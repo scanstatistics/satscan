@@ -1,26 +1,18 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "PurelySpatialAnalysis.h"
+#include "ClusterData.h"
 
 /** Constructor */
 CPurelySpatialAnalysis::CPurelySpatialAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                       :CAnalysis(Parameters, DataHub, PrintDirection) {
-  try {
-    Init();
-    Setup();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelySpatialAnalysis");
-    throw;
-  }
-}
+                       :CAnalysis(Parameters, DataHub, PrintDirection), gTopShapeClusters(DataHub),
+                        gpClusterComparator(0), gpClusterData(0), gpMeasureList(0) {}
 
 /** Desctructor */
 CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
   try {
-    delete gpTopShapeClusters;
     delete gpClusterComparator;
     delete gpClusterData;
     delete gpMeasureList;
@@ -32,15 +24,17 @@ CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
     allocations for each simulation. This method must be called prior to MonteCarlo(). */
 void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
   try {
+    delete gpMeasureList; gpMeasureList=0;
+    delete gpClusterData; gpClusterData=0;
     delete gpClusterComparator; gpClusterComparator=0;
     //create simulation objects based upon which process used to perform simulations
-    if (gbMeasureListReplications) {
+    if (geReplicationsProcessType == MeasureListEvaluation) {
       gpClusterData = new SpatialData(DataGateway, gParameters.GetAreaScanRateType());
       gpMeasureList = GetNewMeasureListObject();
     }
     else { //simulations performed using same process as real data set
       gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
-      gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
+      gTopShapeClusters.SetTopClusters(*gpClusterComparator);
     }
   }
   catch (ZdException &x) {
@@ -58,7 +52,7 @@ void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataSetGate
   try {
     delete gpClusterComparator; gpClusterComparator=0;
     gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
-    gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
+    gTopShapeClusters.SetTopClusters(*gpClusterComparator);
   }
   catch (ZdException &x) {
     delete gpClusterComparator; gpClusterComparator=0;
@@ -71,55 +65,32 @@ void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataSetGate
     Caller should not assume that returned reference is persistent, but should either call
     Clone() method or overloaded assignment operator. */
 const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
-  int                           i, j;
+  int                   j;
+  CentroidNeighbors     CentroidDef;
 
-  gpTopShapeClusters->Reset(tCenter);
+  gTopShapeClusters.Reset(tCenter);
   for (j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      gpClusterComparator->Initialize(tCenter);
-     gpClusterComparator->SetEllipseOffset(j);                       // store the ellipse link in the cluster obj
-     gpClusterComparator->SetNonCompactnessPenalty((j == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetEllipseShape(j)));
-     CPurelySpatialCluster & TopCluster = (CPurelySpatialCluster&)(gpTopShapeClusters->GetTopCluster(j));
-     gpClusterComparator->AddNeighborDataAndCompare(j, tCenter, DataGateway, &gDataHub, TopCluster, *gpLikelihoodCalculator);
+     gpClusterComparator->SetEllipseOffset(j, gDataHub);
+     gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway,
+                                                                     CentroidDef.Set(j, tCenter, gDataHub),
+                                                                     gTopShapeClusters.GetTopCluster(j),
+                                                                     *gpLikelihoodCalculator);
   }
-  return gpTopShapeClusters->GetTopCluster();
-}
-
-/** internal initialization */
-void CPurelySpatialAnalysis::Init() {
-  gpTopShapeClusters=0;
-  gpClusterComparator=0;
-  gpClusterData=0;
-  gpMeasureList=0;
+  return gTopShapeClusters.GetTopCluster();
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication. */
 double CPurelySpatialAnalysis::MonteCarlo(const DataSetInterface& Interface) {
-  tract_t               k, i, * pNeighborCounts, ** ppSorted_Tract_T;
-  unsigned short     ** ppSorted_UShort_T;
+  tract_t               k, i;
+  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
-  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) { //circle is 0 offset... (always there)
-     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
-     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
-     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
-     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        gpClusterData->AddMeasureList(i, Interface, gpMeasureList, pNeighborCounts[i],
-                                      ppSorted_UShort_T, ppSorted_Tract_T);
-     }
+  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     for (i=0; i < gDataHub.m_nGridTracts; ++i)
+        gpClusterData->AddMeasureList(CentroidDef.Set(k, i, gDataHub), Interface, gpMeasureList);
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
-}
-
-/** internal class setup */
-void CPurelySpatialAnalysis::Setup() {
-  try {
-    gpTopShapeClusters = new TopClustersContainer(gDataHub);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()", "CPurelySpatialAnalysis");
-    delete gpTopShapeClusters;
-    throw;
-  }
 }
 
