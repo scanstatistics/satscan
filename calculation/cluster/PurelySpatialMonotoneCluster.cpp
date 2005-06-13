@@ -244,7 +244,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
 
 /** Prints latitude/longitude coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double        dRadius, * pCoords=0, * pCoords2=0, EARTH_RADIUS = 6367/*radius of earth in km*/;
+  double        dRadius, * pCoords=0, * pCoords2=0;
   int           i;
   float         Latitude, Longitude;
   char          cNorthSouth, cEastWest;
@@ -252,8 +252,6 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 
   try {
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
-    Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
-    dRadius = 2 * EARTH_RADIUS * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
     ConvertToLatLong(&Latitude, &Longitude, pCoords);
     Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     Longitude >= 0 ? cEastWest = 'W' : cEastWest = 'E';
@@ -262,7 +260,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     for (i=0; i < m_nSteps; ++i) {
       Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
-      dRadius = 2 * EARTH_RADIUS * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
+      dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS_km));
       free(pCoords2);
       sWork.printf("%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
       sBuffer << sWork;
