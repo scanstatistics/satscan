@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "PurelyTemporalAnalysis.h"
+#include "MostLikelyClustersContainer.h"
 
 /** Constructor */
 CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -39,7 +40,7 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataSetGate
     gpTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
 
     //create simulation objects based upon which process used to perform simulations
-    if (gbMeasureListReplications) {
+    if (geReplicationsProcessType == MeasureListEvaluation) {
       //create new cluster data object
       gpClusterData = new TemporalData(DataGateway);
       //create new measure list object
