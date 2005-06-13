@@ -7,16 +7,13 @@
 #include "SignificantRatios05.h"
 #include "Analysis.h"
 #include "MostLikelyClustersContainer.h"
+#include "AbstractCentricAnalysis.h"
 
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
   friend class stsMCSimReporter;
-  
-  private:
-    void                                Init();
-    void                                Setup();
 
-  protected:
+  private:
     const CParameters                 & gParameters;
     BasePrint                         & gPrintDirection;
     CSaTScanData                      * gpDataHub;
@@ -31,21 +28,25 @@ class AnalysisRunner {
     unsigned int                        giClustersReported;
     MostLikelyClustersContainer         gTopClustersContainer;
 
+    void                                Execute();
+    void                                ExecuteCentrically();
+    void                                ExecuteSuccessively();
     void                                DisplayFindClusterHeading();
     void                                DisplayTopClusterLogLikelihood();
-    virtual void                        CalculateMostLikelyClusters();
-    virtual void                        CreateClusterInformationFile();
-    virtual void                        CreateRelativeRiskFile();
+    void                                CalculateMostLikelyClusters();
+    void                                CreateRelativeRiskFile();
     void                                CreateReport();
-    virtual void                        DisplayTopClusters();
-    virtual void                        DisplayTopCluster();
+    void                                DisplayTopClusters();
+    void                                DisplayTopCluster();
     void                                FinalizeReport();
+    void                                Init();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
-    virtual void                        PerformParallelSimulations();
-    virtual void                        PerformSerializedSimulations();
-    virtual void                        PerformSimulations();
+    void                                PerformParallelSimulations();
+    void                                PerformSerializedSimulations();
+    void                                PerformSimulations();
     void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
+    void                                Setup();
     void                                UpdatePowerCounts(double r);
     void                                UpdateReport();
     void                                UpdateSignificantRatiosList(double dRatio);
@@ -55,11 +56,13 @@ class AnalysisRunner {
     virtual ~AnalysisRunner();
 
     virtual bool                        CheckForEarlyTermination(unsigned int iNumSimulationsCompleted) const;
-    virtual void                        Execute();
+
     const MostLikelyClustersContainer & GetClusterContainer() const {return gTopClustersContainer;}
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
     bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios;}
     CAnalysis                         * GetNewAnalysisObject() const;
+    AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbtractDataSetGateway& RealDataGateway,
+                                                                    const ZdPointerVector<AbtractDataSetGateway>& vSimDataGateways) const;
     unsigned short                      GetNumSignificantAt005() const {return guwSignificantAt005;}
     unsigned int                        GetNumSimulationsExecuted() const {return giNumSimsExecuted;}
     double                              GetSimRatio01() const;
@@ -68,3 +71,4 @@ class AnalysisRunner {
 };
 //***************************************************************************
 #endif
+

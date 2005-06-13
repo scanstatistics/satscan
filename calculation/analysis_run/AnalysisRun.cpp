@@ -24,6 +24,11 @@
 #include "stsMCSimReporter.h"
 #include "stsMCSimContinuationPolicy.h"
 #include "contractor.h"
+#include "PurelySpatialCentricAnalysis.h"
+#include "SpaceTimeCentricAnalysis.h"
+#include "SpaceTimeIncludePurelySpatialCentricAnalysis.h"
+#include "SpaceTimeIncludePurelyTemporalCentricAnalysis.h"
+#include "SpaceTimeIncludePureCentricAnalysis.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -56,12 +61,14 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     //display process heading
     DisplayFindClusterHeading();
     //allocate date gateway object
-    pDataSetGateway = gpDataHub->GetDataSetHandler().GetNewDataGateway();
+    pDataSetGateway = gpDataHub->GetDataSetHandler().GetNewDataGatewayObject();
+    gpDataHub->GetDataSetHandler().GetDataGateway(*pDataSetGateway);
     //get analysis object
     pAnalysis = GetNewAnalysisObject();
     //allocate objects used in 'FindTopClusters()' process
     pAnalysis->AllocateTopClustersObjects(*pDataSetGateway);
     //calculate most likely clusters
+    gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::REPORTED);
     pAnalysis->FindTopClusters(*pDataSetGateway, gTopClustersContainer);
     delete pDataSetGateway; pDataSetGateway=0;
     delete pAnalysis; pAnalysis=0;
@@ -106,31 +113,6 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     return (gTopClustersContainer.GetTopRankedCluster().GetPValue(iNumSimulationsCompleted) > fCutOff);
   }
   return false;
-}
-
-/** Creates 'cluster information' output file(s) if requested by user through
-    parameter settings. If no clusters of significance are found, file will still
-    be created, but will be empty. Files types creates are ASCII text and dBase,
-    with the user's parameter settings indicating which. */
-void AnalysisRunner::CreateClusterInformationFile() {
-  try {
-    if (gParameters.GetOutputClusterLevelFiles()) {
-      //create file record data buffers
-      ClusterInformationWriter ClusterWriter(*gpDataHub, giNumSimsExecuted < 99);
-      //print progress to print direction
-      if (gTopClustersContainer.GetNumClustersRetained())
-        gPrintDirection.SatScanPrintf("Recording results for %i cluster%s...\n",
-                                      gTopClustersContainer.GetNumClustersRetained(),
-                                     (gTopClustersContainer.GetNumClustersRetained() == 1 ? "" : "s"));
-      //collect most likely cluster data in record buffers
-      for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i)
-         ClusterWriter.Write(gTopClustersContainer.GetCluster(i), i+1, giNumSimsExecuted);
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("CreateClusterInformationFile()","AnalysisRunner");
-    throw;
-  }
 }
 
 /** Creates 'relative risks' output file(s) if requested by user through
@@ -204,8 +186,7 @@ void AnalysisRunner::DisplayTopClusterLogLikelihood() {
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopCluster() {
-  std::auto_ptr<LocationInformationWriter>    ClusterLocationWriter;
-  FILE                                * fp=0;
+  FILE          * fp=0;
 
   try {
     if (gTopClustersContainer.GetNumClustersRetained() > 0) {
@@ -213,25 +194,27 @@ void AnalysisRunner::DisplayTopCluster() {
       OpenReportFile(fp, true);
       //get most likely cluster
       const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
-      //if creating 'location information files, create record data buffers
-      if (gParameters.GetOutputAreaSpecificFiles())
-        ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, gParameters.GetNumReplicationsRequested() < 99));
       //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
       if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
         ++giClustersReported;
         switch(giAnalysisCount) {
           case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
           case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-          default : fprintf(fp,"                  _____________________________\n\n");
+          default : fprintf(fp, "                  _____________________________\n\n");
         }
         //print cluster definition to file stream
         TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+        //print cluster definition to 'cluster information' record buffer
+        if (gParameters.GetOutputClusterLevelFiles())
+          ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99, giAnalysisCount > 1).Write(TopCluster, 1, giNumSimsExecuted);
+        //print cluster definition to 'location information' record buffer
+        if (gParameters.GetOutputAreaSpecificFiles()) {
+          LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
+          TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
+        }
         //check track of whether this cluster was significant in top five percentage
         if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
           ++guwSignificantAt005;
-        //print cluster definition to 'location information' record buffer
-        if (gParameters.GetOutputAreaSpecificFiles())
-           TopCluster.Write(*(ClusterLocationWriter.get()), *gpDataHub, giClustersReported, giNumSimsExecuted);
       }
       fprintf(fp, "\n");
       fclose(fp); fp=0;
@@ -249,6 +232,7 @@ void AnalysisRunner::DisplayTopCluster() {
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopClusters() {
   std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
+  std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
   clock_t                                  lStartTime;
   FILE                                   * fp=0;
 
@@ -256,34 +240,48 @@ void AnalysisRunner::DisplayTopClusters() {
     //if creating 'location information' files, create record data buffers
     if (gParameters.GetOutputAreaSpecificFiles())
       ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, giNumSimsExecuted < 99));
+
+    //if creating 'cluster information' files, create record data buffers
+    if (gParameters.GetOutputClusterLevelFiles())
+      ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99));
+
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
     lStartTime = clock(); //get clock for calculating output time
     //open result output file
     OpenReportFile(fp, true);
-    for (tract_t i=0; i < tNumClustersToDisplay; ++i) {
-       //get next most likely cluster
+
+    for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i) {
+       gPrintDirection.SatScanPrintf("Reporting cluster %i of %i\n", i + 1, gTopClustersContainer.GetNumClustersRetained());
+       //report estimate of time to report all clusters
+       if (i==9)
+         ReportTimeEstimate(lStartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
+       //get reference to i'th top cluster  
        const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
-       //report progress
-       if (i==1)
-         ReportTimeEstimate(lStartTime, tNumClustersToDisplay, i, &gPrintDirection);
-       //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-       if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
-         ++giClustersReported;
-         switch (giClustersReported) {
-           case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-           case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-           default : fprintf(fp, "\n"); break;
-         }
-         //print cluster definition to file stream
-         TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
-         //check track of whether this cluster was significant in top five percentage
-         if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
-           ++guwSignificantAt005;
-         //print cluster definition to 'location information' record buffer
-         if (gParameters.GetOutputAreaSpecificFiles())
-           TopCluster.Write(*(ClusterLocationWriter.get()), *gpDataHub, giClustersReported, giNumSimsExecuted);
+       //write cluster details to 'cluster information' file
+       if (ClusterWriter.get())
+         ClusterWriter->Write(TopCluster, i+1, giNumSimsExecuted);
+       //write cluster details to results file and 'location information' files -- only report
+       //cluster if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
+       if (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank() <= giNumSimsExecuted)) {
+           ++giClustersReported;
+           switch (giClustersReported) {
+             case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+             case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
+             default : fprintf(fp, "\n"); break;
+           }
+           //print cluster definition to file stream
+           TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+           //check track of whether this cluster was significant in top five percentage
+           if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
+             ++guwSignificantAt005;
+           //print cluster definition to 'location information' record buffer
+           if (gParameters.GetOutputAreaSpecificFiles())
+             TopCluster.Write(*ClusterLocationWriter, *gpDataHub, giClustersReported, giNumSimsExecuted);
        }
+       //we no longer will be requesting neighbor information for this centroid - we can delete
+       //neighbor information - which might have been just calculated at beginning of this loop
+       gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
     }
     fprintf(fp, "\n");
     fclose(fp); fp=0;
@@ -295,24 +293,66 @@ void AnalysisRunner::DisplayTopClusters() {
   }
 }
 
-/** starts analysis execution */
+/** Executes analysis - conditionally running successive or centric processes. */
 void AnalysisRunner::Execute() {
+  double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0), dPercentage;
+
+  //read data
+  gpDataHub->ReadDataFromFiles();
+  //calculate expected cases
+  gpDataHub->CalculateExpectedCases();
+  //validate that data set contains cases
+  for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
+     if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
+       GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
+
+  switch (gParameters.GetMaxGeographicClusterSizeType()) {
+    case PERCENTOFPOPULATIONTYPE     :
+    case PERCENTOFPOPULATIONFILETYPE : dPercentage = gParameters.GetMaximumGeographicClusterSize() / 100.0; break;
+    case DISTANCETYPE                : //Purely as a guess, we'll assume that the distance the user specified
+                                       //equates to 10% of the population. There might be a better way to due this!
+                                       dPercentage = 0.1; break;
+    default                          :
+       ZdGenerateException("Unknown maximum spatial cluster size type '%d'.\n", "Execute()", gParameters.GetMaxGeographicClusterSizeType());
+  };
+  if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
+    dSuccessiveMemoryDemands = (double)sizeof(unsigned short**) * (double)(gParameters.GetNumTotalEllipses()+1) +
+                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short*) * (double)gpDataHub->m_nGridTracts +
+                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+  else
+    dSuccessiveMemoryDemands = (double)sizeof(tract_t**) * (double)(gParameters.GetNumTotalEllipses()+1) +
+                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t*) * (double)gpDataHub->m_nGridTracts +
+                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
+
+  dCentricMemoryDemands = (double)gParameters.GetNumReplicationsRequested() *
+                          gpDataHub->GetDataSetHandler().GetSimulationDataSetAllocationRequirements();
+  if (gpDataHub->GetDataSetHandler().GetNumDataSets() == 1)
+    dCentricMemoryDemands += (double)gParameters.GetNumReplicationsRequested() *
+                             (double)sizeof(measure_t) * (double)gpDataHub->GetDataSetHandler().GetDataSet().GetTotalCases() *
+                             (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2.0 : 1.0);
+  if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
+    dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+  else
+    dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
+
+  if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
+      (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)) ||
+       dSuccessiveMemoryDemands < dCentricMemoryDemands)
+    ExecuteSuccessively();
+  else
+    ExecuteCentrically();
+}
+
+/** starts analysis execution - evaluating real data then replications */
+void AnalysisRunner::ExecuteSuccessively() {
   bool  bContinue;
 
   try {
-    //read data
-    gpDataHub->ReadDataFromFiles();
-    //calculate expected cases
-    gpDataHub->CalculateExpectedCases();
-    //validate that data set contains cases
-    for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-       if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
-         GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
     //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
     //calculate number of neighboring locations about each centroid
-    gpDataHub->FindNeighbors(false);
+    gpDataHub->FindNeighbors();
     //detect cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
@@ -340,8 +380,6 @@ void AnalysisRunner::Execute() {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
       }
-      //report additional output file: 'cluster information'
-      CreateClusterInformationFile();
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
       //repeat analysis - sequential scan
@@ -356,7 +394,149 @@ void AnalysisRunner::Execute() {
     FinalizeReport();
   }
   catch (ZdException &x) {
-    x.AddCallpath("Execute()","AnalysisRunner");
+    x.AddCallpath("ExecuteSuccessively()","AnalysisRunner");
+    throw;
+  }
+}
+
+/** starts analysis execution - development */
+void AnalysisRunner::ExecuteCentrically() {
+  bool                  bContinue;
+
+  try {
+    DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
+
+    //detect user cancellation
+    if (gPrintDirection.GetIsCanceled())
+      return;
+
+    //create result file report
+    CreateReport();
+
+    //start analyzing data
+    do {
+      ++giAnalysisCount;
+      guwSignificantAt005 = 0;
+      giNumSimsExecuted = 0;
+
+      //simualtion data randomizer
+      RandomizerContainer_t                       RandomizationContainer;
+      //allocate a simulation data set for each requested replication
+      std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
+      //allocate a data gateway for each requested replication
+      ZdPointerVector<AbtractDataSetGateway>      vSimDataGateways(gParameters.GetNumReplicationsRequested());
+      //allocate an array to contain simulation llr values
+      AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
+      //data gateway object for real data
+      std::auto_ptr<AbtractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
+      //centroid neighbor information objects
+      std::vector<CentroidNeighbors>              CentroidNeighbors(gpDataHub->GetParameters().GetNumTotalEllipses() + 1);
+      std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
+      std::auto_ptr<AbstractCentricAnalysis>      CentricAnalysis;
+      //centroid neighbors calculator
+      std::auto_ptr<CentroidNeighborCalculator>   CentroidCalculator;
+
+      //get data randomizers
+      DataHandler.GetRandomizerContainer(RandomizationContainer);
+      //set data gateway object
+      DataHandler.GetDataGateway(*DataSetGateway);
+
+      gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      //create simulation data sets -- randomize each and set corresponding data gateway object
+      for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
+         SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
+         //create new simulation data set object for each data set of this simulation
+         for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
+            thisDataCollection.push_back(new SimDataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+         //allocate appropriate data structure for given data set handler (probablility model)
+         DataHandler.AllocateSimulationData(thisDataCollection);
+         //randomize data
+         gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
+         //allocate and set data gateway object
+         vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
+         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
+      }
+
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+        
+      //allocate analysis object
+      CentricAnalysis.reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
+      //allocate centroid neigbor calculator
+      if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
+        CentroidCalculator.reset(new CentroidNeighborCalculatorByDistance(*gpDataHub, gPrintDirection));
+      else
+        CentroidCalculator.reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
+
+      //analyze real and simulation data about each centroid
+      clock_t  tStartTime = clock();
+      for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
+         gPrintDirection.SatScanPrintf("Calculating top cluster about centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
+         CentricAnalysis->ExecuteAboutCentroids(c, gTopClustersContainer, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
+         //report estimation of total execution time
+         if (c==9)
+           ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
+     }
+     //detect user cancellation
+     if (gPrintDirection.GetIsCanceled())
+       return;
+     if (gParameters.GetIncludePurelyTemporalClusters())
+       CentricAnalysis->CalculatePurelyTemporalCluster(gTopClustersContainer, *DataSetGateway);
+
+     CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
+     giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
+     //free memory of objects that will no longer be used
+     // - we might need the memory for recalculating neighbors in geographical overlap code 
+     vRandomizedDataSets.clear();
+     CentricAnalysis.reset(0);
+     vSimDataGateways.DeleteAllElements();
+     //detect user cancellation
+     if (gPrintDirection.GetIsCanceled())
+       return;
+     //rank top cluster and apply criteria for reporting secondary clusters
+     gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
+
+     //report calculated simulation llr values
+     if (GetIsCalculatingSignificantRatios())
+       gpSignificantRatios->Initialize();
+     if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+       RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+     std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+     for (; itr != itr_end; ++itr) {
+       //update most likely clusters given latest simulated loglikelihood ratio
+       gTopClustersContainer.UpdateTopClustersRank(*itr);
+       //update significance indicator
+       UpdateSignificantRatiosList(*itr);
+       //update power calculations
+       UpdatePowerCounts(*itr);
+       //update simulated loglikelihood record buffer
+       if(RatioWriter.get()) RatioWriter->Write(*itr);
+     }
+     SimulationRatios.reset();
+
+     //report clusters
+     UpdateReport();
+     //log history for first analysis run
+     if (giAnalysisCount == 1) {
+       gPrintDirection.SatScanPrintf("Logging run history...\n");
+       stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+     }
+     //report additional output file: 'relative risks for each location'
+     CreateRelativeRiskFile();
+     //repeat analysis - sequential scan
+     if ((bContinue = RepeatAnalysis()) == true) {
+       RemoveTopClusterData();
+       //detect user cancellation
+       if (gPrintDirection.GetIsCanceled()) return;
+     }
+    } while (bContinue);
+    
+    //finish report
+    FinalizeReport();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ExecuteCentrically()","AnalysisRunner");
     throw;
   }
 }
@@ -471,10 +651,48 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
             return new CSpaceTimeAnalysis(gParameters, *gpDataHub, gPrintDirection);
       case SPATIALVARTEMPTREND :
           return new CSpatialVarTempTrendAnalysis(gParameters, *gpDataHub, gPrintDirection);
+      default :
+        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());  
     };
    } 
   catch (ZdException &x) {
     x.AddCallpath("GetNewAnalysisObject()","AnalysisRunner");
+    throw;
+  }
+  return 0;
+}
+
+/** returns new AbstractCentricAnalysis object */
+AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const AbtractDataSetGateway& RealDataGateway,
+                                                                      const ZdPointerVector<AbtractDataSetGateway>& vSimDataGateways) const {
+  try {
+    switch (gParameters.GetAnalysisType()) {
+      case PURELYSPATIAL :
+          if (gParameters.GetRiskType() == STANDARDRISK)
+            return new PurelySpatialCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
+          else
+            ZdGenerateException("No implementation for purely spatial analysis with isotonic scan for centric evaluation.\n", "GetNewCentricAnalysisObject()");
+      case PURELYTEMPORAL :
+      case PROSPECTIVEPURELYTEMPORAL :
+            ZdGenerateException("No implementation for purely temporal analysis for centric evaluation.\n", "GetNewCentricAnalysisObject()");
+      case SPACETIME :
+      case PROSPECTIVESPACETIME :
+          if (gParameters.GetIncludePurelySpatialClusters() && gParameters.GetIncludePurelyTemporalClusters())
+            return new SpaceTimeIncludePureCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
+          else if (gParameters.GetIncludePurelySpatialClusters())
+            return new SpaceTimeIncludePurelySpatialCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
+          else if (gParameters.GetIncludePurelyTemporalClusters())
+            return new SpaceTimeIncludePurelyTemporalCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
+          else
+            return new SpaceTimeCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
+      case SPATIALVARTEMPTREND :
+            ZdGenerateException("No implementation for svtt analysis for centric evaluation.\n", "GetNewCentricAnalysisObject()");
+      default :
+        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());  
+    };
+   } 
+  catch (ZdException &x) {
+    x.AddCallpath("GetNewCentricAnalysisObject()","AnalysisRunner");
     throw;
   }
   return 0;
@@ -613,7 +831,8 @@ void AnalysisRunner::PerformSerializedSimulations() {
     //get container of data randomizers - these will modify the simulation data
     GetDataHub().GetDataSetHandler().GetRandomizerContainer(RandomizationContainer);
     //get data gateway given dataset handler's real data and simulated data structures
-    pDataGateway = GetDataHub().GetDataSetHandler().GetNewSimulationDataGateway(SimulationDataContainer);
+    pDataGateway = GetDataHub().GetDataSetHandler().GetNewDataGatewayObject();
+    GetDataHub().GetDataSetHandler().GetSimulationDataGateway(*pDataGateway, SimulationDataContainer);
     //get new analysis object for which to defined simulation algorithm
     pAnalysis = GetNewAnalysisObject();
     //allocate appropriate data members for simulation algorithm
@@ -674,8 +893,9 @@ void AnalysisRunner::PerformSimulations() {
   try {
     if (gParameters.GetNumReplicationsRequested() > 0) {
       //recompute neighbors if settings indicate that smaller clusters are reported
-      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-        gpDataHub->FindNeighbors(true);
+      gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
+      //$$if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
+      //$$  gpDataHub->FindNeighbors(true);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
 #ifdef PARALLEL_SIMULATIONS
       PerformParallelSimulations();
