@@ -15,12 +15,12 @@ class C_ST_PT_Analysis : public CSpaceTimeAnalysis {
   private:
     CPurelyTemporalCluster      * gpTopPurelyTemporalCluster;
     CPurelyTemporalCluster      * gpPurelyTemporalClusterComparator;
-    TemporalData                * gpPTClusterData;
+    AbstractTemporalClusterData * gpPTClusterData;
 
     void                          Init();
 
   protected:
-    virtual void                AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway);  
+    virtual void                AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway);
 
   public:
     C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);

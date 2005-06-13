@@ -3,6 +3,8 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
+#include "ClusterData.h"
+#include "MostLikelyClustersContainer.h"
 
 /** Constructor */
 C_ST_PT_Analysis::C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -35,7 +37,7 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway & D
       eIncludeClustersType = gParameters.GetIncludeClustersType();
 
     //create simulation objects based upon which process used to perform simulations
-    if (gbMeasureListReplications)
+    if (geReplicationsProcessType == MeasureListEvaluation)
       gpPTClusterData = new TemporalData(DataGateway);
     else {
       //allocate purely temporal, comparator cluster and top cluster
@@ -107,22 +109,16 @@ void C_ST_PT_Analysis::Init() {
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
-  tract_t                       k, i, *  pNeighborCounts, ** ppSorted_Tract_T;
-  unsigned short             ** ppSorted_UShort_T;
+  tract_t               k, i;
+  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   //compare purely temporal cluster in same ratio correction as circle
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
-     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
-     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
-     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
-                                                 ppSorted_UShort_T, ppSorted_Tract_T,
-                                                 *gpTimeIntervals, *gpMeasureList);
-     }
+     for (i=0; i < gDataHub.m_nGridTracts; ++i)
+        gpClusterData->AddNeighborDataAndCompare(CentroidDef.Set(k, i, gDataHub), Interface, *gpTimeIntervals, *gpMeasureList);
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();

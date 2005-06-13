@@ -9,19 +9,22 @@
 #include "ProbabilityModel.h"
 #include "PurelySpatialProspectiveCluster.h"
 
+class SpatialData;
+class ProspectiveSpatialData;
+
 /** Derives from base class to re-define methods for a space-time analysis that
     include purely spatial clusters. */
 class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
-  private:
-    void                                Init();
-    void                                Setup();
-
+  typedef IntermediateClustersContainer<CPurelySpatialCluster>            intermediate_ps_clusters_t;
+  typedef IntermediateClustersContainer<CPurelySpatialProspectiveCluster> intermediate_psp_clusters_t;
+    
   protected:
-    TopClustersContainer              * gpPSTopShapeClusters;   
-    CPurelySpatialCluster             * gpPSClusterComparator;
-    CPurelySpatialProspectiveCluster  * gpPSPClusterComparator;
     SpatialData                       * gpPSClusterData;
+    CPurelySpatialCluster             * gpPSClusterComparator;
+    intermediate_ps_clusters_t          gPSTopShapeClusters;
     ProspectiveSpatialData            * gpPSPClusterData;
+    CPurelySpatialProspectiveCluster  * gpPSPClusterComparator;
+    intermediate_psp_clusters_t         gPSPTopShapeClusters;
 
     virtual void                        AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway);
     virtual void                        AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway);

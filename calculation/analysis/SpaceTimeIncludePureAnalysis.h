@@ -3,15 +3,14 @@
 #define __SPACETIMEINCLUDEPUREANALYSIS_H
 //*************************************************************************
 #include "SpaceTimeIncludePurelySpatialAnalysis.h"
-#include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 
 /** Derives from base class to re-define methods for a space-time analysis
     which includes purely spatial and purely temporal clusters. */
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
   private:
-    CPurelyTemporalCluster    * gpTopPurelyTemporalCluster; /** cluster object utilized in calculating simulation llr */
-    CPurelyTemporalCluster    * gpPTClusterComparator;      /** cluster object utilized in calculating simulation llr */
-    TemporalData              * gpPTClusterData;            /** cluster data object utilized in calculating simulation llr */
+    CPurelyTemporalCluster      * gpTopPurelyTemporalCluster; /** cluster object utilized in calculating simulation llr */
+    CPurelyTemporalCluster      * gpPTClusterComparator;      /** cluster object utilized in calculating simulation llr */
+    AbstractTemporalClusterData * gpPTClusterData;
 
     void                        Init();
 

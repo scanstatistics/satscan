@@ -1,26 +1,19 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "SpaceTimeAnalysis.h"
+#include "MakeNeighbors.h"
+#include "ClusterData.h"
 
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                   :CAnalysis(Parameters, DataHub, PrintDirection) {
-  try {
-    Init();
-    Setup();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CSpaceTimeAnalysis");
-    throw;
-  }
-}
+                   :CAnalysis(Parameters, DataHub, PrintDirection), gTopShapeClusters(DataHub),
+                    gpClusterComparator(0), gpClusterData(0), gpMeasureList(0), gpTimeIntervals(0) {}
 
 /** Destructor */
 CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {
   try {
-    delete gpTopShapeClusters;
     delete gpClusterComparator;
     delete gpClusterData;
     delete gpMeasureList;
@@ -48,7 +41,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& 
     gpTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
 
     //create simulation objects based upon which process used to perform simulations
-    if (gbMeasureListReplications) {
+    if (geReplicationsProcessType == MeasureListEvaluation) {
       //create new cluster data object
       gpClusterData = new SpaceTimeData(DataGateway);
       //create new measure list object
@@ -58,7 +51,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& 
       //create cluster object used as comparator when iterating over centroids and time intervals
       gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway);
       //initialize list of top circle/ellipse clusters
-      gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
+      gTopShapeClusters.SetTopClusters(*gpClusterComparator);
     }
   }
   catch (ZdException &x) {
@@ -88,7 +81,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway&
     //create cluster object used as comparator when iterating over centroids and time intervals
     gpClusterComparator = new CSpaceTimeCluster(gpClusterDataFactory, DataGateway);
     //initialize list of top circle/ellipse clusters
-    gpTopShapeClusters->SetTopClusters(*gpClusterComparator);
+    gTopShapeClusters.SetTopClusters(*gpClusterComparator);
   }
   catch (ZdException &x) {
     delete gpClusterComparator; gpClusterComparator=0;
@@ -102,61 +95,36 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway&
     likelihood ratio . Caller should not assume that returned reference is
     persistent, but should either call Clone() method or overloaded assignment
     operator. */
-const CCluster & CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
-  tract_t       k;
+const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
+  tract_t               k;
+  CentroidNeighbors     CentroidDef;
 
-  gpTopShapeClusters->Reset(tCenter);
+  gTopShapeClusters.Reset(tCenter);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      gpClusterComparator->Initialize(tCenter);
-     gpClusterComparator->SetRate(gParameters.GetAreaScanRateType());
-     gpClusterComparator->SetEllipseOffset(k);
-     gpClusterComparator->SetNonCompactnessPenalty((k == 0 || !gParameters.GetNonCompactnessPenalty() ? 1 : gDataHub.GetEllipseShape(k)));
-     CSpaceTimeCluster & TopCluster = (CSpaceTimeCluster&)(gpTopShapeClusters->GetTopCluster(k));
-     gpClusterComparator->AddNeighborDataAndCompare(k, tCenter, DataGateway, &gDataHub, TopCluster, gpTimeIntervals);
+     gpClusterComparator->SetEllipseOffset(k, gDataHub);
+     gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway,
+                                                                     CentroidDef.Set(k, tCenter, gDataHub),
+                                                                     gTopShapeClusters.GetTopCluster(k),
+                                                                     *gpTimeIntervals);
   }
-  return gpTopShapeClusters->GetTopCluster();
+  return gTopShapeClusters.GetTopCluster();
 }
 
-/** internal initialization */
-void CSpaceTimeAnalysis::Init() {
-  gpTopShapeClusters=0;
-  gpClusterComparator=0;
-  gpClusterData=0;
-  gpMeasureList=0;
-  gpTimeIntervals=0;
-}
 
 /** Returns log likelihood ratio for Monte Carlo replication. */
 double CSpaceTimeAnalysis::MonteCarlo(const DataSetInterface& Interface) {
-  tract_t                       k, i, * pNeighborCounts, ** ppSorted_Tract_T;
-  unsigned short             ** ppSorted_UShort_T;
+  tract_t               k, i;
+  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
-
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
-     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
-     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
      for (i=0; i < gDataHub.m_nGridTracts; ++i)
-        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
-                                                 ppSorted_UShort_T, ppSorted_Tract_T,
-                                                 *gpTimeIntervals, *gpMeasureList);
+        gpClusterData->AddNeighborDataAndCompare(CentroidDef.Set(k, i, gDataHub), Interface, *gpTimeIntervals, *gpMeasureList);
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
-}
-
-/** internal setup function */
-void CSpaceTimeAnalysis::Setup() {
-  try {
-    gpTopShapeClusters = new TopClustersContainer(gDataHub);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()", "CSpaceTimeAnalysis");
-    delete gpTopShapeClusters;
-    throw;
-  }
 }
 

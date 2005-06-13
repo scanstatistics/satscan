@@ -3,6 +3,8 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "SpaceTimeIncludePureAnalysis.h"
+#include "ClusterData.h"
+#include "MostLikelyClustersContainer.h"
 
 /** Constructor */
 C_ST_PS_PT_Analysis::C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -35,7 +37,7 @@ void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway&
       eIncludeClustersType = gParameters.GetIncludeClustersType();
 
     //create simulation objects based upon which process used to perform simulations
-    if (gbMeasureListReplications)
+    if (geReplicationsProcessType == MeasureListEvaluation)
       gpPTClusterData = new TemporalData(DataGateway);
     else {
       //allocate purely temporal, comparator cluster and top cluster
@@ -63,7 +65,7 @@ void C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataSetGateway& DataGatew
   //detect user cancellation
   if (gPrintDirection.GetIsCanceled())
     return;
-  //calculate top purely temporal cluster  
+  //calculate top purely temporal cluster
   if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
     eIncludeClustersType = ALIVECLUSTERS;
   else
@@ -102,27 +104,22 @@ void C_ST_PS_PT_Analysis::Init() {
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
-  tract_t                       k, i, * pNeighborCounts, ** ppSorted_Tract_T;
-  unsigned short             ** ppSorted_UShort_T;
-
   if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
     return MonteCarloProspective(Interface);
-    
+
+  tract_t               k, i;
+  CentroidNeighbors     CentroidDef;
+
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
-     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
-     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        gpPSClusterData->AddMeasureList(i, Interface, gpMeasureList, pNeighborCounts[i],
-                                        ppSorted_UShort_T, ppSorted_Tract_T);
-        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
-                                                 ppSorted_UShort_T, ppSorted_Tract_T,
-                                                 *gpTimeIntervals, *gpMeasureList);
+        CentroidDef.Set(k, i, gDataHub);
+        gpPSClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
+        gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
@@ -131,8 +128,8 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Interface) {
-  tract_t                 k, i, * pNeighborCounts, ** ppSorted_Tract_T;
-  unsigned short       ** ppSorted_UShort_T;
+  tract_t                 k, i;
+  CentroidNeighbors       CentroidDef;
 
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
@@ -140,15 +137,10 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Inter
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     ppSorted_Tract_T = gDataHub.GetSortedArrayAsTract_T(k);
-     ppSorted_UShort_T = gDataHub.GetSortedArrayAsUShort_T(k);
-     pNeighborCounts = gDataHub.GetNeighborCountArray()[k];
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        gpPSPClusterData->AddMeasureList(i, Interface, gpMeasureList, pNeighborCounts[i],
-                                         ppSorted_UShort_T, ppSorted_Tract_T);
-        gpClusterData->AddNeighborDataAndCompare(i, Interface, pNeighborCounts[i],
-                                                 ppSorted_UShort_T, ppSorted_Tract_T,
-                                                 *gpTimeIntervals, *gpMeasureList);
+        CentroidDef.Set(k, i, gDataHub);
+        gpPSPClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
+        gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
      }
      gpMeasureList->SetForNextIteration(k);
   }
