@@ -34,6 +34,7 @@ class TemporalDataEvaluator : public CTimeIntervals {
 
     virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
     virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual double              ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
     virtual IncludeClustersType GetType() const {return CLUSTERSINRANGE;}
 };
 
@@ -49,6 +50,7 @@ class MultiSetTemporalDataEvaluator : public TemporalDataEvaluator {
 
     virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
     virtual void                           CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double                         ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -63,6 +65,7 @@ class NormalTemporalDataEvaluator : public TemporalDataEvaluator {
 
     virtual void                      CompareClusters(CCluster& Running, CCluster& TopCluster);
     virtual void                      CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double                    ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -77,6 +80,7 @@ class CategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
 
     virtual void                      CompareClusters(CCluster& Running, CCluster& TopCluster);
     virtual void                      CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double                    ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -91,6 +95,7 @@ class MultiSetCategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
 
     virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
     virtual void                           CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double                         ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
 };
 //******************************************************************************
 #endif

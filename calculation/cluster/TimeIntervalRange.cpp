@@ -90,6 +90,34 @@ void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& Cluster
   }
 }
 
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double TemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
+  int            iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  count_t        tTotalCases(gData.GetTotalCases());
+  measure_t      tTotalMeasure(gData.GetTotalMeasure());
+  TemporalData * pData = (TemporalData*)&ClusterData;  //dynamic cast?
+  count_t      * pCases = pData->gpCases;
+  measure_t    * pMeasure = pData->gpMeasure;
+  double         dRatio(0);
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        pData->gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
+        pData->gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure))
+          dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatio(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure));
+     }
+  }
+  return dRatio;
+}
+
 /** internal setup function */
 void TemporalDataEvaluator::Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType) {
   try {
@@ -190,6 +218,34 @@ void MultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&
   ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetTemporalDataEvaluator");
 }
 
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double MultiSetTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
+  int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  MultiSetTemporalData                * pData = (MultiSetTemporalData*)&ClusterData; //dynamic cast ?
+  AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
+  double                                dRatio(0);
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        Unifier.Reset();
+        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
+          TemporalData & Datum = *pData->gvSetClusterData[t];
+          Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
+          Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure);
+        }
+        dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+     }
+  }
+  return dRatio;
+}
 
 //******************************************************************************
 
@@ -243,6 +299,34 @@ void NormalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, 
   ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","NormalTemporalDataEvaluator");
 }
 
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double NormalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
+  int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  count_t              tTotalCases(gData.GetTotalCases());
+  measure_t            tTotalMeasure(gData.GetTotalMeasure());
+  NormalTemporalData * pData = (NormalTemporalData*)&ClusterData; //dynamic cast ?
+  double               dRatio(0);
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
+        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
+        pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
+        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure))
+          dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(pData->gtCases, pData->gtMeasure, pData->gtSqMeasure, tTotalCases, tTotalMeasure));
+     }
+  }
+
+  return dRatio;
+}
+
 //******************************************************************************
 
 /** constructor */
@@ -290,6 +374,30 @@ void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CClust
 /** Not implemented - throws ZdException */
 void CategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
   ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","CategoricalTemporalDataEvaluator");
+}
+
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double CategoricalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
+  int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  CategoricalTemporalData * pData = (CategoricalTemporalData*)&ClusterData; //dynamic cast ?
+  double                    dRatio(0);    
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        for (size_t t=0; t < pData->gvCasesPerCategory.size(); ++t)
+          pData->gvCasesPerCategory[t] = pData->gppCategoryCases[t][iWindowStart] - pData->gppCategoryCases[t][iWindowEnd];
+        dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(pData->gvCasesPerCategory));
+     }
+  }
+
+  return dRatio;
 }
 
 //******************************************************************************
@@ -347,3 +455,31 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalC
   ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetCategoricalTemporalDataEvaluator");
 }
 
+/** Iterates through defined temporal window for accumulated cluster data.
+    Calculates greatest loglikelihood ratio among clusterings that have rates
+    which we are interested in. Returns greatest loglikelihood ratio. */
+double MultiSetCategoricalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
+  int                                           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  AbstractMultiSetCategoricalTemporalData     * pData = (AbstractMultiSetCategoricalTemporalData*)&ClusterData; //dynamic cast ?
+  AbstractLoglikelihoodRatioUnifier           & Unifier = gLikelihoodCalculator.GetUnifier();
+  double                                        dRatio(0);
+
+  //iterate through windows
+  gpMaxWindowLengthIndicator->Reset();
+  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
+  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+        Unifier.Reset();
+        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
+          CategoricalTemporalData& Datum = *pData->gvSetClusterData[t];
+          for (size_t c=0; c < Datum.gvCasesPerCategory.size(); ++c)
+             Datum.gvCasesPerCategory[c] = Datum.gppCategoryCases[c][iWindowStart] - Datum.gppCategoryCases[c][iWindowEnd];
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gvCasesPerCategory, t);
+        }
+        dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
+     }
+  }
+  return dRatio;
+}
