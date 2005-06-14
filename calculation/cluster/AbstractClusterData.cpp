@@ -39,3 +39,15 @@ AbstractTemporalClusterData::AbstractTemporalClusterData() : AbstractClusterData
 /** class destructor */
 AbstractTemporalClusterData::~AbstractTemporalClusterData() {}
 
+/** Reassociates internal data with passed DataSetInterface pointers.
+    Not implemented - throws exception */
+void AbstractTemporalClusterData::Reassociate(const DataSetInterface& Interface) {
+  ZdGenerateException("Reassociate(const DataSetInterface&) not implemented.","AbstractTemporalClusterData");
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers of DataGateway.
+    Not implemented - throws exception */
+void AbstractTemporalClusterData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+  ZdGenerateException("Reassociate(const AbtractDataSetGateway&) not implemented.","AbstractTemporalClusterData");
+}
+

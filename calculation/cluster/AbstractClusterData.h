@@ -45,6 +45,8 @@ class AbstractTemporalClusterData : public AbstractClusterData {
 
     virtual void                          Assign(const AbstractTemporalClusterData& rhs) = 0;
     virtual AbstractTemporalClusterData * Clone() const = 0;
+    virtual void                          Reassociate(const DataSetInterface& Interface);
+    virtual void                          Reassociate(const AbtractDataSetGateway& DataGateway);
 };
 //******************************************************************************
 #endif

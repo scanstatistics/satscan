@@ -151,6 +151,15 @@ measure_t CategoricalTemporalData::GetMeasure(unsigned int) const {
   return 0;
 }
 
+/** Reassociates internal data with passed DataSetInterface pointers. */
+void CategoricalTemporalData::Reassociate(const DataSetInterface& Interface) {
+  gppCategoryCases = Interface.GetPTCategoryCaseArray();
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
+void CategoricalTemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+  gppCategoryCases = DataGateway.GetDataSetInterface().GetPTCategoryCaseArray();
+}
 //************** class CategoricalProspectiveSpatialData ***********************
 
 /** class constructor */
@@ -373,6 +382,9 @@ void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const Abt
 /** internal setup function */
 void CategoricalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
+    //Note that second dimension is number of time intervals plus one - this permits
+    //us to evaluate last time intervals data with same code as other time intervals
+    //in CTimeIntervals object.
     gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0);
     gppCategoryCases = gpCategoryCasesHandler->GetArray();
   }
