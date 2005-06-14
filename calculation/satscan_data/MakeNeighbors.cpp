@@ -1,7 +1,7 @@
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//*****************************************************************************
+//******************************************************************************
 #include "MakeNeighbors.h"
 #include "SaTScanData.h"
 #include "ExponentialRandomizer.h"
@@ -9,13 +9,13 @@
 /** Comparison function for LocationDistance objects. */
 bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
   //first check whether distances are equal - we may need to break a tie
-  if (lhs.GetDistanceSquared() == rhs.GetDistanceSquared()) {
+  if (lhs.GetDistance() == rhs.GetDistance()) {
     // break ties in a controlled scheme:
     //   - compare coordinates starting at first dimension and
     //       continue until last dimension(if needed)
     //   - lesser coordinate breaks tie, not for any particular reason
-    //     that was the decision made by Martin Kulldorph.
-    //   - if all coordinates are equal, than something is wrong as
+    //     that was the decision made by Martin
+    //   - if all coordinates are equal, then something is wrong as
     //     duplicate coordinates should have been handled by this point
     //     in program execution. Throw exception - else we've lost tie
     //     breaking control.
@@ -33,39 +33,194 @@ bool CompareLocationDistance::operator() (const LocationDistance& lhs, const Loc
   }
   //distances not equal, compare as normal
   else
-    return (lhs.GetDistanceSquared() < rhs.GetDistanceSquared());
+    return (lhs.GetDistance() < rhs.GetDistance());
 }
 
+//******************************************************************************
+
 /** constructor */
-CentroidNeighborCalculator::CentroidNeighborCalculator(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData)
-                           :gDataHub(DataHub), gPrintDirection(PrintDirection),
+CentroidNeighbors::CentroidNeighbors() : gtCentroid(0), gtEllipseOffset(0), giNeighbors(0), giMaxNeighbors(0), giMaxReportedNeighbors(0),
+                                         gpSortedNeighborsIntegerType(0), gpSortedNeighborsUnsignedShortType(0) {}
+
+/** destructor */
+CentroidNeighbors::~CentroidNeighbors() {}
+
+/** Sets class members to define locations about centroid index / ellipse index.
+    The neigbor information referenced is that of the 'sorted' array, so caller is
+    responsible for ensuring that:
+        1) sorted array is allocated and contains calculated neighbors about centroids
+        2) tEllipseOffset and tCentroid are valid indexes into sorted array
+        3) sorted array will persist until this object is destructed
+    Returns reference to self.*/
+CentroidNeighbors& CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, const CSaTScanData& DataHub) {
+  gtEllipseOffset = tEllipseOffset;
+  gtCentroid = tCentroid;
+  giNeighbors = giMaxNeighbors = giMaxReportedNeighbors = DataHub.GetNeighborCountArray()[tEllipseOffset][tCentroid];
+
+  if (DataHub.GetSortedArrayAsTract_T(tEllipseOffset)) {
+    gpSortedNeighborsIntegerType = DataHub.GetSortedArrayAsTract_T(tEllipseOffset)[tCentroid];
+    gpSortedNeighborsUnsignedShortType = 0;
+  }
+  else {
+    gpSortedNeighborsUnsignedShortType = DataHub.GetSortedArrayAsUShort_T(tEllipseOffset)[tCentroid];
+    gpSortedNeighborsIntegerType = 0;
+  }
+  
+  return *this;  
+}
+
+/** Sets class members to define locations about centroid index / ellipse index.
+    The neighbor information referenced is that which is calculated by CentroidNeighborCalculator
+    object; caller is responsible for ensuring that:
+        1) tEllipseOffset, tCentroid, iNumNeighbors and iNumReportedNeighbors are valid indexes
+        
+    Allocates vector of either integers or unsigned shorts, based upon specified number of
+    neighbors for centroid (iNumNeighbors). Sets maxium number of neighbors variable returned
+    through GetNumNeighbors() method to that of 'iNumReportedNeighbors' variable. */
+void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, int iNumReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations) {
+
+  //conditionally allocate unsigned short vs tract_t
+  if (iNumNeighbors < std::numeric_limits<unsigned short>::max()) {
+    gvSortedNeighborsUnsignedShortType.resize(iNumNeighbors);
+    gpSortedNeighborsUnsignedShortType = (iNumNeighbors ? &gvSortedNeighborsUnsignedShortType[0] : 0);
+    for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
+       gpSortedNeighborsUnsignedShortType[j] = vOrderedLocations[j].GetTractNumber();
+  }
+  else {
+    gvSortedNeighborsIntegerType.resize(iNumNeighbors);
+    gpSortedNeighborsIntegerType = (iNumNeighbors ? &gvSortedNeighborsIntegerType[0] : 0);
+    for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
+       gpSortedNeighborsIntegerType[j] = vOrderedLocations[j].GetTractNumber();
+  }
+
+  gtCentroid = tCentroid;
+  gtEllipseOffset = tEllipseOffset;
+  giMaxNeighbors = iNumNeighbors;
+  giNeighbors = giMaxReportedNeighbors = iNumReportedNeighbors;
+}
+
+//******************************************************************************
+
+/** constructor */
+CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                           :gDataHub(DataHub), gPrintDirection(PrintDirection), gtCurrentEllipseCoordinates(0),
                             gCentroidInfo(*DataHub.GetGInfo()), gLocationInfo(*DataHub.GetTInfo()) {
   //allocate vector of LocationDistance objects
   for (tract_t t=0; t < gDataHub.GetNumTracts(); ++t)
      gvCentroidToLocationDistances.push_back(LocationDistance(t));
   //determine maximum size of circle/ellipse
-  if (bForRealData && gDataHub.GetParameters().GetRestrictingMaximumReportedGeoClusterSize())
-    gtMaximumSize = gDataHub.GetMaxReportedCircleSize();
+  gtMaximumSize = gDataHub.GetMaxCircleSize();
+  if (gDataHub.GetParameters().GetRestrictingMaximumReportedGeoClusterSize())
+    gtMaximumReportedSize = gDataHub.GetMaxReportedCircleSize();
   else
-    gtMaximumSize = gDataHub.GetMaxCircleSize();
+    gtMaximumReportedSize = gtMaximumSize;
 }
 
 /** destructor */
 CentroidNeighborCalculator::~CentroidNeighborCalculator() {}
 
-/** Calculates neighboring locations about centroid. If ellipse offset is zero, invokes
-    CalculateNeighborsByCircles() else invokes CalculateNeighborsByEllipses(). Parameters
-    'ppSortedInt' and 'ppSortedUShort' are the address of arrays, not 2D arrays. This function
-    is meant to be the public access method used in code refactoring where the sorted array is not utilized.
-    NOTE: Caller is responsible of ensuring that 'tEllipseOffset' and 'tCentroid'
-          are valid indexes. Either 'ppSortedInt' or 'ppSortedUShort' must be supplied, which
-          will be allocated to the size of 'iNumNeighbors' and caller is responsible for deleting array. */
-void CentroidNeighborCalculator::CalculateCentroidNeighbors(tract_t tEllipseOffset, tract_t tCentroid,
-                                                            tract_t** ppSortedInt, unsigned short** ppSortedUShort, int& iNumNeighbors) {
-  if (tEllipseOffset == 0)
-    CalculateNeighborsByCircles(tCentroid, ppSortedInt, ppSortedUShort, iNumNeighbors);
-  else
-    CalculateNeighborsByEllipses(tEllipseOffset, tCentroid, ppSortedInt, ppSortedUShort, iNumNeighbors);
+/** Calculates closest neighbor's distances to all locations from ellipse/centroid, sorted from closest
+    to most distant; storing in gvCentroidToLocationDistances class member. */
+void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
+  CenterLocationDistancesAbout(tEllipseOffsetIndex, tCentroidIndex);
+  //sort such locations are clostest to farthest
+  std::stable_sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
+}
+
+/** Calculates neighboring locations about each centroid; storing results in sorted
+    array contained in CSaTScanData object. */
+void CentroidNeighborCalculator::CalculateNeighbors() {
+  try {
+    const_cast<CSaTScanData&>(gDataHub).AllocateSortedArray();
+    CalculateNeighborsByCircles();
+    CalculateNeighborsByEllipses();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("CalculateNeighbors()", "CentroidNeighborCalculator");
+    throw;
+  }
+}
+
+/** Calculates neighboring locations about centroid for given ellipse offset and centroid;
+    storing results in CentroidNeighbors object. */
+void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid) {
+  int iNumNeighbors, iNumReportedNeighbors;
+
+  CalculateNeighborsAboutCentroid(tEllipseOffsetIndex, tCentroidIndex);
+  iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
+  iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
+  Centroid.Set(tEllipseOffsetIndex, tCentroidIndex, iNumNeighbors, iNumReportedNeighbors, gvCentroidToLocationDistances);
+}
+
+/** Calculates neighboring locations about centroid for given ellipse offset and centroid.
+    Does not sort by increasing distance from centroid but instead iterates through each
+    location comparing distance from centroid to location against cluster radius;
+    storing results in CentroidNeighbors object. */
+void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid, double dMaxRadius) {
+  std::vector<LocationDistance>::const_iterator itr=gvCentroidToLocationDistances.begin(), itr_end=gvCentroidToLocationDistances.end();
+
+  CenterLocationDistancesAbout(tEllipseOffsetIndex, tCentroidIndex);
+  //for each location - determine if distance from centroid to location is in/or at radius
+  if (gvCentroidToLocationDistances.size() < (size_t)std::numeric_limits<unsigned short>::max()) {
+    Centroid.gvSortedNeighborsUnsignedShortType.clear();
+    for (; itr != itr_end; ++itr)
+       if (itr->GetDistance() <= dMaxRadius)
+         Centroid.gvSortedNeighborsUnsignedShortType.push_back(static_cast<unsigned short>(itr->GetTractNumber()));
+    Centroid.giNeighbors = Centroid.giMaxReportedNeighbors = Centroid.giMaxNeighbors = Centroid.gvSortedNeighborsUnsignedShortType.size();
+    Centroid.gpSortedNeighborsUnsignedShortType = (Centroid.giNeighbors ? &Centroid.gvSortedNeighborsUnsignedShortType[0] : 0);
+    Centroid.gpSortedNeighborsIntegerType = 0;
+  }
+  else {
+    Centroid.gvSortedNeighborsIntegerType.clear();
+    for (; itr != itr_end; ++itr)
+       if (itr->GetDistance() <= dMaxRadius)
+         Centroid.gvSortedNeighborsIntegerType.push_back(itr->GetTractNumber());
+    Centroid.giNeighbors = Centroid.giMaxReportedNeighbors = Centroid.giMaxNeighbors = Centroid.gvSortedNeighborsIntegerType.size();
+    Centroid.gpSortedNeighborsIntegerType = (Centroid.giNeighbors ? &Centroid.gvSortedNeighborsIntegerType[0] : 0);
+    Centroid.gpSortedNeighborsUnsignedShortType = 0;
+  }
+  Centroid.gtCentroid = tCentroidIndex;
+  Centroid.gtEllipseOffset = tEllipseOffsetIndex;
+}
+
+/** Calculates neighboring locations about each centroid through expanding circle;
+    storing results in sorted array contained in CSaTScanData object. */
+void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
+  clock_t               tStartTime = clock();
+  int                   iNumReportedNeighbors, iNumNeighbors;
+
+  gPrintDirection.SatScanPrintf("Constructing the circles\n");
+  //Calculate neighboring locations about each centroid for circular regions
+  for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
+     CalculateNeighborsAboutCentroid(0, t);
+     iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
+     iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
+     const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, iNumReportedNeighbors, iNumNeighbors);
+     if (t == 9) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
+  }
+}
+
+/** Calculates neighboring locations about each centroid by distance; storing
+    results in multiple dimension arrays contained in CSaTScanData object. */
+void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
+  clock_t                       tStartTime = clock();
+  int                           iNumReportedNeighbors, iNumNeighbors;
+
+  //only perform calculation if ellipses requested
+  if (!gDataHub.GetParameters().GetNumRequestedEllipses())
+    return;
+
+  gPrintDirection.SatScanPrintf("Constructing the ellipsoids\n");
+  //Calculate neighboring locations about each centroid for elliptical regions
+  for (int i=1; i <= gDataHub.GetParameters().GetNumTotalEllipses(); ++i) {
+     for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
+        CalculateNeighborsAboutCentroid(i, t);
+        iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
+        iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
+        const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, iNumReportedNeighbors, iNumNeighbors);
+        if (t == 9 && i == 1) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
+     }
+  }
 }
 
 /** Transforms the x and y coordinates for each location so that circles
@@ -76,8 +231,8 @@ void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOf
   std::vector<double>                                   vCoordinates;
   std::vector<std::pair<double, double> >::iterator     itr;
 
-  if (tEllipseOffset == 0)
-    return; //offset zero is a circle
+  if (tEllipseOffset == 0 || gtCurrentEllipseCoordinates == tEllipseOffset)
+    return;
 
   gvLocationEllipticCoordinates.resize(gDataHub.GetNumTracts());
   itr=gvLocationEllipticCoordinates.begin();
@@ -87,134 +242,36 @@ void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOf
      gLocationInfo.tiRetrieveCoords(t, vCoordinates);
      Transform(vCoordinates[0], vCoordinates[1], dAngle, dShape, &(itr->first), &(itr->second));
   }
+  gtCurrentEllipseCoordinates = tEllipseOffset;
 }
 
-/** Calculates neighboring locations about each centroid; storing results in sorted
-    array contained in CSaTScanData object. */
-void CentroidNeighborCalculator::CalculateNeighbors() {
-  try {
-    gDataHub.AllocateSortedArray();
-    CalculateNeighborsByCircles();
-    CalculateNeighborsByEllipses();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateNeighbors()", "CentroidNeighborCalculator");
-    throw;
-  }
-}
-
-/** Calculates neighboring locations about each centroid through expanding circle;
-    storing results in sorted array contained in CSaTScanData object. */
-void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
-  clock_t               tStartTime = clock();
-
-  gPrintDirection.SatScanPrintf("Constructing the circles\n");
-  //Calculate neighboring locations about each centroid for circular regions
-  if (gDataHub.GetSortedArrayAsTract_T(0))
-    for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
-       CalculateNeighborsByCircles(t, &(gDataHub.GetSortedArrayAsTract_T(0)[t]),  NULL, gDataHub.GetNeighborCountArray()[0][t]);
-       if (t==9) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts, t+1, &gPrintDirection);
-    }
-  else
-    for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
-       CalculateNeighborsByCircles(t, NULL, &(gDataHub.GetSortedArrayAsUShort_T(0)[t]), gDataHub.GetNeighborCountArray()[0][t]);
-       if (t==9) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts, t+1, &gPrintDirection);
-    }
-}
-
-/** Calculates neighboring locations about centroid through expanding circles.
-    Parameters 'ppSortedInt' and 'ppSortedUShort' are the address of arrays, not 2D arrays.
-    NOTE: Caller is responsible of ensuring that 'tCentroid' is a valid index. Either
-          'ppSortedInt' or 'ppSortedUShort' must be supplied, which will be allocated to the size
-          of 'iNumNeighbors' and caller is responsible for deleting array. */
-void CentroidNeighborCalculator::CalculateNeighborsByCircles(tract_t tCentroid, tract_t** ppSortedInt, unsigned short** ppSortedUShort, int& iNumNeighbors) {
+/** Calculates distances from centroid to all locations, storing in gvCentroidToLocationDistances object. */
+void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
   std::vector<double>    vCentroidCoordinates, vLocationCoordinates;
 
-  gCentroidInfo.giRetrieveCoords(tCentroid, vCentroidCoordinates);
-  //calculate distances from centroid to each location
-  for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
-     gvCentroidToLocationDistances[k].SetTractNumber(k);
-     gLocationInfo.tiRetrieveCoords(k, vLocationCoordinates);
-     gvCentroidToLocationDistances[k].SetDistanceSquared(gLocationInfo.tiGetDistanceSq(&vCentroidCoordinates[0], &vLocationCoordinates[0]));
-  }
-  //sort such locations are clostest to farthest
-  std::stable_sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
-  //calculate closest locations with respect to maximum circle size
-  iNumNeighbors += CalculateNumberOfNeighboringLocations();
-  //allocate array to store location indexes
-  if (ppSortedInt) {
-    *ppSortedInt = new tract_t[iNumNeighbors];
-     for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
-        (*ppSortedInt)[j] = gvCentroidToLocationDistances[j].GetTractNumber();
+  if (tEllipseOffsetIndex == 0) {
+    gCentroidInfo.giRetrieveCoords(tCentroidIndex, vCentroidCoordinates);
+    //calculate distances from centroid to each location
+    for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
+       gvCentroidToLocationDistances[k].SetTractNumber(k);
+       gLocationInfo.tiRetrieveCoords(k, vLocationCoordinates);
+       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(&vCentroidCoordinates[0], &vLocationCoordinates[0])));
+    }
   }
   else {
-    *ppSortedUShort = new unsigned short[iNumNeighbors];
-    for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
-       (*ppSortedUShort)[j] = gvCentroidToLocationDistances[j].GetTractNumber();
-  }
-}
-
-/** Calculates neighboring locations about each centroid by distance; storing
-    results in multiple dimension arrays contained in CSaTScanData object. */
-void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
-  clock_t                       tStartTime = clock();
-
-  //only perform calculation if ellipses requested
-  if (!gDataHub.GetParameters().GetNumRequestedEllipses())
-    return;
-
-  gPrintDirection.SatScanPrintf("Constructing the ellipsoids\n");
-  //Calculate neighboring locations about each centroid for elliptical regions
-  for (int i=1; i <= gDataHub.GetParameters().GetNumTotalEllipses(); ++i) {
-     //tranform location coordinates for this elliptical angle/shape
-     CalculateEllipticCoordinates(i);
-     if (gDataHub.GetSortedArrayAsTract_T(0))
-       for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
-          CalculateNeighborsByEllipses(i, t, &(gDataHub.GetSortedArrayAsTract_T(i)[t]),  NULL, gDataHub.GetNeighborCountArray()[i][t]);
-          if (t == 9 && i == 1) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
-       }
-     else
-       for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
-          CalculateNeighborsByEllipses(i, t, NULL, &(gDataHub.GetSortedArrayAsUShort_T(i)[t]), gDataHub.GetNeighborCountArray()[i][t]);
-          if (t == 9 && i == 1) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
-       }
-  }
-}
-
-/** Calculates neighboring locations about centroid through expanding circles.
-    Parameters 'ppSortedInt' and 'ppSortedUShort' are the address of arrays, not 2D arrays.
-    NOTE: Caller is responsible of ensuring that 'tEllipseOffset' and 'tCentroid'
-          are valid indexes. Either 'ppSortedInt' or 'ppSortedUShort' must be supplied, which
-          will be allocated to the size of 'iNumNeighbors' and caller is responsible for deleting array. */
-void CentroidNeighborCalculator::CalculateNeighborsByEllipses(tract_t tEllipseOffset, tract_t tCentroid, tract_t** ppSortedInt, unsigned short** ppSortedUShort, int& iNumNeighbors) {
-  std::vector<double>    vCentroidCoordinates, vLocationCoordinates;
-
-  gCentroidInfo.giRetrieveCoords(tCentroid, vCentroidCoordinates);
-  //tranform centroid coordinates into elliptical space
-  Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], gDataHub.GetEllipseAngle(tEllipseOffset),
-            gDataHub.GetEllipseShape(tEllipseOffset), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
-  vLocationCoordinates.resize(2);
-  //calculate distances from centroid to each location
-  for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
-     vLocationCoordinates[0] = gvLocationEllipticCoordinates[k].first;
-     vLocationCoordinates[1] = gvLocationEllipticCoordinates[k].second;
-     gvCentroidToLocationDistances[k].SetTractNumber(k);
-     gvCentroidToLocationDistances[k].SetDistanceSquared(gLocationInfo.tiGetDistanceSq(&vCentroidCoordinates[0], &vLocationCoordinates[0]));
-  }
-  //sort such locations are clostest to farthest
-  std::stable_sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
-  //calculate closest locations with respect to maximum circle size
-  iNumNeighbors += CalculateNumberOfNeighboringLocations();
-  //allocate array to store location indexes
-  if (ppSortedInt) {
-    *ppSortedInt = new tract_t[iNumNeighbors];
-     for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
-        (*ppSortedInt)[j] = gvCentroidToLocationDistances[j].GetTractNumber();
-  }
-  else {
-    *ppSortedUShort = new unsigned short[iNumNeighbors];
-    for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
-       (*ppSortedUShort)[j] = gvCentroidToLocationDistances[j].GetTractNumber();
+    gCentroidInfo.giRetrieveCoords(tCentroidIndex, vCentroidCoordinates);
+    //tranform centroid coordinates into elliptical space
+    Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], gDataHub.GetEllipseAngle(tEllipseOffsetIndex),
+              gDataHub.GetEllipseShape(tEllipseOffsetIndex), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
+    vLocationCoordinates.resize(2);
+    CalculateEllipticCoordinates(tEllipseOffsetIndex);
+    //calculate distances from centroid to each location
+    for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
+       vLocationCoordinates[0] = gvLocationEllipticCoordinates[k].first;
+       vLocationCoordinates[1] = gvLocationEllipticCoordinates[k].second;
+       gvCentroidToLocationDistances[k].SetTractNumber(k);
+       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(&vCentroidCoordinates[0], &vLocationCoordinates[0])));
+    }
   }
 }
 
@@ -249,36 +306,39 @@ void CentroidNeighborCalculator::Transform(double Xold, double Yold, float Ellip
    *pYnew=Ynew;
 }
 
+//******************************************************************************
+
 /** constructor */
-CentroidNeighborCalculatorByDistance::CentroidNeighborCalculatorByDistance(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData)
-                                     :CentroidNeighborCalculator(DataHub, PrintDirection, bForRealData){}
+CentroidNeighborCalculatorByDistance::CentroidNeighborCalculatorByDistance(const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                                     :CentroidNeighborCalculator(DataHub, PrintDirection){}
 
 /** destructor */
 CentroidNeighborCalculatorByDistance::~CentroidNeighborCalculatorByDistance() {}
 
 /** Calculates the number of neighboring locations as defined in gvCentroidToLocationDistances
     and maximum circle size. */
-tract_t CentroidNeighborCalculatorByDistance::CalculateNumberOfNeighboringLocations() const {
+tract_t CentroidNeighborCalculatorByDistance::CalculateNumberOfNeighboringLocations(measure_t tMaximumSize) const {
   std::vector<LocationDistance>::const_iterator itr=gvCentroidToLocationDistances.begin(),
                                                 itr_end=gvCentroidToLocationDistances.end();
   tract_t                                       tCount=0;
 
-  for (; itr != itr_end && itr->GetDistance() <= gtMaximumSize; ++itr, ++tCount);
+  for (; itr != itr_end && itr->GetDistance() <= tMaximumSize; ++itr) ++tCount;
 
   return tCount;
 }
 
+//******************************************************************************
 
 /** constructor */
-CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData)
-                                       :CentroidNeighborCalculator(DataHub, PrintDirection, bForRealData){
+CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(const CSaTScanData& DataHub, BasePrint& PrintDirection)
+                                       :CentroidNeighborCalculator(DataHub, PrintDirection){
   count_t    ** ppCases=0;
   int           j;
 
   if (gDataHub.GetParameters().GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE)
     gpLocationsPopulation = const_cast<measure_t*>((&gDataHub.GetMaxCirclePopulationArray()[0]));
   else if (gDataHub.GetParameters().GetProbabilityModelType() == ORDINAL) {
-    //For the Ordinal model, populations for each location is calculated by adding up the
+    //For the Ordinal model, populations for each location are calculated by adding up the
     //total individuals represented in the catgory case arrays.
     gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
     //Population is calculated from first data set - even when multiple data sets are defined.
@@ -294,7 +354,10 @@ CentroidNeighborCalculatorByPopulation::CentroidNeighborCalculatorByPopulation(C
     // consider population as cases and non-censored cases
     gvCalculatedPopulations.assign(gDataHub.GetNumTracts(), 0);
     //Population is calculated from first data set - even when multiple data sets are defined.
-    ((ExponentialRandomizer*)(gDataHub.GetDataSetHandler().GetRandomizer(0)))->CalculateMaxCirclePopulationArray(gvCalculatedPopulations);
+    const ExponentialRandomizer * pRandomizer = dynamic_cast<const ExponentialRandomizer*>(gDataHub.GetDataSetHandler().GetRandomizer(0));
+    if (!pRandomizer)
+      ZdGenerateException("Randomizer failed cast to ExponentialRandomizer.", "constructor()");
+    pRandomizer->CalculateMaxCirclePopulationArray(gvCalculatedPopulations);
     gpLocationsPopulation = &gvCalculatedPopulations[0];
   }
   else
@@ -307,15 +370,15 @@ CentroidNeighborCalculatorByPopulation::~CentroidNeighborCalculatorByPopulation(
 
 /** Calculates the number of neighboring locations as defined in gvCentroidToLocationDistances
     and maximum circle size. */
-tract_t CentroidNeighborCalculatorByPopulation::CalculateNumberOfNeighboringLocations() const {
+tract_t CentroidNeighborCalculatorByPopulation::CalculateNumberOfNeighboringLocations(measure_t tMaximumSize) const {
   std::vector<LocationDistance>::const_iterator itr=gvCentroidToLocationDistances.begin(),
                                                 itr_end=gvCentroidToLocationDistances.end();
   tract_t                                       tCount=0;
   measure_t                                     tCumMeasure=0;
 
-  for (; itr != itr_end && (tCumMeasure + gpLocationsPopulation[itr->GetTractNumber()]) <= gtMaximumSize; ++itr) {
+  for (; itr != itr_end && (tCumMeasure + gpLocationsPopulation[itr->GetTractNumber()]) <= tMaximumSize; ++itr) {
      tCumMeasure += gpLocationsPopulation[itr->GetTractNumber()];
-     if (tCumMeasure <= gtMaximumSize)
+     if (tCumMeasure <= tMaximumSize)
        ++tCount;
   }
   return tCount;

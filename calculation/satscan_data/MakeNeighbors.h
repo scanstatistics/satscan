@@ -11,21 +11,20 @@
 /** Distance from a centroid to a neighboring location. */
 class LocationDistance {
    private:
-     tract_t            m_tTractNumber;     /* tract number      */
-     float              m_fDistanceSquared; /* distance squared  */
+     tract_t    m_tTractNumber;     /* tract number */
+     double     m_dDistance;        /* distance from centroid to location at m_tTractNumber */
 
    public:
-     LocationDistance(tract_t t=0, float f=0) {SetTractNumber(t); SetDistanceSquared(f);}
-     ~LocationDistance() {}
+     LocationDistance(tract_t t=0, double d=0) {SetTractNumber(t); SetDistance(d);}
+     virtual ~LocationDistance() {}
 
-     const double       GetDistance() const {return sqrt(m_fDistanceSquared);}
-     const float      & GetDistanceSquared() const {return m_fDistanceSquared;}
-     const tract_t    & GetTractNumber() const {return m_tTractNumber;}
-     void               SetDistanceSquared(float f) {m_fDistanceSquared=f;}
-     void               SetTractNumber(tract_t t) {m_tTractNumber=t;}
+     double     GetDistance() const {return m_dDistance;}
+     tract_t    GetTractNumber() const {return m_tTractNumber;}
+     void       SetDistance(double d) {m_dDistance=d;}
+     void       SetTractNumber(tract_t t) {m_tTractNumber=t;}
 };
 
-/** Function object used to compare LocationDistance objects by m_fDistanceSquared. */
+/** Function object used to compare LocationDistance objects by m_dDistance. */
 class CompareLocationDistance {
   private:
     int                 	gi;                     /* loop index */
@@ -43,45 +42,77 @@ class CompareLocationDistance {
 
 class CSaTScanData; /** forward class declaration */
 
+/** Interface which details calculated neighbor indexes about a specific centroid. */
+class CentroidNeighbors {
+  friend class CentroidNeighborCalculator;
+  private:
+    tract_t                       gtCentroid;                             /* centroid index */
+    tract_t                       gtEllipseOffset;                        /* ellipse index */
+    int                           giNeighbors;                            /* neighbor count - variable returned in get method */
+    int                           giMaxNeighbors;                         /* neighbor count - variable which defines max for replication process */
+    int                           giMaxReportedNeighbors;                 /* neighbor count - varible whch defines maximum for evaluation of real data */
+    std::vector<tract_t>          gvSortedNeighborsIntegerType;           /* conditionally allocated integer vector of neighbor indexes */
+    std::vector<unsigned short>   gvSortedNeighborsUnsignedShortType;     /* conditionally allocated unsigned short vector of neighbors indexes */
+    tract_t                     * gpSortedNeighborsIntegerType;           /* pointer to integer array of neighbors indexes */
+    unsigned short              * gpSortedNeighborsUnsignedShortType;     /* pointer to unsigned short array of neighbors indexes */
+
+    void                Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, int iNumReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations);
+
+  public:
+    CentroidNeighbors();
+    ~CentroidNeighbors();
+
+    tract_t             GetEllipseIndex() const {return gtEllipseOffset;}
+    tract_t             GetCentroidIndex() const {return gtCentroid;}
+    inline tract_t      GetNeighborTractIndex(size_t tNeighborIndex) const {return (tract_t)(gpSortedNeighborsUnsignedShortType ? gpSortedNeighborsUnsignedShortType[tNeighborIndex] : gpSortedNeighborsIntegerType[tNeighborIndex]);}
+    inline int          GetNumNeighbors() const {return giNeighbors;}
+    CentroidNeighbors & Set(tract_t tEllipseOffset, tract_t tCentroid, const CSaTScanData& DataHub);
+    void                SetMaximumClusterSize_RealData() {giNeighbors = giMaxReportedNeighbors;}
+    void                SetMaximumClusterSize_SimulatedData() {giNeighbors = giMaxNeighbors;}
+};
+
 /** Calculates neighboring locations about centroids with versatility as to whether
     calculations are stored in stored array of CSaTScanData object or allocated to
     passed array. */
 class CentroidNeighborCalculator {
   private:
-    void                CalculateNeighborsByCircles();
-    void                CalculateNeighborsByCircles(tract_t tCentroid, tract_t** SortedInt, unsigned short** SortedUShort, int& iNumNeighbors);
-    void                CalculateNeighborsByEllipses();
-    void                CalculateNeighborsByEllipses(tract_t tEllipseOffset, tract_t tCentroid, tract_t** SortedInt, unsigned short** SortedUShort, int& iNumNeighbors);
+    void                        CalculateEllipticCoordinates(tract_t tEllipseOffset);
+    void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
+    void                        CalculateNeighborsByCircles();
+    void                        CalculateNeighborsByEllipses();
+    void                        CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
 
   protected:
-    CSaTScanData                              & gDataHub;
+    const CSaTScanData                        & gDataHub;
     const GInfo                               & gCentroidInfo;
     const TractHandler                        & gLocationInfo;
     BasePrint                                 & gPrintDirection;
     measure_t                                   gtMaximumSize;
+    measure_t                                   gtMaximumReportedSize;
     std::vector<LocationDistance>               gvCentroidToLocationDistances;
     std::vector<std::pair<double, double> >     gvLocationEllipticCoordinates;
+    tract_t                                     gtCurrentEllipseCoordinates;
 
-    virtual tract_t     CalculateNumberOfNeighboringLocations() const = 0;
-    void                Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
+    virtual tract_t             CalculateNumberOfNeighboringLocations(measure_t tMaximumSize) const = 0;
+    void                        Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
 
   public:
-    CentroidNeighborCalculator(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData);
+    CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CentroidNeighborCalculator();
 
-    void                CalculateCentroidNeighbors(tract_t tEllipseOffset, tract_t tCentroid, tract_t** ppSortedInt, unsigned short** ppSortedUShort, int& iNumNeighbors);
-    void                CalculateEllipticCoordinates(tract_t tEllipseOffset);
-    void                CalculateNeighbors();
+    void                        CalculateNeighbors();
+    void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid);
+    void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid, double dMaxRadius);
 };
 
 /** Calculates neighboring locations about centroids using relative distance
     of locations as limiting factor. */
 class CentroidNeighborCalculatorByDistance : public CentroidNeighborCalculator {
   protected:
-    virtual tract_t     CalculateNumberOfNeighboringLocations() const;
+    virtual tract_t             CalculateNumberOfNeighboringLocations(measure_t tMaximumSize) const;
 
   public:
-    CentroidNeighborCalculatorByDistance(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData);
+    CentroidNeighborCalculatorByDistance(const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CentroidNeighborCalculatorByDistance();
 };
 
@@ -92,10 +123,10 @@ class CentroidNeighborCalculatorByPopulation : public CentroidNeighborCalculator
     measure_t                 * gpLocationsPopulation;
     std::vector<measure_t>      gvCalculatedPopulations;
 
-    virtual tract_t             CalculateNumberOfNeighboringLocations() const;
+    virtual tract_t             CalculateNumberOfNeighboringLocations(measure_t tMaximumSize) const;
 
   public:
-    CentroidNeighborCalculatorByPopulation(CSaTScanData& DataHub, BasePrint& PrintDirection, bool bForRealData);
+    CentroidNeighborCalculatorByPopulation(const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CentroidNeighborCalculatorByPopulation();
 };
 //*****************************************************************************
