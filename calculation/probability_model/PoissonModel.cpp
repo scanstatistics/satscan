@@ -267,7 +267,7 @@ double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, c
 
       for (T = 1; T <= Cluster.GetNumTractsInnerCircle(); T++)
       {
-         t = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), T);
+         t = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), T, Cluster.GetCartesianRadius());
          for (c = 0; c < ncats; c++)
             Population.GetAlphaAdjustedPopulation(nPopulation, t, c, 0, nPops, vAlpha);
       }
