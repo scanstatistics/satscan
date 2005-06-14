@@ -52,6 +52,8 @@ class MultiSetTemporalData : public AbstractMultiSetTemporalData {
     virtual count_t                GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t              GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                   InitializeData();
+    virtual void                   Reassociate(const DataSetInterface& Interface);
+    virtual void                   Reassociate(const AbtractDataSetGateway& DataGateway);
 };
 
 /** Class representing accumulated data of prospective spatial clustering in
@@ -72,6 +74,8 @@ class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData {
     virtual count_t                          GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t                        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                             InitializeData();
+    virtual void                             Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void                             Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** Class representing accumulated data of space-time clustering in multiple data set. */
@@ -87,6 +91,8 @@ class MultiSetSpaceTimeData : public AbstractMultiSetTemporalData {
     virtual count_t                 GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t               GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                    InitializeData();
+    virtual void                    Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void                    Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 //******************************************************************************
 #endif

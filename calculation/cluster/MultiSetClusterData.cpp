@@ -124,6 +124,17 @@ void MultiSetTemporalData::InitializeData() {
      (*gitr)->InitializeData();
 }
 
+/** Reassociates internal data with passed DataSetInterface pointers. */
+void MultiSetTemporalData::Reassociate(const DataSetInterface& Interface) {
+  for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr)
+     (*gitr)->Reassociate(Interface);
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
+void MultiSetTemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+  for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr)
+     (*gitr)->Reassociate(DataGateway);
+}
 //******************************************************************************
 
 /** class constructor */

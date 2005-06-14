@@ -32,7 +32,6 @@ class NormalTemporalData : public TemporalData {
     NormalTemporalData();
 
   public:
-    NormalTemporalData(const DataSetInterface& Interface);
     NormalTemporalData(const AbtractDataSetGateway& DataGateway);
     virtual ~NormalTemporalData();
 
@@ -43,6 +42,8 @@ class NormalTemporalData : public TemporalData {
     measure_t                  * gpSqMeasure;
 
     virtual void                 InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
+    virtual void                 Reassociate(const DataSetInterface& Interface);
+    virtual void                 Reassociate(const AbtractDataSetGateway& DataGateway);
 };
 
 /** class representing accumulated data of prospective spatial clustering  for normal probability model
@@ -73,6 +74,8 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
     virtual void                           AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double                         CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual void                           InitializeData();
+    virtual void                           Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void                           Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** Class representing accumulated data of space-time clustering for normal probability model. */
@@ -96,6 +99,8 @@ class NormalSpaceTimeData : public NormalTemporalData {
 
     virtual void                  AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual void                  InitializeData();
+    virtual void                  Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void                  Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 //******************************************************************************
 #endif

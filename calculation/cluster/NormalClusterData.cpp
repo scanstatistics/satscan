@@ -59,8 +59,8 @@ NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqM
 
 /** class constructor */
 NormalTemporalData::NormalTemporalData(const AbtractDataSetGateway& DataGateway)
-                   :TemporalData(DataGateway), gtSqMeasure(0),
-                    gpSqMeasure(DataGateway.GetDataSetInterface(0).GetPTSqMeasureArray()) {}
+                   :TemporalData(DataGateway.GetDataSetInterface()), gtSqMeasure(0),
+                    gpSqMeasure(DataGateway.GetDataSetInterface().GetPTSqMeasureArray()) {}
 
 /** class destructor */
 NormalTemporalData::~NormalTemporalData() {}
@@ -85,6 +85,17 @@ void NormalTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
   gpSqMeasure = _rhs.gpSqMeasure;
 }
 
+/** Reassociates internal data with passed DataSetInterface pointers.
+    Not implemented - throws exception */
+void NormalTemporalData::Reassociate(const DataSetInterface& Interface) {
+  ZdGenerateException("Reassociate(const DataSetInterface&) not implemented.","NormalTemporalData");
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
+void NormalTemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+  TemporalData::Reassociate(DataGateway.GetDataSetInterface());
+  gpSqMeasure = DataGateway.GetDataSetInterface().GetPTSqMeasureArray();
+}
 //******************************************************************************
 
 /** class constructor */
@@ -105,7 +116,7 @@ NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& D
                              :NormalTemporalData() {
   try {
     Init();
-    Setup(Data, DataGateway.GetDataSetInterface(0));
+    Setup(Data, DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","NormalProspectiveSpatialData");
@@ -286,7 +297,7 @@ NormalSpaceTimeData::NormalSpaceTimeData(const AbtractDataSetGateway& DataGatewa
                     :NormalTemporalData() {
   try {
     Init();
-    Setup(DataGateway.GetDataSetInterface(0));
+    Setup(DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor(const AbtractDataSetGateway&)","NormalSpaceTimeData");
@@ -384,6 +395,9 @@ void NormalSpaceTimeData::InitializeData() {
 /** internal setup function */
 void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   try {
+    //Note that giAllocationSize is number of time intervals plus one - this permits
+    //us to evaluate last time intervals data with same code as other time intervals
+    //in CTimeIntervals object.
     giAllocationSize = Interface.GetNumTimeIntervals() + 1; 
     gtTotalCases = Interface.GetTotalCasesCount();
     gtTotalMeasure = Interface.GetTotalMeasureCount();
