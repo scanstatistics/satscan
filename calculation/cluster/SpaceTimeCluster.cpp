@@ -107,6 +107,7 @@ void CSpaceTimeCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
   m_nTracts = 0;
   m_nRatio = 0;
+  m_CartesianRadius = -1;  
   gpClusterData->InitializeData();
 }
 

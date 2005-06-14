@@ -155,11 +155,7 @@ CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster() {
 }
 
 /** destructor */
-CSVTTCluster::~CSVTTCluster() {
-  try {
-  }
-  catch (...){}
-}
+CSVTTCluster::~CSVTTCluster() {}
 
 /** overloaded assignment operator */
 CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
@@ -169,6 +165,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
 //  m_nCases                      = rhs.m_nCases;
 //  m_nMeasure                    = rhs.m_nMeasure;
   m_nTracts                     = rhs.m_nTracts;
+  m_CartesianRadius             = rhs.m_CartesianRadius;  
   m_nRatio                      = rhs.m_nRatio;
   m_nLogLikelihood              = rhs.m_nLogLikelihood;
   m_nRank                       = rhs.m_nRank;
