@@ -14,14 +14,14 @@ const char * LocationInformationWriter::CLU_EXP_FIELD             = "CLU_EXP";
 const char * LocationInformationWriter::CLU_OBS_DIV_EXP_FIELD     = "CLU_ODE";
 
 /** class constructor */
-LocationInformationWriter::LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField)
+LocationInformationWriter::LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField, bool bAppend)
                           :AbstractDataFileWriter(Parameters), gbExcludePValueField(bExcludePValueField) {
   try {
     DefineFields();
     if (gParameters.GetOutputAreaSpecificAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, AREA_SPECIFIC_FILE_EXT);
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, AREA_SPECIFIC_FILE_EXT, bAppend);
     if (gParameters.GetOutputAreaSpecificDBase())
-      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT);
+      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
   }
   catch (ZdException &x) {
     delete gpASCIIFileWriter;
@@ -46,17 +46,17 @@ void LocationInformationWriter::DefineFields() {
     CreateField(CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
-      CreateField(CLU_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateField(CLU_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(CLU_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(CLU_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
     if (!gbExcludePValueField)
-      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
-      CreateField(LOC_OBS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-      CreateField(LOC_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-      CreateField(LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(LOC_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(LOC_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
   }
   catch (ZdException &x) {

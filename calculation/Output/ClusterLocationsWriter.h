@@ -21,7 +21,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       void                      DefineFields();
 
   public:
-    LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField);
+    LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField, bool bAppend=false);
     virtual ~LocationInformationWriter();
 
       virtual void              Write(const CCluster& theCluster, const CSaTScanData& theData,
