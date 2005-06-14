@@ -30,18 +30,20 @@ double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster
            dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - ppCensoredCases[Cluster.m_nLastInterval][t];
         }
         break;
+     case SPACETIMECLUSTER                 :
+        if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
+          for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+             tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
+             dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
+             dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCensoredCases[Cluster.m_nLastInterval][tNeighborIndex];
+          }
+          break;
+        }        
      case PURELYSPATIALCLUSTER             :
         for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
-           tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
-           dPopulation += ppCases[0][tNeighborIndex];
-           dPopulation += ppCensoredCases[0][tNeighborIndex];
-        }
-        break;
-     case SPACETIMECLUSTER                 :
-        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
-           tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
-           dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
-           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCensoredCases[Cluster.m_nLastInterval][tNeighborIndex];
+           tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
+           dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex];
+           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][tNeighborIndex];
         }
         break;
      case PURELYSPATIALMONOTONECLUSTER     :

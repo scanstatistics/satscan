@@ -32,21 +32,23 @@ double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, co
           dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[Cluster.m_nLastInterval];
         }
         break;
+     case SPACETIMECLUSTER                 :
+        if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
+          for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
+            count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
+            for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
+               tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j, Cluster.GetCartesianRadius());
+               dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
+            }
+          }
+          break;
+        }
      case PURELYSPATIALCLUSTER             :
         for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
           count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
           for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
-             tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
-             dPopulation += ppCases[0][tNeighborIndex];
-          }
-        }
-        break;
-     case SPACETIMECLUSTER                 :
-        for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-          count_t ** ppCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCategoryCaseArray(t);
-          for (int j=1; j <= Cluster.GetNumTractsInnerCircle(); ++j) {
-             tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j);
-             dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
+             tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), j, Cluster.GetCartesianRadius());
+             dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex];
           }
         }
         break;

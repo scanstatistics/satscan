@@ -25,11 +25,10 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
     for (j=0; j < DataSet.GetNumTracts(); ++j) {
        tTotalCases    += ppCases[0][j];
        tTotalControls += ppControls[0][j];
-       for (i=0; i < DataSet.GetNumTimeIntervals()/*+1*/; ++i) {
+       for (i=0; i < DataSet.GetNumTimeIntervals(); ++i) {
           ppMeasure[i][j]  = ppCases[i][j] + ppControls[i][j];
        }
        tTotalMeasure += ppMeasure[0][j];
-       ppMeasure[i][j] = 0;
 
        // Check to see if total case or control values have wrapped
         if (tTotalCases < 0)
@@ -66,19 +65,21 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
           pPTMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTMeasureArray();
           dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[Cluster.m_nLastInterval];
         break;
+     case SPACETIMECLUSTER                 :
+        if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
+          ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
+          for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+            nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
+            dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
+          }
+          break;
+        }
      case PURELYSPATIALCLUSTER             :
      case PURELYSPATIALMONOTONECLUSTER     :
         ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
         for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
-          nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
-          dPopulation += ppMeasure[0][nNeighbor];
-        }
-        break;
-     case SPACETIMECLUSTER                 :
-        ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
-        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
-          nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
-          dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
+          nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
+          dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor];
         }
         break;
      case SPATIALVARTEMPTRENDCLUSTER       :
