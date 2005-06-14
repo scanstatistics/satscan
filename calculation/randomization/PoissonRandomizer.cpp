@@ -238,7 +238,7 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet
   //modify the measures
  for (t=0; t < tNumTracts; ++t) {
      gvMeasure[t] = ppMeasure[0][t];
-     for (i=tNumTimeIntervals; i >= 30/* ??? */ ; i--) {
+     for (i=tNumTimeIntervals-1; i >= 30/* ??? */ ; i--) {
         if (i == tNumTimeIntervals-1) {//if the last interval, the cummulative measure is the measure itself
           gvMeasure[t] = gvMeasure[t] + ppMeasure[i][t] * (gvRelativeRisks[t]-1);
           TotalMeasure = TotalMeasure + ppMeasure[i][t] * (gvRelativeRisks[t]-1);
