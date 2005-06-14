@@ -15,9 +15,10 @@ class BernoulliDataSetHandler : public DataSetHandler {
     BernoulliDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
     virtual ~BernoulliDataSetHandler();
 
-    virtual AbtractDataSetGateway  * GetNewDataGateway() const;
-    virtual AbtractDataSetGateway  * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const;
-    virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
+    virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
+    virtual AbtractDataSetGateway     & GetDataGateway(AbtractDataSetGateway& DataGatway) const;
+    virtual AbtractDataSetGateway     & GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
+    virtual double                      GetSimulationDataSetAllocationRequirements() const;
     virtual bool                        ReadData();
 };
 //******************************************************************************

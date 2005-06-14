@@ -23,14 +23,35 @@ void SpaceTimePermutationDataSetHandler::AllocateCaseStructures(size_t tSetIndex
   }
 }
 
+/** For each element in SimulationDataContainer_t, allocates appropriate data structures
+    as needed by data set handler (probability model). */
+SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  switch (gParameters.GetAnalysisType()) {
+    case PURELYSPATIAL :
+        ZdGenerateException("AllocateSimulationData() not implemented for purely spatial analysis.","AllocateSimulationData()");
+    case PURELYTEMPORAL :
+    case PROSPECTIVEPURELYTEMPORAL :
+        ZdGenerateException("AllocateSimulationData() not implemented for purely temporal analysis.","AllocateSimulationData()");
+    case SPACETIME :
+    case PROSPECTIVESPACETIME :
+        for (size_t t=0; t < Container.size(); ++t)
+          Container[t]->AllocateCasesArray();
+        break;
+    case SPATIALVARTEMPTREND :
+        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+    default :
+        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+  };
+  return Container;
+}
+
 /** returns new data gateway for real data */
-AbtractDataSetGateway * SpaceTimePermutationDataSetHandler::GetNewDataGateway() const {
-  AbtractDataSetGateway    * pDataSetGateway=0;
+AbtractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 
   try {
-    pDataSetGateway = GetNewDataGatewayObject();
+    DataGatway.Clear();
     for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
@@ -40,39 +61,37 @@ AbtractDataSetGateway * SpaceTimePermutationDataSetHandler::GetNewDataGateway() 
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          ZdGenerateException("GetNewDataGateway() not implemented for purely spatial analysis.","GetNewDataGateway()");
+          ZdGenerateException("GetDataGateway() not implemented for purely spatial analysis.","GetDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          ZdGenerateException("GetNewDataGateway() not implemented for purely temporal analysis.","GetNewDataGateway()");
+          ZdGenerateException("GetDataGateway() not implemented for purely temporal analysis.","GetDataGateway()");
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCaseArray(DataSet.GetCaseArray());
           Interface.SetMeasureArray(DataSet.GetMeasureArray());
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetNewDataGateway() not implemented for spatial variation and temporal trends analysis.","GetNewDataGateway()");
+          ZdGenerateException("GetDataGateway() not implemented for spatial variation and temporal trends analysis.","GetDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
+          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataSetGateway->AddDataSetInterface(Interface);
+      DataGatway.AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
-    delete pDataSetGateway;
-    x.AddCallpath("GetNewDataGateway()","SpaceTimePermutationDataSetHandler");
+    x.AddCallpath("GetDataGateway()","SpaceTimePermutationDataSetHandler");
     throw;
   }  
-  return pDataSetGateway;
+  return DataGatway;
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataSetGateway * SpaceTimePermutationDataSetHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
-  AbtractDataSetGateway    * pDataSetGateway=0;
+AbtractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface        Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 
   try {
-    pDataSetGateway = GetNewDataGatewayObject();
+    DataGatway.Clear();
     for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
@@ -83,55 +102,52 @@ AbtractDataSetGateway * SpaceTimePermutationDataSetHandler::GetNewSimulationData
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely spatial analysis.","GetNewSimulationDataGateway()");
+          ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial analysis.","GetSimulationDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          ZdGenerateException("GetNewSimulationDataGateway() not implemented for purely temporal analysis.","GetNewSimulationDataGateway()");
+          ZdGenerateException("GetSimulationDataGateway() not implemented for purely temporal analysis.","GetSimulationDataGateway()");
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCaseArray(S_DataSet.GetCaseArray());
           Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetNewSimulationDataGateway() not implemented for spatial variation and temporal trends analysis.","GetNewSimulationDataGateway()");
+          ZdGenerateException("GetSimulationDataGateway() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetNewSimulationDataGateway()",gParameters.GetAnalysisType());
+          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataSetGateway->AddDataSetInterface(Interface);
+      DataGatway.AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
-    delete pDataSetGateway;
-    x.AddCallpath("GetNewSimulationDataGateway()","SpaceTimePermutationDataSetHandler");
+    x.AddCallpath("GetSimulationDataGateway()","SpaceTimePermutationDataSetHandler");
     throw;
   }
-  return pDataSetGateway;
+  return DataGatway;
 }
 
-/** Fills passed container with simulation data objects, with appropriate members
-    of data object allocated. */
-SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
-  Container.clear();
-  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+/** Returns memory needed to allocate data set objects. */
+double SpaceTimePermutationDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
+  double        dRequirements(0);
 
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-        ZdGenerateException("GetSimulationDataContainer() not implemented for purely spatial analysis.","GetSimulationDataContainer()");
-    case PURELYTEMPORAL :
-    case PROSPECTIVEPURELYTEMPORAL :
-        ZdGenerateException("GetSimulationDataContainer() not implemented for purely temporal analysis.","GetSimulationDataContainer()");
+    case PURELYSPATIAL : break;
+    case SPATIALVARTEMPTREND : break;
+    case PROSPECTIVEPURELYTEMPORAL : break;
+    case PURELYTEMPORAL : break;
     case SPACETIME :
     case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateCasesArray();
-        break;
-    case SPATIALVARTEMPTREND :
-        ZdGenerateException("GetSimulationDataContainer() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataContainer()");
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataContainer()", gParameters.GetAnalysisType());
+       //case array
+       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
+                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
+       if (gParameters.GetIncludePurelyTemporalClusters())
+         //purely temporal case array
+         dRequirements += (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
+       break;
+     default :
+          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return Container;
+  return dRequirements * GetNumDataSets();
 }
 
 /** Read the count data file.

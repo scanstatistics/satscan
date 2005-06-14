@@ -13,6 +13,42 @@ PoissonDataSetHandler::PoissonDataSetHandler(CSaTScanData& DataHub, BasePrint& P
 /** class destructor */
 PoissonDataSetHandler::~PoissonDataSetHandler() {}
 
+/** For each element in SimulationDataContainer_t, allocates appropriate data structures
+    as needed by data set handler (probability model). */
+SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  switch (gParameters.GetAnalysisType()) {
+    case PURELYSPATIAL :
+        for (size_t t=0; t < Container.size(); ++t)
+          Container[t]->AllocateCasesArray();
+        break;
+    case PURELYTEMPORAL :
+    case PROSPECTIVEPURELYTEMPORAL :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t]->AllocateCasesArray();
+          Container[t]->AllocatePTCasesArray();
+        }
+        break;
+    case SPACETIME :
+    case PROSPECTIVESPACETIME :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t]->AllocateCasesArray();
+          if (gParameters.GetIncludePurelyTemporalClusters())
+            Container[t]->AllocatePTCasesArray();
+        }
+        break;
+    case SPATIALVARTEMPTREND :
+        for (size_t t=0; t < Container.size(); ++t) {
+          Container[t]->AllocateCasesArray();
+          Container[t]->AllocateNCCasesArray();
+          Container[t]->AllocatePTCasesArray();
+        }
+        break;
+    default :
+        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+  };
+  return Container;
+}
+
 /** Converts passed string specifiying a population date to a julian date using
     DateStringParser object. Since we accumulate errors/warnings when reading
     input files, indication of a bad date is returned as false and message
@@ -86,13 +122,12 @@ bool PoissonDataSetHandler::CreatePopulationData(size_t tSetIndex) {
     utilized in calculating most likely clusters (real data) for the Poisson
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
-AbtractDataSetGateway * PoissonDataSetHandler::GetNewDataGateway() const {
-  AbtractDataSetGateway    * pDataSetGateway=0;
+AbtractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
-    pDataSetGateway = GetNewDataGatewayObject();
+    DataGatway.Clear();
     for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
@@ -129,30 +164,28 @@ AbtractDataSetGateway * PoissonDataSetHandler::GetNewDataGateway() const {
           Interface.SetTimeTrend(&DataSet.GetTimeTrend());
           break;
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
+          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataSetGateway->AddDataSetInterface(Interface);
+      DataGatway.AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
-    delete pDataSetGateway;
-    x.AddCallpath("GetNewDataGateway()","PoissonDataSetHandler");
+    x.AddCallpath("GetDataGateway()","PoissonDataSetHandler");
     throw;
   }  
-  return pDataSetGateway;
+  return DataGatway;
 }
 
 /** Returns newly allocated data gateway object that references structures
     utilized in performing simulations (Monte Carlo) for the Poisson
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
-AbtractDataSetGateway * PoissonDataSetHandler::GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const {
-  AbtractDataSetGateway    * pDataSetGateway=0;
+AbtractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
   try {
-    pDataSetGateway = GetNewDataGatewayObject();
+    DataGatway.Clear();
     for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
@@ -190,58 +223,48 @@ AbtractDataSetGateway * PoissonDataSetHandler::GetNewSimulationDataGateway(const
           Interface.SetTimeTrend(&S_DataSet.GetTimeTrend());
           break;
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetNewDataGateway()",gParameters.GetAnalysisType());
+          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
-      pDataSetGateway->AddDataSetInterface(Interface);
+      DataGatway.AddDataSetInterface(Interface);
     }
   }
   catch (ZdException &x) {
-    delete pDataSetGateway;
-    x.AddCallpath("GetNewSimulationDataGateway()","PoissonDataSetHandler");
+    x.AddCallpath("GetSimulationDataGateway()","PoissonDataSetHandler");
     throw;
-  }  
-  return pDataSetGateway;
+  }
+  return DataGatway;
 }
 
-/** Return a collection of new created simulation dataset objects for the
-    Poisson probability model, analysis type and possibly inclusion purely
-    temporal clusters.                                                        */
-SimulationDataContainer_t& PoissonDataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
-  Container.clear();
-  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+/** Returns memory needed to allocate data set objects. */
+double PoissonDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
+  double        dRequirements(0);
 
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateCasesArray();
-        break;
-    case PURELYTEMPORAL :
-    case PROSPECTIVEPURELYTEMPORAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocatePTCasesArray();
-        }
-        break;
+       //case array
+       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
+                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
+       break;
     case SPACETIME :
     case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t]->AllocatePTCasesArray();
-        }
-        break;
+       //case array
+       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
+                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
+       if (gParameters.GetIncludePurelyTemporalClusters())
+         //purely temporal case array
+         dRequirements += (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
+       break;
+    case PROSPECTIVEPURELYTEMPORAL :
+    case PURELYTEMPORAL :
+       //purely temporal analyses not of interest
+       break;
     case SPATIALVARTEMPTREND :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocateNCCasesArray();
-          Container[t]->AllocatePTCasesArray();
-        }
-        break;
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataContainer()", gParameters.GetAnalysisType());
+       //svtt analysis not of interest at this time
+       break;
+     default :
+          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return Container;
+  return dRequirements * GetNumDataSets();
 }
 
 /** Refined process for reading input data from files into respective data
