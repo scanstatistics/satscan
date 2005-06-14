@@ -49,10 +49,10 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTE
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE
 
-CFLAGS      := -c -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
+CFLAGS      := -c -m32 -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
               
 
-LFLAGS      := -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lxbaseg -lm -lzd$(ZDVER)g -Wl,-Bdynamic -lrt -lpthread
+LFLAGS      := -m32 -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lxbaseg -lm -lzd$(ZDVER)g -Wl,-Bdynamic -lrt -lpthread
 
 SRC         := Main.cpp \
                $(ANALYSIS)/Analysis.cpp \
@@ -66,6 +66,14 @@ SRC         := Main.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelySpatialAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelyTemporalAnalysis.cpp \
 	             $(ANALYSIS)/SVTTAnalysis.cpp \
+	             $(ANALYSIS)/IntermediateClustersContainer.cpp \
+	             $(ANALYSIS)/AbstractAnalysis.cpp \
+	             $(ANALYSIS)/AbstractCentricAnalysis.cpp \
+	             $(ANALYSIS)/PurelySpatialCentricAnalysis.cpp \
+	             $(ANALYSIS)/SpaceTimeCentricAnalysis.cpp \
+	             $(ANALYSIS)/SpaceTimeIncludePureCentricAnalysis.cpp \
+	             $(ANALYSIS)/SpaceTimeIncludePurelySpatialCentricAnalysis.cpp \
+	             $(ANALYSIS)/SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp \
 	             $(ANALYSIS)_run/AnalysisRun.cpp \
 	             $(ANALYSIS)_run/MostLikelyClustersContainer.cpp\
                $(CLUSTER)/Cluster.cpp \
