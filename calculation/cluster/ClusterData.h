@@ -22,9 +22,7 @@ class SpatialData : public AbstractSpatialClusterData {
     virtual SpatialData * Clone() const;
     SpatialData         & operator=(const SpatialData& rhs);
 
-    inline /*virtual*/ void   AddMeasureList(tract_t tCentroidIndex, const DataSetInterface& Interface,
-                                             CMeasureList* pMeasureList, tract_t tNumNeighbors,
-                                             unsigned short** ppSorted_UShort_T, tract_t** ppSorted_Tract_T);
+    inline /*virtual*/ void   AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList);
     virtual void          AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double        CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
@@ -33,15 +31,12 @@ class SpatialData : public AbstractSpatialClusterData {
 };
 
 /** adds neighbor data to accumulation and updates measure list */
-inline void SpatialData::AddMeasureList(tract_t tCentroidIndex,
-                                        const DataSetInterface& Interface, CMeasureList* pMeasureList,
-                                        tract_t tNumNeighbors, unsigned short** ppSorted_UShort_T,
-                                        tract_t** ppSorted_Tract_T) {
+inline void SpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList) {
   tract_t       t, tNeighborIndex;
 
   gtCases=0;gtMeasure=0; //initialize data
-  for (t=0; t < tNumNeighbors; ++t) {
-    tNeighborIndex = (ppSorted_UShort_T ? (tract_t)ppSorted_UShort_T[tCentroidIndex][t] : ppSorted_Tract_T[tCentroidIndex][t]);
+  for (t=0; t < CentroidDef.GetNumNeighbors(); ++t) {
+    tNeighborIndex = CentroidDef.GetNeighborTractIndex(t);
     gtCases += Interface.gpPSCaseArray[tNeighborIndex];
     gtMeasure += Interface.gpPSMeasureArray[tNeighborIndex];
     pMeasureList->AddMeasure(gtCases, gtMeasure);
@@ -81,6 +76,8 @@ class TemporalData : public AbstractTemporalClusterData {
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                InitializeData() {gtCases=0;gtMeasure=0;}
+    virtual void                Reassociate(const DataSetInterface& Interface);
+    virtual void                Reassociate(const AbtractDataSetGateway& DataGateway);
 };
 
 /** Class representing accumulated data of prospective spatial clustering
@@ -108,13 +105,13 @@ class ProspectiveSpatialData : public TemporalData {
     virtual ProspectiveSpatialData * Clone() const;
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
 
-    /*virtual*/ void                 AddMeasureList(tract_t tCentroidIndex, const DataSetInterface& Interface,
-                                                    CMeasureList* pMeasureList, tract_t tNumNeighbors,
-                                                    unsigned short** ppSorted_UShort_T, tract_t** ppSorted_Tract_T);
+    /*virtual*/ void                 AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList);
     virtual void                     AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double                   CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
     inline virtual void              InitializeData();
+    virtual void                     Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void                     Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** re-initialize data */
@@ -145,15 +142,14 @@ class SpaceTimeData : public TemporalData {
     virtual SpaceTimeData     * Clone() const;
     SpaceTimeData             & operator=(const SpaceTimeData& rhs);
 
-    /*virtual*/ void            AddNeighborDataAndCompare(tract_t tCentroidIndex,
+    /*virtual*/ void            AddNeighborDataAndCompare(const CentroidNeighbors& CentroidDef,
                                                           const DataSetInterface& Interface,
-                                                          tract_t tNumNeighbors,
-                                                          unsigned short** ppSorted_UShort_T,
-                                                          tract_t** ppSorted_Tract_T,
                                                           CTimeIntervals& TimeIntervals,
                                                           CMeasureList& MeasureList);
     virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway & DataGateway, size_t tSetIndex=0);
     inline virtual void         InitializeData();
+    virtual void                Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void                Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** re-initialize data*/
