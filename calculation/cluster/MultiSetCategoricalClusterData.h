@@ -57,6 +57,8 @@ class MultiSetCategoricalTemporalData : public AbstractMultiSetCategoricalTempor
     virtual MultiSetCategoricalTemporalData * Clone() const;
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void        Reassociate(const DataSetInterface& Interface);
+    virtual void        Reassociate(const AbtractDataSetGateway& DataGateway);
 };
 
 /** Class representing accumulated data of a prospective spatial clustering in
@@ -71,6 +73,8 @@ class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategor
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual void        Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void        Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** Class representing accumulated data of a space-time clustering in multiple
@@ -84,6 +88,8 @@ class MultiSetCategoricalSpaceTimeData : public AbstractMultiSetCategoricalTempo
     virtual MultiSetCategoricalSpaceTimeData * Clone() const;
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void        Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void        Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
 };
 //******************************************************************************
 #endif

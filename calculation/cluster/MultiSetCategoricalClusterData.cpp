@@ -137,6 +137,17 @@ void MultiSetCategoricalTemporalData::AddNeighborData(tract_t, const AbtractData
   ZdGenerateException("AddNeighbor(tract_t, const AbtractDataSetGateway&, size_t) not implemeneted.","MultiSetCategoricalTemporalData");
 }
 
+/** Reassociates internal data with passed DataSetInterface pointers.
+    Not implemented - throws exception */
+void MultiSetCategoricalTemporalData::Reassociate(const DataSetInterface& Interface) {
+  ZdGenerateException("Reassociate(const DataSetInterface&) not implemented.","MultiSetCategoricalTemporalData");
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
+void MultiSetCategoricalTemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+  for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr)
+     (*gitr)->Reassociate(DataGateway);
+}
 //******************************************************************************
 
 /** class constructor */
@@ -183,7 +194,7 @@ double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(Ab
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr, ++i) {
      for (size_t t=0; t < (*gitr)->gvCasesPerCategory.size(); ++t)
-        (*gitr)->gvCasesPerCategory[t] = (*gitr)->gppCategoryCases[t][0] - (*gitr)->gppCategoryCases[t][iWindowEnd];
+        (*gitr)->gvCasesPerCategory[t] = (*gitr)->gppCategoryCases[t][0];
     Unifier.AdjoinRatio(Calculator, (*gitr)->gvCasesPerCategory, i);
   }  
   dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
