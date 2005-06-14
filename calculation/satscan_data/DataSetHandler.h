@@ -30,7 +30,6 @@ class DataSetHandler {
 
     virtual void                        AllocateCaseStructures(size_t iSetIndex);
     bool                                ConvertCountDateToJulian(StringParser& Parser, Julian& JulianDate);
-    AbtractDataSetGateway             * GetNewDataGatewayObject() const;
     bool                                ParseCountLine(PopulationData& thePopulation, StringParser& Parser,
                                                        tract_t& tid, count_t& nCount,
                                                        Julian& nDate, int& iCategoryIndex);
@@ -46,17 +45,20 @@ class DataSetHandler {
     virtual ~DataSetHandler();
 
     //pure virtual public functions
-    virtual AbtractDataSetGateway     * GetNewDataGateway() const = 0;
-    virtual AbtractDataSetGateway     * GetNewSimulationDataGateway(const SimulationDataContainer_t& Container) const = 0;
-    virtual const AbstractRandomizer  * GetRandomizer(size_t iSetIndex) const;
-    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
-    virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const = 0;
-    virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
+    virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const = 0;
+    virtual AbtractDataSetGateway     & GetDataGateway(AbtractDataSetGateway& DataGatway) const = 0;
+    virtual AbtractDataSetGateway     & GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const = 0;
+    virtual double                      GetSimulationDataSetAllocationRequirements() const = 0;
     virtual bool                        ReadData() = 0;
 
+    AbtractDataSetGateway             * GetNewDataGatewayObject() const;
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
     const RealDataSet                 & GetDataSet(size_t iSetIndex=0) const {return *gvDataSets[iSetIndex];}
     RealDataSet                       & GetDataSet(size_t iSetIndex=0) {return *gvDataSets[iSetIndex];}
+    virtual const AbstractRandomizer  * GetRandomizer(size_t iSetIndex) const;
+    virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
+    virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
+    virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     void                                ReportZeroPops(CSaTScanData& Data, FILE* pDisplay, BasePrint* pPrintDirection);
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet& thisRealSet);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);

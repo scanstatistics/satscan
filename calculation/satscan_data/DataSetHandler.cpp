@@ -143,6 +143,15 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
   return Container;
 }
 
+/** Fills passed container with simulation data objects, with appropriate members
+    of data object allocated. */
+SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
+  Container.clear();
+  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
+    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+  return AllocateSimulationData(Container);
+}
+
 /** Attempts to parses passed string into tract identifier, count,
     and based upon settings, date and covariate information.
     Returns whether parse completed without errors. */
