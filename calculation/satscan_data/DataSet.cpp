@@ -47,7 +47,7 @@ DataSet & DataSet::operator=(const DataSet& rhs) {
 void DataSet::AllocateCasesArray() {
   try {
     if (!gpCasesHandler)
-      gpCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts);
+      gpCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts);
     gpCasesHandler->Set(0);
   }
   catch (ZdException &x) {
@@ -64,7 +64,7 @@ void DataSet::AllocateCategoryCasesArray(unsigned int iNumCategories) {
   try {
     gvCasesByCategory.DeleteAllElements();
     for (unsigned int i=0; i < iNumCategories; ++i)
-       gvCasesByCategory.push_back(new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts, 0));
+       gvCasesByCategory.push_back(new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts, 0));
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateCategoryCasesArray()","DataSet");
@@ -80,7 +80,7 @@ void DataSet::AllocateCategoryCasesArray(unsigned int iNumCategories) {
 void DataSet::AllocateMeasureArray() {
   try {
     if (!gpMeasureHandler)
-      gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+      gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals, giNumTracts);
     gpMeasureHandler->Set(0);
   }
   catch (ZdException &x) {
@@ -97,7 +97,7 @@ void DataSet::AllocateMeasureArray() {
 void DataSet::AllocateSqMeasureArray() {
   try {
     if (!gpSqMeasureHandler)
-      gpSqMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+      gpSqMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals, giNumTracts);
     gpSqMeasureHandler->Set(0);
   }
   catch (ZdException &x) {
@@ -114,6 +114,9 @@ void DataSet::AllocateSqMeasureArray() {
 void DataSet::AllocatePTSqMeasureArray() {
   try {
     if (!gpPTSqMeasureArray)
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTSqMeasureArray = new measure_t[giNumTimeIntervals+1];
     memset(gpPTSqMeasureArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
   }
@@ -126,6 +129,9 @@ void DataSet::AllocatePTSqMeasureArray() {
 void DataSet::AllocatePTCasesArray() {
   try {
     if (!gpPTCasesArray)
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTCasesArray = new count_t[giNumTimeIntervals+1];
     memset(gpPTCasesArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
   }
@@ -143,6 +149,9 @@ void DataSet::AllocatePTCasesArray() {
 void DataSet::AllocatePTCategoryCasesArray() {
   try {
     if (!gpPTCategoryCasesHandler)
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(gvCasesByCategory.size(), giNumTimeIntervals+1);
     gpPTCategoryCasesHandler->Set(0);
   }
@@ -160,6 +169,9 @@ void DataSet::AllocatePTCategoryCasesArray() {
 void DataSet::AllocatePTMeasureArray() {
   try {
     if (!gpPTMeasureArray)
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTMeasureArray = new measure_t[giNumTimeIntervals+1];
     memset(gpPTMeasureArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
   }
@@ -176,7 +188,7 @@ void DataSet::AllocatePTMeasureArray() {
 void DataSet::AllocateNCMeasureArray() {
   try {
     if (!gpNCMeasureHandler)
-      gpNCMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+      gpNCMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals, giNumTracts);
     gpNCMeasureHandler->Set(0);
   }
   catch(ZdException &x) {
@@ -434,8 +446,8 @@ void DataSet::SetNonCumulativeCaseArrays() {
       gpNCCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts);
     ppCases_NC = gpNCCasesHandler->GetArray();
     if (!gpCasesPerIntervalArray)
-      gpCasesPerIntervalArray = new count_t[giNumTimeIntervals+1];
-    memset(gpCasesPerIntervalArray, 0, sizeof(count_t) * (giNumTimeIntervals+1));
+      gpCasesPerIntervalArray = new count_t[giNumTimeIntervals];
+    memset(gpCasesPerIntervalArray, 0, sizeof(count_t) * giNumTimeIntervals);
 
     for (i=0; i < (int)giNumTracts; ++i)  {
       ppCases_NC[giNumTimeIntervals-1][i] = ppCases[giNumTimeIntervals-1][i];
@@ -464,6 +476,9 @@ void DataSet::SetPTCasesArray() {
       ZdGenerateException("Cumulative measure array not allocated.","SetPTMeasureArray()");
 
     if (!gpPTCasesArray) {
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTCasesArray = new count_t[giNumTimeIntervals+1];
       memset(gpPTCasesArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
     }
@@ -518,6 +533,9 @@ void DataSet::SetPTMeasureArray() {
       ZdGenerateException("Cumulative measure array not allocated.","SetPTMeasureArray()");
 
     if (!gpPTMeasureArray)
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTMeasureArray = new measure_t[giNumTimeIntervals+1];
 
     memset(gpPTMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
@@ -545,6 +563,9 @@ void DataSet::SetPTSqMeasureArray() {
       ZdGenerateException("Cumulative square measure array not allocated.","SetPTSqMeasureArray()");
 
     if (!gpPTSqMeasureArray)
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
       gpPTSqMeasureArray = new measure_t[giNumTimeIntervals+1];
 
     memset(gpPTSqMeasureArray, 0, (giNumTimeIntervals+1)*sizeof(measure_t));
@@ -589,7 +610,7 @@ RealDataSet::~RealDataSet() {
 void RealDataSet::AllocateCensoredCasesArray() {
   try {
     if (!gpCensoredCasesHandler)
-      gpCensoredCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts);
+      gpCensoredCasesHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts);
     gpCensoredCasesHandler->Set(0);
   }
   catch (ZdException &x) {
@@ -606,7 +627,7 @@ void RealDataSet::AllocateCensoredCasesArray() {
 void RealDataSet::AllocateControlsArray() {
   try {
     if (!gpControlsHandler)
-      gpControlsHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts);
+      gpControlsHandler = new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts);
     gpControlsHandler->Set(0);
   }
   catch (ZdException &x) {
@@ -638,7 +659,7 @@ count_t ** RealDataSet::AddOrdinalCategoryCaseCount(double dOrdinalNumber, count
 
   tCategoryIndex = gPopulation.AddOrdinalCategoryCaseCount(dOrdinalNumber, Count);
   if (gPopulation.GetNumOrdinalCategories() > gvCasesByCategory.size())
-    gvCasesByCategory.insert(gvCasesByCategory.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts, 0));
+    gvCasesByCategory.insert(gvCasesByCategory.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts, 0));
 
   return gvCasesByCategory[tCategoryIndex]->GetArray();
 }
@@ -681,7 +702,7 @@ count_t ** RealDataSet::GetCategoryCaseArray(unsigned int iCategoryIndex, bool b
       ZdGenerateException("Index out of range.","GetCategoryCaseArray()");
     size_t tNumAllocate = iCategoryIndex + 1 - gvCasesByCategory.size();
     for (size_t t=0; t < tNumAllocate; ++t)
-      gvCasesByCategory.push_back(new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals+1, giNumTracts, 0));
+      gvCasesByCategory.push_back(new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts, 0));
   }
 
   return gvCasesByCategory[iCategoryIndex]->GetArray();
@@ -775,8 +796,11 @@ void RealDataSet::SetCasesPerTimeIntervalArray() {
 
   try {
     if (!gpCasesPerIntervalArray)
-      gpCasesPerIntervalArray = new count_t[giNumTimeIntervals+1];
-    memset(gpCasesPerIntervalArray, 0, (giNumTimeIntervals+1) * sizeof(count_t));
+      //allocate to # time intervals plus one -- a pointer to this array will be
+      //passed directly CTimeIntervals object, where it is assumed element at index
+      //'giNumTimeIntervals' is accessible and set to zero
+      gpCasesPerIntervalArray = new count_t[giNumTimeIntervals];
+    memset(gpCasesPerIntervalArray, 0, giNumTimeIntervals * sizeof(count_t));
 
     for (i=0; i < (int)giNumTracts; ++i) {
        gpCasesPerIntervalArray[giNumTimeIntervals-1] += ppCases[giNumTimeIntervals-1][i];
@@ -805,7 +829,7 @@ void RealDataSet::SetCumulativeMeasureArrayFromNonCumulative() {
     if (gpMeasureHandler) {
       delete gpMeasureHandler; gpMeasureHandler=0;
     }
-    gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+    gpMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals, giNumTracts);
 
     ppMeasure = gpMeasureHandler->GetArray();
     ppMeasureNC = gpNCMeasureHandler->GetArray();
@@ -830,9 +854,9 @@ void RealDataSet::SetMeasurePerTimeIntervalsArray(measure_t ** ppNonCumulativeMe
 
   try {
     if (!gpMeasurePerIntervalArray)
-      gpMeasurePerIntervalArray = new measure_t[giNumTimeIntervals+1];
-      
-    memset(gpMeasurePerIntervalArray, 0, (giNumTimeIntervals+1) * sizeof(measure_t));
+      gpMeasurePerIntervalArray = new measure_t[giNumTimeIntervals];
+
+    memset(gpMeasurePerIntervalArray, 0, (giNumTimeIntervals) * sizeof(measure_t));
     for (i=0; i < giNumTimeIntervals; ++i)
        for (j=0; j < giNumTracts; ++j)
           gpMeasurePerIntervalArray[i] += ppNonCumulativeMeasure[i][j];
@@ -877,7 +901,7 @@ void RealDataSet::SetNonCumulativeMeasureArrayFromCumulative() {
     if (gpNCMeasureHandler)
       gpNCMeasureHandler->Set(0);
     else
-      gpNCMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals+1, giNumTracts);
+      gpNCMeasureHandler = new TwoDimensionArrayHandler<measure_t>(giNumTimeIntervals, giNumTracts);
 
     ppMeasure = gpMeasureHandler->GetArray();  
     ppMeasureNC = gpNCMeasureHandler->GetArray();
@@ -918,6 +942,11 @@ SimDataSet::SimDataSet(const SimDataSet& thisSet) : DataSet(thisSet) {}
 
 /** destructor */
 SimDataSet::~SimDataSet() {}
+
+SimDataSet * SimDataSet::Clone() const {
+  ZdGenerateException("Clone() not implemented.","SimDataSet");
+  return 0;
+}
 
 /** Reads number of simulated cases from a text file rather than generating them randomly.
     NOTE: Data read from the file is not validated. This means that there is potential

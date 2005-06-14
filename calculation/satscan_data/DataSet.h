@@ -182,6 +182,7 @@ class SimDataSet : public DataSet {
     SimDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex);
     virtual ~SimDataSet();
 
+    virtual SimDataSet        * Clone() const;
     virtual void                ReadSimulationData(const CParameters& Parameters, unsigned int iSimulation);
     void                        ResetCumulativeCaseArray();
     virtual void                WriteSimulationData(const CParameters& Parameters, int iSimulation) const;
