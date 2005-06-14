@@ -8,14 +8,15 @@
     and censored atribute. */
 class PermutedExponentialAttributes : public PermutedVariable {
   protected:
-    unsigned short            guCensored;
+    unsigned short            guCensoredAttribute;
 
   public:
-    PermutedExponentialAttributes(double dVariable, unsigned short uCensored);
+    PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute);
     virtual ~PermutedExponentialAttributes();
 
     virtual PermutedExponentialAttributes * Clone() const;
-    inline unsigned short                   GetCensored() const {return guCensored;}
+    void                                    Calibrate(double dCalibration) {gdVariable *= dCalibration;}
+    inline unsigned short                   GetCensoredAttribute() const {return guCensoredAttribute;}
 };
 
 /** Randomizes data of dataset for a 'Exponetial' probablility model.
@@ -36,8 +37,11 @@ class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
 
     virtual ExponentialRandomizer     * Clone() const;
 
-    void                                AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable, count_t tCensored);
-    void                                Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts);
+    void                                AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable, count_t tCensored);
+    void                                Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts) const;
+    void                                AssignCensoredIndividuals(TwoDimCountArray_t& tCensoredArray) const;
+    std::vector<double>               & CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const;
+    void                                Calibrate(measure_t tCalibration);
 };
 //******************************************************************************
 #endif
