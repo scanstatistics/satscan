@@ -17,6 +17,7 @@ CCluster::~CCluster() {}
 void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
   m_nTracts        = 0;
+  m_CartesianRadius= -1; 
   m_nRatio         = 0;
   m_nRank          = 1;
   m_NonCompactnessPenalty = 1;
@@ -29,6 +30,7 @@ void CCluster::Initialize(tract_t nCenter) {
 CCluster& CCluster::operator=(const CCluster& rhs) {
   m_Center                = rhs.m_Center;
   m_nTracts               = rhs.m_nTracts;
+  m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
   m_nRank                 = rhs.m_nRank;
   m_NonCompactnessPenalty = rhs.m_NonCompactnessPenalty;
@@ -121,7 +123,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
   try {
     for (i=nFirstTract; i <= nLastTract; ++i) {
        //get i'th neighbor tracts index
-       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i);
+       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
        // Print location identifiers if location data has not been removed in sequential scan.
        if (!DataHub.GetIsNullifiedLocation(tTract)) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
@@ -274,15 +276,12 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
 /** Writes clusters cartesian coordinates and ellipse properties (if cluster is elliptical)
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double      * pCoords = 0, * pCoords2 = 0;
-  float         nRadius;
+  double      * pCoords = 0;
   int           i, j, count=0;
   ZdString      sBuffer, sWork;
 
   try {
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
-    Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), &pCoords2);
-    nRadius = (float)sqrt((Data.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2));
 
     //print coordinates differently for the circles and ellipses
     if (m_iEllipseOffset == 0)  {//print coordinates for circle
@@ -291,7 +290,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
          sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
          sBuffer << sWork;
       }
-      sWork.printf("%g) / %-5.2f", pCoords[Data.GetParameters().GetDimensionsOfData() - 1], nRadius);
+      sWork.printf("%g) / %-5.2f", pCoords[Data.GetParameters().GetDimensionsOfData() - 1], (float)m_CartesianRadius);
       sBuffer << sWork;
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       //print ellipse particulars - circle with shape of '1'
@@ -315,7 +314,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       //print ellipse particulars
       PrintFormat.PrintSectionLabel(fp, "Ellipse Semiminor axis", false, true);
-      fprintf(fp, "%-g\n", nRadius);
+      fprintf(fp, "%-g\n", (float)m_CartesianRadius);
       PrintFormat.PrintSectionLabel(fp, "Ellipse Parameters", false, true);
       fprintf(fp, "\n");
       PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
@@ -324,11 +323,9 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
       fprintf(fp, "%-g\n", Data.GetEllipseShape(m_iEllipseOffset));
     }
     free(pCoords);
-    free(pCoords2);
   }
   catch (ZdException &x) {
     free(pCoords);
-    free(pCoords2);
     x.AddCallpath("DisplayCoordinates()","CCluster");
     throw;
   }
@@ -336,27 +333,21 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
 
 /** Writes clusters lat/long coordinates in format required by result output file. */
 void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double  dRadius, * pCoords = 0, * pCoords2 = 0, EARTH_RADIUS = 6367/*radius of earth in km*/;
-  float   Latitude, Longitude;
-  char    cNorthSouth, cEastWest;
+  double      * pCoords = 0;
+  float         Latitude, Longitude;
+  char          cNorthSouth, cEastWest;
 
   try {
     Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
-    Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_nTracts), &pCoords2);
-    dRadius = 2 * EARTH_RADIUS * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS));
-
     ConvertToLatLong(&Latitude, &Longitude, pCoords);
     Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
     PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
-    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n",
-            fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, dRadius);
+    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n", fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, GetLatLongRadius());
     free(pCoords);
-    free(pCoords2);
   }
   catch (ZdException &x) {
     free(pCoords);
-    free(pCoords2);
     x.AddCallpath("DisplayLatLongCoords()","CCluster");
     throw;
   }
@@ -591,8 +582,9 @@ void CCluster::SetCenter(tract_t nCenter) {
 }
 
 /** Set ellipse offset as defined in CSaTScanData. */
-void CCluster::SetEllipseOffset(int iOffset) {
-   m_iEllipseOffset = iOffset;
+void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
+  m_iEllipseOffset = iOffset;
+  SetNonCompactnessPenalty(iOffset == 0 || !DataHub.GetParameters().GetNonCompactnessPenalty() ? 1 : DataHub.GetEllipseShape(iOffset));
 }
 
 /** Sets non compactness penalty for shape. */
@@ -610,6 +602,32 @@ void CCluster::SetRate(int nRate) {
   }
 }
 
+/** Set class member 'm_CartesianRadius' from neighbor information obtained from
+    CSaTScanData object. */
+void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
+  std::vector<double> vCoordsOfCluster;
+  std::vector<double> vCoordsOfNeighborCluster;
+
+  if (ClusterDefined()) {
+    DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
+    DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), vCoordsOfNeighborCluster);
+    m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+  }  
+}
+
+/** Set class member 'm_CartesianRadius' from neighbor information obtained from
+    CentroidNeighbors object. */
+void CCluster::SetCartesianRadius(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {
+  std::vector<double> vCoordsOfCluster;
+  std::vector<double> vCoordsOfNeighborCluster;
+
+  if (ClusterDefined()) {
+    DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
+    DataHub.GetTInfo()->tiRetrieveCoords(Neighbors.GetNeighborTractIndex(m_nTracts - 1), vCoordsOfNeighborCluster);
+    m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+  }  
+}
+
 /** Writes location information to stsAreaSpecificData object for each tract
     contained in cluster. */
 void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
@@ -619,7 +637,7 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
 
   try {
     for (i=1; i <= m_nTracts; i++) {
-       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i);
+       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
        LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
     }   
   }

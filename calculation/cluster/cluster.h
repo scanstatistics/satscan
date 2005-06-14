@@ -20,6 +20,7 @@ class CCluster {
     tract_t                       m_Center;             // Center of cluster (index to grid)
     RATE_FUNCPTRTYPE              m_pfRateOfInterest;
     tract_t                       m_nTracts;            // Number of neighboring tracts in cluster
+    double                        m_CartesianRadius;    // radius based upon locations in cluster in Cartesian system      
     unsigned int                  m_nRank;              // Rank based on results of simulations
     double                        m_NonCompactnessPenalty;  // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
@@ -80,6 +81,7 @@ class CCluster {
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
+    double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
     virtual tract_t               GetNumTractsInnerCircle() const {return m_nTracts;}
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
     virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
@@ -88,6 +90,8 @@ class CCluster {
     virtual double                GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     double                        GetPValue(unsigned int uiNumSimulationsCompleted) const;
+    double                        GetCartesianRadius() const {return m_CartesianRadius;}
+    bool                          GetRadiusDefined() const {return m_CartesianRadius != -1;}
     unsigned int                  GetRank() const {return m_nRank;}
     double                        GetRatio() const {return m_nRatio;}
 
@@ -95,9 +99,11 @@ class CCluster {
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
     void                          SetCenter(tract_t nCenter);
-    void                          SetEllipseOffset(int iOffset);
+    void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape);
     void                          SetRate(int nRate);
+    virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
+    virtual void                  SetCartesianRadius(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
     virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
 };
