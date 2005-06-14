@@ -49,6 +49,7 @@ CPurelySpatialCluster::~CPurelySpatialCluster() {
 CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialCluster& rhs) {
   m_Center                = rhs.m_Center;
   m_nTracts               = rhs.m_nTracts;
+  m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
   m_nRank                 = rhs.m_nRank;
   m_NonCompactnessPenalty = rhs.m_NonCompactnessPenalty;
@@ -59,20 +60,19 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
   return *this;
 }
 
-/** add neighbor tract data from DataGateway */
-void CPurelySpatialCluster::AddNeighborDataAndCompare(tract_t tEllipseOffset,
-                                                      tract_t tCentroid,
-                                                      const AbtractDataSetGateway & DataGateway,
-                                                      const CSaTScanData * pData,
-                                                      CPurelySpatialCluster & TopCluster,
-                                                      AbstractLikelihoodCalculator & Calculator) {
-                                                      
-  tract_t       t, tNumNeighbors = pData->GetNeighborCountArray()[tEllipseOffset][tCentroid];
+/** Adds neighbor location data from DataGateway to cluster data accumulation and
+    calculates loglikelihood ratio. If ratio is greater than that of TopCluster,
+    assigns TopCluster to 'this'. */
+void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+                                                                       const CentroidNeighbors& CentroidDef,
+                                                                       CPurelySpatialCluster& TopCluster,
+                                                                       AbstractLikelihoodCalculator& Calculator) {
+  tract_t       t, tNumNeighbors = CentroidDef.GetNumNeighbors();
 
-  for (t=1; t <= tNumNeighbors; ++t) {
+  for (t=0; t < tNumNeighbors; ++t) {
     //update cluster data
     ++m_nTracts;
-    gpClusterData->AddNeighborData(pData->GetNeighbor(tEllipseOffset, tCentroid, t), DataGateway);
+    gpClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), DataGateway);
     //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio > TopCluster.m_nRatio)
@@ -115,6 +115,7 @@ void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
   m_nTracts = 0;
   m_nRatio = 0;
+  m_CartesianRadius = -1;
   gpClusterData->InitializeData();
 }
 

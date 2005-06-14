@@ -24,12 +24,10 @@ class CPurelySpatialCluster : public CCluster {
     virtual inline AbstractClusterData       * GetClusterData() {return gpClusterData;}
     virtual inline const AbstractClusterData * GetClusterData() const {return gpClusterData;}
 
-    void                                AddNeighborDataAndCompare(tract_t tEllipseOffset,
-                                                                  tract_t tCentroid,
-                                                                  const AbtractDataSetGateway & DataGateway,
-                                                                  const CSaTScanData * pData,
-                                                                  CPurelySpatialCluster & TopCluster,
-                                                                  AbstractLikelihoodCalculator & Calculator);
+    void                                CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+                                                                                   const CentroidNeighbors& CentroidDef,
+                                                                                   CPurelySpatialCluster& TopCluster,
+                                                                                   AbstractLikelihoodCalculator& Calculator);
     virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual ClusterType                 GetClusterType() const {return PURELYSPATIALCLUSTER;}
     virtual ZdString                  & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
