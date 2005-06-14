@@ -126,6 +126,14 @@ USEUNIT("..\calculation\Output\LocationRiskEstimateWriter.cpp");
 USEUNIT("..\calculation\Output\LoglikelihoodRatioWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USEUNIT("..\calculation\Output\ClusterLocationsWriter.cpp");
+USEUNIT("..\calculation\analysis\IntermediateClustersContainer.cpp");
+USEUNIT("..\calculation\analysis\AbstractAnalysis.cpp");
+USEUNIT("..\calculation\analysis\AbstractCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\PurelySpatialCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

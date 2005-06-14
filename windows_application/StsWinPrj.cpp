@@ -147,6 +147,14 @@ USEUNIT("..\calculation\Output\LoglikelihoodRatioWriter.cpp");
 USEUNIT("..\calculation\Output\ClusterInformationWriter.cpp");
 USEUNIT("..\calculation\Output\ClusterLocationsWriter.cpp");
 USEUNIT("..\calculation\Output\LocationRiskEstimateWriter.cpp");
+USEUNIT("..\calculation\analysis\IntermediateClustersContainer.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\AbstractCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\PurelySpatialCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp");
+USEUNIT("..\calculation\analysis\AbstractAnalysis.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

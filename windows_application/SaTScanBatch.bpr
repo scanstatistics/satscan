@@ -120,7 +120,15 @@
       ..\calculation\Output\LocationRiskEstimateWriter.obj 
       ..\calculation\Output\LoglikelihoodRatioWriter.obj 
       ..\calculation\Output\stsASCIIFileWriter.obj 
-      ..\calculation\Output\ClusterLocationsWriter.obj"/>
+      ..\calculation\Output\ClusterLocationsWriter.obj 
+      ..\calculation\analysis\IntermediateClustersContainer.obj 
+      ..\calculation\analysis\AbstractAnalysis.obj 
+      ..\calculation\analysis\AbstractCentricAnalysis.obj 
+      ..\calculation\analysis\PurelySpatialCentricAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeCentricAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.obj 
+      ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
