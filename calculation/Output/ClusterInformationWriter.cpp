@@ -25,14 +25,14 @@ const char * ClusterInformationWriter::SET_FIELD_PART             = "_DS";
 const char * ClusterInformationWriter::SET_CATEGORY_FIELD_PART    = "C";
 
 /** class constructor */
-ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField)
+ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend)
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub), gbExcludePValueField(bExcludePValueField) {
   try {
     DefineFields();
     if (gParameters.GetOutputClusterLevelAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, CLUSTER_FILE_EXT);
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
     if (gParameters.GetOutputClusterLevelDBase())
-      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT);
+      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
   }
   catch (ZdException &x) {
     delete gpASCIIFileWriter;
@@ -54,39 +54,39 @@ void ClusterInformationWriter::DefineFields() {
   try {
     CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField(CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 12, 4, uwOffset);
-    CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 12, 4, uwOffset);
+    CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
+    CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
     // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
     // throughout the program eventhough the third dim is never used. When you print the third it is blank
     // and meaningless and thus does not need to be included here. - AJV 10/2/2002
     if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.GetDimensionsOfData() > 2) {
       for (i=3; i <= (unsigned int)gParameters.GetDimensionsOfData(); ++i) {
          sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
-         CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 4, uwOffset);
+         CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
       }
     }
-    CreateField(RADIUS_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+    CreateField(RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     if (gParameters.GetNumRequestedEllipses()) {
-      CreateField(E_ANGLE_FIELD, ZD_NUMBER_FLD, 16, 0, uwOffset);
-      CreateField(E_SHAPE_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
-    CreateField(NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+    CreateField(NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetNumDataSets() == 1) {
       if (gParameters.GetProbabilityModelType() == ORDINAL) {
         const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(0).GetPopulationData();
         for (size_t t=1; t <= Population.GetNumOrdinalCategories(); ++t) {
           sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, t);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 0, uwOffset);
+          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
           sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, t);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
           sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, t);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
         }  
       }
       else {
-        CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-        CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-        CreateField(OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
+        CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+        CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+        CreateField(OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
       }  
     }
     else {
@@ -95,34 +95,34 @@ void ClusterInformationWriter::DefineFields() {
             const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
             for (size_t t=1; t <= Population.GetNumOrdinalCategories(); ++t) {
                sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 0, uwOffset);
+               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
                sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART ,t);
-               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
                sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
             }   
         }
       }
       else {
         for (i=1; i <= gParameters.GetNumDataSets(); ++i) {
           sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, i);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 0, uwOffset);
+          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
           sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, i);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
           sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 12, 2, uwOffset);
+          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
         }
       }
     }
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
-      CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+      CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     else {
-      CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+      CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
       if (gParameters.GetNumRequestedEllipses() && gParameters.GetNonCompactnessPenalty())
-        CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 11, 6, uwOffset);
+        CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
     if (!gbExcludePValueField)
-      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 12, 5, uwOffset);
+      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
     CreateField(START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
     CreateField(END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
   }
@@ -143,7 +143,7 @@ ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster&
     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       sAreaId = "All";
     else {
-      tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(), 1);
+      tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(), 1, thisCluster.GetCartesianRadius());
       sAreaId = gDataHub.GetTInfo()->tiGetTid(tTractIndex, sBuffer);
     }
   }
@@ -204,8 +204,8 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
 // post : sets the values for long, lat, sAdditCoords, and radius
 void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CCluster& thisCluster) {
   int           i;
-  double      * pCoords=0, * pCoords2=0;
-  float         fLatitude, fLongitude, fRadius;
+  double      * pCoords=0, * pCoords2=0, dRadius;
+  float         fLatitude, fLongitude;
   unsigned int  iFirstCoordIndex, iSecondCoordIndex, iThCoordIndex;
   ZdString      sBuffer;
   tract_t       tTractIndex;
@@ -229,7 +229,8 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
        gDataHub.GetGInfo()->giGetCoords(thisCluster.GetCentroidIndex(), &pCoords);
        tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(),
                                           thisCluster.GetCentroidIndex(),
-                                          thisCluster.GetNumTractsInnerCircle());
+                                          thisCluster.GetNumTractsInnerCircle(),
+                                          thisCluster.GetCartesianRadius());
        gDataHub.GetTInfo()->tiGetCoords(tTractIndex, &pCoords2);
        switch (gParameters.GetCoordinatesType()) {
          case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  pCoords[0];
@@ -239,15 +240,17 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                              //iThCoordIndex = GetFieldNumber(sBuffer);
                              Record.GetFieldValue(sBuffer).AsDouble() = pCoords[i];
                           }
+                          //to mimic behavior in CCluster reporting, cast down to float
+                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = (float)thisCluster.GetCartesianRadius();
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() = fLongitude;
+                          dRadius = 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
+                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
                           break;
          default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", gParameters.GetCoordinatesType());
        }
-       fRadius = (float)(sqrt((gDataHub.GetTInfo())->tiGetDistanceSq(pCoords, pCoords2)));
-       Record.GetFieldValue(RADIUS_FIELD).AsDouble() = fRadius;
        free(pCoords);
        free(pCoords2);
      }

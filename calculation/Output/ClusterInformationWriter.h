@@ -40,7 +40,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       void                      WriteEllipseShape(RecordBuffer& Record, const CCluster& thisCluster) const;
 
   public:
-    ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField);
+    ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend=false);
     virtual ~ClusterInformationWriter();
     
     void                      Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
