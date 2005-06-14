@@ -33,7 +33,7 @@ void LoglikelihoodRatioWriter::DefineFields() {
   unsigned short uwOffset=0;
 
   try {
-    CreateField((gParameters.GetLogLikelihoodRatioIsTestStatistic() ? TST_STAT_FIELD : LOG_LIKL_RATIO_FIELD), ZD_NUMBER_FLD, 11, 6, uwOffset);
+    CreateField((gParameters.GetLogLikelihoodRatioIsTestStatistic() ? TST_STAT_FIELD : LOG_LIKL_RATIO_FIELD), ZD_NUMBER_FLD, 19, 6, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","LoglikelihoodRatioWriter");

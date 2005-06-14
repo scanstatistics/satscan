@@ -45,15 +45,15 @@ void LocationRiskEstimateWriter::DefineFields() {
       ZdGenerateException("Cluster Information file not implemented for SVTT and Ordinal model.","SetupFields()");
     CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     if (gParameters.GetNumDataSets() > 1)
-      CreateField(DATASET_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
+      CreateField(DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == ORDINAL)
-      CreateField(CATEGORY_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-    CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 12, 0, uwOffset);
-    CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 2, uwOffset);
-    CreateField(OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
-    CreateField(RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    CreateField(OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    CreateField(RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      CreateField(TIME_TREND_FIELD, ZD_NUMBER_FLD, 12, 3, uwOffset);
+      CreateField(TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","LocationRiskEstimateWriter");
