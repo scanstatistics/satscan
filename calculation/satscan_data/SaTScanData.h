@@ -19,6 +19,9 @@
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
+  public:
+    enum           ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
+
   private:
     void                                        Init();
     virtual void                                SetProbabilityModel() = 0;
@@ -29,9 +32,11 @@ class CSaTScanData {
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
     DataSetHandler                            * gpDataSets;
-
+    ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
     GInfo                                       gCentroidsHandler;
     TractHandler                                gTractHandler;
+    tract_t                                  ** gppActiveNeighborArray;
+    TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
     ThreeDimensionArrayHandler<tract_t>       * gpSortedIntHandler;
     ThreeDimensionArrayHandler<unsigned short>* gpSortedUShortHandler;
@@ -59,6 +64,7 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowEndRangeStartIndex;
     int                                         m_nFlexibleWindowEndRangeEndIndex;
     std::vector<tract_t>                        gvNullifiedLocations;
+    mutable ZdPointerVector<CentroidNeighbors>  gvCentroidNeighborStore;
 
     bool                                        AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
@@ -90,7 +96,11 @@ class CSaTScanData {
 
 
     void                                        AllocateSortedArray();
-    
+    void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
+                                                                             int iEllipseIndex, tract_t iCentroidIndex,
+                                                                             tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
+    inline void                                 FreeNeighborInfo(tract_t iCentroidIndex) const;
+
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals;
 
@@ -103,7 +113,7 @@ class CSaTScanData {
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp);
     void                                        DisplaySummary2(FILE* fp);
-    virtual void                                FindNeighbors(bool bSimulations);
+    virtual void                                FindNeighbors();
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
     DataSetHandler                            & GetDataSetHandler() {return *gpDataSets;}
     const DataSetHandler                      & GetDataSetHandler() const {return *gpDataSets;}
@@ -119,9 +129,9 @@ class CSaTScanData {
     double                                      GetMaxCircleSize() const {return m_nMaxCircleSize;}
     double                                      GetMaxReportedCircleSize() const {return m_nMaxReportedCircleSize;}
     double                                      GetMeasureAdjustment(size_t iSetIndex) const;
-    inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const;
-    inline tract_t                           ** GetNeighborCountArray() {return gpNeighborCountHandler->GetArray();}
-    inline tract_t                           ** GetNeighborCountArray() const {return gpNeighborCountHandler->GetArray();}
+    inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius=-1) const;
+    inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
+    inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline size_t                               GetNumDataSets() const {return gpDataSets->GetNumDataSets();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
@@ -150,6 +160,7 @@ class CSaTScanData {
     bool                                        ReadRankData();
     bool                                        ReadSpaceTimePermutationData();
     void                                        RemoveTractSignificance(tract_t tTractIndex);
+    void                                        SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType);
     void                                        SetMaxCircleSize();
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
@@ -169,20 +180,62 @@ class CSaTScanData {
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
 };
 
-inline tract_t ** CSaTScanData::GetSortedArrayAsTract_T(int iEllipse) const {
-  return (gpSortedIntHandler ? gpSortedIntHandler->GetArray()[iEllipse] : 0);
+/** Returns pointer to 2 dimensional array, representing sorted neighbors
+    for all locations for specified ellipse offset. Returns null if array
+    not allocated. Caller is responsible for ensuring that 'iEllipseIndex'
+    is in range [0 - (# of ellipses)]. */
+inline tract_t ** CSaTScanData::GetSortedArrayAsTract_T(int iEllipseIndex) const {
+  return (gpSortedIntHandler ? gpSortedIntHandler->GetArray()[iEllipseIndex] : 0);
 }
 
-inline unsigned short ** CSaTScanData::GetSortedArrayAsUShort_T(int iEllipse) const {
-  return (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray()[iEllipse] : 0);
+/** Returns pointer to 2 dimensional array, representing sorted neighbors
+    for all locations for specified ellipse offset. Returns null if array
+    not allocated. Caller is responsible for ensuring that 'iEllipseIndex'
+    is in range [0 - (# of ellipses)]. */
+inline unsigned short ** CSaTScanData::GetSortedArrayAsUShort_T(int iEllipseIndex) const {
+  return (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray()[iEllipseIndex] : 0);
 }
 
-/** Return "nearness"-th closest neighbor to "t" (nearness == 1 returns "t"). */
-inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
+/** Return "nearness"-th closest neighbor to "t" (nearness == 1 returns "t").
+    If neither sorted array are allocated:
+      - first, checked whether neighbor information exists in gvCentroidNeighborStore object
+      - second, if specified radius is not negative one, calculates neigbors for centroid;
+        stores results in gvCentroidNeighborStore object (note that locations will not be
+        ordered by distance from centroid)
+      - third, calculate neighbor information, either by distance or population, stores
+        results in gvCentroidNeighborStore object */
+inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius) const {
   if (gpSortedUShortHandler)
     return (tract_t)gpSortedUShortHandler->GetArray()[iEllipse][t][nearness - 1];
-  else
+  else if (gpSortedIntHandler)
     return gpSortedIntHandler->GetArray()[iEllipse][t][nearness - 1];
+  else {//not storing neighbor information in sorted array
+    //first, look for neighbor information in store
+    if (!gvCentroidNeighborStore.size())
+      gvCentroidNeighborStore.resize(m_nGridTracts, 0);
+    if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
+      return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
+    else {//else calculate
+      delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;
+      gvCentroidNeighborStore[t] = new CentroidNeighbors();
+      CentroidNeighbors& NeighborInfo = *gvCentroidNeighborStore[t];
+      if (dClusterRadius != -1)
+        CentroidNeighborCalculatorByDistance(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
+      else if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
+        CentroidNeighborCalculatorByDistance(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
+      else
+        CentroidNeighborCalculatorByPopulation(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
+      return NeighborInfo.GetNeighborTractIndex(nearness - 1);
+    }
+  }
 }
+
+/** Deletes CentroidNeighbor object for iCentroidIndex, if exists. */
+inline void CSaTScanData::FreeNeighborInfo(tract_t iCentroidIndex) const {
+  if (gvCentroidNeighborStore.size() > (size_t)iCentroidIndex + 1) {
+    delete gvCentroidNeighborStore[iCentroidIndex]; gvCentroidNeighborStore[iCentroidIndex]=0;
+  }
+}
+
 //*****************************************************************************
 #endif

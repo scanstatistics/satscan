@@ -33,6 +33,7 @@ CSaTScanData::~CSaTScanData() {
     delete gpDataSets; gpDataSets=0;
     delete m_pModel;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
+    delete gpReportedNeighborCountHandler; gpReportedNeighborCountHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
   }
@@ -141,8 +142,10 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
 void CSaTScanData::AdjustNeighborCounts() {
   try {
     //Re-calculate neighboring locations about each centroid.
-    if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased())
-        CentroidNeighborCalculatorByPopulation(*this, gPrint, true).CalculateNeighbors();
+    if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased()) {
+      CentroidNeighborCalculatorByPopulation(*this, gPrint).CalculateNeighbors();
+      gvCentroidNeighborStore.DeleteAllElements();
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");
@@ -173,15 +176,61 @@ void CSaTScanData::AllocateSortedArray() {
         gpSortedIntHandler->FreeThirdDimension();
     }
     //allocates two-dimensional array that will track the number of neighbors for each shape/grid point combination.
+    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
+      if (!gpReportedNeighborCountHandler)
+        gpReportedNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
+      gpReportedNeighborCountHandler->Set(0);
+    }
     if (!gpNeighborCountHandler)
       gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
     gpNeighborCountHandler->Set(0);
+    //default neighbor reference type to MAXIMUM, if not set
+    SetActiveNeighborReferenceType(geActiveNeighborReferenceType == NOT_SET ? MAXIMUM : geActiveNeighborReferenceType);
   }
   catch (ZdException &x) {
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
+    delete gpReportedNeighborCountHandler; gpReportedNeighborCountHandler=0;
     x.AddCallpath("AllocateSortedArray()","CSaTScanData");
+    throw;
+  }
+}
+
+/** Allocates third dimension of sorted at 'array[iEllipseIndex][iCentroidIndex]'
+    to length specifed by variable 'iNumMaximumNeighbors'; assigning locations indexes
+    as detailed by 'vOrderLocations' variable. Sets multi-dimension arrays which detail
+    the number actual and reported neighbors defined in just allocated sorted array. */
+void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
+                                                int iEllipseIndex, tract_t iCentroidIndex,
+                                                tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
+  try {
+    if (gpSortedUShortHandler) {
+      delete gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex];
+      gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex]=0;
+      gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex] = new unsigned short[iNumMaximumNeighbors];
+      for (tract_t j=iNumMaximumNeighbors-1; j >= 0; j--) /* copy tract numbers */
+         gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex][j] = vOrderLocations[j].GetTractNumber();
+    }
+    else if (gpSortedIntHandler) {
+      delete gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex];
+      gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex]=0;
+      gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex] = new tract_t[iNumMaximumNeighbors];
+      for (tract_t j=iNumMaximumNeighbors-1; j >= 0; j--) /* copy tract numbers */
+         gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex][j] = vOrderLocations[j].GetTractNumber();
+    }
+    else
+      ZdGenerateException("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
+
+    //update neighbor array(s) for number of calculated neighbors
+    if (!gpNeighborCountHandler)
+      ZdGenerateException("Neighbor array not allocated.","AllocateSortedArrayNeighbors()");
+    gpNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumMaximumNeighbors;
+    if (gpReportedNeighborCountHandler)
+      gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumReportedNeighbors;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
     throw;
   }
 }
@@ -349,12 +398,12 @@ measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** pp
 
 /** Allocates/deallocates memory to store neighbor information.
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
-void CSaTScanData::FindNeighbors(bool bSimulations) {
+void CSaTScanData::FindNeighbors() {
   try {
     if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
-      CentroidNeighborCalculatorByDistance(*this, gPrint, !bSimulations).CalculateNeighbors();
+      CentroidNeighborCalculatorByDistance(*this, gPrint).CalculateNeighbors();
     else
-      CentroidNeighborCalculatorByPopulation(*this, gPrint, !bSimulations).CalculateNeighbors();
+      CentroidNeighborCalculatorByPopulation(*this, gPrint).CalculateNeighbors();
   }
   catch (ZdException &x) {
     x.AddCallpath("FindNeighbors()","CSaTScanData");
@@ -445,7 +494,10 @@ int CSaTScanData::GetTimeIntervalOfEndDate(Julian EndDate) const {
 void CSaTScanData::Init() {
   m_pModel = 0;
   gpDataSets = 0;
+  geActiveNeighborReferenceType=NOT_SET;
+  gppActiveNeighborArray=0;
   gpNeighborCountHandler=0;
+  gpReportedNeighborCountHandler=0;
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
   m_nAnnualRatePop = 100000;
@@ -703,7 +755,7 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
            tTotalControls -= DataSet.GetControlArray()[0][tTractIndex];
            DataSet.GetControlArray()[0][tTractIndex] = 0;
            DataSet.SetTotalControls(tTotalControls);
-         POISSON :
+         case POISSON :
            // Remove observed and expected cases for location from data set
            tTotalCases = DataSet.GetTotalCases();
            tTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
@@ -748,6 +800,33 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
   }
   catch (ZdException & x) {
     x.AddCallpath("RemoveTractSignificance()", "CSaTScanData");
+    throw;
+  }
+}
+
+/** Set neighbor array pointer requested type. */
+void CSaTScanData::SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType) {
+  try {
+    if (gParameters.GetIsPurelyTemporalAnalysis())
+      return;
+
+    switch (eType) {
+      case REPORTED : if (gpReportedNeighborCountHandler) {
+                        gppActiveNeighborArray = gpReportedNeighborCountHandler->GetArray();
+                        break;
+                      }
+      case MAXIMUM  : if (!gpNeighborCountHandler)
+                        ZdGenerateException("Neighbor array not allocated.","SetActiveNeighborReferenceType()");
+                      gppActiveNeighborArray = gpNeighborCountHandler->GetArray();
+                      break;
+      case NOT_SET  : gppActiveNeighborArray=0; break;                
+      default       :
+        ZdGenerateException("Unknown active neighbor type '%d'.", "SetActiveNeighborReferenceType()", eType);
+    };
+    geActiveNeighborReferenceType = eType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetActiveNeighborReferenceType()","CSaTScanData");
     throw;
   }
 }
