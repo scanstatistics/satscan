@@ -33,7 +33,7 @@ void AbstractCentricAnalysis::ExecuteAboutCentroids(tract_t tCentroidIndex,
 
     //calculate neigbor about current centroid
     for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j)
-       CentroidCalculator.CalculateNeighborAboutCentroid(j, tCentroidIndex, CentroidDefs[j]);
+       CentroidCalculator.CalculateNeighborsAboutCentroid(j, tCentroidIndex, CentroidDefs[j]);
     // find top cluster about current centroid
     const CCluster& TopCluster = CalculateTopClusterAboutCentroidDefinition(CentroidDefs, RealDataGateway);
     if (TopCluster.ClusterDefined()) {
