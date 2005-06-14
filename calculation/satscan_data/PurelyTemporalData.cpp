@@ -90,7 +90,7 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
 }
 
 /** Not implemented - throws ZdException. */
-tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness) const {
+tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dMaxRadius) const {
   ZdGenerateException("GetNeighbor() not implemented for CPurelyTemporalData.","GetNeighbor()");
   return 0;
 }
