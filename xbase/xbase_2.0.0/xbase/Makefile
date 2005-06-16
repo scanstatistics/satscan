@@ -7,9 +7,9 @@
 #COMPILE = ${CC} -c 
 CC = gcc
 CXX=g++
-DEPEND = ${CC} -Wno-deprecated -MM -E -I../ -I./
+DEPEND = ${CC} -m32 -Wno-deprecated -MM -E -I../ -I./
 #LFLAGS = -lstdc++ -Lzlib -lz
-LFLAGS = -lstdc++
+LFLAGS = -m32 -lstdc++
 
 
 SOURCEFILES = \
