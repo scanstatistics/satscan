@@ -260,7 +260,7 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
        return false;
     }
     if (tContinuosVariable <= 0) {
-       gPrint.PrintInputWarning("Error: The continuos variable '%ld' in record %ld of the %s, is not greater than zero.\n",
+       gPrint.PrintInputWarning("Error: The continuos variable '%lf' in record %ld of the %s, is not greater than zero.\n",
                                 tContinuosVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
