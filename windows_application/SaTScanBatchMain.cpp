@@ -62,10 +62,9 @@ int main(int argc, char *argv[]) {
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
-    //create analysis runner object
-    AnalysisRunner  Runner(Parameters, RunTime, ConsolePrint);
-    //execute analysis 
-    Runner.Execute();
+    //create analysis runner object and execute analysis
+    AnalysisRunner(Parameters, RunTime, ConsolePrint);
+
     //report completion
     ConsolePrint.SatScanPrintf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",
                                Parameters.GetOutputFileName().c_str());

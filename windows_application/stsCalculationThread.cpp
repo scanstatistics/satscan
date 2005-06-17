@@ -68,10 +68,9 @@ void __fastcall CalcThread::Execute() {
     if (!const_cast<CParameters*>(gpParameters)->ValidateParameters(*gpPrintWindow))
        GenerateResolvableException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
-    //create analysis runner object
-    AnalysisRunner  Runner(*gpParameters, RunTime, *gpPrintWindow);
-    //execute analysis
-    Runner.Execute();
+    //create analysis runner object and execute analysis
+    AnalysisRunner(*gpParameters, RunTime, *gpPrintWindow);
+    
     //report completion
     if (!IsCancelled()) {
       gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
