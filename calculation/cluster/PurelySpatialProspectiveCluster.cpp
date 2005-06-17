@@ -49,7 +49,7 @@ CPurelySpatialProspectiveCluster::~CPurelySpatialProspectiveCluster() {
 CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(const CPurelySpatialProspectiveCluster& cluster) {
   m_Center                      = cluster.m_Center;
   m_nTracts                     = cluster.m_nTracts;
-  m_CartesianRadius             = rhs.m_CartesianRadius;   
+  m_CartesianRadius             = cluster.m_CartesianRadius;   
   m_nRatio                      = cluster.m_nRatio;
   m_nRank                       = cluster.m_nRank;
   m_NonCompactnessPenalty       = cluster.m_NonCompactnessPenalty;
