@@ -13,7 +13,7 @@ const char*      YES                            	= "y";
 const char*      NO                             	= "n";
 const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
 const int        MAXIMUM_ELLIPSOIDS             	= 10;
-int CParameters::giNumParameters 			= 70;
+int CParameters::giNumParameters 			= 71;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -119,6 +119,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbUsePopulationFile                 != rhs.gbUsePopulationFile) return false;
   //if (glRandomizationSeed                 != rhs.glRandomizationSeed) return false;
   if (gbReportCriticalValues              != rhs.gbReportCriticalValues) return false;
+  //if (geExecutionType                     != rhs.geExecutionType) return false;
   return true;
 }
 
@@ -231,11 +232,12 @@ void CParameters::Copy(const CParameters &rhs) {
     gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
     gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
     geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
-    geMultipleSetPurposeType         = rhs.geMultipleSetPurposeType;
+    geMultipleSetPurposeType            = rhs.geMultipleSetPurposeType;
     gCreationVersion                    = rhs.gCreationVersion;
     gbUsePopulationFile                 = rhs.gbUsePopulationFile;
     glRandomizationSeed                 = rhs.glRandomizationSeed;
     gbReportCriticalValues              = rhs.gbReportCriticalValues;
+    geExecutionType                     = rhs.geExecutionType;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -1126,6 +1128,7 @@ void CParameters::SetAsDefaulted() {
   gbUsePopulationFile                   = false;
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
   gbReportCriticalValues                = false;
+  geExecutionType                       = AUTOMATIC;
 }
 
 /** Sets dimensions of input data. */
@@ -1188,10 +1191,22 @@ void CParameters::SetEndRangeStartDate(const char * sEndRangeStartDate) {
   }
 }
 
+/** Sets analysis execution type. Throws exception if out of range. */
+void CParameters::SetExecutionType(ExecutionType eExecutionType) {
+  try {
+    if (AUTOMATIC > eExecutionType || CENTRICALLY < eExecutionType)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetExecutionType()",
+                            eExecutionType, AUTOMATIC, CENTRICALLY);
+    geExecutionType = eExecutionType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetExecutionType()","CParameters");
+    throw;
+  }
+}
+
 /** Sets clusters to include type. Throws exception if out of range. */
 void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersType) {
-  ZdString      sLabel;
-
   try {
     if (ALLCLUSTERS > eIncludeClustersType || CLUSTERSINRANGE < eIncludeClustersType)
       ZdException::Generate("'%d' is out of range(%d - %d).", "SetIncludeClustersType()",
@@ -2156,6 +2171,14 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Adjustment purpose for multiple data sets is not permitted\n"
                                            "       with ordinal probability model in this version of SaTScan.\n");
+      }
+      if (geExecutionType == CENTRICALLY &&
+          (GetIsPurelyTemporalAnalysis() || geAnalysisType == SPATIALVARTEMPTREND || (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK))) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The centric analysis execution is not available for:\n"
+                                           "       purely temporal analyses\n"
+                                           "       purely spatial analyses with isotonic scan\n"
+                                           "       spatial variation of temporal trends analysis\n");
       }
 
       //validate dates

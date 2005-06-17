@@ -31,7 +31,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_5_1_x_ParameterList();
+  Build_6_0_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -50,7 +50,7 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
   else if (Version.iMajor == 5  && Version.iMinor == 0)
     Build_5_0_x_ParameterList();
   else
-    Build_5_1_x_ParameterList();
+    Build_6_0_x_ParameterList();
 }
 
 /** destructor */
@@ -233,6 +233,12 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
   gvMultipleParameterInfo[POPFILE] = std::make_pair(MultipleDataSets, (const char*)"PopulationFile");
 }
 
+/** Version 6.0.x */
+void IniParameterSpecification::Build_6_0_x_ParameterList() {
+  Build_5_1_x_ParameterList();
+
+  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"ExecutionType"));
+}
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */
 bool IniParameterSpecification::GetParameterIniInfo(ParameterType eParameterType,  const char ** sSectionName, const char ** sKey) const {

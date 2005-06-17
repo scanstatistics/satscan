@@ -100,6 +100,7 @@ void IniParameterFileAccess::ReadBatchModeFeaturesSettings(const ZdIniFile& Sour
     ReadIniParameter(SourceFile, VALIDATE);
     ReadIniParameter(SourceFile, RANDOMIZATION_SEED);
     //ReadIniParameter(SourceFile, TIMETRENDCONVRG); //--- until SVTT is available, don't write
+    ReadIniParameter(SourceFile, EXECUTION_TYPE);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadBatchModeFeaturesSettings()","IniParameterFileAccess");
@@ -438,6 +439,8 @@ void IniParameterFileAccess::WriteBatchModeFeaturesSettings(ZdIniFile& WriteFile
                         " randomization seed (0 < Seed < 2147483647)");
     //WriteIniParameter(WriteFile, TIMETRENDCONVRG, AsString(s, gParameters.GetTimeTrendConvergence()),
     //                  " time trend convergence for SVTT analysis (> 0)");  //---  until SVTT is available, don't write
+    WriteIniParameter(WriteFile, EXECUTION_TYPE, AsString(s, gParameters.GetExecutionType()),
+                      " analysis execution method  (AUTOMATIC=0, SUCCESSIVELY=1, CENTRICALLY=2)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteBatchModeFeaturesSettings()","IniParameterFileAccess");

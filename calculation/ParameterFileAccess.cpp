@@ -131,6 +131,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
                                                            gParameters.GetCreationVersion().iMinor, gParameters.GetCreationVersion().iRelease); break;
       case RANDOMIZATION_SEED       : break; //this parameter is not advertised                                                     
       case REPORT_CRITICAL_VALUES   : sDefaultValue = (gParameters.GetReportCriticalValues() ? YES : NO); break;
+      case EXECUTION_TYPE           : sDefaultValue = gParameters.GetExecutionType(); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -424,12 +425,12 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case POWERX                    : gParameters.SetPowerCalculationX(ReadDouble(sParameter, eParameterType)); break;
       case POWERY                    : gParameters.SetPowerCalculationY(ReadDouble(sParameter, eParameterType)); break;
       case TIMETREND                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
-                                       gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)ReadInt(sParameter, eParameterType)); break;
+                                       gParameters.SetTimeTrendAdjustmentType((TimeTrendAdjustmentType)iValue); break;
       case TIMETRENDPERC             : gParameters.SetTimeTrendAdjustmentPercentage(ReadDouble(sParameter, eParameterType)); break;
       case PURETEMPORAL              : gParameters.SetIncludePurelyTemporalClusters(ReadBoolean(sParameter, eParameterType)); break;
       case CONTROLFILE               : gParameters.SetControlFileName(sParameter.GetCString(), true); break;
       case COORDTYPE                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, CARTESIAN, LATLON);
-                                       gParameters.SetCoordinatesType((CoordinatesType)ReadInt(sParameter, eParameterType)); break;
+                                       gParameters.SetCoordinatesType((CoordinatesType)iValue); break;
       case OUTPUT_SIM_LLR_ASCII      : gParameters.SetOutputSimLogLikeliRatiosAscii(ReadBoolean(sParameter, eParameterType)); break;
       case SEQUENTIAL                : gParameters.SetSequentialScanning(ReadBoolean(sParameter, eParameterType)); break;
       case SEQNUM                    : gParameters.SetNumSequentialScans(ReadUnsignedInt(sParameter, eParameterType)); break;
@@ -443,11 +444,11 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case OUTPUT_AREAS_ASCII        : gParameters.SetOutputAreaSpecificAscii(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_MLC_ASCII          : gParameters.SetOutputClusterLevelAscii(ReadBoolean(sParameter, eParameterType)); break;
       case CRITERIA_SECOND_CLUSTERS  : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOGEOOVERLAP, NORESTRICTIONS);
-                                       gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)ReadInt(sParameter, eParameterType)); break;
+                                       gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)iValue); break;
       case MAX_TEMPORAL_TYPE         : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTAGETYPE, TIMETYPE);
                                        gParameters.SetMaximumTemporalClusterSizeType((TemporalSizeType)ReadInt(sParameter, eParameterType)); break;
       case MAX_SPATIAL_TYPE          : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATIONTYPE, PERCENTOFPOPULATIONFILETYPE);
-                                       gParameters.SetMaximumSpacialClusterSizeType((SpatialSizeType)ReadInt(sParameter, eParameterType)); break;
+                                       gParameters.SetMaximumSpacialClusterSizeType((SpatialSizeType)iValue); break;
       case RUN_HISTORY_FILENAME      : //Run History no longer scanned from parameters file. Set through setters/getters and copy() only.
                                        break;
       case OUTPUT_MLC_DBASE          : gParameters.SetOutputClusterLevelDBase(ReadBoolean(sParameter, eParameterType)); break;
@@ -467,7 +468,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case REPORTED_GEOSIZE          : gParameters.SetMaximumReportedGeographicalClusterSize(ReadFloat(sParameter, eParameterType)); break;
       case USE_REPORTED_GEOSIZE      : gParameters.SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STANDARD, FILESOURCE);
-                                       gParameters.SetSimulationType((SimulationType)ReadInt(sParameter, eParameterType)); break;
+                                       gParameters.SetSimulationType((SimulationType)iValue); break;
       case SIMULATION_SOURCEFILE     : gParameters.SetSimulationDataSourceFileName(sParameter.GetCString(), true); break;
       case ADJ_BY_RR_FILE            : gParameters.SetAdjustmentsByRelativeRisksFilename(sParameter.GetCString(), true); break;
       case OUTPUT_SIMULATION_DATA    : gParameters.SetOutputSimulationData(ReadBoolean(sParameter, eParameterType)); break;
@@ -477,10 +478,12 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case SPATIAL_ADJ_TYPE          : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
                                        gParameters.SetSpatialAdjustmentType((SpatialAdjustmentType)ReadInt(sParameter, eParameterType)); break;
       case MULTI_DATASET_PURPOSE_TYPE: iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, MULTIVARIATE, ADJUSTMENT);
-                                       gParameters.SetMultipleDataSetPurposeType((MultipleDataSetPurposeType)ReadInt(sParameter, eParameterType)); break;
+                                       gParameters.SetMultipleDataSetPurposeType((MultipleDataSetPurposeType)iValue); break;
       case CREATION_VERSION          : ReadVersion(sParameter); break;
       case RANDOMIZATION_SEED        : gParameters.SetRandomizationSeed(ReadInt(sParameter, eParameterType)); break;
       case REPORT_CRITICAL_VALUES    : gParameters.SetReportCriticalValues(ReadBoolean(sParameter, eParameterType)); break;
+      case EXECUTION_TYPE            : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, AUTOMATIC, CENTRICALLY);
+                                       gParameters.SetExecutionType((ExecutionType)iValue); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

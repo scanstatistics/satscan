@@ -31,7 +31,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     REPORTED_GEOSIZE, USE_REPORTED_GEOSIZE, SIMULATION_TYPE,
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
-                                    MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES};
+                                    MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
+                                    EXECUTION_TYPE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -61,6 +62,8 @@ enum SpatialSizeType               {PERCENTOFPOPULATIONTYPE=0, DISTANCETYPE, PER
 enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
 /** purpose of multiple data sets */
 enum MultipleDataSetPurposeType    {MULTIVARIATE=0, ADJUSTMENT};
+/** analysis execution type */
+enum ExecutionType                 {AUTOMATIC=0, SUCCESSIVELY, CENTRICALLY};
 
 class DataSetHandler; /** forward class declaration */
 
@@ -69,7 +72,8 @@ class CParameters {
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
 
   private:
-    MultipleDataSetPurposeType          geMultipleSetPurposeType;            /** purpose for multiple data sets */  
+    ExecutionType                       geExecutionType;                        /** */
+    MultipleDataSetPurposeType          geMultipleSetPurposeType;               /** purpose for multiple data sets */
     AnalysisType                        geAnalysisType;                         /** analysis type */
     ProbabilityModelType                geProbabilityModelType;                  /** probability model type */
     AreaRateType                        geAreaScanRate;                         /** areas incidence rate type of interest */
@@ -215,6 +219,7 @@ class CParameters {
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
     const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
+    ExecutionType                       GetExecutionType() const {return geExecutionType;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
@@ -297,6 +302,7 @@ class CParameters {
     void                                SetDimensionsOfData(int iDimensions);
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
+    void                                SetExecutionType(ExecutionType eExecutionType);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);

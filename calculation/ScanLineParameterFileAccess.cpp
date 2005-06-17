@@ -88,6 +88,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case CREATION_VERSION          : return "Sotware Version Created (line 68)";  
       case RANDOMIZATION_SEED        : return "Randomization Seed (line 69)";
       case REPORT_CRITICAL_VALUES    : return "Report Critical Value (line 70)";
+      case EXECUTION_TYPE            : return "Analysis Execution Type (line 71)"; 
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
