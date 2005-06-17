@@ -7,7 +7,7 @@
 /** constructor */
 CSignificantRatios05::CSignificantRatios05(unsigned int iNumReplications) {
   try {
-    gvRatiosList.resize(static_cast<int>(ceil((iNumReplications+1)*0.05)) + 1, 0);
+    gvRatiosList.resize(static_cast<int>(ceil((iNumReplications+1)*0.05)), 0);
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","CSignificantRatios05");
@@ -50,7 +50,7 @@ double CSignificantRatios05::GetAlpha01()  const {
 /** Returns loglikelihood ratio at the top 5%. Calling this function with having
     specifed zero simulations results in zero being returned. */
 double CSignificantRatios05::GetAlpha05() const {
-  return (gvRatiosList.size() ? gvRatiosList[gvRatiosList.size() - 1] : 0);
+  return (gvRatiosList.size() ? gvRatiosList.back() : 0);
 }
 
 
