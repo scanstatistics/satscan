@@ -39,6 +39,7 @@ class AnalysisRunner {
     void                                DisplayTopClusters();
     void                                DisplayTopCluster();
     void                                FinalizeReport();
+    double                              GetAvailablePhysicalMemory() const;
     void                                Init();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                PerformParallelSimulations();

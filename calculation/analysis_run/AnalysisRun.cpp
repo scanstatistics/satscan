@@ -36,6 +36,7 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
   try {
     Init();
     Setup();
+    Execute();
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","AnalysisRunner");
@@ -315,32 +316,39 @@ void AnalysisRunner::Execute() {
     default                          :
        ZdGenerateException("Unknown maximum spatial cluster size type '%d'.\n", "Execute()", gParameters.GetMaxGeographicClusterSizeType());
   };
-  if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
-    dSuccessiveMemoryDemands = (double)sizeof(unsigned short**) * (double)(gParameters.GetNumTotalEllipses()+1) +
-                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short*) * (double)gpDataHub->m_nGridTracts +
-                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
-  else
-    dSuccessiveMemoryDemands = (double)sizeof(tract_t**) * (double)(gParameters.GetNumTotalEllipses()+1) +
-                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t*) * (double)gpDataHub->m_nGridTracts +
-                               (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
 
-  dCentricMemoryDemands = (double)gParameters.GetNumReplicationsRequested() *
-                          gpDataHub->GetDataSetHandler().GetSimulationDataSetAllocationRequirements();
-  if (gpDataHub->GetDataSetHandler().GetNumDataSets() == 1)
-    dCentricMemoryDemands += (double)gParameters.GetNumReplicationsRequested() *
-                             (double)sizeof(measure_t) * (double)gpDataHub->GetDataSetHandler().GetDataSet().GetTotalCases() *
-                             (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2.0 : 1.0);
-  if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
-    dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
-  else
-    dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
+  switch (gParameters.GetExecutionType()) {
+    case SUCCESSIVELY : ExecuteSuccessively(); break;
+    case CENTRICALLY  : ExecuteCentrically(); break;
+    case AUTOMATIC    :
+    default           :
+      if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
+        dSuccessiveMemoryDemands = (double)sizeof(unsigned short**) * (double)(gParameters.GetNumTotalEllipses()+1) +
+                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short*) * (double)gpDataHub->m_nGridTracts +
+                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+      else
+        dSuccessiveMemoryDemands = (double)sizeof(tract_t**) * (double)(gParameters.GetNumTotalEllipses()+1) +
+                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t*) * (double)gpDataHub->m_nGridTracts +
+                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
 
-  if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
-      (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)) ||
-       dSuccessiveMemoryDemands < dCentricMemoryDemands)
-    ExecuteSuccessively();
-  else
-    ExecuteCentrically();
+      dCentricMemoryDemands = (double)gParameters.GetNumReplicationsRequested() *
+                              gpDataHub->GetDataSetHandler().GetSimulationDataSetAllocationRequirements();
+      if (gpDataHub->GetDataSetHandler().GetNumDataSets() == 1)
+        dCentricMemoryDemands += (double)gParameters.GetNumReplicationsRequested() *
+                                 (double)sizeof(measure_t) * (double)gpDataHub->GetDataSetHandler().GetDataSet().GetTotalCases() *
+                                 (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2.0 : 1.0);
+     if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
+       dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+     else
+       dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
+
+     if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
+         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)) ||
+          dSuccessiveMemoryDemands < GetAvailablePhysicalMemory() || dSuccessiveMemoryDemands < dCentricMemoryDemands)
+       ExecuteSuccessively();
+     else
+       ExecuteCentrically();
+  };
 }
 
 /** starts analysis execution - evaluating real data then replications */
@@ -627,6 +635,22 @@ void AnalysisRunner::FinalizeReport() {
   }
 }
 
+/** */
+double AnalysisRunner::GetAvailablePhysicalMemory() const {
+  double dTotalPhysicalMemory(0), dAvailablePhysicalMemory(0);
+
+#ifdef INTEL_BASED
+  MEMORYSTATUS stat;
+  GlobalMemoryStatus (&stat);
+  dTotalPhysicalMemory = stat.dwTotalPhys;
+  dAvailablePhysicalMemory = stat.dwAvailPhys;
+#else
+  ZdGenerateException("GetAvailablePhysicalMemory() not implemented.", "GetNewCentricAnalysisObject()");  
+#endif
+
+  return dAvailablePhysicalMemory;
+}
+
 /** returns new CAnalysis object */
 CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
   try {
@@ -652,9 +676,9 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
       case SPATIALVARTEMPTREND :
           return new CSpatialVarTempTrendAnalysis(gParameters, *gpDataHub, gPrintDirection);
       default :
-        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());  
+        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
     };
-   } 
+   }
   catch (ZdException &x) {
     x.AddCallpath("GetNewAnalysisObject()","AnalysisRunner");
     throw;
@@ -688,9 +712,9 @@ AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const Abtr
       case SPATIALVARTEMPTREND :
             ZdGenerateException("No implementation for svtt analysis for centric evaluation.\n", "GetNewCentricAnalysisObject()");
       default :
-        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());  
+        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
     };
-   } 
+   }
   catch (ZdException &x) {
     x.AddCallpath("GetNewCentricAnalysisObject()","AnalysisRunner");
     throw;
