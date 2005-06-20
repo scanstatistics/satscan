@@ -635,7 +635,7 @@ void AnalysisRunner::FinalizeReport() {
   }
 }
 
-/** */
+/** Returns available random access memory. */
 double AnalysisRunner::GetAvailablePhysicalMemory() const {
   double dTotalPhysicalMemory(0), dAvailablePhysicalMemory(0);
 
@@ -645,7 +645,10 @@ double AnalysisRunner::GetAvailablePhysicalMemory() const {
   dTotalPhysicalMemory = stat.dwTotalPhys;
   dAvailablePhysicalMemory = stat.dwAvailPhys;
 #else
-  ZdGenerateException("GetAvailablePhysicalMemory() not implemented.", "GetNewCentricAnalysisObject()");  
+  dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
+  dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
+  dAvailablePhysicalMemory = sysconf(_SC_AVPHYS_PAGES);   
+  dAvailablePhysicalMemory *= sysconf(_SC_PAGESIZE);
 #endif
 
   return dAvailablePhysicalMemory;
