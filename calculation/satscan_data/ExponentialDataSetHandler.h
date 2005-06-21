@@ -13,7 +13,7 @@ class ExponentialDataSetHandler : public DataSetHandler {
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
                                                           count_t& nCount, Julian& nDate,
                                                           measure_t& tContinuosVariable,
-                                                          count_t& tCensored);
+                                                          count_t& tCensorAttribute);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
     virtual void                        SetRandomizers();
 

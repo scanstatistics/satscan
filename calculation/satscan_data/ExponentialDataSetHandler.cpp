@@ -204,12 +204,12 @@ double ExponentialDataSetHandler::GetSimulationDataSetAllocationRequirements() c
 }
 
 /** Parses current file record contained in StringParser object in expected
-    parts: location, case count, date, survival time and censored attribute. Returns true if no
+    parts: location, case count, date, survival time and censor attribute. Returns true if no
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
 bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
                                                   count_t& nCount, Julian& nDate,
-                                                  measure_t& tContinuosVariable, count_t& tCensored) {
+                                                  measure_t& tContinuosVariable, count_t& tCensorAttribute) {
   int   iContiVariableIndex, iCensoredAttributeIndex;
 
   try {
@@ -268,12 +268,14 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     //read and validate censore attribute
     iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4;
     if (Parser.GetWord(iCensoredAttributeIndex) != 0) {
-      if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensored) || tCensored < 0) {
+      if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || tCensorAttribute < 0) {
        gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n",
                                   Parser.GetWord(iCensoredAttributeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        gPrint.PrintInputWarning("       Censoring attribute must be either 0 or 1.\n");
        return false;
       }
+      //treat values greater than one as indication that patient is not censored
+      tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
     }
     else {
       gPrint.PrintInputWarning("Error: Record %ld, in the %s, does not contain censoring attibute.\n",
@@ -296,7 +298,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
   bool                   bReadSuccessful=true, bEmpty=true;
   Julian                 Date;
   tract_t                tTractIndex;
-  count_t                tPatients, tCensored, tTotalPopuation=0, tTotalCases=0;
+  count_t                tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
   measure_t              tContinuosVariable, tTotalMeasure=0;
   ExponentialRandomizer* pRandomizer;
 
@@ -305,26 +307,28 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     StringParser Parser(gPrint);
 
     // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
-    pRandomizer = (ExponentialRandomizer*)gvDataSetRandomizers[tSetIndex];
+    pRandomizer = dynamic_cast<ExponentialRandomizer*>(gvDataSetRandomizers[tSetIndex]);         
+    if (!pRandomizer)
+      ZdGenerateException("Data set randomizer not ExponentialRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuosVariable, tCensored)) {
-             pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuosVariable, tCensored);
+           if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuosVariable, tCensorAttribute)) {
+             pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuosVariable, tCensorAttribute);
              tTotalPopuation += tPatients;
              //check that addition did not exceed data type limitations
              if (tTotalPopuation < 0)
                GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
                                            "ReadCounts()", std::numeric_limits<count_t>::max());
-             tTotalCases += tPatients * tCensored;
+             tTotalCases += tPatients * tCensorAttribute;
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
                GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
                                            "ReadCounts()", std::numeric_limits<count_t>::max());
              //check numeric limits of data type will not be exceeded
              if (tContinuosVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
-               GenerateResolvableException("Error: The total summation of survival times exceeds the maximum value allowed of %ld.\n",
+               GenerateResolvableException("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n",
                                            "ReadCounts()", std::numeric_limits<measure_t>::max());
              tTotalMeasure += tContinuosVariable;
            }
