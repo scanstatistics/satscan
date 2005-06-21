@@ -12,7 +12,8 @@ ExponentialModel::ExponentialModel() : CModel() {}
 /** destructor */
 ExponentialModel::~ExponentialModel() {}
 
-/** TODO: document */
+/** Calculate expected number of cases -- no action taken in this function.
+    Exponential model use the measure structures but data calculated in read process. */
 void ExponentialModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. */
