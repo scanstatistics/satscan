@@ -17,7 +17,7 @@
        or registory value if this is becomes a problem. */
 const char * TfrmUpdateCheck::gsUpdaterFilename   = "update_app.exe";
 /** perl script for determining updates */
-const char * TfrmUpdateCheck::gsURLFormat         = "http://satscan.us/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=%s&form_current_version_number=%s";
+const char * TfrmUpdateCheck::gsURLFormat         = "http://www.satscan.org/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=%s&form_current_version_number=%s";
 const int TfrmUpdateCheck::giUpdateTokens         = 9;
 const int TfrmUpdateCheck::giUpdateIndicatorIndex = 0;
 const int TfrmUpdateCheck::giUpdateVersionIdIndex = 3;
@@ -44,6 +44,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
   try {
     Show();
     sUpdateURL.printf(gsURLFormat, VERSION_ID, GetToolkit().GetVersion());
+    sUpdateURL.Replace(" ", "%20", true);
     try {
       // let the Get() do the connecting since reading results from perlscript
       // is the only purpose for connecting to remote host ... currently.
