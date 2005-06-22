@@ -21,6 +21,13 @@ void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   }
 }
 
+/** Adds cluster object to list of top clusters, taking ownership.
+    Caller  */
+void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
+  if (pCluster.get() && pCluster->ClusterDefined())
+    gvTopClusterList.push_back(pCluster.release());
+}
+
 //Does the point at 'theCentroid' lie within the spherical region described by
 //'theCircleCentroid' and 'dCircleRadius'?
 bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius) {
