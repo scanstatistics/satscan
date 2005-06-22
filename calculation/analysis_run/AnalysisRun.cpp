@@ -296,7 +296,7 @@ void AnalysisRunner::DisplayTopClusters() {
 
 /** Executes analysis - conditionally running successive or centric processes. */
 void AnalysisRunner::Execute() {
-  double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0), dPercentage;
+  double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0), dNumThreads(1), dPercentage;
 
   //read data
   gpDataHub->ReadDataFromFiles();
@@ -331,20 +331,41 @@ void AnalysisRunner::Execute() {
                                    (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t*) * (double)gpDataHub->m_nGridTracts +
                                    (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
 
+
+      //memory needs for storing simulated data sets
       dCentricMemoryDemands = (double)gParameters.GetNumReplicationsRequested() *
                               gpDataHub->GetDataSetHandler().GetSimulationDataSetAllocationRequirements();
-      if (gpDataHub->GetDataSetHandler().GetNumDataSets() == 1)
-        dCentricMemoryDemands += (double)gParameters.GetNumReplicationsRequested() *
+     if (gpDataHub->GetDataSetHandler().GetNumDataSets() == 1 &&
+         !(gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == ORDINAL)) {
+        //memory needs for storing measurelist objects
+        dCentricMemoryDemands += dNumThreads * (double)gParameters.GetNumReplicationsRequested() * (double)sizeof(measure_t*);
+        dCentricMemoryDemands += dNumThreads *(double)gParameters.GetNumReplicationsRequested() *
                                  (double)sizeof(measure_t) * (double)gpDataHub->GetDataSetHandler().GetDataSet().GetTotalCases() *
                                  (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2.0 : 1.0);
-     if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
-       dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+     }
      else
-       dCentricMemoryDemands += (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
+       //memory needs for storing vector of calculated ratios
+       dCentricMemoryDemands += dNumThreads * (double)gParameters.GetNumReplicationsRequested() * (double)sizeof(double);
+     //memory needs for storing neighbor information about one centroid
+     if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
+       dCentricMemoryDemands += dNumThreads * (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+     else
+       dCentricMemoryDemands += dNumThreads * (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
 
+     //$$ Consider multiple threads comparison. 
+
+     //Everything else considered equal, which algorithm has lesser memory needs?
      if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
          (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)) ||
+          (gParameters.GetNumRequestedEllipses() && gParameters.GetNonCompactnessPenalty()) ||
+          gParameters.GetTerminateSimulationsEarly() ||
           dSuccessiveMemoryDemands < GetAvailablePhysicalMemory() || dSuccessiveMemoryDemands < dCentricMemoryDemands)
+       // execute analysis successively from real data set to each simulated data set if any of following:
+       //   - analysis type requires this execution (i.e. not implemented with centric analysis)
+       //   - parameters settings indicate ellipses with non-compactness penalty
+       //   - parameters settings indicate early termination of simulations
+       //   - at this moment, there is enough RAM to accommodate memory demands (centric analysis typically takes longer to execute)
+       //   - memory demands are less than that of centric method
        ExecuteSuccessively();
      else
        ExecuteCentrically();
@@ -481,7 +502,7 @@ void AnalysisRunner::ExecuteCentrically() {
       clock_t  tStartTime = clock();
       for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
          gPrintDirection.SatScanPrintf("Calculating top cluster about centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
-         CentricAnalysis->ExecuteAboutCentroids(c, gTopClustersContainer, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
+         CentricAnalysis->ExecuteAboutCentroids(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
          //report estimation of total execution time
          if (c==9)
            ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
@@ -492,6 +513,8 @@ void AnalysisRunner::ExecuteCentrically() {
      if (gParameters.GetIncludePurelyTemporalClusters())
        CentricAnalysis->CalculatePurelyTemporalCluster(gTopClustersContainer, *DataSetGateway);
 
+     //retrieve top clusters and simulated loglikelihood ratios from analysis object  
+     CentricAnalysis->RetrieveClusters(gTopClustersContainer);
      CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
      //free memory of objects that will no longer be used
