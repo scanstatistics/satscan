@@ -41,8 +41,6 @@ void CAnalysis::FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLi
        if (i==9)
          ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts, i+1, &gPrintDirection);
     }
-    if (!gPrintDirection.GetIsCanceled())
-      TopClustersContainer.RankTopClusters(gParameters, gDataHub, gPrintDirection);
   }
   catch (ZdException &x) {
     x.AddCallpath("FindTopClusters()","CAnalysis");
