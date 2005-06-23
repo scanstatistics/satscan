@@ -18,7 +18,6 @@ class AbstractCentricAnalysis : public AbstractAnalysis {
   public:
     typedef ZdPointerVector<CMeasureList>               MeasureListContainer_t;
     typedef boost::shared_ptr<std::vector<double> >     CalculatedRatioContainer_t;
-    typedef std::vector<CentroidNeighbors>              CentroidDefinitionContainer_t;
     typedef ZdPointerVector<AbtractDataSetGateway>      DataSetGatewayContainer_t;
     typedef ZdPointerVector<CCluster>                   ClustersContainer_t;
 
@@ -28,21 +27,23 @@ class AbstractCentricAnalysis : public AbstractAnalysis {
     ClustersContainer_t         gRetainedClusters; /** collection of retained most likely clusters */
 
     // pure virtual functions
-    virtual void             CalculateRatiosAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways) = 0;
-    virtual const CCluster & CalculateTopClusterAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const AbtractDataSetGateway& DataGateway) = 0;
-    virtual void             MonteCarloAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways) = 0;
+    virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) = 0;
+    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway) = 0;
+    virtual const CCluster & GetTopCalculatedCluster() = 0;
+    virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) = 0;
 
-    void                     ExecuteSimulationsAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways);
+    void                     ExecuteSimulationsAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
 
   public:
     AbstractCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~AbstractCentricAnalysis();
 
-    virtual void             CalculatePurelyTemporalCluster(MostLikelyClustersContainer& TopClustersContainer, const AbtractDataSetGateway& DataGateway);
-    virtual void             ExecuteAboutCentroids(tract_t tCentroidIndex,
-                                                   CentroidNeighborCalculator& CentroidCalculator,
-                                                   const AbtractDataSetGateway& RealDataGateway,
-                                                   const DataSetGatewayContainer_t& vSimDataGateways);
+    virtual void             ExecuteAboutCentroid(tract_t tCentroidIndex,
+                                                  CentroidNeighborCalculator& CentroidCalculator,
+                                                  const AbtractDataSetGateway& RealDataGateway,
+                                                  const DataSetGatewayContainer_t& vSimDataGateways);
+    virtual void             ExecuteAboutPurelyTemporalCluster(const AbtractDataSetGateway& DataGateway,
+                                                               const DataSetGatewayContainer_t& vSimDataGateways);
     void                     RetrieveClusters(MostLikelyClustersContainer& TopClustersContainer);
     void                     RetrieveLoglikelihoodRatios(CalculatedRatioContainer_t& RatioContainer);
 

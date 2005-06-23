@@ -15,48 +15,44 @@ AbstractCentricAnalysis::AbstractCentricAnalysis(const CParameters& Parameters, 
 /** destructor */
 AbstractCentricAnalysis::~AbstractCentricAnalysis() {}
 
-/** Calculates most likely temporal cluster - adds to MostLikelyClustersContainer object.
-    No action taken in base class. */
-void AbstractCentricAnalysis::CalculatePurelyTemporalCluster(MostLikelyClustersContainer&, const AbtractDataSetGateway&) {}
-
 /** Calculates most likely cluster and evaluates simulated data about 'tCentroidIndex'.
     Cluster object added to TopClustersContainer if significant cluster found. Simulated
     loglikelihood ratios recorded to CalculatedRatioContainer_t class member. */
-void AbstractCentricAnalysis::ExecuteAboutCentroids(tract_t tCentroidIndex,
+void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
                                                     CentroidNeighborCalculator& CentroidCalculator,
                                                     const AbtractDataSetGateway& RealDataGateway,
                                                     const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
-    //centroid neighbor information objects
-    CentroidDefinitionContainer_t  CentroidDefs(gDataHub.GetParameters().GetNumTotalEllipses() + 1);
+    CentroidNeighbors   CentroidDef;
 
-    //calculate neigbor about current centroid
-    for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j)
-       CentroidCalculator.CalculateNeighborsAboutCentroid(j, tCentroidIndex, CentroidDefs[j]);
-    // find top cluster about current centroid
-    const CCluster& TopCluster = CalculateTopClusterAboutCentroidDefinition(CentroidDefs, RealDataGateway);
-    if (TopCluster.ClusterDefined()) {
-      //calculates radius - we'll possibly need to know this later when restricting overlap and reporting
-      const_cast<CCluster&>(TopCluster).SetCartesianRadius(gDataHub, CentroidDefs[TopCluster.GetEllipseOffset()]);
-      gRetainedClusters.push_back(TopCluster.Clone());
+    for (int iEllipseIndex=0; iEllipseIndex <= gParameters.GetNumTotalEllipses(); ++iEllipseIndex) {
+       //calculate neigbor about current centroid
+       CentroidCalculator.CalculateNeighborsAboutCentroid(iEllipseIndex, tCentroidIndex, CentroidDef);
+       // find top cluster about current centroid
+       CalculateTopClusterAboutCentroidDefinition(CentroidDef, RealDataGateway);
+       //perform simulations about current centroid
+       CentroidDef.SetMaximumClusterSize_SimulatedData();
+       ExecuteSimulationsAboutCentroidDefinition(CentroidDef, vSimDataGateways);
     }
-    //perform simulations about current centroid
-    ExecuteSimulationsAboutCentroidDefinition(CentroidDefs, vSimDataGateways);
+    gRetainedClusters.push_back(GetTopCalculatedCluster().Clone());
   }
   catch (ZdException &x) {
-    x.AddCallpath("ExecuteAboutCentroids()","AbstractCentricAnalysis");
+    x.AddCallpath("ExecuteAboutCentroid()","AbstractCentricAnalysis");
     throw;
   }
 }
 
+/** Calculates most likely temporal cluster - no action taken in base class. */
+void AbstractCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbtractDataSetGateway&, const DataSetGatewayContainer_t&) {}
+
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
     CMeasureList class or FindTopRatio() for analyses which must perform
     simulations by the same algorithm as the real data. */
-void AbstractCentricAnalysis::ExecuteSimulationsAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways) {
+void AbstractCentricAnalysis::ExecuteSimulationsAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) {
   if (geReplicationsProcessType == MeasureListEvaluation)
-    MonteCarloAboutCentroidDefinition(vCentroid, vDataGateways);
+    MonteCarloAboutCentroidDefinition(CentroidDef, vDataGateways);
   else
-    CalculateRatiosAboutCentroidDefinition(vCentroid, vDataGateways);
+    CalculateRatiosAboutCentroidDefinition(CentroidDef, vDataGateways);
 }
 
 /** Retrieves calculated most likely clusters. After successful retrieval of clusters,
@@ -122,7 +118,7 @@ void AbstractCentricAnalysis::RetrieveLoglikelihoodRatios(CalculatedRatioContain
     else {
       //share ownership with analysis objects container of calculated ratios
       RatioContainer = gCalculatedRatios;
-      gCalculatedRatios.reset(); //release ownership
+      gCalculatedRatios.reset(); //release shared ownership
     }
   }
 }
