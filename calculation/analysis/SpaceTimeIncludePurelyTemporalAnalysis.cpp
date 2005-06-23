@@ -77,10 +77,7 @@ void C_ST_PT_Analysis::FindTopClusters(const AbtractDataSetGateway & DataGateway
     //create comparator cluster
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     gpTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
-    if (TopCluster.ClusterDefined()) {
-      TopClustersContainer.Add(TopCluster);
-      TopClustersContainer.SortTopClusters();
-    }
+    TopClustersContainer.Add(TopCluster);
   }
   catch (ZdException &x) {
     x.AddCallpath("FindTopClusters()","C_ST_PT_Analysis");

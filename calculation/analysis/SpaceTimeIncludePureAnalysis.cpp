@@ -75,10 +75,7 @@ void C_ST_PS_PT_Analysis::FindTopClusters(const AbtractDataSetGateway& DataGatew
   CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
   //iterate through time intervals - looking for top purely temporal cluster
   gpTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
-  if (TopCluster.ClusterDefined()) {
-    TopClustersContainer.Add(TopCluster);
-    TopClustersContainer.SortTopClusters();
-  }
+  TopClustersContainer.Add(TopCluster);
 }
 
 /** Returns greatest calculated log likelihood ratio. */
