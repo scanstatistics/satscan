@@ -10,10 +10,9 @@
 /** Defines purely spatial analysis class which evaluates real and simulated data
     for each centroid separate than other centroids. */
 class PurelySpatialCentricAnalysis : public AbstractCentricAnalysis {
-  typedef IntermediateClustersContainer<CPurelySpatialCluster> intermediate_clusters_t;
-
   private:
-    intermediate_clusters_t                   gTopShapeClusters;     /** collection of clusters representing top cluster for each shape */
+    std::auto_ptr<CPurelySpatialCluster>      gTopCluster;           /** instance of purely spatial cluster
+                                                                         - used to evaluate real data */
     std::auto_ptr<CPurelySpatialCluster>      gClusterComparator;    /** instance of purely spatial cluster
                                                                          - used to evaluate real data */
     std::auto_ptr<SpatialData>                gClusterData;          /** concrete instance of spatial cluster data object
@@ -23,14 +22,18 @@ class PurelySpatialCentricAnalysis : public AbstractCentricAnalysis {
 
     void                     Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
 
+  protected:
+
+
+    virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
+    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway);
+    virtual const CCluster & GetTopCalculatedCluster();
+    virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
+
   public:
     PurelySpatialCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
                                  const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
     virtual ~PurelySpatialCentricAnalysis();
-
-    virtual void             CalculateRatiosAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways);
-    virtual const CCluster & CalculateTopClusterAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const AbtractDataSetGateway& DataGateway);
-    virtual void             MonteCarloAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways);
 };
 //******************************************************************************
 #endif

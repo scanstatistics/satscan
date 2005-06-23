@@ -13,7 +13,7 @@ PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Pa
                                                            BasePrint& PrintDirection,
                                                            const AbtractDataSetGateway& RealDataGateway,
                                                            const DataSetGatewayContainer_t& vSimDataGateways)
-                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection), gTopShapeClusters(Data) {
+                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection) {
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
@@ -26,76 +26,84 @@ PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Pa
 /** destructor */
 PurelySpatialCentricAnalysis::~PurelySpatialCentricAnalysis() {}
 
-/** Calculates greatest loglikelihood ratios about centroid for each defined
-    simulation data set. Vector of CentroidNeighbors objects must reference the
-    same centroid index (this is not validated in function). */
-void PurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways) {
+/** Calculates greatest loglikelihood ratios about centroid for each defined data set gateway object,
+    storing maximum ratio for each simulation in class member gCalculatedRatios.
+    Caller is responsible for ensuring:
+    1) 'vDataGateways' contains a number of elements equal to number of requested simulations
+    2) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data
+    3) RetrieveLoglikelihoodRatios() has not been called yet */
+void PurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) {
   DataSetGatewayContainer_t::const_iterator  itrGateway, itrGatewayEnd=vDataGateways.end();
-  CentroidDefinitionContainer_t::iterator    itrCentroidDef=vCentroid.begin(), itrCentroidDefEnd=vCentroid.end();
   std::vector<double>::iterator              itrLoglikelihoodRatios;
   tract_t                                    t, tNumNeighbors;
 
   //perform simulations about current centroid
-  for (; itrCentroidDef != itrCentroidDefEnd; ++itrCentroidDef) {
-     itrCentroidDef->SetMaximumClusterSize_SimulatedData();
-     itrGateway=vDataGateways.begin();
-     itrLoglikelihoodRatios=gCalculatedRatios->begin();
-     for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
-        gAbstractClusterData->InitializeData();
-        tNumNeighbors = itrCentroidDef->GetNumNeighbors();
-        for (t=0; t < tNumNeighbors; ++t) {
-           //update cluster data
-           gAbstractClusterData->AddNeighborData(itrCentroidDef->GetNeighborTractIndex(t), *(*itrGateway));
-           //calculate loglikehood ratio and compare against current top cluster
-           *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gAbstractClusterData->CalculateLoglikelihoodRatio(*gpLikelihoodCalculator));
-        }
-        //NOTE: This process assumes no-compactness correction for ellipses - otherwise we would
-        //      use an IntermediateClustersContainer, as used in other top cluster method to
-        //      calculates most likely cluster among circle and ellipses. Not sure how to code this
-        //      should we want compactnes correction later on.
+  itrGateway=vDataGateways.begin();
+  itrLoglikelihoodRatios=gCalculatedRatios->begin();
+  for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
+     gAbstractClusterData->InitializeData();
+     tNumNeighbors = CentroidDef.GetNumNeighbors();
+     for (t=0; t < tNumNeighbors; ++t) {
+        //update cluster data
+        gAbstractClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
+        //calculate loglikehood ratio and compare against current top cluster
+        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gAbstractClusterData->CalculateLoglikelihoodRatio(*gpLikelihoodCalculator));
      }
+     //NOTE: This process assumes no-compactness correction for ellipses - otherwise we would
+     //      use an IntermediateClustersContainer, as used in other top cluster method to
+     //      calculates most likely cluster among circle and ellipses. Not sure how to code this
+     //      should we want compactnes correction later on.
   }
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.
-    Caller should not assume that returned reference is persistent, but should either call
-    Clone() method or overloaded assignment operator. */
-const CCluster& PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const AbtractDataSetGateway& DataGateway) {
-  CentroidDefinitionContainer_t::iterator      itrCentroid=vCentroid.begin(), itrCentroidEnd=vCentroid.end();
+/** Calculates clustering with greastest loglikelihood ratio, storing results in gTopCluster
+    class member. Note that gTopCluster is re-intialized when centroid being evaluated is
+    different than that of gTopCluster; this permits repeated calls to this function, inorder
+    to compare clusterings about same centroid but with different ellipse shapes.
 
-  gTopShapeClusters.Reset(vCentroid.back().GetCentroidIndex());
-  for (; itrCentroid != itrCentroidEnd; ++itrCentroid) {
-     gClusterComparator->Initialize(itrCentroid->GetCentroidIndex());
-     gClusterComparator->SetEllipseOffset(itrCentroid->GetEllipseIndex(), gDataHub);
-     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway,
-                                                                    *itrCentroid,
-                                                                    gTopShapeClusters.GetTopCluster(itrCentroid->GetEllipseIndex()),
-                                                                    *gpLikelihoodCalculator);
-  }
-  return gTopShapeClusters.GetTopCluster();
+    Caller is responsible for ensuring:
+    1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
+void PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway) {
+  if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
+    //re-intialize top cluster object if evaluating data about new centroid
+    gTopCluster->Initialize(CentroidDef.GetCentroidIndex());
+  gClusterComparator->Initialize(CentroidDef.GetCentroidIndex());
+  gClusterComparator->SetEllipseOffset(CentroidDef.GetEllipseIndex(), gDataHub);
+  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopCluster, *gpLikelihoodCalculator);
+  //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
+  if (gTopCluster->GetEllipseOffset() == CentroidDef.GetEllipseIndex())
+    gTopCluster->SetCartesianRadius(gDataHub, CentroidDef);
 }
 
-/** Returns loglikelihood ratio for Monte Carlo replication. */
-void PurelySpatialCentricAnalysis::MonteCarloAboutCentroidDefinition(CentroidDefinitionContainer_t& vCentroid, const DataSetGatewayContainer_t& vDataGateways) {
+/** Returns cluster object with greatest llr value as specified by gTopCluster.
+    Note that this object will potentially be updated with next call to
+    CalculateTopClusterAboutCentroidDefinition(), so calling Clone() on returned object
+    is necessary if you want to keep object around in current state. */
+const CCluster& PurelySpatialCentricAnalysis::GetTopCalculatedCluster() {
+  return *gTopCluster;
+}
+
+/** Updates CMeasureList objects for each defined data set of gateway object.
+    Caller is responsible for ensuring:
+    1) 'vDataGateways' contains a number of elements equal to number of requested simulations
+    2) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data
+    3) RetrieveLoglikelihoodRatios() has not been called yet */
+void PurelySpatialCentricAnalysis::MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) {
   DataSetGatewayContainer_t::const_iterator  itrGateway, itrGatewayEnd=vDataGateways.end();
   MeasureListContainer_t::const_iterator     itrMeasureList;
-  CentroidDefinitionContainer_t::iterator    itrCentroid=vCentroid.begin(), itrCentroidEnd=vCentroid.end();
 
   //perform simulations about current centroid
-  for (; itrCentroid != itrCentroidEnd; ++itrCentroid) {
-    itrCentroid->SetMaximumClusterSize_SimulatedData();
-    itrGateway = vDataGateways.begin();
-    itrMeasureList=gvMeasureLists.begin();
-    for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrMeasureList)
-       gClusterData->AddMeasureList(*itrCentroid, (*itrGateway)->GetDataSetInterface(), (*itrMeasureList));
-       //NOTE: This process assumes no-compactness correction for ellipses - otherwise
-       //      we would call: gpMeasureList->SetForNextIteration(itrCentroidEnd->GetCentroidIndex());
-       //      to calculate the loglikelihood with accumulated measure list for current circle/ellipse.
-       //      Note that if we did in fact call that method, the number of times the loglikelihood is calculated
-       //      would increase dramtically compared to other Monte Carlo method. We would need an additional
-       //      measurelist object for each ellipse/centroid pair to prevent to many loglikelihood calculations, but
-       //      that would increase the amount of memory needed.
-  }
+  itrGateway = vDataGateways.begin();
+  itrMeasureList=gvMeasureLists.begin();
+  for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrMeasureList)
+     gClusterData->AddMeasureList(CentroidDef, (*itrGateway)->GetDataSetInterface(), (*itrMeasureList));
+     //NOTE: This process assumes no-compactness correction for ellipses - otherwise
+     //      we would call: gpMeasureList->SetForNextIteration(itrCentroidEnd->GetCentroidIndex());
+     //      to calculate the loglikelihood with accumulated measure list for current circle/ellipse.
+     //      Note that if we did in fact call that method, the number of times the loglikelihood is calculated
+     //      would increase dramtically compared to other Monte Carlo method. We would need an additional
+     //      measurelist object for each ellipse/centroid pair to prevent to many loglikelihood calculations, but
+     //      that would increase the amount of memory needed.
 }
 
 /** Internal function which allocates appropriate objects for evaulate real and simulated data. */
@@ -103,7 +111,7 @@ void PurelySpatialCentricAnalysis::Setup(const AbtractDataSetGateway& RealDataGa
   try {
     //allocate objects used to evaluate real data
     gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
-    gTopShapeClusters.SetTopClusters(*gClusterComparator);
+    gTopCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
     
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {
