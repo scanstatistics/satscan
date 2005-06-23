@@ -16,16 +16,23 @@ MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   if (Cluster.ClusterDefined()) {
-    gvTopClusterList.push_back(0);
-    gvTopClusterList.back() = Cluster.Clone();
+    if (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+      gptCluster.reset(Cluster.Clone());
+    else {
+      gvTopClusterList.push_back(0);
+      gvTopClusterList.back() = Cluster.Clone();
+    }
   }
 }
 
-/** Adds cluster object to list of top clusters, taking ownership.
-    Caller  */
+/** Adds cluster object to list of top clusters, taking ownership. */
 void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
-  if (pCluster.get() && pCluster->ClusterDefined())
-    gvTopClusterList.push_back(pCluster.release());
+  if (pCluster.get() && pCluster->ClusterDefined()) {
+    if (pCluster->GetClusterType() == PURELYTEMPORALCLUSTER)
+      gptCluster = pCluster;
+    else 
+      gvTopClusterList.push_back(pCluster.release());
+  }
 }
 
 //Does the point at 'theCentroid' lie within the spherical region described by
@@ -282,6 +289,21 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
         gvTopClusterList.resize(vRetainedClusters.size());
         std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
       }
+      //NOTE: In order to keep ordering of ranked clusters consistant with previous
+      //      versions, purely temporal clusters objects are held separate, away
+      //      from gvTopClusterList until after non-pt clusters are ranked. Old
+      //      functionality was such that RankTopClusters() was called, then later on,
+      //      a purely temporal cluster is added to gvTopClusterList and then sorted
+      //      again. This behavior is not desirable for centric analyses. Having the
+      //      pt cluster minged among non-pt clusters becomes a problem when clusters
+      //      in gvTopClusterList have identical llr values; where sorting with the
+      //      extra pt cluster has some bearing on how ties are broken internally with qsort.
+      if (gptCluster.get()) {
+        gvTopClusterList.push_back(gptCluster.release());
+        //qsort is a poor sort algorithm for this situation since list is already sorted,
+        //but to keep consistant with previous versions, it will remain
+        qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
+      }
    }
    catch (ZdException & x) {
       x.AddCallpath("RankTopClusters()", "MostLikelyClustersContainer");
@@ -422,10 +444,6 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
      throw;
   }
   return bResult;
-}
-
-void MostLikelyClustersContainer::SortTopClusters() {
-  qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
 }
 
 /** Updates rank of top clusters by comparing simulated loglikelihood ratio(LLR)

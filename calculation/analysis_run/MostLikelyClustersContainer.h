@@ -57,6 +57,7 @@ class CSaTScanData;
 class MostLikelyClustersContainer {
   private:
     ZdPointerVector<CCluster>   gvTopClusterList;
+    std::auto_ptr<CCluster>     gptCluster;
     static unsigned long        MAX_RANKED_CLUSTERS;
 
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
@@ -65,6 +66,7 @@ class MostLikelyClustersContainer {
     static bool                 HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
     static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
     bool                        ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion);
+    void                        SortTopClusters();
 
   public:
     MostLikelyClustersContainer();
@@ -78,7 +80,6 @@ class MostLikelyClustersContainer {
     const CCluster            & GetTopRankedCluster() const;
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
     void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection);
-    void                        SortTopClusters();
     void                        UpdateTopClustersRank(double r);
 };
 //***************************************************************************
