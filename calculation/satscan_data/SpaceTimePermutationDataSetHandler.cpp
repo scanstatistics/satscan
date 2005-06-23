@@ -147,7 +147,7 @@ double SpaceTimePermutationDataSetHandler::GetSimulationDataSetAllocationRequire
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements * GetNumDataSets();
+  return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 /** Read the count data file.

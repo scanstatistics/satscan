@@ -132,7 +132,7 @@ double RankDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements * GetNumDataSets();
+  return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 /** returns new data gateway for simulation data */

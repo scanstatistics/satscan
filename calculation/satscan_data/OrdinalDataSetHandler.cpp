@@ -162,6 +162,7 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
              dRequirements += (double)sizeof(count_t*) * (double)Set.GetPopulationData().GetNumOrdinalCategories() +
                               (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
           }
+          dRequirements += (double)sizeof(SimDataSet);
        }
        break;
     case PROSPECTIVEPURELYTEMPORAL :

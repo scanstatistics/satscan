@@ -264,7 +264,7 @@ double PoissonDataSetHandler::GetSimulationDataSetAllocationRequirements() const
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements * GetNumDataSets();
+  return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 /** Refined process for reading input data from files into respective data
