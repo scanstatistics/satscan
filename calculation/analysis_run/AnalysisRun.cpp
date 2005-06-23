@@ -74,8 +74,10 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     delete pDataSetGateway; pDataSetGateway=0;
     delete pAnalysis; pAnalysis=0;
     //display the loglikelihood of most likely cluster
-    if (!gPrintDirection.GetIsCanceled())
+    if (!gPrintDirection.GetIsCanceled()) {
+      gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
       DisplayTopClusterLogLikelihood();
+    }
   }
   catch (ZdException &x) {
     delete pDataSetGateway;
@@ -282,7 +284,8 @@ void AnalysisRunner::DisplayTopClusters() {
        }
        //we no longer will be requesting neighbor information for this centroid - we can delete
        //neighbor information - which might have been just calculated at beginning of this loop
-       gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
+       if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+         gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
     }
     fprintf(fp, "\n");
     fclose(fp); fp=0;
@@ -348,9 +351,9 @@ void AnalysisRunner::Execute() {
        dCentricMemoryDemands += dNumThreads * (double)gParameters.GetNumReplicationsRequested() * (double)sizeof(double);
      //memory needs for storing neighbor information about one centroid
      if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
-       dCentricMemoryDemands += dNumThreads * (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+       dCentricMemoryDemands += dNumThreads * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
      else
-       dCentricMemoryDemands += dNumThreads * (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
+       dCentricMemoryDemands += dNumThreads * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
 
      //$$ Consider multiple threads comparison. 
 
@@ -501,8 +504,8 @@ void AnalysisRunner::ExecuteCentrically() {
       //analyze real and simulation data about each centroid
       clock_t  tStartTime = clock();
       for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
-         gPrintDirection.SatScanPrintf("Calculating top cluster about centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
-         CentricAnalysis->ExecuteAboutCentroids(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
+         gPrintDirection.SatScanPrintf("Evaluating centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
+         CentricAnalysis->ExecuteAboutCentroid(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
          //report estimation of total execution time
          if (c==9)
            ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
@@ -510,8 +513,10 @@ void AnalysisRunner::ExecuteCentrically() {
      //detect user cancellation
      if (gPrintDirection.GetIsCanceled())
        return;
-     if (gParameters.GetIncludePurelyTemporalClusters())
-       CentricAnalysis->CalculatePurelyTemporalCluster(gTopClustersContainer, *DataSetGateway);
+     if (gParameters.GetIncludePurelyTemporalClusters()) {
+       gPrintDirection.SatScanPrintf("Evaluating purely temporal clusters\n");
+       CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
+     }
 
      //retrieve top clusters and simulated loglikelihood ratios from analysis object  
      CentricAnalysis->RetrieveClusters(gTopClustersContainer);
@@ -525,7 +530,7 @@ void AnalysisRunner::ExecuteCentrically() {
      //detect user cancellation
      if (gPrintDirection.GetIsCanceled())
        return;
-     //rank top cluster and apply criteria for reporting secondary clusters
+     //rank top clusters and apply criteria for reporting secondary clusters
      gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
 
      //report calculated simulation llr values
