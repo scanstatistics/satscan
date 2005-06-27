@@ -232,7 +232,7 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
 
 /** Deletes CentroidNeighbor object for iCentroidIndex, if exists. */
 inline void CSaTScanData::FreeNeighborInfo(tract_t iCentroidIndex) const {
-  if (gvCentroidNeighborStore.size() > (size_t)iCentroidIndex + 1) {
+  if (gvCentroidNeighborStore.size() > (size_t)iCentroidIndex) {
     delete gvCentroidNeighborStore[iCentroidIndex]; gvCentroidNeighborStore[iCentroidIndex]=0;
   }
 }
