@@ -80,7 +80,7 @@ CentroidNeighbors& CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentr
 void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, int iNumReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations) {
 
   //conditionally allocate unsigned short vs tract_t
-  if (vOrderedLocations.size() < std::numeric_limits<unsigned short>::max()) {
+  if (vOrderedLocations.size() < (size_t)std::numeric_limits<unsigned short>::max()) {
     gvSortedNeighborsUnsignedShortType.resize(iNumNeighbors);
     gpSortedNeighborsUnsignedShortType = (iNumNeighbors ? &gvSortedNeighborsUnsignedShortType[0] : 0);
     for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
