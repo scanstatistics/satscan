@@ -143,8 +143,11 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
     if (ClusterOne.GetCartesianRadius() + ClusterTwo.GetCartesianRadius() < stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords)))
       return false;
     //return true if center of second cluster within radius of first cluster
-    if (ClusterOne.GetCartesianRadius() >= stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords)))
+    if (ClusterOne.GetCartesianRadius() >= stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords))) {
+      //if neighbors for secondard centroid where re-calculated, we can delete this data now
+      DataHub.FreeNeighborInfo(tTwoCentroid);
       return true;
+    }
   }
 
   for (t=1; t <= tTwoNumTracts; ++t) {
