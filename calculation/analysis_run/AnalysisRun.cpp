@@ -32,7 +32,7 @@
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
-               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection) {
+               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection), giNumSimsExecuted(0) {
   try {
     Init();
     Setup();
@@ -310,21 +310,21 @@ void AnalysisRunner::Execute() {
      if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
        GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
 
-  switch (gParameters.GetMaxGeographicClusterSizeType()) {
-    case PERCENTOFPOPULATIONTYPE     :
-    case PERCENTOFPOPULATIONFILETYPE : dPercentage = gParameters.GetMaximumGeographicClusterSize() / 100.0; break;
-    case DISTANCETYPE                : //Purely as a guess, we'll assume that the distance the user specified
-                                       //equates to 10% of the population. There might be a better way to due this!
-                                       dPercentage = 0.1; break;
-    default                          :
-       ZdGenerateException("Unknown maximum spatial cluster size type '%d'.\n", "Execute()", gParameters.GetMaxGeographicClusterSizeType());
-  };
-
   switch (gParameters.GetExecutionType()) {
     case SUCCESSIVELY : ExecuteSuccessively(); break;
     case CENTRICALLY  : ExecuteCentrically(); break;
     case AUTOMATIC    :
     default           :
+      switch (gParameters.GetMaxGeographicClusterSizeType()) {
+        case PERCENTOFPOPULATIONTYPE     :
+        case PERCENTOFPOPULATIONFILETYPE : dPercentage = gParameters.GetMaximumGeographicClusterSize() / 100.0; break;
+        case DISTANCETYPE                : //Purely as a guess, we'll assume that the distance the user specified
+                                           //equates to 10% of the population. There might be a better way to due this!
+                                           dPercentage = 0.1; break;
+        default                          :
+          ZdGenerateException("Unknown maximum spatial cluster size type '%d'.\n", "Execute()", gParameters.GetMaxGeographicClusterSizeType());
+      };
+
       if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
         dSuccessiveMemoryDemands = (double)sizeof(unsigned short**) * (double)(gParameters.GetNumTotalEllipses()+1) +
                                    (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short*) * (double)gpDataHub->m_nGridTracts +
@@ -1087,7 +1087,7 @@ void AnalysisRunner::UpdateReport() {
   ZdString              sBuffer;
 
   try {
-    gPrintDirection.SatScanPrintf("\nPrinting analysis results to file...\n");
+    gPrintDirection.SatScanPrintf("Printing analysis results to file...\n");
     if (gParameters.GetIsSequentialScanning())
       DisplayTopCluster();
     else
