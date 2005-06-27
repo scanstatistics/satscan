@@ -334,7 +334,7 @@ object frmMainForm: TfrmMainForm
     end
   end
   object OpenDialog1: TOpenDialog
-    Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing]
+    Options = [ofHideReadOnly, ofAllowMultiSelect, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 48
     Top = 376
   end

@@ -278,7 +278,8 @@ void TfrmMainForm::OpenAFile(){
     OpenDialog1->Filter = "Parameter Files (*.prm)|*.prm|Text Files (*.txt)|*.txt|All Files (*.*)|*.*";   
     OpenDialog1->Title = "Select Parameter File";
     if (OpenDialog1->Execute())
-      new TfrmAnalysis(this, ActionList, OpenDialog1->FileName.c_str());
+      for (int i=0; i < OpenDialog1->Files->Count; ++i)
+         new TfrmAnalysis(this, ActionList, OpenDialog1->Files->Strings[i].c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("OpenAFile()","TfrmMainForm");
