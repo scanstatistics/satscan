@@ -64,12 +64,20 @@ class CentroidNeighbors {
 
     tract_t             GetEllipseIndex() const {return gtEllipseOffset;}
     tract_t             GetCentroidIndex() const {return gtCentroid;}
-    inline tract_t      GetNeighborTractIndex(size_t tNeighborIndex) const {return (tract_t)(gpSortedNeighborsUnsignedShortType ? gpSortedNeighborsUnsignedShortType[tNeighborIndex] : gpSortedNeighborsIntegerType[tNeighborIndex]);}
+    inline tract_t      GetNeighborTractIndex(size_t tNeighborIndex) const;
     inline int          GetNumNeighbors() const {return giNeighbors;}
     CentroidNeighbors & Set(tract_t tEllipseOffset, tract_t tCentroid, const CSaTScanData& DataHub);
     void                SetMaximumClusterSize_RealData() {giNeighbors = giMaxReportedNeighbors;}
     void                SetMaximumClusterSize_SimulatedData() {giNeighbors = giMaxNeighbors;}
 };
+
+/** Returns zero based tNeighborIndex'th nearest neighbor's tract index.
+    Caller is responsible for ensuring that internal structures have been previously
+    set and 'tNeighborIndex' is within zero based range for defined neighbor information. */
+inline tract_t CentroidNeighbors::GetNeighborTractIndex(size_t tNeighborIndex) const {
+ //assert(tNeighborIndex + 1 <= (size_t)giNeighbors && (gpSortedNeighborsUnsignedShortType || gpSortedNeighborsIntegerType));
+ return (tract_t)(gpSortedNeighborsUnsignedShortType ? gpSortedNeighborsUnsignedShortType[tNeighborIndex] : gpSortedNeighborsIntegerType[tNeighborIndex]);
+}
 
 /** Calculates neighboring locations about centroids with versatility as to whether
     calculations are stored in stored array of CSaTScanData object or allocated to
