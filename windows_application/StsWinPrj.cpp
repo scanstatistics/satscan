@@ -122,8 +122,6 @@ USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\thread.cpp");
 USEUNIT("..\..\boost\release_1_29_0\libs\thread\src\condition.cpp");
 USEUNIT("..\calculation\utility\stsMonteCarloSimFunctor.cpp");
 USEUNIT("..\calculation\utility\contractor.cpp");
-USEUNIT("..\calculation\utility\stsMCSimContinuationPolicy.cpp");
-USEUNIT("..\calculation\utility\stsMCSimReporter.cpp");
 USEUNIT("..\calculation\utility\DateStringParser.cpp");
 USEUNIT("..\calculation\ParameterFileAccess.cpp");
 USEUNIT("..\calculation\ScanLineParameterFileAccess.cpp");
@@ -155,6 +153,7 @@ USEUNIT("..\calculation\analysis\SpaceTimeCentricAnalysis.cpp");
 USEUNIT("..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp");
 USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp");
 USEUNIT("..\calculation\analysis\AbstractAnalysis.cpp");
+USEUNIT("..\calculation\utility\stsMCSimJobSource.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

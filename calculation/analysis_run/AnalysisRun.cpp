@@ -21,8 +21,7 @@
 #include "SVTTAnalysis.h"
 #include "PrintQueue.h"
 #include "stsMonteCarloSimFunctor.h"
-#include "stsMCSimReporter.h"
-#include "stsMCSimContinuationPolicy.h"
+#include "stsMCSimJobSource.h"
 #include "contractor.h"
 #include "PurelySpatialCentricAnalysis.h"
 #include "SpaceTimeCentricAnalysis.h"
@@ -82,7 +81,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
   catch (ZdException &x) {
     delete pDataSetGateway;
     delete pAnalysis;
-    x.AddCallpath("CalculateMostLikelyClusters()","CAnalysis");
+    x.AddCallpath("CalculateMostLikelyClusters()","AnalysisRunner");
     throw;
   }
 }
@@ -509,65 +508,65 @@ void AnalysisRunner::ExecuteCentrically() {
          //report estimation of total execution time
          if (c==9)
            ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
-     }
-     //detect user cancellation
-     if (gPrintDirection.GetIsCanceled())
-       return;
-     if (gParameters.GetIncludePurelyTemporalClusters()) {
-       gPrintDirection.SatScanPrintf("Evaluating purely temporal clusters\n");
-       CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
-     }
+      }
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+      if (gParameters.GetIncludePurelyTemporalClusters()) {
+        gPrintDirection.SatScanPrintf("Evaluating purely temporal clusters\n");
+        CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
+      }
 
-     //retrieve top clusters and simulated loglikelihood ratios from analysis object  
-     CentricAnalysis->RetrieveClusters(gTopClustersContainer);
-     CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
-     giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
-     //free memory of objects that will no longer be used
-     // - we might need the memory for recalculating neighbors in geographical overlap code 
-     vRandomizedDataSets.clear();
-     CentricAnalysis.reset(0);
-     vSimDataGateways.DeleteAllElements();
-     //detect user cancellation
-     if (gPrintDirection.GetIsCanceled())
-       return;
-     //rank top clusters and apply criteria for reporting secondary clusters
-     gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
+      //retrieve top clusters and simulated loglikelihood ratios from analysis object
+      CentricAnalysis->RetrieveClusters(gTopClustersContainer);
+      CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
+      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
+      //free memory of objects that will no longer be used
+      // - we might need the memory for recalculating neighbors in geographical overlap code
+      vRandomizedDataSets.clear();
+      CentricAnalysis.reset(0);
+      vSimDataGateways.DeleteAllElements();
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+      //rank top clusters and apply criteria for reporting secondary clusters
+      gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
 
-     //report calculated simulation llr values
-     if (GetIsCalculatingSignificantRatios())
-       gpSignificantRatios->Initialize();
-     if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-       RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
-     std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
-     for (; itr != itr_end; ++itr) {
-       //update most likely clusters given latest simulated loglikelihood ratio
-       gTopClustersContainer.UpdateTopClustersRank(*itr);
-       //update significance indicator
-       UpdateSignificantRatiosList(*itr);
-       //update power calculations
-       UpdatePowerCounts(*itr);
-       //update simulated loglikelihood record buffer
-       if(RatioWriter.get()) RatioWriter->Write(*itr);
-     }
-     SimulationRatios.reset();
+      //report calculated simulation llr values
+      if (GetIsCalculatingSignificantRatios())
+        gpSignificantRatios->Initialize();
+      if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+      std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+      for (; itr != itr_end; ++itr) {
+        //update most likely clusters given latest simulated loglikelihood ratio
+        gTopClustersContainer.UpdateTopClustersRank(*itr);
+        //update significance indicator
+        UpdateSignificantRatiosList(*itr);
+        //update power calculations
+        UpdatePowerCounts(*itr);
+        //update simulated loglikelihood record buffer
+        if(RatioWriter.get()) RatioWriter->Write(*itr);
+      }
+      SimulationRatios.reset();
 
-     //report clusters
-     UpdateReport();
-     //log history for first analysis run
-     if (giAnalysisCount == 1) {
-       gPrintDirection.SatScanPrintf("Logging run history...\n");
-       stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
-     }
-     //report additional output file: 'relative risks for each location'
-     CreateRelativeRiskFile();
-     //repeat analysis - sequential scan
-     if ((bContinue = RepeatAnalysis()) == true) {
-       RemoveTopClusterData();
-       //detect user cancellation
-       if (gPrintDirection.GetIsCanceled()) return;
-     }
+      //report clusters
+      UpdateReport();
+      //log history for first analysis run
+      if (giAnalysisCount == 1) {
+        gPrintDirection.SatScanPrintf("Logging run history...\n");
+        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+      }
+      //report additional output file: 'relative risks for each location'
+      CreateRelativeRiskFile();
+      //repeat analysis - sequential scan
+      if ((bContinue = RepeatAnalysis()) == true) {
+        RemoveTopClusterData();
+        //detect user cancellation
+        if (gPrintDirection.GetIsCanceled()) return;
+      }
     } while (bContinue);
-    
+
     //finish report
     FinalizeReport();
   }
@@ -826,29 +825,25 @@ void AnalysisRunner::PerformParallelSimulations() {
     if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
     giNumSimsExecuted = 0;
 
-    std::deque< std::pair<unsigned int, double> > qParamsAndResults;
-    for (unsigned int ui = 0; ui < gParameters.GetNumReplicationsRequested(); ++ui)
-    {
-       qParamsAndResults.push_back(std::make_pair(ui + 1,0));
-    }
-    stsMCSimContinuationPolicy CtPlcy(gPrintDirection);
-    stsMCSimReporter Rptr(gParameters, CtPlcy, gTopClustersContainer, gPrintDirection, sReplicationFormatString, *this);
-    typedef contractor<unsigned int, double, stsMCSimReporter, stsMCSimContinuationPolicy> contractor_type;
-    contractor_type theContractor(qParamsAndResults, Rptr, CtPlcy);
+    stsMCSimJobSource jobSource(gParameters, gTopClustersContainer, gPrintDirection, sReplicationFormatString, *this);
+    typedef contractor<stsMCSimJobSource> contractor_type;
+    contractor_type theContractor(jobSource);
     //run threads:
     boost::thread_group tg;
     boost::mutex        thread_mutex;
-    for (int i = 0; i < iParallelProcessCount; ++i)
-    {
+    for (int i = 0; i < iParallelProcessCount; ++i) {
       stsMonteCarloSimFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
       tg.create_thread(subcontractor<contractor_type,stsMonteCarloSimFunctor>(theContractor,mcsf));
     }
     tg.join_all();
+    jobSource.Assert_NoExceptionsCaught();
+    if (jobSource.GetUnregisteredJobCount() > 0)
+      ZdException::Generate("Only %d of %d jobs were completed.", "AnalysisRunner",  gParameters.GetNumReplicationsRequested()-jobSource.GetUnregisteredJobCount(), gParameters.GetNumReplicationsRequested());
   }
   catch (ZdException &x) {
     delete pDataGateway;
     delete pAnalysis;
-    x.AddCallpath("PerformParallelSimulations()","CAnalysis");
+    x.AddCallpath("PerformParallelSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -938,7 +933,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
   catch (ZdException &x) {
     delete pDataGateway;
     delete pAnalysis;
-    x.AddCallpath("PerformSerializedSimulations()","CAnalysis");
+    x.AddCallpath("PerformSerializedSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -960,7 +955,7 @@ void AnalysisRunner::PerformSimulations() {
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("PerformSimulations()","CAnalysis");
+    x.AddCallpath("PerformSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -1131,5 +1126,125 @@ void AnalysisRunner::UpdateReport() {
 /** Updates list of significant ratio, if structure allocated. */
 void AnalysisRunner::UpdateSignificantRatiosList(double dRatio) {
   if (gpSignificantRatios) gpSignificantRatios->AddRatio(dRatio);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//class ExceptionInfo
+//a container for an exception thrown by a simultaneously-run job, held until
+//all other jobs have finished.
+////////////////////////////////////////////////////////////////////////////////
+
+//copy constructor
+ExceptionInfo::ExceptionInfo(ExceptionInfo const & to_be_copied)
+ : geType(to_be_copied.geType)
+ , gpException(0)
+{
+  switch (geType)
+  {
+    case etStd : gpException = new std::exception(to_be_copied.GetException<std::exception>()); break;
+    case etZd  : gpException = new ZdException(to_be_copied.GetException<ZdException>()); break;
+  }
+}
+
+template <>
+ExceptionInfo::ExceptionInfo(std::exception const & e)
+ : geType(etStd)
+ , gpException(new std::exception(e))
+{}
+template <>
+ExceptionInfo::ExceptionInfo(ZdException const & e)
+ : geType(etZd)
+ , gpException(new ZdException(e))
+{}
+
+ExceptionInfo::~ExceptionInfo()
+{
+  switch (geType)
+  {
+//    case etNone : break;
+//    case etUnknown : break;
+    case etStd : delete reinterpret_cast<std::exception*>(gpException); break;
+    case etZd  : delete reinterpret_cast<ZdException*>(gpException); break;
+  }
+}
+
+ExceptionInfo& ExceptionInfo::operator=(ExceptionInfo const & to_be_copied)
+{
+  void * pOldException = gpException;
+  switch (to_be_copied.geType)
+  {
+    case etUnknown : gpException = 0; break;
+    case etStd : gpException = new std::exception(to_be_copied.GetException<std::exception>()); break;
+    case etZd  : gpException = new ZdException(to_be_copied.GetException<ZdException>()); break;
+  }
+  switch (geType)
+  {
+//    case etUnknown : break;
+    case etStd : delete reinterpret_cast<std::exception*>(pOldException); break;
+    case etZd  : delete reinterpret_cast<ZdException*>(pOldException); break;
+  }
+  geType = to_be_copied.geType;
+  return *this;
+}
+
+void ExceptionInfo::swap(ExceptionInfo & other)
+{
+  std::swap(geType,other.geType);
+  std::swap(gpException,other.gpException);
+}
+
+template <>
+std::exception const & ExceptionInfo::GetException<std::exception>() const
+{
+  try { if (geType != etStd) ZdException::Generate("Type of contained exception is not \"std::exception\"", "ExceptionInfo"); }
+  catch (ZdException & e) { e.AddCallpath("GetException<std::exception>()", "ExceptionInfo"); throw; }
+  return *reinterpret_cast<std::exception const *>(gpException);
+}
+template <>
+ZdException const & ExceptionInfo::GetException<ZdException>() const
+{
+  try { if (geType != etZd) ZdException::Generate("Type of contained exception is not \"ZdException\"", "ExceptionInfo"); }
+  catch (ZdException & e) { e.AddCallpath("GetException<ZdException>()", "ExceptionInfo"); throw; }
+  return *reinterpret_cast<ZdException const *>(gpException);
+}
+
+template <>
+void ExceptionInfo::SetException(std::exception const & e)
+{
+  void * pOldException = gpException;
+  gpException = new std::exception(e);
+  switch (geType)
+  {
+//    case etUnknown : break;
+    case etStd : delete reinterpret_cast<std::exception*>(pOldException); break;
+    case etZd  : delete reinterpret_cast<ZdException*>(pOldException); break;
+  }
+  geType = etStd;
+}
+template <>
+void ExceptionInfo::SetException(ZdException const & e)
+{
+  void * pOldException = gpException;
+  gpException = new ZdException(e);
+  switch (geType)
+  {
+//    case etUnknown : break;
+    case etStd : delete reinterpret_cast<std::exception*>(pOldException); break;
+    case etZd  : delete reinterpret_cast<ZdException*>(pOldException); break;
+  }
+  geType = etZd;
+}
+
+void ExceptionInfo::SetUnknownException()
+{
+  switch (geType)
+  {
+//    case etNone : break;
+//    case etUnknown : break;
+    case etStd : delete reinterpret_cast<std::exception*>(gpException); gpException = 0; break;
+    case etZd  : delete reinterpret_cast<ZdException*>(gpException); gpException = 0; break;
+  }
+ geType = etUnknown;
 }
 

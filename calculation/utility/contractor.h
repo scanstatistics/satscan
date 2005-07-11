@@ -12,65 +12,37 @@
 #include "boost/dynamic_bitset.hpp"
 //---------------------------------------------------------------------------
 
-template <typename ParamsType, typename ResultsType, typename Reporter, typename ContinuationPolicy>
+template <typename JobSource>
 class contractor
 {
 public:
-  typedef ParamsType params_type;
-  typedef ResultsType results_type;
+  typedef typename JobSource::param_type job_param_type;
+  typedef typename JobSource::result_type job_result_type;
 
 private:
   typedef boost::recursive_mutex access_mutex_t;
-  typedef std::vector<std::pair<void const *, long> > current_subcontracts_type;
+  typedef std::pair<JobSource::job_id_type, JobSource::param_type> job_info_type;
+  typedef std::vector<std::pair<void const *, JobSource::job_id_type> > current_subcontracts_type;
 
-  std::deque<long> m_job_id_queue;//m_job_id_queue[i] is an index into m_jobs.
-  std::deque< std::pair<ParamsType, ResultsType> > & m_jobs;//each job's id is its index in this structure.
   current_subcontracts_type m_current_subcontracts;//first: subcontractors who have acquired a job and haven't yet registered results for it; second: job id
-  boost::dynamic_bitset<> m_result_registration_conditions;//at(i)==false, jobid i results have not been registered; true: results have been registered
-  Reporter & m_reporter;
-  ContinuationPolicy & m_continuation_policy;
+  JobSource & m_jobs;
   mutable access_mutex_t m_access_mutex;
-  unsigned int m_results_registered_count;
 
-  void setup()
-  { for (long l=0; (unsigned)l < m_jobs.size(); ++l)
-    { m_job_id_queue.push_back(l);
-      m_result_registration_conditions.push_back(false);
-    }
-  }
 
 public:
-  contractor(std::deque< std::pair<ParamsType, ResultsType> > & jobs, Reporter & reporter, ContinuationPolicy & continuation_policy)
+  contractor(JobSource & jobs)
    : m_jobs(jobs)
-   , m_results_registered_count(0)
-   , m_reporter(reporter)
-   , m_continuation_policy(continuation_policy)
-  { setup();
-  }
-  contractor(std::deque< std::pair<ParamsType, ResultsType> > & jobs, Reporter & reporter)
-   : m_jobs(jobs)
-   , m_results_registered_count(0)
-   , m_reporter(reporter)
-   , m_continuation_policy(ContinuationPolicy())
-  { setup();
-  }
-  contractor(std::deque< std::pair<ParamsType, ResultsType> > & jobs)
-   : m_jobs(jobs)
-   , m_results_registered_count(0)
-   , m_reporter(Reporter())
-   , m_continuation_policy(ContinuationPolicy())
-  { setup();
+  {// setup();
   }
 
   bool is_finished() const
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
-    return m_job_id_queue.empty() || !m_continuation_policy.ShouldContinue();
+    return m_jobs.is_exhausted();
   }
 
-  boost::dynamic_bitset<> result_registration_conditions() const { return m_result_registration_conditions; }
 
   template <typename SubcontractorType>
-  bool job_acquired(SubcontractorType const & subcontractor, ParamsType & job_params)
+  bool job_acquired(SubcontractorType const & subcontractor, job_param_type & job_param)
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
 
     {//check to make sure subcontractor doesn't have an uncompleted job:
@@ -83,16 +55,17 @@ public:
 
     if (is_finished())
       return false;
-    long id(m_job_id_queue.front());
-    m_current_subcontracts.push_back(std::make_pair(&subcontractor, id));
-    job_params = m_jobs[id].first;
-    m_reporter.Report_SubcontractLet(id, m_result_registration_conditions, m_jobs);
-    m_job_id_queue.pop_front();
+
+    JobSource::job_id_type new_job_id;
+    job_param_type new_job_param;
+    m_jobs.acquire(new_job_id, new_job_param);
+    m_current_subcontracts.push_back(std::make_pair(&subcontractor, new_job_id));
+    job_param = new_job_param;
     return true;
   }
 
   template <typename SubcontractorType>
-  void register_results(SubcontractorType const & subcontractor, ResultsType const & job_results)
+  void register_result(SubcontractorType const & subcontractor, job_param_type const & job_param, job_result_type const & job_result)
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
 
     current_subcontracts_type::iterator itr = m_current_subcontracts.begin();
@@ -103,17 +76,13 @@ public:
         throw std::runtime_error("Subcontractor has not acquired a job.");
     }
 
-    long id(itr->second);
-    std::pair<params_type, results_type> & job(m_jobs[id]);
-    job.second = job_results;
-    m_result_registration_conditions[id] = true;
-    ++m_results_registered_count;
+    JobSource::job_id_type const & job_id(itr->second);
+    m_jobs.register_result(job_id, job_param, job_result);
     m_current_subcontracts.erase(itr);
-
-    m_reporter.Report_ResultsRegistered(id, m_result_registration_conditions, m_jobs);
-    m_continuation_policy.Report_ResultsRegistered(id, m_result_registration_conditions, m_jobs);
   }
 };
+
+
 
 template <typename ContractorType, typename Function>
 class subcontractor
@@ -131,37 +100,27 @@ public:
   {
     while (!m_contractor.is_finished())
     {
-      typename ContractorType::params_type params;
-      if (m_contractor.job_acquired(*this, params))
+      typename ContractorType::job_param_type param;
+      if (m_contractor.job_acquired(*this, param))
       {
-        typename ContractorType::results_type results(m_function(params));
-        m_contractor.register_results(*this, results);
+        typename ContractorType::job_result_type result(m_function(param));
+        m_contractor.register_result(*this, param, result);
       }
     }
   }
 
 };
 
-template <typename ParamsType, typename ResultsType>
-class null_contractor_reporter
-{
-  typedef ParamsType params_type;
-  typedef ResultsType results_type;
 
-public:
-  void Report_SubcontractLet(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs) {}
-  void Report_ResultsRegistered(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs) {}
-};
-
-template <typename ParamsType, typename ResultsType>
-class null_contractor_continuation_policy
+template <typename ParamType, typename ResultType>
+class null_jobsource_continuation_policy
 {
-  typedef ParamsType params_type;
-  typedef ResultsType results_type;
+  typedef ParamType param_type;
+  typedef ResultType result_type;
 
 public:
   bool ShouldContinue() const { return true; }
-  void Report_ResultsRegistered(unsigned job_idx,boost::dynamic_bitset<> const & result_registration_conditions,std::deque< std::pair<params_type, results_type> > const & jobs) {}
+  void Report_ResultsRegistered(unsigned job_idx, param_type const & param, result_type const & result) {}
 };
 
 #endif

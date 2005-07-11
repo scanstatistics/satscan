@@ -9,16 +9,13 @@
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
 //---------------------------------------------------------------------------
-struct stsMonteCarloSimFunctorParams
-{
-  unsigned int giSimulationNumber;
-};
 
 class stsMonteCarloSimFunctor
 {
 public:
-  typedef unsigned int params_type;
-  typedef double result_type;
+  typedef unsigned int param_type;
+  typedef double successful_result_type;
+  typedef std::pair<ExceptionInfo, successful_result_type> result_type;
 
 private:
   boost::mutex                       & gMutex;
@@ -54,7 +51,7 @@ public:
 //  {
 //  }
 
-  result_type operator() (params_type const & params);
+  result_type operator() (param_type const & param);
 
 };
 

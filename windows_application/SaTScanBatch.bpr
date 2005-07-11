@@ -128,7 +128,8 @@
       ..\calculation\analysis\SpaceTimeCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.obj 
-      ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj"/>
+      ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj 
+      ..\calculation\utility\stsMCSimJobSource.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

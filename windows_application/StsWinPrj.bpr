@@ -107,8 +107,6 @@
       ..\..\boost\release_1_29_0\libs\thread\src\condition.obj 
       ..\calculation\utility\stsMonteCarloSimFunctor.obj 
       ..\calculation\utility\contractor.obj 
-      ..\calculation\utility\stsMCSimContinuationPolicy.obj 
-      ..\calculation\utility\stsMCSimReporter.obj 
       ..\calculation\utility\DateStringParser.obj 
       ..\calculation\ParameterFileAccess.obj 
       ..\calculation\ScanLineParameterFileAccess.obj 
@@ -137,7 +135,8 @@
       ..\calculation\analysis\SpaceTimeCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.obj 
-      ..\calculation\analysis\AbstractAnalysis.obj"/>
+      ..\calculation\analysis\AbstractAnalysis.obj 
+      ..\calculation\utility\stsMCSimJobSource.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

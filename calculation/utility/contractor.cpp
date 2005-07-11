@@ -91,15 +91,35 @@
 
 #pragma package(smart_init)
 
+class test_job_source
+{
+  short gw;
+public:
+  typedef short param_type;
+  typedef float result_type;
+  typedef unsigned long job_id_type;
+  typedef std::pair<job_id_type, param_type> job_info_type;
+
+public:
+  test_job_source() : gw(0) {}
+  bool is_exhausted() const { return gw >= 10; }
+  void acquire(job_id_type & dst_job_id, param_type & dst_param) { if (is_exhausted()) throw std::runtime_error("can't acquire a job from an exhausted source."); ++gw; dst_job_id = gw; }
+//  void unacquire(job_id_type const & job_id) {}
+  void register_result(job_id_type const & job_id, param_type const & param, result_type const & result) { }
+//  void register_failure(job_id_type job_id) {}
+};
+
 void test_fn()
 {
-  std::deque<std::pair<long, long> > jobs;
-  jobs.push_back(std::make_pair(7, 0));
-//  contractor<long, long> cntor(jobs);
+  test_job_source jobs;
+  contractor<test_job_source> cntor(jobs);
   bool b;
+  short w;
   int i;
   long l;
 
-//  b = cntor.job_acquired(i, l);
-//  cntor.register_results(i, l);
+  b = cntor.job_acquired(i, w);
+  cntor.register_result(i, w, l);
 }
+
+
