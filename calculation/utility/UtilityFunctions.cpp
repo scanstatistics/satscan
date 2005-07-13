@@ -83,6 +83,22 @@ const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString
   return sString.GetCString();
 }
 
+/** Returns number of processors in the system. */
+unsigned int GetNumSystemProcessors() {
+  unsigned int iNumProcessors;
+
+#ifdef INTEL_BASED
+   SYSTEM_INFO siSysInfo;
+   GetSystemInfo(&siSysInfo);
+   iNumProcessors = siSysInfo.dwNumberOfProcessors;
+#else
+  iNumProcessors = sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+
+  //return at least one, system calls might have failed
+  return (iNumProcessors > 0 ? iNumProcessors : 1);
+}
+
 /** constructor */
 StringParser::StringParser(BasePrint& Print) : gPrint(Print) {
   gwCurrentWordIndex = -1;
