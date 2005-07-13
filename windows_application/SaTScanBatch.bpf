@@ -133,6 +133,7 @@ USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cp
 USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp");
 USEUNIT("..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp");
 USEUNIT("..\calculation\utility\stsMCSimJobSource.cpp");
+USEUNIT("..\calculation\RunTimeComponents.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

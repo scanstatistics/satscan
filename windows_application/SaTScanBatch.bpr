@@ -94,8 +94,6 @@
       ..\..\boost\release_1_29_0\libs\thread\src\condition.obj 
       ..\calculation\utility\stsMonteCarloSimFunctor.obj 
       ..\calculation\utility\contractor.obj 
-      ..\calculation\utility\stsMCSimContinuationPolicy.obj 
-      ..\calculation\utility\stsMCSimReporter.obj 
       ..\calculation\utility\DateStringParser.obj 
       ..\calculation\ScanLineParameterFileAccess.obj 
       ..\calculation\IniParameterSpecification.obj 
@@ -129,7 +127,8 @@
       ..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj 
-      ..\calculation\utility\stsMCSimJobSource.obj"/>
+      ..\calculation\utility\stsMCSimJobSource.obj 
+      ..\calculation\RunTimeComponents.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
