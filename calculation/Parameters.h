@@ -32,7 +32,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
-                                    EXECUTION_TYPE};
+                                    EXECUTION_TYPE, NUM_PROCESSES};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -72,7 +72,8 @@ class CParameters {
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
 
   private:
-    ExecutionType                       geExecutionType;                        /** */
+    unsigned int                        giNumRequestedParallelProcesses;        /** number of parallel processes to run */
+    ExecutionType                       geExecutionType;                        /** execution process type */
     MultipleDataSetPurposeType          geMultipleSetPurposeType;               /** purpose for multiple data sets */
     AnalysisType                        geAnalysisType;                         /** analysis type */
     ProbabilityModelType                geProbabilityModelType;                  /** probability model type */
@@ -241,6 +242,8 @@ class CParameters {
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
     bool                                GetNonCompactnessPenalty() const {return gbNonCompactnessPenalty;}
     unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
+    unsigned int                        GetNumRequestedParallelProcesses() const {return giNumRequestedParallelProcesses;}
+    unsigned int                        GetNumParallelProcessesToExecute() const;
     int                                 GetNumReadParameters() const {return giNumParameters;}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
@@ -322,6 +325,7 @@ class CParameters {
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
     void                                SetNonCompactnessPenalty(bool b) {gbNonCompactnessPenalty = b;}
     void                                SetNumDataSets(size_t iNumDataSets);
+    void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberEllipses(int iNumEllipses);
     void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);
     void                                SetNumberMonteCarloReplications(int iReplications);

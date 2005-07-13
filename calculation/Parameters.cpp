@@ -9,11 +9,11 @@
 
 #define INCLUDE_RUN_HISTORY
 
-const char*      YES                            	= "y";
-const char*      NO                             	= "n";
-const int        MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
-const int        MAXIMUM_ELLIPSOIDS             	= 10;
-int CParameters::giNumParameters 			= 71;
+const char*     YES                            	= "y";
+const char*     NO                             	= "n";
+const int       MAXIMUM_SEQUENTIAL_ANALYSES    	= 32000;
+const int       MAXIMUM_ELLIPSOIDS             	= 10;
+int             CParameters::giNumParameters 	= 72;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -42,8 +42,6 @@ CParameters &CParameters::operator=(const CParameters &rhs) {
 }
 
 bool  CParameters::operator==(const CParameters& rhs) const {
-  bool bEqual;
-
   if (giNumberEllipses                    != rhs.giNumberEllipses) return false;
   if (gvEllipseShapes                     != rhs.gvEllipseShapes) return false;
   if (gvEllipseRotations                  != rhs.gvEllipseRotations) return false;
@@ -120,13 +118,13 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   //if (glRandomizationSeed                 != rhs.glRandomizationSeed) return false;
   if (gbReportCriticalValues              != rhs.gbReportCriticalValues) return false;
   //if (geExecutionType                     != rhs.geExecutionType) return false;
+  if (giNumRequestedParallelProcesses     != rhs.giNumRequestedParallelProcesses) return false;      
   return true;
 }
 
 bool  CParameters::operator!=(const CParameters& rhs) const{
    return !(*this == rhs);
 }
-
 
 /** If passed filename contains a slash, then assumes that path is complete and
     sInputFilename is not modified. If filename does not contain a slash, it is
@@ -238,6 +236,7 @@ void CParameters::Copy(const CParameters &rhs) {
     glRandomizationSeed                 = rhs.glRandomizationSeed;
     gbReportCriticalValues              = rhs.gbReportCriticalValues;
     geExecutionType                     = rhs.geExecutionType;
+    giNumRequestedParallelProcesses     = rhs.giNumRequestedParallelProcesses;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -479,7 +478,7 @@ void CParameters::DisplayParameters(FILE* fp, unsigned int iNumSimulationsComple
       fprintf(fp, "\n  Number of Angles for Each Ellipse Shape  : ");
       for (i=0; i < giNumberEllipses; ++i)
          fprintf(fp, "%i ", gvEllipseRotations[i]);
-      fprintf(fp, "\n  Non-Compactness Penalty           : ");
+      fprintf(fp, "\n  Non-Compactness Penalty                  : ");
       fprintf(fp, (gbNonCompactnessPenalty ? "Yes" : "No"));
     }
     fprintf(fp, "\n\nScanning Window\n");
@@ -797,6 +796,21 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
   return (geProbabilityModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbNonCompactnessPenalty));
+}
+
+/** Returns number of parallel processes to run. */
+unsigned int CParameters::GetNumParallelProcessesToExecute() const {
+  unsigned int  iNumProcessors;
+
+  if (giNumRequestedParallelProcesses <= 0)
+    //parameter of zero or less indicates that we want all available processors
+    iNumProcessors = GetNumSystemProcessors();
+  else
+    //else parameter indicates the maximum number of processors to use
+    iNumProcessors = std::min(giNumRequestedParallelProcesses, GetNumSystemProcessors());
+    //iNumProcessors = giNumRequestedParallelProcesses;
+
+  return iNumProcessors;
 }
 
 /** Returns whether any area specific files are outputed. */
@@ -1129,6 +1143,7 @@ void CParameters::SetAsDefaulted() {
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
   gbReportCriticalValues                = false;
   geExecutionType                       = AUTOMATIC;
+  giNumRequestedParallelProcesses       = 1;
 }
 
 /** Sets dimensions of input data. */
@@ -1889,6 +1904,11 @@ bool CParameters::ValidateEllipseParameters(BasePrint & PrintDirection) {
            PrintDirection.SatScanPrintWarning("Error: Invalid parameter setting. The number of ellipse angles '%d' that were requested is invalid.\n", gvEllipseRotations[t]);
            PrintDirection.SatScanPrintWarning("       The number of angles can not be less than one.\n");
          }
+      if (geExecutionType == CENTRICALLY && gbNonCompactnessPenalty) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The non-compactness penalty for elliptic scans can not be applied\n"
+                                           "       with the centric analysis execution.\n");
+      }
     }
     else {
       //If there are no ellipses, then these variables must be reset to ensure that no code that
@@ -2171,6 +2191,11 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: Adjustment purpose for multiple data sets is not permitted\n"
                                            "       with ordinal probability model in this version of SaTScan.\n");
+      }
+      if (geExecutionType == CENTRICALLY && gbEarlyTerminationSimulations) {
+        bValid = false;
+        PrintDirection.SatScanPrintWarning("Error: The early termination of simulations option can not be applied\n"
+                                           "       with the centric analysis execution.\n");
       }
       if (geExecutionType == CENTRICALLY &&
           (GetIsPurelyTemporalAnalysis() || geAnalysisType == SPATIALVARTEMPTREND || (geAnalysisType == PURELYSPATIAL && geRiskFunctionType == MONOTONERISK))) {
