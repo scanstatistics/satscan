@@ -132,6 +132,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case RANDOMIZATION_SEED       : break; //this parameter is not advertised                                                     
       case REPORT_CRITICAL_VALUES   : sDefaultValue = (gParameters.GetReportCriticalValues() ? YES : NO); break;
       case EXECUTION_TYPE           : sDefaultValue = gParameters.GetExecutionType(); break;
+      case NUM_PROCESSES            : sDefaultValue << gParameters.GetNumRequestedParallelProcesses(); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -484,6 +485,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case REPORT_CRITICAL_VALUES    : gParameters.SetReportCriticalValues(ReadBoolean(sParameter, eParameterType)); break;
       case EXECUTION_TYPE            : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, AUTOMATIC, CENTRICALLY);
                                        gParameters.SetExecutionType((ExecutionType)iValue); break;
+      case NUM_PROCESSES             : gParameters.SetNumParallelProcessesToExecute(ReadUnsignedInt(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }
