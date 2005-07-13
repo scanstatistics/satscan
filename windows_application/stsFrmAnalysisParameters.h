@@ -23,6 +23,7 @@ class TfrmAdvancedParameters;
 
 class TfrmAnalysis : public stsBaseAnalysisChildForm  {
   friend class TfrmAdvancedParameters;
+  friend class TdlgExecutionOptions;
 
   __published:  // IDE-managed Components
    TButton *btnCoordBrowse;
