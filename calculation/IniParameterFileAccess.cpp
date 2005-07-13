@@ -69,6 +69,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     ReadIsotonicScanSettings(SourceFile);
     ReadSequentialScanSettings(SourceFile);
     ReadPowerSimulationsSettings(SourceFile);
+    ReadRunOptionSettings(SourceFile);
     ReadBatchModeFeaturesSettings(SourceFile);
   }
   catch (ZdException &x) {
@@ -294,6 +295,17 @@ void IniParameterFileAccess::ReadPowerSimulationsSettings(const ZdIniFile& Sourc
   }
 }
 
+/** Reads parameter settings grouped under '[Run Options]'. */
+void IniParameterFileAccess::ReadRunOptionSettings(const ZdIniFile& SourceFile) {
+  try {
+    ReadIniParameter(SourceFile, NUM_PROCESSES);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadRunOptionSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
 /** Reads parameter settings grouped under '[Sequential Scan]. */
 void IniParameterFileAccess::ReadSequentialScanSettings(const ZdIniFile& SourceFile) {
   try {
@@ -389,6 +401,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteIsotonicScanSettings(WriteFile);
     WriteSequentialScanSettings(WriteFile);
     WritePowerSimulationsSettings(WriteFile);
+    WriteRunOptionSettings(WriteFile);
     WriteBatchModeFeaturesSettings(WriteFile);
     WriteSystemSettings(WriteFile);
 
@@ -409,7 +422,7 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
                       " analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective"
                       " Space-Time, 4=Prospective Space-Time, 5=N/A, 6=Prospective Purely Temporal)");
     WriteIniParameter(WriteFile, MODEL, AsString(s, gParameters.GetProbabilityModelType()),
-                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal)");
+                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential)");
     WriteIniParameter(WriteFile, SCANAREAS, AsString(s, gParameters.GetAreaScanRateType()),
                       " scan areas (1=High, 2=Low, 3=High or Low)");
     WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, AsString(s, gParameters.GetTimeAggregationUnitsType()),
@@ -440,7 +453,7 @@ void IniParameterFileAccess::WriteBatchModeFeaturesSettings(ZdIniFile& WriteFile
     //WriteIniParameter(WriteFile, TIMETRENDCONVRG, AsString(s, gParameters.GetTimeTrendConvergence()),
     //                  " time trend convergence for SVTT analysis (> 0)");  //---  until SVTT is available, don't write
     WriteIniParameter(WriteFile, EXECUTION_TYPE, AsString(s, gParameters.GetExecutionType()),
-                      " analysis execution method  (AUTOMATIC=0, SUCCESSIVELY=1, CENTRICALLY=2)");
+                      " analysis execution method  (Automatic=0, Successively=1, Centrically=2)");
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteBatchModeFeaturesSettings()","IniParameterFileAccess");
@@ -672,6 +685,20 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
+/** Reads parameter settings grouped under '[Run Options]'. */
+void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
+  ZdString      s;
+
+  try {
+    WriteIniParameter(WriteFile, NUM_PROCESSES, AsString(s, gParameters.GetNumRequestedParallelProcesses()),
+                      " number of parallel processes to execute (All Processors=0, At Most X Processors=x)");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
     throw;
   }
 }

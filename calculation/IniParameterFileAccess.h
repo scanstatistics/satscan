@@ -25,6 +25,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile);
     void                                ReadOutputSettings(const ZdIniFile& SourceFile);
     void                                ReadPowerSimulationsSettings(const ZdIniFile& SourceFile);
+    void                                ReadRunOptionSettings(const ZdIniFile& SourceFile);
     void                                ReadSequentialScanSettings(const ZdIniFile& SourceFile);
     void                                ReadSpaceAndTimeAdjustmentSettings(const ZdIniFile& SourceFile);
     void                                ReadSpatialWindowSettings(const ZdIniFile& SourceFile);
@@ -43,6 +44,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteMultipleDataSetsSettings(ZdIniFile& WriteFile);
     void                                WriteOutputSettings(ZdIniFile& WriteFile);
     void                                WritePowerSimulationsSettings(ZdIniFile& WriteFile);
+    void                                WriteRunOptionSettings(ZdIniFile& WriteFile);
     void                                WriteSequentialScanSettings(ZdIniFile& WriteFile);
     void                                WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& WriteFile);
     void                                WriteSpatialWindowSettings(ZdIniFile& WriteFile);
