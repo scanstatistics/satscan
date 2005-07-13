@@ -299,14 +299,10 @@ object frmMainForm: TfrmMainForm
         Action = ExecuteAction
         Caption = '&Execute'
       end
-      object N5: TMenuItem
-        Caption = '-'
-      end
-      object ImportInputFile1: TMenuItem
-        Caption = '&Import Files'
-        Hint = 'Import Files'
-        ShortCut = 16457
-        Visible = False
+      object mitExecuteOptions: TMenuItem
+        Action = ActionExecuteOptions
+        Caption = 'Execute &Options'
+        Hint = 'Execute Options'
       end
     end
     object Help1: TMenuItem
@@ -436,6 +432,10 @@ object frmMainForm: TfrmMainForm
       Category = 'All'
       Caption = '&SaTScan User Guide'
       OnExecute = AdobeUserGuideActionExecute
+    end
+    object ActionExecuteOptions: TAction
+      Category = 'Analysis'
+      OnExecute = ExecuteOptionsActionExecute
     end
   end
   object ImageList: TImageList

@@ -4,11 +4,13 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
 #include "stsOutputFileRegistry.h"
 #include "stsFrmStartWindow.h"
 #include "stsFrmUpdateCheck.h"
 #include "stsFrmDownloadProgress.h"
 #include "stsBaseAnalysisChildForm.h"
+#include "stsDlgExecuteOptions.h"
 TfrmMainForm *frmMainForm;
 
 /** contructor */
@@ -154,6 +156,12 @@ void __fastcall TfrmMainForm::ExecuteActionExecute(TObject *Sender) {
     x.AddCallpath("ExecuteActionExecute()","TfrmMainForm");
     DisplayBasisException(this, x);
   }
+}
+
+/** execution options action event --  shows execution options dialog */
+void __fastcall TfrmMainForm::ExecuteOptionsActionExecute(TObject *Sender) {
+  TfrmAnalysis * frmAnalysis = dynamic_cast<TfrmAnalysis *>(frmMainForm->ActiveMDIChild);
+  if (frmAnalysis) TdlgExecutionOptions(this, *frmAnalysis).ShowModal();
 }
 
 /** close form action event -- triggers main form close event */
