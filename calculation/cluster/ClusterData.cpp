@@ -287,10 +287,12 @@ void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef
        gpCases[j] += ppCases[i][tNeighborIndex];
        gpMeasure[j] += ppMeasure[i][tNeighborIndex];
     }
+    macroRunTimeStartFocused(FocusRunTimeComponent::AddingMeasureList);
     //update measure list
     for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd)
        pMeasureList->AddMeasure(gpCases[0] - gpCases[iWindowEnd], gpMeasure[0] - gpMeasure[iWindowEnd]);
     pMeasureList->AddMeasure(gpCases[0], gpMeasure[0]);
+    macroRunTimeStopFocused(FocusRunTimeComponent::AddingMeasureList);
   }
 }
 

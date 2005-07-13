@@ -32,6 +32,8 @@ class SpatialData : public AbstractSpatialClusterData {
 
 /** adds neighbor data to accumulation and updates measure list */
 inline void SpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList) {
+  macroRunTimeStartFocused(FocusRunTimeComponent::AddingMeasureList);
+
   tract_t       t, tNeighborIndex;
 
   gtCases=0;gtMeasure=0; //initialize data
@@ -41,6 +43,8 @@ inline void SpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, co
     gtMeasure += Interface.gpPSMeasureArray[tNeighborIndex];
     pMeasureList->AddMeasure(gtCases, gtMeasure);
   }
+
+  macroRunTimeStopFocused(FocusRunTimeComponent::AddingMeasureList);  
 }
 
 /** initializes accumulated data to zero */
