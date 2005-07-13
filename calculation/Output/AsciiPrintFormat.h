@@ -19,6 +19,7 @@ class AsciiPrintFormat {
      static const unsigned int  giOneDataSetSummuaryLabelWidth;
      static const unsigned int  giMultiDataSetClusterLabelWidth;
      static const unsigned int  giMultiDataSetSummaryLabelWidth;
+     static const unsigned int  giRunTimeComponentsLabelWidth;
      static const unsigned int  giRightMargin;
      static const unsigned int  giVersionHeaderWidth;
 
@@ -33,6 +34,7 @@ class AsciiPrintFormat {
      static void                PrintVersionHeader(FILE* fp);
      void                       SetMarginsAsClusterSection(unsigned int iNumber);
      void                       SetMarginsAsOverviewSection();
+     void                       SetMarginsAsRunTimeReportSection();
      void                       SetMarginsAsSummarySection();
 };
 //***************************************************************************

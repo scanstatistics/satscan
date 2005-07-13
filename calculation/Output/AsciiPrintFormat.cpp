@@ -12,6 +12,8 @@ const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 25;
 const unsigned int AsciiPrintFormat::giMultiDataSetClusterLabelWidth = 32;
 /** width of label for summary section with multiple datasets */
 const unsigned int AsciiPrintFormat::giMultiDataSetSummaryLabelWidth = 38;
+/** width of label for run-time components section */
+const unsigned int  giRunTimeComponentsLabelWidth                    = 35;
 /** width of output area - this value is untested below 64 */
 const unsigned int AsciiPrintFormat::giRightMargin                   = 64;
 /** width of version header section */
@@ -193,6 +195,13 @@ void AsciiPrintFormat::SetMarginsAsClusterSection(unsigned int iNumber) {
 void AsciiPrintFormat::SetMarginsAsOverviewSection() {
   //no labels in overview section - purely wrapping text
   giLeftMargin = giDataLeftMargin = giLabelWidth = 0;
+}
+
+/** Adjusts margins for run-time components section. */
+void AsciiPrintFormat::SetMarginsAsRunTimeReportSection() {
+  giLeftMargin = 0;
+  giLabelWidth = giRunTimeComponentsLabelWidth;
+  giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
 }
 
 /** Adjusts margins for summary of data section. The left margin is zero and the
