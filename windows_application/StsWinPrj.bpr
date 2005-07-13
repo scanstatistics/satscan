@@ -136,13 +136,14 @@
       ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.obj 
       ..\calculation\analysis\AbstractAnalysis.obj 
-      ..\calculation\utility\stsMCSimJobSource.obj"/>
+      ..\calculation\utility\stsMCSimJobSource.obj 
+      ..\calculation\RunTimeComponents.obj stsDlgExecuteOptions.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
       stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm 
       stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm 
-      stsFrmAdvancedParameters.dfm"/>
+      stsFrmAdvancedParameters.dfm stsDlgExecuteOptions.dfm"/>
     <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib ..\..\zero.dimension\zd543.lib 
       ..\..\zero.dimension\zdannex543.lib"/>
     <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 

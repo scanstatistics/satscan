@@ -154,6 +154,8 @@ USEUNIT("..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp");
 USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp");
 USEUNIT("..\calculation\analysis\AbstractAnalysis.cpp");
 USEUNIT("..\calculation\utility\stsMCSimJobSource.cpp");
+USEUNIT("..\calculation\RunTimeComponents.cpp");
+USEFORM("stsDlgExecuteOptions.cpp", dlgExecutionOptions);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
