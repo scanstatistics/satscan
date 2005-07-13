@@ -20,6 +20,7 @@ const char * IniParameterSpecification::EllipticScan            = "[Elliptic Sca
 const char * IniParameterSpecification::SequentialScan          = "[Sequential Scan]";
 const char * IniParameterSpecification::IsotonicScan            = "[Isotonic Scan]";
 const char * IniParameterSpecification::PowerSimulations        = "[Power Simulations]";
+const char * IniParameterSpecification::RunOptions              = "[Run Options]";
 const char * IniParameterSpecification::BatchModeFeatures       = "[BatchMode Features]";
 const char * IniParameterSpecification::System                  = "[System]";
 
@@ -238,6 +239,7 @@ void IniParameterSpecification::Build_6_0_x_ParameterList() {
   Build_5_1_x_ParameterList();
 
   gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"ExecutionType"));
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"NumberParallelProcesses"));
 }
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */

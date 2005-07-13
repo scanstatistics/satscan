@@ -26,6 +26,7 @@ class IniParameterSpecification {
     static const char         * SequentialScan;
     static const char         * IsotonicScan;
     static const char         * PowerSimulations;
+    static const char         * RunOptions;
     static const char         * BatchModeFeatures;
     static const char         * System;
 
