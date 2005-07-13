@@ -37,6 +37,22 @@
 
 #include "Toolkit.h"
 
+#ifdef RPRTCMPT_RUNTIMES
+  #define macroRunTimeManagerInit()     GetToolkit().GetRunTimeComponentManager().Initialize()
+  #define macroRunTimeManagerPrint(p)   GetToolkit().GetRunTimeComponentManager().Print(p)
+  #define macroRunTimeStartSerial(p)    GetToolkit().GetRunTimeComponentManager().StartSerialComponent(p)
+  #define macroRunTimeStopSerial()      GetToolkit().GetRunTimeComponentManager().StopSerialComponent()
+  #define macroRunTimeStartFocused(p)   GetToolkit().GetRunTimeComponentManager().StartFocused(p)
+  #define macroRunTimeStopFocused(p)    GetToolkit().GetRunTimeComponentManager().StopFocused(p)
+#else
+  #define macroRunTimeManagerInit()     ((void)0)
+  #define macroRunTimeManagerPrint()    ((void)0)
+  #define macroRunTimeStartSerial(p)    ((void)0)
+  #define macroRunTimeStopSerial(p)     ((void)0)
+  #define macroRunTimeStartFocused(p)   ((void)0)
+  #define macroRunTimeStopFocused(p)    ((void)0)
+#endif
+
 /**********************************************************************
  file: SaTScan.h
  This file contains header information for all SaTScan program files
