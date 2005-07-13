@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "DBFFile.h"
 #include <list>
+#include "RunTimeComponents.h"
 
 class SaTScanToolkit : public BToolkit {
   public:
@@ -29,6 +30,7 @@ class SaTScanToolkit : public BToolkit {
     bool                        gbRunUpdateOnTerminate;
     ZdString                    gsUpdateArchiveFilename;
     ZdString                    gsVersion;
+    RunTimeComponentManager     gRunTimeComponentManager;
 
     bool                        InsureLastDirectoryPath();
     bool                        InsureRunHistoryFileName();
@@ -50,6 +52,7 @@ class SaTScanToolkit : public BToolkit {
    bool                         GetLogRunHistory() const;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
+   RunTimeComponentManager    & GetRunTimeComponentManager() { return gRunTimeComponentManager;}
    bool                         GetRunUpdateOnTerminate() const {return gbRunUpdateOnTerminate;}
    const char                 * GetSubstantiveSupportEmail() const;
    const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}
