@@ -238,7 +238,10 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
 void IniParameterSpecification::Build_6_0_x_ParameterList() {
   Build_5_1_x_ParameterList();
 
-  gvParameterInfo.push_back(std::make_pair(BatchModeFeatures, (const char*)"ExecutionType"));
+  //VALIDATE and RANDOMIZATION_SEED parameters moved from 'BatchModeFeatures' to 'RunOptions'
+  gvParameterInfo[VALIDATE - 1] = std::make_pair(RunOptions, (const char*)"ValidateParameters");
+  gvParameterInfo[RANDOMIZATION_SEED - 1] = std::make_pair(RunOptions, (const char*)"RandomSeed");
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"ExecutionType"));
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"NumberParallelProcesses"));
 }
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
