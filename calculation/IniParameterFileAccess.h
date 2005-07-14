@@ -14,7 +14,6 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     virtual const char                * GetParameterLabel(ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
     void                                ReadAnalysisSettings(const ZdIniFile& SourceFile);
-    void                                ReadBatchModeFeaturesSettings(const ZdIniFile& SourceFile);
     void                                ReadClustersReportedSettings(const ZdIniFile& SourceFile);
     void                                ReadEllipticScanSettings(const ZdIniFile& SourceFile);
     void                                ReadInferenceSettings(const ZdIniFile& SourceFile);
@@ -33,7 +32,6 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                ReadTemporalWindowSettings(const ZdIniFile& SourceFile);
 
     void                                WriteAnalysisSettings(ZdIniFile& WriteFile);
-    void                                WriteBatchModeFeaturesSettings(ZdIniFile& WriteFile);
     void                                WriteClustersReportedSettings(ZdIniFile& WriteFile);
     void                                WriteEllipticScanSettings(ZdIniFile& WriteFile);
     void                                WriteInferenceSettings(ZdIniFile& WriteFile);

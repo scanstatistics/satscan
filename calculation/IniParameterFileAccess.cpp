@@ -70,7 +70,6 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     ReadSequentialScanSettings(SourceFile);
     ReadPowerSimulationsSettings(SourceFile);
     ReadRunOptionSettings(SourceFile);
-    ReadBatchModeFeaturesSettings(SourceFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("Read()","IniParameterFileAccess");
@@ -91,20 +90,6 @@ void IniParameterFileAccess::ReadAnalysisSettings(const ZdIniFile& SourceFile) {
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadAnalysisSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[BatchMode Features]'. */
-void IniParameterFileAccess::ReadBatchModeFeaturesSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, VALIDATE);
-    ReadIniParameter(SourceFile, RANDOMIZATION_SEED);
-    //ReadIniParameter(SourceFile, TIMETRENDCONVRG); //--- until SVTT is available, don't write
-    ReadIniParameter(SourceFile, EXECUTION_TYPE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadBatchModeFeaturesSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -298,6 +283,10 @@ void IniParameterFileAccess::ReadPowerSimulationsSettings(const ZdIniFile& Sourc
 /** Reads parameter settings grouped under '[Run Options]'. */
 void IniParameterFileAccess::ReadRunOptionSettings(const ZdIniFile& SourceFile) {
   try {
+    ReadIniParameter(SourceFile, VALIDATE);
+    ReadIniParameter(SourceFile, RANDOMIZATION_SEED);
+    //ReadIniParameter(SourceFile, TIMETRENDCONVRG); //--- until SVTT is available, don't write
+    ReadIniParameter(SourceFile, EXECUTION_TYPE);
     ReadIniParameter(SourceFile, NUM_PROCESSES);
   }
   catch (ZdException &x) {
@@ -402,7 +391,6 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteSequentialScanSettings(WriteFile);
     WritePowerSimulationsSettings(WriteFile);
     WriteRunOptionSettings(WriteFile);
-    WriteBatchModeFeaturesSettings(WriteFile);
     WriteSystemSettings(WriteFile);
 
     WriteFile.Write();
@@ -434,29 +422,6 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteAnalysisSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[BatchMode Features]'. */
-void IniParameterFileAccess::WriteBatchModeFeaturesSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
-
-  try {
-    WriteIniParameter(WriteFile, VALIDATE, AsString(s, gParameters.GetValidatingParameters()),
-                      " validate parameters prior to analysis execution? (y/n)");
-    // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
-    // which we'll determine by whether it is different than default seed
-    if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)                  
-      WriteIniParameter(WriteFile, RANDOMIZATION_SEED, AsString(s, (int)gParameters.GetRandomizationSeed()),
-                        " randomization seed (0 < Seed < 2147483647)");
-    //WriteIniParameter(WriteFile, TIMETRENDCONVRG, AsString(s, gParameters.GetTimeTrendConvergence()),
-    //                  " time trend convergence for SVTT analysis (> 0)");  //---  until SVTT is available, don't write
-    WriteIniParameter(WriteFile, EXECUTION_TYPE, AsString(s, gParameters.GetExecutionType()),
-                      " analysis execution method  (Automatic=0, Successively=1, Centrically=2)");
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteBatchModeFeaturesSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -694,6 +659,17 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
+    WriteIniParameter(WriteFile, VALIDATE, AsString(s, gParameters.GetValidatingParameters()),
+                      " validate parameters prior to analysis execution? (y/n)");
+    // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
+    // which we'll determine by whether it is different than default seed
+    if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)                  
+      WriteIniParameter(WriteFile, RANDOMIZATION_SEED, AsString(s, (int)gParameters.GetRandomizationSeed()),
+                        " randomization seed (0 < Seed < 2147483647)");
+    //WriteIniParameter(WriteFile, TIMETRENDCONVRG, AsString(s, gParameters.GetTimeTrendConvergence()),
+    //                  " time trend convergence for SVTT analysis (> 0)");  //---  until SVTT is available, don't write
+    WriteIniParameter(WriteFile, EXECUTION_TYPE, AsString(s, gParameters.GetExecutionType()),
+                      " analysis execution method  (Automatic=0, Successively=1, Centrically=2)");
     WriteIniParameter(WriteFile, NUM_PROCESSES, AsString(s, gParameters.GetNumRequestedParallelProcesses()),
                       " number of parallel processes to execute (All Processors=0, At Most X Processors=x)");
   }
