@@ -7,7 +7,7 @@
 /** constructor */
 CSignificantRatios05::CSignificantRatios05(unsigned int iNumReplications) {
   try {
-    gvRatiosList.resize(static_cast<int>(ceil((iNumReplications+1)*0.05)), 0);
+    gvRatiosList.resize(static_cast<unsigned int>(ceil((iNumReplications+1)*0.05)), 0);
   }
   catch (ZdException &x) {
     x.AddCallpath("constructor()","CSignificantRatios05");
