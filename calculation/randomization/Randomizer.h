@@ -9,7 +9,6 @@
 /** abstract randomizer class to randomize data for replications */
 class AbstractRandomizer {
   protected:
-    static const long            glDataSetSeedOffSet;
     RandomNumberGenerator        gRandomNumberGenerator;  /** generates random numbers */
 
     void                         SetSeed(unsigned int iSimulationIndex, unsigned int iDataSetIndex);
@@ -18,6 +17,8 @@ class AbstractRandomizer {
     AbstractRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractRandomizer();
 
+    static const long            glDataSetSeedOffSet;
+    
     virtual AbstractRandomizer * Clone() const = 0;
 
     virtual void	         RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) = 0;
