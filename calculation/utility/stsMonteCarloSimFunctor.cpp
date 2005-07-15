@@ -4,10 +4,11 @@
 #pragma hdrstop
 
 #include "stsMonteCarloSimFunctor.h"
+
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 
-stsMonteCarloSimFunctor::result_type stsMonteCarloSimFunctor::operator() (stsMonteCarloSimFunctor::param_type const & param)
+stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (stsMCSimSuccessiveFunctor::param_type const & param)
 {
   result_type temp_result;
   try
@@ -21,15 +22,25 @@ stsMonteCarloSimFunctor::result_type stsMonteCarloSimFunctor::operator() (stsMon
          (*gpSimulationDataContainer)[t]->WriteSimulationData(gDataHub.GetParameters(), param);
     }
     //perform simulation to get loglikelihood ratio
-    temp_result.second = gpAnalysis->ExecuteSimulation(*gpDataGateway);
+    temp_result.second.first = gpAnalysis->ExecuteSimulation(*gpDataGateway);
+    temp_result.first = true;
   }
   catch (ZdException & e)
   {
-    e.AddCallpath("operator()", "stsMonteCarloSimFunctor");
-    temp_result.first.SetException(e);
+    temp_result.second.second = e;
+    temp_result.first = false;
   }
-  catch (std::exception & e) { temp_result.first.SetException(e); }
-  catch (...) { temp_result.first.SetUnknownException(); }
+  catch (std::exception & e) {
+    temp_result.second.second = ZdException(e, "", "stsMCSimSuccessiveFunctor");
+    temp_result.first = false;
+  }
+  catch (...) {
+    temp_result.second.second = ZdException("(...) -- unknown error", "stsMCSimSuccessiveFunctor", ZdException::Normal);
+    temp_result.first = false;
+  }
+  if (!temp_result.first) {
+    temp_result.second.second.AddCallpath("operator()", "stsMCSimSuccessiveFunctor");
+  }
   return temp_result;
 }
 

@@ -128,7 +128,10 @@
       ..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.obj 
       ..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.obj 
       ..\calculation\utility\stsMCSimJobSource.obj 
-      ..\calculation\RunTimeComponents.obj"/>
+      ..\calculation\RunTimeComponents.obj 
+      ..\calculation\utility\stsCentricAlgoJobSource.obj 
+      ..\calculation\utility\stsCentricAlgoFunctor.obj 
+      ..\calculation\utility\AsynchronouslyAccessible.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

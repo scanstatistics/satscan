@@ -16,22 +16,17 @@
 #pragma warn +8055
 #include "AnalysisRun.h"
 #include "LoglikelihoodRatioWriter.h"
+#include "PrintQueue.h"
 
 //---------------------------------------------------------------------------
 
-
-//    std::deque< std::pair<unsigned int, double> > qParamsAndResults;
-//    for (unsigned int ui = 0; ui < gParameters.GetNumReplicationsRequested(); ++ui)
-//    {
-//       qParamsAndResults.push_back(std::make_pair(ui + 1,0));
-//    }
 
 class stsMCSimJobSource
 {
 public://types/enums
   typedef unsigned int param_type;
   typedef double successful_result_type;
-  typedef std::pair<ExceptionInfo, successful_result_type> result_type;
+  typedef std::pair<bool, std::pair<successful_result_type, ZdException> > result_type;
   typedef unsigned long job_id_type;
   typedef std::pair<job_id_type, param_type> job_info_type;
 
@@ -58,8 +53,9 @@ private://data members
   unsigned guAutoAbortCheckIdx;//which short-circuit test comes next?
   unsigned guPreviousAutoAbortCheckPoint;//what was the previous check point?
 
+  clock_t const gConstructionTime;
   MostLikelyClustersContainer & grMLCs;
-  BasePrint & grPrintDirection;
+  PrintQueue & grPrintDirection;
   const char * gszReplicationFormatString;
   std::auto_ptr<LoglikelihoodRatioWriter> gRatioWriter;
   AnalysisRunner & grRunner;
@@ -81,8 +77,9 @@ public:
 //  stsMCSimJobSource(CParameters const & rParameters) : guiJobCount(0), guiNextJobParam(1), guiUnfinishedJobLowerBound(1);
   stsMCSimJobSource(
     CParameters const & rParameters
+   ,clock_t tCurrentTime
    ,MostLikelyClustersContainer & rMLCs
-   ,BasePrint & rPrintDirection
+   ,PrintQueue & rPrintDirection
    ,const char * szReplicationFormatString
    ,AnalysisRunner & rRunner
   );

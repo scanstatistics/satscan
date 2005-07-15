@@ -134,6 +134,9 @@ USEUNIT("..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.c
 USEUNIT("..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp");
 USEUNIT("..\calculation\utility\stsMCSimJobSource.cpp");
 USEUNIT("..\calculation\RunTimeComponents.cpp");
+USEUNIT("..\calculation\utility\stsCentricAlgoJobSource.cpp");
+USEUNIT("..\calculation\utility\stsCentricAlgoFunctor.cpp");
+USEUNIT("..\calculation\utility\AsynchronouslyAccessible.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

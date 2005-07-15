@@ -4,8 +4,6 @@
 #define contractorH
 //---------------------------------------------------------------------------
 #include <vector>
-#include <deque>
-#include <list>
 #include <algorithm>
 #include "boost/thread/thread.hpp"
 #include "boost/thread/recursive_mutex.hpp"

@@ -19,8 +19,9 @@ BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckCutoffValues)/s
 //constructor
 stsMCSimJobSource::stsMCSimJobSource(
   CParameters const & rParameters
+ ,clock_t tCurrentTime
  ,MostLikelyClustersContainer & rMLCs
- ,BasePrint & rPrintDirection
+ ,PrintQueue & rPrintDirection
  ,const char * szReplicationFormatString
  ,AnalysisRunner & rRunner
 )
@@ -29,6 +30,7 @@ stsMCSimJobSource::stsMCSimJobSource(
  , gfnRegisterResult(&stsMCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , guAutoAbortCheckIdx(0)
  , guPreviousAutoAbortCheckPoint(0)
+ , gConstructionTime(tCurrentTime)
  , grMLCs(rMLCs)
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)
@@ -80,35 +82,16 @@ void stsMCSimJobSource::Assert_NoExceptionsCaught() const
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
 
   if (GetExceptionCount() > 0) {
-    ZdCarrierException<exception_sequence_type> lclException(gvExceptions, "", "AnalysisRunner");
+    ZdCarrierException<exception_sequence_type> lclException(gvExceptions, "", "stsMCSimJobSource");
     exception_type const & rFirstException(lclException->front());
     ZdString sTemp;
     sTemp.printf(szExceptionIntroFormatString, rFirstException.first);
     lclException.AddMessage(sTemp.GetCString(), false);
-    lclException.AddMessage(szExceptionTypeTitle, false);
-    switch (rFirstException.second.second.first.GetType()) {
-      case ExceptionInfo::etUnknown :
-        lclException.AddMessage("--Unknown--", false);
-        break;
-      case ExceptionInfo::etStd :
-      {
-        std::exception const & rE(rFirstException.second.second.first.GetException<std::exception>());
-        lclException.AddMessage("std::exception", false);
-        lclException.AddMessage(szExceptionMessageTitle, false);
-        lclException.AddMessage(rE.what(), false);
-      }
-      break;
-      case ExceptionInfo::etZd :
-      {
-        ZdException const & rE(rFirstException.second.second.first.GetException<ZdException>());
-        lclException.AddMessage("ZdException", false);
-        lclException.AddMessage(szExceptionMessageTitle, false);
-        lclException.AddMessage(rE.GetErrorMessage(), false);
-        lclException.AddMessage(szExceptionCallPathTitle, false);
-        lclException.AddMessage(rE.GetCallpath(), false);
-      }
-      break;
-    }
+    lclException.AddMessage(szExceptionMessageTitle, false);
+    lclException.AddMessage(rFirstException.second.second.second.second.GetErrorMessage(), false);
+    lclException.AddMessage(szExceptionCallPathTitle, false);
+    lclException.AddMessage(rFirstException.second.second.second.second.GetCallpath(), false);
+
     throw lclException;
   }
 }
@@ -150,6 +133,7 @@ bool stsMCSimJobSource::is_exhausted() const
 {
   return
     CancelConditionExists()
+   || ExceptionConditionExists()
    || AutoAbortConditionExists()
    || (guiNextJobParam > guiJobCount);
 }
@@ -211,7 +195,7 @@ void stsMCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, par
   {
     //check exception condition first.  Want to report an exception even if
     //cancel is requested.
-    if (rResult.first.GetType() != ExceptionInfo::etNone)
+    if (!rResult.first)
     {
       //populate stored exceptions:
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
@@ -298,18 +282,16 @@ void stsMCSimJobSource::RegisterResult_AutoAbortConditionExists(job_id_type cons
 //register a result when a previously registered result indicated an exception.
 void stsMCSimJobSource::RegisterResult_ExceptionConditionExists(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult)
 {
-//  try
-//  {
-//    if (result indicates exception condition)
-//    {
-//      //add to stored exceptions
-//    }
-//  }
-//  catch (ZdException & e)
-//  {
-//    e.AddCallpath("RegisterResult_AutoAbortConditionExists()", "stsMCSimJobSource");
-//    throw;
-//  }
+  try
+  {
+    if (!rResult.first)
+      gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
+  }
+  catch (ZdException & e)
+  {
+    e.AddCallpath("RegisterResult_ExceptionConditionExists()", "stsMCSimJobSource");
+    throw;
+  }
 }
 
 //register a result when no extended conditions (AutoAbort[early termination],
@@ -320,7 +302,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
   {
     //check exception condition first.  Want to report an exception even if
     //cancel is requested.
-    if (rResult.first.GetType() != ExceptionInfo::etNone)
+    if (!rResult.first)
     {
       //populate stored exceptions:
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
@@ -334,7 +316,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
     }
 
     //update ratios, significance, etc.:
-    WriteResultToStructures(rResult.second);
+    WriteResultToStructures(rResult.second.first);
 
     //if appropriate, estimate time required to complete all jobs and report it.
     unsigned int uiJobsProcessedCount =
@@ -342,6 +324,11 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
      ? guPreviousAutoAbortCheckPoint + gAutoAbortResultsRegistered.count()
      : (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
     grPrintDirection.SatScanPrintf(gszReplicationFormatString, uiJobsProcessedCount, guiJobCount, rResult.second);
+    if (uiJobsProcessedCount==10) {
+      ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
+      ZdTimestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
+      grPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
+    }
   }
   catch (ZdException & e)
   {

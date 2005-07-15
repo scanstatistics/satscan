@@ -22,6 +22,8 @@
 #include "PrintQueue.h"
 #include "stsMonteCarloSimFunctor.h"
 #include "stsMCSimJobSource.h"
+#include "stsCentricAlgoJobSource.h"
+#include "stsCentricAlgoFunctor.h"
 #include "contractor.h"
 #include "PurelySpatialCentricAnalysis.h"
 #include "SpaceTimeCentricAnalysis.h"
@@ -400,7 +402,7 @@ void AnalysisRunner::ExecuteSuccessively() {
         return;
       //Do Monte Carlo replications.
       if (gTopClustersContainer.GetNumClustersRetained())
-        PerformSimulations();
+        PerformSuccessiveSimulations();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
@@ -435,140 +437,11 @@ void AnalysisRunner::ExecuteCentrically() {
   bool                  bContinue;
 
   try {
-    DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
-
-    //detect user cancellation
-    if (gPrintDirection.GetIsCanceled())
-      return;
-
-    //create result file report
-    CreateReport();
-
-    //start analyzing data
-    do {
-      ++giAnalysisCount;
-      guwSignificantAt005 = 0;
-      giNumSimsExecuted = 0;
-
-      //simualtion data randomizer
-      RandomizerContainer_t                       RandomizationContainer;
-      //allocate a simulation data set for each requested replication
-      std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
-      //allocate a data gateway for each requested replication
-      ZdPointerVector<AbtractDataSetGateway>      vSimDataGateways(gParameters.GetNumReplicationsRequested());
-      //allocate an array to contain simulation llr values
-      AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
-      //data gateway object for real data
-      std::auto_ptr<AbtractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
-      //centroid neighbor information objects
-      std::vector<CentroidNeighbors>              CentroidNeighbors(gpDataHub->GetParameters().GetNumTotalEllipses() + 1);
-      std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
-      std::auto_ptr<AbstractCentricAnalysis>      CentricAnalysis;
-      //centroid neighbors calculator
-      std::auto_ptr<CentroidNeighborCalculator>   CentroidCalculator;
-
-      //get data randomizers
-      DataHandler.GetRandomizerContainer(RandomizationContainer);
-      //set data gateway object
-      DataHandler.GetDataGateway(*DataSetGateway);
-
-      gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
-      //create simulation data sets -- randomize each and set corresponding data gateway object
-      for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
-         SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
-         //create new simulation data set object for each data set of this simulation
-         for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new SimDataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
-         //allocate appropriate data structure for given data set handler (probablility model)
-         DataHandler.AllocateSimulationData(thisDataCollection);
-         //randomize data
-         gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
-         //allocate and set data gateway object
-         vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
-         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
-      }
-
-      //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
-        
-      //allocate analysis object
-      CentricAnalysis.reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
-      //allocate centroid neigbor calculator
-      if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
-        CentroidCalculator.reset(new CentroidNeighborCalculatorByDistance(*gpDataHub, gPrintDirection));
-      else
-        CentroidCalculator.reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
-
-      //analyze real and simulation data about each centroid
-      clock_t  tStartTime = clock();
-      for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
-         gPrintDirection.SatScanPrintf("Evaluating centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
-         CentricAnalysis->ExecuteAboutCentroid(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
-         //report estimation of total execution time
-         if (c==9)
-           ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
-      }
-      //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
-      if (gParameters.GetIncludePurelyTemporalClusters()) {
-        gPrintDirection.SatScanPrintf("Evaluating purely temporal clusters\n");
-        CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
-      }
-
-      //retrieve top clusters and simulated loglikelihood ratios from analysis object
-      CentricAnalysis->RetrieveClusters(gTopClustersContainer);
-      CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
-      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
-      //free memory of objects that will no longer be used
-      // - we might need the memory for recalculating neighbors in geographical overlap code
-      vRandomizedDataSets.clear();
-      CentricAnalysis.reset(0);
-      vSimDataGateways.DeleteAllElements();
-      //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
-      //rank top clusters and apply criteria for reporting secondary clusters
-      gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
-
-      //report calculated simulation llr values
-      if (GetIsCalculatingSignificantRatios())
-        gpSignificantRatios->Initialize();
-      if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
-      std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
-      for (; itr != itr_end; ++itr) {
-        //update most likely clusters given latest simulated loglikelihood ratio
-        gTopClustersContainer.UpdateTopClustersRank(*itr);
-        //update significance indicator
-        UpdateSignificantRatiosList(*itr);
-        //update power calculations
-        UpdatePowerCounts(*itr);
-        //update simulated loglikelihood record buffer
-        if(RatioWriter.get()) RatioWriter->Write(*itr);
-      }
-      SimulationRatios.reset();
-
-      //report clusters
-      UpdateReport();
-      //log history for first analysis run
-      if (giAnalysisCount == 1) {
-        gPrintDirection.SatScanPrintf("Logging run history...\n");
-        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
-      }
-      //report additional output file: 'relative risks for each location'
-      CreateRelativeRiskFile();
-      //repeat analysis - sequential scan
-      if ((bContinue = RepeatAnalysis()) == true) {
-        RemoveTopClusterData();
-        //detect user cancellation
-        if (gPrintDirection.GetIsCanceled()) return;
-      }
-    } while (bContinue);
-
-    //finish report
-    FinalizeReport();
+//#ifdef PARALLEL_SIMULATIONS
+      PerformCentric_Parallel();
+//#else
+//      PerformCentric_Serial();
+//#endif
   }
   catch (ZdException &x) {
     x.AddCallpath("ExecuteCentrically()","AnalysisRunner");
@@ -790,6 +663,326 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
   }
 }
 
+/** starts analysis execution - development */
+void AnalysisRunner::PerformCentric_Parallel() {
+  bool                  bContinue;
+  unsigned long         ulParallelProcessCount = gParameters.GetNumParallelProcessesToExecute();
+
+  try {
+    DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
+
+    //detect user cancellation
+    if (gPrintDirection.GetIsCanceled())
+      return;
+
+    //create result file report
+    CreateReport();
+
+    //start analyzing data
+    do {
+      ++giAnalysisCount;
+      guwSignificantAt005 = 0;
+      giNumSimsExecuted = 0;
+
+      //simualtion data randomizer
+      RandomizerContainer_t                       RandomizationContainer;
+      //allocate a simulation data set for each requested replication
+      std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
+      //allocate a data gateway for each requested replication
+      ZdPointerVector<AbstractDataSetGateway>      vSimDataGateways(gParameters.GetNumReplicationsRequested());
+      //allocate an array to contain simulation llr values
+      AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
+      //data gateway object for real data
+      std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
+      //centroid neighbor information objects
+      std::vector<CentroidNeighbors>              CentroidNeighbors(gpDataHub->GetParameters().GetNumTotalEllipses() + 1);
+      std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
+
+      //get data randomizers
+      DataHandler.GetRandomizerContainer(RandomizationContainer);
+      //set data gateway object
+      DataHandler.GetDataGateway(*DataSetGateway);
+
+      gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      //create simulation data sets -- randomize each and set corresponding data gateway object
+      for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
+         SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
+         //create new simulation data set object for each data set of this simulation
+         for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
+            thisDataCollection.push_back(new SimDataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+         //allocate appropriate data structure for given data set handler (probablility model)
+         DataHandler.AllocateSimulationData(thisDataCollection);
+         //randomize data
+         gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
+         //allocate and set data gateway object
+         vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
+         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
+      }
+
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+
+      //construct centric-analyses and centroid calculators for each thread:
+      std::deque<boost::shared_ptr<AbstractCentricAnalysis> > seqCentricAnalyses(ulParallelProcessCount);
+      std::deque<boost::shared_ptr<CentroidNeighborCalculator> > seqCentroidCalculators(ulParallelProcessCount);
+      if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE) {
+        for (unsigned u=0; u<ulParallelProcessCount; ++u) {
+          seqCentricAnalyses[u].reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
+          seqCentroidCalculators[u].reset(new CentroidNeighborCalculatorByDistance(*gpDataHub, gPrintDirection));
+        }
+      }
+      else {
+        for (unsigned u=0; u<ulParallelProcessCount; ++u) {
+          seqCentricAnalyses[u].reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
+          seqCentroidCalculators[u].reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
+        }
+      }
+
+      //analyze real and simulation data about each centroid
+      {
+        PrintQueue tmpPrintDirection(gPrintDirection);
+        AsynchronouslyAccessible<PrintQueue> tmpThreadsafePrintDirection(tmpPrintDirection);
+        stsCentricAlgoJobSource jobSource(gpDataHub->m_nGridTracts, ::clock(), tmpThreadsafePrintDirection);
+        typedef contractor<stsCentricAlgoJobSource> contractor_type;
+        contractor_type theContractor(jobSource);
+        //run threads:
+        boost::thread_group tg;
+        boost::mutex        thread_mutex;
+        //launch first thread:
+        tg.create_thread(
+          stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
+            theContractor
+           ,tmpThreadsafePrintDirection
+           ,*(seqCentricAnalyses[0])
+           ,*(seqCentroidCalculators[0])
+           ,*DataSetGateway
+           ,vSimDataGateways
+          )
+        );
+        //launch the remaining threads:
+        for (unsigned u=1; u < ulParallelProcessCount; ++u) {
+          stsCentricAlgoFunctor mcsf(*(seqCentricAnalyses[u]), *(seqCentroidCalculators[u]), *DataSetGateway, vSimDataGateways);
+          tg.create_thread(subcontractor<contractor_type,stsCentricAlgoFunctor>(theContractor,mcsf));
+        }
+        tg.join_all();
+        //propagate exceptions if needed:
+        jobSource.Assert_NoExceptionsCaught();
+        if (jobSource.GetUnregisteredJobCount() > 0)
+          ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
+      }
+
+      if (gPrintDirection.GetIsCanceled())
+        return;
+
+      for (unsigned u=0; u<ulParallelProcessCount; ++u) {
+        //retrieve top clusters and simulated loglikelihood ratios from analysis object
+        seqCentricAnalyses[u]->RetrieveClusters(gTopClustersContainer);
+        seqCentricAnalyses[u]->RetrieveLoglikelihoodRatios(SimulationRatios);
+      }
+      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
+      //free memory of objects that will no longer be used
+      // - we might need the memory for recalculating neighbors in geographical overlap code
+      vRandomizedDataSets.clear();
+      seqCentricAnalyses.clear();
+      seqCentroidCalculators.clear();
+      vSimDataGateways.DeleteAllElements();
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+      //rank top clusters and apply criteria for reporting secondary clusters
+      gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
+
+      //report calculated simulation llr values
+      if (GetIsCalculatingSignificantRatios())
+        gpSignificantRatios->Initialize();
+      if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+      std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+      for (; itr != itr_end; ++itr) {
+        //update most likely clusters given latest simulated loglikelihood ratio
+        gTopClustersContainer.UpdateTopClustersRank(*itr);
+        //update significance indicator
+        UpdateSignificantRatiosList(*itr);
+        //update power calculations
+        UpdatePowerCounts(*itr);
+        //update simulated loglikelihood record buffer
+        if(RatioWriter.get()) RatioWriter->Write(*itr);
+      }
+      SimulationRatios.reset();
+
+      //report clusters
+      UpdateReport();
+      //log history for first analysis run
+      if (giAnalysisCount == 1) {
+        gPrintDirection.SatScanPrintf("Logging run history...\n");
+        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+      }
+      //report additional output file: 'relative risks for each location'
+      CreateRelativeRiskFile();
+      //repeat analysis - sequential scan
+      if ((bContinue = RepeatAnalysis()) == true) {
+        RemoveTopClusterData();
+        //detect user cancellation
+        if (gPrintDirection.GetIsCanceled()) return;
+      }
+    } while (bContinue);
+
+    //finish report
+    FinalizeReport();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("PerformCentric_Parallel()","AnalysisRunner");
+    throw;
+  }
+}
+
+/** starts analysis execution - development */
+void AnalysisRunner::PerformCentric_Serial() {
+  bool                  bContinue;
+
+  try {
+    DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
+
+    //detect user cancellation
+    if (gPrintDirection.GetIsCanceled())
+      return;
+
+    //create result file report
+    CreateReport();
+
+    //start analyzing data
+    do {
+      ++giAnalysisCount;
+      guwSignificantAt005 = 0;
+      giNumSimsExecuted = 0;
+
+      //simualtion data randomizer
+      RandomizerContainer_t                       RandomizationContainer;
+      //allocate a simulation data set for each requested replication
+      std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
+      //allocate a data gateway for each requested replication
+      ZdPointerVector<AbstractDataSetGateway>      vSimDataGateways(gParameters.GetNumReplicationsRequested());
+      //allocate an array to contain simulation llr values
+      AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
+      //data gateway object for real data
+      std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
+      //centroid neighbor information objects
+      std::vector<CentroidNeighbors>              CentroidNeighbors(gpDataHub->GetParameters().GetNumTotalEllipses() + 1);
+      std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
+      std::auto_ptr<AbstractCentricAnalysis>      CentricAnalysis;
+      //centroid neighbors calculator
+      std::auto_ptr<CentroidNeighborCalculator>   CentroidCalculator;
+
+      //get data randomizers
+      DataHandler.GetRandomizerContainer(RandomizationContainer);
+      //set data gateway object
+      DataHandler.GetDataGateway(*DataSetGateway);
+
+      gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      //create simulation data sets -- randomize each and set corresponding data gateway object
+      for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
+         SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
+         //create new simulation data set object for each data set of this simulation
+         for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
+            thisDataCollection.push_back(new SimDataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+         //allocate appropriate data structure for given data set handler (probablility model)
+         DataHandler.AllocateSimulationData(thisDataCollection);
+         //randomize data
+         gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
+         //allocate and set data gateway object
+         vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
+         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
+      }
+
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+
+      //allocate analysis object
+      CentricAnalysis.reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
+      //allocate centroid neigbor calculator
+      if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
+        CentroidCalculator.reset(new CentroidNeighborCalculatorByDistance(*gpDataHub, gPrintDirection));
+      else
+        CentroidCalculator.reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
+
+      //analyze real and simulation data about each centroid
+      clock_t  tStartTime = clock();
+      for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
+         gPrintDirection.SatScanPrintf("Evaluating centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
+         CentricAnalysis->ExecuteAboutCentroid(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
+         //report estimation of total execution time
+         if (c==9)
+           ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
+      }
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+      if (gParameters.GetIncludePurelyTemporalClusters()) {
+        gPrintDirection.SatScanPrintf("Evaluating purely temporal clusters\n");
+        CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
+      }
+
+      //retrieve top clusters and simulated loglikelihood ratios from analysis object
+      CentricAnalysis->RetrieveClusters(gTopClustersContainer);
+      CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
+      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
+      //free memory of objects that will no longer be used
+      // - we might need the memory for recalculating neighbors in geographical overlap code
+      vRandomizedDataSets.clear();
+      CentricAnalysis.reset(0);
+      vSimDataGateways.DeleteAllElements();
+      //detect user cancellation
+      if (gPrintDirection.GetIsCanceled())
+        return;
+      //rank top clusters and apply criteria for reporting secondary clusters
+      gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
+
+      //report calculated simulation llr values
+      if (GetIsCalculatingSignificantRatios())
+        gpSignificantRatios->Initialize();
+      if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+      std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+      for (; itr != itr_end; ++itr) {
+        //update most likely clusters given latest simulated loglikelihood ratio
+        gTopClustersContainer.UpdateTopClustersRank(*itr);
+        //update significance indicator
+        UpdateSignificantRatiosList(*itr);
+        //update power calculations
+        UpdatePowerCounts(*itr);
+        //update simulated loglikelihood record buffer
+        if(RatioWriter.get()) RatioWriter->Write(*itr);
+      }
+      SimulationRatios.reset();
+
+      //report clusters
+      UpdateReport();
+      //log history for first analysis run
+      if (giAnalysisCount == 1) {
+        gPrintDirection.SatScanPrintf("Logging run history...\n");
+        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+      }
+      //report additional output file: 'relative risks for each location'
+      CreateRelativeRiskFile();
+      //repeat analysis - sequential scan
+      if ((bContinue = RepeatAnalysis()) == true) {
+        RemoveTopClusterData();
+        //detect user cancellation
+        if (gPrintDirection.GetIsCanceled()) return;
+      }
+    } while (bContinue);
+
+    //finish report
+    FinalizeReport();
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("PerformCentric_Serial()","AnalysisRunner");
+    throw;
+  }
+}
+
 /** Calculates simulated loglikelihood ratios and updates:
     - most likely clusters rank
     - significant loglikelihood ratio indicator
@@ -797,21 +990,16 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
     - additional output file(s)
 *****************************************************
 */
-void AnalysisRunner::PerformParallelSimulations() {
-  static const int iParallelProcessCount = 2; /** Target enviroment for parallel simulations
-                                                  is Windows w/ dual processors, so hard code
-                                                  to 2 threads. Later, we will want to determine
-                                                  this programmatically, possibly with limits
-                                                  specified by user (e.g. 8 processors available
-                                                  but only utilize 6). */
+void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
 
   double                      dSimulatedRatio;
   unsigned int                iSimulationNumber;
   char                      * sReplicationFormatString;
-  AbstractDataSetGateway     * pDataGateway=0;
+  AbstractDataSetGateway    * pDataGateway=0;
   CAnalysis                 * pAnalysis=0;
   SimulationDataContainer_t   SimulationDataContainer;
   RandomizerContainer_t       RandomizationContainer;
+  unsigned long               ulParallelProcessCount = gParameters.GetNumParallelProcessesToExecute();
 
   try {
     if (gParameters.GetNumReplicationsRequested() == 0)
@@ -825,25 +1013,29 @@ void AnalysisRunner::PerformParallelSimulations() {
     if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
     giNumSimsExecuted = 0;
 
-    stsMCSimJobSource jobSource(gParameters, gTopClustersContainer, gPrintDirection, sReplicationFormatString, *this);
-    typedef contractor<stsMCSimJobSource> contractor_type;
-    contractor_type theContractor(jobSource);
-    //run threads:
-    boost::thread_group tg;
-    boost::mutex        thread_mutex;
-    for (int i = 0; i < iParallelProcessCount; ++i) {
-      stsMonteCarloSimFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
-      tg.create_thread(subcontractor<contractor_type,stsMonteCarloSimFunctor>(theContractor,mcsf));
+    {
+      PrintQueue lclPrintDirection(gPrintDirection);
+      stsMCSimJobSource jobSource(gParameters, ::clock(), gTopClustersContainer, lclPrintDirection, sReplicationFormatString, *this);
+      typedef contractor<stsMCSimJobSource> contractor_type;
+      contractor_type theContractor(jobSource);
+      //run threads:
+      boost::thread_group tg;
+      boost::mutex        thread_mutex;
+      for (int i = 0; i < ulParallelProcessCount; ++i) {
+        stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
+        tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
+      }
+      tg.join_all();
+      jobSource.Assert_NoExceptionsCaught();
+      if (jobSource.GetUnregisteredJobCount() > 0)
+        ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
     }
-    tg.join_all();
-    jobSource.Assert_NoExceptionsCaught();
-    if (jobSource.GetUnregisteredJobCount() > 0)
-      ZdException::Generate("Only %d of %d jobs were completed.", "AnalysisRunner",  gParameters.GetNumReplicationsRequested()-jobSource.GetUnregisteredJobCount(), gParameters.GetNumReplicationsRequested());
+    giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
   }
   catch (ZdException &x) {
     delete pDataGateway;
     delete pAnalysis;
-    x.AddCallpath("PerformParallelSimulations()","AnalysisRunner");
+    x.AddCallpath("PerformSuccessiveSimulations_Parallel()","AnalysisRunner");
     throw;
   }
 }
@@ -853,7 +1045,7 @@ void AnalysisRunner::PerformParallelSimulations() {
     - significant loglikelihood ratio indicator
     - power calculation data, if requested by user
     - additional output file(s)                             */
-void AnalysisRunner::PerformSerializedSimulations() {
+void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
   double                                  dSimulatedRatio;
   unsigned int                            iSimulationNumber;
   char                                  * sReplicationFormatString;
@@ -933,13 +1125,13 @@ void AnalysisRunner::PerformSerializedSimulations() {
   catch (ZdException &x) {
     delete pDataGateway;
     delete pAnalysis;
-    x.AddCallpath("PerformSerializedSimulations()","AnalysisRunner");
+    x.AddCallpath("PerformSuccessiveSimulations_Serial()","AnalysisRunner");
     throw;
   }
 }
 
 /** Prepares data for simulations and contracts simulation process. */
-void AnalysisRunner::PerformSimulations() {
+void AnalysisRunner::PerformSuccessiveSimulations() {
   try {
     if (gParameters.GetNumReplicationsRequested() > 0) {
       //recompute neighbors if settings indicate that smaller clusters are reported
@@ -948,14 +1140,14 @@ void AnalysisRunner::PerformSimulations() {
       //$$  gpDataHub->FindNeighbors(true);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
 #ifdef PARALLEL_SIMULATIONS
-      PerformParallelSimulations();
+      PerformSuccessiveSimulations_Parallel();
 #else
-      PerformSerializedSimulations();
+      PerformSuccessiveSimulations_Serial();
 #endif
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("PerformSimulations()","AnalysisRunner");
+    x.AddCallpath("PerformSuccessiveSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -1129,122 +1321,4 @@ void AnalysisRunner::UpdateSignificantRatiosList(double dRatio) {
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-//class ExceptionInfo
-//a container for an exception thrown by a simultaneously-run job, held until
-//all other jobs have finished.
-////////////////////////////////////////////////////////////////////////////////
-
-//copy constructor
-ExceptionInfo::ExceptionInfo(ExceptionInfo const & to_be_copied)
- : geType(to_be_copied.geType)
- , gpException(0)
-{
-  switch (geType)
-  {
-    case etStd : gpException = new std::exception(to_be_copied.GetException<std::exception>()); break;
-    case etZd  : gpException = new ZdException(to_be_copied.GetException<ZdException>()); break;
-  }
-}
-
-template <>
-ExceptionInfo::ExceptionInfo(std::exception const & e)
- : geType(etStd)
- , gpException(new std::exception(e))
-{}
-template <>
-ExceptionInfo::ExceptionInfo(ZdException const & e)
- : geType(etZd)
- , gpException(new ZdException(e))
-{}
-
-ExceptionInfo::~ExceptionInfo()
-{
-  switch (geType)
-  {
-//    case etNone : break;
-//    case etUnknown : break;
-    case etStd : delete reinterpret_cast<std::exception*>(gpException); break;
-    case etZd  : delete reinterpret_cast<ZdException*>(gpException); break;
-  }
-}
-
-ExceptionInfo& ExceptionInfo::operator=(ExceptionInfo const & to_be_copied)
-{
-  void * pOldException = gpException;
-  switch (to_be_copied.geType)
-  {
-    case etUnknown : gpException = 0; break;
-    case etStd : gpException = new std::exception(to_be_copied.GetException<std::exception>()); break;
-    case etZd  : gpException = new ZdException(to_be_copied.GetException<ZdException>()); break;
-  }
-  switch (geType)
-  {
-//    case etUnknown : break;
-    case etStd : delete reinterpret_cast<std::exception*>(pOldException); break;
-    case etZd  : delete reinterpret_cast<ZdException*>(pOldException); break;
-  }
-  geType = to_be_copied.geType;
-  return *this;
-}
-
-void ExceptionInfo::swap(ExceptionInfo & other)
-{
-  std::swap(geType,other.geType);
-  std::swap(gpException,other.gpException);
-}
-
-template <>
-std::exception const & ExceptionInfo::GetException<std::exception>() const
-{
-  try { if (geType != etStd) ZdException::Generate("Type of contained exception is not \"std::exception\"", "ExceptionInfo"); }
-  catch (ZdException & e) { e.AddCallpath("GetException<std::exception>()", "ExceptionInfo"); throw; }
-  return *reinterpret_cast<std::exception const *>(gpException);
-}
-template <>
-ZdException const & ExceptionInfo::GetException<ZdException>() const
-{
-  try { if (geType != etZd) ZdException::Generate("Type of contained exception is not \"ZdException\"", "ExceptionInfo"); }
-  catch (ZdException & e) { e.AddCallpath("GetException<ZdException>()", "ExceptionInfo"); throw; }
-  return *reinterpret_cast<ZdException const *>(gpException);
-}
-
-template <>
-void ExceptionInfo::SetException(std::exception const & e)
-{
-  void * pOldException = gpException;
-  gpException = new std::exception(e);
-  switch (geType)
-  {
-//    case etUnknown : break;
-    case etStd : delete reinterpret_cast<std::exception*>(pOldException); break;
-    case etZd  : delete reinterpret_cast<ZdException*>(pOldException); break;
-  }
-  geType = etStd;
-}
-template <>
-void ExceptionInfo::SetException(ZdException const & e)
-{
-  void * pOldException = gpException;
-  gpException = new ZdException(e);
-  switch (geType)
-  {
-//    case etUnknown : break;
-    case etStd : delete reinterpret_cast<std::exception*>(pOldException); break;
-    case etZd  : delete reinterpret_cast<ZdException*>(pOldException); break;
-  }
-  geType = etZd;
-}
-
-void ExceptionInfo::SetUnknownException()
-{
-  switch (geType)
-  {
-//    case etNone : break;
-//    case etUnknown : break;
-    case etStd : delete reinterpret_cast<std::exception*>(gpException); gpException = 0; break;
-    case etZd  : delete reinterpret_cast<ZdException*>(gpException); gpException = 0; break;
-  }
- geType = etUnknown;
-}
 

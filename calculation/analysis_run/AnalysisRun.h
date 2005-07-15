@@ -42,9 +42,11 @@ class AnalysisRunner {
     double                              GetAvailablePhysicalMemory() const;
     void                                Init();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
-    void                                PerformParallelSimulations();
-    void                                PerformSerializedSimulations();
-    void                                PerformSimulations();
+    void                                PerformCentric_Parallel();
+    void                                PerformCentric_Serial();
+    void                                PerformSuccessiveSimulations_Parallel();
+    void                                PerformSuccessiveSimulations_Serial();
+    void                                PerformSuccessiveSimulations();
     void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
     void                                Setup();
@@ -71,29 +73,6 @@ class AnalysisRunner {
     const time_t                      * GetStartTime() const {return &gStartTime;}
 };
 
-//holds exception info for jobs run simultaneously:
-class ExceptionInfo
-{
-public:
-  enum Type { etNone, etUnknown, etStd, etZd };
-private:
-  Type geType;
-  void * gpException;
-public:
-  ExceptionInfo() : geType(etNone), gpException(0) {}
-  template <typename ExceptionType> ExceptionInfo(ExceptionType const &);
-  ExceptionInfo(ExceptionInfo const & to_be_copied);
-  ~ExceptionInfo();
-  ExceptionInfo& operator=(ExceptionInfo const & to_be_copied);
-  void swap(ExceptionInfo & other);
-
-  Type GetType() const { return geType; }
-  template <typename ExceptionType>
-  ExceptionType const & GetException() const;
-  template <typename ExceptionType>
-  void SetException(ExceptionType const & e);
-  void SetUnknownException();
-};
 
 //***************************************************************************
 #endif

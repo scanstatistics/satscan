@@ -137,7 +137,9 @@
       ..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.obj 
       ..\calculation\analysis\AbstractAnalysis.obj 
       ..\calculation\utility\stsMCSimJobSource.obj 
-      ..\calculation\RunTimeComponents.obj stsDlgExecuteOptions.obj"/>
+      ..\calculation\RunTimeComponents.obj stsDlgExecuteOptions.obj 
+      ..\calculation\utility\stsCentricAlgoJobSource.obj 
+      ..\calculation\utility\stsCentricAlgoFunctor.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

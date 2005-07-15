@@ -10,31 +10,35 @@
 #include "boost/thread/mutex.hpp"
 //---------------------------------------------------------------------------
 
-class stsMonteCarloSimFunctor
+//runs jobs for the "successive" algorithm
+class stsMCSimSuccessiveFunctor
 {
 public:
   typedef unsigned int param_type;
-  typedef double successful_result_type;
-  typedef std::pair<ExceptionInfo, successful_result_type> result_type;
+  typedef double successful_result_type;//type of result in case of no exceptions
+  typedef std::pair<bool, std::pair<successful_result_type, ZdException> > result_type;
 
 private:
   boost::mutex                       & gMutex;
   CSaTScanData const &                 gDataHub;
-  boost::shared_ptr<AbtractDataSetGateway> gpDataGateway;
+  boost::shared_ptr<AbstractDataSetGateway> gpDataGateway;
   boost::shared_ptr<CAnalysis>         gpAnalysis;
   boost::shared_ptr<SimulationDataContainer_t> gpSimulationDataContainer;
   boost::shared_ptr<RandomizerContainer_t>     gpRandomizationContainer;
 
 public:
-  stsMonteCarloSimFunctor(boost::mutex& Mutex, CSaTScanData const & theDataHub,
-                          boost::shared_ptr<CAnalysis> pAnalysis,
-                          boost::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer,
-                          boost::shared_ptr<RandomizerContainer_t> pRandomizationContainer)
-   : gMutex(Mutex),
-     gDataHub(theDataHub),
-     gpAnalysis(pAnalysis),
-     gpSimulationDataContainer(pSimulationDataContainer),
-     gpRandomizationContainer(pRandomizationContainer)
+  stsMCSimSuccessiveFunctor(
+    boost::mutex& Mutex
+   ,CSaTScanData const & theDataHub
+   ,boost::shared_ptr<CAnalysis> pAnalysis
+   ,boost::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer
+   ,boost::shared_ptr<RandomizerContainer_t> pRandomizationContainer
+  )
+   : gMutex(Mutex)
+   , gDataHub(theDataHub)
+   , gpAnalysis(pAnalysis)
+   , gpSimulationDataContainer(pSimulationDataContainer)
+   , gpRandomizationContainer(pRandomizationContainer)
   {
     //get container for simulation data - this data will be modified in the randomize process
     gDataHub.GetDataSetHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
@@ -54,7 +58,6 @@ public:
   result_type operator() (param_type const & param);
 
 };
-
 
 
 
