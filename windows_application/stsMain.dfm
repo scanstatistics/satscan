@@ -30,7 +30,7 @@ object frmMainForm: TfrmMainForm
   end
   object Bevel6: TBevel
     Left = 0
-    Top = 33
+    Top = 27
     Width = 776
     Height = 2
     Align = alTop
@@ -50,13 +50,13 @@ object frmMainForm: TfrmMainForm
     Left = 0
     Top = 2
     Width = 776
-    Height = 31
+    Height = 25
     Align = alTop
     BevelOuter = bvNone
     TabOrder = 1
     object sbOpen: TSpeedButton
-      Left = 48
-      Top = 3
+      Left = 38
+      Top = 0
       Width = 25
       Height = 25
       Action = OpenParameterFileAction
@@ -77,8 +77,8 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbSave: TSpeedButton
-      Left = 80
-      Top = 3
+      Left = 67
+      Top = 0
       Width = 25
       Height = 25
       Action = SaveSessionAction
@@ -99,8 +99,8 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbHelp: TSpeedButton
-      Left = 240
-      Top = 3
+      Left = 209
+      Top = 0
       Width = 25
       Height = 25
       Action = HelpAction
@@ -121,8 +121,8 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbExecute: TSpeedButton
-      Left = 120
-      Top = 3
+      Left = 102
+      Top = 0
       Width = 25
       Height = 25
       Action = ExecuteAction
@@ -143,8 +143,8 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object sbEditSession: TSpeedButton
-      Left = 8
-      Top = 3
+      Left = 3
+      Top = 0
       Width = 25
       Height = 25
       Action = NewSessionAction
@@ -167,32 +167,32 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object Bevel2: TBevel
-      Left = 40
-      Top = 3
+      Left = 32
+      Top = 0
       Width = 2
       Height = 23
     end
     object Bevel3: TBevel
-      Left = 112
-      Top = 3
+      Left = 96
+      Top = 0
       Width = 2
       Height = 23
     end
     object Bevel4: TBevel
-      Left = 152
-      Top = 3
+      Left = 132
+      Top = 0
       Width = 2
       Height = 23
     end
     object Bevel5: TBevel
-      Left = 192
-      Top = 3
+      Left = 166
+      Top = 0
       Width = 2
       Height = 23
     end
     object sbUpdate: TSpeedButton
-      Left = 200
-      Top = 3
+      Left = 172
+      Top = 0
       Width = 25
       Height = 25
       Action = UpdateAction
@@ -215,14 +215,14 @@ object frmMainForm: TfrmMainForm
       ShowHint = True
     end
     object Bevel7: TBevel
-      Left = 232
-      Top = 3
+      Left = 202
+      Top = 0
       Width = 2
       Height = 23
     end
     object SpeedButton1: TSpeedButton
-      Left = 160
-      Top = 3
+      Left = 137
+      Top = 0
       Width = 25
       Height = 25
       Action = PrintResultsAction
