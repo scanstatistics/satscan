@@ -9,7 +9,7 @@
     evaluating real and simulated data for each centroid separate than other centroids. */
 class  SpaceTimeIncludePurelySpatialCentricAnalysis : public SpaceTimeCentricAnalysis {
   private:
-    void                     Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    void                     Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
 
   protected:
     std::auto_ptr<CPurelySpatialCluster>             gTopPSCluster;         /** instance of spatial cluster
@@ -21,14 +21,14 @@ class  SpaceTimeIncludePurelySpatialCentricAnalysis : public SpaceTimeCentricAna
     std::auto_ptr<AbstractClusterData>               gPSAbstractClusterData;
 
     virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
-    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway);
+    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
     virtual const CCluster & GetTopCalculatedCluster();
     virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
     void                     MonteCarloProspectiveAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
 
   public:
     SpaceTimeIncludePurelySpatialCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
-                                                 const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+                                                 const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
     virtual ~SpaceTimeIncludePurelySpatialCentricAnalysis();
 };
 //******************************************************************************

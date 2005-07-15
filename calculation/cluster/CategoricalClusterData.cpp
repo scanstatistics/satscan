@@ -14,7 +14,7 @@ CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface
 }
 
 /** class constructor */
-CategoricalSpatialData::CategoricalSpatialData(const AbtractDataSetGateway& DataGateway)
+CategoricalSpatialData::CategoricalSpatialData(const AbstractDataSetGateway& DataGateway)
                        :AbstractSpatialClusterData(0) {
                         
   gvCasesPerCategory.resize(DataGateway.GetDataSetInterface().GetNumOrdinalCategories(), 0);
@@ -48,7 +48,7 @@ CategoricalSpatialData & CategoricalSpatialData::operator=(const CategoricalSpat
 
 /** adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void CategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
+void CategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   for (size_t t=0; t < gvCasesPerCategory.size(); ++t)
     gvCasesPerCategory[t] += DataGateway.GetDataSetInterface(tSetIndex).GetCategoryCaseArrays()[t][0][tNeighborIndex];
 }
@@ -90,7 +90,7 @@ CategoricalTemporalData::CategoricalTemporalData(const DataSetInterface& Interfa
 }
 
 /** class constructor */
-CategoricalTemporalData::CategoricalTemporalData(const AbtractDataSetGateway& DataGateway)
+CategoricalTemporalData::CategoricalTemporalData(const AbstractDataSetGateway& DataGateway)
                         :AbstractTemporalClusterData(),
                          gppCategoryCases(DataGateway.GetDataSetInterface().GetPTCategoryCaseArray()) {
 
@@ -124,8 +124,8 @@ CategoricalTemporalData & CategoricalTemporalData::operator=(const CategoricalTe
 }
 
 /** Not implemented - throws ZdException. */
-void CategoricalTemporalData::AddNeighborData(tract_t, const AbtractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighborData(tract_t,const AbtractDataSetGateway&, size_t) not implemeneted.","CategoricalTemporalData");
+void CategoricalTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
+  ZdGenerateException("AddNeighborData(tract_t,const AbstractDataSetGateway&, size_t) not implemeneted.","CategoricalTemporalData");
 }
 
 /** Not implemented - throws ZdException. */
@@ -157,7 +157,7 @@ void CategoricalTemporalData::Reassociate(const DataSetInterface& Interface) {
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
-void CategoricalTemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+void CategoricalTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
   gppCategoryCases = DataGateway.GetDataSetInterface().GetPTCategoryCaseArray();
 }
 //************** class CategoricalProspectiveSpatialData ***********************
@@ -176,14 +176,14 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
 }
 
 /** class constructor */
-CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway)
+CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway)
                                   :CategoricalTemporalData(DataGateway) {
   try {
     Init();
     Setup(Data, DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor(const CSaTScanData&, const AbtractDataSetGateway&)","CategoricalProspectiveSpatialData");
+    x.AddCallpath("constructor(const CSaTScanData&, const AbstractDataSetGateway&)","CategoricalProspectiveSpatialData");
     throw;
   }
 }
@@ -240,7 +240,7 @@ CategoricalProspectiveSpatialData & CategoricalProspectiveSpatialData::operator=
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void CategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
+void CategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   unsigned int           i, j;
   count_t             ** ppCases = 0;
 
@@ -308,14 +308,14 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Inter
 }
 
 /** class constructor */
-CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbtractDataSetGateway& DataGateway)
+CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbstractDataSetGateway& DataGateway)
                          :CategoricalTemporalData(DataGateway) {
   try {
     Init();
     Setup(DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor(const AbtractDataSetGateway&)","CategoricalSpaceTimeData");
+    x.AddCallpath("constructor(const AbstractDataSetGateway&)","CategoricalSpaceTimeData");
     throw;
   }
 }
@@ -368,7 +368,7 @@ CategoricalSpaceTimeData & CategoricalSpaceTimeData::operator=(const Categorical
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
+void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   count_t            ** ppCases=0;
   unsigned int          i, iMaxWindow = gpCategoryCasesHandler->Get2ndDimension() - 1;
 

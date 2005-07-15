@@ -20,7 +20,7 @@ AbstractCentricAnalysis::~AbstractCentricAnalysis() {}
     loglikelihood ratios recorded to CalculatedRatioContainer_t class member. */
 void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
                                                     CentroidNeighborCalculator& CentroidCalculator,
-                                                    const AbtractDataSetGateway& RealDataGateway,
+                                                    const AbstractDataSetGateway& RealDataGateway,
                                                     const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
     CentroidNeighbors   CentroidDef;
@@ -43,7 +43,7 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
 }
 
 /** Calculates most likely temporal cluster - no action taken in base class. */
-void AbstractCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbtractDataSetGateway&, const DataSetGatewayContainer_t&) {}
+void AbstractCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractDataSetGateway&, const DataSetGatewayContainer_t&) {}
 
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
     CMeasureList class or FindTopRatio() for analyses which must perform

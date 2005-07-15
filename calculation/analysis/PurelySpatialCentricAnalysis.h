@@ -20,19 +20,19 @@ class PurelySpatialCentricAnalysis : public AbstractCentricAnalysis {
     std::auto_ptr<AbstractSpatialClusterData> gAbstractClusterData;  /** abstract instance of spatial cluster data object
                                                                         - used by simulation process */
 
-    void                     Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    void                     Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
 
   protected:
 
 
     virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
-    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway);
+    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
     virtual const CCluster & GetTopCalculatedCluster();
     virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
 
   public:
     PurelySpatialCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
-                                 const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+                                 const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
     virtual ~PurelySpatialCentricAnalysis();
 };
 //******************************************************************************

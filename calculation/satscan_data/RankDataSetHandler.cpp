@@ -56,7 +56,7 @@ SimulationDataContainer_t & RankDataSetHandler::AllocateSimulationData(Simulatio
 }
 
 /** returns new data gateway for real data */
-AbtractDataSetGateway & RankDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
+AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 
@@ -136,7 +136,7 @@ double RankDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 

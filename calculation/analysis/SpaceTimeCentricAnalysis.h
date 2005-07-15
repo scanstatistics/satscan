@@ -11,7 +11,7 @@
     data for each centroid separate than other centroids. */
 class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
   private:
-    void                     Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    void                     Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
 
   protected:
     std::auto_ptr<CSpaceTimeCluster>           gTopCluster;           /** instance of space-time cluster
@@ -26,14 +26,14 @@ class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
     std::auto_ptr<CTimeIntervals>              gTimeIntervals_S;      /** iterates through temporal windows of cluster data */
 
     virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
-    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway);
-    virtual void             ExecuteAboutPurelyTemporalCluster(const AbtractDataSetGateway& DataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
+    virtual void             ExecuteAboutPurelyTemporalCluster(const AbstractDataSetGateway& DataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
     virtual const CCluster & GetTopCalculatedCluster();
     virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
 
   public:
     SpaceTimeCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
-                             const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+                             const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
     virtual ~SpaceTimeCentricAnalysis();
 };
 //******************************************************************************

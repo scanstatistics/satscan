@@ -19,7 +19,7 @@ AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(
 
 /** Returns newly created NormalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const {
+AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const {
   return new NormalSpatialData(DataGateway, iRate);
 }
 
@@ -32,7 +32,7 @@ AbstractTemporalClusterData * NormalClusterDataFactory::GetNewProspectiveSpatial
 
 /** Returns newly created NormalProspectiveSpatialData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * NormalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway) const {
   return new NormalProspectiveSpatialData(Data, DataGateway);
 }
 
@@ -44,7 +44,7 @@ AbstractTemporalClusterData * NormalClusterDataFactory::GetNewTemporalClusterDat
 
 /** Returns newly created NormalTemporalData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * NormalClusterDataFactory::GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * NormalClusterDataFactory::GetNewTemporalClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new NormalTemporalData(DataGateway);
 }
 
@@ -56,7 +56,7 @@ AbstractTemporalClusterData * NormalClusterDataFactory::GetNewSpaceTimeClusterDa
 
 /** Returns newly created NormalSpaceTimeData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * NormalClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * NormalClusterDataFactory::GetNewSpaceTimeClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new NormalSpaceTimeData(DataGateway);
 }
 

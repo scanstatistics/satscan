@@ -15,15 +15,15 @@ class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
     void                        Init();
 
   protected:
-    virtual void                AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
+    virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
     double                      MonteCarloProspective(const DataSetInterface& Interface);
 
   public:
     C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PS_PT_Analysis();
 
-    virtual void                FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
-    virtual double              FindTopRatio(const AbtractDataSetGateway& DataGateway);
+    virtual void                FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual double              FindTopRatio(const AbstractDataSetGateway& DataGateway);
     virtual double              MonteCarlo(const DataSetInterface& Interface);
 };
 //*************************************************************************

@@ -25,7 +25,7 @@ CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
+void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -66,7 +66,7 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& 
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each grid point.                             */
-void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway) {
+void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -95,7 +95,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway&
     likelihood ratio . Caller should not assume that returned reference is
     persistent, but should either call Clone() method or overloaded assignment
     operator. */
-const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
+const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   tract_t               k;
   CentroidNeighbors     CentroidDef;
 

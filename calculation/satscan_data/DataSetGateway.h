@@ -4,20 +4,20 @@
 //******************************************************************************
 #include "DataSetInterface.h"
 
-class AbtractDataSetGateway {
+class AbstractDataSetGateway {
   public:
-    AbtractDataSetGateway() {}
-    virtual ~AbtractDataSetGateway() {}
+    AbstractDataSetGateway() {}
+    virtual ~AbstractDataSetGateway() {}
 
     virtual void                               AddDataSetInterface(DataSetInterface & Interface) = 0;
-    virtual void                               Clear() = 0; 
+    virtual void                               Clear() = 0;
     virtual const DataSetInterface           & GetDataSetInterface(size_t tSetIndex=0) const = 0;
     virtual DataSetInterface                 & GetDataSetInterface(size_t tSetIndex) = 0;
     virtual size_t                             GetNumInterfaces() const = 0;
 };
 
 /** Collection of dataset interfaces. */
-class DataSetGateway : public AbtractDataSetGateway {
+class DataSetGateway : public AbstractDataSetGateway {
   private:
     DataSetInterface         gInterface;
 
@@ -33,7 +33,7 @@ class DataSetGateway : public AbtractDataSetGateway {
 };
 
 /** Collection of dataset interfaces. */
-class MultipleDataSetGateway : public AbtractDataSetGateway {
+class MultipleDataSetGateway : public AbstractDataSetGateway {
   private:
     std::vector<DataSetInterface>              gvDataSetInterfaces;
 

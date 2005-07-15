@@ -19,7 +19,7 @@ AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialCluster
 
 /** Returns newly created CategoricalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction. */
-AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const {
+AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const {
   return new CategoricalSpatialData(DataGateway);
 }
 
@@ -31,7 +31,7 @@ AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewProspectiveSp
 
 /** Returns newly created CategoricalProspectiveSpatialData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction. */
-AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway) const {
   return new CategoricalProspectiveSpatialData(Data, DataGateway);
 }
 
@@ -43,7 +43,7 @@ AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewTemporalClust
 
 /** Returns newly created CategoricalTemporalData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewTemporalClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new CategoricalTemporalData(DataGateway);
 }
 
@@ -55,7 +55,7 @@ AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewSpaceTimeClus
 
 /** Returns newly created CategoricalSpaceTimeData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * CategoricalClusterDataFactory::GetNewSpaceTimeClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new CategoricalSpaceTimeData(DataGateway);
 }
 
@@ -83,7 +83,7 @@ AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpati
 
 /** Returns newly created MultiSetCategoricalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const {
+AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const {
   return new MultiSetCategoricalSpatialData(gClusterDataFactory, DataGateway, iRate);
 }
 
@@ -95,7 +95,7 @@ AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewPros
 
 /** Returns newly created MultiSetCategoricalProspectiveSpatialData object as
     AbstractTemporalClusterData pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway) const {
   return new MultiSetCategoricalProspectiveSpatialData(gClusterDataFactory, Data, DataGateway);
 }
 
@@ -107,7 +107,7 @@ AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewTemp
 
 /** Returns newly created MultiSetTemporalData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewTemporalClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new MultiSetCategoricalTemporalData(gClusterDataFactory, DataGateway);
 }
 
@@ -119,7 +119,7 @@ AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpac
 
 /** Returns newly created MultiSetCategoricalSpaceTimeData object as AbstractTemporalClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const {
+AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpaceTimeClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new MultiSetCategoricalSpaceTimeData(gClusterDataFactory, DataGateway);
 }
 

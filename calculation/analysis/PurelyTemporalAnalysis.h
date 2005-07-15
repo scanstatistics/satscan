@@ -22,16 +22,16 @@ class CPurelyTemporalAnalysis : public CAnalysis {
     void                          Setup();
 
   protected:
-    virtual void                  AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
-    virtual void                  AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway);
-    virtual const CCluster     &  CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway);
+    virtual void                  AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+    virtual void                  AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
+    virtual const CCluster     &  CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
 
   public:
     CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPurelyTemporalAnalysis();
 
-    virtual void                  FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
-    virtual double                FindTopRatio(const AbtractDataSetGateway& DataGateway);
+    virtual void                  FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual double                FindTopRatio(const AbstractDataSetGateway& DataGateway);
     virtual double                MonteCarlo(const DataSetInterface& Interface);
 };
 //******************************************************************************

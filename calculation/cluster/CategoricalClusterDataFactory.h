@@ -15,19 +15,19 @@ class CategoricalClusterDataFactory : public AbstractClusterDataFactory {
 
    //spatial cluster data
    virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const;
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const;
 
    //prospective spatial cluster data
    virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway) const;
 
    //temporal cluster data
    virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const DataSetInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbstractDataSetGateway& DataGateway) const;
 
    //space-time cluster data
    virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const DataSetInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbstractDataSetGateway& DataGateway) const;
 };
 
 /** luster factory class that implements interface for getting cluster
@@ -38,7 +38,7 @@ class CategoricalClusterDataFactory : public AbstractClusterDataFactory {
           'const DataSetInterface&' parameter are not implemented and will
           throw an ZdException. Having multiple datasets imposes requirement
           to perform simulations through same process as that of real data and
-          thus only the functions with 'const AbtractDataSetGateway&' are of
+          thus only the functions with 'const AbstractDataSetGateway&' are of
           us at this time.  */
 class MultiSetsCategoricalClusterDataFactory : public AbstractClusterDataFactory {
  private:
@@ -52,19 +52,19 @@ class MultiSetsCategoricalClusterDataFactory : public AbstractClusterDataFactory
 
    //spatial cluster data
    virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const;
-   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const AbtractDataSetGateway& DataGateway, int iRate) const;
+   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const;
 
    //prospective spatial cluster data
    virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway) const;
 
    //temporal cluster data
    virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const DataSetInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbtractDataSetGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewTemporalClusterData(const AbstractDataSetGateway& DataGateway) const;
 
    //space-time cluster data
    virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const DataSetInterface& Interface) const;
-   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbtractDataSetGateway& DataGateway) const;
+   virtual AbstractTemporalClusterData * GetNewSpaceTimeClusterData(const AbstractDataSetGateway& DataGateway) const;
 };
 //******************************************************************************
 #endif

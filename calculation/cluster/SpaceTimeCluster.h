@@ -10,13 +10,13 @@
 class CSpaceTimeCluster : public CCluster {
   private:
     void                                  Init() {gpClusterData=0;}
-    void                                  Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway);
+    void                                  Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway);
 
   protected:
     AbstractTemporalClusterData         * gpClusterData;
 
   public:
-    CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway);
+    CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway);
     CSpaceTimeCluster(const CSpaceTimeCluster& rhs);
     virtual ~CSpaceTimeCluster();
 
@@ -29,7 +29,7 @@ class CSpaceTimeCluster : public CCluster {
     virtual ClusterType                   GetClusterType() const {return SPACETIMECLUSTER;}
     virtual measure_t                     GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                       GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    void                                  CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway & DataGateway,
+    void                                  CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway & DataGateway,
                                                                                      const CentroidNeighbors& CentroidDef,
                                                                                      CSpaceTimeCluster & TopCluster,
                                                                                      CTimeIntervals& TimeIntervals);

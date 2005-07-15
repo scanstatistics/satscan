@@ -28,7 +28,7 @@ class CPSMonotoneCluster : public CCluster {
     void                        SetTotalTracts();
 
   public:
-    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, int iRate);
+    CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, int iRate);
     CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory, const DataSetInterface & Interface, int iRate);
     CPSMonotoneCluster(const CPSMonotoneCluster& rhs);
     ~CPSMonotoneCluster();

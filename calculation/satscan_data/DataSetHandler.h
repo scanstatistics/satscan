@@ -46,12 +46,12 @@ class DataSetHandler {
 
     //pure virtual public functions
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const = 0;
-    virtual AbtractDataSetGateway     & GetDataGateway(AbtractDataSetGateway& DataGatway) const = 0;
-    virtual AbtractDataSetGateway     & GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const = 0;
+    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const = 0;
+    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const = 0;
     virtual double                      GetSimulationDataSetAllocationRequirements() const = 0;
     virtual bool                        ReadData() = 0;
 
-    AbtractDataSetGateway             * GetNewDataGatewayObject() const;
+    AbstractDataSetGateway             * GetNewDataGatewayObject() const;
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
     const RealDataSet                 & GetDataSet(size_t iSetIndex=0) const {return *gvDataSets[iSetIndex];}
     RealDataSet                       & GetDataSet(size_t iSetIndex=0) {return *gvDataSets[iSetIndex];}

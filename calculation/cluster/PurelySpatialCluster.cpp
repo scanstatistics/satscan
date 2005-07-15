@@ -6,7 +6,7 @@
 
 /** constructor */
 CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                             const AbtractDataSetGateway & DataGateway,
+                                             const AbstractDataSetGateway & DataGateway,
                                              int iRate)
                       :CCluster() {
   try {
@@ -63,7 +63,7 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
 /** Adds neighbor location data from DataGateway to cluster data accumulation and
     calculates loglikelihood ratio. If ratio is greater than that of TopCluster,
     assigns TopCluster to 'this'. */
-void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                        const CentroidNeighbors& CentroidDef,
                                                                        CPurelySpatialCluster& TopCluster,
                                                                        AbstractLikelihoodCalculator& Calculator) {

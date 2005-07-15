@@ -114,7 +114,7 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
 /** Returns new data gateway. Caller is responsible for deleting object.
     If number of data sets is more than one, a MultipleDataSetGateway
     object is returned. Else a  DataSetGateway object is returned. */
-AbtractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
+AbstractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
   if (gvDataSets.size() > 1)
     return new MultipleDataSetGateway();
   else

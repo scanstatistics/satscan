@@ -11,7 +11,7 @@
 PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Parameters,
                                                            const CSaTScanData& Data,
                                                            BasePrint& PrintDirection,
-                                                           const AbtractDataSetGateway& RealDataGateway,
+                                                           const AbstractDataSetGateway& RealDataGateway,
                                                            const DataSetGatewayContainer_t& vSimDataGateways)
                              :AbstractCentricAnalysis(Parameters, Data, PrintDirection) {
   try {
@@ -63,7 +63,7 @@ void PurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const 
 
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
-void PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway) {
+void PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
   if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster object if evaluating data about new centroid
     gTopCluster->Initialize(CentroidDef.GetCentroidIndex());
@@ -107,7 +107,7 @@ void PurelySpatialCentricAnalysis::MonteCarloAboutCentroidDefinition(const Centr
 }
 
 /** Internal function which allocates appropriate objects for evaulate real and simulated data. */
-void PurelySpatialCentricAnalysis::Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
+void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
     //allocate objects used to evaluate real data
     gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
@@ -115,7 +115,7 @@ void PurelySpatialCentricAnalysis::Setup(const AbtractDataSetGateway& RealDataGa
     
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {
-      ZdPointerVector<AbtractDataSetGateway>::const_iterator  itr=vSimDataGateways.begin(), itr_end=vSimDataGateways.end();
+      ZdPointerVector<AbstractDataSetGateway>::const_iterator  itr=vSimDataGateways.begin(), itr_end=vSimDataGateways.end();
 
       gvMeasureLists.DeleteAllElements();
       //create simulation objects based upon which process used to perform simulations

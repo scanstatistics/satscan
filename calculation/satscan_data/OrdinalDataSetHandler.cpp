@@ -51,7 +51,7 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
 }
 
 /** returns new data gateway for real data - caller resonsible for deletion object */
-AbtractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
+AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 
@@ -94,7 +94,7 @@ AbtractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbtractDataSetGate
 }
 
 /** returns new data gateway for simulation data - caller resonsible for deletion object */
-AbtractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 

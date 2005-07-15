@@ -13,9 +13,9 @@ class CPSMonotoneAnalysis : public CPurelySpatialAnalysis {
     void                     Init() {gpMaxCluster=0;}
 
   protected:
-    virtual void             AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
-    virtual void             AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway);
-    virtual const CCluster & CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway);
+    virtual void             AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+    virtual void             AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
+    virtual const CCluster & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
 
   public:
     CPSMonotoneAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);

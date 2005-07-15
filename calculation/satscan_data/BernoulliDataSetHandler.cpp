@@ -55,7 +55,7 @@ SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(Simul
 }
 
 /** returns new data gateway for real data */
-AbtractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
+AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
@@ -103,7 +103,7 @@ AbtractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbtractDataSetGa
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 

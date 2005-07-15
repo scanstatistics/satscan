@@ -5,9 +5,9 @@
 #include "PurelySpatialMonotoneCluster.h"
 #include "ClusterLocationsWriter.h"
 
-/** class constructor - const AbtractDataSetGateway */
+/** class constructor - const AbstractDataSetGateway */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                       const AbtractDataSetGateway & DataGateway, int iRate)
+                                       const AbstractDataSetGateway & DataGateway, int iRate)
                    :CCluster() {
   m_nMaxCircles        = 0;
   m_pCasesList         = 0;

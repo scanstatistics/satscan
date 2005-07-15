@@ -22,7 +22,7 @@ CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
 
 /** Allocates objects used during Monte Carlo simulations instead of repeated
     allocations for each simulation. This method must be called prior to MonteCarlo(). */
-void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
+void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway) {
   try {
     delete gpMeasureList; gpMeasureList=0;
     delete gpClusterData; gpClusterData=0;
@@ -48,7 +48,7 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbtractDataSetGatew
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations. This method must be called prior to CalculateTopCluster(). */
-void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway) {
+void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
   try {
     delete gpClusterComparator; gpClusterComparator=0;
     gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
@@ -64,7 +64,7 @@ void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbtractDataSetGate
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.
     Caller should not assume that returned reference is persistent, but should either call
     Clone() method or overloaded assignment operator. */
-const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway) {
+const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   int                   j;
   CentroidNeighbors     CentroidDef;
 

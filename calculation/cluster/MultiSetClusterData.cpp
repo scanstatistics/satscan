@@ -7,7 +7,7 @@
 #include "LoglikelihoodRatioUnifier.h"
 
 /** class constructor */
-MultiSetSpatialData::MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbtractDataSetGateway& DataGateway, int iRate)
+MultiSetSpatialData::MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate)
                     :AbstractSpatialClusterData(iRate) {
   //Allocate SpatialData object for each data set.
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
@@ -38,7 +38,7 @@ void MultiSetSpatialData::AddMeasureList(CMeasureList*, tract_t, const DataSetIn
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' is a valid index. */
-void MultiSetSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway & DataGateway, size_t) {
+void MultiSetSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighborIndex, DataGateway, i);
@@ -77,7 +77,7 @@ void MultiSetSpatialData::InitializeData() {
 //******************************************************************************
 
 /** class constructor */
-MultiSetTemporalData::MultiSetTemporalData(const ClusterDataFactory& DataFactory, const AbtractDataSetGateway& DataGateway)
+MultiSetTemporalData::MultiSetTemporalData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway)
                      :AbstractMultiSetTemporalData() {
   //Allocate TemporalData object for each data set.
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
@@ -102,8 +102,8 @@ void MultiSetTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
 }
 
 /** Not implemented - throws ZdException. */
-void MultiSetTemporalData::AddNeighborData(tract_t, const AbtractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighbor(tract_t, const AbtractDataSetGateway&, size_t) not implemeneted.","MultiSetTemporalData");
+void MultiSetTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
+  ZdGenerateException("AddNeighbor(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","MultiSetTemporalData");
 }
 
 /** Returns number of cases in accumulated respective data sets' cluster data.
@@ -131,14 +131,14 @@ void MultiSetTemporalData::Reassociate(const DataSetInterface& Interface) {
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
-void MultiSetTemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+void MultiSetTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
   for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr)
      (*gitr)->Reassociate(DataGateway);
 }
 //******************************************************************************
 
 /** class constructor */
-MultiSetProspectiveSpatialData::MultiSetProspectiveSpatialData(const ClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway)
+MultiSetProspectiveSpatialData::MultiSetProspectiveSpatialData(const ClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway)
                                :AbstractMultiSetTemporalData() {
   //Allocate ProspectiveSpatialData object for each data set.
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
@@ -170,7 +170,7 @@ void MultiSetProspectiveSpatialData::Assign(const AbstractTemporalClusterData& r
 
 /** Adds neighbor data to accumulated cluster data  - caller is responsible for
     ensuring that 'tNeighborIndex' is a valid index. */
-void MultiSetProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t) {
+void MultiSetProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighborIndex, DataGateway, i);
@@ -224,7 +224,7 @@ void MultiSetProspectiveSpatialData::InitializeData() {
 //******************************************************************************
 
 /** class constructor */
-MultiSetSpaceTimeData::MultiSetSpaceTimeData(const ClusterDataFactory& DataFactory, const AbtractDataSetGateway& DataGateway)
+MultiSetSpaceTimeData::MultiSetSpaceTimeData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway)
                       :AbstractMultiSetTemporalData() {
   //Allocate SpaceTimeData object for each data set.
   gvSetClusterData.resize(DataGateway.GetNumInterfaces(), 0);
@@ -251,7 +251,7 @@ void MultiSetSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
 
 /** Add neighbor data to accumulation  - caller is responsible for
     ensuring that 'tNeighborIndex' is a valid index. */
-void MultiSetSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t) {
+void MultiSetSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   unsigned int i;
   for (i=0, gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++i, ++gitr)
      (*gitr)->AddNeighborData(tNeighborIndex, DataGateway, i);

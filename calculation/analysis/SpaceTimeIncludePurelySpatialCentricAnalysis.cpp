@@ -8,7 +8,7 @@
 SpaceTimeIncludePurelySpatialCentricAnalysis::SpaceTimeIncludePurelySpatialCentricAnalysis(const CParameters& Parameters,
                                                                                            const CSaTScanData& Data,
                                                                                            BasePrint& PrintDirection,
-                                                                                           const AbtractDataSetGateway& RealDataGateway,
+                                                                                           const AbstractDataSetGateway& RealDataGateway,
                                                                                            const DataSetGatewayContainer_t& vSimDataGateways)
                                              :SpaceTimeCentricAnalysis(Parameters, Data, PrintDirection, RealDataGateway, vSimDataGateways) {
   try {
@@ -65,7 +65,7 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidD
 
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
-void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway) {
+void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
   if (gTopPSCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster object if evaluating data about new centroid
     gTopPSCluster->Initialize(CentroidDef.GetCentroidIndex());
@@ -154,7 +154,7 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::MonteCarloProspectiveAboutCen
 }
 
 /** Internal function which allocates appropriate objects for evaulate real and simulated data. */
-void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
+void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
   IncludeClustersType           eIncludeClustersType;
 
   try {

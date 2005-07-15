@@ -115,7 +115,7 @@ void SVTTClusterSetData::Setup() {
 }
 
 /** constructor for DataSetGateway - used with calculating most likely clusters */
-CSVTTCluster::CSVTTCluster(const AbtractDataSetGateway & DataGateway, int iNumTimeIntervals)
+CSVTTCluster::CSVTTCluster(const AbstractDataSetGateway & DataGateway, int iNumTimeIntervals)
              :CCluster(){
   try {
     Init();
@@ -177,7 +177,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
 }
 
 /** add neighbor tract data from DataGateway */
-void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const AbtractDataSetGateway & DataGateway) {
+void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway & DataGateway) {
   ++m_nTracts;
   for (size_t tSetIndex=0; tSetIndex < DataGateway.GetNumInterfaces(); ++tSetIndex)
     AddNeighbor(tNeighbor, DataGateway.GetDataSetInterface(tSetIndex), tSetIndex);
@@ -274,7 +274,7 @@ void CSVTTCluster::Init() {
 }
 
 /** re-initializes cluster data */
-void CSVTTCluster::InitializeSVTT(tract_t nCenter, const AbtractDataSetGateway & DataGateway) {
+void CSVTTCluster::InitializeSVTT(tract_t nCenter, const AbstractDataSetGateway & DataGateway) {
   CCluster::Initialize(nCenter);
   for (size_t t=0; t < gvSetData.size(); ++t)
      gvSetData[t].InitializeSVTTData(DataGateway.GetDataSetInterface(t));
@@ -292,7 +292,7 @@ void CSVTTCluster::SetTimeTrend(DatePrecisionType eDatePrecision, double nInterv
 }
 
 /** internal setup function for DataSetGateway */
-void CSVTTCluster::Setup(const AbtractDataSetGateway & DataGateway, int iNumTimeIntervals) {
+void CSVTTCluster::Setup(const AbstractDataSetGateway & DataGateway, int iNumTimeIntervals) {
   try {
     giTotalIntervals = iNumTimeIntervals;
     gvSetData.resize(DataGateway.GetNumInterfaces(), SVTTClusterSetData(iNumTimeIntervals));

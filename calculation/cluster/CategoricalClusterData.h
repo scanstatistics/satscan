@@ -8,7 +8,7 @@
 class CategoricalSpatialData : public AbstractSpatialClusterData {
   public:
     CategoricalSpatialData(const DataSetInterface& Interface);
-    CategoricalSpatialData(const AbtractDataSetGateway& DataGateway);
+    CategoricalSpatialData(const AbstractDataSetGateway& DataGateway);
     virtual CategoricalSpatialData * Clone() const;
     virtual ~CategoricalSpatialData();
 
@@ -18,7 +18,7 @@ class CategoricalSpatialData : public AbstractSpatialClusterData {
     virtual void                Assign(const AbstractSpatialClusterData& rhs);
     CategoricalSpatialData    & operator=(const CategoricalSpatialData& rhs);
 
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t             GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
@@ -34,7 +34,7 @@ class CategoricalSpatialData : public AbstractSpatialClusterData {
 class CategoricalTemporalData : public AbstractTemporalClusterData {
   public:
     CategoricalTemporalData(const DataSetInterface& Interface);
-    CategoricalTemporalData(const AbtractDataSetGateway& DataGateway);
+    CategoricalTemporalData(const AbstractDataSetGateway& DataGateway);
     virtual CategoricalTemporalData * Clone() const;
     virtual ~CategoricalTemporalData();
 
@@ -45,14 +45,14 @@ class CategoricalTemporalData : public AbstractTemporalClusterData {
     count_t                  ** gppCategoryCases;        /* pointers to temporal arrays of category case data */
     std::vector<count_t>        gvCasesPerCategory;      /* accumulated cases, organized by category */
 
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual unsigned int        GetAllocationSize() const;
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t             GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);}
     virtual void                Reassociate(const DataSetInterface& Interface);
-    virtual void                Reassociate(const AbtractDataSetGateway& DataGateway);
+    virtual void                Reassociate(const AbstractDataSetGateway& DataGateway);
 };
 
 /** Class representing accumulated data of prospective spatial clustering partitioned by category.
@@ -72,7 +72,7 @@ class CategoricalProspectiveSpatialData : public CategoricalTemporalData {
 
   public:
     CategoricalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
-    CategoricalProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway);
+    CategoricalProspectiveSpatialData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway);
     CategoricalProspectiveSpatialData(const CategoricalProspectiveSpatialData& rhs);
     virtual CategoricalProspectiveSpatialData * Clone() const;
     virtual ~CategoricalProspectiveSpatialData();
@@ -80,13 +80,13 @@ class CategoricalProspectiveSpatialData : public CategoricalTemporalData {
     virtual void                        Assign(const AbstractTemporalClusterData& rhs);
     CategoricalProspectiveSpatialData & operator=(const CategoricalProspectiveSpatialData& rhs);
 
-    virtual void                        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway & DataGateway, size_t tSetIndex=0);
+    virtual void                        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex=0);
     virtual double                      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual unsigned int                GetAllocationSize() const {return gpCategoryCasesHandler->Get2ndDimension();}
     virtual void                        InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);
                                                           gpCategoryCasesHandler->Set(0);}
     virtual void                        Reassociate(const DataSetInterface& Interface) {/*nop*/}
-    virtual void                        Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
+    virtual void                        Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** Class representing accumulated data of space-time clustering partitioned by category.*/
@@ -100,7 +100,7 @@ class CategoricalSpaceTimeData : public CategoricalTemporalData {
 
   public:
     CategoricalSpaceTimeData(const DataSetInterface& Interface);
-    CategoricalSpaceTimeData(const AbtractDataSetGateway& DataGateway);
+    CategoricalSpaceTimeData(const AbstractDataSetGateway& DataGateway);
     CategoricalSpaceTimeData(const CategoricalSpaceTimeData& rhs);
     virtual CategoricalSpaceTimeData   * Clone() const;
     virtual ~CategoricalSpaceTimeData();
@@ -108,11 +108,11 @@ class CategoricalSpaceTimeData : public CategoricalTemporalData {
     virtual void                        Assign(const AbstractTemporalClusterData& rhs);
     CategoricalSpaceTimeData          & operator=(const CategoricalSpaceTimeData& rhs);
 
-    virtual void                        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual void                        InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);
                                                           gpCategoryCasesHandler->Set(0);}
     virtual void                        Reassociate(const DataSetInterface& Interface) {/*nop*/}
-    virtual void                        Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
+    virtual void                        Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
 //******************************************************************************
 #endif

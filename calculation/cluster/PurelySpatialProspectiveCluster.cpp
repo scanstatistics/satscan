@@ -9,7 +9,7 @@
 
 /** constructor */
 CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                                                   const AbtractDataSetGateway & DataGateway,
+                                                                   const AbstractDataSetGateway & DataGateway,
                                                                    const CSaTScanData & Data)
                                  :CCluster() {
   try {
@@ -91,7 +91,7 @@ ZdString& CPurelySpatialProspectiveCluster::GetStartDate(ZdString& sDateString, 
 
 /** Adds neighbor location data from DataGateway to cluster data accumulation and
     evaluates for significant clusterings. Assigns greastest clustering to 'TopCluster'. */
-void CPurelySpatialProspectiveCluster::CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+void CPurelySpatialProspectiveCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                   const CentroidNeighbors& CentroidDef,
                                                                                   CPurelySpatialProspectiveCluster& TopCluster,
                                                                                   AbstractLikelihoodCalculator& Calculator) {
@@ -114,7 +114,7 @@ void CPurelySpatialProspectiveCluster::Initialize(tract_t nCenter = 0) {
   gpClusterData->InitializeData();
 }
 
-void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, const CSaTScanData & Data) {
+void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, const CSaTScanData & Data) {
   try {
     gpClusterData = pClusterFactory->GetNewProspectiveSpatialClusterData(Data, DataGateway);
   }

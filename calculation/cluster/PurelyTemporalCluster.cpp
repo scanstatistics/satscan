@@ -6,7 +6,7 @@
 
 /** constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                               const AbtractDataSetGateway & DataGateway,
+                                               const AbstractDataSetGateway & DataGateway,
                                                IncludeClustersType eIncludeClustersType,
                                                const CSaTScanData & Data)
                        :CCluster() {
@@ -98,7 +98,7 @@ void CPurelyTemporalCluster::Initialize(tract_t nCenter) {
 }
 
 /** internal setup function */
-void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
+void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data) {
   try {
     gpClusterData = pClusterFactory->GetNewTemporalClusterData(DataGateway);
   }

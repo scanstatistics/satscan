@@ -24,7 +24,7 @@ C_ST_PS_Analysis::~C_ST_PS_Analysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void C_ST_PS_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway) {
+void C_ST_PS_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
   try {
     CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
     //delete object used during real data
@@ -64,7 +64,7 @@ void C_ST_PS_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway & D
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each simulation.                                */
-void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway) {
+void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -84,7 +84,7 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbtractDataSetGateway & 
 /** Returns cluster centered at grid point nCenter, with the greatest log likelihood
     ratio. Caller should not assume that returned reference is persistent, but should
     either call Clone() method or overloaded assignment operator. */
-const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway) {
+const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
   int                   j;
   CentroidNeighbors     CentroidDef;
 

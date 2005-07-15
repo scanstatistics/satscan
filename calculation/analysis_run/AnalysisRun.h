@@ -62,8 +62,8 @@ class AnalysisRunner {
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
     bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios;}
     CAnalysis                         * GetNewAnalysisObject() const;
-    AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbtractDataSetGateway& RealDataGateway,
-                                                                    const ZdPointerVector<AbtractDataSetGateway>& vSimDataGateways) const;
+    AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
+                                                                    const ZdPointerVector<AbstractDataSetGateway>& vSimDataGateways) const;
     unsigned short                      GetNumSignificantAt005() const {return guwSignificantAt005;}
     unsigned int                        GetNumSimulationsExecuted() const {return giNumSimsExecuted;}
     double                              GetSimRatio01() const;

@@ -25,7 +25,7 @@ C_ST_PT_Analysis::~C_ST_PT_Analysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway) {
+void C_ST_PT_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -58,7 +58,7 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbtractDataSetGateway & D
     all possible time intervals - populates top cluster array with most likely
     cluster about each grid point plus , possible, one more for purely temporal
     cluster. */
-void C_ST_PT_Analysis::FindTopClusters(const AbtractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -87,7 +87,7 @@ void C_ST_PT_Analysis::FindTopClusters(const AbtractDataSetGateway & DataGateway
 
 /** calculates largest loglikelihood ratio for simulation data - using same
     process as real data */
-double C_ST_PT_Analysis::FindTopRatio(const AbtractDataSetGateway & DataGateway) {
+double C_ST_PT_Analysis::FindTopRatio(const AbstractDataSetGateway & DataGateway) {
   double  dMaxLogLikelihoodRatio=0;
 
   dMaxLogLikelihoodRatio = CSpaceTimeAnalysis::FindTopRatio(DataGateway);

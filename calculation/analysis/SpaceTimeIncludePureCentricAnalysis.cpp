@@ -8,8 +8,8 @@
 SpaceTimeIncludePureCentricAnalysis::SpaceTimeIncludePureCentricAnalysis(const CParameters& Parameters,
                                                                          const CSaTScanData& Data,
                                                                          BasePrint& PrintDirection,
-                                                                         const AbtractDataSetGateway& RealDataGateway,
-                                                                         const ZdPointerVector<AbtractDataSetGateway>& vSimDataGateways)
+                                                                         const AbstractDataSetGateway& RealDataGateway,
+                                                                         const ZdPointerVector<AbstractDataSetGateway>& vSimDataGateways)
                                      :SpaceTimeIncludePurelySpatialCentricAnalysis(Parameters, Data, PrintDirection, RealDataGateway, vSimDataGateways) {}
 
 /** destructor */

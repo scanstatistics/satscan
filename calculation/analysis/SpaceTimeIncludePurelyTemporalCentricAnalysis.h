@@ -10,7 +10,7 @@
 class SpaceTimeIncludePurelyTemporalCentricAnalysis : public SpaceTimeCentricAnalysis {
   public:
     SpaceTimeIncludePurelyTemporalCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
-                             const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+                             const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
     virtual ~SpaceTimeIncludePurelyTemporalCentricAnalysis();
 };
 //******************************************************************************

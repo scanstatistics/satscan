@@ -12,13 +12,13 @@
 class CPurelyTemporalCluster : public CCluster {
   private:
     void                                Init() {gpClusterData=0;}
-    void                                Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
+    void                                Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
 
   protected:
     AbstractTemporalClusterData       * gpClusterData;
 
   public:
-    CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway,
+    CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway,
                            IncludeClustersType eIncludeClustersType, const CSaTScanData & Data);
     CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs);
     virtual ~CPurelyTemporalCluster();

@@ -55,7 +55,7 @@ AnalysisRunner::~AnalysisRunner() {
 /** calculates most likely clusters in real data */
 void AnalysisRunner::CalculateMostLikelyClusters() {
   CAnalysis                  * pAnalysis=0;
-  AbtractDataSetGateway      * pDataSetGateway=0;
+  AbstractDataSetGateway      * pDataSetGateway=0;
 
   try {
     //display process heading
@@ -717,8 +717,8 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
 }
 
 /** returns new AbstractCentricAnalysis object */
-AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const AbtractDataSetGateway& RealDataGateway,
-                                                                      const ZdPointerVector<AbtractDataSetGateway>& vSimDataGateways) const {
+AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
+                                                                      const ZdPointerVector<AbstractDataSetGateway>& vSimDataGateways) const {
   try {
     switch (gParameters.GetAnalysisType()) {
       case PURELYSPATIAL :
@@ -808,7 +808,7 @@ void AnalysisRunner::PerformParallelSimulations() {
   double                      dSimulatedRatio;
   unsigned int                iSimulationNumber;
   char                      * sReplicationFormatString;
-  AbtractDataSetGateway     * pDataGateway=0;
+  AbstractDataSetGateway     * pDataGateway=0;
   CAnalysis                 * pAnalysis=0;
   SimulationDataContainer_t   SimulationDataContainer;
   RandomizerContainer_t       RandomizationContainer;
@@ -857,7 +857,7 @@ void AnalysisRunner::PerformSerializedSimulations() {
   double                                  dSimulatedRatio;
   unsigned int                            iSimulationNumber;
   char                                  * sReplicationFormatString;
-  AbtractDataSetGateway                 * pDataGateway=0;
+  AbstractDataSetGateway                * pDataGateway=0;
   CAnalysis                             * pAnalysis=0;
   SimulationDataContainer_t               SimulationDataContainer;
   RandomizerContainer_t                   RandomizationContainer;

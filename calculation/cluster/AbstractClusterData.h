@@ -14,7 +14,7 @@ class AbstractClusterData {
 
     virtual AbstractClusterData * Clone() const = 0;
 
-    virtual void        AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0) = 0;
+    virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0) = 0;
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const = 0;
 
@@ -46,7 +46,7 @@ class AbstractTemporalClusterData : public AbstractClusterData {
     virtual void                          Assign(const AbstractTemporalClusterData& rhs) = 0;
     virtual AbstractTemporalClusterData * Clone() const = 0;
     virtual void                          Reassociate(const DataSetInterface& Interface);
-    virtual void                          Reassociate(const AbtractDataSetGateway& DataGateway);
+    virtual void                          Reassociate(const AbstractDataSetGateway& DataGateway);
 };
 //******************************************************************************
 #endif

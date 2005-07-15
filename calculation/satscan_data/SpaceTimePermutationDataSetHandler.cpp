@@ -46,7 +46,7 @@ SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulatio
 }
 
 /** returns new data gateway for real data */
-AbtractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
+AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 
@@ -86,7 +86,7 @@ AbtractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abtra
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface        Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                     t;
 

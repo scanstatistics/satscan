@@ -22,9 +22,9 @@ class CSpaceTimeAnalysis : public CAnalysis {
     CMeasureList             * gpMeasureList;       /** measure list object utilized in calculated simulation ratio */
     CTimeIntervals           * gpTimeIntervals;     /** iterates through temporal windows of cluster data */
 
-    virtual void               AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
-    virtual void               AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway);
-    virtual const CCluster   & CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway& DataGateway);
+    virtual void               AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+    virtual void               AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
+    virtual const CCluster   & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
 
   public:
     CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);

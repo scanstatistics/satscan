@@ -14,7 +14,7 @@ class CPurelySpatialCluster : public CCluster {
     AbstractSpatialClusterData        * gpClusterData;
 
   public:
-    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, int iRate);
+    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, int iRate);
     CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
     virtual ~CPurelySpatialCluster();
 
@@ -24,7 +24,7 @@ class CPurelySpatialCluster : public CCluster {
     virtual inline AbstractClusterData       * GetClusterData() {return gpClusterData;}
     virtual inline const AbstractClusterData * GetClusterData() const {return gpClusterData;}
 
-    void                                CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+    void                                CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                    const CentroidNeighbors& CentroidDef,
                                                                                    CPurelySpatialCluster& TopCluster,
                                                                                    AbstractLikelihoodCalculator& Calculator);

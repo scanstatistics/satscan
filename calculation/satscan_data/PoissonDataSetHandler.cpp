@@ -122,7 +122,7 @@ bool PoissonDataSetHandler::CreatePopulationData(size_t tSetIndex) {
     utilized in calculating most likely clusters (real data) for the Poisson
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
-AbtractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
+AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
@@ -180,7 +180,7 @@ AbtractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbtractDataSetGate
     utilized in performing simulations (Monte Carlo) for the Poisson
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
-AbtractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 

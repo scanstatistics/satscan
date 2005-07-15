@@ -21,8 +21,8 @@ class OrdinalDataSetHandler : public DataSetHandler {
     virtual ~OrdinalDataSetHandler();
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual AbtractDataSetGateway     & GetDataGateway(AbtractDataSetGateway& DataGatway) const;
-    virtual AbtractDataSetGateway     & GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
+    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
+    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual double                      GetSimulationDataSetAllocationRequirements() const;
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);

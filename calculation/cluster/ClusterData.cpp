@@ -15,7 +15,7 @@ SpatialData::SpatialData(const DataSetInterface& Interface, int iRate)
 }
 
 /** class constructor */
-SpatialData::SpatialData(const AbtractDataSetGateway& DataGateway, int iRate)
+SpatialData::SpatialData(const AbstractDataSetGateway& DataGateway, int iRate)
             :AbstractSpatialClusterData(iRate),
              gtTotalCases(DataGateway.GetDataSetInterface().GetTotalCasesCount()),
              gtTotalMeasure(DataGateway.GetDataSetInterface().GetTotalMeasureCount()) {
@@ -57,7 +57,7 @@ SpatialData & SpatialData::operator=(const SpatialData& rhs) {
 
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void SpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
+void SpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   gtCases += DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
   gtMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
 }
@@ -101,7 +101,7 @@ TemporalData::TemporalData(const DataSetInterface& Interface)
 }
 
 /** class constructor */
-TemporalData::TemporalData(const AbtractDataSetGateway& DataGateway)
+TemporalData::TemporalData(const AbstractDataSetGateway& DataGateway)
              :AbstractTemporalClusterData(),
               gpCases(DataGateway.GetDataSetInterface().GetPTCaseArray()),
               gpMeasure(DataGateway.GetDataSetInterface().GetPTMeasureArray()),
@@ -144,8 +144,8 @@ TemporalData & TemporalData::operator=(const TemporalData& rhs) {
 }
 
 /** Not implemented - throws exception. */
-void TemporalData::AddNeighborData(tract_t, const AbtractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighborData(tract_t, const AbtractDataSetGateway&, size_t) not implemeneted.","TemporalData");
+void TemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
+  ZdGenerateException("AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","TemporalData");
 }
 
 /** Not implemented - throws exception. */
@@ -171,7 +171,7 @@ void TemporalData::Reassociate(const DataSetInterface& Interface) {
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
-void TemporalData::Reassociate(const AbtractDataSetGateway& DataGateway) {
+void TemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
    gpCases = DataGateway.GetDataSetInterface().GetPTCaseArray();
    gpMeasure = DataGateway.GetDataSetInterface().GetPTMeasureArray();
 }
@@ -191,14 +191,14 @@ ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const D
 }
 
 /** class constructor */
-ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway)
+ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway)
                        :TemporalData() {
   try {
     Init();
     Setup(Data, DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor(const CSaTScanData&, const AbtractDataSetGateway&)","ProspectiveSpatialData");
+    x.AddCallpath("constructor(const CSaTScanData&, const AbstractDataSetGateway&)","ProspectiveSpatialData");
     throw;
   }
 }
@@ -298,7 +298,7 @@ void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void ProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
+void ProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   unsigned int           i, j;
   count_t             ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t           ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
@@ -380,14 +380,14 @@ SpaceTimeData::SpaceTimeData(const DataSetInterface& Interface)
 }
 
 /** class constructor */
-SpaceTimeData::SpaceTimeData(const AbtractDataSetGateway& DataGateway)
+SpaceTimeData::SpaceTimeData(const AbstractDataSetGateway& DataGateway)
               :TemporalData() {
   try {
     Init();
     Setup(DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
-    x.AddCallpath("constructor(const AbtractDataSetGateway&)","SpaceTimeData");
+    x.AddCallpath("constructor(const AbstractDataSetGateway&)","SpaceTimeData");
     throw;
   }
 }
@@ -475,7 +475,7 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
 
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void SpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex) {
+void SpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
 

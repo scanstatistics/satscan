@@ -26,9 +26,9 @@ class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
     CPurelySpatialProspectiveCluster  * gpPSPClusterComparator;
     intermediate_psp_clusters_t         gPSPTopShapeClusters;
 
-    virtual void                        AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway);
-    virtual void                        AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway);
-    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway);
+    virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway);
+    virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway);
+    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
     virtual const CCluster            & GetTopCalculatedCluster();
     double                              MonteCarloProspective(const DataSetInterface & Interface);
 

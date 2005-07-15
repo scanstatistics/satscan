@@ -9,7 +9,7 @@
 class SpatialData : public AbstractSpatialClusterData {
   public:
     SpatialData(const DataSetInterface& Interface, int iRate);
-    SpatialData(const AbtractDataSetGateway& DataGateway, int iRate);
+    SpatialData(const AbstractDataSetGateway& DataGateway, int iRate);
     virtual ~SpatialData();
 
     //public data members -- public for speed considerations
@@ -23,7 +23,7 @@ class SpatialData : public AbstractSpatialClusterData {
     SpatialData         & operator=(const SpatialData& rhs);
 
     inline /*virtual*/ void   AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList);
-    virtual void          AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void          AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double        CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t     GetMeasure(unsigned int tSetIndex=0) const;
@@ -61,7 +61,7 @@ class TemporalData : public AbstractTemporalClusterData {
 
   public:
     TemporalData(const DataSetInterface& Interface);
-    TemporalData(const AbtractDataSetGateway& DataGateway);
+    TemporalData(const AbstractDataSetGateway& DataGateway);
     virtual ~TemporalData();
 
     virtual void                Assign(const AbstractTemporalClusterData& rhs);
@@ -75,13 +75,13 @@ class TemporalData : public AbstractTemporalClusterData {
     count_t                     gtTotalCases;
     measure_t                   gtTotalMeasure;
 
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual unsigned int        GetAllocationSize() const;
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                InitializeData() {gtCases=0;gtMeasure=0;}
     virtual void                Reassociate(const DataSetInterface& Interface);
-    virtual void                Reassociate(const AbtractDataSetGateway& DataGateway);
+    virtual void                Reassociate(const AbstractDataSetGateway& DataGateway);
 };
 
 /** Class representing accumulated data of prospective spatial clustering
@@ -101,7 +101,7 @@ class ProspectiveSpatialData : public TemporalData {
 
   public:
     ProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
-    ProspectiveSpatialData(const CSaTScanData& Data, const AbtractDataSetGateway& DataGateway);
+    ProspectiveSpatialData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway);
     ProspectiveSpatialData(const ProspectiveSpatialData& rhs);
     virtual ~ProspectiveSpatialData();
 
@@ -110,12 +110,12 @@ class ProspectiveSpatialData : public TemporalData {
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
 
     /*virtual*/ void                 AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList);
-    virtual void                     AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void                     AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double                   CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
     inline virtual void              InitializeData();
     virtual void                     Reassociate(const DataSetInterface& Interface) {/*nop*/}
-    virtual void                     Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
+    virtual void                     Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** re-initialize data */
@@ -138,7 +138,7 @@ class SpaceTimeData : public TemporalData {
 
   public:
     SpaceTimeData(const DataSetInterface& Interface);
-    SpaceTimeData(const AbtractDataSetGateway& DataGateway);
+    SpaceTimeData(const AbstractDataSetGateway& DataGateway);
     SpaceTimeData(const SpaceTimeData& rhs);
     virtual ~SpaceTimeData();
 
@@ -150,10 +150,10 @@ class SpaceTimeData : public TemporalData {
                                                           const DataSetInterface& Interface,
                                                           CTimeIntervals& TimeIntervals,
                                                           CMeasureList& MeasureList);
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbtractDataSetGateway & DataGateway, size_t tSetIndex=0);
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t tSetIndex=0);
     inline virtual void         InitializeData();
     virtual void                Reassociate(const DataSetInterface& Interface) {/*nop*/}
-    virtual void                Reassociate(const AbtractDataSetGateway& DataGateway) {/*nop*/}
+    virtual void                Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** re-initialize data*/

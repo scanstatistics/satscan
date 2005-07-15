@@ -7,24 +7,24 @@
 /** forward class declarations */
 class CCluster;
 class MostLikelyClustersContainer;
-class AbtractDataSetGateway;
+class AbstractDataSetGateway;
 class DataSetInterface;
 
 /** Abstract base class which defines methods for calculating top clusters and
     simulated log likelihood ratios. */
 class CAnalysis : public AbstractAnalysis {
   protected:
-    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway) = 0;
+    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
 
   public:
     CAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~CAnalysis();
 
-    virtual void                        AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway) = 0;
-    virtual void                        AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway) = 0;
-    double                              ExecuteSimulation(const AbtractDataSetGateway& DataGateway);
-    virtual void                        FindTopClusters(const AbtractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
-    virtual double                      FindTopRatio(const AbtractDataSetGateway & DataGateway);
+    virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) = 0;
+    virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) = 0;
+    double                              ExecuteSimulation(const AbstractDataSetGateway& DataGateway);
+    virtual void                        FindTopClusters(const AbstractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual double                      FindTopRatio(const AbstractDataSetGateway & DataGateway);
     virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
 
 };

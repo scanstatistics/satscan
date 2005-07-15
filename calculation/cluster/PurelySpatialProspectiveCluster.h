@@ -15,11 +15,11 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     AbstractTemporalClusterData              * gpClusterData;
 
     void                        	       Init() {gpClusterData=0;}
-    void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway, const CSaTScanData & Data);
+    void			               Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, const CSaTScanData & Data);
 
   public:
     CPurelySpatialProspectiveCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                     const AbtractDataSetGateway & DataGateway,
+                                     const AbstractDataSetGateway & DataGateway,
                                      const CSaTScanData & Data);
     CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs);
     virtual ~CPurelySpatialProspectiveCluster();
@@ -35,7 +35,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     virtual measure_t                          GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                            GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual ZdString                         & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    void                                       CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway& DataGateway,
+    void                                       CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                           const CentroidNeighbors& CentroidDef,
                                                                                           CPurelySpatialProspectiveCluster& TopCluster,
                                                                                           AbstractLikelihoodCalculator& Calculator);

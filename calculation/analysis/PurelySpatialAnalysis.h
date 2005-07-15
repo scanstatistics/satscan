@@ -20,14 +20,14 @@ class CPurelySpatialAnalysis : public CAnalysis {
     CMeasureList              * gpMeasureList;       /** measure list object utilized in calculated simulation ratio */
 
   protected:
-    virtual const CCluster    & CalculateTopCluster(tract_t nCenter, const AbtractDataSetGateway& DataGateway);
+    virtual const CCluster    & CalculateTopCluster(tract_t nCenter, const AbstractDataSetGateway& DataGateway);
 
   public:
     CPurelySpatialAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPurelySpatialAnalysis();
 
-    virtual void                AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway);
-    virtual void                AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway);
+    virtual void                AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
+    virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
     virtual double              MonteCarlo(const DataSetInterface& Interface);
 };
 //******************************************************************************

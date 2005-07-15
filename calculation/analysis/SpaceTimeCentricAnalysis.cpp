@@ -10,7 +10,7 @@
 SpaceTimeCentricAnalysis::SpaceTimeCentricAnalysis(const CParameters& Parameters,
                                                    const CSaTScanData& Data,
                                                    BasePrint& PrintDirection,
-                                                   const AbtractDataSetGateway& RealDataGateway,
+                                                   const AbstractDataSetGateway& RealDataGateway,
                                                    const DataSetGatewayContainer_t& vSimDataGateways)
                          :AbstractCentricAnalysis(Parameters, Data, PrintDirection) {
   try {
@@ -60,7 +60,7 @@ void SpaceTimeCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const Cent
 
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
-void SpaceTimeCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbtractDataSetGateway& DataGateway) {
+void SpaceTimeCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
   if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster object if evaluating data about new centroid
     gTopCluster->Initialize(CentroidDef.GetCentroidIndex());
@@ -78,7 +78,7 @@ void SpaceTimeCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const 
     1) 'vDataGateways' contains a number of elements equal to number of requested simulations
     2) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data
     3) RetrieveLoglikelihoodRatios() has not been called yet */
-void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbtractDataSetGateway& DataGateway,
+void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractDataSetGateway& DataGateway,
                                                                  const DataSetGatewayContainer_t& vSimDataGateways) {
   IncludeClustersType           eIncludeClustersType;
 
@@ -97,7 +97,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbtractDa
       gRetainedClusters.push_back(TopCluster.Clone());
 
     //calculate simulated ratios  
-    ZdPointerVector<AbtractDataSetGateway>::const_iterator  itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
+    ZdPointerVector<AbstractDataSetGateway>::const_iterator  itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
     std::auto_ptr<AbstractTemporalClusterData>              PTClusterData;
 
     PTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
@@ -157,7 +157,7 @@ void SpaceTimeCentricAnalysis::MonteCarloAboutCentroidDefinition(const CentroidN
 }
 
 /** Internal function which allocates appropriate objects for evaulate real and simulated data. */
-void SpaceTimeCentricAnalysis::Setup(const AbtractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
+void SpaceTimeCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
   IncludeClustersType           eIncludeClustersType;
 
   try {

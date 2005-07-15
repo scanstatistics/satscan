@@ -26,7 +26,7 @@ CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
-void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway& DataGateway) {
+void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
@@ -66,16 +66,16 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbtractDataSetGate
     of repeated allocations for each simulation.
     NOTE: No action taken in this function for this class. Objects are allocated
           directly in CPurelyTemporalAnalysis::FindTopClusters(). */
-void CPurelyTemporalAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway& DataGateway) {}
+void CPurelyTemporalAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {}
 
-const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway) {
+const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
   ZdGenerateException("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
   return *gpTopCluster;
 }
 
 /** Calculate most likely, purely temporal, cluster and adds clone of top cluster
     to top cluster array. */
-void CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
   CTimeIntervals              * pTimeIntervals=0;  
 
@@ -105,7 +105,7 @@ void CPurelyTemporalAnalysis::FindTopClusters(const AbtractDataSetGateway& DataG
 }
 
 /** calculates greatest loglikelihood ratio for a temporal cluster */
-double CPurelyTemporalAnalysis::FindTopRatio(const AbtractDataSetGateway&) {
+double CPurelyTemporalAnalysis::FindTopRatio(const AbstractDataSetGateway&) {
   //re-initialize comparator cluster and top cluster
   gpClusterComparator->Initialize();
   gpTopCluster->Initialize();

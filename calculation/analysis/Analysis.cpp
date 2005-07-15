@@ -16,7 +16,7 @@ CAnalysis::~CAnalysis() {}
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
     TMeasureList class or FindTopRatio() for analyses which must perform
     simulations by the same algorithm as the real data. */
-double CAnalysis::ExecuteSimulation(const AbtractDataSetGateway& DataGateway) {
+double CAnalysis::ExecuteSimulation(const AbstractDataSetGateway& DataGateway) {
   if (geReplicationsProcessType == MeasureListEvaluation)
     return MonteCarlo(DataGateway.GetDataSetInterface(0));
   else
@@ -26,7 +26,7 @@ double CAnalysis::ExecuteSimulation(const AbtractDataSetGateway& DataGateway) {
 /** Given data gate way, calculates and collects most likely clusters about
     each grid point. Collection of clusters are sorted by loglikelihood ratio
     and condensed based upon overlapping geographical areas.                */
-void CAnalysis::FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void CAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   int                   i;
   clock_t               tStartTime;
 
@@ -49,7 +49,7 @@ void CAnalysis::FindTopClusters(const AbtractDataSetGateway& DataGateway, MostLi
 }
 
 /** calculates greatest loglikelihood ratio about each centroid(grid point) */
-double CAnalysis::FindTopRatio(const AbtractDataSetGateway& DataGateway) {
+double CAnalysis::FindTopRatio(const AbstractDataSetGateway& DataGateway) {
   int                   i;
   double                dMaxLogLikelihoodRatio=0;
 

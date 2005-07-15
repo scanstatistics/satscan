@@ -59,7 +59,7 @@ class CSVTTCluster : public CCluster  {
 
   private:
     void                        Init();
-    void                        Setup(const AbtractDataSetGateway & DataGateway, int iNumTimeIntervals);
+    void                        Setup(const AbstractDataSetGateway & DataGateway, int iNumTimeIntervals);
     void                        Setup(const DataSetInterface & Interface, int iNumTimeIntervals);
     void                        Setup(const CSVTTCluster & rhs);
 
@@ -69,14 +69,14 @@ class CSVTTCluster : public CCluster  {
     double                      m_nLogLikelihood;     // Log Likelihood
 
   public:
-    CSVTTCluster(const AbtractDataSetGateway & DataGateway, int iNumTimeIntervals);
+    CSVTTCluster(const AbstractDataSetGateway & DataGateway, int iNumTimeIntervals);
     CSVTTCluster(const DataSetInterface & Interface, int iNumTimeIntervals);
     CSVTTCluster(const CSVTTCluster & rhs);
     ~CSVTTCluster();
 
     CSVTTCluster              & operator=(const CSVTTCluster& rhs);
 
-    void                        AddNeighbor(tract_t tNeighbor, const AbtractDataSetGateway & DataGateway);
+    void                        AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway & DataGateway);
     void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface, size_t tSetIndex);    
     virtual CSVTTCluster      * Clone() const;
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
@@ -92,7 +92,7 @@ class CSVTTCluster : public CCluster  {
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gvSetData[tSetIndex].gtTotalCasesInsideCluster;}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    virtual void                InitializeSVTT(tract_t nCenter, const AbtractDataSetGateway & DataGateway);
+    virtual void                InitializeSVTT(tract_t nCenter, const AbstractDataSetGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataSetInterface & Interface);
     void                        SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);
 };

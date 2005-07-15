@@ -15,14 +15,14 @@ CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {}
     for each simulation.
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           simulation process. This function is only a shell.                     */
-void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbtractDataSetGateway & DataGateway) {
+void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
 }
 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each simulation.
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           process of finding most likely clusters. */
-void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataSetGateway & DataGateway) {
+void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) {
   try {
     CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
     thisCluster.InitializeSVTT(0, DataGateway);
@@ -35,7 +35,7 @@ void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbtractDataS
 }
 
 /** calculates most likely cluster about central location 'tCenter' */
-const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbtractDataSetGateway & DataGateway) {
+const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
   int                   k;
   tract_t               i, iNumNeighbors;
 

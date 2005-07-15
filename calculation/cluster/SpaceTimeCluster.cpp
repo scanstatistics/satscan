@@ -5,7 +5,7 @@
 #include "SpaceTimeCluster.h"
 
 /** constructor */
-CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway)
+CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway)
                   :CCluster() {
   try {
     Init();
@@ -89,7 +89,7 @@ count_t CSpaceTimeCluster::GetObservedCountForTract(tract_t tTractIndex, const C
 
 /** Adds neighbor tract data from DataGateway to cluster data accumulation and
     evaluates for significant clusterings. Assigns greastest clustering to 'TopCluster'. */
-void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const AbtractDataSetGateway & DataGateway,
+void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway & DataGateway,
                                                                    const CentroidNeighbors& CentroidDef,
                                                                    CSpaceTimeCluster& TopCluster,
                                                                    CTimeIntervals& TimeIntervals) {
@@ -112,7 +112,7 @@ void CSpaceTimeCluster::Initialize(tract_t nCenter) {
 }
 
 /** internal setup function */
-void CSpaceTimeCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbtractDataSetGateway & DataGateway) {
+void CSpaceTimeCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway) {
   try {
     gpClusterData = pClusterFactory->GetNewSpaceTimeClusterData(DataGateway);
   }

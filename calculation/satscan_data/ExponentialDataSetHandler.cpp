@@ -66,7 +66,7 @@ SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(Si
 }
 
 /** returns new data gateway for real data */
-AbtractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbtractDataSetGateway& DataGatway) const {
+AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 
@@ -114,7 +114,7 @@ AbtractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbtractDataSet
 }
 
 /** returns new data gateway for simulation data */
-AbtractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(AbtractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
   size_t                        t;
 

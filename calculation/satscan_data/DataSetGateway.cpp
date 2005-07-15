@@ -5,7 +5,7 @@
 #include "DataSetGateway.h"
 
 /** constructor */
-DataSetGateway::DataSetGateway() : AbtractDataSetGateway() {}
+DataSetGateway::DataSetGateway() : AbstractDataSetGateway() {}
 
 /** destructor */                            
 DataSetGateway::~DataSetGateway() {}
@@ -18,7 +18,7 @@ void DataSetGateway::AddDataSetInterface(DataSetInterface& Interface) {
 
 
 /** constructor */
-MultipleDataSetGateway::MultipleDataSetGateway() : AbtractDataSetGateway() {}
+MultipleDataSetGateway::MultipleDataSetGateway() : AbstractDataSetGateway() {}
 
 /** destructor */                            
 MultipleDataSetGateway::~MultipleDataSetGateway() {}
