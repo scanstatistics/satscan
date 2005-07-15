@@ -11,8 +11,8 @@
 
 const unsigned stsMCSimJobSource::guaAutoAbortCheckPoints[] = { 99, 199, 499, 999 };
 const float stsMCSimJobSource::guaAutoAbortCheckCutoffValues[] = { 0.5, 0.4, 0.2, 0.1 };
-BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckPoints)/sizeof(unsigned))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
-BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckCutoffValues)/sizeof(float))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
+//BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckPoints)/sizeof(unsigned))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
+//BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckCutoffValues)/sizeof(float))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
 
 
 
@@ -323,7 +323,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
       (guAutoAbortCheckIdx < guAutoAbortCheckCount)//auto-abort checking
      ? guPreviousAutoAbortCheckPoint + gAutoAbortResultsRegistered.count()
      : (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.SatScanPrintf(gszReplicationFormatString, uiJobsProcessedCount, guiJobCount, rResult.second);
+    grPrintDirection.SatScanPrintf(gszReplicationFormatString, uiJobsProcessedCount, guiJobCount, rResult.second.first);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       ZdTimestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
