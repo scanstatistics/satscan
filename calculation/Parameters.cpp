@@ -1346,7 +1346,7 @@ void CParameters::SetNumberEllipsoidRotations(int iNumberRotations, int iEllipso
 }
 
 /** Sets number of Monte Carlo replications to run. */
-void CParameters::SetNumberMonteCarloReplications(int iReplications) {
+void CParameters::SetNumberMonteCarloReplications(unsigned int iReplications) {
   //Validity of setting is checked in ValidateParameters().
   giReplications = iReplications;
 }
@@ -2262,11 +2262,8 @@ bool CParameters::ValidateParameters(BasePrint & PrintDirection) {
       if (! ValidateSimulationDataParameters(PrintDirection))
         bValid = false;
 
-      //validate hidden parameter which specifies randomization seed
-      if (!(0 < glRandomizationSeed && glRandomizationSeed < RandomNumberGenerator::glM)) {
-         bValid = false;
-         PrintDirection.SatScanPrintWarning("Error: Randomization seed out of range [1 - %ld].\n", RandomNumberGenerator::glM);
-      }
+      if (! ValidateRandomizationSeed(PrintDirection))
+        bValid = false;
     }
     else {
       PrintDirection.SatScanPrintWarning("Warning: Parameters will not be validated, in accordance with the setting of the validation\n"
@@ -2337,6 +2334,73 @@ bool CParameters::ValidateProspectiveDate(BasePrint& PrintDirection) const {
     throw;
   }
   return bReturnValue;
+}
+
+/** Validates parameters parameters related to randomization seed.
+    Prints errors to print direction and returns whether values are vaild. */
+bool CParameters::ValidateRandomizationSeed(BasePrint& PrintDirection) const {
+  double        dMaxRandomizationSeed, dMaxReplications, dMaxSeed;
+
+  if (giReplications) {
+    //validate hidden parameter which specifies randomization seed
+    if (!(0 < glRandomizationSeed && glRandomizationSeed < RandomNumberGenerator::glM)) {
+      PrintDirection.SatScanPrintWarning("Error: Randomization seed out of range [1 - %ld].\n", RandomNumberGenerator::glM - 1);
+      return false;
+    }
+
+    //validate that generated seeds during randomization will not exceed defined range
+    // - note that though the number of data sets has a bearing on the maximum seed, but we
+    //   will not indicate to user to reduce the number of data sets in order to correct issues.
+    dMaxRandomizationSeed = (double)glRandomizationSeed + (double)giReplications + (double)(GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
+
+    if (dMaxRandomizationSeed >= static_cast<double>(RandomNumberGenerator::glM)) {
+      //case #1 - glRandomizationSeed == RandomNumberGenerator::glDefaultSeed
+      //    In this case, it is assumed that user accepted default - at this time
+      //    changing the initial seed through parameter settings is a 'hidden' parameter;
+      //    so no direction should be given regarding the alteration of seed value.
+      if (glRandomizationSeed == RandomNumberGenerator::glDefaultSeed) {
+        dMaxReplications = (double)RandomNumberGenerator::glM - (double)glRandomizationSeed - (double)(GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
+        dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
+        PrintDirection.SatScanPrintWarning("Error: Requested number of replications causes randomization seed to exceed defined limit.\n"
+                                           "       Maximum number of replications is %.0lf.\n", dMaxReplications);
+        return false;
+      }
+      //case #2 - user specified alternate randomization seed
+      //    This alternate seed or the number of requested replications could be the problem.
+      //    User has two options, either pick a lesser seed or request less replications.
+      //calculate maximum seed for requested number of replications
+      dMaxSeed = (double)RandomNumberGenerator::glM - (double)giReplications - (double)(GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
+      //calculate maximum number of replications for requested seed
+      dMaxReplications = (double)RandomNumberGenerator::glM - (double)glRandomizationSeed - (double)(GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
+      dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
+      //check whether specified combination of seed and requested number of replications fights each other 
+      if (dMaxReplications < 9 && (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM)) {
+        PrintDirection.SatScanPrintWarning("Error: Randomization seed will exceed defined limit.\n"
+                                           "       The specified initial seed, in conjunction with the number of replications,\n"
+                                           "       contend for numerical range in defined limits. Please modify the specified\n"
+                                           "       initial seed and/or lessen the number of replications and try again.\n");
+      }
+      //check that randomization seed is not so large that we can't run any replications
+      else if (dMaxReplications < 9) {
+        PrintDirection.SatScanPrintWarning("Error: Randomization seed will exceed defined limit.\n"
+                                           "       The intial seed specified prevents any replications from being performed.\n"
+                                           "       With %ld replications, the initial seed can be [0 - %.0lf].\n", giReplications, dMaxSeed);
+      }
+      //check that number of replications isn't too large
+      else if (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM) {
+        PrintDirection.SatScanPrintWarning("Error: Requested number of replications causes randomization seed to exceed defined limit.\n"
+                                           "       With initial seed of %i, maximum number of replications is %.0lf.\n", glRandomizationSeed, dMaxReplications);
+      }
+      else {
+        PrintDirection.SatScanPrintWarning("Error: Randomization seed will exceed defined limit.\n"
+                                           "       Either limit the number of replications to %.0lf or\n"
+                                           "       define the initial seed to a value less than %.0lf.\n", dMaxReplications, dMaxSeed);
+      }
+      return false;
+    }
+  }
+
+  return true;   
 }
 
 /** Validates parameters used in optional start and end ranges for time windows.

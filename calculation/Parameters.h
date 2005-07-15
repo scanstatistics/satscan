@@ -181,6 +181,7 @@ class CParameters {
     bool                                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
     bool                                ValidateProspectiveDate(BasePrint& PrintDirection) const;
+    bool                                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool                                ValidateRangeParameters(BasePrint & PrintDirection) const;
     bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
     bool                                ValidateSimulationDataParameters(BasePrint & PrintDirection);
@@ -328,7 +329,7 @@ class CParameters {
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberEllipses(int iNumEllipses);
     void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);
-    void                                SetNumberMonteCarloReplications(int iReplications);
+    void                                SetNumberMonteCarloReplications(unsigned int iReplications);
     void                                SetNumSequentialScans(int iNumSequentialScans);
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
     void                                SetOutputAreaSpecificDBase(bool b) {gbOutputAreaSpecificDBase = b;}
