@@ -58,9 +58,9 @@
   #define macroRunTimeStopFocused(p)    GetToolkit().GetRunTimeComponentManager().StopFocused(p)
 #else
   #define macroRunTimeManagerInit()     ((void)0)
-  #define macroRunTimeManagerPrint()    ((void)0)
+  #define macroRunTimeManagerPrint(p)    ((void)0)
   #define macroRunTimeStartSerial(p)    ((void)0)
-  #define macroRunTimeStopSerial(p)     ((void)0)
+  #define macroRunTimeStopSerial()     ((void)0)
   #define macroRunTimeStartFocused(p)   ((void)0)
   #define macroRunTimeStopFocused(p)    ((void)0)
 #endif
