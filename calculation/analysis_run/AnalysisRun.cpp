@@ -1021,7 +1021,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
       //run threads:
       boost::thread_group tg;
       boost::mutex        thread_mutex;
-      for (int i = 0; i < ulParallelProcessCount; ++i) {
+      for (unsigned u=0; u < ulParallelProcessCount; ++u) {
         stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
         tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
       }

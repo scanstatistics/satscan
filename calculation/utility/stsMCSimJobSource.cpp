@@ -280,7 +280,7 @@ void stsMCSimJobSource::RegisterResult_AutoAbortConditionExists(job_id_type cons
 }
 
 //register a result when a previously registered result indicated an exception.
-void stsMCSimJobSource::RegisterResult_ExceptionConditionExists(job_id_type const & rJobId, param_type const & rParam, result_type const & rResult)
+void stsMCSimJobSource::RegisterResult_ExceptionConditionExists(job_id_type const & rJobID, param_type const & rParam, result_type const & rResult)
 {
   try
   {
