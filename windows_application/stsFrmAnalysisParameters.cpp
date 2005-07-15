@@ -20,6 +20,8 @@
 #pragma hdrstop
 #include "stsFrmAdvancedParameters.h"
 #include "ParameterFileAccess.h"
+#include "RandomNumberGenerator.h"
+#include "Randomizer.h"
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
@@ -405,13 +407,28 @@ void TfrmAnalysis::CheckOutputParams() {
 //---------------------------------------------------------------------------
 /** Checks Monte Carlo replications */
 void TfrmAnalysis::CheckReplicas() {
-  if (edtMontCarloReps->Text.IsEmpty() || !IsValidReplicationRequest(atoi(edtMontCarloReps->Text.c_str()))) {
+  double        dNumReplications, dMaxReplications;
+
+  try {
+    if (edtMontCarloReps->Text.IsEmpty())
+      ZdException::GenerateNotification("Please specify a number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.", "CheckReplicas()");
+    //validate that specified value is within allowable range - coincidentally this
+    //check also checks that value does not exceed numeric limits w/32-bit system for unsigned int
+    dNumReplications = edtMontCarloReps->Text.ToDouble();
+    dMaxReplications = (double)RandomNumberGenerator::glM - (double)RandomNumberGenerator::glDefaultSeed - (double)gpfrmAdvancedParameters->GetNumAdditionalDataSets() * AbstractRandomizer::glDataSetSeedOffSet;
+    dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
+    if (dNumReplications > dMaxReplications)
+      ZdException::GenerateNotification("Number of Monte Carlo replications can not exceed %.0lf.", "CheckReplicas()", dMaxReplications);
+    if (!((dNumReplications == 0 || dNumReplications == 9 || dNumReplications == 19 || fmod(dNumReplications+1, 1000) == 0.0)))
+      ZdException::GenerateNotification("Invalid number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.", "CheckReplicas()");
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("CheckReplicas", "TfrmAnalysis");
     PageControl1->ActivePage = tbAnalysis;
     edtMontCarloReps->SetFocus();
-    ZdException::GenerateNotification("Invalid number of Monte Carlo replications.\nChoices are: 9, 999, or value ending in 999.", "CheckReplicas()");
+    throw;
   }
 }
-//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 /** Checks the relationship between a start date and end date.
     Display message box regarding errors when appropriate. Return whether relationship is valid. */
@@ -500,8 +517,7 @@ void __fastcall TfrmAnalysis::edtGridFileNameChange(TObject *Sender) {
 //---------------------------------------------------------------------------
 /** event triggered when Monte Carlo replications control is exited. */
 void __fastcall TfrmAnalysis::edtMontCarloRepsExit(TObject *Sender) {
-  if (edtMontCarloReps->Text.IsEmpty() || !IsValidReplicationRequest(atoi(edtMontCarloReps->Text.c_str())))
-    edtMontCarloReps->Text = 999;
+  if (edtMontCarloReps->Text.IsEmpty()) edtMontCarloReps->Text = 999;
 }
 
 //---------------------------------------------------------------------------
@@ -910,11 +926,6 @@ void TfrmAnalysis::Init() {
   gbPromptOnExist = true;
 }
 //---------------------------------------------------------------------------
-/** returns whether replications are correct */
-bool TfrmAnalysis::IsValidReplicationRequest(int iReplications) {
-  return  (iReplications == 0 || iReplications == 9 || iReplications == 19 || fmod(iReplications+1, 1000) == 0.0);
-}
-//---------------------------------------------------------------------------
 /** Modally shows import dialog. */
 void TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileType) {
   ZdString sNewFile = "";
@@ -1192,7 +1203,8 @@ void TfrmAnalysis::SaveParameterSettings() {
     sString.printf("%i/%i/%i", atoi(edtStudyPeriodEndDateYear->Text.c_str()),
                    atoi(edtStudyPeriodEndDateMonth->Text.c_str()), atoi(edtStudyPeriodEndDateDay->Text.c_str()));
     gParameters.SetStudyPeriodEndDate(sString.GetCString());
-    gParameters.SetNumberMonteCarloReplications(atoi(edtMontCarloReps->Text.c_str()));
+    if (edtMontCarloReps->Text.IsEmpty()) edtMontCarloReps->Text = 999;
+    gParameters.SetNumberMonteCarloReplications(static_cast<unsigned long>(edtMontCarloReps->Text.ToDouble()));
     // (previously in Scanning Window Tab)
     gParameters.SetMaximumGeographicClusterSize(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeFromControl());
     gParameters.SetMaximumSpacialClusterSizeType(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeControlType());
@@ -1408,10 +1420,7 @@ void TfrmAnalysis::SetupInterface() {
     SetAreaScanRateControl(gParameters.GetAreaScanRateType());
     ParseDate(gParameters.GetStudyPeriodStartDate().c_str(), edtStudyPeriodStartDateYear, edtStudyPeriodStartDateMonth, edtStudyPeriodStartDateDay);
     ParseDate(gParameters.GetStudyPeriodEndDate().c_str(), edtStudyPeriodEndDateYear, edtStudyPeriodEndDateMonth, edtStudyPeriodEndDateDay);
-    if (IsValidReplicationRequest(gParameters.GetNumReplicationsRequested()))
-      edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
-    else
-      edtMontCarloReps->Text = 999;
+    edtMontCarloReps->Text = gParameters.GetNumReplicationsRequested();
     if (gParameters.GetTimeAggregationUnitsType() == NONE) gParameters.SetTimeAggregationUnitsType(YEAR);
     if (gParameters.GetTimeAggregationLength() <= 0) gParameters.SetTimeAggregationLength(1);
     rdoTimeAggregationYear->Checked = (gParameters.GetTimeAggregationUnitsType() == YEAR);

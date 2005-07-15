@@ -193,7 +193,6 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     ZdDate                    & GetStudyPeriodStartDate(ZdDate& Date) const;
     DatePrecisionType           GetTimeAggregationControlType() const;
     void                        Init();
-    bool                        IsValidReplicationRequest(int iReplications);
     void                        OnAnalysisTypeClick();
     void                        OnPrecisionTimesClick();
     void                        OnProbabilityModelClick();

@@ -625,17 +625,17 @@ object frmAnalysis: TfrmAnalysis
       object Label16: TLabel
         Left = 52
         Top = 288
-        Width = 271
+        Width = 283
         Height = 13
-        Caption = 'Monte Carlo Replications (9, 999, or value ending in 999):'
+        Caption = 'Monte Carlo Replications (0, 9, 999, or value ending in 999):'
       end
       object edtMontCarloReps: TEdit
-        Left = 332
+        Left = 340
         Top = 285
         Width = 65
         Height = 21
         BiDiMode = bdLeftToRight
-        MaxLength = 9
+        MaxLength = 10
         ParentBiDiMode = False
         TabOrder = 4
         Text = '999'
