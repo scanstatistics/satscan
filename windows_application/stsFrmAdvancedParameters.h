@@ -228,6 +228,7 @@ public:
    float                 GetMaxSpatialClusterSizeFromControl() const;
    TemporalSizeType      GetMaxTemporalClusterSizeControlType() const;
    float                 GetMaxTemporalClusterSizeFromControl() const;
+   unsigned int          GetNumAdditionalDataSets() const {return lstInputDataSets->Items->Count;}
    void                  SaveParameterSettings();
    void                  SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
    void                  SetMaxSpatialClusterSizeControl(float fMaxSize);
