@@ -19,8 +19,8 @@ public:
 
 private:
   typedef boost::recursive_mutex access_mutex_t;
-  typedef std::pair<JobSource::job_id_type, JobSource::param_type> job_info_type;
-  typedef std::vector<std::pair<void const *, JobSource::job_id_type> > current_subcontracts_type;
+  typedef std::pair<typename JobSource::job_id_type, typename JobSource::param_type> job_info_type;
+  typedef std::vector<std::pair<void const *, typename JobSource::job_id_type> > current_subcontracts_type;
 
   current_subcontracts_type m_current_subcontracts;//first: subcontractors who have acquired a job and haven't yet registered results for it; second: job id
   JobSource & m_jobs;
@@ -44,8 +44,8 @@ public:
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
 
     {//check to make sure subcontractor doesn't have an uncompleted job:
-      current_subcontracts_type::const_iterator itr = m_current_subcontracts.begin();
-      current_subcontracts_type::const_iterator itrend = m_current_subcontracts.end();
+      typename current_subcontracts_type::const_iterator itr = m_current_subcontracts.begin();
+      typename current_subcontracts_type::const_iterator itrend = m_current_subcontracts.end();
       for (; (itr != itrend) && (itr->first != &subcontractor); ++itr) {}
       if (itr != m_current_subcontracts.end())
         throw std::runtime_error("Subcontractor has not registered results of previously acquired job.");
@@ -54,7 +54,7 @@ public:
     if (is_finished())
       return false;
 
-    JobSource::job_id_type new_job_id;
+    typename JobSource::job_id_type new_job_id;
     job_param_type new_job_param;
     m_jobs.acquire(new_job_id, new_job_param);
     m_current_subcontracts.push_back(std::make_pair(&subcontractor, new_job_id));
@@ -66,15 +66,15 @@ public:
   void register_result(SubcontractorType const & subcontractor, job_param_type const & job_param, job_result_type const & job_result)
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
 
-    current_subcontracts_type::iterator itr = m_current_subcontracts.begin();
+    typename current_subcontracts_type::iterator itr = m_current_subcontracts.begin();
     {//check to make sure subcontractor has an uncompleted job:
-      current_subcontracts_type::const_iterator itrend = m_current_subcontracts.end();
+      typename current_subcontracts_type::const_iterator itrend = m_current_subcontracts.end();
       for (; (itr != itrend) && (itr->first != &subcontractor); ++itr) {}
       if (itr == m_current_subcontracts.end())
         throw std::runtime_error("Subcontractor has not acquired a job.");
     }
 
-    JobSource::job_id_type const & job_id(itr->second);
+    typename JobSource::job_id_type const & job_id(itr->second);
     m_jobs.register_result(job_id, job_param, job_result);
     m_current_subcontracts.erase(itr);
   }
