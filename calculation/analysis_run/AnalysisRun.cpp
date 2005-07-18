@@ -35,6 +35,7 @@
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
                :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection), giNumSimsExecuted(0) {
   try {
+    macroRunTimeManagerInit();
     Init();
     Setup();
     Execute();
@@ -127,13 +128,26 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     sequential scan. This is primarily to prevent division by zero, since the
     squential scan feature zeros out data used in creating relative risks. */
 void AnalysisRunner::CreateRelativeRiskFile() {
-  if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles())
-    gpDataHub->DisplayRelativeRisksForEachTract();
+  macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+
+  try {
+    if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles())
+      gpDataHub->DisplayRelativeRisksForEachTract();
+  }
+  catch (ZdException &x) {
+    fclose(fp);
+    x.AddCallpath("CreateRelativeRiskFile()","AnalysisRunner");
+    throw;
+  }
+
+  macroRunTimeStopSerial();
 }
 
 /** Creates/overwrites result file specified by user in parameter settings. Only
     header summary information is printed. File pointer does not remain open. */
 void AnalysisRunner::CreateReport() {
+  macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+
   FILE       * fp=0;
   ZdString     sStartTime;
 
@@ -152,6 +166,8 @@ void AnalysisRunner::CreateReport() {
     x.AddCallpath("CreateReport()","AnalysisRunner");
     throw;
   }
+  
+  macroRunTimeStopSerial();
 }
 
 /** Displays progress information to print direction indicating that analysis
@@ -303,6 +319,7 @@ void AnalysisRunner::Execute() {
   double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0), dNumThreads(1), dPercentage;
 
   //read data
+  macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
   gpDataHub->ReadDataFromFiles();
   //calculate expected cases
   gpDataHub->CalculateExpectedCases();
@@ -310,6 +327,7 @@ void AnalysisRunner::Execute() {
   for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
      if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
        GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
+  macroRunTimeStopSerial();
 
   switch (gParameters.GetExecutionType()) {
     case SUCCESSIVELY : ExecuteSuccessively(); break;
@@ -385,7 +403,9 @@ void AnalysisRunner::ExecuteSuccessively() {
     if (gPrintDirection.GetIsCanceled())
       return;
     //calculate number of neighboring locations about each centroid
+    macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
     gpDataHub->FindNeighbors();
+    macroRunTimeStopSerial();
     //detect cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
@@ -396,7 +416,9 @@ void AnalysisRunner::ExecuteSuccessively() {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
       //calculate most likely clusters
+      macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
       CalculateMostLikelyClusters();
+      macroRunTimeStopSerial();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
@@ -411,7 +433,9 @@ void AnalysisRunner::ExecuteSuccessively() {
       //log history for first analysis run
       if (giAnalysisCount == 1) {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
+        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+        macroRunTimeStopSerial();
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
@@ -437,11 +461,8 @@ void AnalysisRunner::ExecuteCentrically() {
   bool                  bContinue;
 
   try {
-//#ifdef PARALLEL_SIMULATIONS
       PerformCentric_Parallel();
-//#else
-//      PerformCentric_Serial();
-//#endif
+      //PerformCentric_Serial();
   }
   catch (ZdException &x) {
     x.AddCallpath("ExecuteCentrically()","AnalysisRunner");
@@ -526,6 +547,9 @@ void AnalysisRunner::FinalizeReport() {
       fprintf(fp,"Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
     else
       fprintf(fp,"Total Running Time : %.0f %s",nSeconds, szSeconds);
+
+    macroRunTimeManagerPrint(fp);
+
     fclose(fp);
   }
   catch (ZdException &x) {
@@ -667,17 +691,13 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
 void AnalysisRunner::PerformCentric_Parallel() {
   bool                  bContinue;
   unsigned long         ulParallelProcessCount = gParameters.GetNumParallelProcessesToExecute();
+  DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
   try {
-    DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
-
     //detect user cancellation
-    if (gPrintDirection.GetIsCanceled())
-      return;
-
+    if (gPrintDirection.GetIsCanceled()) return;
     //create result file report
     CreateReport();
-
     //start analyzing data
     do {
       ++giAnalysisCount;
@@ -694,15 +714,12 @@ void AnalysisRunner::PerformCentric_Parallel() {
       AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
       //data gateway object for real data
       std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
-      //centroid neighbor information objects
-      std::vector<CentroidNeighbors>              CentroidNeighbors(gpDataHub->GetParameters().GetNumTotalEllipses() + 1);
       std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
 
       //get data randomizers
       DataHandler.GetRandomizerContainer(RandomizationContainer);
       //set data gateway object
       DataHandler.GetDataGateway(*DataSetGateway);
-
       gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
       //create simulation data sets -- randomize each and set corresponding data gateway object
       for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
@@ -713,15 +730,15 @@ void AnalysisRunner::PerformCentric_Parallel() {
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
+         macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
          gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
+         macroRunTimeStopSerial();
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
       }
-
       //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
+      if (gPrintDirection.GetIsCanceled()) return;
 
       //construct centric-analyses and centroid calculators for each thread:
       std::deque<boost::shared_ptr<AbstractCentricAnalysis> > seqCentricAnalyses(ulParallelProcessCount);
@@ -766,20 +783,16 @@ void AnalysisRunner::PerformCentric_Parallel() {
           tg.create_thread(subcontractor<contractor_type,stsCentricAlgoFunctor>(theContractor,mcsf));
         }
         tg.join_all();
-
-        giNumSimsExecuted = jobSource.GetSuccessfullyCompletedJobCount();
-
+        
+        giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
         //propagate exceptions if needed:
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
           ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
       }
-
-      if (gPrintDirection.GetIsCanceled())
-        return;
-
+      if (gPrintDirection.GetIsCanceled()) return;
+      //retrieve top clusters and simulated loglikelihood ratios from analysis object
       for (unsigned u=0; u<ulParallelProcessCount; ++u) {
-        //retrieve top clusters and simulated loglikelihood ratios from analysis object
         seqCentricAnalyses[u]->RetrieveClusters(gTopClustersContainer);
         seqCentricAnalyses[u]->RetrieveLoglikelihoodRatios(SimulationRatios);
       }
@@ -812,13 +825,14 @@ void AnalysisRunner::PerformCentric_Parallel() {
         if(RatioWriter.get()) RatioWriter->Write(*itr);
       }
       SimulationRatios.reset();
-
       //report clusters
       UpdateReport();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
+        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+        macroRunTimeStopSerial();
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
@@ -842,17 +856,13 @@ void AnalysisRunner::PerformCentric_Parallel() {
 /** starts analysis execution - development */
 void AnalysisRunner::PerformCentric_Serial() {
   bool                  bContinue;
+  DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
   try {
-    DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
-
     //detect user cancellation
-    if (gPrintDirection.GetIsCanceled())
-      return;
-
+    if (gPrintDirection.GetIsCanceled()) return;
     //create result file report
     CreateReport();
-
     //start analyzing data
     do {
       ++giAnalysisCount;
@@ -891,7 +901,9 @@ void AnalysisRunner::PerformCentric_Serial() {
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
+         macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
          gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
+         macroRunTimeStopSerial();
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
@@ -958,13 +970,14 @@ void AnalysisRunner::PerformCentric_Serial() {
         if(RatioWriter.get()) RatioWriter->Write(*itr);
       }
       SimulationRatios.reset();
-
       //report clusters
       UpdateReport();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
+        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+        macroRunTimeStopSerial();
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
@@ -1092,13 +1105,17 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
       for (giNumSimsExecuted=0, iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
         ++giNumSimsExecuted;
         //randomize data
+        macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
         GetDataHub().RandomizeData(RandomizationContainer, SimulationDataContainer, iSimulationNumber);
+        macroRunTimeStopSerial();
         //print simulation data to file, if requested
         if (gParameters.GetOutputSimulationData())
           for (size_t t=0; t < SimulationDataContainer.size(); ++t)
              SimulationDataContainer[t]->WriteSimulationData(gParameters, iSimulationNumber);
         //perform simulation to get loglikelihood ratio
+        macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
         dSimulatedRatio = pAnalysis->ExecuteSimulation(*pDataGateway);
+        macroRunTimeStopSerial();
         //update most likely clusters given latest simulated loglikelihood ratio
         gTopClustersContainer.UpdateTopClustersRank(dSimulatedRatio);
         //update significance indicator
@@ -1144,11 +1161,8 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
       //$$if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
       //$$  gpDataHub->FindNeighbors(true);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
-#ifdef PARALLEL_SIMULATIONS
       PerformSuccessiveSimulations_Parallel();
-#else
-      PerformSuccessiveSimulations_Serial();
-#endif
+      //PerformSuccessiveSimulations_Serial();
     }
   }
   catch (ZdException &x) {
@@ -1274,6 +1288,8 @@ void AnalysisRunner::UpdatePowerCounts(double r) {
     - power calculation results, if option requested by user
     - indication of when simulations terminated early */
 void AnalysisRunner::UpdateReport() {
+  macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+
   FILE                * fp=0;
   AsciiPrintFormat      PrintFormat;
   ZdString              sBuffer;
@@ -1318,6 +1334,8 @@ void AnalysisRunner::UpdateReport() {
     x.AddCallpath("UpdateReport()","AnalysisRunner");
     throw;
   }
+
+  macroRunTimeStopSerial();
 }
 
 /** Updates list of significant ratio, if structure allocated. */
