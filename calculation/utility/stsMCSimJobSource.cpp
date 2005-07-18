@@ -104,7 +104,10 @@ bool stsMCSimJobSource::CancelRequested() const
 //How many jobs have registered a successful (no exceptions) result?
 unsigned int stsMCSimJobSource::GetSuccessfullyCompletedJobCount() const
 {
-  return guiUnregisteredJobLowerBound + gbsUnregisteredJobs.count() - gvExceptions.size();
+  unsigned int uiResult = guiUnregisteredJobLowerBound-1;
+  if (!AutoAbortConditionExists())
+    uiResult += (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) - gvExceptions.size();
+  return uiResult;
 }
 
 //How many jobs are there that have been acquired but whose results have not

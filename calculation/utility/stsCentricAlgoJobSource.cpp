@@ -70,7 +70,7 @@ bool stsCentricAlgoJobSource::CancelRequested() const
 //How many jobs have registered a successful (no exceptions) result?
 unsigned int stsCentricAlgoJobSource::GetSuccessfullyCompletedJobCount() const
 {
-  return guiUnregisteredJobLowerBound + gbsUnregisteredJobs.count() - gvExceptions.size();
+  return (guiUnregisteredJobLowerBound-1) + gbsUnregisteredJobs.count() - gvExceptions.size();
 }
 
 //How many jobs are there that have been acquired but whose results have not
