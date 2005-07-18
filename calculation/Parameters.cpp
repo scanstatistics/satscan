@@ -800,6 +800,11 @@ bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
 
 /** Returns number of parallel processes to run. */
 unsigned int CParameters::GetNumParallelProcessesToExecute() const {
+#ifdef RPRTCMPT_RUNTIMES
+  // reporting of run-time components is not thread safe at this time,
+  // and has no useful purpose to be such - at this time
+  return 1;
+#else
   unsigned int  iNumProcessors;
 
   if (giNumRequestedParallelProcesses <= 0)
@@ -811,6 +816,7 @@ unsigned int CParameters::GetNumParallelProcessesToExecute() const {
     //iNumProcessors = giNumRequestedParallelProcesses;
 
   return iNumProcessors;
+#endif  
 }
 
 /** Returns whether any area specific files are outputed. */
