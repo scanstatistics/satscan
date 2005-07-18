@@ -135,7 +135,6 @@ void AnalysisRunner::CreateRelativeRiskFile() {
       gpDataHub->DisplayRelativeRisksForEachTract();
   }
   catch (ZdException &x) {
-    fclose(fp);
     x.AddCallpath("CreateRelativeRiskFile()","AnalysisRunner");
     throw;
   }
