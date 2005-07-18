@@ -27,12 +27,18 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
 
     for (int iEllipseIndex=0; iEllipseIndex <= gParameters.GetNumTotalEllipses(); ++iEllipseIndex) {
        //calculate neigbor about current centroid
+       macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
        CentroidCalculator.CalculateNeighborsAboutCentroid(iEllipseIndex, tCentroidIndex, CentroidDef);
+       macroRunTimeStopSerial();
        // find top cluster about current centroid
+       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
        CalculateTopClusterAboutCentroidDefinition(CentroidDef, RealDataGateway);
+       macroRunTimeStopSerial();
        //perform simulations about current centroid
        CentroidDef.SetMaximumClusterSize_SimulatedData();
+       macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
        ExecuteSimulationsAboutCentroidDefinition(CentroidDef, vSimDataGateways);
+       macroRunTimeStopSerial();
     }
     gRetainedClusters.push_back(GetTopCalculatedCluster().Clone());
   }

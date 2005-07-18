@@ -14,7 +14,9 @@ stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (st
   try
   {
     //randomize data
+    macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
     gDataHub.RandomizeData(*gpRandomizationContainer, *gpSimulationDataContainer, param);
+    macroRunTimeStopSerial();
     //print simulation data to file, if requested
     if (gDataHub.GetParameters().GetOutputSimulationData()) {
       boost::mutex::scoped_lock     lock(gMutex);
@@ -22,7 +24,9 @@ stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (st
          (*gpSimulationDataContainer)[t]->WriteSimulationData(gDataHub.GetParameters(), param);
     }
     //perform simulation to get loglikelihood ratio
+    macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
     temp_result.second.first = gpAnalysis->ExecuteSimulation(*gpDataGateway);
+    macroRunTimeStopSerial();
     temp_result.first = true;
   }
   catch (ZdException & e)
