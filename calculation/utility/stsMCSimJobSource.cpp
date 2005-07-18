@@ -101,6 +101,12 @@ bool stsMCSimJobSource::CancelRequested() const
   return grPrintDirection.GetIsCanceled();
 }
 
+//How many jobs have registered a successful (no exceptions) result?
+unsigned int stsMCSimJobSource::GetSuccessfullyCompletedJobCount() const
+{
+  return guiUnregisteredJobLowerBound + gbsUnregisteredJobs.count() - gvExceptions.size();
+}
+
 //How many jobs are there that have been acquired but whose results have not
 //been registered?
 unsigned int stsMCSimJobSource::GetUnregisteredJobCount() const

@@ -65,6 +65,7 @@ public:
   void register_result(job_id_type const & job_id, param_type const & param, result_type const & result);
 //  void register_failure(job_id_type job_id) {}
 
+  unsigned int GetSuccessfullyCompletedJobCount() const;
   unsigned int GetUnregisteredJobCount() const;
   std::deque<unsigned int> GetUnregisteredJobs() const;
   bool CancelConditionExists() const { return gfnRegisterResult == &stsCentricAlgoJobSource::RegisterResult_CancelConditionExists; }

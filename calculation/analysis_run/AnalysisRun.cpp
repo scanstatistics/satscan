@@ -766,6 +766,9 @@ void AnalysisRunner::PerformCentric_Parallel() {
           tg.create_thread(subcontractor<contractor_type,stsCentricAlgoFunctor>(theContractor,mcsf));
         }
         tg.join_all();
+
+        giNumSimsExecuted = jobSource.GetSuccessfullyCompletedJobCount();
+
         //propagate exceptions if needed:
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
@@ -780,7 +783,6 @@ void AnalysisRunner::PerformCentric_Parallel() {
         seqCentricAnalyses[u]->RetrieveClusters(gTopClustersContainer);
         seqCentricAnalyses[u]->RetrieveLoglikelihoodRatios(SimulationRatios);
       }
-      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
       //free memory of objects that will no longer be used
       // - we might need the memory for recalculating neighbors in geographical overlap code
       vRandomizedDataSets.clear();
@@ -1026,11 +1028,14 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
         tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
       }
       tg.join_all();
+
+      giNumSimsExecuted = jobSource.GetSuccessfullyCompletedJobCount();
+
+      //propagate exceptions if needed:
       jobSource.Assert_NoExceptionsCaught();
       if (jobSource.GetUnregisteredJobCount() > 0)
         ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
     }
-    giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
   }
   catch (ZdException &x) {
     delete pDataGateway;
