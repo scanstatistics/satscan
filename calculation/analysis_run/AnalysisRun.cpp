@@ -757,6 +757,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
 
       //analyze real and simulation data about each centroid
       {
+        std::pair<bool,ZdException> purelyTemporalExecutionExceptionStatus;//if (.first) then (.second) is the exception message and callpath.
         PrintQueue tmpPrintDirection(gPrintDirection);
         AsynchronouslyAccessible<PrintQueue> tmpThreadsafePrintDirection(tmpPrintDirection);
         stsCentricAlgoJobSource jobSource(gpDataHub->m_nGridTracts, ::clock(), tmpThreadsafePrintDirection);
@@ -765,26 +766,34 @@ void AnalysisRunner::PerformCentric_Parallel() {
         //run threads:
         boost::thread_group tg;
         boost::mutex        thread_mutex;
-        //launch first thread:
-        tg.create_thread(
-          stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
-            theContractor
-           ,tmpThreadsafePrintDirection
-           ,*(seqCentricAnalyses[0])
-           ,*(seqCentroidCalculators[0])
-           ,*DataSetGateway
-           ,vSimDataGateways
-          )
-        );
+        unsigned uThreadIdx = 0;
+        if (gParameters.GetIncludePurelyTemporalClusters()) {
+          //launch specialized first thread:
+          tg.create_thread(
+            stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
+              theContractor
+             ,jobSource
+             ,purelyTemporalExecutionExceptionStatus
+             ,tmpThreadsafePrintDirection
+             ,*(seqCentricAnalyses[uThreadIdx])
+             ,*(seqCentroidCalculators[uThreadIdx])
+             ,*DataSetGateway
+             ,vSimDataGateways
+            )
+          );
+          ++uThreadIdx;
+        }
         //launch the remaining threads:
-        for (unsigned u=1; u < ulParallelProcessCount; ++u) {
-          stsCentricAlgoFunctor mcsf(*(seqCentricAnalyses[u]), *(seqCentroidCalculators[u]), *DataSetGateway, vSimDataGateways);
+        for (; uThreadIdx < ulParallelProcessCount; ++uThreadIdx) {
+          stsCentricAlgoFunctor mcsf(*(seqCentricAnalyses[uThreadIdx]), *(seqCentroidCalculators[uThreadIdx]), *DataSetGateway, vSimDataGateways);
           tg.create_thread(subcontractor<contractor_type,stsCentricAlgoFunctor>(theContractor,mcsf));
         }
         tg.join_all();
-        
+
         giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
         //propagate exceptions if needed:
+        if (purelyTemporalExecutionExceptionStatus.first)
+          throw purelyTemporalExecutionExceptionStatus.second;
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
           ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());

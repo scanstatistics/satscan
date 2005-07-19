@@ -50,6 +50,8 @@ stsCentricAlgoFunctor::result_type stsCentricAlgoFunctor::operator() (param_type
 
 stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
   contractor_type & rContractor
+ ,job_source_type & rJobSource
+ ,std::pair<bool,ZdException> & rPurelyTemporalExecutionResult
 // ,AsynchronouslyAccessible<BasePrint> & rPrintDirection
  ,AsynchronouslyAccessible<PrintQueue> & rPrintDirection
  ,AbstractCentricAnalysis & rCentricAnalysis
@@ -58,19 +60,41 @@ stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::stsPurelyTemporal_Plus_CentricA
  ,ZdPointerVector<AbstractDataSetGateway> const & rSimDataGateways
 )
  : grContractor(rContractor)
+ , grJobSource(rJobSource)
+ , grPurelyTemporalExecutionResult(rPurelyTemporalExecutionResult)
  , grPrintDirection(rPrintDirection)
  , grCentricAnalysis(rCentricAnalysis)
  , grDataSetGateway(rDataSetGateway)
  , grSimDataGateways(rSimDataGateways)
  , gRegularSubcontractor(rContractor, stsCentricAlgoFunctor(rCentricAnalysis, rCentroidCalculator, rDataSetGateway, rSimDataGateways))
 {
+  rPurelyTemporalExecutionResult.first = false;
 }
 
 void stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::operator() ()
 {
-  grPrintDirection.Locked().Value().SatScanPrintf("Evaluating purely temporal clusters\n");
-  grCentricAnalysis.ExecuteAboutPurelyTemporalCluster(grDataSetGateway, grSimDataGateways);
-
-  gRegularSubcontractor();
+  try {
+    grPrintDirection.Locked().Value().SatScanPrintf("Evaluating purely temporal clusters\n");
+    grCentricAnalysis.ExecuteAboutPurelyTemporalCluster(grDataSetGateway, grSimDataGateways);
+  }
+  catch (ZdException & e) {
+    grPurelyTemporalExecutionResult.second = e;
+    grPurelyTemporalExecutionResult.first = true;
+  }
+  catch (std::exception & e) {
+    grPurelyTemporalExecutionResult.second = ZdException(e, "", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
+    grPurelyTemporalExecutionResult.first = true;
+  }
+  catch (...) {
+    grPurelyTemporalExecutionResult.second = ZdException("(...) -- unknown error", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor", ZdException::Normal);
+    grPurelyTemporalExecutionResult.first = true;
+  }
+  if (grPurelyTemporalExecutionResult.first) {
+    grJobSource.Exhaust();
+    grPurelyTemporalExecutionResult.second.AddCallpath("operator()", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
+  }
+  else {
+    gRegularSubcontractor();
+  }
 }
 

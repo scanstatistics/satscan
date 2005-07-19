@@ -42,6 +42,7 @@ private://data members
 
   result_registration_fn_type gfnRegisterResult;
 
+  bool gbIsExplicitlyExhausted;
   clock_t const gConstructionTime;
   AsynchronouslyAccessible<PrintQueue> & grPrintDirection;
 
@@ -65,6 +66,7 @@ public:
   void register_result(job_id_type const & job_id, param_type const & param, result_type const & result);
 //  void register_failure(job_id_type job_id) {}
 
+  void Exhaust() { gbIsExplicitlyExhausted = true; }
   unsigned int GetSuccessfullyCompletedJobCount() const;
   unsigned int GetUnregisteredJobCount() const;
   std::deque<unsigned int> GetUnregisteredJobs() const;

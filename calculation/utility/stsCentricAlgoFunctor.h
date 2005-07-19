@@ -55,11 +55,16 @@ public:
 //cluster first, then launches into the regular executions.  Only one thread
 //should be assigned this functor.  The rest should be assigned
 //subcontractor<contractor<stsCentricAlgoFunctor>,stsCentricAlgoFunctor> objects.
+//rPurelyTemporalExecutionFailure is a reference to an object that is populated
+//with the failure status of the "purely temporal cluster" execution.
 class stsPurelyTemporal_Plus_CentricAlgoThreadFunctor
 {
-  typedef contractor<stsCentricAlgoJobSource> contractor_type;
+  typedef stsCentricAlgoJobSource job_source_type;
+  typedef contractor<job_source_type> contractor_type;
 
   contractor_type & grContractor;
+  job_source_type & grJobSource;
+  std::pair<bool,ZdException> & grPurelyTemporalExecutionResult;
 //  AsynchronouslyAccessible<BasePrint> & grPrintDirection;
   AsynchronouslyAccessible<PrintQueue> & grPrintDirection;
   AbstractCentricAnalysis & grCentricAnalysis;
@@ -70,6 +75,8 @@ class stsPurelyTemporal_Plus_CentricAlgoThreadFunctor
 public:
   stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
     contractor_type & rContractor
+   ,job_source_type & rJobSource
+   ,std::pair<bool,ZdException> & rPurelyTemporalExecutionResult
 //   ,AsynchronouslyAccessible<BasePrint> & rPrintDirection
    ,AsynchronouslyAccessible<PrintQueue> & rPrintDirection
    ,AbstractCentricAnalysis & rCentricAnalysis

@@ -19,6 +19,7 @@ stsCentricAlgoJobSource::stsCentricAlgoJobSource(
  : guiJobCount(ulJobCount)
  , guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
+ , gbIsExplicitlyExhausted(false)
  , gfnRegisterResult(&stsCentricAlgoJobSource::RegisterResult_Simple)
  , gConstructionTime(tCurrentTime)
  , grPrintDirection(rPrintDirection)
@@ -104,7 +105,8 @@ stsCentricAlgoJobSource::GetExceptions() const
 bool stsCentricAlgoJobSource::is_exhausted() const
 {
   return
-    CancelConditionExists()
+    gbIsExplicitlyExhausted
+   || CancelConditionExists()
    || ExceptionConditionExists()
    || (guiNextJobParam > guiJobCount);
 }
