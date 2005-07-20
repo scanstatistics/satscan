@@ -30,6 +30,7 @@
 #include "SpaceTimeIncludePurelySpatialCentricAnalysis.h"
 #include "SpaceTimeIncludePurelyTemporalCentricAnalysis.h"
 #include "SpaceTimeIncludePureCentricAnalysis.h"
+#include "ParametersPrint.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -155,8 +156,8 @@ void AnalysisRunner::CreateReport() {
     AsciiPrintFormat::PrintVersionHeader(fp);
     sStartTime = ctime(&gStartTime);
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
-    gParameters.DisplayAnalysisSummary(fp);
-    gParameters.DisplayAdjustments(fp, gpDataHub->GetDataSetHandler());
+    ParametersPrint(gParameters).PrintAnalysisSummary(fp);
+    ParametersPrint(gParameters).PrintAdjustments(fp, gpDataHub->GetDataSetHandler());
     gpDataHub->DisplaySummary(fp);
     fclose(fp);
   }
@@ -315,7 +316,8 @@ void AnalysisRunner::DisplayTopClusters() {
 
 /** Executes analysis - conditionally running successive or centric processes. */
 void AnalysisRunner::Execute() {
-  double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0), dNumThreads(1), dPercentage;
+  double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0),
+                dNumThreads = gParameters.GetNumParallelProcessesToExecute(), dPercentage;
 
   //read data
   macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
@@ -526,7 +528,7 @@ void AnalysisRunner::FinalizeReport() {
       gpDataHub->GetDataSetHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
 
     gpDataHub->GetTInfo()->tiReportDuplicateTracts(fp);
-    gParameters.DisplayParameters(fp, giNumSimsExecuted, gpDataHub->GetDataSetHandler());
+    ParametersPrint(gParameters).Print(fp);
     time(&CompletionTime);
     nTotalTime = difftime(CompletionTime, gStartTime);
     nHours     = floor(nTotalTime/(60*60));
