@@ -4,16 +4,7 @@
 //*****************************************************************************
 #include "SaTScan.h"
 #include "JulianDates.h"
-#include "AsciiPrintFormat.h"
 #include "UtilityFunctions.h"
-
-extern const char*      YES;
-extern const char*      NO;
-
-/** maximum number of permitted sequential scans */
-extern const int        MAXIMUM_SEQUENTIAL_ANALYSES;
-/** maximum number of permitted ellipsoids */
-extern const int        MAXIMUM_ELLIPSOIDS;
 
 /** parameter types
     - parameters that are read from file with the exception of: DIMENSION, EXACTTIMES, and RUN_HISTORY_FILENAME */
@@ -166,7 +157,6 @@ class CParameters {
                                                                                     cluster size to 60 instead of 50. Settings this parameter
                                                                                     to false has an implied disclaimer, you may get strange
                                                                                     occurances programmatically and statically. */
-    static int                          giNumParameters;                        /** number enumerated parameters */
 
     struct CreationVersion              gCreationVersion;
     long                                glRandomizationSeed;                    /** randomization seed */
@@ -175,42 +165,30 @@ class CParameters {
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const ZdFileName& fParameterName, const std::string& sFilename, ZdString& sValue) const;
-    bool                                ValidateDateParameters(BasePrint& PrintDirection) const;
-    bool                                ValidateEllipseParameters(BasePrint & PrintDirection);
-    bool                                ValidateFileParameters(BasePrint & PrintDirection);
-    bool                                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
-    bool                                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
-    bool                                ValidateProspectiveDate(BasePrint& PrintDirection) const;
-    bool                                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
-    bool                                ValidateRangeParameters(BasePrint & PrintDirection) const;
-    bool                                ValidateSequentialScanParameters(BasePrint & PrintDirection);
-    bool                                ValidateSimulationDataParameters(BasePrint & PrintDirection);
-    bool                                ValidateSpatialParameters(BasePrint & PrintDirection);
-    bool                                ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const;
-    bool                                ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const;
-    bool                                ValidateTemporalParameters(BasePrint & PrintDirection);
-    bool                                ValidateTimeAggregationUnits(BasePrint & PrintDirection) const;
 
   public:
     CParameters();
     CParameters(const CParameters &other);
     ~CParameters();
 
+    static const int                    giNumParameters;                        /** number enumerated parameters */
+    static const int                    MAXIMUM_SEQUENTIAL_ANALYSES;            /** maximum number of permitted sequential scans */
+    static const int                    MAXIMUM_ELLIPSOIDS;                     /** maximum number of permitted ellipsoids */
+
     CParameters                       & operator=(const CParameters &rhs);
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
-    void                                DisplayAdjustments(FILE* fp, const DataSetHandler& SetHandler) const;
-    void                                DisplayAnalysisSummary(FILE* fp) const;
-    void                                DisplayCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const;
-    void                                DisplayParameters(FILE* fp, unsigned int iNumSimulationsCompleted, const DataSetHandler& SetHandler) const;
+    void                                ClearEllipseSettings();
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
-    const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}  
+    const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
+    const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;
+    const std::vector<std::string>    & GetControlFileNames() const {return gvControlFilenames;}
     const std::string                 & GetCoordinatesFileName() const {return gsCoordinatesFileName;}
     CoordinatesType                     GetCoordinatesType() const {return geCoordinatesType;}
     const CreationVersion            &  GetCreationVersion() const {return gCreationVersion;}
@@ -269,6 +247,7 @@ class CParameters {
     bool                                GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const;
     bool                                GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) const;
     const std::string                 & GetPopulationFileName(size_t iSetIndex=1) const;
+    const std::vector<std::string>    & GetPopulationFileNames() const {return gvPopulationFilenames;}
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
@@ -375,10 +354,10 @@ class CParameters {
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     void                                SetVersion(const CreationVersion& vVersion);
-    bool                                ValidateParameters(BasePrint & PrintDirection);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
+    void                                SetPopulationFile(bool b) {gbUsePopulationFile = b;}  /******/
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
 };
 //*****************************************************************************
