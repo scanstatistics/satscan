@@ -158,6 +158,8 @@ USEUNIT("..\calculation\RunTimeComponents.cpp");
 USEFORM("stsDlgExecuteOptions.cpp", dlgExecutionOptions);
 USEUNIT("..\calculation\utility\stsCentricAlgoJobSource.cpp");
 USEUNIT("..\calculation\utility\stsCentricAlgoFunctor.cpp");
+USEUNIT("..\calculation\ParametersPrint.cpp");
+USEUNIT("..\calculation\ParametersValidate.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

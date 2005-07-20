@@ -131,7 +131,8 @@
       ..\calculation\RunTimeComponents.obj 
       ..\calculation\utility\stsCentricAlgoJobSource.obj 
       ..\calculation\utility\stsCentricAlgoFunctor.obj 
-      ..\calculation\utility\AsynchronouslyAccessible.obj"/>
+      ..\calculation\utility\AsynchronouslyAccessible.obj 
+      ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

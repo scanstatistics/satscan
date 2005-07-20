@@ -168,16 +168,20 @@ SRC         := Main.cpp \
 	             $(UTILITY)/UtilityFunctions.cpp \
 	             $(UTILITY)/MultipleDimensionArrayHandler.cpp \
 	             $(UTILITY)/stsMonteCarloSimFunctor.cpp \
-	             $(UTILITY)/stsMCSimReporter.cpp \
-	             $(UTILITY)/stsMCSimContinuationPolicy.cpp \
+	             $(UTILITY)/stsCentricAlgoFunctor.cpp \
+	             $(UTILITY)/stsCentricAlgoJobSource.cpp \
 	             $(UTILITY)/DateStringParser.cpp \
+	             $(UTILITY)/stsMCSimJobSource.cpp \
 	             $(CALCULATION)/Parameters.cpp \
+	             $(CALCULATION)/ParametersPrint.cpp \
+	             $(CALCULATION)/ParametersValidate.cpp \
 	             $(CALCULATION)/SaTScanBasis.cpp \
 	             $(CALCULATION)/Toolkit.cpp \
 	             $(CALCULATION)/ParameterFileAccess.cpp \
 	             $(CALCULATION)/ScanLineParameterFileAccess.cpp \
 	             $(CALCULATION)/IniParameterSpecification.cpp \
 	             $(CALCULATION)/IniParameterFileAccess.cpp \
+	             $(CALCULATION)/RunTimeComponents.cpp \
 	             $(BOOSTDIR)/libs/thread/src/xtime.cpp \
 	             $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
 	             $(BOOSTDIR)/libs/thread/src/mutex.cpp \

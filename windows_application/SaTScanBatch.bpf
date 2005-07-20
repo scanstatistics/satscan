@@ -137,6 +137,8 @@ USEUNIT("..\calculation\RunTimeComponents.cpp");
 USEUNIT("..\calculation\utility\stsCentricAlgoJobSource.cpp");
 USEUNIT("..\calculation\utility\stsCentricAlgoFunctor.cpp");
 USEUNIT("..\calculation\utility\AsynchronouslyAccessible.cpp");
+USEUNIT("..\calculation\ParametersPrint.cpp");
+USEUNIT("..\calculation\ParametersValidate.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
