@@ -5,6 +5,7 @@
 #include "PopulationData.h"
 #include "UtilityFunctions.h"
 #include "SaTScanData.h"
+#include "AsciiPrintFormat.h"
 
 /** Constructor */
 CovariateCategory::CovariateCategory(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {

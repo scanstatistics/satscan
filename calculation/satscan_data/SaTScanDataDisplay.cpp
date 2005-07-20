@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "SaTScanData.h"
 #include "LocationRiskEstimateWriter.h"
+#include "AsciiPrintFormat.h"
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;

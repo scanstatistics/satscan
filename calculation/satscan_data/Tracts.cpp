@@ -1,7 +1,10 @@
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//******************************************************************************
 #include "Tracts.h"
 #include "SaTScanData.h"
+#include "AsciiPrintFormat.h"
 
 /** Constructor */
 TractDescriptor::TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions) {
