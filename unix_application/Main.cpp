@@ -13,6 +13,7 @@
 #include "DBFFile.h"
 #include "AnalysisRun.h"
 #include "ParameterFileAccess.h"
+#include "ParametersValidate.h"
 
 int main(int argc, char *argv[]) {
   int                   i;
@@ -57,7 +58,7 @@ int main(int argc, char *argv[]) {
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     Parameters.SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
     //validate parameters - print errors to console
-    if (! Parameters.ValidateParameters(ConsolePrint)) {
+    if (! ParametersValidate(Parameters).Validate(ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");

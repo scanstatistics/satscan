@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "AnalysisRun.h"
+#include "ParametersValidate.h"
 
 /** Constructor */
 __fastcall CalcThread::CalcThread(TfrmAnalysisRun& Progress, const CParameters& Parameters)
@@ -65,7 +66,8 @@ void __fastcall CalcThread::Execute() {
     gpPrintWindow->SatScanPrintf(GetToolkit().GetAcknowledgment(Acknowledgment));
 
     time(&RunTime);         // Pass to analysis to include in report
-    if (!const_cast<CParameters*>(gpParameters)->ValidateParameters(*gpPrintWindow))
+
+    if (!ParametersValidate(*gpParameters).Validate(*gpPrintWindow))
        GenerateResolvableException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
 
     //create analysis runner object and execute analysis
