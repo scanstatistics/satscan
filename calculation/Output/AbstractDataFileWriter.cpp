@@ -102,6 +102,11 @@ const ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) const 
   return gvFieldValues[iFieldIndex];
 }
 
+/** Sets all blank indicators as not blank. */
+void RecordBuffer::SetAllFieldsNotBlank() {
+  std::fill(gvBlankFields.begin(), gvBlankFields.end(), false);
+}
+
 /** Sets the field at fieldnumber to either be blank or non-blank. */
 void RecordBuffer::SetFieldIsBlank(const ZdString& sFieldName, bool bBlank) {
   try {

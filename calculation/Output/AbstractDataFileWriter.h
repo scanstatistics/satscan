@@ -24,6 +24,7 @@ class RecordBuffer {
       ZdFieldValue                    & GetFieldValue(unsigned int iFieldIndex);
       const ZdFieldValue              & GetFieldValue(unsigned int iFieldIndex) const;
       unsigned int                      GetNumFields() const { return gvFieldValues.size();}
+      void                              SetAllFieldsNotBlank();
       void                              SetFieldIsBlank(const ZdString& sFieldName, bool bBlank);
       void                              SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank);
 };
