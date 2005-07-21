@@ -78,6 +78,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
   try {
     DataHub.GetTInfo()->tiGetTractIdentifiers(tTract, vIdentifiers);
     for (t=0; t < vIdentifiers.size(); ++t) {
+       Record.SetAllFieldsNotBlank();
        Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = vIdentifiers[t].c_str();
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
        if (!gbExcludePValueField)
