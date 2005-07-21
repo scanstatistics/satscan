@@ -7,6 +7,8 @@
 
 class DataSetHandler; /* forward class declaration */
 
+/** Provides methods to print CParameters in an organized manner to the main output
+    file of an analysis. */
 class ParametersPrint {
   private:
     const CParameters & gParameters;
@@ -38,3 +40,4 @@ class ParametersPrint {
 };
 //******************************************************************************
 #endif
+

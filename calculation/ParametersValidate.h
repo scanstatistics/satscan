@@ -5,7 +5,8 @@
 #include "Parameters.h"
 #include "BasePrint.h"
 
-/** CParameters settings validator. */
+/** Validates CParameters settings in relation to program and each other, as well
+    as available functionality in program. */
 class ParametersValidate {
   private:
     const CParameters & gParameters;
@@ -34,3 +35,4 @@ class ParametersValidate {
 };
 //******************************************************************************
 #endif
+
