@@ -8,6 +8,9 @@
 #pragma link "TSGrid"
 #pragma resource "*.dfm"
 
+#include <iostream>
+#include <fstream>
+
 /** Constructor */
 SourceViewController::SourceViewController(TtsGrid * pTopGrid, BGridZdAbstractFileModel * pGridDataModel)
                      :BZdFileViewController(pTopGrid, pGridDataModel) {}
@@ -189,8 +192,7 @@ void TBDlgDataImporter::AutoAlign() {
 void TBDlgDataImporter::BringPanelToFront(TTabSheet* tabShowTab) {
   try {
     pgcImportPages->ActivePage = tabShowTab;
-    btnPreviousPanel->Visible = (tabShowTab == tabDataMapping && strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(),
-                                                                         ZdDBFFileType.GetFileTypeExtension()) ||  (tabShowTab == tabOutputSettings));
+    btnPreviousPanel->Visible = (tabShowTab == tabDataMapping && gSourceDataFileType != dBase ||  (tabShowTab == tabOutputSettings));
     btnNextPanel->Visible = (pgcImportPages->ActivePage == tabFileFormat || pgcImportPages->ActivePage == tabDataMapping);
     btnExecuteImport->Visible = (pgcImportPages->ActivePage == tabOutputSettings);
     chkFirstRowIsName->Visible = (pgcImportPages->ActivePage == tabDataMapping);
@@ -532,6 +534,18 @@ int TBDlgDataImporter::GetNumInputFileVariables() const {
   return iNumInputVariables;
 }
 
+/** Returns file type given source file extension. */ 
+SourceDataFileType TBDlgDataImporter::GetSourceFileType() const {
+  SourceDataFileType eType;
+
+  if (!strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(), ZdDBFFileType.GetFileTypeExtension()))
+    eType = dBase;
+  else
+    eType = Delimited;
+
+  return eType;
+}
+
 /** Hides rows based on coordinates variables selected to be shown. */
 void TBDlgDataImporter::HideRows() {
   try {
@@ -855,7 +869,9 @@ void TBDlgDataImporter::OpenSourceAsDBaseFile() {
   }
   catch (ZdException &x) {
     x.AddCallpath("OpenSourceAsDBaseFile()","TBDlgDataImporter");
-    throw;
+    dBaseFileOpenException exception(x.GetErrorMessage(), "OpenSourceAsDBaseFile()");
+    exception.SetCallpath(x.GetCallpath());
+    throw exception;
   }
 }
 
@@ -1090,14 +1106,14 @@ void TBDlgDataImporter::SetMappings(BZdFileImporter & FileImporter) {
 }
 
 /** Sets which panels and the order of showing panels. */
-void TBDlgDataImporter::SetPanelsToShow() {
+void TBDlgDataImporter::SetPanelsToShow(SourceDataFileType eType) {
   try {
     //Skip file format panel for dBase since we already know structure.
-    if (!strcmpi(ZdFileName(gSourceDescriptor.GetImportFileName()).GetExtension(), ZdDBFFileType.GetFileTypeExtension())) {
+    if (eType == dBase) {
       gvTabSheets.clear();
       gvTabSheets.push_back(tabDataMapping);
       gvTabSheets.push_back(tabOutputSettings);
-      gSourceDataFileType = dBase;
+      gSourceDataFileType = eType;
       rdoFileType->ItemIndex = -1;
     }
     else {
@@ -1105,7 +1121,7 @@ void TBDlgDataImporter::SetPanelsToShow() {
       gvTabSheets.push_back(tabFileFormat);
       gvTabSheets.push_back(tabDataMapping);
       gvTabSheets.push_back(tabOutputSettings);
-      gSourceDataFileType = Delimited;
+      gSourceDataFileType = eType;
       rdoFileType->ItemIndex = 0;
     }
   }
@@ -1118,8 +1134,15 @@ void TBDlgDataImporter::SetPanelsToShow() {
 /** Internal setup function. */
 void TBDlgDataImporter::Setup(const char * sSourceFilename) {
   unsigned long ulCurrentStyle;
+  std::ifstream filestream;
 
   try {
+    //first check read access
+    filestream.open(sSourceFilename, ios::binary);
+    if (!filestream)
+      ZdException::GenerateNotification("File '%s' could not be opened for reading.", "Setup()", sSourceFilename);
+    filestream.close();
+
     gSourceDescriptor.SetImportFile(sSourceFilename);
     gDestDescriptor.SetDestinationType(BFileDestDescriptor::SingleFile);
     gDestDescriptor.SetModifyType(BFileDestDescriptor::OverWriteExistingData);
@@ -1127,7 +1150,7 @@ void TBDlgDataImporter::Setup(const char * sSourceFilename) {
     gDestDescriptor.SetErrorOptionsType(BFileDestDescriptor::RejectBatch);
     ulCurrentStyle = GetWindowLong(lstFixedColFieldDefs->Handle, GWL_STYLE);
     SetWindowLong(lstFixedColFieldDefs->Handle, GWL_STYLE, ulCurrentStyle|WS_HSCROLL);
-    SetPanelsToShow();
+    SetPanelsToShow(GetSourceFileType());
     gitrCurrentTabSheet = gvTabSheets.begin();
     switch (geFileType) {
       case Case                : SetupCaseFileVariableDescriptors();
@@ -1673,8 +1696,29 @@ void __fastcall TBDlgDataImporter::OnFixedColFieldDefsClick(TObject *Sender) {
 }
 
 void __fastcall TBDlgDataImporter::OnFormShow(TObject *Sender) {
+  SourceDataFileType eFileType = gSourceDataFileType;
+
+  if (eFileType == dBase) {
+    //if source file type has been set to dBase, there is a possibility that
+    //file open will fail; maybe the file isn't really dBase?
+    try {
+      SetPanelsToShow(eFileType);
+      ShowFirstPanel();
+      return;
+    }
+    catch (dBaseFileOpenException &x) {
+      //opening file as dBase failed - try opening as default delimited ascii file
+      eFileType = Delimited;
+    }
+    catch (ZdException &x) {
+      x.AddCallpath("OnFormShow()","TBDlgDataImporter");
+      DisplayBasisException(this, x);
+      return;
+    }
+  }
+  
   try {
-    SetPanelsToShow();
+    SetPanelsToShow(eFileType);
     ShowFirstPanel();
   }
   catch (ZdException &x) {
@@ -1713,32 +1757,6 @@ void __fastcall TBDlgDataImporter::OnUpdateFldDefClick(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
-
-
-//////////////////////////
-/////Exception Class /////
-//////////////////////////
-
-ImporterException::ImporterException(const char * sMessage, const char * sSourceModule, ZdException::Level iLevel)
-                :BException(sMessage, sSourceModule, iLevel){
-}
-
-void ImporterException::GenerateException ( const char * sMessage, const char * sSourceModule, ZdException::Level iLevel, ... ) {
-   va_list   vArgs;
-   char      sExceptionString[2048];
-
-   va_start ( vArgs, iLevel );
-   vsprintf ( sExceptionString, sMessage, vArgs );
-   va_end ( vArgs );
-
-   throw ImporterException(sExceptionString, sSourceModule, iLevel);
-}
-
-void ImporterException::GenerateException( const char * sMessage, const char * sSourceModule ) {
-   throw ImporterException(sMessage, sSourceModule, ZdException::Normal);
-}
-
-
 /** Event triggered when mapping grid is resized. Intended to cause second
     columns combobox buttons to be visible without user needing to resize
     column widths.*/
@@ -1764,3 +1782,48 @@ void __fastcall TBDlgDataImporter::OnChangeDirectoryClick(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 
+//////////////////////////////////
+/////ImporterException Class /////
+//////////////////////////////////
+
+ImporterException::ImporterException(const char * sMessage, const char * sSourceModule, ZdException::Level iLevel)
+                :BException(sMessage, sSourceModule, iLevel){
+}
+
+void ImporterException::GenerateException ( const char * sMessage, const char * sSourceModule, ZdException::Level iLevel, ... ) {
+   va_list   vArgs;
+   char      sExceptionString[2048];
+
+   va_start ( vArgs, iLevel );
+   vsprintf ( sExceptionString, sMessage, vArgs );
+   va_end ( vArgs );
+
+   throw ImporterException(sExceptionString, sSourceModule, iLevel);
+}
+
+void ImporterException::GenerateException( const char * sMessage, const char * sSourceModule ) {
+   throw ImporterException(sMessage, sSourceModule, ZdException::Normal);
+}
+
+///////////////////////////////////////
+/////dBaseFileOpenException Class /////
+///////////////////////////////////////
+
+dBaseFileOpenException::dBaseFileOpenException(const char * sMessage, const char * sSourceModule, ZdException::Level iLevel)
+                       :BException(sMessage, sSourceModule, iLevel){
+}
+
+void dBaseFileOpenException::GenerateException ( const char * sMessage, const char * sSourceModule, ZdException::Level iLevel, ... ) {
+   va_list   vArgs;
+   char      sExceptionString[2048];
+
+   va_start ( vArgs, iLevel );
+   vsprintf ( sExceptionString, sMessage, vArgs );
+   va_end ( vArgs );
+
+   throw dBaseFileOpenException(sExceptionString, sSourceModule, iLevel);
+}
+
+void dBaseFileOpenException::GenerateException( const char * sMessage, const char * sSourceModule ) {
+   throw dBaseFileOpenException(sMessage, sSourceModule, ZdException::Normal);
+}

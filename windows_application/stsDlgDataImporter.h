@@ -1,4 +1,4 @@
-// $Revision: 1.16 $
+// $Revision: 1.17 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -183,6 +183,7 @@ class TBDlgDataImporter : public TForm {
      const char                    * GetInputFileTypeString() const;     
      const char                    * GetInputFileVariableName(int iFieldIndex) const;
      int                             GetNumInputFileVariables() const;
+     SourceDataFileType              GetSourceFileType() const;
      void                            HideRows();
      TModalResult                    ImportFile();
      void                            InitializeInputFileVariableMappings();
@@ -206,7 +207,7 @@ class TBDlgDataImporter : public TForm {
      void                            SelectImportFile();
      void                            SetGridHeaders(bool bFirstRowIsHeader=false);
      void                            SetMappings(BZdFileImporter & FileImporter);
-     void                            SetPanelsToShow();
+     void                            SetPanelsToShow(SourceDataFileType eType);
      void                            SetupCaseFileVariableDescriptors();
      void                            SetupControlFileVariableDescriptors();
      void                            SetCoorinatesControlType(CoordinatesType eCoordinatesType);
@@ -245,4 +246,14 @@ public:
    void static GenerateException ( const char * sMessage, const char * sSourceModule, ZdException::Level iLevel, ... );
    void static GenerateException ( const char * sMessage, const char * sSourceModule );
 };
+
+class dBaseFileOpenException : public BException {
+public:
+   dBaseFileOpenException ( const char * sMessage, const char * sSourceModule, ZdException::Level iLevel = Normal);
+   virtual ~dBaseFileOpenException(){};
+
+   void static GenerateException ( const char * sMessage, const char * sSourceModule, ZdException::Level iLevel, ... );
+   void static GenerateException ( const char * sMessage, const char * sSourceModule );
+};
+
 #endif
