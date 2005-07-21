@@ -691,7 +691,7 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
 /** starts analysis execution - development */
 void AnalysisRunner::PerformCentric_Parallel() {
   bool                  bContinue;
-  unsigned long         ulParallelProcessCount = gParameters.GetNumParallelProcessesToExecute();
+  unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(gpDataHub->m_nGridTracts));
   DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
   try {
@@ -1024,7 +1024,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
   CAnalysis                 * pAnalysis=0;
   SimulationDataContainer_t   SimulationDataContainer;
   RandomizerContainer_t       RandomizationContainer;
-  unsigned long               ulParallelProcessCount = gParameters.GetNumParallelProcessesToExecute();
+  unsigned long               ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.GetNumReplicationsRequested());
 
   try {
     if (gParameters.GetNumReplicationsRequested() == 0)
