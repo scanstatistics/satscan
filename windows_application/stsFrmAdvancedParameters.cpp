@@ -10,7 +10,7 @@
 #pragma resource "*.dfm"
 
 /** Maximum number of additional input datasets permitted. */
-const int TfrmAdvancedParameters::MAXIMUM_ADDITIONAL_SETS = 3;
+const int TfrmAdvancedParameters::MAXIMUM_ADDITIONAL_SETS = 11;
 
 /** class constructor */
 __fastcall TfrmAdvancedParameters::TfrmAdvancedParameters(const TfrmAnalysis& AnalysisSettings)
