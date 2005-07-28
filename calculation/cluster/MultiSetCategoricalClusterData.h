@@ -8,7 +8,7 @@ class CategoricalClusterDataFactory; /* forward class declaration. */
 
 /** Class representing accumulated data of a spatial clustering in multiple data
     sets for case data which is partitioned by category. */
-class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData {
+class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public AbstractCategoricalClusterData {
   protected:
     ZdPointerVector<CategoricalSpatialData>             gvSetClusterData;
     ZdPointerVector<CategoricalSpatialData>::iterator   gitr;
@@ -24,13 +24,16 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData {
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
+    virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                                     std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                                     unsigned int tSetIndex=0) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
 };
 
 /** Abstract class representing accumulated data of a temporal clustering in multiple
     data sets for case data which is partitioned by category. */
-class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterData {
+class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterData, public AbstractCategoricalClusterData {
   protected:
     ZdPointerVector<CategoricalTemporalData>::iterator   gitr;
 
@@ -42,6 +45,9 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
 
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
+    virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                                     std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                                     unsigned int tSetIndex=0) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
 };

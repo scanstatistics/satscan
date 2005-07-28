@@ -4,10 +4,11 @@
 //******************************************************************************
 #include "CategoricalClusterData.h"
 #include "TimeIntervals.h"
+#include "OrdinalLikelihoodCalculation.h"
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface)
-                       :AbstractSpatialClusterData(0) {
+                       :AbstractSpatialClusterData(0), AbstractCategoricalClusterData() {
 
   gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   InitializeData();
@@ -15,7 +16,7 @@ CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const AbstractDataSetGateway& DataGateway)
-                       :AbstractSpatialClusterData(0) {
+                       :AbstractSpatialClusterData(0), AbstractCategoricalClusterData() {
                         
   gvCasesPerCategory.resize(DataGateway.GetDataSetInterface().GetNumOrdinalCategories(), 0);
   InitializeData();
@@ -72,6 +73,14 @@ count_t CategoricalSpatialData::GetCategoryCaseCount(unsigned int iCategoryIndex
   return gvCasesPerCategory[iCategoryIndex];
 }
 
+/** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood
+    ratio to determine which, if any, categories where combined into one category. */
+void CategoricalSpatialData::GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                                          std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                                          unsigned int) const {
+  Calculator.CalculateOrdinalCombinedCategories(gvCasesPerCategory, vCategoryContainer);
+}
+
 /** No implemented - throws ZdException. */
 measure_t CategoricalSpatialData::GetMeasure(unsigned int) const {
   ZdGenerateException("'GetMeasure(unsigned int)' not implemeneted.","CategoricalSpatialData");
@@ -82,7 +91,7 @@ measure_t CategoricalSpatialData::GetMeasure(unsigned int) const {
 
 /** class constructor */
 CategoricalTemporalData::CategoricalTemporalData(const DataSetInterface& Interface)
-                        :AbstractTemporalClusterData(),
+                        :AbstractTemporalClusterData(), AbstractCategoricalClusterData(),
                          gppCategoryCases(Interface.GetPTCategoryCaseArray()) {
 
   gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
@@ -143,6 +152,14 @@ count_t CategoricalTemporalData::GetCaseCount(unsigned int) const {
 /** Returns number of accumulated cases for category. */
 count_t CategoricalTemporalData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int) const {
   return gvCasesPerCategory[iCategoryIndex];
+}
+
+/** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood
+    ratio to determine which, if any, categories where combined into one category. */
+void CategoricalTemporalData::GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                                           std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                                           unsigned int) const {
+  Calculator.CalculateOrdinalCombinedCategories(gvCasesPerCategory, vCategoryContainer);
 }
 
 /** Not implemented - throws ZdException. */

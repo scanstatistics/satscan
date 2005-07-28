@@ -4,8 +4,22 @@
 //******************************************************************************
 #include "AbstractClusterData.h"
 
+class OrdinalCombinedCategory;
+class OrdinalLikelihoodCalculator;
+
+/**Abstract base class for all categorical cluster data. */
+class AbstractCategoricalClusterData {
+  public:
+    AbstractCategoricalClusterData() {}
+    virtual ~AbstractCategoricalClusterData() {}
+
+    virtual void GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                              std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                              unsigned int tSetIndex=0) const = 0;
+};
+
 /** Class representing accumulated data of spatial clustering organized by category. */
-class CategoricalSpatialData : public AbstractSpatialClusterData {
+class CategoricalSpatialData : public AbstractSpatialClusterData, public AbstractCategoricalClusterData {
   public:
     CategoricalSpatialData(const DataSetInterface& Interface);
     CategoricalSpatialData(const AbstractDataSetGateway& DataGateway);
@@ -22,6 +36,9 @@ class CategoricalSpatialData : public AbstractSpatialClusterData {
     virtual double              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t             GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
+    virtual void                GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                                             std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                                             unsigned int tSetIndex=0) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
     inline virtual void         InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);}
 };
@@ -31,7 +48,7 @@ class CategoricalSpatialData : public AbstractSpatialClusterData {
     purely temporal arrays supplied by DataInterface. The protected constructor
     is intended to permit instantiation through a derived class, where perhaps
     pointers will be allocated and data supplied by some other process. */
-class CategoricalTemporalData : public AbstractTemporalClusterData {
+class CategoricalTemporalData : public AbstractTemporalClusterData, public AbstractCategoricalClusterData {
   public:
     CategoricalTemporalData(const DataSetInterface& Interface);
     CategoricalTemporalData(const AbstractDataSetGateway& DataGateway);
@@ -49,6 +66,9 @@ class CategoricalTemporalData : public AbstractTemporalClusterData {
     virtual unsigned int        GetAllocationSize() const;
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t             GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
+    virtual void                GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
+                                                             std::vector<OrdinalCombinedCategory>& vCategoryContainer,
+                                                             unsigned int tSetIndex=0) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);}
     virtual void                Reassociate(const DataSetInterface& Interface);
