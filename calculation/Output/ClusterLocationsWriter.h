@@ -13,9 +13,11 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * LOC_OBS_FIELD;
       static const char       * LOC_EXP_FIELD;
       static const char       * LOC_OBS_DIV_EXP_FIELD;
+      static const char       * LOC_REL_RISK_FIELD;
       static const char       * CLU_OBS_FIELD;
       static const char       * CLU_EXP_FIELD;
       static const char       * CLU_OBS_DIV_EXP_FIELD;
+      static const char       * CLU_REL_RISK_FIELD;
       bool                      gbExcludePValueField;
 
       void                      DefineFields();

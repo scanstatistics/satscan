@@ -9,9 +9,11 @@ const char * LocationInformationWriter::AREA_SPECIFIC_FILE_EXT    = ".gis";
 const char * LocationInformationWriter::LOC_OBS_FIELD             = "LOC_OBS";
 const char * LocationInformationWriter::LOC_EXP_FIELD             = "LOC_EXP";
 const char * LocationInformationWriter::LOC_OBS_DIV_EXP_FIELD     = "LOC_ODE";
+const char * LocationInformationWriter::LOC_REL_RISK_FIELD        = "LOC_RISK";
 const char * LocationInformationWriter::CLU_OBS_FIELD             = "CLU_OBS";
 const char * LocationInformationWriter::CLU_EXP_FIELD             = "CLU_EXP";
 const char * LocationInformationWriter::CLU_OBS_DIV_EXP_FIELD     = "CLU_ODE";
+const char * LocationInformationWriter::CLU_REL_RISK_FIELD        = "CLU_RISK";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField, bool bAppend)
@@ -49,6 +51,8 @@ void LocationInformationWriter::DefineFields() {
       CreateField(CLU_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
       CreateField(CLU_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
       CreateField(CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+        CreateField(CLU_REL_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
     if (!gbExcludePValueField)
       CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
@@ -57,6 +61,8 @@ void LocationInformationWriter::DefineFields() {
       CreateField(LOC_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
       CreateField(LOC_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
       CreateField(LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+        CreateField(LOC_REL_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
   }
   catch (ZdException &x) {
@@ -92,15 +98,21 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
            Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() = theCluster.GetObservedCountForTract(tTract, DataHub);
            Record.GetFieldValue(LOC_EXP_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub);
            Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpectedForTract(tTract, DataHub);
+           if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+             Record.GetFieldValue(LOC_REL_RISK_FIELD).AsDouble() = theCluster.GetRelativeRiskForTract(tTract, DataHub);
          }
          else {
            Record.SetFieldIsBlank(LOC_OBS_FIELD, true);
            Record.SetFieldIsBlank(LOC_EXP_FIELD, true);
            Record.SetFieldIsBlank(LOC_OBS_DIV_EXP_FIELD, true);
+           if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+             Record.SetFieldIsBlank(LOC_REL_RISK_FIELD, true);
          }
          Record.GetFieldValue(CLU_OBS_FIELD).AsDouble() = theCluster.GetObservedCount();
          Record.GetFieldValue(CLU_EXP_FIELD).AsDouble() = theCluster.GetExpectedCount(DataHub);
          Record.GetFieldValue(CLU_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
+         if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+           Record.GetFieldValue(CLU_REL_RISK_FIELD).AsDouble() = theCluster.GetRelativeRisk(DataHub);
        }
        
        if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
