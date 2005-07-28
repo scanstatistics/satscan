@@ -4,6 +4,8 @@
 //*****************************************************************************
 #include "cluster.h"
 #include "ClusterLocationsWriter.h"
+#include "OrdinalLikelihoodCalculation.h"
+#include "CategoricalClusterData.h"
 
 /** constructor */
 CCluster::CCluster() {
@@ -169,15 +171,16 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
      sWork.printf(", %ld", GetObservedCount(i));
      sBuffer << sWork;
   }
-  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-  //print total censored cases
-  PrintFormat.PrintSectionLabel(fp, "Number censored cases", false, true);
-  GetPopulationAsString(sBuffer, DataHub.GetProbabilityModel().GetPopulation(0, *this, DataHub) - GetObservedCount(0));
-  for (i=1; i < DataSets.GetNumDataSets(); ++i) {
-     GetPopulationAsString(sWork, DataHub.GetProbabilityModel().GetPopulation(i, *this, DataHub) - GetObservedCount(i));
-     sBuffer << ", " << sWork;
-  }
-  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  //not printing censored information at Martin's directive, but leave in place for now
+  //PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  ////print total censored cases
+  //PrintFormat.PrintSectionLabel(fp, "Number censored cases", false, true);
+  //GetPopulationAsString(sBuffer, DataHub.GetProbabilityModel().GetPopulation(0, *this, DataHub) - GetObservedCount(0));
+  //for (i=1; i < DataSets.GetNumDataSets(); ++i) {
+  //   GetPopulationAsString(sWork, DataHub.GetProbabilityModel().GetPopulation(i, *this, DataHub) - GetObservedCount(i));
+  //   sBuffer << ", " << sWork;
+  //}
+  //PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   //print expected cases label
   PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
   //print expected cases
@@ -188,17 +191,31 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
   }
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   DisplayObservedDivExpected(fp, DataHub, PrintFormat);
+  //NOTE: Not printing relative risk information for exeponential model at this time.
 }
 
 /** Prints observed cases, expected cases and observed/expected, for Ordinal model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  unsigned int           i, j, k;
-  ZdString               sWork, sBuffer, sNullString;
-  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
-  double                 dTotalCasesInClusterDataSet=0;
+  unsigned int                                          i, j, k;
+  ZdString                                              sWork, sBuffer, sNullString;
+  const DataSetHandler                                & DataSets = DataHub.GetDataSetHandler();
+  double                                                dTotalCasesInClusterDataSet=0;
+  OrdinalLikelihoodCalculator                           Calculator(DataHub);
+  std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
+  std::vector<OrdinalCombinedCategory>::iterator        itrCategory;
+  const AbstractCategoricalClusterData                * pClusterData=0;
 
+  if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(GetClusterData())) == 0)
+    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n",
+                        "DisplayClusterDataOrdinal()");
+                        
   for (i=0; i < DataSets.GetNumDataSets(); ++i) {
+     //retrieve collection of ordinal categories in combined state
+     pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, i);
+     //if container is empty, data set did not contribute to the loglikelihood ratio, so skip reporting it
+     if (!vCategoryContainer.size())
+       continue;
      const RealDataSet& DataSet = DataSets.GetDataSet(i);
      //print data set number if more than data set
      if (DataSets.GetNumDataSets() > 1) {
@@ -211,35 +228,64 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      PrintFormat.PrintAlignedMarginsDataString(fp, GetPopulationAsString(sBuffer, dTotalCasesInClusterDataSet));
      //print category ordinal values
      PrintFormat.PrintSectionLabel(fp, "Category", false, true);
-     sBuffer.printf("%g", DataSet.GetPopulationData().GetOrdinalCategoryValue(0));
-     for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
-       sWork.printf(", %g", DataSet.GetPopulationData().GetOrdinalCategoryValue(k));
-       sBuffer << sWork;
+     sBuffer = "";
+     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       if (itrCategory->GetNumCombinedCategories() == 1)
+         sWork.printf("%s%g",
+                      (itrCategory == vCategoryContainer.begin() ? "" : ", "),
+                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(0)));
+       else
+         sWork.printf("%s(%g-%g)",
+                      (itrCategory == vCategoryContainer.begin() ? "" : ", "),
+                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(0)),
+                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(itrCategory->GetNumCombinedCategories() - 1)));
+        sBuffer << sWork;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print observed case data per category
      PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-     sBuffer.printf("%ld", GetObservedCountOrdinal(i, 0));
-     for (k=1; k < DataSet.GetPopulationData().GetNumOrdinalCategories(); ++k) {
-       sWork.printf(", %ld", GetObservedCountOrdinal(i, k));
+     sBuffer = "";
+     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       count_t tObserved=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tObserved += GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+       sWork.printf("%s%ld", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tObserved);
        sBuffer << sWork;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print expected case data per category
      PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
-     const PopulationData& Population = DataSet.GetPopulationData();
-     sBuffer.printf("%.2f", GetExpectedCountOrdinal(DataHub, i, 0));
-     for (size_t t=1; t < Population.GetNumOrdinalCategories(); ++t) {
-        sWork.printf(", %.2f", GetExpectedCountOrdinal(DataHub, i, t));
-        sBuffer << sWork;
+     sBuffer = "";
+     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       measure_t tExpected=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tExpected += GetExpectedCountOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m));
+       sWork.printf("%s%.2f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tExpected);
+       sBuffer << sWork;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print observed div expected case data per category
      PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
-     sBuffer.printf("%.3f", GetObservedDivExpectedOrdinal(DataHub, i, 0));
-     for (size_t t=1; t < Population.GetNumOrdinalCategories(); ++t) {
-        sWork.printf(", %.3f", GetObservedDivExpectedOrdinal(DataHub, i, t));
-        sBuffer << sWork;
+     sBuffer = "";
+     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       measure_t tObservedDivExpected=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tObservedDivExpected += GetObservedDivExpectedOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m));
+       sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tObservedDivExpected);
+       sBuffer << sWork;
+     }
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print relative data - note that we will possibly be combining categories
+     PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
+     sBuffer = "";
+     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       double tRelativeRisk=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tRelativeRisk += GetRelativeRisk(GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m)),
+                                           GetExpectedCountOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m)),
+                                           DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases());
+       sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
+       sBuffer << sWork;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
@@ -271,6 +317,8 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   DisplayAnnualCaseInformation(fp, DataHub, PrintFormat);
   DisplayObservedDivExpected(fp, DataHub, PrintFormat);
+  if (DataHub.GetParameters().GetProbabilityModelType() == POISSON  || DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI)
+    DisplayRelativeRisk(fp, DataHub, PrintFormat);
 }
 
 /** Writes clusters cartesian coordinates and ellipse properties (if cluster is elliptical)
@@ -475,6 +523,21 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   }
 }
 
+/** Writes clusters relative risk in format required by result output file. */
+void CCluster::DisplayRelativeRisk(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
+  unsigned int           i;
+  ZdString               sBuffer, sWork;
+
+  PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
+  sBuffer.printf("%.3f", GetRelativeRisk(DataHub, 0));
+  for (i=1; i < DataSets.GetNumDataSets(); ++i) {
+    sWork.printf(", %.3f", GetRelativeRisk(DataHub, i));
+    sBuffer << sWork;
+  }
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+}
+
 /** Writes clusters overall relative risk in format required by result output file. */
 void CCluster::DisplayObservedDivExpected(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
@@ -569,6 +632,27 @@ ZdString & CCluster::GetPopulationAsString(ZdString& sString, double dPopulation
 /** Returns p-value, rank / (number of simulations completed + 1), of cluster. */
 double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
   return (double)m_nRank/(double)(uiNumSimulationsCompleted+1);
+}
+
+/** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data. */
+double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) const {
+  return GetRelativeRisk(GetObservedCount(tSetIndex),
+                         GetExpectedCount(DataHub, tSetIndex),
+                         DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalCases());
+}
+
+/** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data. */
+double CCluster::GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const {
+  if (dTotalCases - dExpected && ((dTotalCases - dObserved)/(dTotalCases - dExpected)))
+    return (dObserved/dExpected)/((dTotalCases - dObserved)/(dTotalCases - dExpected));
+  return 0;  
+}
+
+/** Returns relative risk for location contained in cluster. */
+double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex) const {
+  return GetRelativeRisk(GetObservedCountForTract(tTractIndex, DataHub, tSetIndex),
+                         GetExpectedCountForTract(tTractIndex, DataHub, tSetIndex),
+                         DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalCases());
 }
 
 /** returns start date of defined cluster as formated string */
