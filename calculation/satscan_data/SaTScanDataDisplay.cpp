@@ -130,11 +130,18 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
                        break;
     default          : break;
   }
-  //for the ordinal probability model, also print total cases per ordinal category
+  //for the ordinal probability model, also print category values and total cases per ordinal category
   if (gParameters.GetProbabilityModelType() == ORDINAL) {
     if (gpDataSets->GetNumDataSets() == 1) {
-      PrintFormat.PrintSectionLabel(fp, "Total cases per category", false, false);
+      PrintFormat.PrintSectionLabel(fp, "Category values", false, false);
       const PopulationData& Population = gpDataSets->GetDataSet().GetPopulationData();
+      sBuffer="";
+      for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+         sWork.printf("%s%g", (j ? ", " : ""), Population.GetOrdinalCategoryValue(j));
+         sBuffer << sWork;
+      }
+      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      PrintFormat.PrintSectionLabel(fp, "Total cases per category", false, false);
       sBuffer="";
       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
          sWork.printf("%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
@@ -144,9 +151,16 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
     }
     else {
       for (i=0, sBuffer=""; i < gpDataSets->GetNumDataSets(); ++i, sBuffer="") {
-        sLabel.printf("Total cases data set #%d per category", i + 1);
+        sLabel.printf("Category values, data set #%d", i + 1);
         PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
         const PopulationData& Population = gpDataSets->GetDataSet(i).GetPopulationData();
+        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+           sWork.printf("%s%g", (j ? ", " : ""), Population.GetOrdinalCategoryValue(j));
+           sBuffer << sWork;
+        }
+        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+        sLabel.printf("Total cases per category data set #%d ", i + 1);
+        PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
            sWork.printf("%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
            sBuffer << sWork;
