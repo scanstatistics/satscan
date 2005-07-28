@@ -62,6 +62,7 @@ void DBaseDataFileWriter::Setup(const CParameters& Parameters, ZdPointerVector<Z
     record buffer structure agrees with file structure. */
 void DBaseDataFileWriter::WriteRecord(const RecordBuffer& Record) {
   try {
+    gpFileRecord->Clear();
     for (unsigned int j=0; j < Record.GetNumFields(); ++j) {
        if (!Record.GetFieldIsBlank(j))
          gpFileRecord->PutFieldValue(j, Record.GetFieldValue(j));
