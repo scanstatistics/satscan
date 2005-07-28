@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "ClusterInformationWriter.h"
 #include "cluster.h"
+#include "OrdinalLikelihoodCalculation.h"
+#include "CategoricalClusterData.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
 const char * ClusterInformationWriter::START_DATE_FLD	          = "START_DATE";
@@ -20,6 +22,7 @@ const char * ClusterInformationWriter::COORD_Z_FIELD              = "Z";
 const char * ClusterInformationWriter::OBS_FIELD_PART  	          = "OBS";
 const char * ClusterInformationWriter::EXP_FIELD_PART             = "EXP";
 const char * ClusterInformationWriter::OBS_DIV_EXP_FIELD          = "ODE";
+const char * ClusterInformationWriter::RELATIVE_RISK_FIELD        = "RSK";
 const char * ClusterInformationWriter::CATEGORY_FIELD_PART        = "_CAT";
 const char * ClusterInformationWriter::SET_FIELD_PART             = "_DS";
 const char * ClusterInformationWriter::SET_CATEGORY_FIELD_PART    = "C";
@@ -71,46 +74,60 @@ void ClusterInformationWriter::DefineFields() {
       CreateField(E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
     CreateField(NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetNumDataSets() == 1) {
-      if (gParameters.GetProbabilityModelType() == ORDINAL) {
-        const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(0).GetPopulationData();
-        for (size_t t=1; t <= Population.GetNumOrdinalCategories(); ++t) {
-          sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, t);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
-          sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, t);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-          sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, t);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-        }  
+    if (gParameters.GetProbabilityModelType() == ORDINAL) {
+      for (i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
+         const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
+         for (size_t t=1; t <= Population.GetNumOrdinalCategories(); ++t) {
+            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+              sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, t);
+            else
+              sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
+            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
+            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+              sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, t);
+            else
+              sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART ,t);
+            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
+            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+              sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, t);
+            else
+              sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
+            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
+            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+              sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, CATEGORY_FIELD_PART, t);
+            else
+              sBuffer.printf("%s%s%i%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
+            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
+         }
       }
-      else {
-        CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-        CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-      }  
     }
     else {
-      if (gParameters.GetProbabilityModelType() == ORDINAL) {
-        for (i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
-            const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
-            for (size_t t=1; t <= Population.GetNumOrdinalCategories(); ++t) {
-               sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
-               sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART ,t);
-               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-               sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-               CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-            }   
-        }
-      }
-      else {
-        for (i=1; i <= gParameters.GetNumDataSets(); ++i) {
+      for (i=1; i <= gParameters.GetNumDataSets(); ++i) {
+        if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+          CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+        else {
           sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, i);
           CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
+        }
+        if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+          CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+        else {
           sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, i);
           CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
+        }
+        if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+          CreateField(OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+        else {
           sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i);
           CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
+        }  
+        if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
+          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+            CreateField(RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+          else {
+            sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i);
+            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
+          }
         }
       }
     }
@@ -265,29 +282,59 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 
 /** Write obvserved, expected and  observed/expected to record for ordinal data.*/
 void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, const CCluster& theCluster) const {
-  ZdString      sBuffer;
+  ZdString                                              sBuffer;
+  OrdinalLikelihoodCalculator                           Calculator(gDataHub);
+  std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
+  std::vector<OrdinalCombinedCategory>::iterator        itrCategory;
+  const AbstractCategoricalClusterData                * pClusterData=0;
+  measure_t                                             tObservedDivExpected;
+  double                                                tRelativeRisk;
 
-  if (gParameters.GetNumDataSets() == 1) {
-    const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(0).GetPopulationData();
-    for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-       sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, t + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCountOrdinal(0, t);
-       sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, t + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, 0, t);
-       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, t + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpectedOrdinal(gDataHub, 0, t);
-    }
-  }
-  else {
-    for (size_t i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
-       const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
-       for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-          sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCountOrdinal(i, t);
-          sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, i, t);
-          sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() =  theCluster.GetObservedDivExpectedOrdinal(gDataHub, i, t);
+  if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(theCluster.GetClusterData())) == 0)
+    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n",
+                        "WriteCountDataAsOrdinal()");
+
+  for (size_t i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
+    const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
+    //retrieve ordinal categories in combined state
+    pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, i);
+    //for each combined category
+    for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       //calculate summation of observed/expected for each catgeory in this combined category
+       tObservedDivExpected=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tObservedDivExpected += theCluster.GetObservedDivExpectedOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
+       //calculate summation of relative for each catgeory in this combined category
+       tRelativeRisk=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
+          tRelativeRisk += theCluster.GetRelativeRisk(theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m)),
+                                                      theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m)),
+                                                      gDataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases());
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
+          //record observed cases - not combining categories
+          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+            sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          else
+            sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+          //record expected cases - not combining categories
+          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+            sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          else
+            sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
+          //record observed/expected cases - categories which were combined will have the same value
+          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+            sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          else
+            sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = tObservedDivExpected;
+          //record relative risk - categories which were combined will have the same value
+          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+            sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          else
+            sBuffer.printf("%s%s%i%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
+          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = tRelativeRisk;
        }
     }
   }
@@ -301,6 +348,8 @@ void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, cons
     Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
     Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
     Record.GetFieldValue(OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
+    if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+      Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = theCluster.GetRelativeRisk(gDataHub);
   }
   else {
     for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
@@ -310,6 +359,10 @@ void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, cons
        Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, i);
        sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1);
        Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, i);
+       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
+         sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i + 1);
+         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetRelativeRisk(gDataHub, i);
+       }  
     }
   }
 }
