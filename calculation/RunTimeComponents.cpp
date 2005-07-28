@@ -63,7 +63,7 @@ ZdString & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, ZdStrin
     sTimeString << uwHours << " h ";
   if (uwMinutes)
     sTimeString << uwMinutes << " m ";
-  sBuffer.printf("%g", dTimeInSeconds);
+  sBuffer.printf("%g", std::max(dTimeInSeconds, 0.0));
   sTimeString << sBuffer << " s ";
 
   return sTimeString;
