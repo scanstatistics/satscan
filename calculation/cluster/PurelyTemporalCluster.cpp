@@ -46,6 +46,7 @@ CPurelyTemporalCluster::~CPurelyTemporalCluster() {
 /** overloaded assignment operator */
 CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalCluster& rhs) {
   m_Center              = rhs.m_Center;
+  m_MostCentralLocation = rhs.m_MostCentralLocation;
   m_nTracts             = rhs.m_nTracts;
   m_nRatio              = rhs.m_nRatio;
   m_nRank               = rhs.m_nRank;
@@ -76,6 +77,12 @@ measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, 
     tMeasure  = ppMeasure[m_nFirstInterval][tTractIndex] - ppMeasure[m_nLastInterval][tTractIndex];
 
   return tMeasure;
+}
+
+/** Returns index of most central location. */
+tract_t CPurelyTemporalCluster::GetMostCentralLocationIndex() const {
+  ZdGenerateException("GetMostCentralLocationIndex() not implemented for CPurelyTemporalCluster.","GetMostCentralLocationIndex()");
+  return 0;
 }
 
 /** returns the number of cases for tract as defined by cluster */
