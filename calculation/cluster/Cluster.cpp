@@ -232,16 +232,14 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      PrintFormat.PrintSectionLabel(fp, "Category", false, true);
      sBuffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
-       if (itrCategory->GetNumCombinedCategories() == 1)
-         sWork.printf("%s%g",
-                      (itrCategory == vCategoryContainer.begin() ? "" : ", "),
-                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(0)));
-       else
-         sWork.printf("%s(%g-%g)",
-                      (itrCategory == vCategoryContainer.begin() ? "" : ", "),
-                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(0)),
-                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(itrCategory->GetNumCombinedCategories() - 1)));
-        sBuffer << sWork;
+       sBuffer << (itrCategory == vCategoryContainer.begin() ? "" : ", ");
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
+         sWork.printf("%s%g%s",
+                      (m == 0 ? "[" : ", "),
+                      DataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(m)),
+                      (m + 1 == itrCategory->GetNumCombinedCategories() ? "]" : ""));
+         sBuffer << sWork;
+       }
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print observed case data per category
