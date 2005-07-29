@@ -44,6 +44,7 @@ CSpaceTimeCluster::~CSpaceTimeCluster() {
 /** overloaded assignment operator */
 CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
   m_Center                      = rhs.m_Center;
+  m_MostCentralLocation         = rhs.m_MostCentralLocation;
   m_nTracts                     = rhs.m_nTracts;
   m_CartesianRadius             = rhs.m_CartesianRadius;  
   m_nRatio                      = rhs.m_nRatio;
@@ -105,6 +106,7 @@ void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const Abstrac
 /** re-initializes cluster data */
 void CSpaceTimeCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
+  m_MostCentralLocation = -1;
   m_nTracts = 0;
   m_nRatio = 0;
   m_CartesianRadius = -1;  

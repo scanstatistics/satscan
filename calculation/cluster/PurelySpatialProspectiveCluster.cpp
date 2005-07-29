@@ -46,17 +46,18 @@ CPurelySpatialProspectiveCluster::~CPurelySpatialProspectiveCluster() {
 }
 
 /** overloaded assignment operator */
-CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(const CPurelySpatialProspectiveCluster& cluster) {
-  m_Center                      = cluster.m_Center;
-  m_nTracts                     = cluster.m_nTracts;
-  m_CartesianRadius             = cluster.m_CartesianRadius;   
-  m_nRatio                      = cluster.m_nRatio;
-  m_nRank                       = cluster.m_nRank;
-  m_NonCompactnessPenalty       = cluster.m_NonCompactnessPenalty;
-  m_nFirstInterval              = cluster.m_nFirstInterval;
-  m_nLastInterval               = cluster.m_nLastInterval;
-  m_iEllipseOffset              = cluster.m_iEllipseOffset;
-  gpClusterData->Assign(*cluster.gpClusterData);
+CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(const CPurelySpatialProspectiveCluster& rhs) {
+  m_Center                      = rhs.m_Center;
+  m_MostCentralLocation         = rhs.m_MostCentralLocation;
+  m_nTracts                     = rhs.m_nTracts;
+  m_CartesianRadius             = rhs.m_CartesianRadius;
+  m_nRatio                      = rhs.m_nRatio;
+  m_nRank                       = rhs.m_nRank;
+  m_NonCompactnessPenalty       = rhs.m_NonCompactnessPenalty;
+  m_nFirstInterval              = rhs.m_nFirstInterval;
+  m_nLastInterval               = rhs.m_nLastInterval;
+  m_iEllipseOffset              = rhs.m_iEllipseOffset;
+  gpClusterData->Assign(*rhs.gpClusterData);
   return *this;
 }
 

@@ -49,6 +49,7 @@ CPSMonotoneCluster::~CPSMonotoneCluster() {
 CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs) {
   try {
     m_Center         = rhs.m_Center;
+    m_MostCentralLocation = rhs.m_MostCentralLocation;
     m_nCases         = rhs.m_nCases;
     m_nMeasure       = rhs.m_nMeasure;
     m_nTracts        = rhs.m_nTracts;

@@ -162,6 +162,7 @@ CSVTTCluster& CSVTTCluster::operator=(const CSVTTCluster& rhs) {
   if (this == &rhs)
     return *this;
   m_Center                      = rhs.m_Center;
+  m_MostCentralLocation         = rhs.m_MostCentralLocation;
 //  m_nCases                      = rhs.m_nCases;
 //  m_nMeasure                    = rhs.m_nMeasure;
   m_nTracts                     = rhs.m_nTracts;
