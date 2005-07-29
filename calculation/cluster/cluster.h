@@ -17,13 +17,14 @@ class LocationInformationWriter; /** forward class declaration */
     format. */
 class CCluster {
   protected:
-    tract_t                       m_Center;             // Center of cluster (index to grid)
+    tract_t                       m_Center;                // Center of cluster (index to grid)
+    tract_t                       m_MostCentralLocation;   // Index of most central location
     RATE_FUNCPTRTYPE              m_pfRateOfInterest;
-    tract_t                       m_nTracts;            // Number of neighboring tracts in cluster
-    double                        m_CartesianRadius;    // radius based upon locations in cluster in Cartesian system      
-    unsigned int                  m_nRank;              // Rank based on results of simulations
-    double                        m_NonCompactnessPenalty;  // non-compactness penalty, for ellipses
-    int                           m_iEllipseOffset;     // Link to Circle or Ellipse (top cluster)
+    tract_t                       m_nTracts;               // Number of neighboring tracts in cluster
+    double                        m_CartesianRadius;       // radius based upon locations in cluster in Cartesian system
+    unsigned int                  m_nRank;                 // Rank based on results of simulations
+    double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
+    int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
 
     ZdString                    & GetPopulationAsString(ZdString& sString, double dPopulation) const;
 
@@ -83,6 +84,7 @@ class CCluster {
     virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
+    tract_t                       GetMostCentralLocationIndex() const;
     virtual tract_t               GetNumTractsInnerCircle() const {return m_nTracts;}
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
     virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
@@ -101,12 +103,13 @@ class CCluster {
     virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
+    virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
+    virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape);
+    virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
     void                          SetRate(int nRate);
-    virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
-    virtual void                  SetCartesianRadius(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
     virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
 };

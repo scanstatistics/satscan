@@ -18,8 +18,9 @@ CCluster::~CCluster() {}
 /** initializes cluster data  */
 void CCluster::Initialize(tract_t nCenter) {
   m_Center         = nCenter;
+  m_MostCentralLocation = -1;
   m_nTracts        = 0;
-  m_CartesianRadius= -1; 
+  m_CartesianRadius= -1;
   m_nRatio         = 0;
   m_nRank          = 1;
   m_NonCompactnessPenalty = 1;
@@ -31,6 +32,7 @@ void CCluster::Initialize(tract_t nCenter) {
 /** overloaded assignment operator */
 CCluster& CCluster::operator=(const CCluster& rhs) {
   m_Center                = rhs.m_Center;
+  m_MostCentralLocation   = rhs.m_MostCentralLocation;
   m_nTracts               = rhs.m_nTracts;
   m_CartesianRadius       = rhs.m_CartesianRadius;
   m_nRatio                = rhs.m_nRatio;
@@ -583,6 +585,13 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
 
 }
 
+/** Returns index of most central location. */
+tract_t CCluster::GetMostCentralLocationIndex() const {
+  if (m_MostCentralLocation == -1)
+    ZdGenerateException("Most central location of cluster not calculated.","GetMostCentralLocationIndex()");
+  return m_MostCentralLocation;
+}
+
 /** Returns number of observed cases in accumulated data. */
 count_t CCluster::GetObservedCount(size_t tSetIndex) const {
   return GetClusterData()->GetCaseCount(tSetIndex);
@@ -660,32 +669,6 @@ ZdString& CCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& Data
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval]);
 }
 
-/** Sets centroid index of cluster as defined in CSaTScanData. */
-void CCluster::SetCenter(tract_t nCenter) {
-  m_Center = nCenter;
-}
-
-/** Set ellipse offset as defined in CSaTScanData. */
-void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
-  m_iEllipseOffset = iOffset;
-  SetNonCompactnessPenalty(iOffset == 0 || !DataHub.GetParameters().GetNonCompactnessPenalty() ? 1 : DataHub.GetEllipseShape(iOffset));
-}
-
-/** Sets non compactness penalty for shape. */
-void CCluster::SetNonCompactnessPenalty(double dEllipseShape) {
-  m_NonCompactnessPenalty = CalculateNonCompactnessPenalty(dEllipseShape);
-}
-
-/** Sets scanning area rate. */
-void CCluster::SetRate(int nRate) {
-  switch (nRate) {
-    case HIGH       : m_pfRateOfInterest = HighRate;      break;
-    case LOW        : m_pfRateOfInterest = LowRate;       break;
-    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
-    default         : ;
-  }
-}
-
 /** Set class member 'm_CartesianRadius' from neighbor information obtained from
     CSaTScanData object. */
 void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
@@ -699,9 +682,31 @@ void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
   }  
 }
 
-/** Set class member 'm_CartesianRadius' from neighbor information obtained from
-    CentroidNeighbors object. */
-void CCluster::SetCartesianRadius(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {
+/** Sets centroid index of cluster as defined in CSaTScanData. */
+void CCluster::SetCenter(tract_t nCenter) {
+  m_Center = nCenter;
+}
+
+/** Set ellipse offset as defined in CSaTScanData. */
+void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
+  m_iEllipseOffset = iOffset;
+  SetNonCompactnessPenalty(iOffset == 0 || !DataHub.GetParameters().GetNonCompactnessPenalty() ? 1 : DataHub.GetEllipseShape(iOffset));
+}
+
+/** Set class member 'm_MostCentralLocation' from neighbor information obtained
+    from CSaTScanData object. */
+void CCluster::SetMostCentralLocationIndex(const CSaTScanData& DataHub) {
+  m_MostCentralLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), 1);
+}
+
+/** Sets non compactness penalty for shape. */
+void CCluster::SetNonCompactnessPenalty(double dEllipseShape) {
+  m_NonCompactnessPenalty = CalculateNonCompactnessPenalty(dEllipseShape);
+}
+
+/** Set class members 'm_CartesianRadius' and 'm_MostCentralLocation' from
+    neighbor information obtained from CentroidNeighbors object. */
+void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {
   std::vector<double> vCoordsOfCluster;
   std::vector<double> vCoordsOfNeighborCluster;
 
@@ -709,7 +714,18 @@ void CCluster::SetCartesianRadius(const CSaTScanData& DataHub, const CentroidNei
     DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
     DataHub.GetTInfo()->tiRetrieveCoords(Neighbors.GetNeighborTractIndex(m_nTracts - 1), vCoordsOfNeighborCluster);
     m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
-  }  
+    m_MostCentralLocation = Neighbors.GetNeighborTractIndex(0);
+  }
+}
+
+/** Sets scanning area rate. */
+void CCluster::SetRate(int nRate) {
+  switch (nRate) {
+    case HIGH       : m_pfRateOfInterest = HighRate;      break;
+    case LOW        : m_pfRateOfInterest = LowRate;       break;
+    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
+    default         : ;
+  }
 }
 
 /** Writes location information to stsAreaSpecificData object for each tract
