@@ -37,6 +37,7 @@ void CAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostL
     for (i=0; i < gDataHub.m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++i) {
        const CCluster& TopCluster = CalculateTopCluster(i, DataGateway);
        const_cast<CCluster&>(TopCluster).SetCartesianRadius(gDataHub);
+       const_cast<CCluster&>(TopCluster).SetMostCentralLocationIndex(gDataHub);
        TopClustersContainer.Add(TopCluster);
        if (i==9)
          ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts, i+1, &gPrintDirection);
