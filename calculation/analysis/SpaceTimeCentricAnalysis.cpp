@@ -69,7 +69,7 @@ void SpaceTimeCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const 
   gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopCluster, *gTimeIntervals_R);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
   if (gTopCluster->GetEllipseOffset() == CentroidDef.GetEllipseIndex())
-    gTopCluster->SetCartesianRadius(gDataHub, CentroidDef);
+    gTopCluster->SetNonPersistantNeighborInfo(gDataHub, CentroidDef);
 }
 
 /** Calculates top cluster and simulated llr values about purely temporal clusterings.

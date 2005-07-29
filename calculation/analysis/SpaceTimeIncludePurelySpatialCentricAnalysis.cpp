@@ -74,7 +74,7 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateTopClusterAboutCentr
   gPSClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopPSCluster, *gpLikelihoodCalculator);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
   if (gTopPSCluster->GetEllipseOffset() == CentroidDef.GetEllipseIndex())
-    gTopPSCluster->SetCartesianRadius(gDataHub, CentroidDef);
+    gTopPSCluster->SetNonPersistantNeighborInfo(gDataHub, CentroidDef);
 
   if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster object if evaluating data about new centroid
@@ -84,7 +84,7 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateTopClusterAboutCentr
   gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopCluster, *gTimeIntervals_R);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
   if (gTopCluster->GetEllipseOffset() == CentroidDef.GetEllipseIndex())
-    gTopCluster->SetCartesianRadius(gDataHub, CentroidDef);
+    gTopCluster->SetNonPersistantNeighborInfo(gDataHub, CentroidDef);
 }
 
 /** Returns cluster object with greatest llr value among gTopPSCluster and gTopCluster.
