@@ -159,8 +159,9 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
            sBuffer << sWork;
         }
         PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-        sLabel.printf("Total cases per category data set #%d ", i + 1);
+        sLabel.printf("Total category cases, data set #%d ", i + 1);
         PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
+        sBuffer="";
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
            sWork.printf("%s%ld", (j ? ", " : ""), Population.GetNumOrdinalCategoryCases(j));
            sBuffer << sWork;
