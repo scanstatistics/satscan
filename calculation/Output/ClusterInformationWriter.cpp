@@ -154,15 +154,12 @@ void ClusterInformationWriter::DefineFields() {
 // post: sTempvalue will contain the legible area id
 ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster& thisCluster) const {
   std::string   sBuffer;
-  tract_t       tTractIndex;
 
   try {
     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       sAreaId = "All";
-    else {
-      tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(), 1, thisCluster.GetCartesianRadius());
-      sAreaId = gDataHub.GetTInfo()->tiGetTid(tTractIndex, sBuffer);
-    }
+    else
+      sAreaId = gDataHub.GetTInfo()->tiGetTid(thisCluster.GetMostCentralLocationIndex(), sBuffer);
   }
   catch (ZdException &x) {
     x.AddCallpath("GetAreaID","ClusterInformationWriter");
