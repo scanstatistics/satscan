@@ -931,16 +931,23 @@ void TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileTyp
   ZdString sNewFile = "";
 
   try {
-    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this, sFileName, eFileType, (CoordinatesType)rgpCoordinates->ItemIndex));
+    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this,
+                                                                   sFileName,
+                                                                   eFileType,
+                                                                   GetModelControlType(),
+                                                                   (CoordinatesType)rgpCoordinates->ItemIndex));
     if (pDialog->ShowModal() == mrOk) {
        switch (eFileType) {  // set parameters
           case Case :       SetCaseFile(pDialog->GetDestinationFilename(sNewFile));
                             SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                            SetModelControl(pDialog->GetModelControlType());
                             break;
           case Control :    SetControlFile(pDialog->GetDestinationFilename(sNewFile));
                             SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                            SetModelControl(BERNOULLI);
                             break;
           case Population : SetPopulationFile(pDialog->GetDestinationFilename(sNewFile));
+                            SetModelControl(POISSON);
                             break;
           case Coordinates: SetCoordinateFile(pDialog->GetDestinationFilename(sNewFile));
                             SetCoordinateType(pDialog->GetCoorinatesControlType());
