@@ -982,7 +982,11 @@ void TfrmAdvancedParameters::LaunchImporter(const char * sFileName, InputFileTyp
   ZdString sNewFile = "";
 
   try {
-    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this, sFileName, eFileType, (CoordinatesType)(gAnalysisSettings.rgpCoordinates->ItemIndex)));
+    std::auto_ptr<TBDlgDataImporter> pDialog(new TBDlgDataImporter(this,
+                                                                   sFileName,
+                                                                   eFileType,
+                                                                   gAnalysisSettings.GetModelControlType(),
+                                                                   (CoordinatesType)(gAnalysisSettings.rgpCoordinates->ItemIndex)));
     if (pDialog->ShowModal() == mrOk) {
        switch (eFileType) {  // set parameters
           case Case                : edtCaseFileName->Text = pDialog->GetDestinationFilename(sNewFile);
