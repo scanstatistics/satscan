@@ -1,4 +1,4 @@
-// $Revision: 1.17 $
+// $Revision: 1.18 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -79,10 +79,7 @@ class TBDlgDataImporter : public TForm {
      TButton *btnClearImports;
      TButton *btnAutoAlign;
      TPanel *pnlMappingPanelClient;
-     TPanel *pnlBottomPanelTopAligned;
-     TRadioGroup *rdoCoordinates;
      TPanel *pnlBottomClient;
-     TBevel *Bevel1;
      TtsGrid *tsImportFileGrid;
      TPanel *pnlFileFormat;
      TPanel *pnlCSVDefs;
@@ -116,6 +113,10 @@ class TBDlgDataImporter : public TForm {
      TLabel *lblOutputDirectoryLabel;
      TEdit *edtOutputDirectory;
      TButton *btnChangeDirectory;
+     TPanel *pnlTopPanelTop;
+     TComboBox *cmbDisplayVariables;
+     TStaticText *StaticText1;
+        TSplitter *Splitter1;
      void __fastcall NumericKeyPressMask(TObject *Sender, char &Key);
      void __fastcall OnAddFldDefClick(TObject *Sender);
      void __fastcall OnAutoAlignClick(TObject *Sender);
@@ -137,8 +138,8 @@ class TBDlgDataImporter : public TForm {
      void __fastcall OnFirstRowIsNameClick(TObject *Sender);
      void __fastcall OnNextClick(TObject *Sender);
      void __fastcall OnStartColumnChange(TObject *Sender);
-     void __fastcall tsfieldGridResize(TObject *Sender);
-     void __fastcall OnCoordinatesClick(TObject *Sender);
+     void __fastcall OnFieldGridResize(TObject *Sender);
+     void __fastcall OnDisplayVariableCoordinatesClick(TObject *Sender);
      void __fastcall OnClearFldDefsClick(TObject *Sender);
      void __fastcall OnUpdateFldDefClick(TObject *Sender);
      void __fastcall OnOutputDirectoryChange(TObject *Sender);
@@ -163,7 +164,8 @@ class TBDlgDataImporter : public TForm {
      SourceDataFileType              gSourceDataFileType;
      bool                            gbErrorSamplingSourceFile;
      CoordinatesType                 geStartingCoordinatesType;
-     InputFileType                   geFileType; 
+     ProbabilityModelType            geStartingModelType;
+     InputFileType                   geFileType;
 
      void                            AddFixedColDefinitionEnable();
      void                            AdjustSourceFileAttributes(ZdFile & File);
@@ -210,7 +212,6 @@ class TBDlgDataImporter : public TForm {
      void                            SetPanelsToShow(SourceDataFileType eType);
      void                            SetupCaseFileVariableDescriptors();
      void                            SetupControlFileVariableDescriptors();
-     void                            SetCoorinatesControlType(CoordinatesType eCoordinatesType);
      void                            SetupGeoFileVariableDescriptors();
      void                            SetupGridFileVariableDescriptors();
      void                            SetupMaxCirclePopFileVariableDescriptors();
@@ -226,13 +227,15 @@ class TBDlgDataImporter : public TForm {
      void                            ValidateImportSource();
 
 public:		// User declarations
-     virtual __fastcall TBDlgDataImporter(TComponent* Owner, const char * sSourceFilename, InputFileType eFileType, CoordinatesType eCoordinatesType);
+     virtual __fastcall TBDlgDataImporter(TComponent* Owner, const char * sSourceFilename, InputFileType eFileType,
+                                          ProbabilityModelType eModelType, CoordinatesType eCoordinatesType);
      virtual __fastcall TBDlgDataImporter(TComponent* Owner, TfrmAnalysis & AnalysisForm);
      virtual __fastcall ~TBDlgDataImporter();
 
      CoordinatesType                 GetCoorinatesControlType() const;
      const char *                    GetDestinationFilename(ZdString& sFilename) const;
      bool                            GetDateFieldImported() const;
+     ProbabilityModelType            GetModelControlType() const;
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TBDlgDataImporter *BDlgDataImporter;

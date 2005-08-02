@@ -111,8 +111,9 @@ void SaTScanVariable::Init() {
 
 /** Constructor. */
 __fastcall TBDlgDataImporter::TBDlgDataImporter(TComponent* Owner, const char * sSourceFilename,
-                                                InputFileType eFileType, CoordinatesType eCoordinatesType)
-                             :TForm(Owner), geFileType(eFileType), geStartingCoordinatesType(eCoordinatesType) {
+                                                InputFileType eFileType, ProbabilityModelType eModelType, CoordinatesType eCoordinatesType)
+                             :TForm(Owner), geFileType(eFileType),
+                              geStartingModelType(eModelType), geStartingCoordinatesType(eCoordinatesType) {
   try {
     Init();
     Setup(sSourceFilename);
@@ -418,10 +419,27 @@ const char TBDlgDataImporter::GetColumnDelimiter() const {
 CoordinatesType TBDlgDataImporter::GetCoorinatesControlType() const {
   CoordinatesType eReturn;
 
-  switch (rdoCoordinates->ItemIndex) {
+  switch (cmbDisplayVariables->ItemIndex) {
     case 1  : eReturn = CARTESIAN; break;
     default : eReturn = LATLON;
   }
+  return eReturn;
+}
+
+/** returns interface probability model type */
+ProbabilityModelType TBDlgDataImporter::GetModelControlType() const {
+  ProbabilityModelType eReturn;
+
+  switch (cmbDisplayVariables->ItemIndex) {
+   case 0 : eReturn = POISSON; break;
+   case 1 : eReturn = BERNOULLI; break;
+   case 2 : eReturn = SPACETIMEPERMUTATION; break;
+   case 3 : eReturn = ORDINAL; break;
+   case 4 : eReturn = EXPONENTIAL; break;
+   //case 5 : eReturn = NORMAL break;
+   //case 6 : eReturn =  RANK; break;
+   default : ZdGenerateException("Unknown probability model type index: \"%d\"","SetUp()", geStartingModelType);
+  };
   return eReturn;
 }
 
@@ -546,24 +564,47 @@ SourceDataFileType TBDlgDataImporter::GetSourceFileType() const {
   return eType;
 }
 
-/** Hides rows based on coordinates variables selected to be shown. */
+/** Hides rows based on combo box selection and importing file type. */
 void TBDlgDataImporter::HideRows() {
   try {
     switch (geFileType) {
+      case Case        : for (int i=1; i <= tsfieldGrid->Rows; i++) {
+                           if (i >= 4 && i <= 13)
+                             //show 'covariate' variables for Poisson and space-time permutation models only
+                             tsfieldGrid->RowVisible[i] = GetModelControlType() == POISSON ||
+                                                          GetModelControlType() == SPACETIMEPERMUTATION;
+                           else if (i == 14)
+                             //show 'attribute' variable for ordinal, exponential, normal and rank models only
+                             tsfieldGrid->RowVisible[i] = GetModelControlType() == ORDINAL ||
+                                                          GetModelControlType() == EXPONENTIAL ||
+                                                          GetModelControlType() == NORMAL ||
+                                                          GetModelControlType() == RANK;
+                           else if (i == 15)
+                             //show 'censored' variable for exponential model only
+                             tsfieldGrid->RowVisible[i] = GetModelControlType() == EXPONENTIAL;
+                           else
+                             //default - show variable
+                             tsfieldGrid->RowVisible[i] = true;
+                         }
+                         break;
       case Coordinates : for (int i=1; i <= tsfieldGrid->Rows; i++) {
-                            if (i == 2 || i == 3) //Latitude and Longitude
-                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
-                            else if (i >= 4) //Cartesian variables
-                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == CARTESIAN;
-                            else
-                              tsfieldGrid->RowVisible[i] = true;
+                           if (i == 2 || i == 3)
+                             //show 'lat/long' variables for lat/long system
+                             tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
+                           else if (i >= 4)
+                             //show 'X/Y/Zn' variables for Cartesian system
+                             tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == CARTESIAN;
+                           else
+                             tsfieldGrid->RowVisible[i] = true;
                          }
                          break;
       case SpecialGrid : for (int i=1; i <= tsfieldGrid->Rows; i++) {
-                            if (i == 1 || i == 2) //Latitude and Longitude
-                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
-                            else //Cartesian variables
-                              tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == CARTESIAN;
+                           if (i == 1 || i == 2)
+                             //show 'lat/long' variables for lat/long system
+                             tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == LATLON;
+                           else
+                             //show 'X/Y/Zn' variables for Cartesian system
+                             tsfieldGrid->RowVisible[i] = GetCoorinatesControlType() == CARTESIAN;
                          }
                          break;
       default          : for (int i=1; i <= tsfieldGrid->Rows; i++)
@@ -645,11 +686,7 @@ void TBDlgDataImporter::LoadMappingPanel() {
     tsfieldGrid->Rows = gvSaTScanVariables.size();
     ClearSaTScanVariableFieldIndexes();
     AutoAlign();
-    if (rdoCoordinates->ItemIndex == -1)
-      //If coordinates index not set, set to current settings of analysis. 
-      SetCoorinatesControlType(geStartingCoordinatesType);
-    else
-      HideRows();
+    HideRows();
     ContinueButtonEnable();
   }
   catch (ZdException &x) {
@@ -732,6 +769,14 @@ void TBDlgDataImporter::OnAutoAlignClick() {
   }
 }
 
+/** Launches directory browse dialog, permitting user to select directory where
+    resultant import file will be created. */
+void __fastcall TBDlgDataImporter::OnChangeDirectoryClick(TObject *Sender) {
+  AnsiString Directory;
+  if (SelectDirectory("Select directory to save imported file", "", Directory))
+    edtOutputDirectory->Text = Directory;
+}
+
 /** Deletes fixed column field definition. */
 void TBDlgDataImporter::OnDeleteFieldDefinitionClick() {
   try {
@@ -797,6 +842,12 @@ void TBDlgDataImporter::OnFirstRowIsHeadersClick() {
     x.AddCallpath("OnFirstRowIsHeadersClick()","TBDlgDataImporter");
     throw;
   }
+}
+
+/** Event triggered when user changes text of TEdit which specifies directory
+    where import file will be created. */
+void __fastcall TBDlgDataImporter::OnOutputDirectoryChange(TObject *Sender) {
+   ContinueButtonEnable();
 }
 
 /** Preparation for viewing file format panel. */
@@ -1050,14 +1101,6 @@ void TBDlgDataImporter::ShowFileTypeFormatPanel(int iFileType) {
   };
 }
 
-/** sets interface coordinates type */
-void TBDlgDataImporter::SetCoorinatesControlType(CoordinatesType eCoordinatesType) {
-  switch (eCoordinatesType) {
-    case CARTESIAN : rdoCoordinates->ItemIndex = 1; break;
-    default        : rdoCoordinates->ItemIndex = 0;
-  }
-}
-
 /** Re-assigns grid headers to that of first row of model if not blank. */
 void TBDlgDataImporter::SetGridHeaders(bool bFirstRowIsHeader) {
   ZdString    sHeaderValue;
@@ -1152,34 +1195,57 @@ void TBDlgDataImporter::Setup(const char * sSourceFilename) {
     SetWindowLong(lstFixedColFieldDefs->Handle, GWL_STYLE, ulCurrentStyle|WS_HSCROLL);
     SetPanelsToShow(GetSourceFileType());
     gitrCurrentTabSheet = gvTabSheets.begin();
+    cmbDisplayVariables->Items->Clear();
     switch (geFileType) {
       case Case                : SetupCaseFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
+                                 pnlTopPanelTop->Visible = true;
+                                 cmbDisplayVariables->Items->Add("Poisson");
+                                 cmbDisplayVariables->Items->Add("Bernoulli");
+                                 cmbDisplayVariables->Items->Add("space-time permutation");
+                                 cmbDisplayVariables->Items->Add("ordinal");
+                                 cmbDisplayVariables->Items->Add("exponential");
+                                 switch (geStartingModelType) {
+                                   case POISSON : cmbDisplayVariables->ItemIndex = 0; break;
+                                   case BERNOULLI : cmbDisplayVariables->ItemIndex = 1; break;
+                                   case SPACETIMEPERMUTATION : cmbDisplayVariables->ItemIndex = 2; break;
+                                   case ORDINAL : cmbDisplayVariables->ItemIndex = 3; break;
+                                   case EXPONENTIAL : cmbDisplayVariables->ItemIndex = 4; break;
+                                   //case NORMAL : cmbDisplayVariables->ItemIndex = 5; break;
+                                   //case RANK : cmbDisplayVariables->ItemIndex = 6; break;
+                                   default : ZdGenerateException("Unknown probability model type index: \"%d\"","SetUp()", geStartingModelType);
+                                 };
                                  break;
       case Control             : SetupControlFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
+                                 pnlTopPanelTop->Visible = false;
                                  break;
       case Population          : SetupPopFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
+                                 pnlTopPanelTop->Visible = false;
                                  break;
       case Coordinates         : SetupGeoFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = true;
-                                 pnlBottomPanelTopAligned->Visible = true;
+                                 pnlTopPanelTop->Visible = true;
+                                 cmbDisplayVariables->Items->Add("Latitude/Longitude Coordinates");
+                                 cmbDisplayVariables->Items->Add("Cartesian (x, y) Coordinates");
+                                 switch (geStartingCoordinatesType) {
+                                   case LATLON : cmbDisplayVariables->ItemIndex = 0; break;
+                                   case CARTESIAN : cmbDisplayVariables->ItemIndex = 1; break;
+                                   default : ZdGenerateException("Unknown coordinates type index: \"%d\"","SetUp()", geStartingCoordinatesType);
+                                 };
                                  break;
       case SpecialGrid         : SetupGridFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = true;
-                                 pnlBottomPanelTopAligned->Visible = true;
+                                 pnlTopPanelTop->Visible = true;
+                                 cmbDisplayVariables->Items->Add("Latitude/Longitude Coordinates");
+                                 cmbDisplayVariables->Items->Add("Cartesian (x, y) Coordinates");
+                                 switch (geStartingCoordinatesType) {
+                                   case LATLON : cmbDisplayVariables->ItemIndex = 0; break;
+                                   case CARTESIAN : cmbDisplayVariables->ItemIndex = 1; break;
+                                   default : ZdGenerateException("Unknown coordinates type index: \"%d\"","SetUp()", geStartingCoordinatesType);
+                                 };
                                  break;
       case MaxCirclePopulation : SetupMaxCirclePopFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
+                                 pnlTopPanelTop->Visible = false;
                                  break;
       case AdjustmentsByRR     : SetupRelativeRisksFileVariableDescriptors();
-                                 rdoCoordinates->Enabled = false;
-                                 pnlBottomPanelTopAligned->Visible = false;
+                                 pnlTopPanelTop->Visible = false;
                                  break;
       default : ZdGenerateException("Unknown file type index: \"%d\"","SetUp()", geFileType);
     };
@@ -1207,6 +1273,9 @@ void TBDlgDataImporter::SetupCaseFileVariableDescriptors() {
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate8", 10, false));
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate9", 11, false));
     gvSaTScanVariables.push_back(SaTScanVariable("Covariate10", 12, false));
+    gvSaTScanVariables.push_back(SaTScanVariable("Attribute", 13, true));
+    gvSaTScanVariables.push_back(SaTScanVariable("Censored", 14, false));
+
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupCaseFileVariableDescriptors()", "TBDlgDataImporter");
@@ -1221,16 +1290,6 @@ void TBDlgDataImporter::SetupControlFileVariableDescriptors() {
     gvSaTScanVariables.push_back(SaTScanVariable("Location ID", 0, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Number of Controls", 1, true));
     gvSaTScanVariables.push_back(SaTScanVariable("Date/Time", 2, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate1", 3, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate2", 4, false ));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate3", 5, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate4", 6, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate5", 7, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate6", 8, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate7", 9, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate8", 10, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate9", 11, false));
-//    gvSaTScanVariables.push_back(SaTScanVariable("Covariate10", 12, false));
   }
   catch (ZdException &x) {
     x.AddCallpath("SetupControlFileVariableDescriptors()", "TBDlgDataImporter");
@@ -1531,7 +1590,7 @@ void __fastcall TBDlgDataImporter::OnClearFldDefsClick(TObject *Sender) {
   }
 }
 
-void __fastcall TBDlgDataImporter::OnCoordinatesClick(TObject *Sender) {
+void __fastcall TBDlgDataImporter::OnDisplayVariableCoordinatesClick(TObject *Sender) {
   try {
     HideRows();
     ContinueButtonEnable();
@@ -1618,6 +1677,17 @@ void __fastcall TBDlgDataImporter::OnFieldGridComboGetValue(TObject *Sender,TtsC
     x.AddCallpath("OnFieldGridComboGetValue()","TBDlgDataImporter");
     DisplayBasisException(this,x);
   }
+}
+
+/** Event triggered when mapping grid is resized. Intended to cause second
+    columns combobox buttons to be visible without user needing to resize
+    column widths.*/
+void __fastcall TBDlgDataImporter::OnFieldGridResize(TObject *Sender) {
+  //Adjust width of 'input file variable' column to fit.
+  if (!tsfieldGrid->VertScrollBarVisible)
+    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width);
+  else
+    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
 }
 
 void __fastcall TBDlgDataImporter::OnFieldLengthChange(TObject *Sender) {
@@ -1757,30 +1827,6 @@ void __fastcall TBDlgDataImporter::OnUpdateFldDefClick(TObject *Sender) {
     DisplayBasisException(this, x);
   }
 }
-/** Event triggered when mapping grid is resized. Intended to cause second
-    columns combobox buttons to be visible without user needing to resize
-    column widths.*/
-
-void __fastcall TBDlgDataImporter::tsfieldGridResize(TObject *Sender) {
-  //Adjust width of 'input file variable' column to fit.
-  if (!tsfieldGrid->VertScrollBarVisible)
-    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width);
-  else
-    tsfieldGrid->Col[2]->Width = tsfieldGrid->Width - ((tsfieldGrid->RowBarOn ? tsfieldGrid->RowBarWidth + 5/*buffer*/ : 5/*buffer*/) + tsfieldGrid->Col[1]->Width + 15);
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TBDlgDataImporter::OnOutputDirectoryChange(TObject *Sender) {
-   ContinueButtonEnable();
-}
-//---------------------------------------------------------------------------
-
-void __fastcall TBDlgDataImporter::OnChangeDirectoryClick(TObject *Sender) {
-  AnsiString Directory;
-  if (SelectDirectory("Select directory to save imported file", "", Directory))
-    edtOutputDirectory->Text = Directory;
-}
-//---------------------------------------------------------------------------
 
 //////////////////////////////////
 /////ImporterException Class /////
