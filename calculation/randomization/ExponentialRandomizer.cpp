@@ -51,7 +51,7 @@ void ExponentialRandomizer::Assign(count_t ** ppCases, measure_t ** ppMeasure, i
   //assign randomized continuous data to measure
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
      ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += (*itr_permuted)->GetVariable();
-     ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += (*itr_permuted)->GetCensoredAttribute();
+     ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += ((*itr_permuted)->GetCensoredAttribute() ? 0 : 1);
   }
 
   //now set as cumulative
@@ -75,7 +75,7 @@ void ExponentialRandomizer::AssignCensoredIndividuals(TwoDimCountArray_t& tCenso
   tCensoredArray.Set(0);
   //assign censored cases to array
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary)
-     if (!(*itr_permuted)->GetCensoredAttribute())
+     if ((*itr_permuted)->GetCensoredAttribute())
        ++ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()];
 
   //now set as cumulative
