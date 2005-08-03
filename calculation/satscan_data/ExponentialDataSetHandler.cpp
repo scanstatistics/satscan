@@ -277,11 +277,9 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
       //treat values greater than one as indication that patient is not censored
       tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
     }
-    else {
-      gPrint.PrintInputWarning("Error: Record %ld, in the %s, does not contain censoring attibute.\n",
-                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
-    }
+    else
+      //censored attribute optional - default to not censored
+      tCensorAttribute = 0;
   }
   catch (ZdException &x) {
     x.AddCallpath("ParseCaseFileLine()","ExponentialDataSetHandler");
@@ -321,7 +319,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
              if (tTotalPopuation < 0)
                GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
                                            "ReadCounts()", std::numeric_limits<count_t>::max());
-             tTotalCases += tPatients * tCensorAttribute;
+             tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
                GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
