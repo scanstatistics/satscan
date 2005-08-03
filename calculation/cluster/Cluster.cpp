@@ -173,8 +173,8 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
      sWork.printf(", %ld", GetObservedCount(i));
      sBuffer << sWork;
   }
+  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   //not printing censored information at Martin's directive, but leave in place for now
-  //PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   ////print total censored cases
   //PrintFormat.PrintSectionLabel(fp, "Number censored cases", false, true);
   //GetPopulationAsString(sBuffer, DataHub.GetProbabilityModel().GetPopulation(0, *this, DataHub) - GetObservedCount(0));
