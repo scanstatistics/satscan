@@ -650,7 +650,7 @@ double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) 
 
 /** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data. */
 double CCluster::GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const {
-  if (dTotalCases - dExpected && ((dTotalCases - dObserved)/(dTotalCases - dExpected)))
+  if (dExpected && dTotalCases - dExpected && ((dTotalCases - dObserved)/(dTotalCases - dExpected)))
     return (dObserved/dExpected)/((dTotalCases - dObserved)/(dTotalCases - dExpected));
   return 0;  
 }
