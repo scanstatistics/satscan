@@ -428,7 +428,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
 
   try {
     if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 98) {
-      PrintFormat.PrintSectionLabel(fp, "Null Occurrence", false, true);
+      PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
       fIntervals = Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1;
       fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
       fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
