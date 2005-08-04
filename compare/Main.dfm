@@ -496,6 +496,7 @@ object frmMain: TfrmMain
       Top = 13
       Width = 571
       Height = 44
+      Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 0
