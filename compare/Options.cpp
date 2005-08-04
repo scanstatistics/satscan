@@ -28,4 +28,14 @@ void __fastcall TfrmOptions::btnBrowseArchiveApplicationClick(TObject *Sender) {
     edtArchiveApplication->Text = OpenDialog->FileName.c_str();
 }
 //---------------------------------------------------------------------------
+DWORD TfrmOptions::GetThreadPriority() const {
+   switch (rdoGroupThreadPriority->ItemIndex) {
+     case 0 : return HIGH_PRIORITY_CLASS;
+     case 1 : return IDLE_PRIORITY_CLASS;
+     case 2 : return NORMAL_PRIORITY_CLASS;
+     case 3 : return REALTIME_PRIORITY_CLASS;
+   };
+   return NORMAL_PRIORITY_CLASS;
+}
+//---------------------------------------------------------------------------
 

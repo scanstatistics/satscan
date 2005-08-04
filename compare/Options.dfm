@@ -3,7 +3,7 @@ object frmOptions: TfrmOptions
   Top = 204
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 351
+  ClientHeight = 424
   ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frmOptions: TfrmOptions
     Left = 0
     Top = 0
     Width = 367
-    Height = 351
+    Height = 424
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -151,6 +151,21 @@ object frmOptions: TfrmOptions
       Height = 17
       Caption = 'Suppress DOS Window'
       TabOrder = 9
+    end
+    object rdoGroupThreadPriority: TRadioGroup
+      Left = 8
+      Top = 354
+      Width = 352
+      Height = 63
+      Caption = 'Thread Priority'
+      Columns = 2
+      ItemIndex = 0
+      Items.Strings = (
+        'High Priority Class'
+        'Idle Priority Class'
+        'Normal Priority Class'
+        'Realtime Priority Class')
+      TabOrder = 10
     end
   end
   object OpenDialog: TOpenDialog

@@ -31,11 +31,14 @@ __published:	// IDE-managed Components
         TBevel *Bevel1;
         TBevel *Bevel2;
         TCheckBox *chkSuppressDosWindow;
+        TRadioGroup *rdoGroupThreadPriority;
         void __fastcall btnBrowseComparisonAppClick(TObject *Sender);
         void __fastcall btnBrowseArchiveApplicationClick(TObject *Sender);
 private:	// User declarations
 public:		// User declarations
         __fastcall TfrmOptions(TComponent* Owner);
+
+        DWORD           GetThreadPriority() const;
 };
 //---------------------------------------------------------------------------
 #endif
