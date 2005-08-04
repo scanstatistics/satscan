@@ -147,10 +147,11 @@ object frmOptions: TfrmOptions
     object chkSuppressDosWindow: TCheckBox
       Left = 8
       Top = 327
-      Width = 273
+      Width = 110
       Height = 17
-      Caption = 'Suppress DOS Window'
+      Caption = 'Suppress Console'
       TabOrder = 9
+      OnClick = chkSuppressDosWindowClick
     end
     object rdoGroupThreadPriority: TRadioGroup
       Left = 8
@@ -166,6 +167,15 @@ object frmOptions: TfrmOptions
         'Normal Priority Class'
         'Realtime Priority Class')
       TabOrder = 10
+    end
+    object chkMinimizeConsoleWindow: TCheckBox
+      Left = 143
+      Top = 327
+      Width = 152
+      Height = 17
+      Caption = 'Inactive Minimized Console'
+      TabOrder = 11
+      OnClick = chkMinimizeConsoleWindowClick
     end
   end
   object OpenDialog: TOpenDialog

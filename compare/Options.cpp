@@ -28,7 +28,7 @@ void __fastcall TfrmOptions::btnBrowseArchiveApplicationClick(TObject *Sender) {
     edtArchiveApplication->Text = OpenDialog->FileName.c_str();
 }
 //---------------------------------------------------------------------------
-DWORD TfrmOptions::GetThreadPriority() const {
+DWORD TfrmOptions::GetThreadPriorityFlags() const {
    switch (rdoGroupThreadPriority->ItemIndex) {
      case 0 : return HIGH_PRIORITY_CLASS;
      case 1 : return IDLE_PRIORITY_CLASS;
@@ -38,4 +38,13 @@ DWORD TfrmOptions::GetThreadPriority() const {
    return NORMAL_PRIORITY_CLASS;
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmOptions::chkMinimizeConsoleWindowClick(TObject *Sender) {
+  if (chkMinimizeConsoleWindow->Checked) chkSuppressDosWindow->Checked = false;
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmOptions::chkSuppressDosWindowClick(TObject *Sender) {
+  if (chkSuppressDosWindow->Checked) chkMinimizeConsoleWindow->Checked = false;
+}
+//---------------------------------------------------------------------------
+
 

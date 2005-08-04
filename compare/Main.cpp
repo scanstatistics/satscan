@@ -49,8 +49,9 @@ const char * TfrmMain::ARCHIVE_APP_DATA                 = "ArchiveApp";
 const char * TfrmMain::USE_ARCHIVE_APP_DATA             = "ArchivingResults";
 const char * TfrmMain::ARCHIVE_APP_OPTIONS_DATA         = "ArchiveOptions";
 const char * TfrmMain::ARCHIVE_DELETE_FILES_DATA        = "DeleteArchivedFiles";
-const char * TfrmMain::SUPPRESS_DOS_WINDOW_DATA         = "SuppressDosWindow";
+const char * TfrmMain::SUPPRESS_CONSOLE_DATA            = "SuppressDosWindow";
 const char * TfrmMain::THREAD_PRIORITY_CLASS_DATA       = "ThreadPriority";
+const char * TfrmMain::INACTIVE_MINIMIZED_CONSOLE_DATA  = "InactiveMinimizedConsole";
 
 /** constructor */
 __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0) {
@@ -78,10 +79,12 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
     gpFrmOptions->edtArchiveApplicationOptions->Text = pRegistry->ReadString(ARCHIVE_APP_OPTIONS_DATA);
     if (pRegistry->GetDataSize(ARCHIVE_DELETE_FILES_DATA) != -1)
       gpFrmOptions->chkDeleteFileAfterArchiving->Checked = pRegistry->ReadBool(ARCHIVE_DELETE_FILES_DATA);
-    if (pRegistry->GetDataSize(SUPPRESS_DOS_WINDOW_DATA) != -1)
-      gpFrmOptions->chkSuppressDosWindow->Checked = pRegistry->ReadBool(SUPPRESS_DOS_WINDOW_DATA);
+    if (pRegistry->GetDataSize(SUPPRESS_CONSOLE_DATA) != -1)
+      gpFrmOptions->chkSuppressDosWindow->Checked = pRegistry->ReadBool(SUPPRESS_CONSOLE_DATA);
     if (pRegistry->GetDataSize(THREAD_PRIORITY_CLASS_DATA) != -1)
       gpFrmOptions->rdoGroupThreadPriority->ItemIndex = pRegistry->ReadInteger(THREAD_PRIORITY_CLASS_DATA);
+    if (pRegistry->GetDataSize(INACTIVE_MINIMIZED_CONSOLE_DATA) != -1)
+      gpFrmOptions->chkMinimizeConsoleWindow->Checked = pRegistry->ReadBool(INACTIVE_MINIMIZED_CONSOLE_DATA);
     pRegistry->CloseKey();
   }
   delete pRegistry;
@@ -119,8 +122,9 @@ __fastcall TfrmMain::~TfrmMain() {
       pRegistry->WriteString(ARCHIVE_APP_DATA, gpFrmOptions->edtArchiveApplication->Text);
       pRegistry->WriteString(ARCHIVE_APP_OPTIONS_DATA, gpFrmOptions->edtArchiveApplicationOptions->Text);
       pRegistry->WriteBool(ARCHIVE_DELETE_FILES_DATA, gpFrmOptions->chkDeleteFileAfterArchiving->Checked);
-      pRegistry->WriteBool(SUPPRESS_DOS_WINDOW_DATA, gpFrmOptions->chkSuppressDosWindow->Checked);
+      pRegistry->WriteBool(SUPPRESS_CONSOLE_DATA, gpFrmOptions->chkSuppressDosWindow->Checked);
       pRegistry->WriteInteger(THREAD_PRIORITY_CLASS_DATA, gpFrmOptions->rdoGroupThreadPriority->ItemIndex);
+      pRegistry->WriteBool(INACTIVE_MINIMIZED_CONSOLE_DATA, gpFrmOptions->chkMinimizeConsoleWindow->Checked);
       pRegistry->CloseKey();
     }
     delete pRegistry;
@@ -397,6 +401,9 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    int          iItemIndex=0;
    TDateTime    StartDate;
 
+   if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
+     Application->Minimize();
+
    //get start time of execution
    StartDate = TDateTime::CurrentDateTime();
 
@@ -423,7 +430,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         sCommand.printf("\"%s\" \"%s\"",
                         edtBatchExecutableComparatorName->Text.c_str(),
                         gvParameterResultsInfo.back().GetFilenameString());
-        if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriority())) {
+        if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
           Application->ProcessMessages();
           _sleep(2);
           //get filename that will be the result file created for comparison
@@ -434,7 +441,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
                           gvParameterResultsInfo.back().GetFilenameString(),
                           sCompareFilename.c_str());
           //execute SaTScan version that is in question
-          if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriority())) {
+          if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
             CompareClusterInformationFiles();
             CompareLocationInformationFiles();
             CompareRelativeRisksInformationFiles();
@@ -462,6 +469,8 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(StartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
    memMessages->Lines->Add(sCommand);
    memMessages->SelStart = 0;
+   if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
+     Application->Restore();
 }
 
 /** opens selected parameter files in associated text viewer */
@@ -557,7 +566,7 @@ void TfrmMain::ArchiveResults() {
                    gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                    sArchiveFilename.c_str(),
                    sStatsFilename.c_str());
-  Execute(sCommand, false, gpFrmOptions->GetThreadPriority());
+  Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked);
   remove(sStatsFilename.c_str());
   //add 'ReadMe' file to archive
   if (gpFrmOptions->chkCreateReadMeFile->Checked) {
@@ -569,7 +578,7 @@ void TfrmMain::ArchiveResults() {
                      sArchiveFilename.c_str(),
                      sStatsFilename.c_str());
 
-    Execute(sCommand, false, gpFrmOptions->GetThreadPriority());
+    Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked);
     remove(sStatsFilename.c_str());
   }
   //add files of each comparison process
@@ -582,7 +591,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(),
                      ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
-    Execute(sCommand, false, gpFrmOptions->GetThreadPriority());
+    Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked);
 
     //add results file
     sCommand.sprintf("\"%s\" %s \"%s\" \"%s\" \"%s\"",
@@ -591,7 +600,7 @@ void TfrmMain::ArchiveResults() {
                      sArchiveFilename.c_str(),
                      GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
                      GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriority()) {
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
       remove(sMaster.c_str());
       remove(sCompare.c_str());
     }
@@ -605,7 +614,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriority()) {
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
       remove(sTemp1.c_str());
       remove(sTemp2.c_str());
     }
@@ -619,7 +628,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriority()) {
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
       remove(sTemp1.c_str());
       remove(sTemp2.c_str());
     }
@@ -634,7 +643,7 @@ void TfrmMain::ArchiveResults() {
                        gpFrmOptions->edtArchiveApplication->Text.c_str(),
                        gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                        sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-      if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriority()) {
+      if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
         remove(sTemp1.c_str());
         remove(sTemp2.c_str());
       }
@@ -649,7 +658,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriority()) {
+    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
       remove(sTemp1.c_str());
       remove(sTemp2.c_str());
     }
@@ -948,7 +957,7 @@ void TfrmMain::EnableViewAction() {
 }
 
 /** creates process to execute command */
-bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed, DWORD wThreadPriority) {
+bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed, DWORD wThreadPriority, bool bInactiveMinimizedWindow) {
    STARTUPINFO          si;
    PROCESS_INFORMATION  pi;
    unsigned long        lProcessTerminationStatus=-1;
@@ -958,6 +967,9 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed, DWORD wT
    si.cb = sizeof(si);
    ZeroMemory(&pi,sizeof(pi));
    //Start the child process.
+   si.dwFlags = STARTF_USEFILLATTRIBUTE | STARTF_USESHOWWINDOW;
+   si.dwFillAttribute = FOREGROUND_RED| BACKGROUND_RED| BACKGROUND_GREEN| BACKGROUND_BLUE;
+   si.wShowWindow = (bInactiveMinimizedWindow && bWindowed ? SW_SHOWMINNOACTIVE : SW_SHOWDEFAULT);
    if(!CreateProcess(NULL,                                         //No module name (use command line).
                      const_cast<char*>(sCommandLine.c_str()),      //Command line.
                      NULL,                                         //Process handle not inheritable.

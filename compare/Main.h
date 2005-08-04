@@ -169,8 +169,9 @@ __published:	// IDE-managed Components
     static const char                 * USE_ARCHIVE_APP_DATA;
     static const char                 * ARCHIVE_APP_OPTIONS_DATA;
     static const char                 * ARCHIVE_DELETE_FILES_DATA;
-    static const char                 * SUPPRESS_DOS_WINDOW_DATA;
+    static const char                 * SUPPRESS_CONSOLE_DATA;
     static const char                 * THREAD_PRIORITY_CLASS_DATA;
+    static const char                 * INACTIVE_MINIMIZED_CONSOLE_DATA;
 
     TfrmOptions                       * gpFrmOptions;
 
@@ -192,7 +193,7 @@ __published:	// IDE-managed Components
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
     void                                EnableViewAction();
-    bool                                Execute(const AnsiString & sCommandLine, bool bWindowed=true, DWORD wThreadPriority=NORMAL_PRIORITY_CLASS);
+    bool                                Execute(const AnsiString & sCommandLine, bool bWindowed=true, DWORD wThreadPriority=NORMAL_PRIORITY_CLASS, bool bInactiveMinimizedWindow=false);
     std::string                       & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     AnsiString                        & GetDisplayTime(AnsiString & sDisplay);
     std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
