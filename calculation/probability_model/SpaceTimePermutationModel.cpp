@@ -21,14 +21,15 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataSet& DataSet) {
 
   try {
     //calculate total number of cases
-    for (size_t t=0; t < DataSet.GetCasesByCategory().size(); ++t)
+    for (size_t t=0; t < DataSet.GetCasesByCategory().size(); ++t) {
        ppCases = DataSet.GetCategoryCaseArray(t);
        for (j=0; j < DataSet.GetNumTracts(); ++j) {
           tTotalCases += ppCases[0][j];
-       // Check to see if total case values have wrapped
-       if (tTotalCases < 0)
-         GenerateResolvableException("Error: The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
-                                     "CalculateMeasure()", DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+          // Check to see if total case values have wrapped
+          if (tTotalCases < 0)
+            GenerateResolvableException("Error: The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
+                                        "CalculateMeasure()", DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+       }
     }
 
     DataSet.AllocateMeasureArray();
