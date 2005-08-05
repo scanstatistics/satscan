@@ -338,7 +338,9 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
          sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
          sBuffer << sWork;
       }
-      sWork.printf("%g) / %-5.2f", pCoords[Data.GetParameters().GetDimensionsOfData() - 1], (float)m_CartesianRadius);
+      //to keep radius value consistant with previous versions, down cast double to float
+      float radius = static_cast<float>(m_CartesianRadius);
+      sWork.printf("%g) / %-5.2f", pCoords[Data.GetParameters().GetDimensionsOfData() - 1], radius);
       sBuffer << sWork;
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       //print ellipse particulars - circle with shape of '1'
@@ -433,7 +435,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
       fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
       fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
       switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
-        case YEAR   : sBuffer.printf("Once in %.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
+        case YEAR   : sBuffer.printf("%.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
         case MONTH  : fYears = floor(fUnitsInOccurrence/12);
                       fMonths = fUnitsInOccurrence - (fYears * 12);
@@ -446,11 +448,11 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         fMonths = 0;
                       //Print correctly formatted statement.
                       if (fMonths == 0)
-                        sBuffer.printf("Once in %.0f year%s", fYears, (fYears == 1 ? "" : "s"));
+                        sBuffer.printf("%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
                       else if (fYears == 0)
-                        sBuffer.printf("Once in %.0f month%s", fMonths, (fMonths < 1.5 ? "" : "s"));
+                        sBuffer.printf("%.0f month%s", fMonths, (fMonths < 1.5 ? "" : "s"));
                       else /*Having both zero month and year should never happen.*/
-                        sBuffer.printf("Once in %.0f year%s and %0.f month%s", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
+                        sBuffer.printf("%.0f year%s %0.f month%s", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
                       break;
         case DAY    : fYears = floor(fUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fUnitsInOccurrence - (fYears * AVERAGE_DAYS_IN_YEAR);
@@ -459,11 +461,11 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         fDays = 0;
                       //Print correctly formatted statement.
                       if (fDays == 0)
-                        sBuffer.printf("Once in %.0f year%s", fYears, (fYears == 1 ? "" : "s"));
+                        sBuffer.printf("%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
                       else if (fYears == 0)
-                        sBuffer.printf("Once in %.0f day%s", fDays, (fDays < 1.5 ? "" : "s"));
+                        sBuffer.printf("%.0f day%s", fDays, (fDays < 1.5 ? "" : "s"));
                       else /*Having both zero day and year should never happen.*/
-                        sBuffer.printf("Once in %.0f year%s and %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
+                        sBuffer.printf("%.0f year%s %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
         default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
                                           "DisplayNullOccurrence()", Data.GetParameters().GetTimeAggregationUnitsType());
