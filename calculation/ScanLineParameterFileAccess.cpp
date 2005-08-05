@@ -3,6 +3,8 @@
 #pragma hdrstop
 //***************************************************************************
 #include "ScanLineParameterFileAccess.h"
+#include <iostream>
+#include <fstream>
 
 /** constructor */
 ScanLineParameterFileAccess::ScanLineParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection)
@@ -186,9 +188,41 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
   return !gbReadStatusError;
 }
 
-/** Write parameters to file - not implemented, throws ZdException. */
+/** Write parameters to file - not implemented for multiple data sets. */
 void ScanLineParameterFileAccess::Write(const char * sFilename) {
-  ZdException::Generate("Write() not implemented for line scanned version.","ScanLineParameterFileAccess");
+  std::ofstream parameters;
+  ZdString      s;
+  unsigned int  iLen;
+
+  try {
+    if (gParameters.GetNumDataSets() > 1)
+      GenerateResolvableException("Error: Lined based parameter file can not write with multiple data sets.\n", "Write()");
+
+    //open output file
+    parameters.open(sFilename, ios::trunc);
+    if (!parameters)
+      GenerateResolvableException("Error: Could not open parameter file '%s' for write.\n", "Write()", sFilename);
+
+    for (int eParameterType=ANALYSISTYPE; eParameterType <= NUM_PROCESSES; ++eParameterType) {
+       parameters << GetParameterString((ParameterType)eParameterType, s).GetCString();
+       //Don't write comment string for parameters which specify filenames -- problem for read
+       if (!((ParameterType)eParameterType == CASEFILE || (ParameterType)eParameterType == POPFILE ||
+             (ParameterType)eParameterType == COORDFILE || (ParameterType)eParameterType == OUTPUTFILE ||
+             (ParameterType)eParameterType == GRIDFILE || (ParameterType)eParameterType == CONTROLFILE ||
+             (ParameterType)eParameterType == MAXCIRCLEPOPFILE || (ParameterType)eParameterType == SIMULATION_SOURCEFILE ||
+             (ParameterType)eParameterType == SIMULATION_DATA_OUTFILE || (ParameterType)eParameterType == ADJ_BY_RR_FILE )) {
+          iLen = s.GetLength();
+          while (++iLen < 30) parameters << ' ';
+          parameters << "   // " << GetParameterComment((ParameterType)eParameterType);
+        }
+       parameters << std::endl;
+    }
+    parameters.close();
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("Write()","ScanLineParameterFileAccess");
+    throw;
+  }
 }
 
 
