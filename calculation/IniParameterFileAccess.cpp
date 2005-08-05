@@ -50,100 +50,15 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     gParameters.SetAsDefaulted();
     gParameters.SetSourceFileName(sFilename);
 
-    ReadSystemSettings(SourceFile);
-
-    //read settings as provided in main graphical interface
-    ReadInputSettings(SourceFile);
-    ReadAnalysisSettings(SourceFile);
-    ReadOutputSettings(SourceFile);
-    //read settings as provided in advanced features of graphical interface
+    for (ParameterType eType=ANALYSISTYPE; eType <= NUM_PROCESSES; eType = ParameterType(eType + 1))
+       ReadIniParameter(SourceFile, eType);
     ReadMultipleDataSetsSettings(SourceFile);
-    ReadSpatialWindowSettings(SourceFile);
-    ReadTemporalWindowSettings(SourceFile);
-    ReadSpaceAndTimeAdjustmentSettings(SourceFile);
-    ReadInferenceSettings(SourceFile);
-    ReadClustersReportedSettings(SourceFile);
-
-    //read settings as provided only through user mofication of parameter file and batch executable
-    ReadEllipticScanSettings(SourceFile);
-    ReadIsotonicScanSettings(SourceFile);
-    ReadSequentialScanSettings(SourceFile);
-    ReadPowerSimulationsSettings(SourceFile);
-    ReadRunOptionSettings(SourceFile);
   }
   catch (ZdException &x) {
     x.AddCallpath("Read()","IniParameterFileAccess");
     throw;
   }
   return !gbReadStatusError;
-}
-
-/** Reads parameter settings grouped under 'Analysis'. */
-void IniParameterFileAccess::ReadAnalysisSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, ANALYSISTYPE);
-    ReadIniParameter(SourceFile, MODEL);
-    ReadIniParameter(SourceFile, SCANAREAS);
-    ReadIniParameter(SourceFile, TIME_AGGREGATION_UNITS);
-    ReadIniParameter(SourceFile, TIME_AGGREGATION);
-    ReadIniParameter(SourceFile, REPLICAS);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadAnalysisSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under 'Clusters Reported'. */
-void IniParameterFileAccess::ReadClustersReportedSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, CRITERIA_SECOND_CLUSTERS);
-    ReadIniParameter(SourceFile, REPORTED_GEOSIZE);
-    ReadIniParameter(SourceFile, USE_REPORTED_GEOSIZE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadClustersReportedSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[Elliptic Scan]'. */
-void IniParameterFileAccess::ReadEllipticScanSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, ELLIPSES);
-    ReadIniParameter(SourceFile, ESHAPES);
-    ReadIniParameter(SourceFile, ENUMBERS);
-    ReadIniParameter(SourceFile, NON_COMPACTNESS_PENALTY);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadEllipticScanSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under 'inference'. */
-void IniParameterFileAccess::ReadInferenceSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, START_PROSP_SURV);
-    ReadIniParameter(SourceFile, EARLY_SIM_TERMINATION);
-    ReadIniParameter(SourceFile, ADJ_FOR_EALIER_ANALYSES);
-    ReadIniParameter(SourceFile, REPORT_CRITICAL_VALUES);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadInferenceSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[Isotonic Scan]'. */
-void IniParameterFileAccess::ReadIsotonicScanSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, RISKFUNCTION);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadIsotonicScanSettings()","IniParameterFileAccess");
-    throw;
-  }
 }
 
 /** Reads parameter from ini file and sets in CParameter object. If parameter specification not
@@ -190,28 +105,8 @@ std::vector<ZdString>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile&
       }
     }
   }
-  
-  return vParameters;
-}
 
-/** Reads parameter settings grouped under 'Input'. */
-void IniParameterFileAccess::ReadInputSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, CASEFILE);
-    ReadIniParameter(SourceFile, CONTROLFILE);
-    ReadIniParameter(SourceFile, POPFILE);
-    ReadIniParameter(SourceFile, COORDFILE);
-    ReadIniParameter(SourceFile, SPECIALGRID);
-    ReadIniParameter(SourceFile, GRIDFILE);
-    ReadIniParameter(SourceFile, PRECISION);
-    ReadIniParameter(SourceFile, COORDTYPE);
-    ReadIniParameter(SourceFile, STARTDATE);
-    ReadIniParameter(SourceFile, ENDDATE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadInputSettings()","IniParameterFileAccess");
-    throw;
-  }
+  return vParameters;
 }
 
 /** Reads parameter settings grouped under 'Mutliple Data Sets'. */
@@ -240,126 +135,6 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadMultipleDataSetsSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under 'Output'. */
-void IniParameterFileAccess::ReadOutputSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, OUTPUTFILE);
-    ReadIniParameter(SourceFile, OUTPUT_SIM_LLR_ASCII);
-    ReadIniParameter(SourceFile, OUTPUT_RR_ASCII);
-    ReadIniParameter(SourceFile, OUTPUT_AREAS_ASCII);
-    ReadIniParameter(SourceFile, OUTPUT_MLC_ASCII);
-    ReadIniParameter(SourceFile, OUTPUT_MLC_DBASE);
-    ReadIniParameter(SourceFile, OUTPUT_AREAS_DBASE);
-    ReadIniParameter(SourceFile, OUTPUT_RR_DBASE);
-    ReadIniParameter(SourceFile, OUTPUT_SIM_LLR_DBASE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadOutputSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[Power Simulations]'. */
-void IniParameterFileAccess::ReadPowerSimulationsSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, POWERCALC);
-    ReadIniParameter(SourceFile, POWERX);
-    ReadIniParameter(SourceFile, POWERY);
-    ReadIniParameter(SourceFile, SIMULATION_TYPE);
-    ReadIniParameter(SourceFile, SIMULATION_SOURCEFILE);
-    ReadIniParameter(SourceFile, OUTPUT_SIMULATION_DATA);
-    ReadIniParameter(SourceFile, SIMULATION_DATA_OUTFILE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadPowerSimulationsSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[Run Options]'. */
-void IniParameterFileAccess::ReadRunOptionSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, VALIDATE);
-    ReadIniParameter(SourceFile, RANDOMIZATION_SEED);
-    //ReadIniParameter(SourceFile, TIMETRENDCONVRG); //--- until SVTT is available, don't write
-    ReadIniParameter(SourceFile, EXECUTION_TYPE);
-    ReadIniParameter(SourceFile, NUM_PROCESSES);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadRunOptionSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[Sequential Scan]. */
-void IniParameterFileAccess::ReadSequentialScanSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, SEQUENTIAL);
-    ReadIniParameter(SourceFile, SEQNUM);
-    ReadIniParameter(SourceFile, SEQPVAL);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadSequentialScanSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under 'Space and Time Adjustments'. */
-void IniParameterFileAccess::ReadSpaceAndTimeAdjustmentSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, TIMETREND);
-    ReadIniParameter(SourceFile, TIMETRENDPERC);
-    ReadIniParameter(SourceFile, ADJ_BY_RR_FILE);
-    ReadIniParameter(SourceFile, USE_ADJ_BY_RR_FILE);
-    ReadIniParameter(SourceFile, SPATIAL_ADJ_TYPE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under 'Spatial Window'. */
-void IniParameterFileAccess::ReadSpatialWindowSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, GEOSIZE);
-    ReadIniParameter(SourceFile, PURETEMPORAL);
-    ReadIniParameter(SourceFile, MAX_SPATIAL_TYPE);
-    ReadIniParameter(SourceFile, MAXCIRCLEPOPFILE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadSpatialWindowSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[System]'. */
-void IniParameterFileAccess::ReadSystemSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, CREATION_VERSION);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadSystemSettings()", "CParameters");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under 'Temporal Window'. */
-void IniParameterFileAccess::ReadTemporalWindowSettings(const ZdIniFile& SourceFile) {
-  try {
-    ReadIniParameter(SourceFile, TIMESIZE);
-    ReadIniParameter(SourceFile, PURESPATIAL);
-    ReadIniParameter(SourceFile, MAX_TEMPORAL_TYPE);
-    ReadIniParameter(SourceFile, CLUSTERS);
-    ReadIniParameter(SourceFile, INTERVAL_STARTRANGE);
-    ReadIniParameter(SourceFile, INTERVAL_ENDRANGE);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadTemporalWindowSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -406,19 +181,12 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, ANALYSISTYPE, AsString(s, gParameters.GetAnalysisType()),
-                      " analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective"
-                      " Space-Time, 4=Prospective Space-Time, 5=N/A, 6=Prospective Purely Temporal)");
-    WriteIniParameter(WriteFile, MODEL, AsString(s, gParameters.GetProbabilityModelType()),
-                      " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential)");
-    WriteIniParameter(WriteFile, SCANAREAS, AsString(s, gParameters.GetAreaScanRateType()),
-                      " scan areas (1=High, 2=Low, 3=High or Low)");
-    WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, AsString(s, gParameters.GetTimeAggregationUnitsType()),
-                      " time aggregation units (0=None, 1=Year, 2=Month, 3=Day)");
-    WriteIniParameter(WriteFile, TIME_AGGREGATION, AsString(s, (int)gParameters.GetTimeAggregationLength()),
-                      " time aggregation length (positive integer)");
-    WriteIniParameter(WriteFile, REPLICAS, AsString(s, gParameters.GetNumReplicationsRequested()),
-                      " Monte Carlo replications (0, 9, 999, n999)");
+    WriteIniParameter(WriteFile, ANALYSISTYPE, GetParameterString(ANALYSISTYPE, s), GetParameterComment(ANALYSISTYPE));
+    WriteIniParameter(WriteFile, MODEL, GetParameterString(MODEL, s), GetParameterComment(MODEL));
+    WriteIniParameter(WriteFile, SCANAREAS, GetParameterString(SCANAREAS, s), GetParameterComment(SCANAREAS));
+    WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, GetParameterString(TIME_AGGREGATION_UNITS, s), GetParameterComment(TIME_AGGREGATION_UNITS));
+    WriteIniParameter(WriteFile, TIME_AGGREGATION, GetParameterString(TIME_AGGREGATION, s), GetParameterComment(TIME_AGGREGATION));
+    WriteIniParameter(WriteFile, REPLICAS, GetParameterString(REPLICAS, s), GetParameterComment(REPLICAS));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteAnalysisSettings()","IniParameterFileAccess");
@@ -431,13 +199,9 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, AsString(s, gParameters.GetCriteriaSecondClustersType()),
-                      " criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,"
-                      "  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)");
-    WriteIniParameter(WriteFile, REPORTED_GEOSIZE, AsString(s, gParameters.GetMaximumReportedGeoClusterSize()),
-                      " max reported geographic size (< max geographical cluster size%)");
-    WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, AsString(s, gParameters.GetRestrictingMaximumReportedGeoClusterSize()),
-                      " restrict reported clusters to maximum geographical cluster size? (y/n)");
+    WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
+    WriteIniParameter(WriteFile, REPORTED_GEOSIZE, GetParameterString(REPORTED_GEOSIZE, s), GetParameterComment(REPORTED_GEOSIZE));
+    WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s), GetParameterComment(USE_REPORTED_GEOSIZE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteClustersReportedSettings()","IniParameterFileAccess");
@@ -450,20 +214,10 @@ void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, ELLIPSES, AsString(s, gParameters.GetNumRequestedEllipses()),
-                      " number of ellipses to scan, other than circle (0-10)");
-    s << ZdString::reset;
-    for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
-       s << (i == 0 ? "" : ",") << gParameters.GetEllipseShapes()[i];
-    WriteIniParameter(WriteFile, ESHAPES, s.GetCString(),
-                      " elliptic shapes - one value for each ellipse (comma separated decimal values)");
-    s << ZdString::reset;
-    for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
-       s << (i == 0 ? "" : ",") << gParameters.GetEllipseRotations()[i];
-    WriteIniParameter(WriteFile, ENUMBERS, s.GetCString(),
-                      " elliptic angles - one value for each ellipse (comma separated integer values)");
-    WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, AsString(s, gParameters.GetNonCompactnessPenalty()),
-                      " elliptic non-compactness penalty? (y/n)");
+    WriteIniParameter(WriteFile, ELLIPSES, GetParameterString(ELLIPSES, s), GetParameterComment(ELLIPSES));
+    WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s), GetParameterComment(ESHAPES));
+    WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s), GetParameterComment(ENUMBERS));
+    WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s), GetParameterComment(NON_COMPACTNESS_PENALTY));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteEllipticScanSettings()","IniParameterFileAccess");
@@ -476,14 +230,10 @@ void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, START_PROSP_SURV, gParameters.GetProspectiveStartDate().c_str(),
-                      " prospective surveillance start date (YYYY/MM/DD)");
-    WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, AsString(s, gParameters.GetTerminateSimulationsEarly()),
-                      " terminate simulations early for large p-values? (y/n)");
-    WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, AsString(s, gParameters.GetAdjustForEarlierAnalyses()),
-                      " adjust for earlier analyses(prospective analyses only)? (y/n)");
-    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, AsString(s, gParameters.GetReportCriticalValues()),
-                      " report critical values for .01 and .05? (y/n)");
+    WriteIniParameter(WriteFile, START_PROSP_SURV, GetParameterString(START_PROSP_SURV, s), GetParameterComment(START_PROSP_SURV));
+    WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s), GetParameterComment(EARLY_SIM_TERMINATION));
+    WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
+    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s), GetParameterComment(REPORT_CRITICAL_VALUES));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -527,7 +277,7 @@ void IniParameterFileAccess::WriteIsotonicScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, RISKFUNCTION, AsString(s, gParameters.GetRiskType()), " isotonic scan (0=Standard, 1=Monotone)");
+    WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s), GetParameterComment(RISKFUNCTION));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteIsotonicScanSettings()","IniParameterFileAccess");
@@ -540,20 +290,16 @@ void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, CASEFILE, gParameters.GetCaseFileName().c_str(), " case data filename");
-    WriteIniParameter(WriteFile, CONTROLFILE, gParameters.GetControlFileName().c_str(), " control data filename");
-    WriteIniParameter(WriteFile, POPFILE, gParameters.GetPopulationFileName().c_str(), " population data filename");
-    WriteIniParameter(WriteFile, COORDFILE, gParameters.GetCoordinatesFileName().c_str(), " coordinate data filename");
-    WriteIniParameter(WriteFile, SPECIALGRID, AsString(s, gParameters.UseSpecialGrid()), " use grid file? (y/n)");
-    WriteIniParameter(WriteFile, GRIDFILE, gParameters.GetSpecialGridFileName().c_str(), " grid data filename");
-    WriteIniParameter(WriteFile, PRECISION, AsString(s, gParameters.GetPrecisionOfTimesType()),
-                      " time precision (0=None, 1=Year, 2=Month, 3=Day)");
-    WriteIniParameter(WriteFile, COORDTYPE, AsString(s, gParameters.GetCoordinatesType()),
-                      " coordinate type (0=Cartesian, 1=latitude/longitude)");
-    WriteIniParameter(WriteFile, STARTDATE, gParameters.GetStudyPeriodStartDate().c_str(),
-                      " study period start date (YYYY/MM/DD)");
-    WriteIniParameter(WriteFile, ENDDATE, gParameters.GetStudyPeriodEndDate().c_str(),
-                      " study period end date (YYYY/MM/DD)");
+    WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s), GetParameterComment(CASEFILE));
+    WriteIniParameter(WriteFile, CONTROLFILE, GetParameterString(CONTROLFILE, s), GetParameterComment(CONTROLFILE));
+    WriteIniParameter(WriteFile, POPFILE, GetParameterString(POPFILE, s), GetParameterComment(POPFILE));
+    WriteIniParameter(WriteFile, COORDFILE, GetParameterString(COORDFILE, s), GetParameterComment(COORDFILE));
+    WriteIniParameter(WriteFile, SPECIALGRID, GetParameterString(SPECIALGRID, s), GetParameterComment(SPECIALGRID));
+    WriteIniParameter(WriteFile, GRIDFILE, GetParameterString(GRIDFILE, s), GetParameterComment(GRIDFILE));
+    WriteIniParameter(WriteFile, PRECISION, GetParameterString(PRECISION, s), GetParameterComment(PRECISION));
+    WriteIniParameter(WriteFile, COORDTYPE, GetParameterString(COORDTYPE, s), GetParameterComment(COORDTYPE));
+    WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s), GetParameterComment(STARTDATE));
+    WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s), GetParameterComment(ENDDATE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteInputSettings()","IniParameterFileAccess");
@@ -603,24 +349,15 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, OUTPUTFILE, gParameters.GetOutputFileName().c_str(),
-                      " analysis results output filename");
-    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, AsString(s, gParameters.GetOutputSimLoglikeliRatiosAscii()),
-                      " output simulated log likelihoods ratios in ASCII format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, AsString(s, gParameters.GetOutputSimLoglikeliRatiosDBase()),
-                      " output simulated log likelihoods ratios in dBase format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, AsString(s, gParameters.GetOutputRelativeRisksAscii()),
-                      " output relative risks in ASCII format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_RR_DBASE, AsString(s, gParameters.GetOutputRelativeRisksDBase()),
-                      " output relative risks in dBase format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_AREAS_ASCII, AsString(s, gParameters.GetOutputAreaSpecificAscii()),
-                      " output location information in ASCII format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_AREAS_DBASE, AsString(s, gParameters.GetOutputAreaSpecificDBase()),
-                      " output location information in dBase format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, AsString(s, gParameters.GetOutputClusterLevelAscii()),
-                      " output cluster information in ASCII format? (y/n)");
-    WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, AsString(s, gParameters.GetOutputClusterLevelDBase()),
-                      " output cluster information in dBase format? (y/n)");
+    WriteIniParameter(WriteFile, OUTPUTFILE, GetParameterString(OUTPUTFILE, s), GetParameterComment(OUTPUTFILE));
+    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, GetParameterString(OUTPUT_SIM_LLR_ASCII, s), GetParameterComment(OUTPUT_SIM_LLR_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, GetParameterString(OUTPUT_SIM_LLR_DBASE, s), GetParameterComment(OUTPUT_SIM_LLR_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, GetParameterString(OUTPUT_RR_ASCII, s), GetParameterComment(OUTPUT_RR_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_RR_DBASE, GetParameterString(OUTPUT_RR_DBASE, s), GetParameterComment(OUTPUT_RR_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_AREAS_ASCII, GetParameterString(OUTPUT_AREAS_ASCII, s), GetParameterComment(OUTPUT_AREAS_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_AREAS_DBASE, GetParameterString(OUTPUT_AREAS_DBASE, s), GetParameterComment(OUTPUT_AREAS_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, GetParameterString(OUTPUT_MLC_ASCII, s), GetParameterComment(OUTPUT_MLC_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s), GetParameterComment(OUTPUT_MLC_DBASE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteOutputSettings()","IniParameterFileAccess");
@@ -633,20 +370,13 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, POWERCALC, AsString(s, gParameters.GetIsPowerCalculated()),
-                      " p-values for 2 pre-specified log likelihood ratios? (y/n)");
-    WriteIniParameter(WriteFile, POWERX, AsString(s, gParameters.GetPowerCalculationX()),
-                      " power calculation log likelihood ratio (no. 1)");
-    WriteIniParameter(WriteFile, POWERY, AsString(s, gParameters.GetPowerCalculationY()),
-                      " power calculation log likelihood ratio (no. 2)");
-    WriteIniParameter(WriteFile, SIMULATION_TYPE, AsString(s, gParameters.GetSimulationType()),
-                      " simulation methods (Null Randomization=0, HA Randomization=1, File Import=2)");
-    WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, gParameters.GetSimulationDataSourceFilename().c_str(),
-                      " simulation data input file name (with File Import=2)");
-    WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, AsString(s, gParameters.GetOutputSimulationData()),
-                      " print simulation data to file? (y/n)");
-    WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, gParameters.GetSimulationDataOutputFilename().c_str(),
-                      " simulation data output filename");
+    WriteIniParameter(WriteFile, POWERCALC, GetParameterString(POWERCALC, s), GetParameterComment(POWERCALC));
+    WriteIniParameter(WriteFile, POWERX, GetParameterString(POWERX, s), GetParameterComment(POWERX));
+    WriteIniParameter(WriteFile, POWERY, GetParameterString(POWERY, s), GetParameterComment(POWERY));
+    WriteIniParameter(WriteFile, SIMULATION_TYPE, GetParameterString(SIMULATION_TYPE, s), GetParameterComment(SIMULATION_TYPE));
+    WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, GetParameterString(SIMULATION_SOURCEFILE, s), GetParameterComment(SIMULATION_SOURCEFILE));
+    WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s), GetParameterComment(OUTPUT_SIMULATION_DATA));
+    WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, GetParameterString(SIMULATION_DATA_OUTFILE, s), GetParameterComment(SIMULATION_DATA_OUTFILE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -659,19 +389,14 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, VALIDATE, AsString(s, gParameters.GetValidatingParameters()),
-                      " validate parameters prior to analysis execution? (y/n)");
+    WriteIniParameter(WriteFile, VALIDATE, GetParameterString(VALIDATE, s), GetParameterComment(VALIDATE));
     // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
     // which we'll determine by whether it is different than default seed
     if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)                  
-      WriteIniParameter(WriteFile, RANDOMIZATION_SEED, AsString(s, (int)gParameters.GetRandomizationSeed()),
-                        " randomization seed (0 < Seed < 2147483647)");
-    //WriteIniParameter(WriteFile, TIMETRENDCONVRG, AsString(s, gParameters.GetTimeTrendConvergence()),
-    //                  " time trend convergence for SVTT analysis (> 0)");  //---  until SVTT is available, don't write
-    WriteIniParameter(WriteFile, EXECUTION_TYPE, AsString(s, gParameters.GetExecutionType()),
-                      " analysis execution method  (Automatic=0, Successively=1, Centrically=2)");
-    WriteIniParameter(WriteFile, NUM_PROCESSES, AsString(s, gParameters.GetNumRequestedParallelProcesses()),
-                      " number of parallel processes to execute (All Processors=0, At Most X Processors=x)");
+      WriteIniParameter(WriteFile, RANDOMIZATION_SEED, GetParameterString(RANDOMIZATION_SEED, s), GetParameterComment(RANDOMIZATION_SEED));
+    //WriteIniParameter(WriteFile, TIMETRENDCONVRG, GetParameterString(TIMETRENDCONVRG, s), GetParameterComment(TIMETRENDCONVRG));  //---  until SVTT is available, don't write
+    WriteIniParameter(WriteFile, EXECUTION_TYPE, GetParameterString(EXECUTION_TYPE, s), GetParameterComment(EXECUTION_TYPE));
+    WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s), GetParameterComment(NUM_PROCESSES));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
@@ -684,12 +409,9 @@ void IniParameterFileAccess::WriteSequentialScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, SEQUENTIAL, AsString(s, gParameters.GetIsSequentialScanning()),
-                     " perform sequential scans? (y/n)");
-    WriteIniParameter(WriteFile, SEQNUM, AsString(s, gParameters.GetNumSequentialScansRequested()),
-                      " maximum iterations for sequential scan (0-32000)");
-    WriteIniParameter(WriteFile, SEQPVAL, AsString(s, gParameters.GetSequentialCutOffPValue()),
-                      " max p-value for sequential scan before cutoff (0.000-1.000)");
+    WriteIniParameter(WriteFile, SEQUENTIAL, GetParameterString(SEQUENTIAL, s), GetParameterComment(SEQUENTIAL));
+    WriteIniParameter(WriteFile, SEQNUM, GetParameterString(SEQNUM, s), GetParameterComment(SEQNUM));
+    WriteIniParameter(WriteFile, SEQPVAL, GetParameterString(SEQPVAL, s), GetParameterComment(SEQPVAL));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSequentialScanSettings()","IniParameterFileAccess");
@@ -702,17 +424,11 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& Writ
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, TIMETREND, AsString(s, gParameters.GetTimeTrendAdjustmentType()),
-                      " time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage,"
-                      " 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization)");
-    WriteIniParameter(WriteFile, TIMETRENDPERC, AsString(s, gParameters.GetTimeTrendAdjustmentPercentage()),
-                      " time trend adjustment percentage (>-100)");
-    WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(),
-                      " adjustments by known relative risks file name (with HA Randomization=1 or ...)");
-    WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, AsString(s, gParameters.UseAdjustmentForRelativeRisksFile()),
-                      " use adjustments by known relative risks file? (y/n)");
-    WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, AsString(s, gParameters.GetSpatialAdjustmentType()),
-                      " Spatial Adjustments Type (no spatial adjustment=0, spatially stratified randomization=1)");
+    WriteIniParameter(WriteFile, TIMETREND, GetParameterString(TIMETREND, s), GetParameterComment(TIMETREND));
+    WriteIniParameter(WriteFile, TIMETRENDPERC, GetParameterString(TIMETRENDPERC, s), GetParameterComment(TIMETRENDPERC));
+    WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, GetParameterString(ADJ_BY_RR_FILE, s), GetParameterComment(ADJ_BY_RR_FILE));
+    WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s), GetParameterComment(USE_ADJ_BY_RR_FILE));
+    WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s), GetParameterComment(SPATIAL_ADJ_TYPE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -725,14 +441,10 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, GEOSIZE, AsString(s, gParameters.GetMaximumGeographicClusterSize()),
-                      " maximum geographic cluster size (<=50%)");
-    WriteIniParameter(WriteFile, PURETEMPORAL, AsString(s, gParameters.GetIncludePurelyTemporalClusters()),
-                      " include purely temporal clusters? (y/n)");
-    WriteIniParameter(WriteFile, MAX_SPATIAL_TYPE, AsString(s, gParameters.GetMaxGeographicClusterSizeType()),
-                      " how max spatial size should be interpretted (0=Percentage, 1=Distance, 2=Percentage of max circle population file)");
-    WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, gParameters.GetMaxCirclePopulationFileName().c_str(),
-                      " maximum circle size filename");
+    WriteIniParameter(WriteFile, GEOSIZE, GetParameterString(GEOSIZE, s), GetParameterComment(GEOSIZE));
+    WriteIniParameter(WriteFile, PURETEMPORAL, GetParameterString(PURETEMPORAL, s), GetParameterComment(PURETEMPORAL));
+    WriteIniParameter(WriteFile, MAX_SPATIAL_TYPE, GetParameterString(MAX_SPATIAL_TYPE, s), GetParameterComment(MAX_SPATIAL_TYPE));
+    WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s), GetParameterComment(MAXCIRCLEPOPFILE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpatialWindowSettings()","IniParameterFileAccess");
@@ -745,9 +457,7 @@ void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    s.printf("%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE);
-    WriteIniParameter(WriteFile, CREATION_VERSION, s.GetCString(),
-                      " system setting - do not modify");
+    WriteIniParameter(WriteFile, CREATION_VERSION, GetParameterString(CREATION_VERSION, s), GetParameterComment(CREATION_VERSION));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSystemSettings()","IniParameterFileAccess");
@@ -760,20 +470,12 @@ void IniParameterFileAccess::WriteTemporalWindowSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, TIMESIZE, AsString(s, gParameters.GetMaximumTemporalClusterSize()),
-                     " maximum temporal cluster size (<=90%)");
-    WriteIniParameter(WriteFile, PURESPATIAL, AsString(s, gParameters.GetIncludePurelySpatialClusters()),
-                      " include purely spatial clusters? (y/n)");
-    WriteIniParameter(WriteFile, MAX_TEMPORAL_TYPE, AsString(s, gParameters.GetMaximumTemporalClusterSizeType()),
-                      " how max temporal size should be interpretted (0=Percentage, 1=Time)");
-    WriteIniParameter(WriteFile, CLUSTERS, AsString(s, gParameters.GetIncludeClustersType()),
-                      " temporal clusters evaluated (0=All, 1=Alive, 2=Flexible Window)");
-    s.printf("%s,%s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
-    WriteIniParameter(WriteFile, INTERVAL_STARTRANGE, s,
-                      " flexible temporal window start range (YYYY/MM/DD,YYYY/MM/DD)");
-    s.printf("%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
-    WriteIniParameter(WriteFile, INTERVAL_ENDRANGE, s,
-                      " flexible temporal window end range (YYYY/MM/DD,YYYY/MM/DD)");
+    WriteIniParameter(WriteFile, TIMESIZE, GetParameterString(TIMESIZE, s), GetParameterComment(TIMESIZE));
+    WriteIniParameter(WriteFile, PURESPATIAL, GetParameterString(PURESPATIAL, s), GetParameterComment(PURESPATIAL));
+    WriteIniParameter(WriteFile, MAX_TEMPORAL_TYPE, GetParameterString(MAX_TEMPORAL_TYPE, s), GetParameterComment(MAX_TEMPORAL_TYPE));
+    WriteIniParameter(WriteFile, CLUSTERS, GetParameterString(CLUSTERS, s), GetParameterComment(CLUSTERS));
+    WriteIniParameter(WriteFile, INTERVAL_STARTRANGE, GetParameterString(INTERVAL_STARTRANGE, s), GetParameterComment(INTERVAL_STARTRANGE));
+    WriteIniParameter(WriteFile, INTERVAL_ENDRANGE, GetParameterString(INTERVAL_ENDRANGE, s), GetParameterComment(INTERVAL_ENDRANGE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteTemporalWindowSettings()","IniParameterFileAccess");

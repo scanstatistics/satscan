@@ -13,23 +13,9 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
 
     virtual const char                * GetParameterLabel(ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
-    void                                ReadAnalysisSettings(const ZdIniFile& SourceFile);
-    void                                ReadClustersReportedSettings(const ZdIniFile& SourceFile);
-    void                                ReadEllipticScanSettings(const ZdIniFile& SourceFile);
-    void                                ReadInferenceSettings(const ZdIniFile& SourceFile);
     void                                ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType);
     std::vector<ZdString>             & ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<ZdString>& vParameters) const;
-    void                                ReadIsotonicScanSettings(const ZdIniFile& SourceFile);
-    void                                ReadInputSettings(const ZdIniFile& SourceFile);
     void                                ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile);
-    void                                ReadOutputSettings(const ZdIniFile& SourceFile);
-    void                                ReadPowerSimulationsSettings(const ZdIniFile& SourceFile);
-    void                                ReadRunOptionSettings(const ZdIniFile& SourceFile);
-    void                                ReadSequentialScanSettings(const ZdIniFile& SourceFile);
-    void                                ReadSpaceAndTimeAdjustmentSettings(const ZdIniFile& SourceFile);
-    void                                ReadSpatialWindowSettings(const ZdIniFile& SourceFile);
-    void                                ReadSystemSettings(const ZdIniFile& SourceFile);
-    void                                ReadTemporalWindowSettings(const ZdIniFile& SourceFile);
 
     void                                WriteAnalysisSettings(ZdIniFile& WriteFile);
     void                                WriteClustersReportedSettings(ZdIniFile& WriteFile);
