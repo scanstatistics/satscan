@@ -238,6 +238,10 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
 void IniParameterSpecification::Build_6_0_x_ParameterList() {
   Build_5_1_x_ParameterList();
 
+  //Flexible start and end range where in wrong section
+  gvParameterInfo[INTERVAL_STARTRANGE - 1] = std::make_pair(TemporalWindow, (const char*)"IntervalStartRange");
+  gvParameterInfo[INTERVAL_ENDRANGE - 1] = std::make_pair(TemporalWindow, (const char*)"IntervalEndRange");
+
   //VALIDATE and RANDOMIZATION_SEED parameters moved from 'BatchModeFeatures' to 'RunOptions'
   gvParameterInfo[VALIDATE - 1] = std::make_pair(RunOptions, (const char*)"ValidateParameters");
   gvParameterInfo[RANDOMIZATION_SEED - 1] = std::make_pair(RunOptions, (const char*)"RandomSeed");
