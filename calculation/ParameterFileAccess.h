@@ -48,6 +48,8 @@ class AbtractParameterFileAccess {
     ZdString                  & AsString(ZdString& ref, double d) const {ref = d; return ref;}
     ZdString                  & AsString(ZdString& ref, bool b) const {ref = (b ? "y" : "n"); return ref;}
     ZdString                  & AsString(ZdString& ref, const CParameters::CreationVersion& v) const {ref.printf("%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
+    const char                * GetParameterComment(ParameterType eParameterType) const;
+    ZdString                  & GetParameterString(ParameterType eParameterType, ZdString& s) const;
     void                        MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint& PrintDirection);
     void                        SetParameter(ParameterType eParameterType, const ZdString& sParameter, BasePrint& PrintDirection);
 

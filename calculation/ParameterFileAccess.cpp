@@ -35,7 +35,8 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
 /** Writes parameters to ini file in most recent format. */
 void ParameterAccessCoordinator::Write(const char * sFilename, BasePrint& PrintDirection /* ability to specify a version to write as ?*/) {
   try {
-    IniParameterFileAccess(gParameters, PrintDirection).Write(sFilename);
+   IniParameterFileAccess(gParameters, PrintDirection).Write(sFilename);
+   //ScanLineParameterFileAccess(gParameters, PrintDirection).Write(sFilename);
   }
   catch (ZdException &x) {
     x.AddCallpath("Write()","ParameterAccessCoordinator");
@@ -50,6 +51,186 @@ AbtractParameterFileAccess::AbtractParameterFileAccess(CParameters& Parameters, 
 
 /** destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
+
+/** Returns constant char pointer to parameters comment string. */
+const char * AbtractParameterFileAccess::GetParameterComment(ParameterType eParameterType) const {
+  try {
+    switch (eParameterType) {
+      case ANALYSISTYPE             : return " analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=N/A, 6=Prospective Purely Temporal)";
+      case SCANAREAS                : return " scan areas (1=High, 2=Low, 3=High or Low)";
+      case CASEFILE                 : return " case data filename";
+      case POPFILE                  : return " population data filename";
+      case COORDFILE                : return " coordinate data filename";
+      case OUTPUTFILE               : return " analysis results output filename";
+      case PRECISION                : return " time precision (0=None, 1=Year, 2=Month, 3=Day)";
+      case DIMENSION                : return " n/a";
+      case SPECIALGRID              : return " use grid file? (y/n)";
+      case GRIDFILE                 : return " grid data filename";
+      case GEOSIZE                  : return " maximum geographic cluster size (<=50%)";
+      case STARTDATE                : return " study period start date (YYYY/MM/DD)";
+      case ENDDATE                  : return " study period end date (YYYY/MM/DD)";
+      case CLUSTERS                 : return " temporal clusters evaluated (0=All, 1=Alive, 2=Flexible Window)";
+      case EXACTTIMES               : return " n/a";
+      case TIME_AGGREGATION_UNITS   : return " time aggregation units (0=None, 1=Year, 2=Month, 3=Day)";
+      case TIME_AGGREGATION         : return " time aggregation length (positive integer)";
+      case PURESPATIAL              : return " include purely spatial clusters? (y/n)";
+      case TIMESIZE                 : return " maximum temporal cluster size (<=90%)";
+      case REPLICAS                 : return " Monte Carlo replications (0, 9, 999, n999)";
+      case MODEL                    : return " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential)";
+      case RISKFUNCTION             : return " isotonic scan (0=Standard, 1=Monotone)";
+      case POWERCALC                : return " p-values for 2 pre-specified log likelihood ratios? (y/n)";
+      case POWERX                   : return " power calculation log likelihood ratio (no. 1)";
+      case POWERY                   : return " power calculation log likelihood ratio (no. 2)";
+      case TIMETREND                : return " time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization)";
+      case TIMETRENDPERC            : return " time trend adjustment percentage (>-100)";
+      case PURETEMPORAL             : return " include purely temporal clusters? (y/n)";
+      case CONTROLFILE              : return " control data filename";
+      case COORDTYPE                : return " coordinate type (0=Cartesian, 1=latitude/longitude)";
+      case OUTPUT_SIM_LLR_ASCII     : return " output simulated log likelihoods ratios in ASCII format? (y/n)";
+      case SEQUENTIAL               : return " perform sequential scans? (y/n)";
+      case SEQNUM                   : return " maximum iterations for sequential scan (0-32000)";
+      case SEQPVAL                  : return " max p-value for sequential scan before cutoff (0.000-1.000)";
+      case VALIDATE                 : return " validate parameters prior to analysis execution? (y/n)";
+      case OUTPUT_RR_ASCII          : return " output relative risks in ASCII format? (y/n)";
+      case ELLIPSES                 : return " number of ellipses to scan, other than circle (0-10)";
+      case ESHAPES                  : return " elliptic shapes - one value for each ellipse (comma separated decimal values)";
+      case ENUMBERS                 : return " elliptic angles - one value for each ellipse (comma separated integer values)";
+      case START_PROSP_SURV         : return " prospective surveillance start date (YYYY/MM/DD)";
+      case OUTPUT_AREAS_ASCII       : return " output location information in ASCII format? (y/n)";
+      case OUTPUT_MLC_ASCII         : return " output cluster information in ASCII format? (y/n)";
+      case CRITERIA_SECOND_CLUSTERS : return " criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)";
+      case MAX_TEMPORAL_TYPE        : return " how max temporal size should be interpretted (0=Percentage, 1=Time)";
+      case MAX_SPATIAL_TYPE         : return " how max spatial size should be interpretted (0=Percentage, 1=Distance, 2=Percentage of max circle population file)";
+      case RUN_HISTORY_FILENAME     : return " n/a";
+      case OUTPUT_MLC_DBASE         : return " output cluster information in dBase format? (y/n)";
+      case OUTPUT_AREAS_DBASE       : return " output location information in dBase format? (y/n)";
+      case OUTPUT_RR_DBASE          : return " output relative risks in dBase format? (y/n)";
+      case OUTPUT_SIM_LLR_DBASE     : return " output simulated log likelihoods ratios in dBase format? (y/n)";
+      case NON_COMPACTNESS_PENALTY  : return " elliptic non-compactness penalty? (y/n)";
+      case INTERVAL_STARTRANGE      : return " flexible temporal window start range (YYYY/MM/DD,YYYY/MM/DD)";
+      case INTERVAL_ENDRANGE        : return " flexible temporal window end range (YYYY/MM/DD,YYYY/MM/DD)";
+      case TIMETRENDCONVRG	    : return " time trend convergence for SVTT analysis (> 0)";
+      case MAXCIRCLEPOPFILE         : return " maximum circle size filename";
+      case EARLY_SIM_TERMINATION    : return " terminate simulations early for large p-values? (y/n)";
+      case REPORTED_GEOSIZE         : return " max reported geographic size (< max geographical cluster size%)";
+      case USE_REPORTED_GEOSIZE     : return " restrict reported clusters to maximum geographical cluster size? (y/n)";
+      case SIMULATION_TYPE          : return " simulation methods (Null Randomization=0, HA Randomization=1, File Import=2)";
+      case SIMULATION_SOURCEFILE    : return " simulation data input file name (with File Import=2)";
+      case ADJ_BY_RR_FILE           : return " adjustments by known relative risks file name (with HA Randomization=1 or ...)";
+      case OUTPUT_SIMULATION_DATA   : return " print simulation data to file? (y/n)";
+      case SIMULATION_DATA_OUTFILE  : return " simulation data output filename";
+      case ADJ_FOR_EALIER_ANALYSES  : return " adjust for earlier analyses(prospective analyses only)? (y/n)";
+      case USE_ADJ_BY_RR_FILE       : return " use adjustments by known relative risks file? (y/n)";
+      case SPATIAL_ADJ_TYPE         : return " Spatial Adjustments Type (no spatial adjustment=0, spatially stratified randomization=1)";
+      case MULTI_DATASET_PURPOSE_TYPE : return " multiple data sets purpose type (multivariate=0, adjustment=1)";
+      case CREATION_VERSION         : return " system setting - do not modify";
+      case RANDOMIZATION_SEED       : return " randomization seed (0 < Seed < 2147483647)";
+      case REPORT_CRITICAL_VALUES   : return " report critical values for .01 and .05? (y/n)";
+      case EXECUTION_TYPE           : return " analysis execution method  (Automatic=0, Successively=1, Centrically=2)";
+      case NUM_PROCESSES            : return " number of parallel processes to execute (All Processors=0, At Most X Processors=x)";
+      default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
+    };
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetParameterComment()","AbtractParameterFileAccess");
+    throw;
+ }
+ return 0;
+}
+
+/** Assigns string representation to passed string class for parameter. */
+ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParameterType, ZdString& s) const {
+  try {
+    switch (eParameterType) {
+      case ANALYSISTYPE             : return AsString(s, gParameters.GetAnalysisType());
+      case SCANAREAS                : return AsString(s, gParameters.GetAreaScanRateType());
+      case CASEFILE                 : s = gParameters.GetCaseFileName().c_str(); return s;
+      case POPFILE                  : s = gParameters.GetPopulationFileName().c_str(); return s;
+      case COORDFILE                : s = gParameters.GetCoordinatesFileName().c_str(); return s;
+      case OUTPUTFILE               : s = gParameters.GetOutputFileName().c_str(); return s;
+      case PRECISION                : return AsString(s, gParameters.GetPrecisionOfTimesType());
+      case DIMENSION                : s = " n/a"; return s;
+      case SPECIALGRID              : return AsString(s, gParameters.UseSpecialGrid());
+      case GRIDFILE                 : s = gParameters.GetSpecialGridFileName().c_str(); return s;
+      case GEOSIZE                  : return AsString(s, gParameters.GetMaximumGeographicClusterSize());
+      case STARTDATE                : s = gParameters.GetStudyPeriodStartDate().c_str(); return s;
+      case ENDDATE                  : s = gParameters.GetStudyPeriodEndDate().c_str(); return s;
+      case CLUSTERS                 : return AsString(s, gParameters.GetIncludeClustersType());
+      case EXACTTIMES               : s = " n/a"; return s;
+      case TIME_AGGREGATION_UNITS   : return AsString(s, gParameters.GetTimeAggregationUnitsType());
+      case TIME_AGGREGATION         : return AsString(s, (int)gParameters.GetTimeAggregationLength());
+      case PURESPATIAL              : return AsString(s, gParameters.GetIncludePurelySpatialClusters());
+      case TIMESIZE                 : return AsString(s, gParameters.GetMaximumTemporalClusterSize());
+      case REPLICAS                 : return AsString(s, gParameters.GetNumReplicationsRequested());
+      case MODEL                    : return AsString(s, gParameters.GetProbabilityModelType());
+      case RISKFUNCTION             : return AsString(s, gParameters.GetRiskType());
+      case POWERCALC                : return AsString(s, gParameters.GetIsPowerCalculated());
+      case POWERX                   : return AsString(s, gParameters.GetPowerCalculationX());
+      case POWERY                   : return AsString(s, gParameters.GetPowerCalculationY());
+      case TIMETREND                : return AsString(s, gParameters.GetTimeTrendAdjustmentType());
+      case TIMETRENDPERC            : return AsString(s, gParameters.GetTimeTrendAdjustmentPercentage());
+      case PURETEMPORAL             : return AsString(s, gParameters.GetIncludePurelyTemporalClusters());
+      case CONTROLFILE              : s = gParameters.GetControlFileName().c_str(); return s;
+      case COORDTYPE                : return AsString(s, gParameters.GetCoordinatesType());
+      case OUTPUT_SIM_LLR_ASCII     : return AsString(s, gParameters.GetOutputSimLoglikeliRatiosAscii());
+      case SEQUENTIAL               : return AsString(s, gParameters.GetIsSequentialScanning());
+      case SEQNUM                   : return AsString(s, gParameters.GetNumSequentialScansRequested());
+      case SEQPVAL                  : return AsString(s, gParameters.GetSequentialCutOffPValue());
+      case VALIDATE                 : return AsString(s, gParameters.GetValidatingParameters());
+      case OUTPUT_RR_ASCII          : return AsString(s, gParameters.GetOutputRelativeRisksAscii());
+      case ELLIPSES                 : return AsString(s, gParameters.GetNumRequestedEllipses());
+      case ESHAPES                  : s << ZdString::reset;
+                                      for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
+                                         s << (i == 0 ? "" : ",") << gParameters.GetEllipseShapes()[i];
+                                      return s;
+      case ENUMBERS                 :  s << ZdString::reset;
+                                      for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
+                                         s << (i == 0 ? "" : ",") << gParameters.GetEllipseRotations()[i];
+                                      return s;
+      case START_PROSP_SURV         : s = gParameters.GetProspectiveStartDate().c_str(); return s;
+      case OUTPUT_AREAS_ASCII       : return AsString(s, gParameters.GetOutputAreaSpecificAscii());
+      case OUTPUT_MLC_ASCII         : return AsString(s, gParameters.GetOutputAreaSpecificAscii());
+      case CRITERIA_SECOND_CLUSTERS : return AsString(s, gParameters.GetCriteriaSecondClustersType());
+      case MAX_TEMPORAL_TYPE        : return AsString(s, gParameters.GetMaximumTemporalClusterSizeType());
+      case MAX_SPATIAL_TYPE         : return AsString(s, gParameters.GetMaxGeographicClusterSizeType());
+      case RUN_HISTORY_FILENAME     : s = " n/a"; return s;
+      case OUTPUT_MLC_DBASE         : return AsString(s, gParameters.GetOutputClusterLevelDBase());
+      case OUTPUT_AREAS_DBASE       : return AsString(s, gParameters.GetOutputAreaSpecificDBase());
+      case OUTPUT_RR_DBASE          : return AsString(s, gParameters.GetOutputRelativeRisksDBase());
+      case OUTPUT_SIM_LLR_DBASE     : return AsString(s, gParameters.GetOutputSimLoglikeliRatiosDBase());
+      case NON_COMPACTNESS_PENALTY  : return AsString(s, gParameters.GetNonCompactnessPenalty());
+      case INTERVAL_STARTRANGE      : s.printf("%s,%s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
+                                      return s;
+      case INTERVAL_ENDRANGE        : s.printf("%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
+                                      return s;
+      case TIMETRENDCONVRG	    : return AsString(s, gParameters.GetTimeTrendConvergence());
+      case MAXCIRCLEPOPFILE         : s = gParameters.GetMaxCirclePopulationFileName().c_str(); return s;
+      case EARLY_SIM_TERMINATION    : return AsString(s, gParameters.GetTerminateSimulationsEarly());
+      case REPORTED_GEOSIZE         : return AsString(s, gParameters.GetMaximumReportedGeoClusterSize());
+      case USE_REPORTED_GEOSIZE     : return AsString(s, gParameters.GetRestrictingMaximumReportedGeoClusterSize());
+      case SIMULATION_TYPE          : return AsString(s, gParameters.GetSimulationType());
+      case SIMULATION_SOURCEFILE    : s = gParameters.GetSimulationDataSourceFilename().c_str(); return s;
+      case ADJ_BY_RR_FILE           : s = gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(); return s;
+      case OUTPUT_SIMULATION_DATA   : return AsString(s, gParameters.GetOutputSimulationData());
+      case SIMULATION_DATA_OUTFILE  : s = gParameters.GetSimulationDataOutputFilename().c_str(); return s;
+      case ADJ_FOR_EALIER_ANALYSES  : return AsString(s, gParameters.GetAdjustForEarlierAnalyses());
+      case USE_ADJ_BY_RR_FILE       : return AsString(s, gParameters.UseAdjustmentForRelativeRisksFile());
+      case SPATIAL_ADJ_TYPE         : return AsString(s, gParameters.GetSpatialAdjustmentType());
+      case MULTI_DATASET_PURPOSE_TYPE : return AsString(s, gParameters.GetMultipleDataSetPurposeType());
+      case CREATION_VERSION         : s.printf("%s.%s.%s", VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE); return s;
+      case RANDOMIZATION_SEED       : return AsString(s, (int)gParameters.GetRandomizationSeed());
+      case REPORT_CRITICAL_VALUES   : return AsString(s, gParameters.GetReportCriticalValues());
+      case EXECUTION_TYPE           : return AsString(s, gParameters.GetExecutionType());
+      case NUM_PROCESSES            : return AsString(s, gParameters.GetNumRequestedParallelProcesses());
+      default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
+    };
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetParameterString()","AbtractParameterFileAccess");
+    throw;
+ }
+ return s;
+}
 
 /** Prints message to print direction that parameter was missing when read from
     parameter file and that a default value as assigned. */
@@ -129,7 +310,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case MULTI_DATASET_PURPOSE_TYPE : sDefaultValue = gParameters.GetMultipleDataSetPurposeType(); break;
       case CREATION_VERSION         : sDefaultValue.printf("%u.%u.%u", gParameters.GetCreationVersion().iMajor,
                                                            gParameters.GetCreationVersion().iMinor, gParameters.GetCreationVersion().iRelease); break;
-      case RANDOMIZATION_SEED       : break; //this parameter is not advertised                                                     
+      case RANDOMIZATION_SEED       : break; //this parameter is not advertised
       case REPORT_CRITICAL_VALUES   : sDefaultValue = (gParameters.GetReportCriticalValues() ? "y" : "n"); break;
       case EXECUTION_TYPE           : sDefaultValue = gParameters.GetExecutionType(); break;
       case NUM_PROCESSES            : sDefaultValue << gParameters.GetNumRequestedParallelProcesses(); break;
