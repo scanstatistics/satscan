@@ -219,7 +219,7 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
 void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CCluster& thisCluster) {
   int           i;
   double      * pCoords=0, * pCoords2=0, dRadius;
-  float         fLatitude, fLongitude;
+  float         fLatitude, fLongitude, fRadius;
   unsigned int  iFirstCoordIndex, iSecondCoordIndex, iThCoordIndex;
   ZdString      sBuffer;
   tract_t       tTractIndex;
@@ -255,7 +255,8 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                              Record.GetFieldValue(sBuffer).AsDouble() = pCoords[i];
                           }
                           //to mimic behavior in CCluster reporting, cast down to float
-                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = (float)thisCluster.GetCartesianRadius();
+                          fRadius = static_cast<float>(thisCluster.GetCartesianRadius());
+                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = fRadius;
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
