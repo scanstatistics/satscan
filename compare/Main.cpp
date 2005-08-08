@@ -1037,8 +1037,11 @@ std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, 
 
   //Determine the location of master results file
   ZdIniFile IniFile(ParameterFilename.GetFullPath());
-  if (IniFile.GetNumSections())
+  if (IniFile.GetNumSections()) {
     sResultFilename = IniFile.GetSection("[Output Files]")->GetString("ResultsFile");
+    if (sResultFilename.empty())
+      sResultFilename = IniFile.GetSection("[Output]")->GetString("ResultsFile");
+  }
   else {
     //open parameter file and scan to the 6th line, which is the results filename
     ifstream ParameterFile(ParameterFilename.GetFullPath(), ios::in);
