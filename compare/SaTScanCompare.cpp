@@ -14,9 +14,9 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
    {
        ZdInit();
        Application->Initialize();
-       Application->Title = "SaTScan Version Comparsion Utility v1.2";
-                 Application->CreateForm(__classid(TfrmMain), &frmMain);
-                 Application->Run();
+       Application->Title = "SaTScan Version Comparsion Utility v1.4";
+       Application->CreateForm(__classid(TfrmMain), &frmMain);
+       Application->Run();
        ZdExit();
    }
    catch (Exception &exception)
