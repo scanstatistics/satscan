@@ -59,6 +59,7 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
   int           iSize, iIndex=0;
   AnsiString    sParameterDataName, sParameterData;
 
+  Caption = Application->Title;
   gpFrmOptions = new TfrmOptions(this);
   if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
     edtBatchExecutableComparatorName->Text = pRegistry->ReadString(LASTAPPCOMPARATOR_DATA);
@@ -600,7 +601,7 @@ void TfrmMain::ArchiveResults() {
                      sArchiveFilename.c_str(),
                      GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
                      GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
+    if (Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
       remove(sMaster.c_str());
       remove(sCompare.c_str());
     }
@@ -614,7 +615,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
+    if (Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
       remove(sTemp1.c_str());
       remove(sTemp2.c_str());
     }
@@ -628,7 +629,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
+    if (Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
       remove(sTemp1.c_str());
       remove(sTemp2.c_str());
     }
@@ -643,7 +644,7 @@ void TfrmMain::ArchiveResults() {
                        gpFrmOptions->edtArchiveApplication->Text.c_str(),
                        gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                        sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-      if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
+      if (Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
         remove(sTemp1.c_str());
         remove(sTemp2.c_str());
       }
@@ -658,7 +659,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplication->Text.c_str(),
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(), sTemp1.c_str(), sTemp2.c_str());
-    if (Execute(sCommand, false) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) {
+    if (Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
       remove(sTemp1.c_str());
       remove(sTemp2.c_str());
     }

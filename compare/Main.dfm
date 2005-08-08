@@ -3,7 +3,6 @@ object frmMain: TfrmMain
   Top = 83
   Width = 604
   Height = 554
-  Caption = 'SaTScan Version Comparsion Utility v1.4'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
