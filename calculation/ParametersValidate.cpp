@@ -62,6 +62,9 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                                            "       purely spatial analyses with isotonic scan\n"
                                            "       spatial variation of temporal trends analysis\n");
       }
+      //before version 6, critical values were always reported
+      if (gParameters.GetCreationVersion().iMajor < 6)
+        const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
 
       //validate dates
       if (! ValidateDateParameters(PrintDirection))
