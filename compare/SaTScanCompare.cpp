@@ -7,6 +7,7 @@ USERES("SaTScanCompare.res");
 USEFORM("Main.cpp", frmMain);
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEFORM("Options.cpp", frmOptions);
+USEFORM("QueueWindow.cpp", frmQueueWindow);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
@@ -16,7 +17,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
        Application->Initialize();
        Application->Title = "SaTScan Version Comparsion Utility v1.4";
        Application->CreateForm(__classid(TfrmMain), &frmMain);
-       Application->Run();
+                 Application->Run();
        ZdExit();
    }
    catch (Exception &exception)

@@ -4,10 +4,10 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="SaTScanCompare.exe"/>
-    <OBJFILES value="SaTScanCompare.obj Main.obj Options.obj"/>
+    <OBJFILES value="SaTScanCompare.obj Main.obj Options.obj QueueWindow.obj"/>
     <RESFILES value="SaTScanCompare.res"/>
     <DEFFILE value=""/>
-    <RESDEPEN value="$(RESFILES) Main.dfm Options.dfm"/>
+    <RESDEPEN value="$(RESFILES) Main.dfm Options.dfm QueueWindow.dfm"/>
     <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
     <LIBRARIES value="TSGC5201.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib TSGC5201.lib"/>
