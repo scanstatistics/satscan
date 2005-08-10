@@ -117,18 +117,19 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   }
   // print total cases per data set
   switch (gParameters.GetProbabilityModelType()) {
-    case POISSON     :
-    case BERNOULLI   :
-    case ORDINAL     :
-    case EXPONENTIAL : PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
-                       sBuffer.printf("%ld", gpDataSets->GetDataSet(0).GetTotalCasesAtStart());
-                       for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
-                         sWork.printf(", %ld", gpDataSets->GetDataSet(i).GetTotalCasesAtStart());
-                         sBuffer << sWork;
-                       }
-                       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-                       break;
-    default          : break;
+    case POISSON              :
+    case BERNOULLI            :
+    case SPACETIMEPERMUTATION :
+    case ORDINAL              :
+    case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
+                                sBuffer.printf("%ld", gpDataSets->GetDataSet(0).GetTotalCasesAtStart());
+                                for (i=1; i < gpDataSets->GetNumDataSets(); ++i) {
+                                  sWork.printf(", %ld", gpDataSets->GetDataSet(i).GetTotalCasesAtStart());
+                                  sBuffer << sWork;
+                                }
+                                PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+                                break;
+    default                   : break;
   }
   //for the ordinal probability model, also print category values and total cases per ordinal category
   if (gParameters.GetProbabilityModelType() == ORDINAL) {
