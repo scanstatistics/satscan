@@ -27,17 +27,24 @@ void __fastcall TfrmQueueWindow::ActionStartBatchesExecute(TObject *Sender)  {
   bool          bResult;
   time_t        StartTime, StopTime;
   double        dExecutionTime, dSeconds,  dMinutes,  dHours;
-  AnsiString    sTime;
+  AnsiString    sTime, sCurTitle, sText;
 
   Show();
-  
+
+  if (frmMain->gpFrmOptions->chkSuppressDosWindow->Checked || frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked)
+    Application->Minimize();
+
   //reset status to queued
   for (i=0; i < ltvScheduledBatchs->Items->Count; i++)
      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "queued";
 
+  sCurTitle = Application->Title;
   for (i=0; i < ltvScheduledBatchs->Items->Count; i++) {
     //ltvScheduledBatchs->Selected = ltvScheduledBatchs->Items->Item[i];
     Application->ProcessMessages();
+    sText.printf("%s - Batch Queue [(%d of %d) %s]", sCurTitle.c_str(), i + 1, ltvScheduledBatchs->Items->Count,
+                 ExtractFileName(ltvScheduledBatchs->Items->Item[i]->Caption).c_str());
+    Application->Title = sText;
     //create process command line
     sCommandLine.sprintf("\"%s\" \"%s\"", // for testing in future -- need ability to have -v option for v4.0 and up
                         ltvScheduledBatchs->Items->Item[i]->Caption.c_str(),
@@ -68,6 +75,9 @@ void __fastcall TfrmQueueWindow::ActionStartBatchesExecute(TObject *Sender)  {
       
     Application->ProcessMessages();
   }
+  Application->Title = sCurTitle;
+  if (frmMain->gpFrmOptions->chkSuppressDosWindow->Checked || frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked)
+     Application->Restore();
 
 //  if (gbRunVersionComparison && !gsVersionComparisonApplication.empty() && !access(gsVersionComparisonApplication.c_str(), 00))
 //    RunVersionComparison();
