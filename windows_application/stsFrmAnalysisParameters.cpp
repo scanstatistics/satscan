@@ -488,8 +488,10 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION &&
       gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
     gParameters.SetSpatialAdjustmentType(NO_SPATIAL_ADJUSTMENT);
-    
   gParameters.SetExecutionType(AUTOMATIC);
+  //before version 6, critical values were always reported
+  if (gParameters.GetCreationVersion().iMajor < 6)
+    gParameters.SetReportCriticalValues(true);
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */
@@ -1387,6 +1389,11 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
     try {
       if (sParameterFileName)
         ParameterAccessCoordinator(gParameters).Read(sParameterFileName, gNullPrint);
+      else {
+        //New session - creation version is this version.
+        CParameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
+        gParameters.SetVersion(vVersion);
+      }
     }
     catch (ZdException &x) {
       x.SetLevel(ZdException::Notify);
