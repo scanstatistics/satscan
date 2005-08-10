@@ -2,6 +2,7 @@
 #include <vcl.h>
 #pragma hdrstop
 #include "Main.h"
+#include "QueueWindow.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -44,7 +45,8 @@ const char * TfrmMain::LASTAPPCOMPARATOR_DATA           = "LastComparatorOpenExe
 const char * TfrmMain::LASTAPP_DATA                     = "LastOpenExe";
 const char * TfrmMain::PARAMETER_DATA                   = "ParameterFile";
 const char * TfrmMain::COMPARE_APP_DATA                 = "CompareProgram";
-const char * TfrmMain::COMPARE_FILE_EXTENSION           = ".out.compare.txt";
+const char * TfrmMain::COMPARATOR_FILE_EXTENSION        = ".out.comparator.txt";
+const char * TfrmMain::COMPARE_FILE_EXTENSION           = ".out.in.question.txt";
 const char * TfrmMain::ARCHIVE_APP_DATA                 = "ArchiveApp";
 const char * TfrmMain::USE_ARCHIVE_APP_DATA             = "ArchivingResults";
 const char * TfrmMain::ARCHIVE_APP_OPTIONS_DATA         = "ArchiveOptions";
@@ -174,7 +176,7 @@ void __fastcall TfrmMain::ActionCompareClusterInformationExecute(TObject *Sender
   const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
   GetResultFileName(Ref, sMaster);
   sMaster.insert(sMaster.find_last_of("."),".col");
-  GetCompareFilename(Ref, sCompare);
+  GetInQuestionFilename(Ref, sCompare);
   sCompare.insert(sCompare.find_last_of("."),".col");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
@@ -197,7 +199,7 @@ void __fastcall TfrmMain::ActionCompareLocationInformationExecute(TObject *Sende
   const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
   GetResultFileName(Ref, sMaster);
   sMaster.insert(sMaster.find_last_of("."),".gis");
-  GetCompareFilename(Ref, sCompare);
+  GetInQuestionFilename(Ref, sCompare);
   sCompare.insert(sCompare.find_last_of("."),".gis");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
@@ -220,7 +222,7 @@ void __fastcall TfrmMain::ActionCompareRelativeRisksExecute(TObject *Sender) {
   const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
   GetResultFileName(Ref, sMaster);
   sMaster.insert(sMaster.find_last_of("."),".rr");
-  GetCompareFilename(Ref, sCompare);
+  GetInQuestionFilename(Ref, sCompare);
   sCompare.insert(sCompare.find_last_of("."),".rr");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
@@ -243,7 +245,7 @@ void __fastcall TfrmMain::ActionCompareSimulatedLLRsExecute(TObject *Sender) {
   const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
   GetResultFileName(Ref, sMaster);
   sMaster.insert(sMaster.find_last_of("."),".llr");
-  GetCompareFilename(Ref, sCompare);
+  GetInQuestionFilename(Ref, sCompare);
   sCompare.insert(sCompare.find_last_of("."),".llr");
   //launch comparison program
   sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
@@ -265,7 +267,7 @@ void __fastcall TfrmMain::ActionCompareResultFilesExecute(TObject *Sender) {
 
   //launch comparison program
   const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
-  sParameters.sprintf("\"%s\" \"%s\"", GetResultFileName(Ref, sMaster).c_str(), GetCompareFilename(Ref, sCompare).c_str());
+  sParameters.sprintf("\"%s\" \"%s\"", GetResultFileName(Ref, sMaster).c_str(), GetInQuestionFilename(Ref, sCompare).c_str());
   HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
   if ((int)hInst <= 32)
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
@@ -283,7 +285,7 @@ void __fastcall TfrmMain::ActionDeleteAnalysesFilesExecute(TObject *Sender) {
 
     //delete results file
     remove(GetResultFileName(Ref.GetFilename(), sMaster).c_str());
-    remove(GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
+    remove(GetInQuestionFilename(Ref.GetFilename(), sCompare).c_str());
     //delete cluster information file
     sDeleteMe = sMaster;
     sDeleteMe.insert(sDeleteMe.find_last_of("."),".col");
@@ -397,7 +399,7 @@ void __fastcall TfrmMain::ActionSaveParametersListExecute(TObject *Sender){
 
 /** starts process of comparing output files */
 void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
-   std::string  sBuffer, sCompareFilename;
+   std::string  sBuffer, sComparatorFilename, sCompareFilename;
    AnsiString   sCommand, sCurTitle, sText;
    int          iItemIndex=0;
    TDateTime    StartDate;
@@ -427,15 +429,18 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
           continue;
         }
 
+        //get filename that will be the result file
+        GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sComparatorFilename);
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\"",
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"",
                         edtBatchExecutableComparatorName->Text.c_str(),
-                        gvParameterResultsInfo.back().GetFilenameString());
+                        gvParameterResultsInfo.back().GetFilenameString(),
+                        sComparatorFilename.c_str());
         if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
           Application->ProcessMessages();
           _sleep(2);
           //get filename that will be the result file created for comparison
-          GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
+          GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
           //Execute SatScan using the current Parameter file, but set commandline options for version check
           sCommand.printf("\"%s\" \"%s\" -o \"%s\"",
                           edtBatchExecutableName->Text.c_str(),
@@ -600,7 +605,7 @@ void TfrmMain::ArchiveResults() {
                      gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
                      sArchiveFilename.c_str(),
                      GetResultFileName(Ref.GetFilename(), sMaster).c_str(),
-                     GetCompareFilename(Ref.GetFilename(), sCompare).c_str());
+                     GetInQuestionFilename(Ref.GetFilename(), sCompare).c_str());
     if (Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked) && gpFrmOptions->chkDeleteFileAfterArchiving->Checked) {
       remove(sMaster.c_str());
       remove(sCompare.c_str());
@@ -696,7 +701,7 @@ void TfrmMain::CompareClusterInformationFiles() {
   std::string     sMaster, sCompare;
 
   GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
 
   sMaster.insert(sMaster.find_last_of("."),".col");
   sCompare.insert(sCompare.find_last_of("."),".col");
@@ -718,7 +723,7 @@ void TfrmMain::CompareLocationInformationFiles() {
   std::string     sMaster, sCompare;
 
   GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
 
   sMaster.insert(sMaster.find_last_of("."),".gis");
   sCompare.insert(sCompare.find_last_of("."),".gis");
@@ -757,7 +762,7 @@ void TfrmMain::CompareRelativeRisksInformationFiles() {
   }
   else {
     GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-    GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+    GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
 
     sMaster.insert(sMaster.find_last_of("."),".rr");
     sCompare.insert(sCompare.find_last_of("."),".rr");
@@ -780,7 +785,7 @@ void TfrmMain::CompareSimulatedRatiosFiles() {
   std::string     sMaster, sCompare;
 
   GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
 
   sMaster.insert(sMaster.find_last_of("."),".llr");
   sCompare.insert(sCompare.find_last_of("."),".llr");
@@ -825,7 +830,7 @@ void TfrmMain::CompareTimes() {
 
   GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
   bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
-  GetCompareFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
   GetRunTime(sCompare.c_str(), uHoursC, uMinutesC, uSecondsC);
 
   if (!bMasterDate)
@@ -982,9 +987,9 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed, DWORD wT
                      &si,                                          //Pointer to STARTUPINFO structure.
                      &pi))                                       //Pointer to PROCESS_INFORMATION structure.
      {
-      memMessages->Lines->Add("Process create failed!");
-      memMessages->Lines->Add(sCommandLine.c_str());
-      memMessages->Lines->Add("");
+      //memMessages->Lines->Add("Process create failed!");
+      //memMessages->Lines->Add(sCommandLine.c_str());
+      //memMessages->Lines->Add("");
      }
 
    //Wait until child process exits.
@@ -997,8 +1002,19 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed, DWORD wT
 
    return (lProcessTerminationStatus == 0 ? true : false);
 }
+
 /** Gets filename of file that will be the alternate results to compare to original */
-std::string & TfrmMain::GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
+std::string & TfrmMain::GetComparatorFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
+  //defined alternate results filename -- this will be the new file we will compare against
+  sResultFilename = ParameterFilename.GetLocation();
+  sResultFilename += ParameterFilename.GetFileName();
+  sResultFilename += COMPARATOR_FILE_EXTENSION;
+
+  return sResultFilename;
+}
+
+/** Gets filename of file that will be the alternate results to compare to original */
+std::string & TfrmMain::GetInQuestionFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
   //defined alternate results filename -- this will be the new file we will compare against
   sResultFilename = ParameterFilename.GetLocation();
   sResultFilename += ParameterFilename.GetFileName();
@@ -1033,27 +1049,28 @@ AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
 /** Sets result filename as specified by parameter file. If path is missing from
     filename, path of parameter file is inserted as path of result file. */
 std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
-  int   count=0;
-
-  //Determine the location of master results file
-  ZdIniFile IniFile(ParameterFilename.GetFullPath());
-  if (IniFile.GetNumSections()) {
-    sResultFilename = IniFile.GetSection("[Output Files]")->GetString("ResultsFile");
-    if (sResultFilename.empty())
-      sResultFilename = IniFile.GetSection("[Output]")->GetString("ResultsFile");
-  }
-  else {
-    //open parameter file and scan to the 6th line, which is the results filename
-    ifstream ParameterFile(ParameterFilename.GetFullPath(), ios::in);
-    while (++count < 7)
-         std::getline(ParameterFile, sResultFilename);
-  }
-
-  //complete path if only filename specified
-  if (sResultFilename.find("\\") == sResultFilename.npos)
-    sResultFilename.insert(0, ParameterFilename.GetLocation());
-
-  return sResultFilename;
+  return GetComparatorFilename(ParameterFilename, sResultFilename);
+//  int   count=0;
+//
+//  //Determine the location of master results file
+//  ZdIniFile IniFile(ParameterFilename.GetFullPath());
+//  if (IniFile.GetNumSections()) {
+//    sResultFilename = IniFile.GetSection("[Output Files]")->GetString("ResultsFile");
+//    if (sResultFilename.empty())
+//      sResultFilename = IniFile.GetSection("[Output]")->GetString("ResultsFile");
+//  }
+//  else {
+//    //open parameter file and scan to the 6th line, which is the results filename
+//    ifstream ParameterFile(ParameterFilename.GetFullPath(), ios::in);
+//    while (++count < 7)
+//        std::getline(ParameterFile, sResultFilename);
+//  }
+//
+//  //complete path if only filename specified
+//  if (sResultFilename.find("\\") == sResultFilename.npos)
+//    sResultFilename.insert(0, ParameterFilename.GetLocation());
+//
+//  return sResultFilename;
 }
 
 /** parses out analysis time for execution string from results file */
@@ -1144,4 +1161,25 @@ bool TfrmMain::PromptForCompareProgram() {
   }
   return true;
 }
+
+void __fastcall TfrmMain::btnExecuteQueueComparatorClick(TObject *Sender) {
+  std::auto_ptr<TfrmQueueWindow> pDialog(new TfrmQueueWindow(this));
+
+  for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
+     pDialog->AddBatch(edtBatchExecutableComparatorName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
+
+  pDialog->ActionStartBatchesExecute(this);
+//  pDialog->ShowModal();
+}
+//---------------------------------------------------------------------------
+void __fastcall TfrmMain::btnExecuteQueueQuestionClick(TObject *Sender) {
+  std::auto_ptr<TfrmQueueWindow> pDialog(new TfrmQueueWindow(this));
+
+  for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
+     pDialog->AddBatch(edtBatchExecutableName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
+
+  pDialog->ActionStartBatchesExecute(this);
+//  pDialog->ShowModal();
+}
+//---------------------------------------------------------------------------
 

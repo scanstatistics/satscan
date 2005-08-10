@@ -407,8 +407,80 @@ object frmMain: TfrmMain
       ParentShowHint = False
       ShowHint = True
     end
-    object ToolButton2: TToolButton
+    object ToolButton6: TToolButton
       Left = 35
+      Top = 2
+      Width = 12
+      Caption = 'ToolButton6'
+      ImageIndex = 7
+      Style = tbsSeparator
+    end
+    object btnExecuteQueueComparator: TSpeedButton
+      Left = 47
+      Top = 2
+      Width = 23
+      Height = 23
+      Hint = 'Run Comparator Executable in Queue'
+      Glyph.Data = {
+        DE010000424DDE01000000000000760000002800000024000000120000000100
+        04000000000068010000C40E0000C40E00001000000000000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+        6666666666666F6666666666000066999636666666666666999686F666666666
+        0000669666306666666666669666886F66666666000066966663066666666666
+        96666886F6666666000066999663B066666666669996F8F86F66666600006666
+        63000F06666666666668888686F666660000666663FBFBF06666666666686F66
+        686F666600006666663FB0333666666666668F688886666600006666663BFB06
+        6666666666FF8FF686F66666000066630000BFB06666666668888866686F6666
+        00006663FBFBFBFB06666666686F6666668F6666000066663FBFB03336666666
+        668F666888866666000066663BFBFB06666666666686F66686F6666600006666
+        63BFBFB0666666666668F666686F66660000666663FBFBFB0666666666686F66
+        6686F66600006666663FBFBFB066666666668FFFFFF8FF660000666666333333
+        3336666666668888888886660000666666666666666666666666666666666666
+        0000}
+      NumGlyphs = 2
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = btnExecuteQueueComparatorClick
+    end
+    object ToolButton8: TToolButton
+      Left = 70
+      Top = 2
+      Width = 12
+      Caption = 'ToolButton8'
+      ImageIndex = 8
+      Style = tbsSeparator
+    end
+    object btnExecuteQueueQuestion: TSpeedButton
+      Left = 82
+      Top = 2
+      Width = 23
+      Height = 23
+      Hint = 'Run In Question Executable in Queue'
+      Glyph.Data = {
+        DE010000424DDE01000000000000760000002800000024000000120000000100
+        04000000000068010000C40E0000C40E00001000000000000000000000000000
+        80000080000000808000800000008000800080800000C0C0C000808080000000
+        FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00666666666666
+        6666666666666F6666666666000066696636666666666666696686F666666666
+        0000666666306666666666666666886F66666666000066696663066666666666
+        69666886F6666666000066699663B066666666666996F8F86F66666600006966
+        93000F06666666696698888686F666660000669963FBFBF06666666699686F66
+        686F666600006666663FB0333666666666668F688886666600006666663BFB06
+        6666666666FF8FF686F66666000066630000BFB06666666668888866686F6666
+        00006663FBFBFBFB06666666686F6666668F6666000066663FBFB03336666666
+        668F666888866666000066663BFBFB06666666666686F66686F6666600006666
+        63BFBFB0666666666668F666686F66660000666663FBFBFB0666666666686F66
+        6686F66600006666663FBFBFB066666666668FFFFFF8FF660000666666333333
+        3336666666668888888886660000666666666666666666666666666666666666
+        0000}
+      NumGlyphs = 2
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = btnExecuteQueueQuestionClick
+    end
+    object ToolButton2: TToolButton
+      Left = 105
       Top = 2
       Width = 12
       Caption = 'ToolButton2'
@@ -416,7 +488,7 @@ object frmMain: TfrmMain
       Style = tbsSeparator
     end
     object sbtnSaveComparisonResults: TSpeedButton
-      Left = 47
+      Left = 117
       Top = 2
       Width = 23
       Height = 23
@@ -443,7 +515,7 @@ object frmMain: TfrmMain
       ShowHint = True
     end
     object ToolButton3: TToolButton
-      Left = 70
+      Left = 140
       Top = 2
       Width = 12
       Caption = 'ToolButton3'
@@ -451,7 +523,7 @@ object frmMain: TfrmMain
       Style = tbsSeparator
     end
     object btnOptions: TToolButton
-      Left = 82
+      Left = 152
       Top = 2
       Action = ActionOptions
       ImageIndex = 4
@@ -459,7 +531,7 @@ object frmMain: TfrmMain
       ShowHint = True
     end
     object ToolButton1: TToolButton
-      Left = 107
+      Left = 177
       Top = 2
       Width = 12
       Caption = 'ToolButton1'
@@ -467,7 +539,7 @@ object frmMain: TfrmMain
       Style = tbsSeparator
     end
     object btnDeleteAnlysesFiles: TToolButton
-      Left = 119
+      Left = 189
       Top = 2
       Action = ActionDeleteAnalysesFiles
       ImageIndex = 5

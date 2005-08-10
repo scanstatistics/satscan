@@ -128,6 +128,10 @@ __published:	// IDE-managed Components
         TAction *ActionDeleteAnalysesFiles;
         TAction *ActionViewParameters;
         TButton *Button1;
+        TToolButton *ToolButton6;
+        TToolButton *ToolButton8;
+        TSpeedButton *btnExecuteQueueComparator;
+        TSpeedButton *btnExecuteQueueQuestion;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -153,6 +157,8 @@ __published:	// IDE-managed Components
         void __fastcall ActionClearListExecute(TObject *Sender);
         void __fastcall ActionDeleteAnalysesFilesExecute(TObject *Sender);
         void __fastcall ActionViewParametersExecute(TObject *Sender);
+        void __fastcall btnExecuteQueueComparatorClick(TObject *Sender);
+        void __fastcall btnExecuteQueueQuestionClick(TObject *Sender);
    
   private:
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;
@@ -164,6 +170,7 @@ __published:	// IDE-managed Components
     static const char                 * LASTAPP_DATA;
     static const char                 * PARAMETER_DATA;
     static const char                 * COMPARE_APP_DATA;
+    static const char                 * COMPARATOR_FILE_EXTENSION;
     static const char                 * COMPARE_FILE_EXTENSION;
     static const char                 * ARCHIVE_APP_DATA;
     static const char                 * USE_ARCHIVE_APP_DATA;
@@ -172,8 +179,6 @@ __published:	// IDE-managed Components
     static const char                 * SUPPRESS_CONSOLE_DATA;
     static const char                 * THREAD_PRIORITY_CLASS_DATA;
     static const char                 * INACTIVE_MINIMIZED_CONSOLE_DATA;
-
-    TfrmOptions                       * gpFrmOptions;
 
     void                                AddList();
     void                                AddList(const char * sMessage);
@@ -193,8 +198,8 @@ __published:	// IDE-managed Components
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
     void                                EnableViewAction();
-    bool                                Execute(const AnsiString & sCommandLine, bool bWindowed=true, DWORD wThreadPriority=NORMAL_PRIORITY_CLASS, bool bInactiveMinimizedWindow=false);
-    std::string                       & GetCompareFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
+    std::string                       & GetComparatorFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
+    std::string                       & GetInQuestionFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     AnsiString                        & GetDisplayTime(AnsiString & sDisplay);
     std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     bool                                GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds);
@@ -203,6 +208,9 @@ __published:	// IDE-managed Components
   public:
      __fastcall TfrmMain(TComponent* Owner);
      __fastcall ~TfrmMain();
+
+    TfrmOptions                       * gpFrmOptions;
+    static bool                         Execute(const AnsiString & sCommandLine, bool bWindowed=true, DWORD wThreadPriority=NORMAL_PRIORITY_CLASS, bool bInactiveMinimizedWindow=false);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmMain *frmMain;
