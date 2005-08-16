@@ -8,6 +8,7 @@ USEFORM("Main.cpp", frmMain);
 USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEFORM("Options.cpp", frmOptions);
 USEFORM("QueueWindow.cpp", frmQueueWindow);
+USEFORM("QueueItemDefinition.cpp", frmBatchDefinition);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
