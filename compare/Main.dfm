@@ -51,16 +51,16 @@ object frmMain: TfrmMain
       object lblSaTScanBatchExecutableComparator: TLabel
         Left = 12
         Top = 7
-        Width = 193
+        Width = 237
         Height = 13
-        Caption = 'SaTScan Batch Application (comparator)'
+        Caption = 'SaTScan Batch Application (yardstick executable)'
       end
       object lblSaTScanBatchExecutable: TLabel
         Left = 12
         Top = 47
-        Width = 191
+        Width = 245
         Height = 13
-        Caption = 'SaTScan Batch Application (in question)'
+        Caption = 'SaTScan Batch Application (scrutinized executable)'
       end
       object edtBatchExecutableComparatorName: TEdit
         Left = 12
@@ -420,7 +420,7 @@ object frmMain: TfrmMain
       Top = 2
       Width = 23
       Height = 23
-      Hint = 'Run Comparator Executable in Queue'
+      Hint = 'Run Yardstick Executable in Queue'
       Glyph.Data = {
         DE010000424DDE01000000000000760000002800000024000000120000000100
         04000000000068010000C40E0000C40E00001000000000000000000000000000
@@ -456,7 +456,7 @@ object frmMain: TfrmMain
       Top = 2
       Width = 23
       Height = 23
-      Hint = 'Run In Question Executable in Queue'
+      Hint = 'Run Scrutinized Executable in Queue'
       Glyph.Data = {
         DE010000424DDE01000000000000760000002800000024000000120000000100
         04000000000068010000C40E0000C40E00001000000000000000000000000000

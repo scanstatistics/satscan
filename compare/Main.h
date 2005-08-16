@@ -164,6 +164,7 @@ __published:	// IDE-managed Components
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;
     int                                 giSortColumnIndex;
     std::vector<int>                    gvColumnSortOrder;
+    TDateTime                           gStartDate;
 
     static const char                 * SCU_REGISTRY_KEY;
     static const char                 * LASTAPPCOMPARATOR_DATA;

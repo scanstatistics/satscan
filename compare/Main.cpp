@@ -45,8 +45,8 @@ const char * TfrmMain::LASTAPPCOMPARATOR_DATA           = "LastComparatorOpenExe
 const char * TfrmMain::LASTAPP_DATA                     = "LastOpenExe";
 const char * TfrmMain::PARAMETER_DATA                   = "ParameterFile";
 const char * TfrmMain::COMPARE_APP_DATA                 = "CompareProgram";
-const char * TfrmMain::COMPARATOR_FILE_EXTENSION        = ".out.comparator.txt";
-const char * TfrmMain::COMPARE_FILE_EXTENSION           = ".out.in.question.txt";
+const char * TfrmMain::COMPARATOR_FILE_EXTENSION        = ".out.yardstick.txt";
+const char * TfrmMain::COMPARE_FILE_EXTENSION           = ".out.scrutinized.txt";
 const char * TfrmMain::ARCHIVE_APP_DATA                 = "ArchiveApp";
 const char * TfrmMain::USE_ARCHIVE_APP_DATA             = "ArchivingResults";
 const char * TfrmMain::ARCHIVE_APP_OPTIONS_DATA         = "ArchiveOptions";
@@ -402,14 +402,15 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    std::string  sBuffer, sComparatorFilename, sCompareFilename;
    AnsiString   sCommand, sCurTitle, sText;
    int          iItemIndex=0;
-   TDateTime    StartDate;
 
    if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
      Application->Minimize();
 
    //get start time of execution
-   StartDate = TDateTime::CurrentDateTime();
-
+   gStartDate = TDateTime::CurrentDateTime();
+   DateSeparator = '/';
+   TimeSeparator = ':';
+   
    memMessages->Clear();
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
@@ -470,9 +471,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
      ArchiveResults();
    EnableSaveResultsAction();
    //print execution time to message window
-   DateSeparator = '/';
-   TimeSeparator = ':';
-   sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(StartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+   sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(gStartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
    memMessages->Lines->Add(sCommand);
    memMessages->SelStart = 0;
    if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
@@ -826,7 +825,8 @@ void TfrmMain::CompareTimes() {
   bool                  bMasterDate;
   unsigned short        uHoursM, uMinutesM, uSecondsM, uHoursC, uMinutesC, uSecondsC;
   std::string           sMaster, sCompare;
-  float                 fMasterTimeInMinutes, fComareTimeInMinutes;
+//  float                 fMasterTimeInMinutes, fComareTimeInMinutes;
+  double                dMasterTimeInSeconds, dComareTimeInSeconds;
 
   GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
   bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
@@ -836,27 +836,30 @@ void TfrmMain::CompareTimes() {
   if (!bMasterDate)
     gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, INCOMPLETE);
   else {
-    fMasterTimeInMinutes = (float)(uHoursM) * 60 + (float)uMinutesM + (float)(uSecondsM)/60;
-    fComareTimeInMinutes = (float)(uHoursC) * 60 + (float)uMinutesC + (float)(uSecondsC)/60;
+//    fMasterTimeInMinutes = (float)(uHoursM) * 60 + (float)uMinutesM + (float)(uSecondsM)/60;
+//    fComareTimeInMinutes = (float)(uHoursC) * 60 + (float)uMinutesC + (float)(uSecondsC)/60;
 
-    if (fMasterTimeInMinutes == fComareTimeInMinutes) {
+    dMasterTimeInSeconds = (double)(uHoursM) * 3600.0 + (double)uMinutesM * 60.0 + (double)(uSecondsM);
+    dComareTimeInSeconds = (double)(uHoursC) * 3600.0 + (double)uMinutesC * 60.0 + (double)(uSecondsC);
+
+    if (dMasterTimeInSeconds == dComareTimeInSeconds) {
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SAME);
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(0);
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(0.0);
     }
-    else if (fMasterTimeInMinutes > fComareTimeInMinutes) {
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - fComareTimeInMinutes/fMasterTimeInMinutes);
-      fMasterTimeInMinutes = fMasterTimeInMinutes - fComareTimeInMinutes;
-      uHoursM = fMasterTimeInMinutes/60;
-      uMinutesM = fMasterTimeInMinutes - uHoursM * 60;
-      uSecondsM = (float)(fMasterTimeInMinutes - uHoursM * 60 - uMinutesM) * 60;
+    else if (dMasterTimeInSeconds > dComareTimeInSeconds) {
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - dComareTimeInSeconds/dMasterTimeInSeconds);
+      dMasterTimeInSeconds = dMasterTimeInSeconds - dComareTimeInSeconds;
+      uHoursM = dMasterTimeInSeconds/3600.0;
+      uMinutesM = (dMasterTimeInSeconds - uHoursM * 3600.0)/60.0;
+      uSecondsM = (double)(dMasterTimeInSeconds - uHoursM * 3600 - uMinutesM * 60);
       gvParameterResultsInfo.back().SetTimeDifference(uHoursM, uMinutesM, uSecondsM, FASTER);
     }
     else {
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - fMasterTimeInMinutes/fComareTimeInMinutes);
-      fComareTimeInMinutes = fComareTimeInMinutes - fMasterTimeInMinutes;
-      uHoursC = fComareTimeInMinutes/60;
-      uMinutesC = fComareTimeInMinutes - uHoursC * 60;
-      uSecondsC = (float)(fComareTimeInMinutes - uHoursC * 60 - uMinutesC) * 60;
+      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - dMasterTimeInSeconds/dComareTimeInSeconds);
+      dComareTimeInSeconds = dComareTimeInSeconds - dMasterTimeInSeconds;
+      uHoursC = dComareTimeInSeconds/3600.0;
+      uMinutesC = (dComareTimeInSeconds - uHoursC * 3600.0)/60.0;
+      uSecondsC = (double)(dComareTimeInSeconds - uHoursC * 3600 - uMinutesC * 60);
       gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SLOWER);
     }
   }
@@ -1008,6 +1011,10 @@ std::string & TfrmMain::GetComparatorFilename(const ZdFileName & ParameterFilena
   //defined alternate results filename -- this will be the new file we will compare against
   sResultFilename = ParameterFilename.GetLocation();
   sResultFilename += ParameterFilename.GetFileName();
+  sResultFilename += ".";
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sResultFilename += DateTimeToStr(gStartDate).c_str();
   sResultFilename += COMPARATOR_FILE_EXTENSION;
 
   return sResultFilename;
@@ -1018,6 +1025,10 @@ std::string & TfrmMain::GetInQuestionFilename(const ZdFileName & ParameterFilena
   //defined alternate results filename -- this will be the new file we will compare against
   sResultFilename = ParameterFilename.GetLocation();
   sResultFilename += ParameterFilename.GetFileName();
+  sResultFilename += ".";
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sResultFilename += DateTimeToStr(gStartDate).c_str();  
   sResultFilename += COMPARE_FILE_EXTENSION;
 
   return sResultFilename;
@@ -1027,19 +1038,19 @@ std::string & TfrmMain::GetInQuestionFilename(const ZdFileName & ParameterFilena
 AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
   const ParameterResultsInfo & Ref = gvParameterResultsInfo.back();
   switch (Ref.GetTimeDifferenceType()) {
-    case INCOMPLETE : sDisplay.printf("%i hr %i min % i sec - ?", Ref.GetHoursDifferent(),
+    case INCOMPLETE : sDisplay.printf("%i hr %i min % i sec (?)", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
                       break;
-    case SLOWER     : sDisplay.printf("%i hr %i min % i sec slower (%.2f)", Ref.GetHoursDifferent(),
+    case SLOWER     : sDisplay.printf("%i hr %i min % i sec (%.2f%% slower)", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
-                                      Ref.GetTimeDifferencePercentage());
+                                      Ref.GetTimeDifferencePercentage() * 100.0);
                       break;
-    case SAME       : sDisplay.printf("%i hr %i min % i sec - same time", Ref.GetHoursDifferent(),
+    case SAME       : sDisplay.printf("%i hr %i min % i sec (same time)", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
                       break;
-    case FASTER     : sDisplay.printf("%i hr %i min % i sec faster (%.2f)", Ref.GetHoursDifferent(),
+    case FASTER     : sDisplay.printf("%i hr %i min % i sec (%.2f%% faster)", Ref.GetHoursDifferent(),
                                       Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
-                                      Ref.GetTimeDifferencePercentage());
+                                      Ref.GetTimeDifferencePercentage() * 100.0);
                       break;
     //default : error
   };
@@ -1050,27 +1061,6 @@ AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
     filename, path of parameter file is inserted as path of result file. */
 std::string & TfrmMain::GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename) {
   return GetComparatorFilename(ParameterFilename, sResultFilename);
-//  int   count=0;
-//
-//  //Determine the location of master results file
-//  ZdIniFile IniFile(ParameterFilename.GetFullPath());
-//  if (IniFile.GetNumSections()) {
-//    sResultFilename = IniFile.GetSection("[Output Files]")->GetString("ResultsFile");
-//    if (sResultFilename.empty())
-//      sResultFilename = IniFile.GetSection("[Output]")->GetString("ResultsFile");
-//  }
-//  else {
-//    //open parameter file and scan to the 6th line, which is the results filename
-//    ifstream ParameterFile(ParameterFilename.GetFullPath(), ios::in);
-//    while (++count < 7)
-//        std::getline(ParameterFile, sResultFilename);
-//  }
-//
-//  //complete path if only filename specified
-//  if (sResultFilename.find("\\") == sResultFilename.npos)
-//    sResultFilename.insert(0, ParameterFilename.GetLocation());
-//
-//  return sResultFilename;
 }
 
 /** parses out analysis time for execution string from results file */
@@ -1168,8 +1158,8 @@ void __fastcall TfrmMain::btnExecuteQueueComparatorClick(TObject *Sender) {
   for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
      pDialog->AddBatch(edtBatchExecutableComparatorName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
 
-  pDialog->ActionStartBatchesExecute(this);
-//  pDialog->ShowModal();
+//  pDialog->ActionStartBatchesExecute(this);
+  pDialog->ShowModal();
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMain::btnExecuteQueueQuestionClick(TObject *Sender) {
@@ -1178,8 +1168,8 @@ void __fastcall TfrmMain::btnExecuteQueueQuestionClick(TObject *Sender) {
   for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
      pDialog->AddBatch(edtBatchExecutableName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
 
-  pDialog->ActionStartBatchesExecute(this);
-//  pDialog->ShowModal();
+//  pDialog->ActionStartBatchesExecute(this);
+  pDialog->ShowModal();
 }
 //---------------------------------------------------------------------------
 
