@@ -128,6 +128,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case REPORT_CRITICAL_VALUES   : return " report critical values for .01 and .05? (y/n)";
       case EXECUTION_TYPE           : return " analysis execution method  (Automatic=0, Successively=1, Centrically=2)";
       case NUM_PROCESSES            : return " number of parallel processes to execute (All Processors=0, At Most X Processors=x)";
+      case LOG_HISTORY              : return " log analysis run to history file? (y/n)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -222,6 +223,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case REPORT_CRITICAL_VALUES   : return AsString(s, gParameters.GetReportCriticalValues());
       case EXECUTION_TYPE           : return AsString(s, gParameters.GetExecutionType());
       case NUM_PROCESSES            : return AsString(s, gParameters.GetNumRequestedParallelProcesses());
+      case LOG_HISTORY              : return AsString(s, gParameters.GetIsLoggingHistory());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -314,6 +316,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case REPORT_CRITICAL_VALUES   : sDefaultValue = (gParameters.GetReportCriticalValues() ? "y" : "n"); break;
       case EXECUTION_TYPE           : sDefaultValue = gParameters.GetExecutionType(); break;
       case NUM_PROCESSES            : sDefaultValue << gParameters.GetNumRequestedParallelProcesses(); break;
+      case LOG_HISTORY              : sDefaultValue = (gParameters.GetIsLoggingHistory() ? "y" : "n"); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -667,6 +670,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case EXECUTION_TYPE            : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, AUTOMATIC, CENTRICALLY);
                                        gParameters.SetExecutionType((ExecutionType)iValue); break;
       case NUM_PROCESSES             : gParameters.SetNumParallelProcessesToExecute(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case LOG_HISTORY               : gParameters.SetIsLoggingHistory(ReadBoolean(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

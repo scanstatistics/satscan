@@ -247,6 +247,7 @@ void IniParameterSpecification::Build_6_0_x_ParameterList() {
   gvParameterInfo[RANDOMIZATION_SEED - 1] = std::make_pair(RunOptions, (const char*)"RandomSeed");
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"ExecutionType"));
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"NumberParallelProcesses"));
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"LogRunToHistoryFile"));
 }
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */

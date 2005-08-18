@@ -50,7 +50,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     gParameters.SetAsDefaulted();
     gParameters.SetSourceFileName(sFilename);
 
-    for (ParameterType eType=ANALYSISTYPE; eType <= NUM_PROCESSES; eType = ParameterType(eType + 1))
+    for (ParameterType eType=ANALYSISTYPE; eType <= gParameters.giNumParameters; eType = ParameterType(eType + 1))
        ReadIniParameter(SourceFile, eType);
     ReadMultipleDataSetsSettings(SourceFile);
   }
@@ -397,6 +397,7 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
     //WriteIniParameter(WriteFile, TIMETRENDCONVRG, GetParameterString(TIMETRENDCONVRG, s), GetParameterComment(TIMETRENDCONVRG));  //---  until SVTT is available, don't write
     WriteIniParameter(WriteFile, EXECUTION_TYPE, GetParameterString(EXECUTION_TYPE, s), GetParameterComment(EXECUTION_TYPE));
     WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s), GetParameterComment(NUM_PROCESSES));
+    WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s), GetParameterComment(LOG_HISTORY));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");

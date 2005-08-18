@@ -92,6 +92,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case REPORT_CRITICAL_VALUES    : return "Report Critical Value (line 70)";
       case EXECUTION_TYPE            : return "Analysis Execution Type (line 71)";
       case NUM_PROCESSES             : return "Number Parallel Processes (line 72)";
+      case LOG_HISTORY               : return "Log Run to History File (line 73)";   
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
@@ -203,7 +204,7 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
     if (!parameters)
       GenerateResolvableException("Error: Could not open parameter file '%s' for write.\n", "Write()", sFilename);
 
-    for (int eParameterType=ANALYSISTYPE; eParameterType <= NUM_PROCESSES; ++eParameterType) {
+    for (int eParameterType=ANALYSISTYPE; eParameterType <= gParameters.giNumParameters; ++eParameterType) {
        parameters << GetParameterString((ParameterType)eParameterType, s).GetCString();
        //Don't write comment string for parameters which specify filenames -- problem for read
        if (!((ParameterType)eParameterType == CASEFILE || (ParameterType)eParameterType == POPFILE ||
