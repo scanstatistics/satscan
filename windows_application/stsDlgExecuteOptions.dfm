@@ -4,7 +4,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Session Execution Options'
-  ClientHeight = 94
+  ClientHeight = 131
   ClientWidth = 282
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
     Left = 204
     Top = 0
     Width = 78
-    Height = 94
+    Height = 131
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 0
@@ -48,7 +48,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
     Left = 0
     Top = 0
     Width = 204
-    Height = 94
+    Height = 131
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -57,7 +57,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
       Top = 12
       Width = 185
       Height = 77
-      Anchors = [akLeft, akTop, akRight, akBottom]
+      Anchors = [akLeft, akTop, akRight]
       Caption = 'Parallel Proccessors'
       TabOrder = 0
       object rdoAllProcessors: TRadioButton
@@ -93,7 +93,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
         Left = 69
         Top = 24
         Width = 34
-        Height = 16
+        Height = 21
         Anchors = [akBottom]
         MaxLength = 3
         TabOrder = 3
@@ -102,6 +102,16 @@ object dlgExecutionOptions: TdlgExecutionOptions
         OnExit = edtAtMostProcessesExit
         OnKeyPress = edtAtMostProcessesKeyPress
       end
+    end
+    object chkLogRunHistory: TCheckBox
+      Left = 8
+      Top = 104
+      Width = 185
+      Height = 17
+      Caption = 'Log Analysis to History File'
+      Checked = True
+      State = cbChecked
+      TabOrder = 1
     end
   end
 end

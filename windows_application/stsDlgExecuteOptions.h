@@ -23,6 +23,7 @@ class TdlgExecutionOptions : public TForm {
     TEdit *edtAtMostProcesses;
     TButton *btnOk;
     TButton *btnCancel;
+        TCheckBox *chkLogRunHistory;
     void __fastcall btnOkClick(TObject *Sender);
     void __fastcall edtAtMostProcessesAssociatedControlClick(TObject *Sender);
     void __fastcall edtAtMostProcessesExit(TObject *Sender);
