@@ -578,7 +578,9 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
       };
     }
     if (!gParameters.GetValidatingParameters())
-      fprintf(fp, "  Validate Parameters :  No\n");
+      fprintf(fp, "  Validate Parameters : No\n");
+    if (!gParameters.GetIsLoggingHistory())
+      fprintf(fp, "  Analysis Logged     : No\n");
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
