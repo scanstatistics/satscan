@@ -438,8 +438,8 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
                         gvParameterResultsInfo.back().GetFilenameString(),
                         sComparatorFilename.c_str());
         if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
-          Application->ProcessMessages();
-          _sleep(2);
+          //Application->ProcessMessages();
+          //_sleep(2);
           //get filename that will be the result file created for comparison
           GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
           //Execute SatScan using the current Parameter file, but set commandline options for version check
@@ -462,7 +462,7 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
         else
           AddList("Comparator Program Failed/Cancelled");
         Application->ProcessMessages();
-        _sleep(2);
+        //_sleep(2);
         iItemIndex++;
    }
    Application->Title = sCurTitle;
