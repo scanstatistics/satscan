@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 72;
+const int CParameters::giNumParameters 	              = 73;
 
 /** Constructor */
 CParameters::CParameters() {
