@@ -236,7 +236,6 @@ void CalcThread::Setup(const CParameters& Parameters) {
     gpParameters = new CParameters(Parameters);
     gpPrintWindow = new PrintWindow(*this);
     gpParameters->SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
-    gpParameters->SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
     Priority = tpNormal;  
     FreeOnTerminate = false;
   }

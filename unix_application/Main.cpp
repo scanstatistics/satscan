@@ -56,7 +56,6 @@ int main(int argc, char *argv[]) {
          GenerateUsageException(argv[0]);
     }
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
-    Parameters.SetIsLoggingHistory(GetToolkit().GetLogRunHistory());
     //validate parameters - print errors to console
     if (! ParametersValidate(Parameters).Validate(ConsolePrint)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
