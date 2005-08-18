@@ -15,24 +15,32 @@ MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
-  if (Cluster.ClusterDefined()) {
+// NOTE: We could suppress adding undefined clusters to the internal list, but
+//       unfortunetly this causes inconsistency between outputs due to the call
+//       to qsort() before removing undefined clusters in the ranking process.
+
+//  if (Cluster.ClusterDefined()) {
     if (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       gptCluster.reset(Cluster.Clone());
     else {
       gvTopClusterList.push_back(0);
       gvTopClusterList.back() = Cluster.Clone();
     }
-  }
+//  }
 }
 
 /** Adds cluster object to list of top clusters, taking ownership. */
 void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
-  if (pCluster.get() && pCluster->ClusterDefined()) {
+// NOTE: We could suppress adding undefined clusters to the internal list, but
+//       unfortunetly this causes inconsistency between outputs due to the call
+//       to qsort() before removing undefined clusters in the ranking process.
+
+//  if (pCluster.get() && pCluster->ClusterDefined()) {
     if (pCluster->GetClusterType() == PURELYTEMPORALCLUSTER)
       gptCluster = pCluster;
-    else 
+    else
       gvTopClusterList.push_back(pCluster.release());
-  }
+//  }
 }
 
 //Does the point at 'theCentroid' lie within the spherical region described by
@@ -139,11 +147,13 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
     std::vector<double> vClusterOneCoords, vClusterTwoCoords;
     DataHub.GetGInfo()->giRetrieveCoords(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
     DataHub.GetGInfo()->giRetrieveCoords(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
-    //return false if combined radius of clusters is greater than or equal to the distance between centroids
-    if (ClusterOne.GetCartesianRadius() + ClusterTwo.GetCartesianRadius() < stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords)))
+    double dDistanceBetween = stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords));
+    //we can say for certain that they don't have tracts in common if their circles don't overlap
+    if (dDistanceBetween > ClusterOne.GetCartesianRadius() + ClusterTwo.GetCartesianRadius())
       return false;
-    //return true if center of second cluster within radius of first cluster
-    if (ClusterOne.GetCartesianRadius() >= stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords))) {
+    //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
+    //or vice versa, centroid of first cluster is within radius of second cluster
+    if (dDistanceBetween <= ClusterOne.GetCartesianRadius() || dDistanceBetween <= ClusterTwo.GetCartesianRadius()) {
       //if neighbors for secondard centroid where re-calculated, we can delete this data now
       DataHub.FreeNeighborInfo(tTwoCentroid);
       return true;
