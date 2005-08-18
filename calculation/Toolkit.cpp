@@ -92,12 +92,6 @@ void SaTScanToolkit::AddParameterToHistory(const char * sParameterFileName) {
   }
 }
 
-/** Returns indicator of run history logging. */
-bool SaTScanToolkit::GetLogRunHistory() const {
-  /** NOTE: This is not a requested feature, the hook is in place. */
-  return true;//GetSession().GetProperty(gsLoggingProperty)->GetBool(true);
-}
-
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
 const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {

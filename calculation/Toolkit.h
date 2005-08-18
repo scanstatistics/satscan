@@ -49,7 +49,6 @@ class SaTScanToolkit : public BToolkit {
    const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
    const char                 * GetLastDirectory() /*const*/;
-   bool                         GetLogRunHistory() const;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
    RunTimeComponentManager    & GetRunTimeComponentManager() { return gRunTimeComponentManager;}
