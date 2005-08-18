@@ -97,15 +97,16 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
     operator. */
 const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   tract_t               k;
-  CentroidNeighbors     CentroidDef;
 
   gTopShapeClusters.Reset(tCenter);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, gDataHub);
+     CentroidDef.Set(tCenter);
      gpClusterComparator->Initialize(tCenter);
      gpClusterComparator->SetEllipseOffset(k, gDataHub);
      gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway,
-                                                                     CentroidDef.Set(k, tCenter, gDataHub),
+                                                                     CentroidDef,
                                                                      gTopShapeClusters.GetTopCluster(k),
                                                                      *gpTimeIntervals);
   }
@@ -116,13 +117,15 @@ const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const A
 /** Returns log likelihood ratio for Monte Carlo replication. */
 double CSpaceTimeAnalysis::MonteCarlo(const DataSetInterface& Interface) {
   tract_t               k, i;
-  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     for (i=0; i < gDataHub.m_nGridTracts; ++i)
-        gpClusterData->AddNeighborDataAndCompare(CentroidDef.Set(k, i, gDataHub), Interface, *gpTimeIntervals, *gpMeasureList);
+     CentroidNeighbors CentroidDef(k, gDataHub);
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        CentroidDef.Set(i);
+        gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
+     }
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();

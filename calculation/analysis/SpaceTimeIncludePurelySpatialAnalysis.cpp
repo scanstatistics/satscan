@@ -86,7 +86,6 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway &
     either call Clone() method or overloaded assignment operator. */
 const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
   int                   j;
-  CentroidNeighbors     CentroidDef;
 
   //re-initialize clusters
   if (gpPSClusterComparator) gPSTopShapeClusters.Reset(tCenter);
@@ -94,7 +93,8 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abs
   gTopShapeClusters.Reset(tCenter);
 
   for (j=0 ;j <= gParameters.GetNumTotalEllipses(); ++j) {
-     CentroidDef.Set(j, tCenter, gDataHub);
+     CentroidNeighbors CentroidDef(j, gDataHub);
+     CentroidDef.Set(tCenter);
      gpClusterComparator->Initialize(tCenter);
      gpClusterComparator->SetEllipseOffset(j, gDataHub);
      if (gpPSClusterComparator) {
@@ -136,13 +136,13 @@ double C_ST_PS_Analysis::MonteCarlo(const DataSetInterface & Interface) {
     return MonteCarloProspective(Interface);
 
   tract_t               i, k;
-  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        CentroidDef.Set(k, i, gDataHub);
+        CentroidDef.Set(i);
         gpPSClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
         gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
      }
@@ -154,13 +154,13 @@ double C_ST_PS_Analysis::MonteCarlo(const DataSetInterface & Interface) {
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_Analysis::MonteCarloProspective(const DataSetInterface & Interface) {
   tract_t               k, i;
-  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        CentroidDef.Set(k, i, gDataHub);
+        CentroidDef.Set(i);
         gpPSPClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
         gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
      }

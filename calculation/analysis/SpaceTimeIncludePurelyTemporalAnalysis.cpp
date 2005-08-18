@@ -107,15 +107,17 @@ void C_ST_PT_Analysis::Init() {
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   tract_t               k, i;
-  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   //compare purely temporal cluster in same ratio correction as circle
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     for (i=0; i < gDataHub.m_nGridTracts; ++i)
-        gpClusterData->AddNeighborDataAndCompare(CentroidDef.Set(k, i, gDataHub), Interface, *gpTimeIntervals, *gpMeasureList);
+     CentroidNeighbors CentroidDef(k, gDataHub);
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        CentroidDef.Set(i);
+        gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
+     }
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();

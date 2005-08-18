@@ -66,14 +66,14 @@ void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbstractDataSetGat
     Clone() method or overloaded assignment operator. */
 const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   int                   j;
-  CentroidNeighbors     CentroidDef;
 
   gTopShapeClusters.Reset(tCenter);
   for (j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
+     CentroidNeighbors CentroidDef(j, gDataHub);
+     CentroidDef.Set(tCenter);
      gpClusterComparator->Initialize(tCenter);
      gpClusterComparator->SetEllipseOffset(j, gDataHub);
-     gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway,
-                                                                     CentroidDef.Set(j, tCenter, gDataHub),
+     gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef,
                                                                      gTopShapeClusters.GetTopCluster(j),
                                                                      *gpLikelihoodCalculator);
   }
@@ -83,12 +83,14 @@ const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, con
 /** Returns loglikelihood ratio for Monte Carlo replication. */
 double CPurelySpatialAnalysis::MonteCarlo(const DataSetInterface& Interface) {
   tract_t               k, i;
-  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     for (i=0; i < gDataHub.m_nGridTracts; ++i)
-        gpClusterData->AddMeasureList(CentroidDef.Set(k, i, gDataHub), Interface, gpMeasureList);
+     CentroidNeighbors CentroidDef(k, gDataHub);
+     for (i=0; i < gDataHub.m_nGridTracts; ++i) {
+        CentroidDef.Set(i);
+        gpClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
+     }
      gpMeasureList->SetForNextIteration(k);
   }
   return gpMeasureList->GetMaximumLogLikelihoodRatio();

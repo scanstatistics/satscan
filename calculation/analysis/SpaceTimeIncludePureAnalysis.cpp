@@ -105,7 +105,6 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
     return MonteCarloProspective(Interface);
 
   tract_t               k, i;
-  CentroidNeighbors     CentroidDef;
 
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
@@ -113,8 +112,9 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        CentroidDef.Set(k, i, gDataHub);
+        CentroidDef.Set(i);
         gpPSClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
         gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
      }
@@ -126,7 +126,6 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Interface) {
   tract_t                 k, i;
-  CentroidNeighbors       CentroidDef;
 
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
@@ -134,8 +133,9 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Inter
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-        CentroidDef.Set(k, i, gDataHub);
+        CentroidDef.Set(i);
         gpPSPClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
         gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
      }
