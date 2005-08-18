@@ -39,35 +39,28 @@ bool CompareLocationDistance::operator() (const LocationDistance& lhs, const Loc
 //******************************************************************************
 
 /** constructor */
-CentroidNeighbors::CentroidNeighbors() : gtCentroid(0), gtEllipseOffset(0), giNeighbors(0), giMaxNeighbors(0), giMaxReportedNeighbors(0),
-                                         gpSortedNeighborsIntegerType(0), gpSortedNeighborsUnsignedShortType(0) {}
+CentroidNeighbors::CentroidNeighbors()
+                  :gtCentroid(0), gtEllipseOffset(0), giNeighbors(0), giMaxNeighbors(0),
+                   giMaxReportedNeighbors(0), gpSortedNeighborsIntegerType(0),
+                   gpSortedNeighborsUnsignedShortType(0), gppSortedNeighborsIntegerType(0),
+                   gppSortedNeighborsUnsignedShortType(0), gpNeighborArray(0) {}
+
+/** constructor */
+CentroidNeighbors::CentroidNeighbors(tract_t tEllipseOffset, const CSaTScanData& DataHub)
+                  : gtCentroid(0), gtEllipseOffset(tEllipseOffset), giNeighbors(0), giMaxNeighbors(0),
+                    giMaxReportedNeighbors(0), gpSortedNeighborsIntegerType(0),
+                    gpSortedNeighborsUnsignedShortType(0), gppSortedNeighborsIntegerType(0),
+                    gppSortedNeighborsUnsignedShortType(0), gpNeighborArray(0) {
+                    
+  gpNeighborArray = DataHub.GetNeighborCountArray()[gtEllipseOffset];
+  if (DataHub.GetSortedArrayAsTract_T(tEllipseOffset))
+    gppSortedNeighborsIntegerType = DataHub.GetSortedArrayAsTract_T(gtEllipseOffset);
+  else
+    gppSortedNeighborsUnsignedShortType = DataHub.GetSortedArrayAsUShort_T(gtEllipseOffset);
+}
 
 /** destructor */
 CentroidNeighbors::~CentroidNeighbors() {}
-
-/** Sets class members to define locations about centroid index / ellipse index.
-    The neigbor information referenced is that of the 'sorted' array, so caller is
-    responsible for ensuring that:
-        1) sorted array is allocated and contains calculated neighbors about centroids
-        2) tEllipseOffset and tCentroid are valid indexes into sorted array
-        3) sorted array will persist until this object is destructed
-    Returns reference to self.*/
-CentroidNeighbors& CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, const CSaTScanData& DataHub) {
-  gtEllipseOffset = tEllipseOffset;
-  gtCentroid = tCentroid;
-  giNeighbors = giMaxNeighbors = giMaxReportedNeighbors = DataHub.GetNeighborCountArray()[tEllipseOffset][tCentroid];
-
-  if (DataHub.GetSortedArrayAsTract_T(tEllipseOffset)) {
-    gpSortedNeighborsIntegerType = DataHub.GetSortedArrayAsTract_T(tEllipseOffset)[tCentroid];
-    gpSortedNeighborsUnsignedShortType = 0;
-  }
-  else {
-    gpSortedNeighborsUnsignedShortType = DataHub.GetSortedArrayAsUShort_T(tEllipseOffset)[tCentroid];
-    gpSortedNeighborsIntegerType = 0;
-  }
-  
-  return *this;  
-}
 
 /** Sets class members to define locations about centroid index / ellipse index.
     The neighbor information referenced is that which is calculated by CentroidNeighborCalculator

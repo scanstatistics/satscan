@@ -53,22 +53,26 @@ class CentroidNeighbors {
     int                           giMaxReportedNeighbors;                 /* neighbor count - varible whch defines maximum for evaluation of real data */
     std::vector<tract_t>          gvSortedNeighborsIntegerType;           /* conditionally allocated integer vector of neighbor indexes */
     std::vector<unsigned short>   gvSortedNeighborsUnsignedShortType;     /* conditionally allocated unsigned short vector of neighbors indexes */
+    tract_t                    ** gppSortedNeighborsIntegerType;          /* pointer to integer array of neighbors indexes */
+    unsigned short             ** gppSortedNeighborsUnsignedShortType;    /* pointer to unsigned short array of neighbors indexes */
+    tract_t                     * gpNeighborArray;
     tract_t                     * gpSortedNeighborsIntegerType;           /* pointer to integer array of neighbors indexes */
     unsigned short              * gpSortedNeighborsUnsignedShortType;     /* pointer to unsigned short array of neighbors indexes */
 
-    void                Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, int iNumReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations);
+    void                        Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, int iNumReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations);
 
   public:
     CentroidNeighbors();
+    CentroidNeighbors(tract_t tEllipseOffset, const CSaTScanData& DataHub);
     ~CentroidNeighbors();
 
-    tract_t             GetEllipseIndex() const {return gtEllipseOffset;}
-    tract_t             GetCentroidIndex() const {return gtCentroid;}
-    inline tract_t      GetNeighborTractIndex(size_t tNeighborIndex) const;
-    inline int          GetNumNeighbors() const {return giNeighbors;}
-    CentroidNeighbors & Set(tract_t tEllipseOffset, tract_t tCentroid, const CSaTScanData& DataHub);
-    void                SetMaximumClusterSize_RealData() {giNeighbors = giMaxReportedNeighbors;}
-    void                SetMaximumClusterSize_SimulatedData() {giNeighbors = giMaxNeighbors;}
+    tract_t                     GetEllipseIndex() const {return gtEllipseOffset;}
+    tract_t                     GetCentroidIndex() const {return gtCentroid;}
+    inline tract_t              GetNeighborTractIndex(size_t tNeighborIndex) const;
+    inline int                  GetNumNeighbors() const {return giNeighbors;}
+    inline void                 Set(tract_t tCentroid);
+    void                        SetMaximumClusterSize_RealData() {giNeighbors = giMaxReportedNeighbors;}
+    void                        SetMaximumClusterSize_SimulatedData() {giNeighbors = giMaxNeighbors;}
 };
 
 /** Returns zero based tNeighborIndex'th nearest neighbor's tract index.
@@ -76,7 +80,24 @@ class CentroidNeighbors {
     set and 'tNeighborIndex' is within zero based range for defined neighbor information. */
 inline tract_t CentroidNeighbors::GetNeighborTractIndex(size_t tNeighborIndex) const {
  //assert(tNeighborIndex + 1 <= (size_t)giNeighbors && (gpSortedNeighborsUnsignedShortType || gpSortedNeighborsIntegerType));
- return (tract_t)(gpSortedNeighborsUnsignedShortType ? gpSortedNeighborsUnsignedShortType[tNeighborIndex] : gpSortedNeighborsIntegerType[tNeighborIndex]);
+ return (gpSortedNeighborsUnsignedShortType ? (tract_t)gpSortedNeighborsUnsignedShortType[tNeighborIndex] : gpSortedNeighborsIntegerType[tNeighborIndex]);
+}
+
+/** Sets class members to define locations about centroid index / ellipse index.
+    The neigbor information referenced is that of the 'sorted' array, so caller is
+    responsible for ensuring that:
+        1) sorted array is allocated and contains calculated neighbors about centroids
+        2) tEllipseOffset and tCentroid are valid indexes into sorted array
+        3) sorted array will persist until this object is destructed
+    Returns reference to self.*/
+inline void CentroidNeighbors::Set(tract_t tCentroid) {
+  gtCentroid = tCentroid;
+  giNeighbors = giMaxNeighbors = giMaxReportedNeighbors = gpNeighborArray[tCentroid];
+
+  if (gppSortedNeighborsIntegerType)
+    gpSortedNeighborsIntegerType = gppSortedNeighborsIntegerType[tCentroid];
+  else
+    gpSortedNeighborsUnsignedShortType = gppSortedNeighborsUnsignedShortType[tCentroid];
 }
 
 /** Calculates neighboring locations about centroids with versatility as to whether
