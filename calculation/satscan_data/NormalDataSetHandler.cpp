@@ -209,7 +209,7 @@ double NormalDataSetHandler::GetSimulationDataSetAllocationRequirements() const 
   return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
-bool NormalDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuosVariable) {
+bool NormalDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
@@ -246,23 +246,23 @@ bool NormalDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid
     if (!ConvertCountDateToJulian(Parser, nDate))
       return false;
 
-    // read continuos variable 
+    // read continuous variable
     if (!Parser.GetWord(3)) {
       gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(3), "%lf", &tContinuosVariable) != 1) {
-       gPrint.PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of %s, is not a number.\n",
+    if (sscanf(Parser.GetWord(3), "%lf", &tContinuousVariable) != 1) {
+       gPrint.PrintInputWarning("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
                                   Parser.GetWord(3), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
 //    //validate that population is not negative or exceeding type precision
-//    if (tContinuosVariable < 0) {//validate that count is not negative or exceeds type precision
+//    if (tContinuousVariable < 0) {//validate that count is not negative or exceeds type precision
 //      if (strstr(Parser.GetWord(3), "-"))
-//        gPrint.PrintInputWarning("Error: Negative continuos variable in record %ld of cases file.\n", Parser.GetReadCount());
+//        gPrint.PrintInputWarning("Error: Negative continuous variable in record %ld of cases file.\n", Parser.GetReadCount());
 //      else
-//        gPrint.PrintInputWarning("Error: Continuos variable '%s' exceeds maximum value of %i in record %ld of population file.\n",
+//        gPrint.PrintInputWarning("Error: Continuous variable '%s' exceeds maximum value of %i in record %ld of population file.\n",
 //                                   Parser.GetWord(3), std::numeric_limits<measure_t>::max(), Parser.GetReadCount());
 //      return false;
 //     }
@@ -284,7 +284,7 @@ bool NormalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* s
   tract_t       TractIndex;
   int           i;
   count_t       Count, ** ppCounts, tTotalCases=0;
-  measure_t     tContinuosVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
+  measure_t     tContinuousVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
@@ -295,7 +295,7 @@ bool NormalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* s
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuosVariable)) {
+           if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuousVariable)) {
              //cumulatively add count to time by location structure
              ppCounts[0][TractIndex] += Count;
              if (ppCounts[0][TractIndex] < 0)
@@ -307,10 +307,10 @@ bool NormalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* s
 //             DataSet.GetPopulationData().AddCaseCount(0, Count);
              if (gParameters.GetSimulationType() != FILESOURCE)
                for (i=0; i < Count; ++i)
-                 ((NormalRandomizer*)gvDataSetRandomizers[tSetIndex])->AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable);
+                 ((NormalRandomizer*)gvDataSetRandomizers[tSetIndex])->AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
 
              tTotalCases += Count;
-             tTotalMeasure += tContinuosVariable;
+             tTotalMeasure += tContinuousVariable;
            }
            else
              bValid = false;

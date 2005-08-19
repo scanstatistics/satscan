@@ -12,7 +12,7 @@ class ExponentialDataSetHandler : public DataSetHandler {
     virtual void                        AllocateCaseStructures(size_t tSetIndex);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
                                                           count_t& nCount, Julian& nDate,
-                                                          measure_t& tContinuosVariable,
+                                                          measure_t& tContinuousVariable,
                                                           count_t& tCensorAttribute);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
     virtual void                        SetRandomizers();

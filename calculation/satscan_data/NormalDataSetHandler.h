@@ -8,7 +8,7 @@
 class NormalDataSetHandler : public DataSetHandler {
   protected:
     virtual void                        AllocateCaseStructures(size_t tSetIndex);
-    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuosVariable);
+    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
     virtual void                        SetRandomizers();
 

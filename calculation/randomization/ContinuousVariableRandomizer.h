@@ -59,7 +59,7 @@ class NormalRandomizer : public ContinuousVariableRandomizer {
     virtual ~NormalRandomizer();
 
     virtual NormalRandomizer * Clone() const;
-    void                       AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable);
+    void                       AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable);
     void                       AssignMeasure(measure_t ** ppMeasure, measure_t ** ppSqMeasure, int iNumTimeIntervals, int iNumTracts);
 };
 
@@ -75,7 +75,7 @@ class RankRandomizer : public ContinuousVariableRandomizer {
     virtual ~RankRandomizer();
 
     virtual RankRandomizer * Clone() const;
-    void                     AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable);
+    void                     AddCase(int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable);
     void                     AssignMeasure(measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts);
 };
 //******************************************************************************

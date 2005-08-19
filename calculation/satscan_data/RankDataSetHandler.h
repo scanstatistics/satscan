@@ -10,7 +10,7 @@ class RankDataSetHandler : public DataSetHandler {
     virtual void                        AllocateCaseStructures(size_t iSetIndex);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
                                                           count_t& nCount, Julian& nDate,
-                                                          measure_t& tContinuosVariable);
+                                                          measure_t& tContinuousVariable);
     virtual bool                        ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescription);
     virtual void                        SetRandomizers();
 

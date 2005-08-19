@@ -37,7 +37,7 @@ class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
 
     virtual ExponentialRandomizer     * Clone() const;
 
-    void                                AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuosVariable, count_t tCensored);
+    void                                AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored);
     void                                Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts) const;
     void                                AssignCensoredIndividuals(TwoDimCountArray_t& tCensoredArray) const;
     std::vector<double>               & CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const;

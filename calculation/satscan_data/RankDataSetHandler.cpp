@@ -186,7 +186,7 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
 
 bool RankDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
                                               count_t& nCount, Julian& nDate,
-                                              measure_t& tContinuosVariable) {
+                                              measure_t& tContinuousVariable) {
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
@@ -223,14 +223,14 @@ bool RankDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
     if (!ConvertCountDateToJulian(Parser, nDate))
       return false;
 
-    // read continuos variable
+    // read continuous variable
     if (!Parser.GetWord(3)) {
-      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuos variable.\n",
+      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(3), "%lf", &tContinuosVariable) != 1) {
-       gPrint.PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of %s, is not a number.\n",
+    if (sscanf(Parser.GetWord(3), "%lf", &tContinuousVariable) != 1) {
+       gPrint.PrintInputWarning("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
                                   Parser.GetWord(3), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
@@ -252,7 +252,7 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
   tract_t       TractIndex;
   int           i;
   count_t       Count, tCensored, ** ppCounts, tTotalCases=0;
-  measure_t     tContinuosVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
+  measure_t     tContinuousVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
@@ -263,7 +263,7 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuosVariable)) {
+           if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuousVariable)) {
              //cumulatively add count to time by location structure
              ppCounts[0][TractIndex] += Count;
              if (ppCounts[0][TractIndex] < 0)
@@ -275,10 +275,10 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
 //             DataSet.GetPopulationData().AddCaseCount(0, Count);
              if (gParameters.GetSimulationType() != FILESOURCE)
                for (i=0; i < Count; ++i)
-                  ((RankRandomizer*)gvDataSetRandomizers[tSetIndex])->AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuosVariable);
+                  ((RankRandomizer*)gvDataSetRandomizers[tSetIndex])->AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
 
              tTotalCases += Count;
-             tTotalMeasure += tContinuosVariable;
+             tTotalMeasure += tContinuousVariable;
            }
            else
              bValid = false;

@@ -12,7 +12,7 @@ class OrdinalDataSetHandler : public DataSetHandler {
 
     virtual void                        AllocateCaseStructures(size_t tSetIndex);
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
-                                                          count_t& nCount, Julian& nDate, measure_t& tContinuosVariable);
+                                                          count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char*);
     virtual void                        SetRandomizers();
 

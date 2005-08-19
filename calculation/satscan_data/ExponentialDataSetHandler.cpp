@@ -209,7 +209,7 @@ double ExponentialDataSetHandler::GetSimulationDataSetAllocationRequirements() c
     BasePrint object. */
 bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
                                                   count_t& nCount, Julian& nDate,
-                                                  measure_t& tContinuosVariable, count_t& tCensorAttribute) {
+                                                  measure_t& tContinuousVariable, count_t& tCensorAttribute) {
   int   iContiVariableIndex, iCensoredAttributeIndex;
 
   try {
@@ -247,21 +247,21 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     if (!ConvertCountDateToJulian(Parser, nDate))
       return false;
 
-    // read continuos variable
+    // read continuous variable
     iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
     if (!Parser.GetWord(iContiVariableIndex)) {
-      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuos variable.\n",
+      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(iContiVariableIndex), "%lf", &tContinuosVariable) != 1) {
-       gPrint.PrintInputWarning("Error: The continuos variable value '%s' in record %ld, of the %s, is not a number.\n",
+    if (sscanf(Parser.GetWord(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
+       gPrint.PrintInputWarning("Error: The continuous variable value '%s' in record %ld, of the %s, is not a number.\n",
                                 Parser.GetWord(iContiVariableIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
-    if (tContinuosVariable <= 0) {
-       gPrint.PrintInputWarning("Error: The continuos variable '%lf' in record %ld of the %s, is not greater than zero.\n",
-                                tContinuosVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+    if (tContinuousVariable <= 0) {
+       gPrint.PrintInputWarning("Error: The continuous variable '%g' in record %ld of the %s, is not greater than zero.\n",
+                                tContinuousVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
 
@@ -297,7 +297,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
   Julian                 Date;
   tract_t                tTractIndex;
   count_t                tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
-  measure_t              tContinuosVariable, tTotalMeasure=0;
+  measure_t              tContinuousVariable, tTotalMeasure=0;
   ExponentialRandomizer* pRandomizer;
 
   try {
@@ -312,8 +312,8 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     while (Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuosVariable, tCensorAttribute)) {
-             pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuosVariable, tCensorAttribute);
+           if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute)) {
+             pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuousVariable, tCensorAttribute);
              tTotalPopuation += tPatients;
              //check that addition did not exceed data type limitations
              if (tTotalPopuation < 0)
@@ -325,10 +325,10 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
                GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
                                            "ReadCounts()", std::numeric_limits<count_t>::max());
              //check numeric limits of data type will not be exceeded
-             if (tContinuosVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+             if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
                GenerateResolvableException("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n",
                                            "ReadCounts()", std::numeric_limits<measure_t>::max());
-             tTotalMeasure += tContinuosVariable;
+             tTotalMeasure += tContinuousVariable;
            }
            else
              bReadSuccessful = false;

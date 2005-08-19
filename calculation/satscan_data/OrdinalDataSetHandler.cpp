@@ -182,7 +182,7 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
     parts: location, case count, date and ordinal category. Returns true if no
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
-bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuosVariable) {
+bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   int   iCategoryIndex;
 
   try {
@@ -227,7 +227,7 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
                                Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(iCategoryIndex), "%lf", &tContinuosVariable) != 1) {
+    if (sscanf(Parser.GetWord(iCategoryIndex), "%lf", &tContinuousVariable) != 1) {
        gPrint.PrintInputWarning("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
                                   Parser.GetWord(iCategoryIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
