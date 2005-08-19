@@ -69,7 +69,6 @@ USEUNIT("..\calculation\satscan_data\BernoulliDataSetHandler.cpp");
 USEUNIT("..\calculation\satscan_data\ExponentialDataSetHandler.cpp");
 USEUNIT("..\calculation\cluster\Cluster.cpp");
 USEUNIT("..\calculation\cluster\SpaceTimeCluster.cpp");
-USEUNIT("..\calculation\cluster\TimeEstimate.cpp");
 USEUNIT("..\calculation\cluster\IncidentRate.cpp");
 USEUNIT("..\calculation\cluster\PurelySpatialCluster.cpp");
 USEUNIT("..\calculation\cluster\PurelyTemporalCluster.cpp");

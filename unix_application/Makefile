@@ -84,7 +84,6 @@ SRC         := Main.cpp \
                $(CLUSTER)/SpaceTimeCluster.cpp \
 	             $(CLUSTER)/SVTTCluster.cpp \
 	             $(CLUSTER)/PurelySpatialProspectiveCluster.cpp \
-               $(CLUSTER)/TimeEstimate.cpp \
                $(CLUSTER)/TimeTrend.cpp \
 	             $(CLUSTER)/TimeIntervalRange.cpp \
 	             $(CLUSTER)/AbstractClusterData.cpp \

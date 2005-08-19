@@ -44,8 +44,7 @@
       ..\calculation\satscan_data\BernoulliDataSetHandler.obj 
       ..\calculation\satscan_data\NormalDataSetHandler.obj 
       ..\calculation\satscan_data\RankDataSetHandler.obj 
-      ..\calculation\cluster\Cluster.obj ..\calculation\cluster\TimeEstimate.obj 
-      ..\calculation\cluster\IncidentRate.obj 
+      ..\calculation\cluster\Cluster.obj ..\calculation\cluster\IncidentRate.obj 
       ..\calculation\cluster\PurelySpatialCluster.obj 
       ..\calculation\cluster\PurelySpatialMonotoneCluster.obj 
       ..\calculation\cluster\SVTTCluster.obj 

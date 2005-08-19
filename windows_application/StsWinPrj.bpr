@@ -55,7 +55,6 @@
       ..\calculation\satscan_data\ExponentialDataSetHandler.obj 
       ..\calculation\cluster\Cluster.obj 
       ..\calculation\cluster\SpaceTimeCluster.obj 
-      ..\calculation\cluster\TimeEstimate.obj 
       ..\calculation\cluster\IncidentRate.obj 
       ..\calculation\cluster\PurelySpatialCluster.obj 
       ..\calculation\cluster\PurelyTemporalCluster.obj 
