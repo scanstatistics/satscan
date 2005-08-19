@@ -311,7 +311,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
       //      pt cluster minged among non-pt clusters becomes a problem when clusters
       //      in gvTopClusterList have identical llr values; where sorting with the
       //      extra pt cluster has some bearing on how ties are broken internally with qsort.
-      if (gptCluster.get()) {
+      if (gptCluster.get() && gptCluster->ClusterDefined()) {
         gvTopClusterList.push_back(gptCluster.release());
         //qsort is a poor sort algorithm for this situation since list is already sorted,
         //but to keep consistant with previous versions, it will remain
