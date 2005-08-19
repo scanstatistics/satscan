@@ -5,7 +5,7 @@
 #include "SaTScan.h"
 #include "Tracts.h"
 #include "Parameters.h"
-#include "TimeEstimate.h"
+//#include "TimeEstimate.h"
 #include "GridTractCoordinates.h"
 
 /** Distance from a centroid to a neighboring location. */
