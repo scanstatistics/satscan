@@ -432,7 +432,7 @@ void AnalysisRunner::ExecuteSuccessively() {
       //update report
       UpdateReport();
       //log history for first analysis run
-      if (giAnalysisCount == 1) {
+      if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
@@ -462,8 +462,10 @@ void AnalysisRunner::ExecuteCentrically() {
   bool                  bContinue;
 
   try {
-      PerformCentric_Parallel();
-      //PerformCentric_Serial();
+      //if (gParameters.GetNumParallelProcessesToExecute() == 1)
+      //  PerformCentric_Serial();
+      //else
+        PerformCentric_Parallel();
   }
   catch (ZdException &x) {
     x.AddCallpath("ExecuteCentrically()","AnalysisRunner");
@@ -838,7 +840,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //report clusters
       UpdateReport();
       //log history for first analysis run
-      if (giAnalysisCount == 1) {
+      if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
@@ -983,7 +985,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       //report clusters
       UpdateReport();
       //log history for first analysis run
-      if (giAnalysisCount == 1) {
+      if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
         gPrintDirection.SatScanPrintf("Logging run history...\n");
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
@@ -1164,15 +1166,15 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
 
 /** Prepares data for simulations and contracts simulation process. */
 void AnalysisRunner::PerformSuccessiveSimulations() {
-  try {
+  try {                                                           
     if (gParameters.GetNumReplicationsRequested() > 0) {
       //recompute neighbors if settings indicate that smaller clusters are reported
       gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
-      //$$if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-      //$$  gpDataHub->FindNeighbors(true);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
-      PerformSuccessiveSimulations_Parallel();
-      //PerformSuccessiveSimulations_Serial();
+      //if (gParameters.GetNumParallelProcessesToExecute() == 1)
+      //  PerformSuccessiveSimulations_Serial();
+      // else
+        PerformSuccessiveSimulations_Parallel();
     }
   }
   catch (ZdException &x) {
