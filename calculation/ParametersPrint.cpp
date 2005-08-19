@@ -692,7 +692,7 @@ void ParametersPrint::PrintSystemParameters(FILE* fp) const {
       IniVersion.iMinor != Current.iMinor ||
       IniVersion.iRelease != Current.iRelease) {
     fprintf(fp, "\nSystem\n------\n");
-    fprintf(fp, "  Parameters Version : %u %u %u\n", IniVersion.iMajor, IniVersion.iMinor, IniVersion.iRelease);
+    fprintf(fp, "  Parameters Version : %u.%u.%u\n", IniVersion.iMajor, IniVersion.iMinor, IniVersion.iRelease);
   }
 }
 
