@@ -99,6 +99,27 @@ unsigned int GetNumSystemProcessors() {
   return (iNumProcessors > 0 ? iNumProcessors : 1);
 }
 
+/** Calculates an estimate for the time remaining to complete X repetition given Y completed. */
+void ReportTimeEstimate(clock_t nStartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection) {
+  clock_t nStopTime = ::clock();
+
+  //nothing to report if number of repetitions less than 2 or none have been completed
+  if (nRepetitions <= 1 || nRepsCompleted <= 0) return;
+  //nothing to report if start time greater than stop time -- error?
+  if (nStartTime > nStopTime) return;
+
+  double dEstimatedClockTicksRemaining =  static_cast<double>(nStopTime - nStartTime)/nRepsCompleted * (nRepetitions - nRepsCompleted);
+  double dEstimatedSecondsRemaining = dEstimatedClockTicksRemaining/CLOCKS_PER_SEC;
+
+  //print an estimation only if estimated time will be 30 seconds or more
+  if (dEstimatedSecondsRemaining >= 30) {
+    if (dEstimatedSecondsRemaining < 60.0)
+      pPrintDirection->SatScanPrintf(".... this will take approximately %.1f seconds.\n", dEstimatedSecondsRemaining);
+    else
+      pPrintDirection->SatScanPrintf(".... this will take approximately %.1f minutes.\n", dEstimatedSecondsRemaining/60.0);
+  }    
+}
+
 /** constructor */
 StringParser::StringParser(BasePrint& Print) : gPrint(Print) {
   gwCurrentWordIndex = -1;
