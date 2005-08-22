@@ -68,12 +68,14 @@ void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const Abs
                                                                        const CentroidNeighbors& CentroidDef,
                                                                        CPurelySpatialCluster& TopCluster,
                                                                        AbstractLikelihoodCalculator& Calculator) {
-  tract_t       t, tNumNeighbors = CentroidDef.GetNumNeighbors();
+  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
+                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
 
   for (t=0; t < tNumNeighbors; ++t) {
     //update cluster data
     ++m_nTracts;
-    gpClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), DataGateway);
+    gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio > TopCluster.m_nRatio)

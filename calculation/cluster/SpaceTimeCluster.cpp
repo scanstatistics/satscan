@@ -94,11 +94,13 @@ void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const Abstrac
                                                                    const CentroidNeighbors& CentroidDef,
                                                                    CSpaceTimeCluster& TopCluster,
                                                                    CTimeIntervals& TimeIntervals) {
-  tract_t       t, tNumNeighbors = CentroidDef.GetNumNeighbors();
+  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
+                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
 
   for (t=0; t < tNumNeighbors; ++t) {
     ++m_nTracts;
-    gpClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), DataGateway);
+    gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     TimeIntervals.CompareClusters(*this, TopCluster);
   }
 }
