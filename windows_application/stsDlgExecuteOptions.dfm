@@ -62,36 +62,36 @@ object dlgExecutionOptions: TdlgExecutionOptions
       TabOrder = 0
       object rdoAllProcessors: TRadioButton
         Left = 8
-        Top = 49
-        Width = 89
+        Top = 24
+        Width = 153
         Height = 17
-        Caption = 'All Processors'
+        Caption = 'All available processors'
         TabOrder = 0
       end
       object rdoAtMostProcesses: TRadioButton
         Left = 8
-        Top = 24
+        Top = 49
         Width = 59
         Height = 17
         Anchors = [akBottom]
-        Caption = 'At Most'
+        Caption = 'At most'
         Checked = True
         TabOrder = 1
         TabStop = True
       end
       object StaticText1: TStaticText
         Left = 110
-        Top = 24
-        Width = 56
+        Top = 49
+        Width = 55
         Height = 17
         Anchors = [akRight, akBottom]
-        Caption = 'Processors'
+        Caption = 'processors'
         TabOrder = 2
         OnClick = edtAtMostProcessesAssociatedControlClick
       end
       object edtAtMostProcesses: TEdit
         Left = 69
-        Top = 24
+        Top = 49
         Width = 34
         Height = 21
         Anchors = [akBottom]
@@ -108,7 +108,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
       Top = 104
       Width = 185
       Height = 17
-      Caption = 'Log Analysis to History File'
+      Caption = 'Log analysis to history file'
       Checked = True
       State = cbChecked
       TabOrder = 1
