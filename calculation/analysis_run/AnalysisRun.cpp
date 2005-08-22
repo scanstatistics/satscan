@@ -462,9 +462,9 @@ void AnalysisRunner::ExecuteCentrically() {
   bool                  bContinue;
 
   try {
-      //if (gParameters.GetNumParallelProcessesToExecute() == 1)
-      //  PerformCentric_Serial();
-      //else
+      if (gParameters.GetNumParallelProcessesToExecute() == 1)
+        PerformCentric_Serial();
+      else
         PerformCentric_Parallel();
   }
   catch (ZdException &x) {
@@ -1171,9 +1171,9 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
       //recompute neighbors if settings indicate that smaller clusters are reported
       gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
       gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
-      //if (gParameters.GetNumParallelProcessesToExecute() == 1)
-      //  PerformSuccessiveSimulations_Serial();
-      // else
+      if (gParameters.GetNumParallelProcessesToExecute() == 1)
+        PerformSuccessiveSimulations_Serial();
+      else
         PerformSuccessiveSimulations_Parallel();
     }
   }
