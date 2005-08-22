@@ -68,8 +68,10 @@ class CentroidNeighbors {
 
     tract_t                     GetEllipseIndex() const {return gtEllipseOffset;}
     tract_t                     GetCentroidIndex() const {return gtCentroid;}
-    inline tract_t              GetNeighborTractIndex(size_t tNeighborIndex) const;
+    inline tract_t              GetNeighborTractIndex(tract_t tNeighborIndex) const;
     inline int                  GetNumNeighbors() const {return giNeighbors;}
+    tract_t                   * GetRawIntegerArray() const {return gpSortedNeighborsIntegerType;}
+    unsigned short            * GetRawUnsignedShortArray() const {return gpSortedNeighborsUnsignedShortType;}
     inline void                 Set(tract_t tCentroid);
     void                        SetMaximumClusterSize_RealData() {giNeighbors = giMaxReportedNeighbors;}
     void                        SetMaximumClusterSize_SimulatedData() {giNeighbors = giMaxNeighbors;}
@@ -78,7 +80,7 @@ class CentroidNeighbors {
 /** Returns zero based tNeighborIndex'th nearest neighbor's tract index.
     Caller is responsible for ensuring that internal structures have been previously
     set and 'tNeighborIndex' is within zero based range for defined neighbor information. */
-inline tract_t CentroidNeighbors::GetNeighborTractIndex(size_t tNeighborIndex) const {
+inline tract_t CentroidNeighbors::GetNeighborTractIndex(tract_t tNeighborIndex) const {
  //assert(tNeighborIndex + 1 <= (size_t)giNeighbors && (gpSortedNeighborsUnsignedShortType || gpSortedNeighborsIntegerType));
  return (gpSortedNeighborsUnsignedShortType ? (tract_t)gpSortedNeighborsUnsignedShortType[tNeighborIndex] : gpSortedNeighborsIntegerType[tNeighborIndex]);
 }
