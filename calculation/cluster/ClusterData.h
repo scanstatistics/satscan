@@ -34,11 +34,13 @@ class SpatialData : public AbstractSpatialClusterData {
 inline void SpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList) {
   macroRunTimeStartFocused(FocusRunTimeComponent::AddingMeasureList);
 
-  tract_t       t, tNeighborIndex, tNumNeighbors=CentroidDef.GetNumNeighbors();
+  tract_t               t, tNeighborIndex, tNumNeighbors=CentroidDef.GetNumNeighbors(),
+                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
 
   gtCases=0;gtMeasure=0; //initialize data
   for (t=0; t < tNumNeighbors; ++t) {
-    tNeighborIndex = CentroidDef.GetNeighborTractIndex(t);
+    tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
     gtCases += Interface.gpPSCaseArray[tNeighborIndex];
     gtMeasure += Interface.gpPSMeasureArray[tNeighborIndex];
     pMeasureList->AddMeasure(gtCases, gtMeasure);

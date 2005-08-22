@@ -272,13 +272,15 @@ void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef
   unsigned int           i, j, iWindowEnd;
   count_t             ** ppCases = Interface.GetCaseArray();
   measure_t           ** ppMeasure = Interface.GetMeasureArray();
-  tract_t                t, tNeighborIndex, tNumNeighbors=CentroidDef.GetNumNeighbors();
+  tract_t                t, tNeighborIndex, tNumNeighbors=CentroidDef.GetNumNeighbors(),
+                       * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short       * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
 
   // reset accumulated case/measure data
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   for (t=0; t < tNumNeighbors; ++t) {
-    tNeighborIndex = CentroidDef.GetNeighborTractIndex(t);
+    tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
     //update accumulated data
     gpCases[0]   += ppCases[0][tNeighborIndex]; //set cases for entire period added by this neighbor
     gpMeasure[0] += ppMeasure[0][tNeighborIndex];
@@ -455,17 +457,19 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
                                               CTimeIntervals& TimeIntervals,
                                               CMeasureList& MeasureList) {
 
-  unsigned int  i, iIntervals = giAllocationSize - 1;
-  count_t    ** ppCases = Interface.GetCaseArray();
-  measure_t  ** ppMeasure = Interface.GetMeasureArray();
-  tract_t       t, tNeighborIndex, tNumNeighbors = CentroidDef.GetNumNeighbors();
+  unsigned int          i, iIntervals = giAllocationSize - 1;
+  count_t            ** ppCases = Interface.GetCaseArray();
+  measure_t          ** ppMeasure = Interface.GetMeasureArray();
+  tract_t               t, tNeighborIndex, tNumNeighbors = CentroidDef.GetNumNeighbors(),
+                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
 
   //reset accumulated case/measure data
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-  for (t=0; t < tNumNeighbors; t++) {
-     tNeighborIndex = CentroidDef.GetNeighborTractIndex(t);
-     for (i=0; i < iIntervals; i++) {
+  for (t=0; t < tNumNeighbors; ++t) {
+     tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
+     for (i=0; i < iIntervals; ++i) {
        gpCases[i] += ppCases[i][tNeighborIndex];
        gpMeasure[i] += ppMeasure[i][tNeighborIndex];
      }
