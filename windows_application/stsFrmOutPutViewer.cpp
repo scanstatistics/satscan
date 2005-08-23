@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
 TfrmOutputViewer *frmOutputViewer;
 //---------------------------------------------------------------------------
 __fastcall TfrmOutputViewer::TfrmOutputViewer(TComponent* Owner, char *sOutputFileName)
