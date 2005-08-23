@@ -12,7 +12,6 @@ USEFORM("stsFrmAnalysisRun.cpp", frmAnalysisRun);
 USEUNIT("stsUtilityFunctions.cpp");
 USEUNIT("stsCalculationThread.cpp");
 USEUNIT("stsPrintWindow.cpp");
-USEFORM("stsFrmOutPutViewer.cpp", frmOutputViewer);
 USEUNIT("stsDataImporter.cpp");
 USEFORM("stsDlgDataImporter.cpp", BDlgDataImporter);
 USEUNIT("stsOutputFileRegistry.cpp");

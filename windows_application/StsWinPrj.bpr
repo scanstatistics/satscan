@@ -6,9 +6,8 @@
     <PROJECT value="StsWinPrj.exe"/>
     <OBJFILES value="StsWinPrj.obj stsMain.obj stsFrmAnalysisParameters.obj stsFrmAbout.obj 
       stsFrmAnalysisRun.obj stsUtilityFunctions.obj stsCalculationThread.obj 
-      stsPrintWindow.obj stsFrmOutPutViewer.obj stsDataImporter.obj 
-      stsDlgDataImporter.obj stsOutputFileRegistry.obj 
-      stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
+      stsPrintWindow.obj stsDataImporter.obj stsDlgDataImporter.obj 
+      stsOutputFileRegistry.obj stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
       stsBaseAnalysisChildForm.obj stsFrmStartWindow.obj 
       stsFrmAdvancedParameters.obj ..\calculation\Parameters.obj 
       ..\calculation\Toolkit.obj ..\calculation\SaTScanBasis.obj 
@@ -143,9 +142,9 @@
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
-      stsFrmAnalysisRun.dfm stsFrmOutPutViewer.dfm stsDlgDataImporter.dfm 
-      stsFrmDownloadProgress.dfm stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm 
-      stsFrmAdvancedParameters.dfm stsDlgExecuteOptions.dfm"/>
+      stsFrmAnalysisRun.dfm stsDlgDataImporter.dfm stsFrmDownloadProgress.dfm 
+      stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm stsFrmAdvancedParameters.dfm 
+      stsDlgExecuteOptions.dfm"/>
     <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib ..\..\zero.dimension\zd543.lib 
       ..\..\zero.dimension\zdannex543.lib"/>
     <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 
