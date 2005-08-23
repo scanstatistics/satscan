@@ -138,7 +138,7 @@ const char * AbstractDataFileWriter::P_VALUE_FLD  	  = "P_VALUE";
 const char * AbstractDataFileWriter::OBSERVED_FIELD	  = "OBSERVED";
 const char * AbstractDataFileWriter::EXPECTED_FIELD	  = "EXPECTED";
 const char * AbstractDataFileWriter::LOG_LIKL_RATIO_FIELD = "LLR";
-const char * AbstractDataFileWriter::TST_STAT_FIELD       = "TST_STAT";
+const char * AbstractDataFileWriter::TST_STAT_FIELD       = "TEST_STAT";
 
 /** constructor */
 AbstractDataFileWriter::AbstractDataFileWriter(const CParameters& Parameters)
