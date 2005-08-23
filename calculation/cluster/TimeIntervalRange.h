@@ -56,8 +56,9 @@ class MultiSetTemporalDataEvaluator : public TemporalDataEvaluator {
 /** Class which defines methods of iterating through temporal windows,
     evaluating the strength of a clustering. Redefines method CompareClusters()
     to incorporate a second measure variable in the calculation of a log
-    likelihood ratio. The alogrithm for using the TMeasureList object with this
-    second variable is not defined so method CompareMeasures() throws an exception. */
+    likelihood ratio for categorical data. The alogrithm for using the
+    TMeasureList object with this second variable is not defined so method
+    CompareMeasures() throws an exception. */
 class NormalTemporalDataEvaluator : public TemporalDataEvaluator {
   public:
     NormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
@@ -70,9 +71,9 @@ class NormalTemporalDataEvaluator : public TemporalDataEvaluator {
 
 /** Class which defines methods of iterating through temporal windows,
     evaluating the strength of a clustering. Redefines method CompareClusters()
-    to incorporate a second measure variable in the calculation of a log
-    likelihood ratio. The alogrithm for using the CMeasureList object with this
-    second variable is not defined so method CompareMeasures() throws an exception. */
+    to calculate log likelihood ratio for categorical data. The alogrithm for
+    using the TMeasureList object with multiple data sets is not defined so
+    method CompareMeasures() throws an exception. */
 class CategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
   public:
     CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
@@ -86,8 +87,9 @@ class CategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
 /** Class which defines methods of iterating through temporal windows,
     evaluating the strength of a clustering. Redefines method CompareClusters()
     to incorporate multiple data sets in the calculation of a log likelihood
-    ratio. The alogrithm for using the TMeasureList object with multiple data
-    sets is not defined so method CompareMeasures() throws an exception. */
+    ratio for categorical data. The alogrithm for using the TMeasureList object
+    with multiple data sets is not defined so method CompareMeasures() throws
+    an exception. */
 class MultiSetCategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
   public:
     MultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
