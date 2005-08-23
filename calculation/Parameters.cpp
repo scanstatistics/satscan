@@ -664,7 +664,7 @@ void CParameters::SetAsDefaulted() {
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
   gbReportCriticalValues                = false;
   geExecutionType                       = AUTOMATIC;
-  giNumRequestedParallelProcesses       = 1;
+  giNumRequestedParallelProcesses       = 0;
 }
 
 /** Sets dimensions of input data. */
