@@ -46,6 +46,8 @@ void LocationInformationWriter::DefineFields() {
   try {
     CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField(CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+    if (!gbExcludePValueField)
+      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(CLU_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
@@ -54,8 +56,6 @@ void LocationInformationWriter::DefineFields() {
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
         CreateField(CLU_REL_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
-    if (!gbExcludePValueField)
-      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(LOC_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
