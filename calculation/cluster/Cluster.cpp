@@ -518,7 +518,7 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   else {
     PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
     fprintf(fp, "%lf\n", m_nRatio/m_NonCompactnessPenalty);
-    if (DataHub.GetParameters().GetNonCompactnessPenalty()) {
+    if (DataHub.GetParameters().GetNumRequestedEllipses()) {
       PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
       fprintf(fp, "%lf\n", m_nRatio);
     }
