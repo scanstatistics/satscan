@@ -35,7 +35,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       void                      DefineFields();
       ZdString                & GetAreaID(ZdString& sAreaId, const CCluster& thisCluster) const;
       void                      WriteCoordinates(RecordBuffer& Record, const CCluster& pCluster);
-      void                      WriteCountDataAsOrdinal(RecordBuffer& Record, const CCluster& thisCluster) const;
+//      void                      WriteCountDataAsOrdinal(RecordBuffer& Record, const CCluster& thisCluster) const;
       void                      WriteCountDataStandard(RecordBuffer& Record, const CCluster& thisCluster) const;
       void                      WriteEllipseAngle(RecordBuffer& Record, const CCluster& thisCluster) const;
       void                      WriteEllipseShape(RecordBuffer& Record, const CCluster& thisCluster) const;

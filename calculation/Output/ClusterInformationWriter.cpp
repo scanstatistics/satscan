@@ -74,6 +74,10 @@ void ClusterInformationWriter::DefineFields() {
       CreateField(E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
     CreateField(NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+/*
+    Suppress printing cluster information for ordinal in this version, we will
+    be updating this in v6.1.
+
     if (gParameters.GetProbabilityModelType() == ORDINAL) {
       for (i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
          const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
@@ -102,6 +106,8 @@ void ClusterInformationWriter::DefineFields() {
       }
     }
     else {
+*/
+   if (gParameters.GetProbabilityModelType() != ORDINAL) {
       for (i=1; i <= gParameters.GetNumDataSets(); ++i) {
         if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
           CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
@@ -120,7 +126,7 @@ void ClusterInformationWriter::DefineFields() {
         else {
           sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i);
           CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-        }  
+        }
         if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
           if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
             CreateField(RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
@@ -130,12 +136,15 @@ void ClusterInformationWriter::DefineFields() {
           }
         }
       }
+   }
+/*
     }
+*/
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     else {
       CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
-      if (gParameters.GetNumRequestedEllipses() && gParameters.GetNonCompactnessPenalty())
+      if (gParameters.GetNumRequestedEllipses())
         CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
     if (!gbExcludePValueField)
@@ -188,16 +197,22 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
       WriteEllipseShape(Record, theCluster);
     }
 
+/*
+    Suppress printing cluster information for ordinal in this version, we will
+    be updating this in v6.1.
+
     if (gParameters.GetProbabilityModelType() == ORDINAL)
       WriteCountDataAsOrdinal(Record, theCluster);
     else
+*/
+    if (gParameters.GetProbabilityModelType() != ORDINAL)
       WriteCountDataStandard(Record, theCluster);
 
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
       Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty();
-      if (gParameters.GetNonCompactnessPenalty())
+      if (gParameters.GetNumRequestedEllipses())
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
     if (iNumSimsCompleted > 98)
@@ -279,6 +294,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 }
 
 /** Write obvserved, expected and  observed/expected to record for ordinal data.*/
+/*
 void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, const CCluster& theCluster) const {
   ZdString                                              sBuffer;
   OrdinalLikelihoodCalculator                           Calculator(gDataHub);
@@ -337,6 +353,7 @@ void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, con
     }
   }
 }
+*/
 
 /** Write obvserved, expected and  observed/expected to record.*/
 void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, const CCluster& theCluster) const {
