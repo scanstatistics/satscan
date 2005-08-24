@@ -189,7 +189,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
      iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
      iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
      const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, iNumReportedNeighbors, iNumNeighbors);
-     if (t == 9) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * (gDataHub.GetParameters().GetNumTotalEllipses() + 1), t, &gPrintDirection);
+     if (t == 9) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
   }
 }
 
@@ -211,7 +211,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
         iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
         iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
         const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, iNumReportedNeighbors, iNumNeighbors);
-        if (t == 9 && i == 1) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * (gDataHub.GetParameters().GetNumTotalEllipses() + 1), t, &gPrintDirection);
+        if (t == 9 && i == 1) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
      }
   }
 }
