@@ -53,7 +53,7 @@ private://data members
   unsigned guAutoAbortCheckIdx;//which short-circuit test comes next?
   unsigned guPreviousAutoAbortCheckPoint;//what was the previous check point?
 
-  clock_t const gConstructionTime;
+  boost::posix_time::ptime const gConstructionTime;
   MostLikelyClustersContainer & grMLCs;
   PrintQueue & grPrintDirection;
   const char * gszReplicationFormatString;
@@ -77,7 +77,7 @@ public:
 //  stsMCSimJobSource(CParameters const & rParameters) : guiJobCount(0), guiNextJobParam(1), guiUnfinishedJobLowerBound(1);
   stsMCSimJobSource(
     CParameters const & rParameters
-   ,clock_t tCurrentTime
+   ,boost::posix_time::ptime CurrentTime
    ,MostLikelyClustersContainer & rMLCs
    ,PrintQueue & rPrintDirection
    ,const char * szReplicationFormatString

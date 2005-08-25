@@ -179,7 +179,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
 /** Calculates neighboring locations about each centroid through expanding circle;
     storing results in sorted array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
-  clock_t               tStartTime = clock();
+  boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   int                   iNumReportedNeighbors, iNumNeighbors;
 
   gPrintDirection.SatScanPrintf("Constructing the circles\n");
@@ -189,14 +189,14 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
      iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
      iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
      const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, iNumReportedNeighbors, iNumNeighbors);
-     if (t == 9) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
+     if (t == 9) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
   }
 }
 
 /** Calculates neighboring locations about each centroid by distance; storing
     results in multiple dimension arrays contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
-  clock_t                       tStartTime = clock();
+  boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   int                           iNumReportedNeighbors, iNumNeighbors;
 
   //only perform calculation if ellipses requested
@@ -211,7 +211,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
         iNumNeighbors = CalculateNumberOfNeighboringLocations(gtMaximumSize);
         iNumReportedNeighbors = (gtMaximumSize == gtMaximumReportedSize ? iNumNeighbors : CalculateNumberOfNeighboringLocations(gtMaximumReportedSize));
         const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, iNumReportedNeighbors, iNumNeighbors);
-        if (t == 9 && i == 1) ReportTimeEstimate(tStartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
+        if (t == 9 && i == 1) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
      }
   }
 }

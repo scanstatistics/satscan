@@ -12,7 +12,8 @@ void 	     ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
 double       CalculateNonCompactnessPenalty(double dEllipseShape);
 const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural=true, bool bCapitalizeFirstLetter=false);
 unsigned int GetNumSystemProcessors();
-void         ReportTimeEstimate(clock_t nStartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
+void         ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
+boost::posix_time::ptime GetCurrentTime_HighResolution();
 
 /** The data read routines of CSaTScanData used to use function:
     const char * GetWord(const char *s, int num, BasePrint *pPrintDirection)

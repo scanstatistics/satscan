@@ -43,7 +43,7 @@ private://data members
   result_registration_fn_type gfnRegisterResult;
 
   bool gbIsExplicitlyExhausted;
-  clock_t const gConstructionTime;
+  boost::posix_time::ptime const gConstructionTime;
   AsynchronouslyAccessible<PrintQueue> & grPrintDirection;
 
 private://functions
@@ -57,7 +57,7 @@ private://functions
 public:
   stsCentricAlgoJobSource(
     unsigned long ulJobCount
-   ,clock_t tCurrentTime
+   ,boost::posix_time::ptime CurrentTime
    ,AsynchronouslyAccessible<PrintQueue> & rPrintDirection
   );
   bool is_exhausted() const;

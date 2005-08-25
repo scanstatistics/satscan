@@ -19,7 +19,7 @@ const float stsMCSimJobSource::guaAutoAbortCheckCutoffValues[] = { 0.5, 0.4, 0.2
 //constructor
 stsMCSimJobSource::stsMCSimJobSource(
   CParameters const & rParameters
- ,clock_t tCurrentTime
+ ,boost::posix_time::ptime CurrentTime
  ,MostLikelyClustersContainer & rMLCs
  ,PrintQueue & rPrintDirection
  ,const char * szReplicationFormatString
@@ -30,7 +30,7 @@ stsMCSimJobSource::stsMCSimJobSource(
  , gfnRegisterResult(&stsMCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , guAutoAbortCheckIdx(0)
  , guPreviousAutoAbortCheckPoint(0)
- , gConstructionTime(tCurrentTime)
+ , gConstructionTime(CurrentTime)
  , grMLCs(rMLCs)
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)

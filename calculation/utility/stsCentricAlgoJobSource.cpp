@@ -13,7 +13,7 @@
 //constructor
 stsCentricAlgoJobSource::stsCentricAlgoJobSource(
     unsigned long ulJobCount
-   ,clock_t tCurrentTime
+   ,boost::posix_time::ptime CurrentTime
    ,AsynchronouslyAccessible<PrintQueue> & rPrintDirection
 )
  : guiJobCount(ulJobCount)
@@ -21,7 +21,7 @@ stsCentricAlgoJobSource::stsCentricAlgoJobSource(
  , guiUnregisteredJobLowerBound(1)
  , gbIsExplicitlyExhausted(false)
  , gfnRegisterResult(&stsCentricAlgoJobSource::RegisterResult_Simple)
- , gConstructionTime(tCurrentTime)
+ , gConstructionTime(CurrentTime)
  , grPrintDirection(rPrintDirection)
 {
 }

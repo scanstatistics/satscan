@@ -253,7 +253,7 @@ void AnalysisRunner::DisplayTopCluster() {
 void AnalysisRunner::DisplayTopClusters() {
   std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
   std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
-  clock_t                                  lStartTime;
+  boost::posix_time::ptime                 StartTime(0);
   FILE                                   * fp=0;
 
   try {
@@ -267,7 +267,7 @@ void AnalysisRunner::DisplayTopClusters() {
 
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
-    lStartTime = clock(); //get clock for calculating output time
+    StartTime = ::GetCurrentTime_HighResolution(); //get clock for calculating output time
     //open result output file
     OpenReportFile(fp, true);
 
@@ -275,7 +275,7 @@ void AnalysisRunner::DisplayTopClusters() {
        gPrintDirection.SatScanPrintf("Reporting cluster %i of %i\n", i + 1, gTopClustersContainer.GetNumClustersRetained());
        //report estimate of time to report all clusters
        if (i==9)
-         ReportTimeEstimate(lStartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
+         ReportTimeEstimate(StartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
        //get reference to i'th top cluster  
        const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
        //write cluster details to 'cluster information' file
@@ -764,7 +764,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
         std::pair<bool,ZdException> purelyTemporalExecutionExceptionStatus;//if (.first) then (.second) is the exception message and callpath.
         PrintQueue tmpPrintDirection(gPrintDirection);
         AsynchronouslyAccessible<PrintQueue> tmpThreadsafePrintDirection(tmpPrintDirection);
-        stsCentricAlgoJobSource jobSource(gpDataHub->m_nGridTracts, ::clock(), tmpThreadsafePrintDirection);
+        stsCentricAlgoJobSource jobSource(gpDataHub->m_nGridTracts, ::GetCurrentTime_HighResolution(), tmpThreadsafePrintDirection);
         typedef contractor<stsCentricAlgoJobSource> contractor_type;
         contractor_type theContractor(jobSource);
         //run threads:
@@ -934,13 +934,13 @@ void AnalysisRunner::PerformCentric_Serial() {
         CentroidCalculator.reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
 
       //analyze real and simulation data about each centroid
-      clock_t  tStartTime = clock();
+      boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
       for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
          gPrintDirection.SatScanPrintf("Evaluating centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
          CentricAnalysis->ExecuteAboutCentroid(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
          //report estimation of total execution time
          if (c==9)
-           ReportTimeEstimate(tStartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
+           ReportTimeEstimate(StartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
       }
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
@@ -1042,7 +1042,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
 
     {
       PrintQueue lclPrintDirection(gPrintDirection);
-      stsMCSimJobSource jobSource(gParameters, ::clock(), gTopClustersContainer, lclPrintDirection, sReplicationFormatString, *this);
+      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), gTopClustersContainer, lclPrintDirection, sReplicationFormatString, *this);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
       //run threads:
@@ -1110,7 +1110,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     //allocate appropriate data members for simulation algorithm
     pAnalysis->AllocateSimulationObjects(*pDataGateway);
     //start clock for estimating approximate time to complete
-    clock_t nStartTime = clock();
+    boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
     {//block for the scope of SimulationPrintDirection
       PrintQueue SimulationPrintDirection(gPrintDirection);
 
@@ -1139,7 +1139,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
         //if first simulation, report approximate time to complete simulations and print queue threshold
         if (giNumSimsExecuted==1) {
           //***** time to complete approximate will need modified with incorporation of thread code ******
-          ReportTimeEstimate(nStartTime, gParameters.GetNumReplicationsRequested(), iSimulationNumber, &SimulationPrintDirection);
+          ReportTimeEstimate(StartTime, gParameters.GetNumReplicationsRequested(), iSimulationNumber, &SimulationPrintDirection);
           ZdTimestamp tsReleaseTime;
           tsReleaseTime.Now();
           tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now

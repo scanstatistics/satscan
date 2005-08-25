@@ -44,6 +44,9 @@
 #pragma warn -8066
 #pragma warn -8055
 #include "boost/dynamic_bitset.hpp"
+#define DATE_TIME_INLINE
+#include "boost/date_time/posix_time/ptime.hpp"
+#undef DATE_TIME_INLINE
 #pragma warn +8012
 #pragma warn +8008
 #pragma warn +8066

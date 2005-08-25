@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "UtilityFunctions.h"
+#include <cmath>
 
 double CalcLogLikelihood(count_t n, measure_t u, count_t N, measure_t U) {
   double nLogLikelihood;
@@ -68,6 +69,30 @@ double CalculateNonCompactnessPenalty(double dEllipseShape) {
   return ( 4*dEllipseShape/(pow(dEllipseShape + 1, 2)) );
 }
 
+//What is the current time? (UTC | Coordinated Universal Time)
+#ifdef INTEL_BASED
+boost::posix_time::ptime GetCurrentTime_HighResolution()
+{
+  using namespace boost::posix_time;
+  using namespace boost::gregorian;
+  SYSTEMTIME stm;
+  GetSystemTime(&stm);
+  time_duration::fractional_seconds_type frct_secs = stm.wMilliseconds * std::pow10(time_duration::num_fractional_digits()-3);
+  return ptime(date(stm.wYear,stm.wMonth,stm.wDay), time_duration(stm.wHour,stm.wMinute,stm.wSecond,frct_secs));
+}
+#else
+#include <sys/time.h>
+boost::posix_time::ptime GetCurrentTime_HighResolution()
+{
+  using namespace boost::posix_time;
+  using namespace boost::gregorian;
+  struct timeval   tmStruct;
+  gettimeofday(&tmStruct, 0);
+  time_duration::fractional_seconds_type frct_secs = tmStruct.tv_usec * std::pow(static_cast<double>(10), time_duration::num_fractional_digits()-6);
+  return ptime(date(1970,1,1), time_duration(0,0,tmStruct.tv_sec,frct_secs));
+}
+#endif
+
 /** Returns date precision as string. */
 const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural, bool bCapitalizeFirstLetter) {
   sString.Clear();
@@ -79,7 +104,7 @@ const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString
   };
   if (bPlural)
     sString << "s";
-     
+
   return sString.GetCString();
 }
 
@@ -100,16 +125,21 @@ unsigned int GetNumSystemProcessors() {
 }
 
 /** Calculates an estimate for the time remaining to complete X repetition given Y completed. */
-void ReportTimeEstimate(clock_t nStartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection) {
-  clock_t nStopTime = ::clock();
+void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection) {
+  boost::posix_time::ptime StopTime(GetCurrentTime_HighResolution());
+  double dSecondsElapsed;
 
   //nothing to report if number of repetitions less than 2 or none have been completed
   if (nRepetitions <= 1 || nRepsCompleted <= 0) return;
   //nothing to report if start time greater than stop time -- error?
-  if (nStartTime > nStopTime) return;
+  if (StartTime > StopTime) return;
 
-  double dEstimatedClockTicksRemaining =  static_cast<double>(nStopTime - nStartTime)/nRepsCompleted * (nRepetitions - nRepsCompleted);
-  double dEstimatedSecondsRemaining = dEstimatedClockTicksRemaining/CLOCKS_PER_SEC;
+  boost::posix_time::time_duration ElapsedTime = StopTime - StartTime;
+  dSecondsElapsed = ElapsedTime.fractional_seconds() / std::pow(static_cast<double>(10), ElapsedTime.num_fractional_digits());
+  dSecondsElapsed += ElapsedTime.seconds();
+  dSecondsElapsed += ElapsedTime.minutes() * 60;
+  dSecondsElapsed += ElapsedTime.hours() * 60 * 60;
+  double dEstimatedSecondsRemaining = dSecondsElapsed/nRepsCompleted * (nRepetitions - nRepsCompleted);
 
   //print an estimation only if estimated time will be 30 seconds or more
   if (dEstimatedSecondsRemaining >= 30) {
@@ -117,7 +147,7 @@ void ReportTimeEstimate(clock_t nStartTime, int nRepetitions, int nRepsCompleted
       pPrintDirection->SatScanPrintf(".... this will take approximately %.1f seconds.\n", dEstimatedSecondsRemaining);
     else
       pPrintDirection->SatScanPrintf(".... this will take approximately %.1f minutes.\n", dEstimatedSecondsRemaining/60.0);
-  }    
+  }
 }
 
 /** constructor */
