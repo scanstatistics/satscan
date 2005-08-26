@@ -199,7 +199,7 @@ void AsciiPrintFormat::SetMarginsAsOverviewSection() {
 
 /** Adjusts margins for run-time components section. */
 void AsciiPrintFormat::SetMarginsAsRunTimeReportSection() {
-  giLeftMargin = 0;
+  giLeftMargin = 2;
   giLabelWidth = giRunTimeComponentsLabelWidth;
   giDataLeftMargin = giLabelWidth + giLeftMargin + strlen(": ");
 }
