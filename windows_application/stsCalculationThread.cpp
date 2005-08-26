@@ -126,6 +126,14 @@ void __fastcall CalcThread::Execute() {
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
+  catch (...) {
+    gpPrintWindow->SatScanPrintWarning("\nUnknown Program Error Encountered\n");
+    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    Synchronize((TThreadMethod)&ResetProgressCloseButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
+    Synchronize((TThreadMethod)&EnableProgressEmailButton);
+    CancellJob();
+  }
   Synchronize((TThreadMethod)&ProcessSignalsCompletion);
 }
 

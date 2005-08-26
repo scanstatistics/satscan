@@ -95,6 +95,13 @@ int main(int argc, char *argv[]) {
     BasisExit();
     return 1;
   }
+  catch (...) {
+    ConsolePrint.SatScanPrintf("\n\nJob cancelled due to an unexpected program error.\n\n");
+    ConsolePrint.SatScanPrintf("Please contact technical support with the following information:\n");
+    ConsolePrint.SatScanPrintf("Unknown program error encountered.");
+    BasisExit();
+    return 1;
+  }
   return 0;
 } /* main() */
 
