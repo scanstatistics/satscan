@@ -3,19 +3,6 @@
 #include "UtilityFunctions.h"
 #include <cmath>
 
-double CalcLogLikelihood(count_t n, measure_t u, count_t N, measure_t U) {
-  double nLogLikelihood;
-
-  if (n != N && n != 0)
-    nLogLikelihood = n*log(n/u) + (N-n)*log((N-n)/(U-u));
-  else if (n == 0)
-    nLogLikelihood = (N-n) * log((N-n)/(U-u));
-  else
-    nLogLikelihood = n*log(n/u);
-
-   return (nLogLikelihood);
-}
-
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
 //
