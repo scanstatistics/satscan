@@ -531,6 +531,7 @@ void AnalysisRunner::FinalizeReport() {
 
     gpDataHub->GetTInfo()->tiReportDuplicateTracts(fp);
     ParametersPrint(gParameters).Print(fp);
+    macroRunTimeManagerPrint(fp);
     time(&CompletionTime);
     nTotalTime = difftime(CompletionTime, gStartTime);
     nHours     = floor(nTotalTime/(60*60));
@@ -550,8 +551,6 @@ void AnalysisRunner::FinalizeReport() {
       fprintf(fp,"Total Running Time : %.0f %s %.0f %s", nMinutes, szMinutes, nSeconds, szSeconds);
     else
       fprintf(fp,"Total Running Time : %.0f %s",nSeconds, szSeconds);
-
-    macroRunTimeManagerPrint(fp);
 
     fclose(fp);
   }
