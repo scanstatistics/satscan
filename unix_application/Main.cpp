@@ -37,17 +37,7 @@ int main(int argc, char *argv[]) {
     }
     // read options
     for (i=2; i < argc; ++i) {
-       if (!stricmp(argv[i], "-v")) {
-         Parameters.SetOutputClusterLevelAscii(true);
-         Parameters.SetOutputAreaSpecificAscii(true);
-         if (Parameters.GetProbabilityModelType() != SPACETIMEPERMUTATION)
-           Parameters.SetOutputRelativeRisksAscii(true);
-         Parameters.SetOutputSimLogLikeliRatiosAscii(true);
-         if (Parameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL || Parameters.GetAnalysisType() == PROSPECTIVESPACETIME)
-           //so that we can compare prospective analyses with v3.1 and prior, which didn't have below option
-           Parameters.SetAdjustForEarlierAnalyses(true);
-       }
-       else if (!stricmp(argv[i], "-o")) {
+       if (!stricmp(argv[i], "-o")) {
          if (argc < i + 2)
            GenerateUsageException(argv[0]);
          Parameters.SetOutputFileName(argv[++i]);
