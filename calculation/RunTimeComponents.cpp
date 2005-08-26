@@ -86,20 +86,20 @@ void RunTimeComponentManager::Print(FILE* fp) {
   //stop total execution timer
   dTotalExecutionTime = gTimer.elapsed();
   Printer.SetMarginsAsRunTimeReportSection();
-  Printer.PrintSectionSeparatorString(fp, 1, 2);
+  fprintf(fp, "\nRUN TIME EVALUATION\n\n");
   //print SerialRunTimeComponent objects
   fprintf(fp, "Run Time Components\n");
   fprintf(fp, "-------------------\n");
-  Printer.PrintSectionLabel(fp, "Total Time", false, false);
+  Printer.PrintSectionLabel(fp, "Total Time", false, true);
   Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, sBuffer));
   for (const_srt_itr_t itr=gtRunTimeComponents.begin(); itr != gtRunTimeComponents.end(); ++itr) {
      sBuffer.printf("%d) %s", itr->second.GetType(), GetLabel(itr->second.GetType()));
-     Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, false);
+     Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
      dTotalExecutionTime -= itr->second.GetTotalTime();
      Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), sBuffer));
   }
   sBuffer.printf("%d) %s", SerialRunTimeComponent::CatchAll, GetLabel(SerialRunTimeComponent::CatchAll));
-  Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, false);
+  Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
   Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, sBuffer));
   //print FocusRunTimeComponent objects
   if (gtFocusedRunTimeComponents.size()) {
@@ -107,11 +107,11 @@ void RunTimeComponentManager::Print(FILE* fp) {
     fprintf(fp, "------------------\n");
     for (const_frt_itr_t itr=gtFocusedRunTimeComponents.begin(); itr != gtFocusedRunTimeComponents.end(); ++itr) {
        sBuffer.printf("%s (%d)", GetLabel(itr->second.GetType()), itr->second.GetBelongingSerialType());
-       Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, false);
+       Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
        Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), sBuffer));
     }
   }  
-  Printer.PrintSectionSeparatorString(fp);
+  Printer.PrintSectionSeparatorString(fp, 1);
 }
 
 /** Starts timing of SerialRunTimeComponent type, stopping current component, creating
