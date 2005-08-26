@@ -28,6 +28,7 @@ class TdlgExecutionOptions : public TForm {
     void __fastcall edtAtMostProcessesAssociatedControlClick(TObject *Sender);
     void __fastcall edtAtMostProcessesExit(TObject *Sender);
     void __fastcall edtAtMostProcessesKeyPress(TObject *Sender, char &Key);
+        void __fastcall edtAtMostProcessesEnter(TObject *Sender);
 
   private:	
     TfrmAnalysis       & gfrmAnalysis;

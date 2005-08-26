@@ -99,6 +99,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
         TabOrder = 3
         Text = '1'
         OnClick = edtAtMostProcessesAssociatedControlClick
+        OnEnter = edtAtMostProcessesEnter
         OnExit = edtAtMostProcessesExit
         OnKeyPress = edtAtMostProcessesKeyPress
       end

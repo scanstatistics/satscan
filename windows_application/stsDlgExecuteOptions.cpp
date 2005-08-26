@@ -50,3 +50,7 @@ void __fastcall TdlgExecutionOptions::edtAtMostProcessesKeyPress(TObject *Sender
     Key = 0;
 }
 
+void __fastcall TdlgExecutionOptions::edtAtMostProcessesEnter(TObject *Sender) {
+  if (!rdoAtMostProcesses->Checked) rdoAtMostProcesses->Checked = true;
+}
+
