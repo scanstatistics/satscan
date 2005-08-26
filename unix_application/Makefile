@@ -1,18 +1,6 @@
-#You must use GNU make (/opt/net/utils/bin/make) to run this script
-#setting a line like 
-#  alias gmake '/opt/net/utils/bin/make'
-#in your .setup file will let you run GNU make by typing 'gmake'
-#
-#
-# alter these two lines to be the full path to FAIRView and Basis
-#
-#
+
 SATSCAN     := /home/hostovic/prj/satscan
 BASIS       := /home/hostovic/prj/satscan/basisdev/
-INSTALLDIR  := ~/FV
-
-##########
-# you shouldn't have to change any of this.
 
 CC          := g++
 APPLICATION := SaTScan
@@ -47,6 +35,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTE
 	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR)
 
 DEFINES     := -D__BASIS_NO_VCL \
+#               -DRPRTCMPT_RUNTIMES \
                -D__BATCH_COMPILE
 
 CFLAGS      := -c -m32 -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
@@ -209,10 +198,3 @@ clean :
 	rm -f core $(OBJS)
 	rm -f $(APPLICATION)
 	
-#install : thin
-#	mkdir $(INSTALLDIR)
-#	mkdir $(INSTALLDIR)/db
-#	cp ./initial/fvserv.cfg $(INSTALLDIR)
-#	cp ./initial/fair.zdd $(INSTALLDIR)/db
-#	cp fvServer $(INSTALLDIR)
-
