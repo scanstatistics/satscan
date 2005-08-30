@@ -268,10 +268,14 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
      sBuffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
-       measure_t tObservedDivExpected=0;
-       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
-          tObservedDivExpected += GetObservedDivExpectedOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m));
-       sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tObservedDivExpected);
+       count_t   tObserved=0;
+       measure_t tExpected=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
+          tObserved += GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+          tExpected += GetExpectedCountOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m));
+       }
+       sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "),
+                    (tExpected ? (double)tObserved/tExpected  : 0));
        sBuffer << sWork;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -279,11 +283,14 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
      sBuffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
-       double tRelativeRisk=0;
-       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
-          tRelativeRisk += GetRelativeRisk(GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m)),
-                                           GetExpectedCountOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m)),
-                                           DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases());
+       double           tRelativeRisk=0;
+       count_t          tObserved=0;
+       measure_t        tExpected=0;
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
+          tObserved += GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+          tExpected += GetExpectedCountOrdinal(DataHub, i, itrCategory->GetCategoryIndex(m));
+       }
+       tRelativeRisk += GetRelativeRisk(tObserved, tExpected, DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases());
        sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
        sBuffer << sWork;
      }
@@ -619,7 +626,9 @@ double CCluster::GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTS
 }
 
 /** Returns observed cases divided by expected cases of accummulated data that
-    is stratified by ordinal categories. */
+    is stratified by ordinal categories. Note that if categories where combined,
+    then this function should not be used. Instead value should be gotten by adding
+    together observed values and dividing by sum of expected values. */
 double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const {
    measure_t    tExpected = GetExpectedCountOrdinal(DataHub, tSetIndex, iCategoryIndex);
 
