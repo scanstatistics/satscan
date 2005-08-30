@@ -57,11 +57,12 @@ OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& Dat
     gvDataSetTotalCasesPerCategory.push_back(std::vector<double>());
     LL0 = 0;
     for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i) {
+       count_t tCategoryCases = Population.GetNumOrdinalCategoryCases(i);
        // add number of category cases to accumulation
-       gvDataSetTotalCasesPerCategory.back().push_back(Population.GetNumOrdinalCategoryCases(i));
+       gvDataSetTotalCasesPerCategory.back().push_back(tCategoryCases);
        // add this categories contribution to loglikelihood under null to LL0
-       LL0 += (double)Population.GetNumOrdinalCategoryCases(i) *
-              log((double)Population.GetNumOrdinalCategoryCases(i)/(double)DataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases());
+       if (tCategoryCases)
+         LL0 += (double)tCategoryCases * log((double)tCategoryCases/(double)DataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases());
     }
     // set loglikelihood under null for this data set
     gvDataSetLogLikelihoodUnderNull.push_back(LL0);
@@ -237,10 +238,16 @@ bool OrdinalLikelihoodCalculator::CalculateProbabilitiesInsideAndOutsideOfCluste
           for (size_t j=i; j <= k; ++j)
             dQ += vOrdinalTotalCases[j] - vOrdinalCases[j];
           dQ /= U;
-          for (size_t j=i; j <= k; ++j) {
-             gvP[j] = dP * (vOrdinalTotalCases[j]/dTotalCasesInCategoryRange);
-             gvQ[j] = dQ * (vOrdinalTotalCases[j]/dTotalCasesInCategoryRange);
-          }
+          if (dTotalCasesInCategoryRange)
+            //when a sequential scan is performed, there is a possibility that
+            //the number of cases in a ordinal category have become zero
+            for (size_t j=i; j <= k; ++j) {
+               gvP[j] = dP * (vOrdinalTotalCases[j]/dTotalCasesInCategoryRange);
+               gvQ[j] = dQ * (vOrdinalTotalCases[j]/dTotalCasesInCategoryRange);
+            }
+          else
+            for (size_t j=i; j <= k; ++j)
+               gvP[j] = gvQ[j] = 0;
      }
   }
 
