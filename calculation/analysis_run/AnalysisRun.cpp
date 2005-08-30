@@ -1235,27 +1235,44 @@ void AnalysisRunner::RemoveTopClusterData() {
     - last iteration of simulations did not terminate early
     Indication of false is returned if user did not request sequential scan option. */
 bool AnalysisRunner::RepeatAnalysis() {
-   bool bCorrectAnalysisType, bTopCluster, bHasMoreSequentialScans,
-        bNotEarlyTerminated, bHasTractsAfterTopCluster, bReturn=false;
+  bool bCorrectAnalysisType, bTopCluster, bHasMoreSequentialScans,
+       bNotEarlyTerminated, bHasTractsAfterTopCluster, bModelCriterianMet=true,
+       bHasMinimumNumberOfCases=true, bReturn=false;
 
-   try {
-      if (gParameters.GetIsSequentialScanning()) {
-        bCorrectAnalysisType = gParameters.GetAnalysisType() == PURELYSPATIAL; 
-        bTopCluster = gTopClustersContainer.GetNumClustersRetained() &&
-                      gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) < gParameters.GetSequentialCutOffPValue();
-        bHasTractsAfterTopCluster = bTopCluster && gpDataHub->GetNumTracts() - gTopClustersContainer.GetTopRankedCluster().GetNumTractsInnerCircle() > 0;
-        bHasMoreSequentialScans = giAnalysisCount < gParameters.GetNumSequentialScansRequested();
-        bNotEarlyTerminated = giNumSimsExecuted == gParameters.GetNumReplicationsRequested();
+  //NOTE: Still in the air as to the minimum for STP model, set to 2 for now.
+  count_t      tMinCases = (gParameters.GetProbabilityModelType() == ORDINAL ? 4 : 2);
 
-        bReturn = bCorrectAnalysisType && bTopCluster && bHasMoreSequentialScans
-                  && bNotEarlyTerminated && bHasTractsAfterTopCluster;
+  try {
+    if (gParameters.GetIsSequentialScanning()) {
+      bCorrectAnalysisType = gParameters.GetAnalysisType() == PURELYSPATIAL;
+      for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets() && bHasMinimumNumberOfCases; ++i)
+         bHasMinimumNumberOfCases = (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() >= tMinCases);
+      if (gParameters.GetProbabilityModelType() == ORDINAL) {
+        int iCategoriesWithCases=0;
+        for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets() && bModelCriterianMet; ++i) {
+           const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).GetPopulationData();
+           for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t)
+              if (Population.GetNumOrdinalCategoryCases(t))
+                ++iCategoriesWithCases;
+           bModelCriterianMet = (iCategoriesWithCases >= 2);
+        }
       }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("RepeatAnalysis()","AnalysisRunner");
-      throw;
-   }
-   return bReturn;
+      bTopCluster = gTopClustersContainer.GetNumClustersRetained() &&
+                    gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) < gParameters.GetSequentialCutOffPValue();
+      bHasTractsAfterTopCluster = bTopCluster && gpDataHub->GetNumTracts() - gTopClustersContainer.GetTopRankedCluster().GetNumTractsInnerCircle() > 0;
+      bHasMoreSequentialScans = giAnalysisCount < gParameters.GetNumSequentialScansRequested();
+      bNotEarlyTerminated = giNumSimsExecuted == gParameters.GetNumReplicationsRequested();
+
+      bReturn = bCorrectAnalysisType && bHasMinimumNumberOfCases
+                && bModelCriterianMet && bTopCluster
+                && bHasMoreSequentialScans && bNotEarlyTerminated && bHasTractsAfterTopCluster;
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RepeatAnalysis()","AnalysisRunner");
+    throw;
+  }
+  return bReturn;
 }
 
 /** internal class setup - allocate CSaTScanData object(the data hub) */
