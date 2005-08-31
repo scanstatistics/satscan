@@ -525,7 +525,7 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
 
   try {
     if (bPrintingPowerCalculations || bPrintingSimulationType || bPrintingSimulationData) {
-      fprintf(fp, "\nPower Simulations\n-----------------\n");
+      fprintf(fp, "\n\nPower Simulations\n-----------------\n");
       if (bPrintingPowerCalculations) {
         fprintf(fp, "  P-values Prespecified LLRs : Yes\n");
         fprintf(fp, "  LLR1                       : %lf\n", gParameters.GetPowerCalculationX());
