@@ -431,16 +431,16 @@ count_t CSaTScanData::GetCaseCount(count_t ** ppCumulativeCases, int iInterval, 
 
 /** Returns angle to referenced ellipse at index. Caller is responsible for ensuring
     that iEllipseIndex is within validate range where if ellipses where requested,
-    the valid range is 0 to gParameters.GetNumTotalEllipses() - 1. */
+    the valid range is 0 to gParameters.GetNumTotalEllipses(). */
 double CSaTScanData::GetEllipseAngle(int iEllipseIndex) const {
-  return gvEllipseAngles[iEllipseIndex - 1];
+  return (iEllipseIndex == 0 ? 0.0 : gvEllipseAngles[iEllipseIndex - 1]);
 }
 
 /** Returns shape to referenced ellipse at index. Caller is responsible for ensuring
     that iEllipseIndex is within validate range where if ellipses where requested,
-    the valid range is 0 to gParameters.GetNumTotalEllipses() - 1 */
+    the valid range is 0 to gParameters.GetNumTotalEllipses(). */
 double CSaTScanData::GetEllipseShape(int iEllipseIndex) const {
-  return gvEllipseShapes[iEllipseIndex - 1];
+  return (iEllipseIndex == 0 ? 1.0 : gvEllipseShapes[iEllipseIndex - 1]);
 }
 
 /** Returns whether data of location at index has been removed as a result of
