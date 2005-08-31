@@ -331,58 +331,47 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
 /** Writes clusters cartesian coordinates and ellipse properties (if cluster is elliptical)
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double      * pCoords = 0;
-  int           i, j, count=0;
-  ZdString      sBuffer, sWork;
+  std::vector<double>   vCoordinates;
+  int                   i, j, count=0;
+  ZdString              sBuffer, sWork;
 
   try {
-    Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
+    Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
 
-    //print coordinates differently for the circles and ellipses
-    if (m_iEllipseOffset == 0)  {//print coordinates for circle
+    //print coordinates differently when ellipses are requested
+    if (Data.GetParameters().GetNumRequestedEllipses() == 0)  {
       PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
       for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
-         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
+         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          sBuffer << sWork;
       }
       //to keep radius value consistant with previous versions, down cast double to float
       float radius = static_cast<float>(m_CartesianRadius);
-      sWork.printf("%g) / %-5.2f", pCoords[Data.GetParameters().GetDimensionsOfData() - 1], radius);
+      sWork.printf("%g) / %-5.2f", vCoordinates[Data.GetParameters().GetDimensionsOfData() - 1], radius);
       sBuffer << sWork;
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-      //print ellipse particulars - circle with shape of '1'
-      if (Data.GetParameters().GetNumRequestedEllipses()) {
-        PrintFormat.PrintSectionLabel(fp, "Ellipse Parameters", false, true);
-        fprintf(fp, "\n");
-        PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
-        fprintf(fp, "n/a\n");
-        PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
-        fprintf(fp, "1.0\n");
-      }
     }
     else {//print ellipse settings
       PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
       for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
-         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
+         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          sBuffer << sWork;
       }
-      sWork.printf("%g)", pCoords[Data.GetParameters().GetDimensionsOfData() - 1]);
+      sWork.printf("%g)", vCoordinates[Data.GetParameters().GetDimensionsOfData() - 1]);
       sBuffer << sWork;
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       //print ellipse particulars
-      PrintFormat.PrintSectionLabel(fp, "Ellipse Semiminor axis", false, true);
+      PrintFormat.PrintSectionLabel(fp, "Semiminor axis", false, true);
       fprintf(fp, "%-g\n", (float)m_CartesianRadius);
-      PrintFormat.PrintSectionLabel(fp, "Ellipse Parameters", false, true);
-      fprintf(fp, "\n");
+      PrintFormat.PrintSectionLabel(fp, "Semimajor axis", false, true);
+      fprintf(fp, "%-g\n", (float)m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()));
       PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
       fprintf(fp, "%-g\n", ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)));
       PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
       fprintf(fp, "%-g\n", Data.GetEllipseShape(m_iEllipseOffset));
     }
-    free(pCoords);
   }
   catch (ZdException &x) {
-    free(pCoords);
     x.AddCallpath("DisplayCoordinates()","CCluster");
     throw;
   }
