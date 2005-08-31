@@ -552,6 +552,9 @@ void AnalysisRunner::FinalizeReport() {
     else
       fprintf(fp,"Total Running Time : %.0f %s",nSeconds, szSeconds);
 
+    if (gParameters.GetNumParallelProcessesToExecute() > 1)
+      fprintf(fp,"\nProcessor Usage    : %u processors", gParameters.GetNumParallelProcessesToExecute());
+
     fclose(fp);
   }
   catch (ZdException &x) {
