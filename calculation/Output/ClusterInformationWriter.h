@@ -13,6 +13,8 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * START_DATE_FLD;
       static const char       * END_DATE_FLD;
       static const char       * RADIUS_FIELD;
+      static const char       * E_MINOR_FIELD;
+      static const char       * E_MAJOR_FIELD;
       static const char       * E_ANGLE_FIELD;
       static const char       * E_SHAPE_FIELD;
       static const char       * NUM_LOCATIONS_FIELD;

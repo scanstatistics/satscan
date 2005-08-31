@@ -11,6 +11,8 @@ const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
 const char * ClusterInformationWriter::START_DATE_FLD	          = "START_DATE";
 const char * ClusterInformationWriter::END_DATE_FLD	          = "END_DATE";
 const char * ClusterInformationWriter::RADIUS_FIELD	          = "RADIUS";
+const char * ClusterInformationWriter::E_MINOR_FIELD              = "E_MINOR";
+const char * ClusterInformationWriter::E_MAJOR_FIELD              = "E_MAJOR";
 const char * ClusterInformationWriter::E_ANGLE_FIELD              = "E_ANGLE";
 const char * ClusterInformationWriter::E_SHAPE_FIELD              = "E_SHAPE";
 const char * ClusterInformationWriter::NUM_LOCATIONS_FIELD        = "NUMBER_LOC";
@@ -68,12 +70,27 @@ void ClusterInformationWriter::DefineFields() {
          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
       }
     }
-    CreateField(RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     if (gParameters.GetNumRequestedEllipses()) {
+      CreateField(E_MINOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(E_MAJOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
       CreateField(E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
       CreateField(E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
+    else {
+      CreateField(RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    }
+    CreateField(START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+    CreateField(END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
     CreateField(NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
+      CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
+    else {
+      CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
+      if (gParameters.GetNumRequestedEllipses())
+        CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
+    }
+    if (!gbExcludePValueField)
+      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
 /*
     Suppress printing cluster information for ordinal in this version, we will
     be updating this in v6.1.
@@ -140,17 +157,6 @@ void ClusterInformationWriter::DefineFields() {
 /*
     }
 */
-    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
-      CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
-    else {
-      CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
-      if (gParameters.GetNumRequestedEllipses())
-        CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
-    }
-    if (!gbExcludePValueField)
-      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
-    CreateField(START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-    CreateField(END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","ClusterInformationWriter");
@@ -269,9 +275,17 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                              //iThCoordIndex = GetFieldNumber(sBuffer);
                              Record.GetFieldValue(sBuffer).AsDouble() = pCoords[i];
                           }
-                          //to mimic behavior in CCluster reporting, cast down to float
-                          fRadius = static_cast<float>(thisCluster.GetCartesianRadius());
-                          Record.GetFieldValue(RADIUS_FIELD).AsDouble() = fRadius;
+                          if (gParameters.GetNumRequestedEllipses()) {
+                            //to mimic behavior in CCluster reporting, cast down to float
+                            fRadius = static_cast<float>(thisCluster.GetCartesianRadius());
+                            Record.GetFieldValue(E_MINOR_FIELD).AsDouble() = fRadius;
+                            Record.GetFieldValue(E_MAJOR_FIELD).AsDouble() = fRadius * gDataHub.GetEllipseShape(thisCluster.GetEllipseOffset());
+                          }
+                          else {
+                            //to mimic behavior in CCluster reporting, cast down to float
+                            fRadius = static_cast<float>(thisCluster.GetCartesianRadius());
+                            Record.GetFieldValue(RADIUS_FIELD).AsDouble() = fRadius;
+                          }
                           break;
          case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
@@ -396,8 +410,6 @@ void ClusterInformationWriter::WriteEllipseAngle(RecordBuffer& Record, const CCl
 void ClusterInformationWriter::WriteEllipseShape(RecordBuffer& Record, const CCluster& thisCluster) const {
   if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
     Record.SetFieldIsBlank(E_SHAPE_FIELD, true);
-  else if (thisCluster.GetEllipseOffset() == 0)
-    Record.GetFieldValue(E_SHAPE_FIELD).AsDouble() = 1.0;
   else
     Record.GetFieldValue(E_SHAPE_FIELD).AsDouble() = gDataHub.GetEllipseShape(thisCluster.GetEllipseOffset());
 }
