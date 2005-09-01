@@ -35,8 +35,10 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTE
 	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR)
 
 DEFINES     := -D__BASIS_NO_VCL \
-#               -DRPRTCMPT_RUNTIMES \
                -D__BATCH_COMPILE
+#DEFINES     := -D__BASIS_NO_VCL \
+#               -DRPRTCMPT_RUNTIMES \
+#               -D__BATCH_COMPILE
 
 CFLAGS      := -c -m32 -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
               
