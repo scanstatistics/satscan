@@ -111,7 +111,7 @@ void RunTimeComponentManager::Print(FILE* fp) {
        Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), sBuffer));
     }
   }  
-  Printer.PrintSectionSeparatorString(fp, 1);
+  Printer.PrintSectionSeparatorString(fp);
 }
 
 /** Starts timing of SerialRunTimeComponent type, stopping current component, creating

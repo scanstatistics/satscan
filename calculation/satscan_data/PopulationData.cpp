@@ -927,7 +927,7 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
           if (PopTotalsArray[j]==0) {
             if (!bZeroFound) {
               bZeroFound = true;
-              AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 1, 2);
+              AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 0, 2);
               fprintf(pDisplay,"Warning: According to the input data, the following locations have a\n");
               fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
               PrintDirection.SatScanPrintWarning("Warning: According to the input data, the following locations have a\n");

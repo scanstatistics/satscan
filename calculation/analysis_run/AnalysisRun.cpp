@@ -1346,11 +1346,12 @@ void AnalysisRunner::UpdateReport() {
         fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
     }
     if (gParameters.GetIsPowerCalculated()) {
+      fprintf(fp, "\n");
       sBuffer = "Percentage of Monte Carlo replications with a likelihood greater than";
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(),
               ((double)giPower_X_Count)/giNumSimsExecuted);
-      fprintf(fp,"... Y (%f) : %f\n\n", gParameters.GetPowerCalculationY(),
+      fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(),
               ((double)giPower_Y_Count)/giNumSimsExecuted);
     }
     if (giClustersReported > 0 && giNumSimsExecuted < gParameters.GetNumReplicationsRequested()) {
