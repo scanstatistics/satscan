@@ -14,7 +14,7 @@ ParametersPrint::~ParametersPrint() {}
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(FILE* fp) const {
   try {
-    AsciiPrintFormat::PrintSectionSeparatorString(fp, 1, 2);
+    AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 2);
     fprintf(fp, "PARAMETER SETTINGS\n");
     //print 'Input' tab settings
     PrintInputParameters(fp);
@@ -46,7 +46,7 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintRunOptionsParameters(fp);
     //print 'System' parameters
     PrintSystemParameters(fp);
-    AsciiPrintFormat::PrintSectionSeparatorString(fp, 1, 1);
+    AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
   }
   catch (ZdException &x) {
     x.AddCallpath("Print()","ParametersPrint");
@@ -327,7 +327,7 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
       for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
          fprintf(fp, "%i ", gParameters.GetEllipseRotations()[i]);
       fprintf(fp, "\n  Non-Compactness Penalty                  : ");
-      fprintf(fp, (gParameters.GetNonCompactnessPenalty() ? "Yes" : "No"));
+      fprintf(fp, (gParameters.GetNonCompactnessPenalty() ? "Yes\n" : "No\n"));
     }
   }
   catch (ZdException &x) {
@@ -508,8 +508,6 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       AdditionalOutputFile.SetExtension(".llr.dbf");
       fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
     }
-    if (gParameters.GetOutputSimulationData())
-      fprintf(fp, "  Simulated Data Output File : %s\n", gParameters.GetSimulationDataOutputFilename().c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintOutputParameters()","ParametersPrint");
@@ -525,16 +523,16 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
 
   try {
     if (bPrintingPowerCalculations || bPrintingSimulationType || bPrintingSimulationData) {
-      fprintf(fp, "\n\nPower Simulations\n-----------------\n");
+      fprintf(fp, "\nPower Simulations\n-----------------\n");
       if (bPrintingPowerCalculations) {
         fprintf(fp, "  P-values Prespecified LLRs : Yes\n");
         fprintf(fp, "  LLR1                       : %lf\n", gParameters.GetPowerCalculationX());
         fprintf(fp, "  LLR2                       : %lf\n", gParameters.GetPowerCalculationY());
       }
-      if (bPrintingSimulationType) {
-        fprintf(fp, "  Simulation Method          : ");
+      if (gParameters.GetSimulationType() != STANDARD) {
+        fprintf(fp, "\n  Simulation Method          : ");
         switch (gParameters.GetSimulationType()) {
-          case STANDARD         : fprintf(fp, "Null Randomization\n"); break;
+          //case STANDARD         : fprintf(fp, "Null Randomization\n"); break;
           case HA_RANDOMIZATION : fprintf(fp, "HA Randomization\n"); break;
           case FILESOURCE       : fprintf(fp, "File Source\n");
                                   fprintf(fp, "  Simulation Data Source     : %s\n",
@@ -545,7 +543,7 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
         };
       }
       if (bPrintingSimulationData) {
-        fprintf(fp, "  Output Simulation Data     : Yes\n");
+        fprintf(fp, "\n  Output Simulation Data     : Yes\n");
         fprintf(fp, "  Simulation Data Output     : %s\n", gParameters.GetSimulationDataOutputFilename().c_str());
       }
     }
