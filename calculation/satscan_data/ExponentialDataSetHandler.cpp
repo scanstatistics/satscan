@@ -274,7 +274,7 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
        gPrint.PrintInputWarning("       Censoring attribute must be either 0 or 1.\n");
        return false;
       }
-      //treat values greater than one as indication that patient is not censored
+      //treat values greater than one as indication that patient was censored
       tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
     }
     else
@@ -351,7 +351,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     }
     else {
       //calibrate measure -- multiply by (tTotalCases/tTotalMeasure)
-      pRandomizer->Calibrate(tTotalCases/tTotalMeasure);
+      tTotalMeasure = pRandomizer->Calibrate(tTotalCases/tTotalMeasure);
       //assign data accumulated in randomizer to data set case and measure arrays
       pRandomizer->Assign(DataSet.GetCaseArray(), DataSet.GetMeasureArray(), DataSet.GetNumTimeIntervals(), DataSet.GetNumTracts());
       //assign data accumulated in randomizer to data set censored case array

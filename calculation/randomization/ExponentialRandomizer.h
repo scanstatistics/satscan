@@ -15,7 +15,7 @@ class PermutedExponentialAttributes : public PermutedVariable {
     virtual ~PermutedExponentialAttributes();
 
     virtual PermutedExponentialAttributes * Clone() const;
-    void                                    Calibrate(double dCalibration) {gdVariable *= dCalibration;}
+    double                                  Calibrate(double dCalibration) {gdVariable *= dCalibration; return gdVariable; }
     inline unsigned short                   GetCensoredAttribute() const {return guCensoredAttribute;}
 };
 
@@ -41,7 +41,7 @@ class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
     void                                Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts) const;
     void                                AssignCensoredIndividuals(TwoDimCountArray_t& tCensoredArray) const;
     std::vector<double>               & CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const;
-    void                                Calibrate(measure_t tCalibration);
+    double                              Calibrate(measure_t tCalibration);
 };
 //******************************************************************************
 #endif

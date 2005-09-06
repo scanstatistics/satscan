@@ -110,12 +110,15 @@ std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(st
   return vMaxCirclePopulation;
 }
 
-/** Calibrates accumulated survival times. */
-void ExponentialRandomizer::Calibrate(measure_t tCalibration) {
+/** Calibrates accumulated survival times. Returns calibrated total measure. */
+double ExponentialRandomizer::Calibrate(measure_t tCalibration) {
+  double                                                   dTotalMeasure=0;
   ZdPointerVector<PermutedExponentialAttributes>::iterator itr_permuted=gvPermutedAttribute.begin();
 
   for (; itr_permuted != gvPermutedAttribute.end(); ++itr_permuted)
-    (*itr_permuted)->Calibrate(tCalibration);
+    dTotalMeasure += (*itr_permuted)->Calibrate(tCalibration);
+
+  return dTotalMeasure;  
 }
 
 /** re-initializes and  sorts permutated attribute */
