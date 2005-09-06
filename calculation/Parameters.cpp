@@ -655,11 +655,10 @@ void CParameters::SetAsDefaulted() {
   gbAdjustForEarlierAnalyses            = false;
   gbUseAdjustmentsForRRFile             = false;
   geSpatialAdjustmentType               = NO_SPATIAL_ADJUSTMENT;
-  geMultipleSetPurposeType           = MULTIVARIATE;
-  //default to 4.0.3, the last version prior to 'version' parameter
-  gCreationVersion.iMajor               = 4;
-  gCreationVersion.iMinor               = 0;
-  gCreationVersion.iRelease             = 3;
+  geMultipleSetPurposeType              = MULTIVARIATE;
+  gCreationVersion.iMajor               = atoi(VERSION_MAJOR);
+  gCreationVersion.iMinor               = atoi(VERSION_MINOR);
+  gCreationVersion.iRelease             = atoi(VERSION_RELEASE);
   gbUsePopulationFile                   = false;
   glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
   gbReportCriticalValues                = false;
