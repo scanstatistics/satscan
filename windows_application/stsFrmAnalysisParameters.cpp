@@ -492,6 +492,13 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   //before version 6, critical values were always reported
   if (gParameters.GetCreationVersion().iMajor < 6)
     gParameters.SetReportCriticalValues(true);
+  //If parameter file was created with version 4 of SaTScan, use time interval
+  //units as specifier for date precision. This was the behavior in v4 but it
+  //was decided to revert to time precision units. Note that for a purely spatial
+  //analysis, we have no way of knowing what the time precision should be; settings
+  //to YEAR is safe since it is permittable to have more precise dates.
+  if (gParameters.GetCreationVersion().iMajor == 4)
+    gParameters.SetPrecisionOfTimesType(gParameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : gParameters.GetTimeAggregationUnitsType());
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */
@@ -1192,7 +1199,7 @@ void TfrmAnalysis::SaveParameterSettings() {
     Caption = gParameters.GetSourceFileName().c_str();
 
     //set version parameter
-    CParameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR),atoi(VERSION_RELEASE)};
+    CParameters::CreationVersion vVersion = {atoi(VERSION_MAJOR), atoi(VERSION_MINOR), atoi(VERSION_RELEASE)};
     gParameters.SetVersion(vVersion);
     //Input File Tab
     gParameters.SetCaseFileName(edtCaseFileName->Text.c_str());
@@ -1402,6 +1409,10 @@ void TfrmAnalysis::Setup(const char * sParameterFileName) {
     }
     DefaultHiddenParameters();
     SetupInterface();
+
+    //Save orginal parameter settings to compare against when window closes but
+    //first save what the interface has produced for the settings read from file.
+    SaveParameterSettings();
     gInitialParameters = gParameters;
   }
   catch (ZdException & x) {
