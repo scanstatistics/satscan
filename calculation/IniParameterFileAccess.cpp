@@ -45,7 +45,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     gbReadStatusError = false;
 
     ZdIniFile SourceFile(sFilename, true, false, ZDIO_OPEN_READ|ZDIO_SREAD);
-    gpSpecifications = new IniParameterSpecification(SourceFile);
+    gpSpecifications = new IniParameterSpecification(SourceFile, gParameters);
 
     gParameters.SetAsDefaulted();
     gParameters.SetSourceFileName(sFilename);
