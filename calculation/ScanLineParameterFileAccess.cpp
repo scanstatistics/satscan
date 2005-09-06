@@ -177,6 +177,18 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
       }
     }
 
+    if (iLinesRead <= START_PROSP_SURV) {
+      //2.1.3 was the last version with documentation or with available executable to produce param file 
+      CParameters::CreationVersion Version = {2, 1, 3};
+      gParameters.SetVersion(Version);
+    }
+    else {
+      //versions 3.0.0 - 3.0.5 all had same number of parameters; this also was the last version
+      //which saved parameters in line based format; subsequent versions saved as ini file
+      CParameters::CreationVersion Version = {3, 0, 5};
+      gParameters.SetVersion(Version);
+    }
+
    ////Mark defaulted values.
    //if (iLinesRead != gParameters.GetNumReadParameters())
    //   while (++iLinesRead <= gParameters.GetNumReadParameters())
