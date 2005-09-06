@@ -47,7 +47,7 @@ class IniParameterSpecification {
 
    public:
      IniParameterSpecification();
-     IniParameterSpecification(const ZdIniFile& SourceFile);
+     IniParameterSpecification(const ZdIniFile& SourceFile, CParameters& Parameters);
      virtual ~IniParameterSpecification();
 
     bool                GetParameterIniInfo(ParameterType eParameterType, const char ** sSectionName, const char ** sKey) const;

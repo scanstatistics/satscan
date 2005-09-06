@@ -36,18 +36,36 @@ IniParameterSpecification::IniParameterSpecification() {
 }
 
 /** constructor -- builds specification for read process */
-IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile) {
+IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile, CParameters& Parameters) {
   long                          lSectionIndex, lKeyIndex;
-  CParameters::CreationVersion  Version = {4, 0, 3};
+  CParameters::CreationVersion  Version = {3, 1, 2};
+  bool                          bHasVersionKey=false;
 
   if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
     const ZdIniSection * pSection = SourceFile.GetSection(lSectionIndex);
-    if ((lKeyIndex = pSection->FindKey("Version")) > -1)
+    if ((lKeyIndex = pSection->FindKey("Version")) > -1) {
       sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &Version.iMajor, &Version.iMinor, &Version.iRelease);
+      bHasVersionKey = true;
+    }
   }
 
-  if (Version.iMajor == 4  && Version.iMinor == 0 && Version.iRelease == 3)
+  if (!bHasVersionKey) {//version prior to 5.0 didn't have the system section
+    //Attempt to determine which version, 3.1 was first version with ini structure:
+    //  with 3.1.0 - 3.1.2 having the same number of parameters
+    //  with 4.0.0 - 4.0.3 having the same number of parameters
+    //So this parameter file will either be 3.1.2 or 4.0.3 and since the early termination
+    //of simulations feature was added in version 4.0.0; we'll use that help determine which.
+    if ((lSectionIndex = SourceFile.GetSectionIndex(AdvancedFeatures)) > -1) {
+      const ZdIniSection * pSection = SourceFile.GetSection(lSectionIndex);
+      if ((lKeyIndex = pSection->FindKey("EarlySimulationTermination")) > -1)
+        {Version.iMajor = 4; Version.iMinor = 0; Version.iRelease = 3;}
+    }
+  }
+
+  if (Version.iMajor <= 4) {
+    Parameters.SetVersion(Version); //version section not present before v5.0
     Build_4_0_x_ParameterList();
+  }
   else if (Version.iMajor == 5  && Version.iMinor == 0)
     Build_5_0_x_ParameterList();
   else
