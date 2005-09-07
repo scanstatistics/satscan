@@ -170,8 +170,8 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            BasisInit();
            BasisSetToolkit(new SaTScanToolkit(_argv[0]));
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
-           Application->Title = "SaTScan";
-           Application->HelpFile = "";
+           Application->Title = "SaTScan - Software for the Spatial and Space-Time Scan Statistics";
+                 Application->HelpFile = "";
            sUpdateApplication.printf("%s%s", ExtractFilePath(Application->ExeName).c_str(), TfrmUpdateCheck::gsUpdaterFilename);
            if (!access(sUpdateApplication.c_str(), 00)) {
              _sleep(1); // give updater moment to shutdown
