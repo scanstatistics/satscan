@@ -35,12 +35,13 @@ inline bool HighRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, me
 
 /** Indicates whether an area has lower than expected cases for a clustering
     within a single dataset. */
-inline bool HighOrLowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure)
-{
-  if (nMeasure == 0)
-    return false;
-
-  return (nCases*nTotalMeasure != nMeasure*nTotalCases);
+inline bool HighOrLowRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure) {
+  if (nMeasure == 0) return false;
+  //check for high rate -- must have more than one case to be considered high rate
+  if (nCases*nTotalMeasure > nMeasure*nTotalCases) return (nCases > 1);
+  //check for low rate
+  else if (nCases*nTotalMeasure < nMeasure*nTotalCases) return true;
+  else return false;
 }
 
 inline bool MultipleSetsHighRate(count_t nCases, measure_t nMeasure, count_t nTotalCases, measure_t nTotalMeasure);
