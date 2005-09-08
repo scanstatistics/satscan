@@ -41,7 +41,11 @@ void AbstractOrdinalDenominatorDataRandomizer::MakeDataB(count_t tTotalCounts, m
   }
 }
 
-/** TODO: document */
+/** Distributes cases into simulation case array, where individuals are initially
+    dichotomized into cases and controls then each randomly assigned to be a case
+    or a control. 
+    Caller is responsible for ensuring that passed array pointers are allocated
+    and dimensions match that of passed tract and locations variables. */
 void AbstractOrdinalDenominatorDataRandomizer::RandomizeOrdinalData(count_t tNumCases, count_t tNumControls,
                                                                     count_t** ppSimCases, measure_t** ppMeasure,
                                                                     int tNumTracts, int tNumTimeIntervals) {
