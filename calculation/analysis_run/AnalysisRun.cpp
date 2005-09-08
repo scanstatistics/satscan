@@ -132,8 +132,10 @@ void AnalysisRunner::CreateRelativeRiskFile() {
   macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
 
   try {
-    if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles())
+    if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles()) {
+      gPrintDirection.SatScanPrintf("Reporting relative risk estimates...\n");
       gpDataHub->DisplayRelativeRisksForEachTract();
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("CreateRelativeRiskFile()","AnalysisRunner");
