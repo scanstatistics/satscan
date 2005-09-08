@@ -495,7 +495,7 @@ void AnalysisRunner::FinalizeReport() {
     PrintFormat.SetMarginsAsOverviewSection();
     //if zero clusters retained in real data, then no clusters of significance were retained.  
     if (gTopClustersContainer.GetNumClustersRetained() == 0) {
-      fprintf(fp, "\nNo clusters were found.\n");
+      fprintf(fp, "No clusters were found.\n");
       if (gParameters.GetAreaScanRateType() == HIGH)
         sBuffer = "All areas scanned had either only one case or equal or fewer cases than expected.";
       else if (gParameters.GetAreaScanRateType() == LOW)
@@ -505,11 +505,11 @@ void AnalysisRunner::FinalizeReport() {
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
     }
     else if (giClustersReported == 0) {
-      fprintf(fp, "\nNo clusters reported.\n");
+      fprintf(fp, "No clusters reported.\n");
       if (gTopClustersContainer.GetTopRankedCluster().GetRatio() < gdMinRatioToReport)
-        sBuffer.printf("All clusters had a ratio less than %g.\n", gdMinRatioToReport);
+        sBuffer.printf("All clusters had a ratio less than %g.", gdMinRatioToReport);
       else
-        sBuffer.printf("All clusters had a rank greater than %i.\n", gParameters.GetNumReplicationsRequested());
+        sBuffer.printf("All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
     }
     else if (gParameters.GetNumReplicationsRequested() == 0) {
