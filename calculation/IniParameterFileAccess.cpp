@@ -43,12 +43,11 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
    try {
     gvParametersMissingDefaulted.clear();
     gbReadStatusError = false;
+    gParameters.SetAsDefaulted();
+    gParameters.SetSourceFileName(sFilename);
 
     ZdIniFile SourceFile(sFilename, true, false, ZDIO_OPEN_READ|ZDIO_SREAD);
     gpSpecifications = new IniParameterSpecification(SourceFile, gParameters);
-
-    gParameters.SetAsDefaulted();
-    gParameters.SetSourceFileName(sFilename);
 
     for (ParameterType eType=ANALYSISTYPE; eType <= gParameters.giNumParameters; eType = ParameterType(eType + 1))
        ReadIniParameter(SourceFile, eType);
