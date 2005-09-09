@@ -17,9 +17,10 @@ CMeasureList::~CMeasureList() {}
     where iteration represents an elliptical shaped cylinder in conjunction with
     requested correction for compactness. */
 void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration) {
-  double dMaxLogLikelihoodRatio, dNonCompactnessPenalty;
+  double dMaxLogLikelihoodRatio, dNonCompactnessPenalty, dTotal;
 
-  dMaxLogLikelihoodRatio = dMaxLogLikelihood - gLikelihoodCalculator.GetLogLikelihoodForTotal();
+  dTotal = gLikelihoodCalculator.GetLogLikelihoodForTotal();
+  dMaxLogLikelihoodRatio = dMaxLogLikelihood - dTotal;
   if (iIteration > 0 && gSaTScanData.GetParameters().GetNumRequestedEllipses() && gSaTScanData.GetParameters().GetNonCompactnessPenalty()) {
     dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetEllipseShape(iIteration));
     gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dNonCompactnessPenalty);
