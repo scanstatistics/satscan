@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   catch (ZdMemoryException &x) {
-    ConsolePrint.SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
+    ConsolePrint.SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insufficient memory.\n");
     ConsolePrint.SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
     BasisExit();
     return 1;
