@@ -37,6 +37,26 @@ AbstractAnalysis::~AbstractAnalysis() {
   catch(...){}
 }
 
+/** Returns newly allocated log likelihood ratio calculator based upon requested
+    probability model. Caller is responsible for object deletion.
+    - throws ZdException if model type is not known */
+AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(const CSaTScanData& DataHub) {
+  //create likelihood calculator
+  switch (DataHub.GetParameters().GetProbabilityModelType()) {
+    case POISSON              :
+    case SPACETIMEPERMUTATION :
+    case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
+    case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
+    case NORMAL               : return new NormalLikelihoodCalculator(DataHub);
+    case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
+    case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
+    default                   :
+     ZdGenerateException("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()",
+                         DataHub.GetParameters().GetProbabilityModelType());
+  };
+  return 0;
+}
+
 /** Returns newly allocated CMeasureList object - caller is responsible for deletion.
     - throws ZdException if type is not known */
 CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
@@ -92,17 +112,7 @@ void AbstractAnalysis::Setup() {
       geReplicationsProcessType = MeasureListEvaluation;
     }
     //create likelihood calculator
-    switch (gParameters.GetProbabilityModelType()) {
-      case POISSON              :
-      case SPACETIMEPERMUTATION :
-      case EXPONENTIAL          : gpLikelihoodCalculator = new PoissonLikelihoodCalculator(gDataHub); break;
-      case BERNOULLI            : gpLikelihoodCalculator = new BernoulliLikelihoodCalculator(gDataHub); break;
-      case NORMAL               : gpLikelihoodCalculator = new NormalLikelihoodCalculator(gDataHub); break;
-      case ORDINAL              : gpLikelihoodCalculator = new OrdinalLikelihoodCalculator(gDataHub); break;
-      case RANK                 : gpLikelihoodCalculator = new WilcoxonLikelihoodCalculator(gDataHub); break;
-      default                   :
-       ZdGenerateException("Unknown probability model '%d'.", "Setup()", gParameters.GetProbabilityModelType());
-    };
+    gpLikelihoodCalculator = GetNewLikelihoodCalculator(gDataHub);
   }
   catch (ZdException &x) {
     delete gpClusterDataFactory;

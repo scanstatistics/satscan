@@ -19,21 +19,23 @@ class AbstractAnalysis {
     void                                Setup();
 
   protected:
-    enum ReplicationsProcessType        {MeasureListEvaluation=0, ClusterEvaluation};
+    enum ReplicationsProcessType          {MeasureListEvaluation=0, ClusterEvaluation};
 
-    const CParameters                 & gParameters;                    
-    const CSaTScanData                & gDataHub;
-    BasePrint                         & gPrintDirection;
-    AbstractClusterDataFactory        * gpClusterDataFactory;
-    AbstractLikelihoodCalculator      * gpLikelihoodCalculator;
-    ReplicationsProcessType             geReplicationsProcessType;
+    const CParameters                   & gParameters;
+    const CSaTScanData                  & gDataHub;
+    BasePrint                           & gPrintDirection;
+    AbstractClusterDataFactory          * gpClusterDataFactory;
+    AbstractLikelihoodCalculator        * gpLikelihoodCalculator;
+    ReplicationsProcessType               geReplicationsProcessType;
 
-    CMeasureList                      * GetNewMeasureListObject() const;
-    CTimeIntervals                    * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const;
+    CMeasureList                        * GetNewMeasureListObject() const;
+    CTimeIntervals                      * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const;
 
   public:
     AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
     virtual ~AbstractAnalysis();
+
+    static AbstractLikelihoodCalculator * GetNewLikelihoodCalculator(const CSaTScanData& DataHub);
 };    
 //******************************************************************************
 #endif
