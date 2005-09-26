@@ -6,6 +6,7 @@
 #include "cluster.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
+#include "AbstractAnalysis.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
 const char * ClusterInformationWriter::START_DATE_FLD	          = "START_DATE";
@@ -371,7 +372,7 @@ void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, con
 
 /** Write obvserved, expected and  observed/expected to record.*/
 void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, const CCluster& theCluster) const {
-  ZdString      sBuffer;
+  ZdString                                      sBuffer;
 
   if (gParameters.GetNumDataSets() == 1) {
     Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
@@ -381,17 +382,23 @@ void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, cons
       Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = theCluster.GetRelativeRisk(gDataHub);
   }
   else {
-    for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
-       sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCount(i);
-       sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, i);
-       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, i);
+    std::vector<unsigned int>                     vComprisedDataSetIndexes;
+    std::vector<unsigned int>::iterator           itr_Index;
+    std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
+
+    theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+    for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
+//    for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
+       sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, *itr_Index + 1);
+       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCount(*itr_Index);
+       sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, *itr_Index + 1);
+       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, *itr_Index);
+       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, *itr_Index + 1);
+       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, *itr_Index);
        if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
-         sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i + 1);
-         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetRelativeRisk(gDataHub, i);
-       }  
+         sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, *itr_Index + 1);
+         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetRelativeRisk(gDataHub, *itr_Index);
+       }
     }
   }
 }
