@@ -2,10 +2,10 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //******************************************************************************
-#include "MultiSetCategoricalClusterData.h"
 #include "CategoricalClusterDataFactory.h"
 #include "LoglikelihoodRatioUnifier.h"
 #include "OrdinalLikelihoodCalculation.h"
+#include "MultiSetCategoricalClusterData.h"
 
 /** class constructor */
 MultiSetCategoricalSpatialData::MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate)
@@ -63,6 +63,41 @@ count_t MultiSetCategoricalSpatialData::GetCategoryCaseCount(unsigned int iCateg
   return gvSetClusterData[tSetIndex]->GetCategoryCaseCount(iCategoryIndex);
 }
 
+/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
+    If specified purpose for multiple data sets is multivariate, recalculates high and low
+    LLR values to determine which data sets comprised target ratio; else all data sets
+    comprised target ratio. */
+void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                    AbstractLikelihoodCalculator& Calculator,
+                                                                    std::vector<unsigned int>& vDataSetIndexes) const {
+
+  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+
+  if (pUnifier) {
+    std::vector<count_t>::iterator                      itr_data;
+    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
+    double                                              dHighRatios=0, dLowRatios=0;
+
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
+       unsigned int iIndex = std::distance(vHighLowRatios.begin(), itr_pair);
+       pUnifier->GetHighLowRatioOrdinal(Calculator, gvSetClusterData[iIndex]->gvCasesPerCategory, iIndex, *itr_pair);
+       dHighRatios += itr_pair->first;
+       dLowRatios += itr_pair->second;
+    }
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
+       if (dHighRatios == dTargetLoglikelihoodRatio && itr_pair->first)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+       else if (dLowRatios == dTargetLoglikelihoodRatio && itr_pair->second)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+    }
+  }
+  else {
+    for (unsigned int i=0; i < gvSetClusterData.size(); ++i)
+       vDataSetIndexes.push_back(i);
+  }
+}
+
 /** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood
     ratio to determine which, if any, categories where combined into one category. */
 void MultiSetCategoricalSpatialData::GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
@@ -101,6 +136,40 @@ count_t AbstractMultiSetCategoricalTemporalData::GetCaseCount(unsigned int) cons
     Caller responsible for ensuring that 'iCategoryIndex' and 'tSetIndex' are valid indexes. */
 count_t AbstractMultiSetCategoricalTemporalData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex) const {
   return gvSetClusterData[tSetIndex]->GetCategoryCaseCount(iCategoryIndex);
+}
+
+/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
+    -- This base class implementation handles all cluster data objects for which there is only one
+       data set analyzed. */
+void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                    AbstractLikelihoodCalculator& Calculator,
+                                                                    std::vector<unsigned int>& vDataSetIndexes) const {
+
+  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+
+  if (pUnifier) {
+    std::vector<count_t>::iterator                      itr_data;
+    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
+    double                                              dHighRatios=0, dLowRatios=0;
+
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
+       unsigned int iIndex = std::distance(vHighLowRatios.begin(), itr_pair);
+       pUnifier->GetHighLowRatioOrdinal(Calculator, gvSetClusterData[iIndex]->gvCasesPerCategory, iIndex, *itr_pair);
+       dHighRatios += itr_pair->first;
+       dLowRatios += itr_pair->second;
+    }
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
+       if (dHighRatios == dTargetLoglikelihoodRatio && itr_pair->first)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+       else if (dLowRatios == dTargetLoglikelihoodRatio && itr_pair->second)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+    }
+  }
+  else {
+    for (unsigned int i=0; i < gvSetClusterData.size(); ++i)
+       vDataSetIndexes.push_back(i);
+  }
 }
 
 /** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood

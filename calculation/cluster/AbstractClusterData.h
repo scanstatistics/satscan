@@ -17,9 +17,10 @@ class AbstractClusterData {
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0) = 0;
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const = 0;
-
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const {return 0;}// make virtual later = 0;
-
+    virtual void        GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                          AbstractLikelihoodCalculator& Calculator,
+                                                          std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const = 0;
     virtual void        InitializeData() = 0;
 };

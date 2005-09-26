@@ -23,6 +23,9 @@ class MultiSetSpatialData : public AbstractSpatialClusterData {
     virtual void                  AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual double                CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual count_t               GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void                  GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                    AbstractLikelihoodCalculator& Calculator,
+                                                                    std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t             GetMeasure(unsigned int tSetIndex=0) const;
     virtual void                  InitializeData();
 };
@@ -37,6 +40,10 @@ class AbstractMultiSetTemporalData : public AbstractTemporalClusterData {
     virtual ~AbstractMultiSetTemporalData() {}
 
    ZdPointerVector<TemporalData>           gvSetClusterData;
+
+    virtual void                  GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                    AbstractLikelihoodCalculator& Calculator,
+                                                                   std::vector<unsigned int>& vDataSetIndexes) const;
 };
 
 /** Class representing accumulated data of temporal clustering in multiple data sets. */

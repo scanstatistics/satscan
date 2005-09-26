@@ -5,6 +5,7 @@
 #include "CategoricalClusterData.h"
 
 class CategoricalClusterDataFactory; /* forward class declaration. */
+class AbstractLikelihoodCalculator;
 
 /** Class representing accumulated data of a spatial clustering in multiple data
     sets for case data which is partitioned by category. */
@@ -29,6 +30,11 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
                                                      unsigned int tSetIndex=0) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
+
+    void GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                           AbstractLikelihoodCalculator& Calculator,
+                                           std::vector<unsigned int>& vDataSetIndexes) const;
+
 };
 
 /** Abstract class representing accumulated data of a temporal clustering in multiple
@@ -50,6 +56,11 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
                                                      unsigned int tSetIndex=0) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
+
+    void GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                           AbstractLikelihoodCalculator& Calculator,
+                                           std::vector<unsigned int>& vDataSetIndexes) const;
+    
 };
 
 /** Class representing accumulated data of a temporal clustering in multiple data

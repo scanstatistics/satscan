@@ -62,6 +62,41 @@ count_t MultiSetSpatialData::GetCaseCount(unsigned int tSetIndex) const {
   return gvSetClusterData[tSetIndex]->GetCaseCount();
 }
 
+/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
+    If specified purpose for multiple data sets is multivariate, recalculates high and low
+    LLR values to determine which data sets comprised target ratio; else all data sets
+    comprised target ratio. */
+void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                            AbstractLikelihoodCalculator& Calculator,
+                                                            std::vector<unsigned int>& vDataSetIndexes) const {
+  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+
+  if (pUnifier) {
+    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
+    ZdPointerVector<SpatialData>::const_iterator        itr_data;
+    double                                              dHighRatios=0, dLowRatios=0;
+
+    for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
+       pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
+                                 (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, *itr_pair);
+       dHighRatios += itr_pair->first;
+       dLowRatios += itr_pair->second;
+    }
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
+       if (dHighRatios == dTargetLoglikelihoodRatio && itr_pair->first)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+      else if (dLowRatios == dTargetLoglikelihoodRatio && itr_pair->second)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+    }
+  }
+  else {
+    ZdPointerVector<SpatialData>::const_iterator itr_data;
+    for (itr_data=gvSetClusterData.begin(); itr_data != gvSetClusterData.end(); ++itr_data)
+       vDataSetIndexes.push_back(std::distance(gvSetClusterData.begin(), itr_data));
+  }
+}
+
 /** Returns expected number of cases in accumulated respective data sets' cluster data.
     Caller responsible for ensuring that 'tSetIndex' is a valid index. */
 measure_t MultiSetSpatialData::GetMeasure(unsigned int tSetIndex) const {
@@ -72,6 +107,43 @@ measure_t MultiSetSpatialData::GetMeasure(unsigned int tSetIndex) const {
 void MultiSetSpatialData::InitializeData() {
   for (gitr=gvSetClusterData.begin(); gitr != gvSetClusterData.end(); ++gitr)
      (*gitr)->InitializeData();
+}
+
+//******************************************************************************
+
+/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
+    If specified purpose for multiple data sets is multivariate, recalculates high and low
+    LLR values to determine which data sets comprised target ratio; else all data sets
+    comprised target ratio. */
+void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                            AbstractLikelihoodCalculator& Calculator,
+                                                            std::vector<unsigned int>& vDataSetIndexes) const {
+  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+
+  if (pUnifier) {
+    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
+    ZdPointerVector<TemporalData>::const_iterator       itr_data;
+    double                                              dHighRatios=0, dLowRatios=0;
+    
+    for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
+       pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
+                                 (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, *itr_pair);
+       dHighRatios += itr_pair->first;
+       dLowRatios += itr_pair->second;
+    }
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
+       if (dHighRatios == dTargetLoglikelihoodRatio && itr_pair->first)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+      else if (dLowRatios == dTargetLoglikelihoodRatio && itr_pair->second)
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+    }
+  }
+  else {
+    ZdPointerVector<TemporalData>::const_iterator       itr_data;
+    for (itr_data=gvSetClusterData.begin(); itr_data != gvSetClusterData.end(); ++itr_data)
+       vDataSetIndexes.push_back(std::distance(gvSetClusterData.begin(), itr_data));
+  }
 }
 
 //******************************************************************************
