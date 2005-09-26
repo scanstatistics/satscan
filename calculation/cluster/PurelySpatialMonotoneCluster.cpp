@@ -278,20 +278,16 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 }
 
 /** Prints observed divided by expected and relative risk of cluster to file pointer in ACSII format. */
-void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   ZdString      sBuffer, sWork;
   int           i;
 
   try {
-    CCluster::DisplayObservedDivExpected(fp, DataHub, PrintFormat);
+    CCluster::DisplayObservedDivExpected(fp, iDataSetIndex, DataHub, PrintFormat);
     if (m_nSteps == 1)
       return;
     PrintFormat.PrintSectionLabel(fp, "Relative risk by step", false, true);
-    sBuffer.printf("%.3f", GetRelativeRisk(0, DataHub));
-    for (i=1; i < m_nSteps; ++i) {
-       sWork.printf(", %.3f", GetRelativeRisk(i, DataHub));
-       sBuffer << sWork;
-    }
+    sBuffer.printf("%.3f", GetRelativeRisk(iDataSetIndex, DataHub));
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
   catch (ZdException &x) {
