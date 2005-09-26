@@ -49,6 +49,16 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     measure_t tTotalMeasure);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
+    void                GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
+                                    count_t tCases,
+                                    measure_t tMeasure,
+                                    count_t tTotalCases,
+                                    measure_t tTotalMeasure,
+                                    std::pair<double, double>& prHighLowRatios);
+    void                GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator,
+                                               const std::vector<count_t>& vOrdinalCases,
+                                               size_t tSetIndex,
+                                               std::pair<double, double>& prHighLowRatios);
     virtual double      GetLoglikelihoodRatio() const;
     virtual void        Reset();
 };

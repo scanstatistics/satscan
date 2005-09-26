@@ -35,6 +35,38 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, 
     gdHighRateRatios += ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalHighRate(vOrdinalCases, tSetIndex);
 }
 
+/** Calculates loglikelihood ratio given parameter data; accumulating high and low
+    rates separately; storing is passed pair object. */
+void MultivariateUnifier::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
+                                          count_t tCases,
+                                          measure_t tMeasure,
+                                          count_t tTotalCases,
+                                          measure_t tTotalMeasure,
+                                          std::pair<double, double>& prHighLowRatios) {
+
+  prHighLowRatios.second = 0;
+  prHighLowRatios.first = 0;
+  if (gbScanLowRates && LowRate(tCases, tMeasure, tTotalCases, tTotalMeasure))
+    prHighLowRatios.second = Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
+  if (gbScanHighRates && MultipleSetsHighRate(tCases, tMeasure, tTotalCases, tTotalMeasure))
+    prHighLowRatios.first = Calculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
+}
+
+/** Calculates loglikelihood ratio given parameter data; accumulating high and low
+    rates separately; storing is passed pair object. */
+void MultivariateUnifier::GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator,
+                                                 const std::vector<count_t>& vOrdinalCases,
+                                                 size_t tSetIndex,
+                                                 std::pair<double, double>& prHighLowRatios) {
+
+  prHighLowRatios.second = 0;
+  prHighLowRatios.first = 0;
+  if (gbScanLowRates)
+    prHighLowRatios.second = ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalLowRate(vOrdinalCases, tSetIndex);
+  if (gbScanHighRates)
+    prHighLowRatios.first = ((OrdinalLikelihoodCalculator&)Calculator).CalcLogLikelihoodRatioOrdinalHighRate(vOrdinalCases, tSetIndex);
+}
+
 /** Returns the largest calculated loglikelihood ratio by comparing summed ratios
     that were for high rates to those that were for low rates. */
 double MultivariateUnifier::GetLoglikelihoodRatio() const {
