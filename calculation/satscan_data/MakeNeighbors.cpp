@@ -10,6 +10,9 @@
 bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
   //first check whether distances are equal - we may need to break a tie
   if (lhs.GetDistance() == rhs.GetDistance()) {
+    // if lhs and rhs reference same location - just return false 
+    if (lhs.GetTractNumber() == rhs.GetTractNumber())
+      return false;
     // break ties in a controlled scheme:
     //   - compare coordinates starting at first dimension and
     //       continue until last dimension(if needed)
@@ -117,7 +120,7 @@ CentroidNeighborCalculator::~CentroidNeighborCalculator() {}
 void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
   CenterLocationDistancesAbout(tEllipseOffsetIndex, tCentroidIndex);
   //sort such locations are clostest to farthest
-  std::stable_sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
+  std::sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
 }
 
 /** Calculates neighboring locations about each centroid; storing results in sorted
