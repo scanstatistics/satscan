@@ -331,12 +331,12 @@ void PopulationData::CalculateAlpha(std::vector<double>& vAlpha, Julian StartDat
     for ensuring 'pCases' points to allocates memory and contains a number of
     elements equal to gTractCategories.size(). */
 void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const {
-  int                           i, j, nPEndIndex, nPStartIndex = 0;
+  int                           j, nPEndIndex, nPStartIndex = 0;
+  size_t                        tTractIndex;
   const CovariateCategory  *    pCategoryDescriptor;
-  std::string                   sBuffer, sBuffer2;
-  double                        dTractPopulation, dCategoryTotal;
-  count_t                       iTractCaseCount;
-//  count_t                     * pCases(Data.GetCasesArray()[0]);
+  std::string                   sBuffer;
+  float                         fTractTotalPopulation, fTractCategoryPopulation;
+  std::vector<float>            vCategoryTotalPopulation(GetNumCovariateCategories(), 0);
 
   try {
     if (gbStartAsPopDt)
@@ -349,33 +349,33 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
     //NOTE: Because of the design error with reading the case file, the tract handler
     //      class no longer records number of cases for each tract/category. So this
     //      check has been removed until that code is updated.
-    for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
-       dTractPopulation = 0;
-       //iTractCaseCount = 0;
-       pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
+    for (tTractIndex=0; tTractIndex < gCovariateCategoriesPerLocation.size(); ++tTractIndex) {
+       fTractTotalPopulation = 0;
+       pCategoryDescriptor = gCovariateCategoriesPerLocation[tTractIndex];
        while (pCategoryDescriptor) {
-          dCategoryTotal = 0;
-          //iTractCaseCount += pCategoryDescriptor->GetCaseCount();
+          fTractCategoryPopulation = 0;
           for (j=nPStartIndex; j <= nPEndIndex; j++)
-             dCategoryTotal += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
-          dTractPopulation += dCategoryTotal;
-          //if (dCategoryTotal == 0 && pCategoryDescriptor->GetCaseCount() > 0) {
-          //  if (gpPopulation->GetNumPopulation() > 1)
-          //    //If there is only one population category, then this warning is redundant as the error
-          //    //message below will be displayed with same information. So we only want to
-          //    //show this warning if there is more than one covariate for this location.
-          //    gpPrintDirection->SatScanPrintWarning("Warning: Tract %s  covariate %s has %d cases but zero population.\n",
-          //                     gvTractDescriptors[i]->GetTractIdentifier(0, sBuffer),
-          //                      gpPopulationCategories->GetPopulationCategoryAsString(pCategoryDescriptor->GetCategoryIndex(), sBuffer2),
-          //                      pCategoryDescriptor->GetCaseCount());
-          //}
+             fTractCategoryPopulation += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
+          fTractTotalPopulation += fTractCategoryPopulation;
+          vCategoryTotalPopulation[pCategoryDescriptor->GetCategoryIndex()] += fTractCategoryPopulation;
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
        }
-
-       if (dTractPopulation == 0 && pCases[i] > 0)
+       if (fTractTotalPopulation == 0 && pCases[tTractIndex] > 0)
          GenerateResolvableException("Error: The total population is zero for location ID %s but it has %d cases.",
                                      "CheckCasesHavePopulations()",
-                                     Data.GetTInfo()->tiGetTid(i, sBuffer), pCases[i]);
+                                     Data.GetTInfo()->tiGetTid(tTractIndex, sBuffer), pCases[tTractIndex]);
+    }
+
+    //if there is at least one case in a category then the total population in
+    //that category can not be zero (summed across all locations)
+    for (tTractIndex=0; tTractIndex < gvCovariateCategoryCaseCount.size(); ++tTractIndex) {
+       if (gvCovariateCategoryCaseCount[tTractIndex] && !vCategoryTotalPopulation[tTractIndex])
+         GenerateResolvableException("Error: The total population in covariate category '%s'\n"
+                                     "       is zero but there is %d case%s specified in the case file.",
+                                     "CheckCasesHavePopulations()",
+                                     GetCovariateCategoryAsString(tTractIndex, sBuffer),
+                                     gvCovariateCategoryCaseCount[tTractIndex],
+                                     (gvCovariateCategoryCaseCount[tTractIndex] == 1 ? "" : "s"));
     }
   }
   catch (ZdException &x) {
