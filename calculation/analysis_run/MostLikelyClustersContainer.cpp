@@ -15,32 +15,16 @@ MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
 
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
-// NOTE: We could suppress adding undefined clusters to the internal list, but
-//       unfortunetly this causes inconsistency between outputs due to the call
-//       to qsort() before removing undefined clusters in the ranking process.
-
-//  if (Cluster.ClusterDefined()) {
-    if (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
-      gptCluster.reset(Cluster.Clone());
-    else {
-      gvTopClusterList.push_back(0);
-      gvTopClusterList.back() = Cluster.Clone();
-    }
-//  }
+  if (Cluster.ClusterDefined()) {
+    gvTopClusterList.push_back(0);
+    gvTopClusterList.back() = Cluster.Clone();
+  }
 }
 
 /** Adds cluster object to list of top clusters, taking ownership. */
 void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
-// NOTE: We could suppress adding undefined clusters to the internal list, but
-//       unfortunetly this causes inconsistency between outputs due to the call
-//       to qsort() before removing undefined clusters in the ranking process.
-
-//  if (pCluster.get() && pCluster->ClusterDefined()) {
-    if (pCluster->GetClusterType() == PURELYTEMPORALCLUSTER)
-      gptCluster = pCluster;
-    else
-      gvTopClusterList.push_back(pCluster.release());
-//  }
+  if (pCluster.get() && pCluster->ClusterDefined())
+    gvTopClusterList.push_back(pCluster.release());
 }
 
 //Does the point at 'theCentroid' lie within the spherical region described by
@@ -62,14 +46,6 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
      throw;
   }
   return bResult;
-}
-
-/** Comparison function for sorting clusters by m_ratio in descending order.*/
-int MostLikelyClustersContainer::CompareClustersByRatio(const void *a, const void *b) {
-  double rdif = (*(CCluster**)b)->m_nRatio - (*(CCluster**)a)->m_nRatio;
-  if (rdif < 0.0)   return -1;
-  if (rdif > 0.0)   return 1;
-  return 0;
 }
 
 /** Removes all cluster objects from list. */
@@ -261,66 +237,42 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
    try {
      if (DataHub.GetTInfo()->tiGetDimensions() < 2)
        ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
-
-      if (Parameters.GetIsSequentialScanning())
-        uClustersToKeepEachPass = 1;
-      else {
-        if (eClusterInclusionCriterion == NORESTRICTIONS)
-          uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());
-        else
-          uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
-      }
-      /* Note: "Old clusters" are clusters already included on the list, while */
-      /* a "new cluster" is the present candidate for inclusion.               */
-
-      /* Sort by descending m_ratio, without regard to overlap */
-      qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
-
-      // Remove "Undefined" clusters that have been sorted to bottom of list because ratio=-DBL_MAX
-      for (u=0; u < gvTopClusterList.size(); ) {
-        if (gvTopClusterList[u]->ClusterDefined()) {
-          ++u;//skip this cluster
-        }
-        else {
-          gvTopClusterList.DeleteElement(u);
-        }
-      }
-      if (eClusterInclusionCriterion != NORESTRICTIONS)
-        gPrintDirection.SatScanPrintf("Restricting secondary clusters by geographical overlap for %u clusters\n", gvTopClusterList.size());
-      
-      if (gvTopClusterList.size() > 0) {
-        std::vector<CCluster *> vRetainedClusters;
-        /* Remove certain types of overlapping clusters from later printout */
-        for (itrCurr=gvTopClusterList.begin(), itrEnd = gvTopClusterList.end(); (vRetainedClusters.size() < uClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
+     //return from function if no clusters retained
+     if (!gvTopClusterList.size()) return;
+     //determine maximum number of clusters to retain
+     if (Parameters.GetIsSequentialScanning())
+       uClustersToKeepEachPass = 1;
+     else if (eClusterInclusionCriterion == NORESTRICTIONS)
+       uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());
+     else
+       uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
+     //sort by descending m_ratio
+     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
+     if (eClusterInclusionCriterion != NORESTRICTIONS)
+       gPrintDirection.SatScanPrintf("Restricting secondary clusters by geographical overlap for %u clusters\n", gvTopClusterList.size());
+     //remove geographically overlapping clusters
+     if (gvTopClusterList.size() > 0) {
+       std::vector<CCluster *> vRetainedClusters;
+       size_t                  tNumSpatialRetained=0; 
+       for (itrCurr=gvTopClusterList.begin(),itrEnd=gvTopClusterList.end(); (tNumSpatialRetained < uClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
           if (ShouldRetainCandidateCluster(vRetainedClusters, **itrCurr, DataHub, eClusterInclusionCriterion)) {
-            //transfer ownership of cluster to vRetainedClusters:
+            //transfer ownership of cluster to vRetainedClusters
             vRetainedClusters.push_back(*itrCurr);
+            //since previous version had it so that the purely temporal cluster was added after
+            //this ranking process, we don't want to consider a purely temporal cluster as
+            //part of the retained list when determining whether list is at maximum size
+            if ((*itrCurr)->GetClusterType() != PURELYTEMPORALCLUSTER) ++tNumSpatialRetained;
             *itrCurr = 0;
           }
-        }
-        gvTopClusterList.DeleteAllElements();
-        gvTopClusterList.resize(vRetainedClusters.size());
-        std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
-      }
-      //NOTE: In order to keep ordering of ranked clusters consistant with previous
-      //      versions, purely temporal clusters objects are held separate, away
-      //      from gvTopClusterList until after non-pt clusters are ranked. Old
-      //      functionality was such that RankTopClusters() was called, then later on,
-      //      a purely temporal cluster is added to gvTopClusterList and then sorted
-      //      again. This behavior is not desirable for centric analyses. Having the
-      //      pt cluster minged among non-pt clusters becomes a problem when clusters
-      //      in gvTopClusterList have identical llr values; where sorting with the
-      //      extra pt cluster has some bearing on how ties are broken internally with qsort.
-      if (gptCluster.get() && gptCluster->ClusterDefined()) {
-        gvTopClusterList.push_back(gptCluster.release());
-        //qsort is a poor sort algorithm for this situation since list is already sorted,
-        //but to keep consistant with previous versions, it will remain
-        qsort(&gvTopClusterList[0], gvTopClusterList.size(), sizeof(CCluster*), CompareClustersByRatio);
-      }
+       }
+       gvTopClusterList.DeleteAllElements();
+       gvTopClusterList.resize(vRetainedClusters.size());
+       std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
+     }
    }
    catch (ZdException & x) {
-      x.AddCallpath("RankTopClusters()", "MostLikelyClustersContainer");
-      throw;
+     x.AddCallpath("RankTopClusters()", "MostLikelyClustersContainer");
+     throw;
    }
 }
 

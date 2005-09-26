@@ -50,18 +50,38 @@ public:
   }
 };
 
-
 class CSaTScanData;
 
 /** Container class for maintaining the collection of most likely clusters. */
 class MostLikelyClustersContainer {
   private:
+    //CCluster comparison functor used to order CClusters in descending order
+    //by evaluating clusters calculated loglikelihood ratio. When ratios are
+    //equal, clusters centroid index is used to break tie. Note that purely
+    //temporal cluster types are rank higher than other cluster types with
+    //same LLR. 
+    class CompareClustersRatios {
+       public:
+         bool                   operator() (const CCluster* pCluster1, const CCluster* pCluster2)
+                                {
+                                  if (pCluster1->m_nRatio == pCluster2->m_nRatio) {
+                                    //rank a purely temporal cluster higher than other cluster types
+                                    //when rank is the same -- there will be at most one pt cluster in list 
+                                    if (pCluster1->GetClusterType() == PURELYTEMPORALCLUSTER)
+                                       return true;
+                                    if (pCluster2->GetClusterType() == PURELYTEMPORALCLUSTER)
+                                       return false;
+                                    //if ratios are equal, lesser centroid index ranks greater
+                                    return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
+                                  }
+                                  return pCluster1->m_nRatio > pCluster2->m_nRatio;
+                                }
+    };
+
     ZdPointerVector<CCluster>   gvTopClusterList;
-    std::auto_ptr<CCluster>     gptCluster;
     static unsigned long        MAX_RANKED_CLUSTERS;
 
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
-    static int                  CompareClustersByRatio(const void *a, const void *b);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
     static bool                 HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
     static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
