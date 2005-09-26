@@ -206,7 +206,7 @@ double NormalDataSetHandler::GetSimulationDataSetAllocationRequirements() const 
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
+  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 bool NormalDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {

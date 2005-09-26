@@ -144,10 +144,11 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
        for (size_t t=0; t < GetNumDataSets(); ++t)
-          for (unsigned int i=0; i < GetDataSet(t).GetPopulationData().GetNumOrdinalCategories(); ++i)
+          for (unsigned int i=0; i < GetDataSet(t).GetPopulationData().GetNumOrdinalCategories(); ++i) {
             //case array for ordinal category
             dRequirements += (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
                              (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
+       }
        break;
     case SPACETIME :
     case PROSPECTIVESPACETIME :
@@ -162,7 +163,6 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
              dRequirements += (double)sizeof(count_t*) * (double)Set.GetPopulationData().GetNumOrdinalCategories() +
                               (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
           }
-          dRequirements += (double)sizeof(SimDataSet);
        }
        break;
     case PROSPECTIVEPURELYTEMPORAL :
@@ -175,7 +175,7 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements;
+  return dRequirements + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 /** Parses current file record contained in StringParser object in expected

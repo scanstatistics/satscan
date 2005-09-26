@@ -200,7 +200,7 @@ double ExponentialDataSetHandler::GetSimulationDataSetAllocationRequirements() c
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
+  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 /** Parses current file record contained in StringParser object in expected

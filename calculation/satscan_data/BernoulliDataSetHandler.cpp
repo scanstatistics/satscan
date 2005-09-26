@@ -180,7 +180,7 @@ double BernoulliDataSetHandler::GetSimulationDataSetAllocationRequirements() con
      default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
   };
-  return dRequirements * (double)sizeof(SimDataSet) * (double)GetNumDataSets();
+  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
 /** Read the control data file.
