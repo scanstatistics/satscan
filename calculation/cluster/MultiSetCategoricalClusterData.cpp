@@ -103,7 +103,7 @@ void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dT
 void MultiSetCategoricalSpatialData::GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                                   std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                                   unsigned int tSetIndex) const {
-  Calculator.CalculateOrdinalCombinedCategories(gvSetClusterData[tSetIndex]->gvCasesPerCategory, vCategoryContainer);
+  Calculator.CalculateOrdinalCombinedCategories(gvSetClusterData[tSetIndex]->gvCasesPerCategory, vCategoryContainer, tSetIndex);
 }
 
 /** Not implemented - throws ZdException. */
@@ -177,7 +177,7 @@ void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(
 void AbstractMultiSetCategoricalTemporalData::GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                                            std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                                            unsigned int tSetIndex) const {
-  Calculator.CalculateOrdinalCombinedCategories(gvSetClusterData[tSetIndex]->gvCasesPerCategory, vCategoryContainer);
+  Calculator.CalculateOrdinalCombinedCategories(gvSetClusterData[tSetIndex]->gvCasesPerCategory, vCategoryContainer, tSetIndex);
 }
 
 /** Not implemented - throws ZdException. */
