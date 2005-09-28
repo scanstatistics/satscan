@@ -3,7 +3,7 @@ object frmAbout: TfrmAbout
   Top = 156
   BorderStyle = bsDialog
   Caption = 'About SaTScan'
-  ClientHeight = 382
+  ClientHeight = 404
   ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object frmAbout: TfrmAbout
     Left = 0
     Top = 0
     Width = 470
-    Height = 382
+    Height = 404
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -164,7 +164,7 @@ object frmAbout: TfrmAbout
       Left = 12
       Top = 133
       Width = 453
-      Height = 213
+      Height = 226
       BorderStyle = bsNone
       Color = clBtnFace
       Font.Charset = DEFAULT_CHARSET
@@ -177,34 +177,37 @@ object frmAbout: TfrmAbout
         'Information Management Services Inc, Silver Spring, Maryland.'
         ''
         
-          'This software may be freely used as long as proper citations are' +
-          ' given to '
+          'The SaTScan software may be used freely, with the requirement th' +
+          'at'
         
-          'both the statistical methodology papers and the software itself.' +
-          ' For '
-        'suggested citations, see the accompanying SaTScan User Guide.'
+          'proper references are provided to the scientific papers describi' +
+          'ng the'
+        
+          'statistical methods. For suggested citations, see the accompanyi' +
+          'ng'
+        'SaTScan User Guide.'
         ''
         
           'Users of SaTScan should in any reference to the software note th' +
-          'at: '
+          'at:'
+        '"SaTScan(TM) is a trademark of Martin Kulldorff. The SaTScan(TM)'
         
-          '"SaTScan(TM) is a trademark of Martin Kulldorff. The SaTScan(TM)' +
-          ' software '
+          'software was developed under the joint auspices of (i) Martin Ku' +
+          'lldorff,'
         
-          'was developed under the joint auspices of Martin Kulldorff, the ' +
-          'National '
+          '(ii) the National Cancer Institute (iii) Farzad Mostashari at th' +
+          'e New York'
         
-          'Cancer Institute and Farzad Mostashari at the New York City Depa' +
-          'rtment of '
-        'Health and Mental Hygiene."'
-        '')
+          'City Department of Health and Mental Hygiene and (iv) the Center' +
+          's for'
+        'Disease Control and Prevention"')
       ParentFont = False
       ReadOnly = True
       TabOrder = 1
     end
     object Button1: TButton
       Left = 200
-      Top = 348
+      Top = 370
       Width = 70
       Height = 24
       Anchors = [akLeft, akRight, akBottom]
