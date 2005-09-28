@@ -274,13 +274,14 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
      sBuffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        double           tRelativeRisk=0;
-       count_t          tObserved=0;
+       count_t          tObserved=0, tTotalCategoryCases=0;
        measure_t        tExpected=0;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
-       tRelativeRisk += GetRelativeRisk(tObserved, tExpected, DataHub.GetDataSetHandler().GetDataSet(*itr_Index).GetTotalCases());
+       tRelativeRisk += GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
        sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
        sBuffer << sWork;
      }
