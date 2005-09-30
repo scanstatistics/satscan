@@ -1,12 +1,8 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//******************************************************************************
 #include "stsMonteCarloSimFunctor.h"
-
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
 
 stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (stsMCSimSuccessiveFunctor::param_type const & param)
 {
@@ -25,25 +21,35 @@ stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (st
     }
     //perform simulation to get loglikelihood ratio
     macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
-    temp_result.second.first = gpAnalysis->ExecuteSimulation(*gpDataGateway);
+    temp_result.dSuccessfulResult = gpAnalysis->ExecuteSimulation(*gpDataGateway);
     macroRunTimeStopSerial();
-    temp_result.first = true;
+    temp_result.bUnExceptional = true;
+    throw ZdMemoryException("ppp");
+  }
+  catch (ZdMemoryException & e)
+  {
+    temp_result.eException_type = stsMCSimJobSource::result_type::zdmemory;
+    temp_result.Exception = e;
+    temp_result.bUnExceptional = false;
   }
   catch (ZdException & e)
   {
-    temp_result.second.second = e;
-    temp_result.first = false;
+    temp_result.eException_type = stsMCSimJobSource::result_type::zd;
+    temp_result.Exception = e;
+    temp_result.bUnExceptional = false;
   }
   catch (std::exception & e) {
-    temp_result.second.second = ZdException(e, "", "stsMCSimSuccessiveFunctor");
-    temp_result.first = false;
+    temp_result.eException_type = stsMCSimJobSource::result_type::std;
+    temp_result.Exception = ZdException(e, "", "stsMCSimSuccessiveFunctor");
+    temp_result.bUnExceptional = false;
   }
   catch (...) {
-    temp_result.second.second = ZdException("(...) -- unknown error", "stsMCSimSuccessiveFunctor", ZdException::Normal);
-    temp_result.first = false;
+    temp_result.eException_type = stsMCSimJobSource::result_type::unknown;
+    temp_result.Exception = ZdException("(...) -- unknown error", "stsMCSimSuccessiveFunctor", ZdException::Normal);
+    temp_result.bUnExceptional = false;
   }
-  if (!temp_result.first) {
-    temp_result.second.second.AddCallpath("operator()", "stsMCSimSuccessiveFunctor");
+  if (!temp_result.bUnExceptional) {
+    temp_result.Exception.AddCallpath("operator()", "stsMCSimSuccessiveFunctor");
   }
   return temp_result;
 }

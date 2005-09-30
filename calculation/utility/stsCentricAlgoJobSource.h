@@ -1,8 +1,7 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #ifndef stsCentricAlgoJobSourceH
 #define stsCentricAlgoJobSourceH
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include <utility>
 #include <deque>
 #pragma warn -8012
@@ -19,12 +18,20 @@
 #include "AsynchronouslyAccessible.h"
 #include "PrintQueue.h"
 
-
 class stsCentricAlgoJobSource
 {
 public://types/enums
+  struct job_result {
+    enum                        exception_type {unknown=0, std, zd, zdmemory};
+
+    bool                        bExceptional;
+    exception_type              eException_type;
+    ZdException                 Exception;
+  };
+
   typedef unsigned int param_type;
-  typedef std::pair<bool, ZdException> result_type;
+//  typedef std::pair<bool, ZdException> result_type;
+  typedef job_result result_type;
   typedef unsigned long job_id_type;
   typedef std::pair<job_id_type, param_type> job_info_type;
 
@@ -76,8 +83,6 @@ public:
   std::deque<std::pair<job_id_type,std::pair<param_type,result_type> > > GetExceptions() const;
   void Assert_NoExceptionsCaught() const;
 };
-
-
-
+//******************************************************************************
 #endif
 

@@ -1,22 +1,18 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #ifndef stsMonteCarloSimFunctorH
 #define stsMonteCarloSimFunctorH
-
-//#include "DataSetHandler.h"
-//#include "DataSetGateway.h"
-#include "AnalysisRun.h"
+//******************************************************************************
 #include "boost/shared_ptr.hpp"
 #include "boost/thread/mutex.hpp"
-//---------------------------------------------------------------------------
+#include "AnalysisRun.h"
+#include "stsMCSimJobSource.h"
 
 //runs jobs for the "successive" algorithm
 class stsMCSimSuccessiveFunctor
 {
 public:
   typedef unsigned int param_type;
-  typedef double successful_result_type;//type of result in case of no exceptions
-  typedef std::pair<bool, std::pair<successful_result_type, ZdException> > result_type;
+  typedef stsMCSimJobSource::result_type result_type;
 
 private:
   boost::mutex                       & gMutex;
@@ -58,8 +54,6 @@ public:
   result_type operator() (param_type const & param);
 
 };
-
-
-
-
+//******************************************************************************
 #endif
+

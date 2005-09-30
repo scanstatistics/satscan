@@ -1,11 +1,8 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//******************************************************************************
 #include "stsCentricAlgoJobSource.h"
-//---------------------------------------------------------------------------
-#pragma package(smart_init)
 
 //Class stsCentricAlgoJobSource
 //Job source for centric algorithm running asynchronously
@@ -48,16 +45,32 @@ void stsCentricAlgoJobSource::Assert_NoExceptionsCaught() const
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
 
   if (GetExceptionCount() > 0) {
+    //scan collection of exceptions for ZdMemory exception type, this type trumps all others -- take first found
+    std::deque<exception_type>::const_iterator itr = gvExceptions.begin();
+    for (; itr != gvExceptions.end(); ++itr) {
+       if (itr->second.second.eException_type == job_result::zdmemory) {
+         ZdString sTemp;
+         sTemp.printf(szExceptionIntroFormatString, itr->first);
+
+         ZdMemoryException MemoryException(sTemp.GetCString());
+         MemoryException.AddMessage(sTemp.GetCString(), false);
+         MemoryException.AddMessage(szExceptionMessageTitle, false);
+         MemoryException.AddMessage(itr->second.second.Exception.GetErrorMessage(), false);
+         MemoryException.AddMessage(szExceptionCallPathTitle, false);
+         MemoryException.AddMessage(itr->second.second.Exception.GetCallpath(), false);
+         throw MemoryException;
+       }
+    }
+
     ZdCarrierException<exception_sequence_type> lclException(gvExceptions, "", "stsCentricAlgoJobSource");
     exception_type const & rFirstException(lclException->front());
     ZdString sTemp;
     sTemp.printf(szExceptionIntroFormatString, rFirstException.first);
     lclException.AddMessage(sTemp.GetCString(), false);
-//    lclException.AddMessage(szExceptionTypeTitle, false);
     lclException.AddMessage(szExceptionMessageTitle, false);
-    lclException.AddMessage(rFirstException.second.second.second.GetErrorMessage(), false);
+    lclException.AddMessage(rFirstException.second.second.Exception.GetErrorMessage(), false);
     lclException.AddMessage(szExceptionCallPathTitle, false);
-    lclException.AddMessage(rFirstException.second.second.second.GetCallpath(), false);
+    lclException.AddMessage(rFirstException.second.second.Exception.GetCallpath(), false);
 
     throw lclException;
   }
@@ -166,7 +179,7 @@ void stsCentricAlgoJobSource::RegisterResult_ExceptionConditionExists(job_id_typ
 {
   try
   {
-    if (!rResult.first)
+    if (!rResult.bExceptional)
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
   }
   catch (ZdException & e)
@@ -184,7 +197,7 @@ void stsCentricAlgoJobSource::RegisterResult_Simple(job_id_type const & rJobID, 
   {
     //check exception condition first.  Want to report an exception even if
     //cancel is requested.
-    if (rResult.first)
+    if (rResult.bExceptional)
     {
       //populate stored exceptions:
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));

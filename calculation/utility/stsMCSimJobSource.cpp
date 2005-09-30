@@ -1,20 +1,13 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-
+//******************************************************************************
 #include "stsMCSimJobSource.h"
-
-//---------------------------------------------------------------------------
-
-#pragma package(smart_init)
 
 const unsigned stsMCSimJobSource::guaAutoAbortCheckPoints[] = { 99, 199, 499, 999 };
 const float stsMCSimJobSource::guaAutoAbortCheckCutoffValues[] = { 0.5, 0.4, 0.2, 0.1 };
 //BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckPoints)/sizeof(unsigned))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
 //BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckCutoffValues)/sizeof(float))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
-
-
 
 //constructor
 stsMCSimJobSource::stsMCSimJobSource(
@@ -82,15 +75,32 @@ void stsMCSimJobSource::Assert_NoExceptionsCaught() const
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
 
   if (GetExceptionCount() > 0) {
+    //scan collection of exceptions for ZdMemory exception type, this type trumps all -- take first
+    std::deque<exception_type>::const_iterator itr = gvExceptions.begin();
+    for (; itr != gvExceptions.end(); ++itr) {
+       if (itr->second.second.eException_type == job_result::zdmemory) {
+         ZdString sTemp;
+         sTemp.printf(szExceptionIntroFormatString, itr->first);
+
+         ZdMemoryException MemoryException(sTemp.GetCString());
+         MemoryException.AddMessage(sTemp.GetCString(), false);
+         MemoryException.AddMessage(szExceptionMessageTitle, false);
+         MemoryException.AddMessage(itr->second.second.Exception.GetErrorMessage(), false);
+         MemoryException.AddMessage(szExceptionCallPathTitle, false);
+         MemoryException.AddMessage(itr->second.second.Exception.GetCallpath(), false);
+         throw MemoryException;
+       }
+    }
+
     ZdCarrierException<exception_sequence_type> lclException(gvExceptions, "", "stsMCSimJobSource");
     exception_type const & rFirstException(lclException->front());
     ZdString sTemp;
     sTemp.printf(szExceptionIntroFormatString, rFirstException.first);
     lclException.AddMessage(sTemp.GetCString(), false);
     lclException.AddMessage(szExceptionMessageTitle, false);
-    lclException.AddMessage(rFirstException.second.second.second.second.GetErrorMessage(), false);
+    lclException.AddMessage(rFirstException.second.second.Exception.GetErrorMessage(), false);
     lclException.AddMessage(szExceptionCallPathTitle, false);
-    lclException.AddMessage(rFirstException.second.second.second.second.GetCallpath(), false);
+    lclException.AddMessage(rFirstException.second.second.Exception.GetCallpath(), false);
 
     throw lclException;
   }
@@ -204,7 +214,7 @@ void stsMCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, par
   {
     //check exception condition first.  Want to report an exception even if
     //cancel is requested.
-    if (!rResult.first)
+    if (!rResult.bUnExceptional)
     {
       //populate stored exceptions:
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
@@ -293,7 +303,7 @@ void stsMCSimJobSource::RegisterResult_ExceptionConditionExists(job_id_type cons
 {
   try
   {
-    if (!rResult.first)
+    if (!rResult.bUnExceptional)
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
   }
   catch (ZdException & e)
@@ -311,7 +321,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
   {
     //check exception condition first.  Want to report an exception even if
     //cancel is requested.
-    if (!rResult.first)
+    if (!rResult.bUnExceptional)
     {
       //populate stored exceptions:
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
@@ -325,14 +335,14 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
     }
 
     //update ratios, significance, etc.:
-    WriteResultToStructures(rResult.second.first);
+    WriteResultToStructures(rResult.dSuccessfulResult);
 
     //if appropriate, estimate time required to complete all jobs and report it.
     unsigned int uiJobsProcessedCount =
       (guAutoAbortCheckIdx < guAutoAbortCheckCount)//auto-abort checking
      ? guPreviousAutoAbortCheckPoint + gAutoAbortResultsRegistered.count()
      : (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.SatScanPrintf(gszReplicationFormatString, uiJobsProcessedCount, guiJobCount, rResult.second.first);
+    grPrintDirection.SatScanPrintf(gszReplicationFormatString, uiJobsProcessedCount, guiJobCount, rResult.dSuccessfulResult);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       ZdTimestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now

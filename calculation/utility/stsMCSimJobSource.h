@@ -1,7 +1,7 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #ifndef stsMCSimJobSourceH
 #define stsMCSimJobSourceH
+//******************************************************************************
 
 #include <utility>
 #include <deque>
@@ -18,15 +18,22 @@
 #include "LoglikelihoodRatioWriter.h"
 #include "PrintQueue.h"
 
-//---------------------------------------------------------------------------
-
-
 class stsMCSimJobSource
 {
 public://types/enums
-  typedef unsigned int param_type;
   typedef double successful_result_type;
-  typedef std::pair<bool, std::pair<successful_result_type, ZdException> > result_type;
+
+  struct job_result {
+    enum                        exception_type {unknown=0, std, zd, zdmemory};
+
+    bool                        bUnExceptional;
+    exception_type              eException_type;
+    ZdException                 Exception;
+    successful_result_type      dSuccessfulResult;
+  };
+
+  typedef unsigned int param_type;
+  typedef job_result result_type;
   typedef unsigned long job_id_type;
   typedef std::pair<job_id_type, param_type> job_info_type;
 
@@ -99,7 +106,6 @@ public:
   std::deque<std::pair<job_id_type,std::pair<param_type,result_type> > > GetExceptions() const;
   void Assert_NoExceptionsCaught() const;
 };
-
-
-
+//******************************************************************************
 #endif
+

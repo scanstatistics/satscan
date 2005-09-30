@@ -1,8 +1,7 @@
-//---------------------------------------------------------------------------
-
+//******************************************************************************
 #ifndef stsCentricAlgoFunctorH
 #define stsCentricAlgoFunctorH
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include <utility>
 #include "SaTScan.h"
 #include "AbstractCentricAnalysis.h"
@@ -10,15 +9,12 @@
 #include "stsCentricAlgoJobSource.h"
 #include "AsynchronouslyAccessible.h"
 
-
-
-
 //runs jobs for the "centric" algorithm
 class stsCentricAlgoFunctor
 {
 public:
   typedef unsigned int param_type;
-  typedef std::pair<bool, ZdException> result_type;
+  typedef stsCentricAlgoJobSource::result_type result_type;
 
 private:
   AbstractCentricAnalysis & grCentricAnalysis;
@@ -64,8 +60,7 @@ class stsPurelyTemporal_Plus_CentricAlgoThreadFunctor
 
   contractor_type & grContractor;
   job_source_type & grJobSource;
-  std::pair<bool,ZdException> & grPurelyTemporalExecutionResult;
-//  AsynchronouslyAccessible<BasePrint> & grPrintDirection;
+   stsCentricAlgoJobSource::result_type & grPurelyTemporalExecutionResult;
   AsynchronouslyAccessible<PrintQueue> & grPrintDirection;
   AbstractCentricAnalysis & grCentricAnalysis;
   AbstractDataSetGateway const & grDataSetGateway;
@@ -76,8 +71,7 @@ public:
   stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
     contractor_type & rContractor
    ,job_source_type & rJobSource
-   ,std::pair<bool,ZdException> & rPurelyTemporalExecutionResult
-//   ,AsynchronouslyAccessible<BasePrint> & rPrintDirection
+   ,stsCentricAlgoJobSource::result_type & rPurelyTemporalExecutionResult
    ,AsynchronouslyAccessible<PrintQueue> & rPrintDirection
    ,AbstractCentricAnalysis & rCentricAnalysis
    ,CentroidNeighborCalculator & rCentroidCalculator
@@ -88,9 +82,6 @@ public:
   void operator() ();
 
 };
-
-
-
-
+//******************************************************************************
 #endif
 
