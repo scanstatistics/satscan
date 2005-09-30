@@ -765,7 +765,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
 
       //analyze real and simulation data about each centroid
       {
-        std::pair<bool,ZdException> purelyTemporalExecutionExceptionStatus;//if (.first) then (.second) is the exception message and callpath.
+        stsCentricAlgoJobSource::result_type purelyTemporalExecutionExceptionStatus;//if (.first) then (.second) is the exception message and callpath.
         PrintQueue tmpPrintDirection(gPrintDirection);
         AsynchronouslyAccessible<PrintQueue> tmpThreadsafePrintDirection(tmpPrintDirection);
         stsCentricAlgoJobSource jobSource(gpDataHub->m_nGridTracts, ::GetCurrentTime_HighResolution(), tmpThreadsafePrintDirection);
@@ -777,18 +777,10 @@ void AnalysisRunner::PerformCentric_Parallel() {
         unsigned uThreadIdx = 0;
         if (gParameters.GetIncludePurelyTemporalClusters()) {
           //launch specialized first thread:
-          tg.create_thread(
-            stsPurelyTemporal_Plus_CentricAlgoThreadFunctor(
-              theContractor
-             ,jobSource
-             ,purelyTemporalExecutionExceptionStatus
-             ,tmpThreadsafePrintDirection
-             ,*(seqCentricAnalyses[uThreadIdx])
-             ,*(seqCentroidCalculators[uThreadIdx])
-             ,*DataSetGateway
-             ,vSimDataGateways
-            )
-          );
+          stsPurelyTemporal_Plus_CentricAlgoThreadFunctor Functor(theContractor, jobSource, purelyTemporalExecutionExceptionStatus,
+                                                                  tmpThreadsafePrintDirection, *(seqCentricAnalyses[uThreadIdx]),
+                                                                  *(seqCentroidCalculators[uThreadIdx]), *DataSetGateway, vSimDataGateways);
+          tg.create_thread(Functor);
           ++uThreadIdx;
         }
         //launch the remaining threads:
@@ -800,8 +792,11 @@ void AnalysisRunner::PerformCentric_Parallel() {
 
         giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
         //propagate exceptions if needed:
-        if (purelyTemporalExecutionExceptionStatus.first)
-          throw purelyTemporalExecutionExceptionStatus.second;
+        if (gParameters.GetIncludePurelyTemporalClusters() && purelyTemporalExecutionExceptionStatus.bExceptional) {
+          if (purelyTemporalExecutionExceptionStatus.eException_type == stsCentricAlgoJobSource::result_type::zdmemory)
+            throw ZdMemoryException(purelyTemporalExecutionExceptionStatus.Exception.GetErrorMessage());
+          throw purelyTemporalExecutionExceptionStatus.Exception;
+        }  
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
           ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
