@@ -77,18 +77,35 @@ void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglik
     ZdPointerVector<SpatialData>::const_iterator        itr_data;
     double                                              dHighRatios=0, dLowRatios=0;
 
+    //for each data set, calculate llr values - possibly scanning for both high and low rates
     for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
        pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
                                  (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, *itr_pair);
        dHighRatios += itr_pair->first;
        dLowRatios += itr_pair->second;
     }
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
-       if (dHighRatios == dTargetLoglikelihoodRatio && itr_pair->first)
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
-      else if (dLowRatios == dTargetLoglikelihoodRatio && itr_pair->second)
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+    //assess collection of llr values to determine which data sets created target ratios
+    // - if scanning for high and low ratios, determine which corresponding rate produced
+    //   target ratio - high wins if they are equal
+    bool        bHighRatios=false;
+    if (dHighRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = true;
+    else if (dLowRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = false;
+    else {//target ratio does not equal high or low ratios
+     //likely round-off error 
+      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = true;
+      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = false;
+      else 
+        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetSpatialData",
+                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
+
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
+       if ((bHighRatios ? itr_pair->first : itr_pair->second))
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
   }
   else {
     ZdPointerVector<SpatialData>::const_iterator itr_data;
@@ -126,18 +143,35 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
     ZdPointerVector<TemporalData>::const_iterator       itr_data;
     double                                              dHighRatios=0, dLowRatios=0;
     
+    //for each data set, calculate llr values - possibly scanning for both high and low rates
     for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
        pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
                                  (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, *itr_pair);
        dHighRatios += itr_pair->first;
        dLowRatios += itr_pair->second;
     }
-    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair) {
-       if (dHighRatios == dTargetLoglikelihoodRatio && itr_pair->first)
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
-      else if (dLowRatios == dTargetLoglikelihoodRatio && itr_pair->second)
-         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+    //assess collection of llr values to determine which data sets created target ratios
+    // - if scanning for high and low ratios, determine which corresponding rate produced
+    //   target ratio - high wins if they are equal
+    bool        bHighRatios=false;
+    if (dHighRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = true;
+    else if (dLowRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = false;
+    else {//target ratio does not equal high or low ratios
+     //likely round-off error 
+      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = true;
+      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = false;
+      else
+        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetTemporalData",
+                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
+    
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
+       if ((bHighRatios ? itr_pair->first : itr_pair->second))
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
   }
   else {
     ZdPointerVector<TemporalData>::const_iterator       itr_data;
