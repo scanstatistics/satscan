@@ -58,8 +58,8 @@ void ClusterInformationWriter::DefineFields() {
   ZdString       sBuffer;
 
   try {
-    CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField(CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+    CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
     CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
     // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
@@ -372,7 +372,7 @@ void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, con
 
 /** Write obvserved, expected and  observed/expected to record.*/
 void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, const CCluster& theCluster) const {
-  ZdString                                      sBuffer;
+  ZdString      sBuffer;
 
   if (gParameters.GetNumDataSets() == 1) {
     Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
@@ -387,17 +387,29 @@ void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, cons
     std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
 
     theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
-    for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
-//    for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
-       sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, *itr_Index + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCount(*itr_Index);
-       sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, *itr_Index + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, *itr_Index);
-       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, *itr_Index + 1);
-       Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, *itr_Index);
+    for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
+       itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
+       sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, iSetIndex + 1);
+       if (itr_Index == vComprisedDataSetIndexes.end())
+         Record.SetFieldIsBlank(sBuffer.GetCString(), true);
+       else
+         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCount(iSetIndex);
+       sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, iSetIndex + 1);
+       if (itr_Index == vComprisedDataSetIndexes.end())
+         Record.SetFieldIsBlank(sBuffer.GetCString(), true);
+       else
+         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
+       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, iSetIndex + 1);
+       if (itr_Index == vComprisedDataSetIndexes.end())
+         Record.SetFieldIsBlank(sBuffer.GetCString(), true);
+       else
+         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
        if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
-         sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, *itr_Index + 1);
-         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetRelativeRisk(gDataHub, *itr_Index);
+         sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, iSetIndex + 1);
+         if (itr_Index == vComprisedDataSetIndexes.end())
+           Record.SetFieldIsBlank(sBuffer.GetCString(), true);
+         else
+           Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetRelativeRisk(gDataHub, iSetIndex);
        }
     }
   }
