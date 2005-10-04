@@ -281,7 +281,7 @@ void AnalysisRunner::DisplayTopClusters() {
        //get reference to i'th top cluster  
        const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
        //write cluster details to 'cluster information' file
-       if (ClusterWriter.get())
+       if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
          ClusterWriter->Write(TopCluster, i+1, giNumSimsExecuted);
        //write cluster details to results file and 'location information' files -- only report
        //cluster if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
