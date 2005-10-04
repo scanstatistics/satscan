@@ -325,10 +325,10 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
                GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
                                            "ReadCounts()", std::numeric_limits<count_t>::max());
              //check numeric limits of data type will not be exceeded
-             if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+             if (tContinuousVariable * tPatients > std::numeric_limits<measure_t>::max() - tTotalMeasure)
                GenerateResolvableException("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n",
                                            "ReadCounts()", std::numeric_limits<measure_t>::max());
-             tTotalMeasure += tContinuousVariable;
+             tTotalMeasure += tContinuousVariable * tPatients;
            }
            else
              bReadSuccessful = false;
@@ -351,7 +351,11 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     }
     else {
       //calibrate measure -- multiply by (tTotalCases/tTotalMeasure)
-      tTotalMeasure = pRandomizer->Calibrate(tTotalCases/tTotalMeasure);
+      tTotalMeasure = pRandomizer->Calibrate((double)tTotalCases/tTotalMeasure);
+      if (fabs(tTotalCases - tTotalMeasure) > 0.0001)
+        ZdGenerateException("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
+                            "ReadCounts()", tTotalMeasure, tTotalCases);
+
       //assign data accumulated in randomizer to data set case and measure arrays
       pRandomizer->Assign(DataSet.GetCaseArray(), DataSet.GetMeasureArray(), DataSet.GetNumTimeIntervals(), DataSet.GetNumTracts());
       //assign data accumulated in randomizer to data set censored case array
