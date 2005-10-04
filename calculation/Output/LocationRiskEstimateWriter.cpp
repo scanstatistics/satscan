@@ -108,11 +108,11 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
               vDataSetLocationPopulation[m] += pCases[m];
        }
        // for each category in data set, record relative risk data
-       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-          pCases = DataSet.GetCategoryCaseArray(j)[0];
-          for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
+       for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
+          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
+          for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
+             pCases = DataSet.GetCategoryCaseArray(j)[0];
              Record.SetAllFieldsNotBlank();
-             Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
              if (gParameters.GetNumDataSets() > 1)
                Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
              Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = j + 1;
