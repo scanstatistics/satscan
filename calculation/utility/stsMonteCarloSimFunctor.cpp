@@ -24,7 +24,6 @@ stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (st
     temp_result.dSuccessfulResult = gpAnalysis->ExecuteSimulation(*gpDataGateway);
     macroRunTimeStopSerial();
     temp_result.bUnExceptional = true;
-    throw ZdMemoryException("ppp");
   }
   catch (ZdMemoryException & e)
   {
