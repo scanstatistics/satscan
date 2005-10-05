@@ -3,7 +3,7 @@ object frmAbout: TfrmAbout
   Top = 156
   BorderStyle = bsDialog
   Caption = 'About SaTScan'
-  ClientHeight = 404
+  ClientHeight = 398
   ClientWidth = 470
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -54,7 +54,7 @@ object frmAbout: TfrmAbout
     Left = 0
     Top = 0
     Width = 470
-    Height = 404
+    Height = 398
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -164,7 +164,7 @@ object frmAbout: TfrmAbout
       Left = 12
       Top = 133
       Width = 453
-      Height = 226
+      Height = 227
       BorderStyle = bsNone
       Color = clBtnFace
       Font.Charset = DEFAULT_CHARSET
@@ -193,21 +193,18 @@ object frmAbout: TfrmAbout
         '"SaTScan(TM) is a trademark of Martin Kulldorff. The SaTScan(TM)'
         
           'software was developed under the joint auspices of (i) Martin Ku' +
-          'lldorff,'
+          'lldorff, '
         
-          '(ii) the National Cancer Institute (iii) Farzad Mostashari at th' +
-          'e New York'
-        
-          'City Department of Health and Mental Hygiene and (iv) the Center' +
-          's for'
-        'Disease Control and Prevention"')
+          '(ii) the National Cancer Institute, and (iii) Farzad Mostashari ' +
+          'at the New'
+        'York City Department of Health and Mental Hygiene."')
       ParentFont = False
       ReadOnly = True
       TabOrder = 1
     end
     object Button1: TButton
       Left = 200
-      Top = 370
+      Top = 364
       Width = 70
       Height = 24
       Anchors = [akLeft, akRight, akBottom]
