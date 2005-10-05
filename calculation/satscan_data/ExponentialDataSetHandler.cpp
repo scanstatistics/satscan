@@ -268,7 +268,7 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     //read and validate censore attribute
     iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4;
     if (Parser.GetWord(iCensoredAttributeIndex) != 0) {
-      if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || tCensorAttribute < 0) {
+      if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
        gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n",
                                   Parser.GetWord(iCensoredAttributeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        gPrint.PrintInputWarning("       Censoring attribute must be either 0 or 1.\n");
