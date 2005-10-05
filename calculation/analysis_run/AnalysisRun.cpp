@@ -517,14 +517,14 @@ void AnalysisRunner::FinalizeReport() {
     else if (gParameters.GetNumReplicationsRequested() == 0) {
       fprintf(fp, "\n");
       sBuffer = "Note: As the number of Monte Carlo replications was set to "
-                "zero, no hypothesis testing was done and no p-values were printed.";
+                "zero, no hypothesis testing was done and no p-values are reported.";
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
     else if (gParameters.GetNumReplicationsRequested() <= 98) {
       fprintf(fp, "\n");
       sBuffer = "Note: The number of Monte Carlo replications was set too low, "
                 "and a meaningful hypothesis test cannot be done. Consequently, "
-                "no p-values were printed.";
+                "no p-values are reported.";
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
 
