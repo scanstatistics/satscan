@@ -509,7 +509,9 @@ void AnalysisRunner::FinalizeReport() {
     else if (giClustersReported == 0) {
       fprintf(fp, "No clusters reported.\n");
       if (gTopClustersContainer.GetTopRankedCluster().GetRatio() < gdMinRatioToReport)
-        sBuffer.printf("All clusters had a ratio less than %g.", gdMinRatioToReport);
+        sBuffer.printf("All clusters had a %s less than %g.",
+                        (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
+                        gdMinRatioToReport);
       else
         sBuffer.printf("All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
