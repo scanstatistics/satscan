@@ -175,6 +175,7 @@ class SimDataSet : public DataSet {
   protected:  
     void                        ReadSimulationDataOrdinal(std::ifstream& filestream, unsigned int iSimulation);
     void                        ReadSimulationDataStandard(std::ifstream& filestream, unsigned int iSimulation);
+    void                        WriteSimulationDataExponential(std::ofstream& filestream) const;
     void                        WriteSimulationDataOrdinal(std::ofstream& filestream) const;
     void                        WriteSimulationDataStandard(std::ofstream& filestream) const;
 

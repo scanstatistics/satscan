@@ -1035,21 +1035,43 @@ void SimDataSet::ResetCumulativeCaseArray() {
           of the files themselves or in relation to the running analysis.
           Also, not previsions have been made for this code to work for multiple
           data sets at this time.                                             */
-void SimDataSet::WriteSimulationData(const CParameters& Parameters, int iSimulation) const {
+void SimDataSet::WriteSimulationData(const CParameters& Parameters, int) const {
   std::ofstream                 filestream;
 
   //open output file
-  filestream.open(Parameters.GetSimulationDataOutputFilename().c_str(), (iSimulation == 1 ? ios::trunc : ios::ate));
+  filestream.open(Parameters.GetSimulationDataOutputFilename().c_str(), ios::ate);
   if (!filestream)
     GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "WriteSimulationData()",
                                 Parameters.GetSimulationDataOutputFilename().c_str());
 
   if (Parameters.GetProbabilityModelType() == ORDINAL)
     WriteSimulationDataOrdinal(filestream);
+//  else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
+//    WriteSimulationDataExponential(filestream);
   else
     WriteSimulationDataStandard(filestream);
 
   filestream.close();
+}
+
+void SimDataSet::WriteSimulationDataExponential(std::ofstream& filestream) const {
+  unsigned int                  t, i;
+  count_t                    ** ppSimCases(GetCaseArray());
+  measure_t                  ** ppSimMeasure(GetMeasureArray());
+
+  for (t=0; t < GetNumTracts(); ++t) {
+     for (i=0; i < GetNumTimeIntervals(); ++i)
+        filestream << ppSimCases[i][t] << " ";
+     filestream << std::endl;
+  }
+  filestream << std::endl;
+
+  for (t=0; t < GetNumTracts(); ++t) {           
+     for (i=0; i < GetNumTimeIntervals(); ++i)
+        filestream << ppSimMeasure[i][t] << " ";
+     filestream << std::endl;
+  }
+  filestream << std::endl;
 }
 
 /** Writes simulation data to file stream from those data structures which are
