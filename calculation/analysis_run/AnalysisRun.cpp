@@ -730,6 +730,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //set data gateway object
       DataHandler.GetDataGateway(*DataSetGateway);
       gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      if (gParameters.GetOutputSimulationData())
+        remove(gParameters.GetSimulationDataOutputFilename().c_str());
       //create simulation data sets -- randomize each and set corresponding data gateway object
       for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
@@ -742,6 +744,10 @@ void AnalysisRunner::PerformCentric_Parallel() {
          macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
          gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
          macroRunTimeStopSerial();
+         //print simulation data to file, if requested
+         if (gParameters.GetOutputSimulationData())
+           for (size_t t=0; t < thisDataCollection.size(); ++t)
+              thisDataCollection[t]->WriteSimulationData(gParameters, i);
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
@@ -905,6 +911,8 @@ void AnalysisRunner::PerformCentric_Serial() {
       DataHandler.GetDataGateway(*DataSetGateway);
 
       gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      if (gParameters.GetOutputSimulationData())
+        remove(gParameters.GetSimulationDataOutputFilename().c_str());
       //create simulation data sets -- randomize each and set corresponding data gateway object
       for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
@@ -917,6 +925,10 @@ void AnalysisRunner::PerformCentric_Serial() {
          macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
          gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
          macroRunTimeStopSerial();
+        //print simulation data to file, if requested
+        if (gParameters.GetOutputSimulationData())
+          for (size_t t=0; t < thisDataCollection.size(); ++t)
+             thisDataCollection[t]->WriteSimulationData(gParameters, i);
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
@@ -1040,6 +1052,9 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
     //set/reset loglikelihood ratio significance indicator
     if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
     giNumSimsExecuted = 0;
+    //if writing simulation data to file, delete file now
+    if (gParameters.GetOutputSimulationData())
+      remove(gParameters.GetSimulationDataOutputFilename().c_str());
 
     {
       PrintQueue lclPrintDirection(gPrintDirection);
@@ -1110,6 +1125,9 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     pAnalysis = GetNewAnalysisObject();
     //allocate appropriate data members for simulation algorithm
     pAnalysis->AllocateSimulationObjects(*pDataGateway);
+    //if writing simulation data to file, delete file now
+    if (gParameters.GetOutputSimulationData())
+      remove(gParameters.GetSimulationDataOutputFilename().c_str());
     //start clock for estimating approximate time to complete
     boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
     {//block for the scope of SimulationPrintDirection
