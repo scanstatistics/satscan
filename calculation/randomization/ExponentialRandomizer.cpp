@@ -5,8 +5,8 @@
 #include "ExponentialRandomizer.h"
 
 /** constructor */
-PermutedExponentialAttributes::PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute)
-                              :PermutedVariable(dVariable), guCensoredAttribute(uCensoreddAttribute) {}
+PermutedExponentialAttributes::PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute, unsigned int iOrderIndex)
+                              :PermutedVariable(dVariable, iOrderIndex), guCensoredAttribute(uCensoreddAttribute) {}
 
 /** destructor */
 PermutedExponentialAttributes::~PermutedExponentialAttributes() {}
@@ -18,7 +18,7 @@ PermutedExponentialAttributes * PermutedExponentialAttributes::Clone() const {
 
 
 /** constructor */
-ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
+ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed), giOrderIndex(0) {}
 
 /** destructor */
 ExponentialRandomizer::~ExponentialRandomizer() {}
@@ -35,7 +35,7 @@ void ExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeInterval,
     gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
     //add permutated value
     gvPermutedAttribute.push_back(0);
-    gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedExponentialAttributes(tContinuousVariable, tCensored);
+    gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedExponentialAttributes(tContinuousVariable, tCensored, ++giOrderIndex);
   }  
 }
 
@@ -123,6 +123,10 @@ double ExponentialRandomizer::Calibrate(measure_t tCalibration) {
 
 /** re-initializes and  sorts permutated attribute */
 void ExponentialRandomizer::SortPermutedAttribute() {
+  // Sort permuted attributes to original order - this is needed to maintain
+  // consistancy of output when running in parallel. 
+  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedOrderIndex());
+
   std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute(gRandomNumberGenerator));
   std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute());
 }

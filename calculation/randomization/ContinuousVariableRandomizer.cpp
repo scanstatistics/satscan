@@ -5,7 +5,8 @@
 #include "ContinuousVariableRandomizer.h"
 
 /** constructor */
-PermutedVariable::PermutedVariable(double dVariable) : PermutedAttribute(), gdVariable(dVariable) {}
+PermutedVariable::PermutedVariable(double dVariable, unsigned int iOrderIndex)
+                 :PermutedAttribute(), gdVariable(dVariable), giOrderIndex(iOrderIndex) {}
 
 /** destructor */
 PermutedVariable::~PermutedVariable() {}
@@ -37,13 +38,17 @@ ContinuousVariableRandomizer::~ContinuousVariableRandomizer() {}
 
 /** re-initializes and  sorts permutated attribute */
 void ContinuousVariableRandomizer::SortPermutedAttribute() {
+  // Sort permuted attributes to original order - this is needed to maintain
+  // consistancy of output when running in parallel. 
+  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedOrderIndex());
+
   std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute(gRandomNumberGenerator));
   std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute());
 }
 
 
 /** constructor */
-NormalRandomizer::NormalRandomizer(long lInitialSeed) : ContinuousVariableRandomizer(lInitialSeed) {}
+NormalRandomizer::NormalRandomizer(long lInitialSeed) : ContinuousVariableRandomizer(lInitialSeed), giOrderIndex(0) {}
 
 /** destructor */
 NormalRandomizer::~NormalRandomizer() {}
@@ -59,7 +64,7 @@ void NormalRandomizer::AddCase(int iTimeInterval, tract_t tTractIndex, measure_t
   gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
   //add permutated value
   gvPermutedAttribute.push_back(0);
-  gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedVariable(tContinuousVariable);
+  gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedVariable(tContinuousVariable, ++giOrderIndex);
 }
 
 /** Assigns data in randomizer to measure structures.
@@ -93,7 +98,7 @@ void NormalRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, SimD
 
 
 /** constructor */
-RankRandomizer::RankRandomizer(long lInitialSeed) : ContinuousVariableRandomizer(lInitialSeed) {}
+RankRandomizer::RankRandomizer(long lInitialSeed) : ContinuousVariableRandomizer(lInitialSeed), giOrderIndex(0) {}
 
 /** destructor */
 RankRandomizer::~RankRandomizer() {}
@@ -109,7 +114,7 @@ void RankRandomizer::AddCase(int iTimeInterval, tract_t tTractIndex, measure_t t
   gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
   //add permutated value
   gvPermutedAttribute.push_back(0);
-  gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedVariable(tContinuousVariable);
+  gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedVariable(tContinuousVariable, ++giOrderIndex);
 }
 
 /** Assigns data in randomizer to measure structures.

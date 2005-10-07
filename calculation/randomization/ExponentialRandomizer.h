@@ -11,7 +11,7 @@ class PermutedExponentialAttributes : public PermutedVariable {
     unsigned short            guCensoredAttribute;
 
   public:
-    PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute);
+    PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute, unsigned int iOrderIndex);
     virtual ~PermutedExponentialAttributes();
 
     virtual PermutedExponentialAttributes * Clone() const;
@@ -25,8 +25,8 @@ class PermutedExponentialAttributes : public PermutedVariable {
 class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
   protected:
     std::vector<SpaceTimeStationaryAttribute>	   gvStationaryAttribute;
-    //$$ std::vector<PermutedExponentialAttributes>	  gvPermutedAttribute;
     ZdPointerVector<PermutedExponentialAttributes> gvPermutedAttribute;
+    unsigned int                                   giOrderIndex;
 
     virtual void                                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
     virtual void                                SortPermutedAttribute();
