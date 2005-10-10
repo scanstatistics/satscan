@@ -10,27 +10,14 @@
 class PermutedVariable : public PermutedAttribute {
   protected:
     double		      gdVariable;
-    unsigned int              giOrderIndex;  
 
   public:
-    PermutedVariable(double dVariable, unsigned int iOrderIndex);
+    PermutedVariable(double dVariable);
     virtual ~PermutedVariable();
 
     virtual PermutedVariable* Clone() const;
-    inline unsigned int	      GetOrderIndex() const {return giOrderIndex;}
     inline double	      GetVariable() const {return gdVariable;}
 };
-
-/** Function object used to compare permuted exponential attributes. */
-class ComparePermutedOrderIndex {
-  public:
-    inline bool operator() (const PermutedVariable* plhs, const PermutedVariable* prhs);
-};
-
-/** compares permuted attribute by assigned time interval */
-inline bool ComparePermutedOrderIndex::operator() (const PermutedVariable* plhs, const PermutedVariable* prhs) {
-  return (plhs->GetOrderIndex() < prhs->GetOrderIndex());
-}
 
 /** class representing the stationary space-time attributes in a permutated randomization. */
 class SpaceTimeStationaryAttribute {
@@ -50,12 +37,17 @@ class SpaceTimeStationaryAttribute {
 /** Randomizer which has a stationary space-time attribute
     and a randomized continuous variable. */
 class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
-  protected:
-    std::vector<SpaceTimeStationaryAttribute>	gvStationaryAttribute;
-    ZdPointerVector<PermutedVariable>           gvPermutedAttribute;
+  public:
+    typedef std::vector<SpaceTimeStationaryAttribute> StationaryContainer_t;
+    typedef std::vector<PermutedVariable>             PermutedContainer_t;
 
-    virtual void                                SortPermutedAttribute();
-    
+  protected:
+    StationaryContainer_t       gvStationaryAttribute;
+    PermutedContainer_t         gvOriginalPermutedAttribute;
+    PermutedContainer_t         gvPermutedAttribute;
+
+    virtual void                SortPermutedAttribute();
+
   public:
     ContinuousVariableRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~ContinuousVariableRandomizer();
@@ -66,7 +58,6 @@ class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
     randomized data to simulation meaure structures. */
 class NormalRandomizer : public ContinuousVariableRandomizer {
   protected:
-    unsigned int               giOrderIndex; 
     virtual void               AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
 
   public:
@@ -83,7 +74,6 @@ class NormalRandomizer : public ContinuousVariableRandomizer {
     randomized data to simulation meaure structures. */
 class RankRandomizer : public ContinuousVariableRandomizer {
   protected:
-    unsigned int             giOrderIndex;
     virtual void             AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
 
   public:
