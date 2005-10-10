@@ -35,28 +35,28 @@ class PermutedAttribute {
 /** Function object used to compare permuted attributes. */
 class ComparePermutedAttribute {
   public:
-    inline bool operator() (const PermutedAttribute* plhs, const PermutedAttribute* prhs);
+    inline bool operator() (const PermutedAttribute& plhs, const PermutedAttribute& prhs);
 };
 
 /** compares permuted attribute by assigned random number */
-inline bool ComparePermutedAttribute::operator() (const PermutedAttribute* plhs, const PermutedAttribute* prhs) {
-  return (plhs->GetRandomNumber() < prhs->GetRandomNumber());
+inline bool ComparePermutedAttribute::operator() (const PermutedAttribute& plhs, const PermutedAttribute& prhs) {
+  return (plhs.GetRandomNumber() < prhs.GetRandomNumber());
 }
 
 /** Function object used to assign random number to permuted attribute. */
 class AssignPermutedAttribute {
   protected:
      RandomNumberGenerator      & gGenerator;
-     
+
   public:
     AssignPermutedAttribute(RandomNumberGenerator & Generator);
     virtual ~AssignPermutedAttribute();
-    
-    inline void operator() (PermutedAttribute* pAttribute);
+
+    inline void operator() (PermutedAttribute& pAttribute);
 };
 
-inline void AssignPermutedAttribute::operator() (PermutedAttribute* pAttribute) {
-  pAttribute->SetRandomNumber(gGenerator.GetRandomFloat());
+inline void AssignPermutedAttribute::operator() (PermutedAttribute& pAttribute) {
+  pAttribute.SetRandomNumber(gGenerator.GetRandomFloat());
 }
 //******************************************************************************
 #endif
