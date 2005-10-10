@@ -22,13 +22,20 @@ class DataSet; /** forward class declaration */
 
 /** Randomizes data of dataset for a 'space-time permutation' probablility model. */
 class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
+  public:
+    typedef std::vector<tract_t>                StationaryContainer_t;
+    typedef std::vector<PermutedTime>           PermutedContainer_t;
+
   class CategoryGrouping {
     public:
-      std::vector<tract_t>	     gvStationaryAttribute;
-      ZdPointerVector<PermutedTime>  gvPermutedAttribute;
+      StationaryContainer_t	                gvStationaryAttribute;
+      PermutedContainer_t                       gvOriginalPermutedAttribute;
+      PermutedContainer_t                       gvPermutedAttribute;
   };
+  typedef std::vector<CategoryGrouping>         CategoryContainer_t;
+
   protected:
-    std::vector<CategoryGrouping>    gCategoryAttributes;
+    CategoryContainer_t              gCategoryAttributes;
 
     virtual void                     AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
     virtual void                     SortPermutedAttribute();
@@ -39,19 +46,8 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
 
     virtual SpaceTimeRandomizer    * Clone() const;
 
-    void                             AddCase(unsigned int iCategory, int iTimeInterval, tract_t tTractIndex);
     void                             CreateRandomizationData(const RealDataSet& thisRealSet);
 };
-
-/** Function object used to compare permuted attributes. */
-class ComparePermutedTime {
-  public:
-    inline bool operator() (const PermutedTime* plhs, const PermutedTime* prhs);
-};
-
-/** compares permuted attribute by assigned time interval */
-inline bool ComparePermutedTime::operator() (const PermutedTime* plhs, const PermutedTime* prhs) {
-  return (plhs->GetTimeInterval() > prhs->GetTimeInterval());
-}
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+

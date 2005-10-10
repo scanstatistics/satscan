@@ -5,20 +5,20 @@
 #include "ExponentialRandomizer.h"
 
 /** constructor */
-PermutedExponentialAttributes::PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute, unsigned int iOrderIndex)
-                              :PermutedVariable(dVariable, iOrderIndex), guCensoredAttribute(uCensoreddAttribute) {}
+PermutedExponentialAttribute::PermutedExponentialAttribute(double dVariable, unsigned short uCensoreddAttribute)
+                             :PermutedVariable(dVariable), guCensoredAttribute(uCensoreddAttribute) {}
 
 /** destructor */
-PermutedExponentialAttributes::~PermutedExponentialAttributes() {}
+PermutedExponentialAttribute::~PermutedExponentialAttribute() {}
 
 /** returns pointer to newly cloned PermutatedVariable */
-PermutedExponentialAttributes * PermutedExponentialAttributes::Clone() const {
-  return new PermutedExponentialAttributes(*this);
+PermutedExponentialAttribute * PermutedExponentialAttribute::Clone() const {
+  return new PermutedExponentialAttribute(*this);
 }
 
 
 /** constructor */
-ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed), giOrderIndex(0) {}
+ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
 
 /** destructor */
 ExponentialRandomizer::~ExponentialRandomizer() {}
@@ -34,24 +34,23 @@ void ExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeInterval,
     //add stationary values
     gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
     //add permutated value
-    gvPermutedAttribute.push_back(0);
-    gvPermutedAttribute[gvPermutedAttribute.size() - 1] = new PermutedExponentialAttributes(tContinuousVariable, tCensored, ++giOrderIndex);
-  }  
+    gvOriginalPermutedAttribute.push_back(PermutedExponentialAttribute(tContinuousVariable, tCensored));
+  }
 }
 
 
 /** Assigns data in randomizer to case and measure structures.
     NOTE: Correctness of passed iNumTimeIntervals and iNumTracts, in relation
           to passed arrays is responsibility of caller. */
-void ExponentialRandomizer::Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts) const {
-  std::vector<SpaceTimeStationaryAttribute>::const_iterator      itr_stationary=gvStationaryAttribute.begin();
-  ZdPointerVector<PermutedExponentialAttributes>::const_iterator itr_permuted=gvPermutedAttribute.begin();
-  int                                                            i, tTract;
+void ExponentialRandomizer::Assign(const PermutedContainer_t& vPermutedAttributes, count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts) const {
+  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
+  PermutedContainer_t::const_iterator   itr_permuted=vPermutedAttributes.begin();
+  int                                   i, tTract;
 
   //assign randomized continuous data to measure
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
-     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += (*itr_permuted)->GetVariable();
-     ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += ((*itr_permuted)->GetCensoredAttribute() ? 0 : 1);
+     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += (*itr_permuted).GetVariable();
+     ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += ((*itr_permuted).GetCensoredAttribute() ? 0 : 1);
   }
 
   //now set as cumulative
@@ -67,15 +66,15 @@ void ExponentialRandomizer::Assign(count_t ** ppCases, measure_t ** ppMeasure, i
           to number of time intervals and locations in input data is responsibility
           of caller. */
 void ExponentialRandomizer::AssignCensoredIndividuals(TwoDimCountArray_t& tCensoredArray) const {
-  std::vector<SpaceTimeStationaryAttribute>::const_iterator      itr_stationary=gvStationaryAttribute.begin();
-  ZdPointerVector<PermutedExponentialAttributes>::const_iterator itr_permuted=gvPermutedAttribute.begin();
-  int                                                            iIntervalIndex;
-  count_t                                                     ** ppCases = tCensoredArray.GetArray();
+  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
+  PermutedContainer_t::const_iterator   itr_permuted=gvOriginalPermutedAttribute.begin();
+  int                                   iIntervalIndex;
+  count_t                            ** ppCases = tCensoredArray.GetArray();
 
   tCensoredArray.Set(0);
   //assign censored cases to array
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary)
-     if ((*itr_permuted)->GetCensoredAttribute())
+     if ((*itr_permuted).GetCensoredAttribute())
        ++ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()];
 
   //now set as cumulative
@@ -92,13 +91,13 @@ void ExponentialRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet,
   thisSimSet.ResetCumulativeCaseArray();
   //reset simulation measure array to zero
   thisSimSet.GetMeasureArrayHandler().Set(0);
-  Assign(thisSimSet.GetCaseArray(), thisSimSet.GetMeasureArray(), thisRealSet.GetNumTimeIntervals(), thisRealSet.GetNumTracts());
+  Assign(gvPermutedAttribute, thisSimSet.GetCaseArray(), thisSimSet.GetMeasureArray(), thisRealSet.GetNumTimeIntervals(), thisRealSet.GetNumTracts());
 }
 
 /** Calculates the total populations for each location - both censored and uncensored data.
     Caller is responsible for sizing vector to number of locations in input data. */
 std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const {
-  std::vector<SpaceTimeStationaryAttribute>::const_iterator             itr_stationary=gvStationaryAttribute.begin();
+  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
 
   // set all elements to zero
   std::fill(vMaxCirclePopulation.begin(), vMaxCirclePopulation.end(), 0);
@@ -111,23 +110,28 @@ std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(st
 }
 
 /** Calibrates accumulated survival times. Returns calibrated total measure. */
-double ExponentialRandomizer::Calibrate(measure_t tCalibration) {
-  double                                                   dTotalMeasure=0;
-  ZdPointerVector<PermutedExponentialAttributes>::iterator itr_permuted=gvPermutedAttribute.begin();
+double ExponentialRandomizer::CalibrateAndAssign(measure_t tCalibration, RealDataSet& thisDataSet) {
+  double                        dTotalMeasure=0;
+  PermutedContainer_t::iterator itr_permuted=gvOriginalPermutedAttribute.begin();
 
-  for (; itr_permuted != gvPermutedAttribute.end(); ++itr_permuted)
-    dTotalMeasure += (*itr_permuted)->Calibrate(tCalibration);
+  for (; itr_permuted != gvOriginalPermutedAttribute.end(); ++itr_permuted)
+    dTotalMeasure += (*itr_permuted).Calibrate(tCalibration);
+
+  // case and measure arrays
+  Assign(gvOriginalPermutedAttribute, thisDataSet.GetCaseArray(), thisDataSet.GetMeasureArray(), thisDataSet.GetNumTimeIntervals(), thisDataSet.GetNumTracts());
 
   return dTotalMeasure;  
 }
 
 /** re-initializes and  sorts permutated attribute */
 void ExponentialRandomizer::SortPermutedAttribute() {
-  // Sort permuted attributes to original order - this is needed to maintain
-  // consistancy of output when running in parallel. 
-  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedOrderIndex());
+  // Reset permuted attributes to original order - this is needed to maintain
+  // consistancy of output when running in parallel.
+  gvPermutedAttribute = gvOriginalPermutedAttribute;
 
   std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute(gRandomNumberGenerator));
   std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute());
 }
+
+
 

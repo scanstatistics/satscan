@@ -6,15 +6,15 @@
 
 /** class representing a permuted attribute which is a continuous variable
     and censored atribute. */
-class PermutedExponentialAttributes : public PermutedVariable {
+class PermutedExponentialAttribute : public PermutedVariable {
   protected:
-    unsigned short            guCensoredAttribute;
+    unsigned short                          guCensoredAttribute;
 
   public:
-    PermutedExponentialAttributes(double dVariable, unsigned short uCensoreddAttribute, unsigned int iOrderIndex);
-    virtual ~PermutedExponentialAttributes();
+    PermutedExponentialAttribute(double dVariable, unsigned short uCensoreddAttribute);
+    virtual ~PermutedExponentialAttribute();
 
-    virtual PermutedExponentialAttributes * Clone() const;
+    virtual PermutedExponentialAttribute  * Clone() const;
     double                                  Calibrate(double dCalibration) {gdVariable *= dCalibration; return gdVariable; }
     inline unsigned short                   GetCensoredAttribute() const {return guCensoredAttribute;}
 };
@@ -23,13 +23,20 @@ class PermutedExponentialAttributes : public PermutedVariable {
     Instead of assigning data to simulation case structures, assigns
     randomized data to simulation meaure structures. */
 class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
+  public:
+    typedef std::vector<SpaceTimeStationaryAttribute> StationaryContainer_t;
+    typedef std::vector<PermutedExponentialAttribute> PermutedContainer_t;
+     
   protected:
-    std::vector<SpaceTimeStationaryAttribute>	   gvStationaryAttribute;
-    ZdPointerVector<PermutedExponentialAttributes> gvPermutedAttribute;
-    unsigned int                                   giOrderIndex;
+    StationaryContainer_t	        gvStationaryAttribute;
+    PermutedContainer_t                 gvOriginalPermutedAttribute;
+    PermutedContainer_t                 gvPermutedAttribute;
 
-    virtual void                                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
-    virtual void                                SortPermutedAttribute();
+    void                                Assign(const PermutedContainer_t& vPermutedAttributes,
+                                               count_t ** ppCases, measure_t ** ppMeasure,
+                                               int iNumTimeIntervals, int iNumTracts) const;
+    virtual void                        AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
+    virtual void                        SortPermutedAttribute();
 
   public:
     ExponentialRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
@@ -38,10 +45,9 @@ class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
     virtual ExponentialRandomizer     * Clone() const;
 
     void                                AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored);
-    void                                Assign(count_t ** ppCases, measure_t ** ppMeasure, int iNumTimeIntervals, int iNumTracts) const;
     void                                AssignCensoredIndividuals(TwoDimCountArray_t& tCensoredArray) const;
     std::vector<double>               & CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const;
-    double                              Calibrate(measure_t tCalibration);
+    double                              CalibrateAndAssign(measure_t tCalibration, RealDataSet& thisDataSet);
 };
 //******************************************************************************
 #endif
