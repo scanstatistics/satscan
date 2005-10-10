@@ -350,14 +350,11 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
       bReadSuccessful = false;
     }
     else {
-      //calibrate measure -- multiply by (tTotalCases/tTotalMeasure)
-      tTotalMeasure = pRandomizer->Calibrate((double)tTotalCases/tTotalMeasure);
+      //calibrate measure -- multiply by (tTotalCases/tTotalMeasure) and assign data accumulated in randomizer to data set
+      tTotalMeasure = pRandomizer->CalibrateAndAssign((double)tTotalCases/tTotalMeasure, DataSet);
       if (fabs(tTotalCases - tTotalMeasure) > 0.0001)
         ZdGenerateException("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
                             "ReadCounts()", tTotalMeasure, tTotalCases);
-
-      //assign data accumulated in randomizer to data set case and measure arrays
-      pRandomizer->Assign(DataSet.GetCaseArray(), DataSet.GetMeasureArray(), DataSet.GetNumTimeIntervals(), DataSet.GetNumTracts());
       //assign data accumulated in randomizer to data set censored case array
       pRandomizer->AssignCensoredIndividuals(DataSet.GetCensoredCasesArrayHandler());
       DataSet.SetTotalCases(tTotalCases); //total non-censored cases
