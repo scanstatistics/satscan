@@ -873,7 +873,7 @@ void TfrmMain::CreateExcelSheet() {
   CMiniExcel                                            ExcelSheet;
   unsigned int                                          iColumnIndex=0, iRowIndex=0;
   std::vector<ParameterResultsInfo>::const_iterator     itr=gvParameterResultsInfo.begin();
-  AnsiString                                            sString;
+  AnsiString                                            sString, sYardTime, sScrutinizedTime;
 
   //add column headers
   ExcelSheet(iRowIndex, iColumnIndex) = "Data Set";
@@ -894,11 +894,11 @@ void TfrmMain::CreateExcelSheet() {
   for (; itr != gvParameterResultsInfo.end(); ++itr) {
     iColumnIndex=0;
     ExcelSheet(++iRowIndex, iColumnIndex) = itr->GetFilename().GetFileName();
-    sString.printf("%.2lf", itr->GetYardStickTimeInMinutes());
-    ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
-    sString.printf("%.2lf", itr->GetScrutinizedTimeInMinutes());
-    ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
-    sString.printf("%.2lf", 100.0 * itr->GetScrutinizedTimeInMinutes()/itr->GetYardStickTimeInMinutes() - 100.0);
+    sYardTime.printf("%.2lf", itr->GetYardStickTimeInMinutes());
+    ExcelSheet(iRowIndex, ++iColumnIndex) = sYardTime.ToDouble();
+    sScrutinizedTime.printf("%.2lf", itr->GetScrutinizedTimeInMinutes());
+    ExcelSheet(iRowIndex, ++iColumnIndex) = sScrutinizedTime.ToDouble();
+    sString.printf("%.2lf", 100.0 * sScrutinizedTime.ToDouble()/sYardTime.ToDouble() - 100.0);
     ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
     ExcelSheet(iRowIndex, ++iColumnIndex) = DateTimeToStr(gStartDate).c_str();
   }
