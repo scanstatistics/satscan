@@ -910,7 +910,7 @@ void CSaTScanData::SetIntervalStartTimes() {
 
 /** Causes maximum circle size to be set based on parameters settings. */
 void CSaTScanData::SetMaxCircleSize() {
-  measure_t tTotalPopulation;
+  measure_t tPopulation, tTotalPopulation=0;
 
   try {
     switch (gParameters.GetMaxGeographicClusterSizeType()) {
@@ -922,12 +922,19 @@ void CSaTScanData::SetMaxCircleSize() {
       case PERCENTOFPOPULATIONTYPE :
            //NOTE: The measure from the first dataset is used when calculating
            //      the maximum circle size; at least for the time being.
-           if (gParameters.GetProbabilityModelType() == ORDINAL)
-             tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalCases();
-           else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
-             tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalPopulation();
-           else
-             tTotalPopulation = gpDataSets->GetDataSet(0).GetTotalMeasure();
+           for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+              if (gParameters.GetProbabilityModelType() == ORDINAL)
+                tPopulation = gpDataSets->GetDataSet(t).GetTotalCases();
+              else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
+                tPopulation = gpDataSets->GetDataSet(t).GetTotalPopulation();
+              else
+                tPopulation = gpDataSets->GetDataSet(t).GetTotalMeasure();
+
+             if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
+               GenerateResolvableException("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
+                                           "SetMaxCircleSize()", std::numeric_limits<measure_t>::max());
+             tTotalPopulation += tPopulation;
+           }
 
            m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * tTotalPopulation;
            if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
