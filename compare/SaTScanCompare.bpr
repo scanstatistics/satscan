@@ -5,7 +5,7 @@
     <VERSION value="BCB.05.03"/>
     <PROJECT value="SaTScanCompare.exe"/>
     <OBJFILES value="SaTScanCompare.obj Main.obj Options.obj QueueWindow.obj 
-      QueueItemDefinition.obj"/>
+      QueueItemDefinition.obj mexcel.obj"/>
     <RESFILES value="SaTScanCompare.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) Main.dfm Options.dfm QueueWindow.dfm QueueItemDefinition.dfm"/>
