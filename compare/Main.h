@@ -25,6 +25,8 @@
 #include <dos.h>
 #include "Options.h"
 //---------------------------------------------------------------------------
+#include "mexcel.h"
+using namespace miniexcel;
 
 enum CompareType {UNKNOWN=0, MASTER_MISSING, COMPARE_MISSING, EQUAL, NOT_EQUAL, NOT_APPLICABLE};
 enum TimeDifferenceType {INCOMPLETE=0, SLOWER, SAME, FASTER};
@@ -42,6 +44,13 @@ class ParameterResultsInfo {
     unsigned short      guSecondsDifferent;
     float               gfTimeDifferencePercentage;
 
+    unsigned short      guYardStickHours;
+    unsigned short      guYardStickMinutes;
+    unsigned short      guYardStickSeconds;
+    unsigned short      guScrutinizedHours;
+    unsigned short      guScrutinizedMinutes;
+    unsigned short      guScrutinizedSeconds;
+
   public:
     ParameterResultsInfo(const char * sParameterFilename);
     ~ParameterResultsInfo();
@@ -55,16 +64,23 @@ class ParameterResultsInfo {
     const char        * GetFilenameString() const {return gParameterFilename.GetFullPath();}
     unsigned short      GetMinutesDifferent() const {return guMinutesDifferent;}
     CompareType         GetRelativeRisksType() const {return geRelativeRisks;}
+    double              GetScrutinizedTimeInMinutes() const {return (double)guScrutinizedHours * 60.0 + (double)guScrutinizedMinutes + (double)guScrutinizedSeconds/60.0;}
+    double              GetScrutinizedTimeInSeconds() const {return (double)(guScrutinizedHours) * 3600.0 + (double)guScrutinizedMinutes * 60.0 + (double)(guScrutinizedSeconds);}
     unsigned short      GetSecondsDifferent() const {return guSecondsDifferent;}
     CompareType         GetSimulatedRatiosType() const {return geSimulatedRatios;}
     float               GetTimeDifferencePercentage() const {return gfTimeDifferencePercentage;}
     TimeDifferenceType  GetTimeDifferenceType() const {return geTimeDifferenceType;}
+    double              GetYardStickTimeInMinutes() const {return (double)guYardStickHours * 60.0 + (double)guYardStickMinutes + (double)guYardStickSeconds/60.0;}
+    double              GetYardStickTimeInSeconds() const {return (double)(guYardStickHours) * 3600.0 + (double)guYardStickMinutes * 60.0 + (double)(guYardStickSeconds);}
     void                SetClusterInformationType(CompareType eCompareType) {geClusterInformation = eCompareType;}
     void                SetLocationInformationType(CompareType eCompareType) {geLocationInformation = eCompareType;}
     void                SetRelativeRisksType(CompareType eCompareType) {geRelativeRisks = eCompareType;}
+    void                SetResultTimes(unsigned short uYardStickHours, unsigned short uYardStickMinutes, unsigned short uYardStickSeconds,
+                                       unsigned short uScrutinizedHours, unsigned short uScrutinizedMinutes, unsigned short uScrutinizedSeconds);
     void                SetSimulatedRatiosType(CompareType eCompareType) {geSimulatedRatios = eCompareType;}
     void                SetTimeDifferencePercentage(float fPercentage) {gfTimeDifferencePercentage = fPercentage;}
     void                SetTimeDifference(unsigned short uHours, unsigned short uMinutes, unsigned short uSeconds, TimeDifferenceType geTimeDifferenceType);
+    void                Write(CMiniExcel& ExcelSheet, unsigned iRowIndex) const;
 };
 
 class TfrmMain : public TForm {
@@ -149,10 +165,8 @@ __published:	// IDE-managed Components
         void __fastcall ActionRemoveParameterFileExecute(TObject *Sender);
         void __fastcall ActionSaveParametersListExecute(TObject *Sender);
         void __fastcall ActionLoadParameterListExecute(TObject *Sender);
-        void __fastcall lstScheduledBatchsKeyDown(TObject *Sender,
-          WORD &Key, TShiftState Shift);
-        void __fastcall lstScheduledBatchsSelectItem(TObject *Sender,
-          TListItem *Item, bool Selected);
+        void __fastcall lstScheduledBatchsKeyDown(TObject *Sender, WORD &Key, TShiftState Shift);
+        void __fastcall lstScheduledBatchsSelectItem(TObject *Sender, TListItem *Item, bool Selected);
         void __fastcall ActionOptionsExecute(TObject *Sender);
         void __fastcall ActionClearListExecute(TObject *Sender);
         void __fastcall ActionDeleteAnalysesFilesExecute(TObject *Sender);
@@ -181,16 +195,17 @@ __published:	// IDE-managed Components
     static const char                 * THREAD_PRIORITY_CLASS_DATA;
     static const char                 * INACTIVE_MINIMIZED_CONSOLE_DATA;
 
-    void                                AddList();
-    void                                AddList(const char * sMessage);
+    void                                AddList(const ParameterResultsInfo& ResultsInfo, size_t tPosition);
     void                                AddSubItemForType(TListItem * pListItem, CompareType eType);
     void                                ArchiveResults();
-    void                                CompareClusterInformationFiles();
-    void                                CompareLocationInformationFiles();
-    void                                CompareRelativeRisksInformationFiles();
-    void                                CompareSimulatedRatiosFiles();
+    void                                CompareClusterInformationFiles(ParameterResultsInfo& ResultsInfo);
+    void                                CompareLocationInformationFiles(ParameterResultsInfo& ResultsInfo);
+    void                                CompareRelativeRisksInformationFiles(ParameterResultsInfo& ResultsInfo);
+    void                                CompareResultsAndReport();
+    void                                CompareSimulatedRatiosFiles(ParameterResultsInfo& ResultsInfo);
     bool                                CompareTextFiles(const std::string & sMaster, const std::string & sCompare);
-    void                                CompareTimes();
+    void                                CompareTimes(ParameterResultsInfo& ResultsInfo);
+    void                                CreateExcelSheet();
     void                                CreateReadMeFile(const char * sFilename);
     void                                CreateStatsFile(const char * sFilename);
     void                                EnableCompareActions();
@@ -201,7 +216,7 @@ __published:	// IDE-managed Components
     void                                EnableViewAction();
     std::string                       & GetComparatorFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     std::string                       & GetInQuestionFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
-    AnsiString                        & GetDisplayTime(AnsiString & sDisplay);
+    AnsiString                        & GetDisplayTime(const ParameterResultsInfo& ResultsInfo, AnsiString & sDisplay);
     std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     bool                                GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds);
     bool                                PromptForCompareProgram();

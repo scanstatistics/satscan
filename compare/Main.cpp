@@ -13,7 +13,10 @@ TfrmMain *frmMain;
 ParameterResultsInfo::ParameterResultsInfo(const char * sParameterFilename)
                      :geClusterInformation(UNKNOWN), geLocationInformation(UNKNOWN), geRelativeRisks(UNKNOWN),
                       geSimulatedRatios(UNKNOWN), geTimeDifferenceType(INCOMPLETE), guHoursDifferent(0),
-                      guMinutesDifferent(0), guSecondsDifferent(0), gfTimeDifferencePercentage(0) {
+                      guMinutesDifferent(0), guSecondsDifferent(0), gfTimeDifferencePercentage(0),
+                      guYardStickHours(0), guYardStickMinutes(0), guYardStickSeconds(0),
+                      guScrutinizedHours(0), guScrutinizedMinutes(0), guScrutinizedSeconds(0)
+ {
   gParameterFilename = sParameterFilename;
 }
 
@@ -30,6 +33,41 @@ bool ParameterResultsInfo::GetHasMisMatches() const {
 bool ParameterResultsInfo::GetHasMissingFiles() const {
   return geClusterInformation < EQUAL || geLocationInformation < EQUAL ||
          geRelativeRisks < EQUAL || geSimulatedRatios < EQUAL;
+}
+
+void ParameterResultsInfo::SetResultTimes(unsigned short uYardStickHours, unsigned short uYardStickMinutes, unsigned short uYardStickSeconds,
+                                          unsigned short uScrutinizedHours, unsigned short uScrutinizedMinutes, unsigned short uScrutinizedSeconds) {
+  guYardStickHours = uYardStickHours;
+  guYardStickMinutes = uYardStickMinutes;
+  guYardStickSeconds = uYardStickSeconds;
+  guScrutinizedHours = uScrutinizedHours;
+  guScrutinizedMinutes = uScrutinizedMinutes;
+  guScrutinizedSeconds = uScrutinizedSeconds;
+
+  unsigned short        uHours, uMinutes, uSeconds;
+  double                dYardStickTimeInSeconds = GetYardStickTimeInSeconds(),
+                        dScrutinizedTimeInSeconds = GetScrutinizedTimeInSeconds();
+
+  if (dYardStickTimeInSeconds == dScrutinizedTimeInSeconds) {
+    SetTimeDifference(guScrutinizedHours, guScrutinizedMinutes, guScrutinizedSeconds, SAME);
+    SetTimeDifferencePercentage(0.0);
+  }
+  else if (dYardStickTimeInSeconds > dScrutinizedTimeInSeconds) {
+    SetTimeDifferencePercentage(std::fabs(100 * dScrutinizedTimeInSeconds/dYardStickTimeInSeconds - 100));
+    dYardStickTimeInSeconds = dYardStickTimeInSeconds - dScrutinizedTimeInSeconds;
+    uHours = dYardStickTimeInSeconds/3600.0;
+    uMinutes = (dYardStickTimeInSeconds - uHours * 3600.0)/60.0;
+    uSeconds = (double)(dYardStickTimeInSeconds - uHours * 3600 - uMinutes * 60);
+    SetTimeDifference(uHours, uMinutes, uSeconds, FASTER);
+  }
+  else {
+    SetTimeDifferencePercentage(std::fabs(100 * dScrutinizedTimeInSeconds/dYardStickTimeInSeconds - 100));
+    dScrutinizedTimeInSeconds = dScrutinizedTimeInSeconds - dYardStickTimeInSeconds;
+    uHours = dScrutinizedTimeInSeconds/3600.0;
+    uMinutes = (dScrutinizedTimeInSeconds - uHours * 3600.0)/60.0;
+    uSeconds = (double)(dScrutinizedTimeInSeconds - uHours * 3600 - uMinutes * 60);
+    SetTimeDifference(uHours, uMinutes, uSeconds, SLOWER);
+  }
 }
 
 /** Set difference in time between master and compare analyses */
@@ -399,9 +437,9 @@ void __fastcall TfrmMain::ActionSaveParametersListExecute(TObject *Sender){
 
 /** starts process of comparing output files */
 void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
-   std::string  sBuffer, sComparatorFilename, sCompareFilename;
+   std::string  sComparatorFilename, sCompareFilename;
    AnsiString   sCommand, sCurTitle, sText;
-   int          iItemIndex=0;
+   int          iItemIndex=-1;
 
    if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
      Application->Minimize();
@@ -410,62 +448,52 @@ void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
    gStartDate = TDateTime::CurrentDateTime();
    DateSeparator = '/';
    TimeSeparator = ':';
-   
+
    memMessages->Clear();
    lstDisplay->Items->Clear();
    gvParameterResultsInfo.clear();
    gvColumnSortOrder.clear();
    sCurTitle = Application->Title;
    gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
-   while (iItemIndex < ltvScheduledBatchs->Items->Count) {
-        sText.printf("%s [(%d of %d) %s]", sCurTitle.c_str(),
-                     iItemIndex + 1, ltvScheduledBatchs->Items->Count,
-                     ExtractFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption).c_str());
+   while (++iItemIndex < ltvScheduledBatchs->Items->Count) {
+        sText.printf("%s [(%d of %d) %s]", sCurTitle.c_str(), iItemIndex + 1, ltvScheduledBatchs->Items->Count, ExtractFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption).c_str());
         Application->Title = sText;
-        sBuffer = ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str();
-        gvParameterResultsInfo.push_back(ParameterResultsInfo(sBuffer.c_str()));
-        if (! FileExists(gvParameterResultsInfo.back().GetFilenameString())) {
-          AddList("Parameter File Missing");
+        ParameterResultsInfo thisParameterInfo(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str());
+        if (!FileExists(thisParameterInfo.GetFilenameString())) {
+          memMessages->Lines->Add("Parameter File Missing : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
           iItemIndex++;
           continue;
         }
-
         //get filename that will be the result file
-        GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sComparatorFilename);
+        GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"",
-                        edtBatchExecutableComparatorName->Text.c_str(),
-                        gvParameterResultsInfo.back().GetFilenameString(),
-                        sComparatorFilename.c_str());
-        if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
-          //Application->ProcessMessages();
-          //_sleep(2);
-          //get filename that will be the result file created for comparison
-          GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompareFilename);
-          //Execute SatScan using the current Parameter file, but set commandline options for version check
-          sCommand.printf("\"%s\" \"%s\" -o \"%s\"",
-                          edtBatchExecutableName->Text.c_str(),
-                          gvParameterResultsInfo.back().GetFilenameString(),
-                          sCompareFilename.c_str());
-          //execute SaTScan version that is in question
-          if (Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
-            CompareClusterInformationFiles();
-            CompareLocationInformationFiles();
-            CompareRelativeRisksInformationFiles();
-            CompareSimulatedRatiosFiles();
-            CompareTimes();
-            AddList();
-          }
-          else
-            AddList("Program Failed/Cancelled");
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableComparatorName->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str());
+        if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
+          memMessages->Lines->Add("Yardstick Executable Failed/Cancelled : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
+          memMessages->Lines->Add("");
+          continue;
         }
-        else
-          AddList("Comparator Program Failed/Cancelled");
-        Application->ProcessMessages();
-        //_sleep(2);
-        iItemIndex++;
+        //get filename that will be the result file created for comparison
+        GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
+        //Execute SatScan using the current Parameter file, but set commandline options for version check
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableName->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str());
+        //execute SaTScan version that is in question
+        if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
+          memMessages->Lines->Add("Scrutinized Executable Failed/Cancelled : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
+          memMessages->Lines->Add("");
+          continue;
+        }
+        gvParameterResultsInfo.push_back(thisParameterInfo);
    }
+   Application->ProcessMessages();
    Application->Title = sCurTitle;
+   //compare results
+   CompareResultsAndReport();
+   //build excel results sheet
+   CreateExcelSheet();
    //archive results
    if (gpFrmOptions->chkArchiveResults->Checked)
      ArchiveResults();
@@ -495,42 +523,25 @@ void __fastcall TfrmMain::ActionViewParametersExecute(TObject *Sender) {
 }
 
 /** add item to display indicating results of analysis comparison */
-void TfrmMain::AddList() {
+void TfrmMain::AddList(const ParameterResultsInfo& ResultsInfo, size_t tPosition) {
   AnsiString    sDisplay;
 
   TListItem * pListItem = lstDisplay->Items->Add();
-  pListItem->Data = (void*)(gvParameterResultsInfo.size() - 1);
+  pListItem->Data = (void*)(tPosition);
 
-  const ParameterResultsInfo & ref = gvParameterResultsInfo.back();
-  if (ref.GetHasMisMatches() || ref.GetTimeDifferenceType() == SLOWER)
+  if (ResultsInfo.GetHasMisMatches() || ResultsInfo.GetTimeDifferenceType() == SLOWER)
     pListItem->ImageIndex = 2;
-  else if (ref.GetHasMissingFiles() || ref.GetTimeDifferenceType() == INCOMPLETE)
+  else if (ResultsInfo.GetHasMissingFiles() || ResultsInfo.GetTimeDifferenceType() == INCOMPLETE)
     pListItem->ImageIndex = 1;
   else
     pListItem->ImageIndex = 0;
 
-  pListItem->SubItems->Add(gvParameterResultsInfo.back().GetFilename().GetCompleteFileName());
-  pListItem->SubItems->Add(GetDisplayTime(sDisplay));
-  AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetClusterInformationType());
-  AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetLocationInformationType());
-  AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetRelativeRisksType());
-  AddSubItemForType(pListItem, gvParameterResultsInfo.back().GetSimulatedRatiosType());
-}
-
-/** adds listview item -- error reporting */
-void TfrmMain::AddList(const char * sMessage) {
-  AnsiString    sCaption;
-
-  TListItem * pListItem = lstDisplay->Items->Add();
-  sCaption.printf("%s <%s>", gvParameterResultsInfo.back().GetFilename().GetCompleteFileName(), sMessage);
-  pListItem->Data = (void*)(gvParameterResultsInfo.size() - 1);
-  pListItem->ImageIndex = 3;
-  pListItem->SubItems->Add(sCaption);
-  pListItem->SubItems->Add("-");
-  pListItem->SubItems->Add("-");
-  pListItem->SubItems->Add("-");
-  pListItem->SubItems->Add("-");
-  pListItem->SubItems->Add("-");
+  pListItem->SubItems->Add(ResultsInfo.GetFilename().GetCompleteFileName());
+  pListItem->SubItems->Add(GetDisplayTime(ResultsInfo, sDisplay));
+  AddSubItemForType(pListItem, ResultsInfo.GetClusterInformationType());
+  AddSubItemForType(pListItem, ResultsInfo.GetLocationInformationType());
+  AddSubItemForType(pListItem, ResultsInfo.GetRelativeRisksType());
+  AddSubItemForType(pListItem, ResultsInfo.GetSimulatedRatiosType());
 }
 
 /** adds sub menu item for compare result type */
@@ -549,13 +560,11 @@ void TfrmMain::AddSubItemForType(TListItem * pListItem, CompareType eType) {
 void TfrmMain::ArchiveResults() {
   AnsiString    sArchiveFilename, sStatsFilename, sCommand;
   std::string   sMaster, sCompare, sTemp1, sTemp2;
-  TDateTime     Date;
 
   //create archive name
-  Date = TDateTime::CurrentDateTime();
   DateSeparator = '_';
   TimeSeparator = '.';
-  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
+  sArchiveFilename.printf("%s%s.zip", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(gStartDate).c_str());
   if (!access(sArchiveFilename.c_str(), 00) && remove(sArchiveFilename.c_str()))
     return;
 
@@ -564,7 +573,7 @@ void TfrmMain::ArchiveResults() {
   memMessages->Lines->Add(sArchiveFilename);
   memMessages->Lines->Add("");
   //create analysis stats file
-  sStatsFilename.printf("%s%s.stats.txt", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(Date).c_str());
+  sStatsFilename.printf("%s%s.stats.txt", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(gStartDate).c_str());
   CreateStatsFile(sStatsFilename.c_str());
   sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
                    gpFrmOptions->edtArchiveApplication->Text.c_str(),
@@ -573,6 +582,15 @@ void TfrmMain::ArchiveResults() {
                    sStatsFilename.c_str());
   Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked);
   remove(sStatsFilename.c_str());
+  //add Excel file
+  sStatsFilename.printf("%s%s.speed.compare.xls", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(gStartDate).c_str());
+  sCommand.sprintf("\"%s\" %s \"%s\" \"%s\"",
+                   gpFrmOptions->edtArchiveApplication->Text.c_str(),
+                   gpFrmOptions->edtArchiveApplicationOptions->Text.c_str(),
+                   sArchiveFilename.c_str(),
+                   sStatsFilename.c_str());
+  Execute(sCommand, false, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked);
+
   //add 'ReadMe' file to archive
   if (gpFrmOptions->chkCreateReadMeFile->Checked) {
     sStatsFilename.printf("%sReadMe.txt", ExtractFilePath(Application->ExeName).c_str());
@@ -695,12 +713,12 @@ void __fastcall TfrmMain::btnBrowseBatchExecutableClick(TObject *Sender) {
 }
 
 /** Sets open dialog filters and displays for selecting parameter list file *//** compare Cluster Information files */
-void TfrmMain::CompareClusterInformationFiles() {
+void TfrmMain::CompareClusterInformationFiles(ParameterResultsInfo& ResultsInfo) {
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
   sMaster.insert(sMaster.find_last_of("."),".col");
   sCompare.insert(sCompare.find_last_of("."),".col");
@@ -713,16 +731,16 @@ void TfrmMain::CompareClusterInformationFiles() {
   else
     eType = NOT_EQUAL;
 
-  gvParameterResultsInfo.back().SetClusterInformationType(eType);
+  ResultsInfo.SetClusterInformationType(eType);
 }
 
 /** compare Location Information files */
-void TfrmMain::CompareLocationInformationFiles() {
+void TfrmMain::CompareLocationInformationFiles(ParameterResultsInfo& ResultsInfo) {
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
   sMaster.insert(sMaster.find_last_of("."),".gis");
   sCompare.insert(sCompare.find_last_of("."),".gis");
@@ -735,21 +753,21 @@ void TfrmMain::CompareLocationInformationFiles() {
   else
     eType = NOT_EQUAL;
 
-  gvParameterResultsInfo.back().SetLocationInformationType(eType);
+  ResultsInfo.SetLocationInformationType(eType);
 }
 
 /** compare Relative Risks files */
-void TfrmMain::CompareRelativeRisksInformationFiles() {
+void TfrmMain::CompareRelativeRisksInformationFiles(ParameterResultsInfo& ResultsInfo) {
   CompareType   eType;
   std::string   sMaster, sCompare, sLineBuffer;
   unsigned int  iPos, iLine=0;
 
   //not applicable for Space-Time Permutation model
-  ZdIniFile IniFile(gvParameterResultsInfo.back().GetFilenameString());
+  ZdIniFile IniFile(ResultsInfo.GetFilenameString());
   if (IniFile.GetNumSections())
     sLineBuffer = IniFile.GetSection("[Analysis]")->GetString("ModelType");
   else {
-    ifstream ParameterFile(gvParameterResultsInfo.back().GetFilenameString());
+    ifstream ParameterFile(ResultsInfo.GetFilenameString());
     while (++iLine < 22 && std::getline(ParameterFile, sLineBuffer));
     if ((iPos = sLineBuffer.find_first_of("//")) != sLineBuffer.npos)
       sLineBuffer = sLineBuffer.substr(0, iPos);
@@ -760,8 +778,8 @@ void TfrmMain::CompareRelativeRisksInformationFiles() {
     eType = NOT_APPLICABLE;
   }
   else {
-    GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-    GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+    GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
     sMaster.insert(sMaster.find_last_of("."),".rr");
     sCompare.insert(sCompare.find_last_of("."),".rr");
@@ -775,16 +793,30 @@ void TfrmMain::CompareRelativeRisksInformationFiles() {
       eType = NOT_EQUAL;
   }
 
-  gvParameterResultsInfo.back().SetRelativeRisksType(eType);
+  ResultsInfo.SetRelativeRisksType(eType);
+}
+
+/** Compare results and update TList/ParameterResultsInfo objects. */
+void TfrmMain::CompareResultsAndReport() {
+  std::vector<ParameterResultsInfo>::iterator     itr=gvParameterResultsInfo.begin();
+
+  for (;itr != gvParameterResultsInfo.end(); ++itr) {
+     CompareClusterInformationFiles(*itr);
+     CompareLocationInformationFiles(*itr);
+     CompareRelativeRisksInformationFiles(*itr);
+     CompareSimulatedRatiosFiles(*itr);
+     CompareTimes(*itr);
+     AddList(*itr, std::distance(gvParameterResultsInfo.begin(), itr));
+   }  
 }
 
 /** compare Simulated Loglikelihood Ratio files */
-void TfrmMain::CompareSimulatedRatiosFiles() {
+void TfrmMain::CompareSimulatedRatiosFiles(ParameterResultsInfo& ResultsInfo) {
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
+  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
   sMaster.insert(sMaster.find_last_of("."),".llr");
   sCompare.insert(sCompare.find_last_of("."),".llr");
@@ -797,7 +829,7 @@ void TfrmMain::CompareSimulatedRatiosFiles() {
   else
     eType = NOT_EQUAL;
 
-  gvParameterResultsInfo.back().SetSimulatedRatiosType(eType);
+  ResultsInfo.SetSimulatedRatiosType(eType);
 }
 
 /** returns whether text files are equal, ignoring whitespace differences */
@@ -821,48 +853,72 @@ bool TfrmMain::CompareTextFiles(const std::string & sMaster, const std::string &
 }
 
 /** compares and records time differences between master and this analysis */
-void TfrmMain::CompareTimes() {
+void TfrmMain::CompareTimes(ParameterResultsInfo& ResultsInfo) {
   bool                  bMasterDate;
-  unsigned short        uHoursM, uMinutesM, uSecondsM, uHoursC, uMinutesC, uSecondsC;
+  unsigned short        uHoursY, uMinutesY, uSecondsY, uHoursS, uMinutesS, uSecondsS;
   std::string           sMaster, sCompare;
-//  float                 fMasterTimeInMinutes, fComareTimeInMinutes;
-  double                dMasterTimeInSeconds, dComareTimeInSeconds;
 
-  GetResultFileName(gvParameterResultsInfo.back().GetFilename(), sMaster);
-  bMasterDate = GetRunTime(sMaster.c_str(), uHoursM, uMinutesM, uSecondsM);
-  GetInQuestionFilename(gvParameterResultsInfo.back().GetFilename(), sCompare);
-  GetRunTime(sCompare.c_str(), uHoursC, uMinutesC, uSecondsC);
-
-  if (!bMasterDate)
-    gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, INCOMPLETE);
-  else {
-//    fMasterTimeInMinutes = (float)(uHoursM) * 60 + (float)uMinutesM + (float)(uSecondsM)/60;
-//    fComareTimeInMinutes = (float)(uHoursC) * 60 + (float)uMinutesC + (float)(uSecondsC)/60;
-
-    dMasterTimeInSeconds = (double)(uHoursM) * 3600.0 + (double)uMinutesM * 60.0 + (double)(uSecondsM);
-    dComareTimeInSeconds = (double)(uHoursC) * 3600.0 + (double)uMinutesC * 60.0 + (double)(uSecondsC);
-
-    if (dMasterTimeInSeconds == dComareTimeInSeconds) {
-      gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SAME);
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(0.0);
-    }
-    else if (dMasterTimeInSeconds > dComareTimeInSeconds) {
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - dComareTimeInSeconds/dMasterTimeInSeconds);
-      dMasterTimeInSeconds = dMasterTimeInSeconds - dComareTimeInSeconds;
-      uHoursM = dMasterTimeInSeconds/3600.0;
-      uMinutesM = (dMasterTimeInSeconds - uHoursM * 3600.0)/60.0;
-      uSecondsM = (double)(dMasterTimeInSeconds - uHoursM * 3600 - uMinutesM * 60);
-      gvParameterResultsInfo.back().SetTimeDifference(uHoursM, uMinutesM, uSecondsM, FASTER);
-    }
-    else {
-      gvParameterResultsInfo.back().SetTimeDifferencePercentage(1 - dMasterTimeInSeconds/dComareTimeInSeconds);
-      dComareTimeInSeconds = dComareTimeInSeconds - dMasterTimeInSeconds;
-      uHoursC = dComareTimeInSeconds/3600.0;
-      uMinutesC = (dComareTimeInSeconds - uHoursC * 3600.0)/60.0;
-      uSecondsC = (double)(dComareTimeInSeconds - uHoursC * 3600 - uMinutesC * 60);
-      gvParameterResultsInfo.back().SetTimeDifference(uHoursC, uMinutesC, uSecondsC, SLOWER);
-    }
+  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+  if (GetRunTime(sMaster.c_str(), uHoursY, uMinutesY, uSecondsY)) {
+    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+    GetRunTime(sCompare.c_str(), uHoursS, uMinutesS, uSecondsS);
+    ResultsInfo.SetResultTimes(uHoursY, uMinutesY, uSecondsY, uHoursS, uMinutesS, uSecondsS);
   }
+  else
+    ResultsInfo.SetTimeDifference(0, 0, 0, INCOMPLETE);
+}
+
+/** creates excel spread sheet of results */
+void TfrmMain::CreateExcelSheet() {
+  CMiniExcel                                            ExcelSheet;
+  unsigned int                                          iColumnIndex=0, iRowIndex=0;
+  std::vector<ParameterResultsInfo>::const_iterator     itr=gvParameterResultsInfo.begin();
+  AnsiString                                            sString;
+
+  //add column headers
+  ExcelSheet(iRowIndex, iColumnIndex) = "Data Set";
+  ExcelSheet(iRowIndex, iColumnIndex).setBorder(BORDER_LEFT|BORDER_TOP|BORDER_BOTTOM);
+  ExcelSheet(iRowIndex, ++iColumnIndex) = "Yardstick Speed (min)";
+  ExcelSheet(iRowIndex, iColumnIndex).setBorder(BORDER_TOP|BORDER_BOTTOM);
+  ExcelSheet(iRowIndex, ++iColumnIndex) = "Scrutinized Speed (min)";
+  ExcelSheet(iRowIndex, iColumnIndex).setBorder(BORDER_TOP|BORDER_BOTTOM);
+  ExcelSheet(iRowIndex, ++iColumnIndex) = "Speed Difference (%)";
+  ExcelSheet(iRowIndex, iColumnIndex).setBorder(BORDER_TOP|BORDER_BOTTOM);
+  ExcelSheet(iRowIndex, ++iColumnIndex) = "Date";
+  ExcelSheet(iRowIndex, iColumnIndex).setBorder(BORDER_TOP|BORDER_BOTTOM);
+  ExcelSheet(iRowIndex, ++iColumnIndex) = "Comments";
+  ExcelSheet(iRowIndex, iColumnIndex).setBorder(BORDER_RIGHT|BORDER_TOP|BORDER_BOTTOM);
+
+  DateSeparator = '/';
+  TimeSeparator = ':';
+  for (; itr != gvParameterResultsInfo.end(); ++itr) {
+    iColumnIndex=0;
+    ExcelSheet(++iRowIndex, iColumnIndex) = itr->GetFilename().GetFileName();
+    sString.printf("%.2lf", itr->GetYardStickTimeInMinutes());
+    ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
+    sString.printf("%.2lf", itr->GetScrutinizedTimeInMinutes());
+    ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
+    sString.printf("%.2lf", 100.0 * itr->GetScrutinizedTimeInMinutes()/itr->GetYardStickTimeInMinutes() - 100.0);
+    ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
+    ExcelSheet(iRowIndex, ++iColumnIndex) = DateTimeToStr(gStartDate).c_str();
+  }
+
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sString.printf("%s%s.speed.compare.xls", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(gStartDate).c_str());
+  FILE *f;
+  if ((!access(sString.c_str(), 00) && remove(sString.c_str())) || (f = fopen(sString.c_str(),"wb")) == NULL) {
+    memMessages->Lines->Add("Could not create Excel filename:");
+    memMessages->Lines->Add(sString);
+    memMessages->Lines->Add("");
+    return;
+  }
+  ExcelSheet.Write(f);
+  fclose(f);
+  //print archive filename
+  memMessages->Lines->Add("Excel Filename:");
+  memMessages->Lines->Add(sString);
+  memMessages->Lines->Add("");
 }
 
 /** creates 'ReadMe' file */
@@ -877,14 +933,12 @@ void TfrmMain::CreateReadMeFile(const char * sFilename) {
 void TfrmMain::CreateStatsFile(const char * sFilename) {
  int            i, iNumMisMatch=0,iNumCorrect=0, iNumMissingFiles=0, iNumProgramStop=0;
  TListItem    * pListItem;
- TDateTime      Date;
 
   if (sFilename) {
     ofstream Output(sFilename, ios_base::out|ios_base::trunc);
 
     //print header information
-    Date = TDateTime::CurrentDateTime();
-    Output << endl << "Date: " << Date.DateTimeString().c_str() << endl;
+    Output << endl << "Date: " << gStartDate.DateTimeString().c_str() << endl;
 
     for (i=0; i < lstDisplay->Items->Count; i++)
        switch (lstDisplay->Items->Item[i]->ImageIndex) {
@@ -894,8 +948,6 @@ void TfrmMain::CreateStatsFile(const char * sFilename) {
          case 3 : iNumProgramStop++; break;
          //default : error
        };
-
-
 
     Output << "Total Analyses         : " << lstDisplay->Items->Count << endl
            << "Compared Equal         : " << iNumCorrect << endl
@@ -1035,22 +1087,20 @@ std::string & TfrmMain::GetInQuestionFilename(const ZdFileName & ParameterFilena
 }
 
 /** adds analysis speed comparison to display */
-AnsiString & TfrmMain::GetDisplayTime(AnsiString & sDisplay) {
-  const ParameterResultsInfo & Ref = gvParameterResultsInfo.back();
-  switch (Ref.GetTimeDifferenceType()) {
-    case INCOMPLETE : sDisplay.printf("%i hr %i min % i sec (?)", Ref.GetHoursDifferent(),
-                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+AnsiString & TfrmMain::GetDisplayTime(const ParameterResultsInfo& ResultsInfo, AnsiString & sDisplay) {
+  switch (ResultsInfo.GetTimeDifferenceType()) {
+    case INCOMPLETE : sDisplay.printf("not completed (?)");
                       break;
-    case SLOWER     : sDisplay.printf("%i hr %i min % i sec (%.2f%% slower)", Ref.GetHoursDifferent(),
-                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
-                                      Ref.GetTimeDifferencePercentage() * 100.0);
+    case SLOWER     : sDisplay.printf("%i hr %i min % i sec (%.2f%% slower)", ResultsInfo.GetHoursDifferent(),
+                                      ResultsInfo.GetMinutesDifferent(), ResultsInfo.GetSecondsDifferent(),
+                                      ResultsInfo.GetTimeDifferencePercentage());
                       break;
-    case SAME       : sDisplay.printf("%i hr %i min % i sec (same time)", Ref.GetHoursDifferent(),
-                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent());
+    case SAME       : sDisplay.printf("%i hr %i min % i sec (same time)", ResultsInfo.GetHoursDifferent(),
+                                      ResultsInfo.GetMinutesDifferent(), ResultsInfo.GetSecondsDifferent());
                       break;
-    case FASTER     : sDisplay.printf("%i hr %i min % i sec (%.2f%% faster)", Ref.GetHoursDifferent(),
-                                      Ref.GetMinutesDifferent(), Ref.GetSecondsDifferent(),
-                                      Ref.GetTimeDifferencePercentage() * 100.0);
+    case FASTER     : sDisplay.printf("%i hr %i min % i sec (%.2f%% faster)", ResultsInfo.GetHoursDifferent(),
+                                      ResultsInfo.GetMinutesDifferent(), ResultsInfo.GetSecondsDifferent(),
+                                      ResultsInfo.GetTimeDifferencePercentage());
                       break;
     //default : error
   };
@@ -1158,7 +1208,6 @@ void __fastcall TfrmMain::btnExecuteQueueComparatorClick(TObject *Sender) {
   for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
      pDialog->AddBatch(edtBatchExecutableComparatorName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
 
-//  pDialog->ActionStartBatchesExecute(this);
   pDialog->ShowModal();
 }
 //---------------------------------------------------------------------------
@@ -1168,7 +1217,6 @@ void __fastcall TfrmMain::btnExecuteQueueQuestionClick(TObject *Sender) {
   for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
      pDialog->AddBatch(edtBatchExecutableName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
 
-//  pDialog->ActionStartBatchesExecute(this);
   pDialog->ShowModal();
 }
 //---------------------------------------------------------------------------

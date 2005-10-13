@@ -1,8 +1,8 @@
 object frmMain: TfrmMain
-  Left = 192
-  Top = 83
+  Left = 187
+  Top = 81
   Width = 604
-  Height = 554
+  Height = 589
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -233,7 +233,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 257
     Width = 596
-    Height = 207
+    Height = 200
     Align = alClient
     BevelOuter = bvNone
     Constraints.MinHeight = 200
@@ -243,7 +243,7 @@ object frmMain: TfrmMain
       Left = 12
       Top = 11
       Width = 453
-      Height = 183
+      Height = 176
       Anchors = [akLeft, akTop, akRight, akBottom]
       Columns = <
         item
@@ -288,7 +288,7 @@ object frmMain: TfrmMain
       Left = 474
       Top = 0
       Width = 122
-      Height = 207
+      Height = 200
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
@@ -549,9 +549,9 @@ object frmMain: TfrmMain
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 464
+    Top = 457
     Width = 596
-    Height = 63
+    Height = 105
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 3
@@ -564,9 +564,9 @@ object frmMain: TfrmMain
     end
     object memMessages: TMemo
       Left = 12
-      Top = 13
+      Top = 14
       Width = 571
-      Height = 44
+      Height = 86
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
       ScrollBars = ssVertical
