@@ -1,9 +1,9 @@
 object frmOptions: TfrmOptions
-  Left = 320
-  Top = 204
+  Left = 304
+  Top = 123
   BorderStyle = bsDialog
   Caption = 'Options'
-  ClientHeight = 424
+  ClientHeight = 473
   ClientWidth = 367
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frmOptions: TfrmOptions
     Left = 0
     Top = 0
     Width = 367
-    Height = 424
+    Height = 473
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
@@ -46,13 +46,19 @@ object frmOptions: TfrmOptions
     end
     object Bevel1: TBevel
       Left = 2
-      Top = 315
+      Top = 300
       Width = 364
       Height = 2
     end
     object Bevel2: TBevel
       Left = 3
       Top = 62
+      Width = 364
+      Height = 2
+    end
+    object Bevel3: TBevel
+      Left = 3
+      Top = 366
       Width = 364
       Height = 2
     end
@@ -141,12 +147,12 @@ object frmOptions: TfrmOptions
       Left = 24
       Top = 190
       Width = 335
-      Height = 113
+      Height = 98
       TabOrder = 8
     end
     object chkSuppressDosWindow: TCheckBox
       Left = 8
-      Top = 327
+      Top = 376
       Width = 110
       Height = 17
       Caption = 'Suppress Console'
@@ -155,7 +161,7 @@ object frmOptions: TfrmOptions
     end
     object rdoGroupThreadPriority: TRadioGroup
       Left = 8
-      Top = 354
+      Top = 403
       Width = 352
       Height = 63
       Caption = 'Thread Priority'
@@ -170,12 +176,25 @@ object frmOptions: TfrmOptions
     end
     object chkMinimizeConsoleWindow: TCheckBox
       Left = 143
-      Top = 327
+      Top = 376
       Width = 152
       Height = 17
       Caption = 'Inactive Minimized Console'
       TabOrder = 11
       OnClick = chkMinimizeConsoleWindowClick
+    end
+    object rdgExecuteMethod: TRadioGroup
+      Left = 7
+      Top = 306
+      Width = 352
+      Height = 50
+      Caption = 'Execute Method'
+      Columns = 2
+      ItemIndex = 0
+      Items.Strings = (
+        'Create Process Each Analysis'
+        'Batch File Execute')
+      TabOrder = 12
     end
   end
   object OpenDialog: TOpenDialog

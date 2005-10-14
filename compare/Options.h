@@ -33,6 +33,8 @@ __published:	// IDE-managed Components
         TCheckBox *chkSuppressDosWindow;
         TRadioGroup *rdoGroupThreadPriority;
         TCheckBox *chkMinimizeConsoleWindow;
+        TBevel *Bevel3;
+        TRadioGroup *rdgExecuteMethod;
         void __fastcall btnBrowseComparisonAppClick(TObject *Sender);
         void __fastcall btnBrowseArchiveApplicationClick(TObject *Sender);
         void __fastcall chkMinimizeConsoleWindowClick(TObject *Sender);
@@ -42,6 +44,7 @@ public:		// User declarations
         __fastcall TfrmOptions(TComponent* Owner);
 
         DWORD           GetThreadPriorityFlags() const;
+        bool            GetExecuteThroughBatchFile() const {return rdgExecuteMethod->ItemIndex == 1;}
 };
 //---------------------------------------------------------------------------
 #endif
