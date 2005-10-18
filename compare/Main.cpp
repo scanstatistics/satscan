@@ -92,6 +92,8 @@ const char * TfrmMain::ARCHIVE_DELETE_FILES_DATA        = "DeleteArchivedFiles";
 const char * TfrmMain::SUPPRESS_CONSOLE_DATA            = "SuppressDosWindow";
 const char * TfrmMain::THREAD_PRIORITY_CLASS_DATA       = "ThreadPriority";
 const char * TfrmMain::INACTIVE_MINIMIZED_CONSOLE_DATA  = "InactiveMinimizedConsole";
+const char * TfrmMain::EXECUTE_METHOD_DATA              = "ExecuteMethod";
+
 
 /** constructor */
 __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0) {
@@ -126,6 +128,9 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
       gpFrmOptions->rdoGroupThreadPriority->ItemIndex = pRegistry->ReadInteger(THREAD_PRIORITY_CLASS_DATA);
     if (pRegistry->GetDataSize(INACTIVE_MINIMIZED_CONSOLE_DATA) != -1)
       gpFrmOptions->chkMinimizeConsoleWindow->Checked = pRegistry->ReadBool(INACTIVE_MINIMIZED_CONSOLE_DATA);
+    if (pRegistry->GetDataSize(EXECUTE_METHOD_DATA) != -1)
+      gpFrmOptions->rdgExecuteMethod->ItemIndex = pRegistry->ReadInteger(EXECUTE_METHOD_DATA);
+
     pRegistry->CloseKey();
   }
   delete pRegistry;
@@ -166,6 +171,7 @@ __fastcall TfrmMain::~TfrmMain() {
       pRegistry->WriteBool(SUPPRESS_CONSOLE_DATA, gpFrmOptions->chkSuppressDosWindow->Checked);
       pRegistry->WriteInteger(THREAD_PRIORITY_CLASS_DATA, gpFrmOptions->rdoGroupThreadPriority->ItemIndex);
       pRegistry->WriteBool(INACTIVE_MINIMIZED_CONSOLE_DATA, gpFrmOptions->chkMinimizeConsoleWindow->Checked);
+      pRegistry->WriteInteger(EXECUTE_METHOD_DATA, gpFrmOptions->rdgExecuteMethod->ItemIndex);
       pRegistry->CloseKey();
     }
     delete pRegistry;
@@ -437,71 +443,14 @@ void __fastcall TfrmMain::ActionSaveParametersListExecute(TObject *Sender){
 
 /** starts process of comparing output files */
 void __fastcall TfrmMain::ActionStartExecute(TObject *Sender) {
-   std::string  sComparatorFilename, sCompareFilename;
-   AnsiString   sCommand, sCurTitle, sText;
-   int          iItemIndex=-1;
+  if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
+    Application->Minimize();
 
-   if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
-     Application->Minimize();
+   if (gpFrmOptions->GetExecuteThroughBatchFile())
+     ExecuteThroughBatchFile();
+   else
+     ExecuteCreateProcessEachAnalysis();
 
-   //get start time of execution
-   gStartDate = TDateTime::CurrentDateTime();
-   DateSeparator = '/';
-   TimeSeparator = ':';
-
-   memMessages->Clear();
-   lstDisplay->Items->Clear();
-   gvParameterResultsInfo.clear();
-   gvColumnSortOrder.clear();
-   sCurTitle = Application->Title;
-   gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
-   while (++iItemIndex < ltvScheduledBatchs->Items->Count) {
-        sText.printf("%s [(%d of %d) %s]", sCurTitle.c_str(), iItemIndex + 1, ltvScheduledBatchs->Items->Count, ExtractFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption).c_str());
-        Application->Title = sText;
-        ParameterResultsInfo thisParameterInfo(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str());
-        if (!FileExists(thisParameterInfo.GetFilenameString())) {
-          memMessages->Lines->Add("Parameter File Missing : ");
-          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
-          iItemIndex++;
-          continue;
-        }
-        //get filename that will be the result file
-        GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
-        //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableComparatorName->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str());
-        if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
-          memMessages->Lines->Add("Yardstick Executable Failed/Cancelled : ");
-          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
-          memMessages->Lines->Add("");
-          continue;
-        }
-        //get filename that will be the result file created for comparison
-        GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
-        //Execute SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableName->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str());
-        //execute SaTScan version that is in question
-        if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
-          memMessages->Lines->Add("Scrutinized Executable Failed/Cancelled : ");
-          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
-          memMessages->Lines->Add("");
-          continue;
-        }
-        gvParameterResultsInfo.push_back(thisParameterInfo);
-   }
-   Application->ProcessMessages();
-   Application->Title = sCurTitle;
-   //compare results
-   CompareResultsAndReport();
-   //build excel results sheet
-   CreateExcelSheet();
-   //archive results
-   if (gpFrmOptions->chkArchiveResults->Checked)
-     ArchiveResults();
-   EnableSaveResultsAction();
-   //print execution time to message window
-   sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(gStartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
-   memMessages->Lines->Add(sCommand);
-   memMessages->SelStart = 0;
    if (gpFrmOptions->chkSuppressDosWindow->Checked || gpFrmOptions->chkMinimizeConsoleWindow->Checked)
      Application->Restore();
 }
@@ -1056,6 +1005,145 @@ bool TfrmMain::Execute(const AnsiString & sCommandLine, bool bWindowed, DWORD wT
    CloseHandle(pi.hThread);
 
    return (lProcessTerminationStatus == 0 ? true : false);
+}
+
+void TfrmMain::ExecuteCreateProcessEachAnalysis() {
+   std::string  sComparatorFilename, sCompareFilename;
+   AnsiString   sCommand, sCurTitle, sText;
+   int          iItemIndex=-1;
+
+   //get start time of execution
+   gStartDate = TDateTime::CurrentDateTime();
+   DateSeparator = '/';
+   TimeSeparator = ':';
+
+   memMessages->Clear();
+   lstDisplay->Items->Clear();
+   gvParameterResultsInfo.clear();
+   gvColumnSortOrder.clear();
+   sCurTitle = Application->Title;
+   gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
+   while (++iItemIndex < ltvScheduledBatchs->Items->Count) {
+        sText.printf("%s [(%d of %d) %s]", sCurTitle.c_str(), iItemIndex + 1, ltvScheduledBatchs->Items->Count, ExtractFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption).c_str());
+        Application->Title = sText;
+        ParameterResultsInfo thisParameterInfo(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str());
+        if (!FileExists(thisParameterInfo.GetFilenameString())) {
+          memMessages->Lines->Add("Parameter File Missing : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
+          iItemIndex++;
+          continue;
+        }
+        //get filename that will be the result file
+        GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
+        //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableComparatorName->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str());
+        if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
+          memMessages->Lines->Add("Yardstick Executable Failed/Cancelled : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
+          memMessages->Lines->Add("");
+          continue;
+        }
+        //get filename that will be the result file created for comparison
+        GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
+        //Execute SatScan using the current Parameter file, but set commandline options for version check
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableName->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str());
+        //execute SaTScan version that is in question
+        if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
+          memMessages->Lines->Add("Scrutinized Executable Failed/Cancelled : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
+          memMessages->Lines->Add("");
+          continue;
+        }
+        gvParameterResultsInfo.push_back(thisParameterInfo);
+   }
+   Application->ProcessMessages();
+   Application->Title = sCurTitle;
+   //compare results
+   CompareResultsAndReport();
+   //build excel results sheet
+   CreateExcelSheet();
+   //archive results
+   if (gpFrmOptions->chkArchiveResults->Checked)
+     ArchiveResults();
+   EnableSaveResultsAction();
+   //print execution time to message window
+   sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(gStartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+   memMessages->Lines->Add(sCommand);
+   memMessages->SelStart = 0;
+}
+
+void TfrmMain::ExecuteThroughBatchFile() {
+  std::ofstream         filestream;
+  std::string           sComparatorFilename, sCompareFilename;
+  AnsiString            sFilename, sCommand, sCurTitle, sText;
+  int                   iItemIndex=-1;
+
+  gStartDate = TDateTime::CurrentDateTime();
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sFilename.printf("%s%s.runs.bat", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(gStartDate).c_str());
+
+
+ //create batch file
+  filestream.open(sFilename.c_str());
+  if (!filestream)
+    return;
+
+   memMessages->Clear();
+   lstDisplay->Items->Clear();
+   gvParameterResultsInfo.clear();
+   sCurTitle = Application->Title;   
+   gvColumnSortOrder.clear();
+   gvColumnSortOrder.resize(lstDisplay->Columns->Count, -1);
+       
+   while (++iItemIndex < ltvScheduledBatchs->Items->Count) {
+        ParameterResultsInfo thisParameterInfo(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str());
+        if (!FileExists(thisParameterInfo.GetFilenameString())) {
+          memMessages->Lines->Add("Parameter File Missing : ");
+          memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
+          iItemIndex++;
+          continue;
+        }
+        //get filename that will be the result file
+        GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
+        //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableComparatorName->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str());
+        filestream << sCommand.c_str() << std::endl;
+        //get filename that will be the result file created for comparison
+        GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
+        //Execute SatScan using the current Parameter file, but set commandline options for version check
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableName->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str());
+        filestream << sCommand.c_str() << std::endl;
+        gvParameterResultsInfo.push_back(thisParameterInfo);
+   }
+   filestream.close();
+
+   sText.printf("%s executing %s]", Application->Title.c_str(), ExtractFileName(sFilename).c_str());
+   Application->Title = sText;
+
+   ///execute batch file
+   if (!Execute(sFilename.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
+      memMessages->Lines->Add("Batch Operation Failed/Cancelled");
+      memMessages->Lines->Add("");
+      Application->ProcessMessages();
+      Application->Title = sCurTitle;
+      return;
+   }
+
+   Application->ProcessMessages();
+   Application->Title = sCurTitle;
+   //compare results
+   CompareResultsAndReport();
+   //build excel results sheet
+   CreateExcelSheet();
+   //archive results
+   if (gpFrmOptions->chkArchiveResults->Checked)
+     ArchiveResults();
+   EnableSaveResultsAction();
+   //print execution time to message window
+   sCommand.printf("Start time: %s    Stop time: %s", DateTimeToStr(gStartDate).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+   memMessages->Lines->Add(sCommand);
+   memMessages->SelStart = 0;
 }
 
 /** Gets filename of file that will be the alternate results to compare to original */

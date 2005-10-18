@@ -8,7 +8,6 @@
 #include <Dialogs.hpp>
 #include <ImgList.hpp>
 #include <StdCtrls.hpp>
-#include "zd540.h"
 #include <ExtCtrls.hpp>
 #include <Menus.hpp>
 #include <ActnList.hpp>
@@ -23,8 +22,9 @@
 #include <stdlib.h>
 #include <vector>
 #include <dos.h>
-#include "Options.h"
 //---------------------------------------------------------------------------
+#include "zd540.h"
+#include "Options.h"
 #include "mexcel.h"
 using namespace miniexcel;
 
@@ -194,6 +194,7 @@ __published:	// IDE-managed Components
     static const char                 * SUPPRESS_CONSOLE_DATA;
     static const char                 * THREAD_PRIORITY_CLASS_DATA;
     static const char                 * INACTIVE_MINIMIZED_CONSOLE_DATA;
+    static const char                 * EXECUTE_METHOD_DATA;
 
     void                                AddList(const ParameterResultsInfo& ResultsInfo, size_t tPosition);
     void                                AddSubItemForType(TListItem * pListItem, CompareType eType);
@@ -214,6 +215,8 @@ __published:	// IDE-managed Components
     void                                EnableSaveResultsAction();
     void                                EnableStartAction();
     void                                EnableViewAction();
+    void                                ExecuteCreateProcessEachAnalysis();
+    void                                ExecuteThroughBatchFile();
     std::string                       & GetComparatorFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     std::string                       & GetInQuestionFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     AnsiString                        & GetDisplayTime(const ParameterResultsInfo& ResultsInfo, AnsiString & sDisplay);
