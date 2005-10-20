@@ -79,6 +79,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
   std::string                  sBuffer;
   std::vector<std::string>     vIdentifiers;
   size_t                       t;
+  double                       dRelativeRisk; 
   RecordBuffer                 Record(vFieldDefinitions);
 
   try {
@@ -98,8 +99,12 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
            Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() = theCluster.GetObservedCountForTract(tTract, DataHub);
            Record.GetFieldValue(LOC_EXP_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub);
            Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpectedForTract(tTract, DataHub);
-           if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
-             Record.GetFieldValue(LOC_REL_RISK_FIELD).AsDouble() = theCluster.GetRelativeRiskForTract(tTract, DataHub);
+           if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
+             if ((dRelativeRisk = theCluster.GetRelativeRiskForTract(tTract, DataHub)) == -1)
+               Record.SetFieldIsBlank(LOC_REL_RISK_FIELD, true);
+             else
+               Record.GetFieldValue(LOC_REL_RISK_FIELD).AsDouble() = dRelativeRisk;
+           }
          }
          else {
            Record.SetFieldIsBlank(LOC_OBS_FIELD, true);
@@ -111,8 +116,12 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          Record.GetFieldValue(CLU_OBS_FIELD).AsDouble() = theCluster.GetObservedCount();
          Record.GetFieldValue(CLU_EXP_FIELD).AsDouble() = theCluster.GetExpectedCount(DataHub);
          Record.GetFieldValue(CLU_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
-         if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
-           Record.GetFieldValue(CLU_REL_RISK_FIELD).AsDouble() = theCluster.GetRelativeRisk(DataHub);
+         if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
+             if ((dRelativeRisk = theCluster.GetRelativeRisk(DataHub)) == -1)
+               Record.SetFieldIsBlank(CLU_REL_RISK_FIELD, true);
+             else
+               Record.GetFieldValue(CLU_REL_RISK_FIELD).AsDouble() = dRelativeRisk;
+         }
        }
        
        if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
