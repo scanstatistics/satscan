@@ -281,8 +281,10 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
           tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
-       tRelativeRisk += GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
-       sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
+       if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases)) == -1)
+         sWork.printf("%sinfinity", (itrCategory == vCategoryContainer.begin() ? "" : ", "));
+       else
+         sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
        sBuffer << sWork;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -518,9 +520,13 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
 /** Writes clusters relative risk in format required by result output file. */
 void CCluster::DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   ZdString      sBuffer;
+  double        dRelativeRisk;
 
   PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
-  sBuffer.printf("%.3f", GetRelativeRisk(DataHub, iDataSetIndex));
+  if ((dRelativeRisk = GetRelativeRisk(DataHub, iDataSetIndex)) == -1)
+    sBuffer = "infinity";
+  else
+    sBuffer.printf("%.3f", dRelativeRisk);
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
 
@@ -630,8 +636,12 @@ double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) 
                          DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalCases());
 }
 
-/** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data. */
+/** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data.
+    Returns negative one if relative risk goes to infinity */
 double CCluster::GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const {
+  //when all cases are inside cluster, relative risk goes to infinity
+  if (dTotalCases == dObserved) return -1;
+
   if (dExpected && dTotalCases - dExpected && ((dTotalCases - dObserved)/(dTotalCases - dExpected)))
     return (dObserved/dExpected)/((dTotalCases - dObserved)/(dTotalCases - dExpected));
   return 0;  
