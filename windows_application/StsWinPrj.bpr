@@ -167,7 +167,7 @@
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
-    <CFLAG1 value="-O2 -H=vcl_trunk_gui.csm -Hc -Q -Vx -Ve -fp -X- -a8 -5 -b- -k- -vi -c -tW 
+    <CFLAG1 value="-O2 -H=vcl_trunk_gui.csm -Hc -Q -Vx -Ve -ff -X- -a8 -5 -b- -k- -vi -c -tW 
       -tWM"/>
     <PFLAGS value="-$Y- -$L- -$D- -v -JPHNE -M"/>
     <RFLAGS value=""/>
@@ -183,8 +183,8 @@
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=0
-MajorVer=5
-MinorVer=1
+MajorVer=6
+MinorVer=0
 Release=0
 Build=0
 Debug=0
@@ -198,14 +198,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=5.1.0.0
+FileVersion=6.0.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=
-ProductVersion=5.1
-Comments=Released December 30, 2004
+ProductVersion=6.0
+Comments=Released October 21, 2005
 
 [HistoryLists\hlIncludePath]
 Count=5

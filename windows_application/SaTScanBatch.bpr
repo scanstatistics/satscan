@@ -174,8 +174,8 @@
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=0
-MajorVer=5
-MinorVer=1
+MajorVer=6
+MinorVer=0
 Release=0
 Build=0
 Debug=0
@@ -189,14 +189,14 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=5.1.0.0
+FileVersion=6.0.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
-ProductVersion=5.1
-Comments=Released December 30, 2004
+ProductVersion=6.0
+Comments=Released October 21, 2005
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
@@ -208,7 +208,6 @@ $(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
 $(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
 $(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
 $(BCB)\Bin\mfcwizard.bpl=MFC Wizard
-C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\TSGDCLC5.bpl=Top Support TopGrid Components
 
 [HistoryLists\hlIncludePath]
 Count=6
@@ -235,8 +234,8 @@ Item1=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basis
 
 [HistoryLists\hlConditionals]
 Count=3
-Item0=INTEL_BASED;__BATCH_COMPILE;_DEBUG
-Item1=INTEL_BASED;__BATCH_COMPILE
+Item0=INTEL_BASED;__BATCH_COMPILE
+Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
 Item2=INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS
 
 [Debugging]
