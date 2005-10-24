@@ -6,6 +6,7 @@
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
+
 TfrmMain *frmMain;
 //---------------------------------------------------------------------------
 __fastcall TfrmMain::TfrmMain(TComponent* Owner): TForm(Owner) {}
@@ -155,10 +156,12 @@ void TfrmMain::OpenZipArchive() {
     for (i=0; i < 2; i++)
        while ((d=zzip_readdir(dir)) != 0) {
             sArchiveName = d->d_name;
-            CorrectPathDelimiter(sArchiveName);
-            CheckForDrive(sArchiveName);
-            ZipFileFullPath.printf("%s%s", gsBasePath.c_str(), sArchiveName.c_str());
-            CheckAccess(ZipFileFullPath);
+            if (d->st_size) {
+              CorrectPathDelimiter(sArchiveName);
+              CheckForDrive(sArchiveName);
+              ZipFileFullPath.printf("%s%s", gsBasePath.c_str(), sArchiveName.c_str());
+              CheckAccess(ZipFileFullPath);
+            }  
        }
 
     // rewind dir pointer to extract archived files   
@@ -166,27 +169,29 @@ void TfrmMain::OpenZipArchive() {
     for (i = 0; i < 2; i++)  {
        while ((d=zzip_readdir(dir)) != 0) {
             sArchiveName = d->d_name;
-            CorrectPathDelimiter(sArchiveName);
-            ExtendBasePath(sArchiveName, ZipFileFullPath);
-            if ((fpDest = fopen(ZipFileFullPath.c_str(), "wb")) == NULL) {
-              s.printf("Could not open file '%s'.", ZipFileFullPath.c_str());
-              throw archive_error(s.c_str());
-            }
-            fp = zzip_file_open(dir, const_cast<char*>(d->d_name), ZZIP_CASEINSENSITIVE);
-            if (! fp) {
-              s.printf("error %d: %s.", zzip_error(dir), zzip_strerror_of(dir));
-              throw archive_error(s.c_str());
-            }
-            else {
-              while (0 < (i = zzip_file_read(fp, buf, 1023)))
-                fwrite(buf, i, 1, fpDest);
-              if (i < 0) {
-                s.printf("error %d\n", zzip_error(dir));
+            if (d->st_size) {
+              CorrectPathDelimiter(sArchiveName);
+              ExtendBasePath(sArchiveName, ZipFileFullPath);
+              if ((fpDest = fopen(ZipFileFullPath.c_str(), "wb")) == NULL) {
+                s.printf("Could not open file '%s'.", ZipFileFullPath.c_str());
                 throw archive_error(s.c_str());
               }
+              fp = zzip_file_open(dir, const_cast<char*>(d->d_name), ZZIP_CASEINSENSITIVE);
+              if (! fp) {
+                s.printf("error %d: %s.", zzip_error(dir), zzip_strerror_of(dir));
+                throw archive_error(s.c_str());
+              }
+              else {
+                while (0 < (i = zzip_file_read(fp, buf, 1023)))
+                  fwrite(buf, i, 1, fpDest);
+                if (i < 0) {
+                  s.printf("error %d\n", zzip_error(dir));
+                  throw archive_error(s.c_str());
+                }
+              }
+              zzip_close(fp);
+              fclose(fpDest);
             }
-            zzip_close(fp);
-            fclose(fpDest);
        }
     }
     zzip_closedir(dir);
