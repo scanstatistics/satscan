@@ -80,7 +80,7 @@
 #define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
 #define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "October 21, 2005"
+#define VERSION_DATE    "October 24, 2005"
 /** New defines for ellipsoid calculations. */
 #define MAXELLIPSESHAPES 10
 /** PI declaration - this is now defined in math.h but changing may cause
