@@ -57,6 +57,8 @@ class TfrmQueueWindow : public TForm {
     void                EnableRemoveBatchButton();
     void                EnableSaveBatchDefinitionsButton();
     void                EnableStartBatchButton();
+    void                ExecuteCreateProcessEachAnalysis();
+    void                ExecuteThroughBatchFile();
     std::string       & GetOutputFilename(const ZdFileName & ParameterFilename, std::string& OutputFilename);
     void                RunVersionComparison();
     void                Setup();

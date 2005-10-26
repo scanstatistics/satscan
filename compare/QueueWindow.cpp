@@ -127,61 +127,15 @@ void __fastcall TfrmQueueWindow::ActionScheduleBatchExecute(TObject *Sender) {
 }
 
 void __fastcall TfrmQueueWindow::ActionStartBatchesExecute(TObject *Sender)  {
-  AnsiString    sCommandLine;
-  int           i;
-  bool          bResult;
-  time_t        StartTime, StopTime;
-  double        dExecutionTime, dSeconds,  dMinutes,  dHours;
-  AnsiString    sTime, sCurTitle, sText;
-
-  Show();
-
   if (frmMain->gpFrmOptions->chkSuppressDosWindow->Checked || frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked)
     Application->Minimize();
 
-  //reset status to queued
-  for (i=0; i < ltvScheduledBatchs->Items->Count; i++)
-     ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "queued";
+   if (frmMain->gpFrmOptions->GetExecuteThroughBatchFile())
+     ExecuteThroughBatchFile();
+   else
+     ExecuteCreateProcessEachAnalysis();
 
-  sCurTitle = Application->Title;
-  for (i=0; i < ltvScheduledBatchs->Items->Count; i++) {
-    //ltvScheduledBatchs->Selected = ltvScheduledBatchs->Items->Item[i];
-    Application->ProcessMessages();
-    sText.printf("%s - Batch Queue [(%d of %d) %s]", sCurTitle.c_str(), i + 1, ltvScheduledBatchs->Items->Count,
-                 ExtractFileName(ltvScheduledBatchs->Items->Item[i]->Caption).c_str());
-    Application->Title = sText;
-    //create process command line
-    sCommandLine.sprintf("\"%s\" \"%s\"", // for testing in future -- need ability to have -v option for v4.0 and up
-                        ltvScheduledBatchs->Items->Item[i]->Caption.c_str(),
-                        ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[0].c_str());
-    //mark as running
-    ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "running";
-    Application->ProcessMessages();
-    //start process                       frmMain
-    time(&StartTime);
-    bResult = TfrmMain::Execute(sCommandLine, !frmMain->gpFrmOptions->chkSuppressDosWindow->Checked, frmMain->gpFrmOptions->GetThreadPriorityFlags(), frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked);
-    time(&StopTime);
-    if (bResult) {
-      //mark as completed
-      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "completed";
-      dExecutionTime = difftime(StopTime, StartTime);
-      dHours = floor(dExecutionTime/(60*60));
-      dMinutes = floor((dExecutionTime - dHours*60*60)/60);
-      dSeconds   = dExecutionTime - (dHours*60*60) - (dMinutes*60);
-      sTime.sprintf("%.0f hour%s %.0f minute%s  %.0f second%s", dHours , (0 < dHours && dHours < 1.5 ? "" : "s"),
-                    dMinutes , (0 < dMinutes && dMinutes < 1.5 ? "" : "s"), dSeconds , (0.5 < dSeconds && dSeconds < 1.5 ? "" : "s"));
-      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[2] = sTime.c_str();
-    }
-    else {
-      //mark as failed
-      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "failed";
-      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[2] = "--";
-    }
-      
-    Application->ProcessMessages();
-  }
-  Application->Title = sCurTitle;
-  if (frmMain->gpFrmOptions->chkSuppressDosWindow->Checked || frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked)
+   if (frmMain->gpFrmOptions->chkSuppressDosWindow->Checked || frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked)
      Application->Restore();
 }
 
@@ -235,6 +189,100 @@ void TfrmQueueWindow::EnableSaveBatchDefinitionsButton() {
 
 void TfrmQueueWindow::EnableStartBatchButton() {
   ActionStartBatches->Enabled = ltvScheduledBatchs->Items->Count;
+}
+
+void TfrmQueueWindow::ExecuteCreateProcessEachAnalysis() {
+  AnsiString    sCommandLine;
+  int           i;
+  bool          bResult;
+  time_t        StartTime, StopTime;
+  double        dExecutionTime, dSeconds,  dMinutes,  dHours;
+  AnsiString    sTime, sCurTitle, sText;
+
+  Show();
+
+  //reset status to queued
+  for (i=0; i < ltvScheduledBatchs->Items->Count; i++)
+     ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "queued";
+
+  sCurTitle = Application->Title;
+  for (i=0; i < ltvScheduledBatchs->Items->Count; i++) {
+    //ltvScheduledBatchs->Selected = ltvScheduledBatchs->Items->Item[i];
+    Application->ProcessMessages();
+    sText.printf("%s - Batch Queue [(%d of %d) %s]", sCurTitle.c_str(), i + 1, ltvScheduledBatchs->Items->Count,
+                 ExtractFileName(ltvScheduledBatchs->Items->Item[i]->Caption).c_str());
+    Application->Title = sText;
+    //create process command line
+    sCommandLine.sprintf("\"%s\" \"%s\"", // for testing in future -- need ability to have -v option for v4.0 and up
+                        ltvScheduledBatchs->Items->Item[i]->Caption.c_str(),
+                        ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[0].c_str());
+    //mark as running
+    ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "running";
+    Application->ProcessMessages();
+    //start process                       frmMain
+    time(&StartTime);
+    bResult = TfrmMain::Execute(sCommandLine, !frmMain->gpFrmOptions->chkSuppressDosWindow->Checked, frmMain->gpFrmOptions->GetThreadPriorityFlags(), frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked);
+    time(&StopTime);
+    if (bResult) {
+      //mark as completed
+      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "completed";
+      dExecutionTime = difftime(StopTime, StartTime);
+      dHours = floor(dExecutionTime/(60*60));
+      dMinutes = floor((dExecutionTime - dHours*60*60)/60);
+      dSeconds   = dExecutionTime - (dHours*60*60) - (dMinutes*60);
+      sTime.sprintf("%.0f hour%s %.0f minute%s  %.0f second%s", dHours , (0 < dHours && dHours < 1.5 ? "" : "s"),
+                    dMinutes , (0 < dMinutes && dMinutes < 1.5 ? "" : "s"), dSeconds , (0.5 < dSeconds && dSeconds < 1.5 ? "" : "s"));
+      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[2] = sTime.c_str();
+    }
+    else {
+      //mark as failed
+      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "failed";
+      ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[2] = "--";
+    }
+
+    Application->ProcessMessages();
+  }
+  Application->Title = sCurTitle;
+}
+
+void TfrmQueueWindow::ExecuteThroughBatchFile() {
+  std::ofstream         filestream;
+  std::string           sOutputFilename;
+  AnsiString            sFilename, sCommand;
+  int                   iItemIndex=-1;
+
+  DateSeparator = '_';
+  TimeSeparator = '.';
+  sFilename.printf("%s%s.runs.bat", ExtractFilePath(Application->ExeName).c_str(), DateTimeToStr(TDateTime::CurrentDateTime()).c_str());
+
+ //create batch file
+  filestream.open(sFilename.c_str());
+  if (!filestream)
+    return;
+
+  Show();
+  while (++iItemIndex < ltvScheduledBatchs->Items->Count) {
+       if (!FileExists(ltvScheduledBatchs->Items->Item[iItemIndex]->SubItems->Strings[0].c_str())) {
+         iItemIndex++;
+         continue;
+       }
+       //get filename that will be the result file
+       frmMain->GetResultFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->SubItems->Strings[0].c_str(), sOutputFilename);
+       //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
+       sCommand.printf("\"%s\" \"%s\" -o \"%s\"", ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str(), ltvScheduledBatchs->Items->Item[iItemIndex]->SubItems->Strings[0].c_str(), sOutputFilename.c_str());
+       filestream << sCommand.c_str() << std::endl;
+  }
+  filestream.close();
+
+  ///execute batch file
+  if (!TfrmMain::Execute(sFilename.c_str(), !frmMain->gpFrmOptions->chkSuppressDosWindow->Checked, frmMain->gpFrmOptions->GetThreadPriorityFlags(), frmMain->gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
+    Application->ProcessMessages();
+    Application->MessageBox("Batch Operation Failed/Cancelled", "Failed/Cancelled", MB_OK);
+    return;
+  }
+  Application->ProcessMessages();
+  sCommand.printf("Batch Operation Successed\nSee file %s for listing of executed analyses.", sFilename.c_str());
+  Application->MessageBox(sCommand.c_str(), "Complete", MB_OK);
 }
 
 std::string & TfrmQueueWindow::GetOutputFilename(const ZdFileName& ParameterFilename, std::string& OutputFilename) {
