@@ -220,7 +220,6 @@ __published:	// IDE-managed Components
     std::string                       & GetComparatorFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     std::string                       & GetInQuestionFilename(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     AnsiString                        & GetDisplayTime(const ParameterResultsInfo& ResultsInfo, AnsiString & sDisplay);
-    std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
     bool                                GetRunTime(const char * sResultFile, unsigned short& uHours, unsigned short& uMinutes, unsigned short& uSeconds);
     bool                                PromptForCompareProgram();
 
@@ -230,6 +229,7 @@ __published:	// IDE-managed Components
 
     TfrmOptions                       * gpFrmOptions;
     static bool                         Execute(const AnsiString & sCommandLine, bool bWindowed=true, DWORD wThreadPriority=NORMAL_PRIORITY_CLASS, bool bInactiveMinimizedWindow=false);
+    std::string                       & GetResultFileName(const ZdFileName & ParameterFilename, std::string & sResultFilename);
 };
 //---------------------------------------------------------------------------
 extern PACKAGE TfrmMain *frmMain;
