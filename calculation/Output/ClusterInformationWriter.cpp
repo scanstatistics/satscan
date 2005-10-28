@@ -190,7 +190,6 @@ ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster&
     post: function will record the appropriate data into the cluster record   */
 void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
   ZdString       sBuffer;
-  unsigned int   i;
   RecordBuffer   Record(vFieldDefinitions);
 
   try {
@@ -242,7 +241,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
   int           i;
   double      * pCoords=0, * pCoords2=0, dRadius;
   float         fLatitude, fLongitude, fRadius;
-  unsigned int  iFirstCoordIndex, iSecondCoordIndex, iThCoordIndex;
+  unsigned int  iFirstCoordIndex, iSecondCoordIndex;
   ZdString      sBuffer;
   tract_t       tTractIndex;
 
@@ -255,7 +254,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
        Record.SetFieldIsBlank(iSecondCoordIndex, true);
        if (gParameters.GetCoordinatesType() == CARTESIAN) {
          for (i=2; i < gParameters.GetDimensionsOfData(); ++i) {
-            sBuffer << ZdString::reset << COORD_Z_FIELD << i - 1;
+            sBuffer << ZdString::reset << COORD_Z_FIELD << (i - 1);
             Record.SetFieldIsBlank(sBuffer, true);
          }
        }
@@ -272,8 +271,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
          case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  pCoords[0];
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  pCoords[1];
                           for (i=2; i < gParameters.GetDimensionsOfData(); ++i) {
-                             sBuffer << ZdString::reset << COORD_Z_FIELD << i - 1;
-                             //iThCoordIndex = GetFieldNumber(sBuffer);
+                             sBuffer << ZdString::reset << COORD_Z_FIELD << (i - 1);
                              Record.GetFieldValue(sBuffer).AsDouble() = pCoords[i];
                           }
                           if (gParameters.GetNumRequestedEllipses()) {
