@@ -80,7 +80,7 @@ void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumN
     gvSortedNeighborsUnsignedShortType.resize(iNumNeighbors);
     gpSortedNeighborsUnsignedShortType = (iNumNeighbors ? &gvSortedNeighborsUnsignedShortType[0] : 0);
     for (tract_t j=iNumNeighbors-1; j >= 0; j--) /* copy tract numbers */
-       gpSortedNeighborsUnsignedShortType[j] = vOrderedLocations[j].GetTractNumber();
+       gpSortedNeighborsUnsignedShortType[j] = static_cast<unsigned short>(vOrderedLocations[j].GetTractNumber());
   }
   else {
     gvSortedNeighborsIntegerType.resize(iNumNeighbors);
