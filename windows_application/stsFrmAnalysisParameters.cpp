@@ -1224,7 +1224,7 @@ void TfrmAnalysis::SaveParameterSettings() {
     // (previously in Scanning Window Tab)
     gParameters.SetMaximumGeographicClusterSize(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeFromControl());
     gParameters.SetMaximumSpacialClusterSizeType(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeControlType());
-    gParameters.SetMaxCirclePopulationFileName(gpfrmAdvancedParameters->edtMaxCirclePopulationFilename->Text.c_str(), false, true);
+    gParameters.SetMaxCirclePopulationFileName(gpfrmAdvancedParameters->edtMaxCirclePopulationFilename->Text.c_str(), false);
     gParameters.SetMaximumTemporalClusterSize(gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl());
     gParameters.SetMaximumTemporalClusterSizeType(gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType());
     gParameters.SetIncludePurelyTemporalClusters(gpfrmAdvancedParameters->chkInclPureTempClust->Enabled && gpfrmAdvancedParameters->chkInclPureTempClust->Checked);

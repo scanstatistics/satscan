@@ -34,7 +34,7 @@ void ExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeInterval,
     //add stationary values
     gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
     //add permutated value
-    gvOriginalPermutedAttribute.push_back(PermutedExponentialAttribute(tContinuousVariable, tCensored));
+    gvOriginalPermutedAttribute.push_back(PermutedExponentialAttribute(tContinuousVariable, static_cast<unsigned short>(tCensored)));
   }
 }
 
