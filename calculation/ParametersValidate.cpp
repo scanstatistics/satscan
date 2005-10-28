@@ -880,7 +880,7 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
           PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster cannot be included for a %s model.\n",
                                              gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
-      else if (!gParameters.GetPermitsPurelySpatialCluster(gParameters.GetAnalysisType())) {
+      else if (!gParameters.GetPermitsPurelySpatialCluster()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: A purely spatial cluster can only be included for spatial based analyses.\n");
       }
@@ -1143,7 +1143,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
           PrintDirection.SatScanPrintWarning("Error: Looking for purely temporal clusters can not be included when the %s model is used.\n",
                                              gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
-      else if (!gParameters.GetPermitsPurelyTemporalCluster(gParameters.GetAnalysisType())) {
+      else if (!gParameters.GetPermitsPurelyTemporalCluster()) {
         bValid = false;
         PrintDirection.SatScanPrintWarning("Error: A purely temporal cluster can only be included for time based analyses.\n");
       }
