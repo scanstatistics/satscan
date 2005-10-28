@@ -210,7 +210,7 @@ double ExponentialDataSetHandler::GetSimulationDataSetAllocationRequirements() c
 bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
                                                   count_t& nCount, Julian& nDate,
                                                   measure_t& tContinuousVariable, count_t& tCensorAttribute) {
-  int   iContiVariableIndex, iCensoredAttributeIndex;
+  short   iContiVariableIndex, iCensoredAttributeIndex;
 
   try {
     //read and validate that tract identifier exists in coordinates file
@@ -248,7 +248,7 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
       return false;
 
     // read continuous variable
-    iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 2 : 3;
+    iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
     if (!Parser.GetWord(iContiVariableIndex)) {
       gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
                                  Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
@@ -266,7 +266,7 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     }
 
     //read and validate censore attribute
-    iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4;
+    iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
     if (Parser.GetWord(iCensoredAttributeIndex) != 0) {
       if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
        gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n",
