@@ -11,20 +11,6 @@
  a message on stderr, and exits.
  **********************************************************************/
 
-void *Scalloc(size_t nitems, size_t size, BasePrint*) {
-  void *rtn;
-
-  try {
-    if (size && rtn == NULL)
-      ZdMemoryException::Generate("Error: Failed not allocate enough memory for %d elements of size %d.\n", "Scalloc()", nitems, size);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Scalloc()","Salloc.cpp");
-    throw;
-  }
-  return rtn;
-}
-
 void *Smalloc(size_t size, BasePrint*) {
   void *rtn;
 
