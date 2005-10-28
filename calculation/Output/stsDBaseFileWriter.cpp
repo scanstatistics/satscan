@@ -63,7 +63,7 @@ void DBaseDataFileWriter::Setup(const CParameters& Parameters, ZdPointerVector<Z
 void DBaseDataFileWriter::WriteRecord(const RecordBuffer& Record) {
   try {
     gpFileRecord->Clear();
-    for (unsigned int j=0; j < Record.GetNumFields(); ++j) {
+    for (unsigned short j=0; j < (unsigned short)Record.GetNumFields(); ++j) {
        if (!Record.GetFieldIsBlank(j))
          gpFileRecord->PutFieldValue(j, Record.GetFieldValue(j));
        else
