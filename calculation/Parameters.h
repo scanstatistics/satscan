@@ -243,9 +243,9 @@ class CParameters {
     bool                                GetOutputSimLoglikeliRatiosFiles() const;
     bool                                GetOutputSimulationData() const {return gbOutputSimulationData;}
     bool                                GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const;
-    bool                                GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) const;
+    bool                                GetPermitsPurelySpatialCluster() const;
     bool                                GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const;
-    bool                                GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) const;
+    bool                                GetPermitsPurelyTemporalCluster() const;
     const std::string                 & GetPopulationFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetPopulationFileNames() const {return gvPopulationFilenames;}
     double                              GetPowerCalculationX() const {return gdPower_X;}
@@ -296,7 +296,7 @@ class CParameters {
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
-    void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
+    void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false);
     void                                SetMaximumGeographicClusterSize(float fMaxGeographicClusterSize);
     void                                SetMaximumReportedGeographicalClusterSize(float fMaxReportedGeographicClusterSize);
     void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);

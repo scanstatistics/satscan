@@ -355,7 +355,7 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
 }
 
 /** returns whether analysis type permits inclusion of purely spatial cluster */
-bool CParameters::GetPermitsPurelySpatialCluster(AnalysisType eAnalysisType) const {
+bool CParameters::GetPermitsPurelySpatialCluster() const {
   return geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis();
 }
 
@@ -366,7 +366,7 @@ bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType
 }
 
 /** returns whether analysis type permits inclusion of purely temporal cluster */
-bool CParameters::GetPermitsPurelyTemporalCluster(AnalysisType eAnalysisType) const {
+bool CParameters::GetPermitsPurelyTemporalCluster() const {
   return geAnalysisType == PURELYTEMPORAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis();
 }
 
@@ -809,8 +809,6 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
 
 /** Adjusts the number of data sets. */
 void CParameters::SetNumDataSets(size_t iNumDataSets) {
-  size_t        t;
-
   try {
     if (iNumDataSets == 0)
       ZdException::Generate("Number of data sets can not be zero.\n", "SetNumDataSets()");
@@ -1143,7 +1141,7 @@ void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool
 /** Sets maximum circle population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
-void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
+void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath) {
   try {
     if (! sMaxCirclePopulationFileName)
       ZdGenerateException("Null pointer.", "SetMaxCirclePopulationFileName()");
