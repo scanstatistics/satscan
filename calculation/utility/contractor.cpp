@@ -113,12 +113,11 @@ void test_fn()
 {
   test_job_source jobs;
   contractor<test_job_source> cntor(jobs);
-  bool b;
   short w;
   int i;
-  long l;
+  long l=0;
 
-  b = cntor.job_acquired(i, w);
+  cntor.job_acquired(i, w);
   cntor.register_result(i, w, l);
 }
 

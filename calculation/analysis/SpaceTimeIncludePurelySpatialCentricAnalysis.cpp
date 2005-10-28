@@ -155,8 +155,6 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::MonteCarloProspectiveAboutCen
 
 /** Internal function which allocates appropriate objects for evaulate real and simulated data. */
 void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
-  IncludeClustersType           eIncludeClustersType;
-
   try {
     //allocate objects used to evaluate real data
     gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));

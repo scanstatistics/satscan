@@ -14,7 +14,7 @@ static FILE* pMResult;
 /** Calculates the risk for each population category storing results in vector
     'vRisk'. Sets data set's total case and population counts. */
 std::vector<double>& CalcRisk(RealDataSet& DataSet, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate) {
-  int                   c, i, n;
+  int                   c;
   tract_t               t;
   double                nPop, dTotalPopulation=0;
   count_t               nCaseCount, tTotalCases=0;
@@ -67,7 +67,7 @@ std::vector<double>& CalcRisk(RealDataSet& DataSet, std::vector<double>& vRisk, 
 void Calcm(RealDataSet& DataSet, Julian StudyStartDate, Julian StudyEndDate) {
   std::vector<double>   vRisk;
   PopulationData      & Population = DataSet.GetPopulationData();
-  int                   c, n, nCats, nPops;
+  int                   n, nPops;
   tract_t               t, nTracts = DataSet.GetNumTracts();
   measure_t          ** m;
 

@@ -65,8 +65,6 @@ void C_ST_PS_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & 
 /** Allocates objects used during calculation of most likely clusters, instead
     of repeated allocations for each simulation.                                */
 void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) {
-  IncludeClustersType           eIncludeClustersType;
-
   try {
     //create top cluster objects for space-time portion
     CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);

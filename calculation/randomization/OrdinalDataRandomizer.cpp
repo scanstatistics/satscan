@@ -20,7 +20,7 @@ OrdinalDenominatorDataRandomizer * OrdinalDenominatorDataRandomizer::Clone() con
 void OrdinalDenominatorDataRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
   count_t        ** ppSimCases=0;
    measure_t     ** ppMeasure=0;
-   unsigned int     c, i, t;
+   unsigned int     i, t;
 
   // reset seed of random number generator
   SetSeed(iSimulation, thisSimSet.GetSetIndex());

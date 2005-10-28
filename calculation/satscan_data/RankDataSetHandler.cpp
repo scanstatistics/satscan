@@ -251,8 +251,8 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
   Julian        Date;
   tract_t       TractIndex;
   int           i;
-  count_t       Count, tCensored, ** ppCounts, tTotalCases=0;
-  measure_t     tContinuousVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
+  count_t       Count, ** ppCounts, tTotalCases=0;
+  measure_t     tContinuousVariable, tTotalMeasure=0;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];

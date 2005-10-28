@@ -559,8 +559,6 @@ measure_t CCluster::GetExpectedCount(const CSaTScanData& DataHub, size_t tSetInd
 /** Returns number of expected cases in accumulated data that is stratified by
     ordinal categories. */
 measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const {
-  measure_t     tExpected;
-
   const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(tSetIndex);
 
   return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this, DataHub) *

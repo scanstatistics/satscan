@@ -187,7 +187,7 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLike
 
 /** Prints locations of cluster, detailed by step, to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  int           i, j;
+  int           i;
   ZdString      sBuffer;
 
   try {
@@ -278,8 +278,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 
 /** Prints observed divided by expected and relative risk of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString      sBuffer, sWork;
-  int           i;
+  ZdString      sBuffer;
 
   try {
     CCluster::DisplayObservedDivExpected(fp, iDataSetIndex, DataHub, PrintFormat);

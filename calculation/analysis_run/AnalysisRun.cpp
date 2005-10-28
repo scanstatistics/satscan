@@ -461,8 +461,6 @@ void AnalysisRunner::ExecuteSuccessively() {
 
 /** starts analysis execution - development */
 void AnalysisRunner::ExecuteCentrically() {
-  bool                  bContinue;
-
   try {
       if (gParameters.GetNumParallelProcessesToExecute() == 1)
         PerformCentric_Serial();
@@ -1032,8 +1030,6 @@ void AnalysisRunner::PerformCentric_Serial() {
 */
 void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
 
-  double                      dSimulatedRatio;
-  unsigned int                iSimulationNumber;
   char                      * sReplicationFormatString;
   AbstractDataSetGateway    * pDataGateway=0;
   CAnalysis                 * pAnalysis=0;

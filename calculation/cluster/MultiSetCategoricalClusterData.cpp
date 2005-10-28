@@ -74,7 +74,6 @@ void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dT
   MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
 
   if (pUnifier) {
-    std::vector<count_t>::iterator                      itr_data;
     std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
     std::vector<std::pair<double, double> >::iterator   itr_pair;
     double                                              dHighRatios=0, dLowRatios=0;
@@ -164,7 +163,6 @@ void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(
   MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
 
   if (pUnifier) {
-    std::vector<count_t>::iterator                      itr_data;
     std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
     std::vector<std::pair<double, double> >::iterator   itr_pair;
     double                                              dHighRatios=0, dLowRatios=0;

@@ -50,7 +50,7 @@ void AbstractOrdinalDenominatorDataRandomizer::RandomizeOrdinalData(count_t tNum
                                                                     count_t** ppSimCases, measure_t** ppMeasure,
                                                                     int tNumTracts, int tNumTimeIntervals) {
                                           
-  int                   t, i, c;
+  int                   t, i;
   count_t               nCumCounts, nCumMeasure;
   std::vector<count_t>	RandCounts;
 

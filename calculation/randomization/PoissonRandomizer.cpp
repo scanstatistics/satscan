@@ -206,7 +206,6 @@ AlternateHypothesisRandomizer * AlternateHypothesisRandomizer::Clone() const {
 void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
   unsigned int          j, t, i, tNumTracts = thisRealSet.GetNumTracts(),
                         tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
-  int                   iInterval;
   std::ifstream         RelativeRiskFile;
   std::string           sTractId;
   tract_t               tractIndex;

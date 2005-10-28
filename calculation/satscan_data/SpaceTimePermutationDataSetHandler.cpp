@@ -155,7 +155,7 @@ double SpaceTimePermutationDataSetHandler::GetSimulationDataSetAllocationRequire
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription) {
-  int                                   i, j, iCategoryIndex;
+  int                                   i, iCategoryIndex;
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;

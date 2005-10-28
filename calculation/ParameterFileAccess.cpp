@@ -389,7 +389,7 @@ void AbtractParameterFileAccess::ReadDate(const ZdString& sValue, ParameterType 
 
 /** Attempts to interpret passed string as comma separated string of dates. Throws InvalidParameterException. */
 void AbtractParameterFileAccess::ReadDateRange(const ZdString& sValue, ParameterType eParameterType, DateRange_t& Range) const {
-  int                   i, iNumTokens;
+  int                   iNumTokens;
 
   try {
     if (sValue.GetLength()) {

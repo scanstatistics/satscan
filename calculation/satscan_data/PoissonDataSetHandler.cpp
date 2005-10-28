@@ -318,12 +318,10 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
   bool                                                          bValid=true, bEmpty=true;
   tract_t                                                       TractIdentifierIndex;
   float                                                         fPopulation;
-  Julian                                                        PopulationDate;
   FILE                                                        * fp=0; // Ptr to population file
   std::pair<Julian, DatePrecisionType>                          prPopulationDate;
   std::vector<std::pair<Julian, DatePrecisionType> >            vprPopulationDates;
   std::vector<std::pair<Julian, DatePrecisionType> >::iterator  itr;
-  ComparePopulationDates                                        JulianCompare;  
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
@@ -354,7 +352,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
             continue;
         }
         //Insert population date in sorted order.
-        itr = std::lower_bound(vprPopulationDates.begin(), vprPopulationDates.end(), prPopulationDate, JulianCompare);
+        itr = std::lower_bound(vprPopulationDates.begin(), vprPopulationDates.end(), prPopulationDate, ComparePopulationDates());
         if (itr == vprPopulationDates.end()) //List is empty, just add.
           vprPopulationDates.push_back(prPopulationDate);
         else if ((*itr).first == prPopulationDate.first) //replace more precise dates

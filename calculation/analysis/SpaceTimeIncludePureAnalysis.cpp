@@ -80,7 +80,6 @@ void C_ST_PS_PT_Analysis::FindTopClusters(const AbstractDataSetGateway& DataGate
 
 /** Returns greatest calculated log likelihood ratio. */
 double C_ST_PS_PT_Analysis::FindTopRatio(const AbstractDataSetGateway& DataGateway) {
-  int                   i;
   double                dMaxLogLikelihoodRatio=0;
 
   //calculate top loglikelihood for purely spatial/space-time portion

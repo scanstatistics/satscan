@@ -96,8 +96,6 @@ double IntervalInYears(DatePrecisionType eUnits, long nLength) {
 
 /** Returns whether a date is valid or not. */
 bool IsDateValid(UInt month, UInt day, UInt year) {
-  unsigned d;
-
   if ( day <= 0 || !( month>=1 && month<=12 ) || !( year>=MIN_YEAR && year<=MAX_YEAR) )
     return(false);
 

@@ -40,7 +40,7 @@ void stsCentricAlgoJobSource::Assert_NoExceptionsCaught() const
   typedef std::pair<job_id_type,std::pair<param_type,result_type> > exception_type;
   typedef std::deque<exception_type> exception_sequence_type;
   static const char * szExceptionIntroFormatString = "An exception was thrown from task #%d.";
-  static const char * szExceptionTypeTitle = "\nException type: ";
+  //static const char * szExceptionTypeTitle = "\nException type: ";
   static const char * szExceptionMessageTitle = "\nException message: ";
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
 

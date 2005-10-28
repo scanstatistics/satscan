@@ -284,7 +284,7 @@ bool NormalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* s
   tract_t       TractIndex;
   int           i;
   count_t       Count, ** ppCounts, tTotalCases=0;
-  measure_t     tContinuousVariable, ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0;
+  measure_t     tContinuousVariable, tTotalMeasure=0;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];

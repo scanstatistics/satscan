@@ -33,7 +33,7 @@ class DataSetHandler {
     bool                                ParseCountLine(PopulationData& thePopulation, StringParser& Parser,
                                                        tract_t& tid, count_t& nCount,
                                                        Julian& nDate, int& iCategoryIndex);
-    bool                                ParseCovariates(PopulationData& thePopulation, int& iCategoryIndex, int iCovariatesOffset, StringParser& Parser);
+    bool                                ParseCovariates(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, StringParser& Parser);
     virtual bool                        ReadCaseFile(size_t iSetIndex);
     virtual bool                        ReadCounts(size_t iSetIndex, FILE * fp, const char* szDescription);
 

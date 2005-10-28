@@ -272,8 +272,8 @@ NormalTemporalDataEvaluator::NormalTemporalDataEvaluator(const CSaTScanData& Dat
           with the only deviation being the second measure. */
 void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  count_t              tCases, tTotalCases(gData.GetTotalCases());
-  measure_t            tMeasure, tMeasure2, tTotalMeasure(gData.GetTotalMeasure());
+  count_t              tTotalCases(gData.GetTotalCases());
+  measure_t            tTotalMeasure(gData.GetTotalMeasure());
   NormalTemporalData * pData = (NormalTemporalData*)Running.GetClusterData(); //dynamic cast ?
 
   //iterate through windows

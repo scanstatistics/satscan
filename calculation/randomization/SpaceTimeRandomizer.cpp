@@ -29,7 +29,6 @@ SpaceTimeRandomizer * SpaceTimeRandomizer::Clone() const {
 
 /** Assigns randomized data to datasets' simulation case array. */
 void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) {
-  size_t                                tCategory, tCase;
   int                                   iInterval, tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
   unsigned int                          tTract, tNumTracts = thisRealSet.GetNumTracts();
   count_t                            ** ppSimCases = thisSimSet.GetCaseArray();
@@ -66,7 +65,7 @@ void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet
   int	                i;
   unsigned int          j, k, c, iNumCases, iNumCategories(thisRealSet.GetPopulationData().GetNumCovariateCategories());
   std::vector<int>      vCummulatedCases;
-  count_t               iMaxCasesPerCategory, ** ppCases=0;
+  count_t            ** ppCases=0;
 
   gCategoryAttributes.resize(iNumCategories);
   vCummulatedCases.resize(thisRealSet.GetNumTracts());

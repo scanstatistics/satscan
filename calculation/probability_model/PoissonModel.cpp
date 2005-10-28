@@ -252,13 +252,11 @@ void CPoissonModel::CalculateMeasure(RealDataSet& DataSet) {
 
 /** Returns population as defined in CCluster object. */
 double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
-  tract_t T, t;
-  int     c, n;
+  tract_t               T, t;
+  int                   c, ncats, nPops;
   std::vector<double>   vAlpha;
-  const PopulationData & Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
-  int     ncats;
-  int     nPops;
-  double  nPopulation = 0.0;
+  const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPopulationData();
+  double                nPopulation = 0.0;
 
   try {
     ncats = Population.GetNumCovariateCategories();

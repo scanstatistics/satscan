@@ -230,7 +230,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
     purely temporal clusters. The ranking performed is based soley on geographical
     orientation.   */
 void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection) {
-   unsigned long                        u, uClustersToKeepEachPass;
+   unsigned long                        uClustersToKeepEachPass;
    ZdPointerVector<CCluster>::iterator  itrCurr, itrEnd;
    CriteriaSecondaryClustersType        eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
 

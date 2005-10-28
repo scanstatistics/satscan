@@ -159,7 +159,7 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
                                        tract_t& tid, count_t& nCount,
                                        Julian& nDate, int& iCategoryIndex) {
                                        
-  int                          iCategoryOffSet, iScanPrecision;
+  short         iCategoryOffSet;
 
   try {
     //read and validate that tract identifier exists in coordinates file
@@ -209,7 +209,7 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
 }
 
 /** Parses count file data line to determine category index given covariates contained in line.*/
-bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, int iCovariatesOffset, StringParser & Parser) {
+bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, short iCovariatesOffset, StringParser & Parser) {
   int                          iNumCovariatesScanned=0;
   std::vector<std::string>     vCategoryCovariates;
   const char                 * pCovariate;
@@ -305,7 +305,7 @@ bool DataSetHandler::ReadCaseFile(size_t iSetIndex) {
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescription) {
-  int                                   i, j, iCategoryIndex;
+  int                                   i, iCategoryIndex;
   bool                                  bCaseFile, bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;

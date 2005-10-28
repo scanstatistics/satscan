@@ -46,8 +46,6 @@ void TractDescriptor::AddTractIdentifier(const char * sTractIdentifier) {
 
 /** Combines passed tract descriptor with this descriptor. */
 void TractDescriptor::Combine(const TractDescriptor * pTractDescriptor, const TractHandler & theTractHandler) {
-  int                           i;
-
   try {
     if (! pTractDescriptor)
       ZdGenerateException("Null pointer.","Combine()");
@@ -448,7 +446,6 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
   size_t                                                       t;
   AsciiPrintFormat                                             PrintFormat;
   ZdString                                                     sBuffer; 
-  unsigned int                                                 iPos, iIdLength, iIndent, iMaxWidth;
 
   try {
     if (gmDuplicateTracts.size()) {

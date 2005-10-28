@@ -213,7 +213,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
 
 /** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
-  unsigned int                  t, iStart, iScan;
+  unsigned int                  t;
   ZdString                      sPrintString, sWorkString;
   std::deque<unsigned int>      TrendIncrease, TrendDecrease;              
 
