@@ -183,7 +183,7 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
 bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
-  int   iCategoryIndex;
+  short   iCategoryIndex;
 
   try {
     //read and validate that tract identifier exists in coordinates file
@@ -250,7 +250,6 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
   tract_t               tLocationIndex;
   count_t               tCount, tTotalCases=0, ** ppCategoryCounts;
   measure_t             tOrdinalVariable;
-  size_t                tOrdinalCategoryIndex;
   std::vector<double>   vReadCategories;
 
   try {
