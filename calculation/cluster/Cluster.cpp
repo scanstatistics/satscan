@@ -90,7 +90,6 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
 /** Prints annual cases to file stream is in format required by result output file. */
 void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   ZdString               sBuffer;
-  const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
 
   if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
@@ -328,7 +327,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   std::vector<double>   vCoordinates;
-  int                   i, j, count=0;
+  int                   i;
   ZdString              sBuffer, sWork;
 
   try {

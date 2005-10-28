@@ -248,7 +248,6 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
   bool                  bReadSuccessful=true, bEmpty=true;
   Julian                Date;
   tract_t               tLocationIndex;
-  int                   i, iDateIndex;
   count_t               tCount, tTotalCases=0, ** ppCategoryCounts;
   measure_t             tOrdinalVariable;
   size_t                tOrdinalCategoryIndex;
@@ -277,14 +276,12 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
                if (tTotalCases < 0)
                  GenerateResolvableException("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n",
                                              "ReadCounts()", std::numeric_limits<count_t>::max());
-               //get calculated date index from read date
-               iDateIndex = gDataHub.GetTimeIntervalOfDate(Date);
                //record count and get category's 2-D array pointer
                ppCategoryCounts = DataSet.AddOrdinalCategoryCaseCount(tOrdinalVariable, tCount);
                //update location case counts such that 'tCount' is reprented cumulatively through
                //time from start date through specifed date in record
                ppCategoryCounts[0][tLocationIndex] += tCount;
-               for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+               for (int i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                   ppCategoryCounts[i][tLocationIndex] += tCount;
              }
            }

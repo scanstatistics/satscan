@@ -957,7 +957,6 @@ SimDataSet * SimDataSet::Clone() const {
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                           */
 void SimDataSet::ReadSimulationData(const CParameters& Parameters, unsigned int iSimulation) {
-  unsigned int          i, t, tNumTracts = GetNumTracts();
   std::ifstream         filestream;
 
   //open file stream

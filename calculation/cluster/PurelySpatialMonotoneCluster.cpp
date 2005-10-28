@@ -150,7 +150,6 @@ void CPSMonotoneCluster::ConcatLastCircles() {
 /** no documentation */
 void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, count_t** pCases) {
   tract_t            ** ppNeighborCount(Data.GetNeighborCountArray());
-  CModel              & ProbModel(Data.GetProbabilityModel());
 
   try {
     //  int i = 1;

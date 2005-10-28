@@ -292,8 +292,7 @@ void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
 
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
-  double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
-                dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
+  double        dLogLikelihood, dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
 
   for (i=0; i <= iListSize; i++) {
      if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {

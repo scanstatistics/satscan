@@ -570,16 +570,16 @@ void AnalysisRunner::FinalizeReport() {
 
 /** Returns available random access memory. */
 double AnalysisRunner::GetAvailablePhysicalMemory() const {
-  double dTotalPhysicalMemory(0), dAvailablePhysicalMemory(0);
+  double /*dTotalPhysicalMemory(0),*/ dAvailablePhysicalMemory(0);
 
 #ifdef INTEL_BASED
   MEMORYSTATUS stat;
   GlobalMemoryStatus (&stat);
-  dTotalPhysicalMemory = stat.dwTotalPhys;
+  //dTotalPhysicalMemory = stat.dwTotalPhys;
   dAvailablePhysicalMemory = stat.dwAvailPhys;
 #else
-  dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
-  dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
+  //dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
+  //dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
   dAvailablePhysicalMemory = sysconf(_SC_AVPHYS_PAGES);   
   dAvailablePhysicalMemory *= sysconf(_SC_PAGESIZE);
 #endif

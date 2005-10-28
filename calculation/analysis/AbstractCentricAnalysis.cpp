@@ -92,7 +92,7 @@ void AbstractCentricAnalysis::RetrieveClusters(MostLikelyClustersContainer& TopC
 void AbstractCentricAnalysis::RetrieveLoglikelihoodRatios(CalculatedRatioContainer_t& RatioContainer) {
   if (RatioContainer.get()) {
     //if RatioContainer already contains data - combine with the results of this analysis object
-    std::vector<double>::iterator   itrRatios=RatioContainer->begin(), itrRatios_end=RatioContainer->end();
+    std::vector<double>::iterator   itrRatios=RatioContainer->begin()/*, itrRatios_end=RatioContainer->end()*/;
     if (geReplicationsProcessType == MeasureListEvaluation) {
       //if simulations done using CMeasureList objects, calculate ratios now and take maximums
       MeasureListContainer_t::iterator   itr=gvMeasureLists.begin(), itr_end=gvMeasureLists.end();
