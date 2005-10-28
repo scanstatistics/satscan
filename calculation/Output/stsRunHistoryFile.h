@@ -70,11 +70,11 @@ class stsRunHistoryFile {
 static      void      CreateNewField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, const char cType, const short wLength,
                                      const short wPrecision, unsigned short& uwOffset, bool bCreateIndex = false);
 static unsigned short GetFieldNumber(const ZdPointerVector<ZdField>& vFields, const char* sFieldName);
-static      void      SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber);
-static      void      SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber);
+static      void      SetBoolField(ZdFileRecord& record, bool bValue, unsigned short uwFieldNumber);
+static      void      SetDoubleField(ZdFileRecord& record, double dValue, unsigned short uwFieldNumber);
 static      void      SetFieldVector(ZdVector<ZdField*>& vFields, const ZdFile& File);
-static      void      SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber);
-static      void      SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber);
+static      void      SetLongField(ZdFileRecord& record, long lValue, unsigned short uwFieldNumber);
+static      void      SetStringField(ZdFileRecord& record, const ZdString& sValue, unsigned short uwFieldNumber);
 
 
 // allocates a new field and adds it to the vector
@@ -114,7 +114,7 @@ static unsigned short GetFieldNumber(const ZdPointerVector<ZdField>& vFields, co
    try {
       for(unsigned int i = 0; i < vFields.GetNumElements() && !bFound; ++i) {
          bFound = (!strcmp(vFields[i]->GetName(),sFieldName));
-         uwFieldNumber = i;
+         uwFieldNumber = static_cast<unsigned short>(i);
       }
 
       if(!bFound)
@@ -130,7 +130,7 @@ static unsigned short GetFieldNumber(const ZdPointerVector<ZdField>& vFields, co
 // function to set the value of boolean fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-static void SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned long uwFieldNumber) {
+static void SetBoolField(ZdFileRecord& record, bool bValue, unsigned short uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -147,7 +147,7 @@ static void SetBoolField(ZdFileRecord& record, const bool bValue, const unsigned
 // function to set the value of double fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-static void SetDoubleField(ZdFileRecord& record, const double dValue, const unsigned long uwFieldNumber) {
+static void SetDoubleField(ZdFileRecord& record, double dValue, unsigned short uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -166,7 +166,7 @@ static void SetDoubleField(ZdFileRecord& record, const double dValue, const unsi
 // post : vector will be filled with the field pointers used in the zdfile
 static void SetFieldVector(ZdVector<ZdField*>& vFields, const ZdFile& File) {
    try {
-      for(int i = 0; i < File.GetNumFields(); ++i) {
+      for(unsigned short i = 0; i < File.GetNumFields(); ++i) {
          vFields.push_back(File.GetFieldInfo(i)->Clone());
       }
    }
@@ -179,7 +179,7 @@ static void SetFieldVector(ZdVector<ZdField*>& vFields, const ZdFile& File) {
 // function to set the value of long fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-static void SetLongField(ZdFileRecord& record, const long lValue, const unsigned long uwFieldNumber) {
+static void SetLongField(ZdFileRecord& record, long lValue, unsigned short uwFieldNumber) {
    ZdFieldValue fv;
 
    try {
@@ -196,7 +196,7 @@ static void SetLongField(ZdFileRecord& record, const long lValue, const unsigned
 // function to set the value of string fields
 // pre: record has been allocated
 // post: sets the values in the FieldNumber field of the record
-static void SetStringField(ZdFileRecord& record, const ZdString& sValue, const unsigned long uwFieldNumber) {
+static void SetStringField(ZdFileRecord& record, const ZdString& sValue, unsigned short uwFieldNumber) {
    ZdFieldValue fv;
 
    try {

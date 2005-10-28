@@ -648,3 +648,6 @@ void stsRunHistoryFile::StripCRLF(ZdString& sStore) {
    }
 }
 
+
+
+
