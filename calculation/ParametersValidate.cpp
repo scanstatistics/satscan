@@ -1171,10 +1171,8 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
     return false;
   }
   if (gParameters.GetTimeAggregationLength() <= 0) {
-    PrintDirection.SatScanPrintWarning("Error: The time aggregation length of '%d' is invalid. Length must be greater than zero.\n"
-                                       "       Note that current settings permit a maximum time aggregation of %g %s%s.\n",
-                                       gParameters.GetTimeAggregationLength(), dMaxTemporalLengthInUnits, sPrecisionString.GetCString(),
-                                       (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+    PrintDirection.SatScanPrintWarning("Error: The time aggregation length of '%d' is invalid. Length must be greater than zero.\n",
+                                       gParameters.GetTimeAggregationLength());
     return false;
   }
   //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
