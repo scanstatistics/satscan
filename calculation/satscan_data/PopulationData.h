@@ -64,7 +64,7 @@ class PopulationData {
   private:
     bool                                gbAggregateCovariateCategories;   /** indicates that category data should be aggregated
                                                                               together, not maintained separate - Bernoulli */
-    int                                 giNumberCovariatesPerCategory;    /** number covariates expected in each record */
+    short                               giNumberCovariatesPerCategory;    /** number covariates expected in each record */
     std::vector<std::string>            gvCovariateNames;                 /** covariates labels */
     std::vector<std::vector<int> >      gvCovariateCategories;            /** vector of covariate categories
                                                                               - integers are indexes of covariate names */
@@ -94,7 +94,7 @@ class PopulationData {
     void                                CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const;
     void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;
     bool                                CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const;
-    int                                 CreateCovariateCategory(StringParser& Parser, unsigned int iScanOffset, BasePrint& PrintDirection);
+    int                                 CreateCovariateCategory(StringParser& Parser, short iScanOffset, BasePrint& PrintDirection);
     void                                Display(BasePrint& PrintDirection) const;
     double                              GetAlphaAdjustedPopulation(double& dPopulation, tract_t t, int iCategoryIndex,
                                                                    int iStartPopulationDateIndex, int iEndPopulationDateIndex,

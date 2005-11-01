@@ -87,13 +87,12 @@ Input: Tract, Adjustment Time Period, Relative Risk
 *****************************************************************************************/
 bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
   int                                   interval;
-  Julian                                AdjustmentStart, AdjustmentEnd, IntervalLength;
-  measure_t                             Adjustment_t, fProportionAdjusted, tMaxMeasure_tValue;
+  Julian                                AdjustmentStart, AdjustmentEnd;
+  measure_t                             tMaxMeasure_tValue;
   measure_t				MeasurePre, MeasurePost, MeasureDuring, ** pp_m;
   ZdString                              s;
-  std::numeric_limits<measure_t>        measure_limit;
 
-  tMaxMeasure_tValue = measure_limit.max();
+  tMaxMeasure_tValue = std::numeric_limits<measure_t>::max();
 
   //NOTE: The adjustment for known relative risks is hard coded to the first
   //      dataset for the time being.
@@ -210,7 +209,7 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
       gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex]=0;
       gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex] = new unsigned short[iNumMaximumNeighbors];
       for (tract_t j=iNumMaximumNeighbors-1; j >= 0; j--) /* copy tract numbers */
-         gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex][j] = vOrderLocations[j].GetTractNumber();
+         gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex][j] = static_cast<unsigned short>(vOrderLocations[j].GetTractNumber());
     }
     else if (gpSortedIntHandler) {
       delete gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex];
@@ -530,8 +529,6 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 
 /** reads data from input files for a Bernoulli probability model */
 bool CSaTScanData::ReadBernoulliData() {
-  size_t        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -589,8 +586,6 @@ void CSaTScanData::ReadDataFromFiles() {
 
 /** reads data from input files for a Exponential probability model */
 bool CSaTScanData::ReadExponentialData() {
-  size_t                        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -612,8 +607,6 @@ bool CSaTScanData::ReadExponentialData() {
 
 /** reads data from input files for a normal probability model */
 bool CSaTScanData::ReadNormalData() {
-  size_t        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -635,8 +628,6 @@ bool CSaTScanData::ReadNormalData() {
 
 /** reads data from input files for a Ordinal probability model */
 bool CSaTScanData::ReadOrdinalData() {
-  size_t        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -659,8 +650,6 @@ bool CSaTScanData::ReadOrdinalData() {
 
 /** reads data from input files for a Poisson probability model */
 bool CSaTScanData::ReadPoissonData() {
-  size_t        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -685,8 +674,6 @@ bool CSaTScanData::ReadPoissonData() {
 
 /** reads data from input files for a Rank probability model */
 bool CSaTScanData::ReadRankData() {
-  size_t        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -708,8 +695,6 @@ bool CSaTScanData::ReadRankData() {
 
 /** reads data from input files for a space-time permutation probability model */
 bool CSaTScanData::ReadSpaceTimePermutationData() {
-  size_t        t;
-
   try {
     if (!ReadCoordinatesFile())
       return false;
@@ -734,7 +719,7 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
     feature and is designed only for purely spatial analyses at this time.*/
 void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
   count_t       tTotalCases, tTotalControls;
-  measure_t     tTotalMeasure, tTotalCategoryCases;
+  measure_t     tTotalMeasure;
 
   try {
     // Previous iterations of sequential scan could have had this location as part of the most likely cluster.

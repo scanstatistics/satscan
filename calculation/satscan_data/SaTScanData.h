@@ -75,13 +75,13 @@ class CSaTScanData {
     int                                         LowerPopIndex(Julian Date) const;
     bool                                        ReadAdjustmentsByRelativeRisksFile();
     bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                         int & iScanCount, int iWordOffSet);
+                                                                         short & iScanCount, short iWordOffSet);
     bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
     bool                                        ReadCoordinatesFileAsLatitudeLongitude(FILE * fp);
     bool                                        ReadGridFileAsCartiesian(FILE * fp);
     bool                                        ReadGridFileAsLatitudeLongitude(FILE * fp);
     bool                                        ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                                 int iWordOffSet, const char * sSourceFile);
+                                                                                 short iWordOffSet, const char * sSourceFile);
     virtual void                                SetAdditionalCaseArrays(RealDataSet & thisSet);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();

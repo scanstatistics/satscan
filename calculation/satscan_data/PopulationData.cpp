@@ -445,8 +445,9 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
     covariates or an error message will be printed to PrintDirection and returned
     category in returned will be negative one. Upon successful creation of
     population category, index is returned. */
-int PopulationData::CreateCovariateCategory(StringParser& Parser, unsigned int iScanOffset, BasePrint& PrintDirection) {
-  unsigned int                                  iCategoryIndex, iNumCovariatesScanned=0;
+int PopulationData::CreateCovariateCategory(StringParser& Parser, short iScanOffset, BasePrint& PrintDirection) {
+  unsigned int                                  iCategoryIndex;
+  short                                         iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
   const char                                  * pCovariate;
   std::vector<std::string>::iterator            itr;
@@ -478,8 +479,8 @@ int PopulationData::CreateCovariateCategory(StringParser& Parser, unsigned int i
     gvCovariateCategoryCaseCount.resize(1, 0);
     gvCovariateCategoryControlCount.resize(1, 0);
   }
-  else if (iNumCovariatesScanned != static_cast<unsigned int>(giNumberCovariatesPerCategory)){
-    PrintDirection.PrintInputWarning("Error: Record %d of %s contains %d covariate%s but expecting %d covariate%s.",
+  else if (iNumCovariatesScanned != giNumberCovariatesPerCategory){
+    PrintDirection.PrintInputWarning("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.",
                                      Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
                                      iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
                                      giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
@@ -897,7 +898,6 @@ void PopulationData::RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t t
     PrintDirection as formatted warning. */
 void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const {
   int                           i, j, nPEndIndex, nPStartIndex = 0;
-  UInt                          month, day, year;
   bool                          bZeroFound = false;
   float                       * PopTotalsArray = 0;
   std::string                   sBuffer;
