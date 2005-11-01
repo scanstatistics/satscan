@@ -12,7 +12,7 @@
     supports. Since we accumulate errors/warnings when reading input files,
     indication of a bad date is returned and any messages sent to print direction. */
 bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian & JulianDate, bool bStartDate) {
-  int                                   iDateIndex;
+  short                                 iDateIndex;
   DateStringParser                      DateParser;
   DateStringParser::ParserStatus        eStatus;
 
@@ -185,8 +185,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
     function will use this information to confirm that coordinates scanned is
     not less than defined dimensions. The reason we don't check scanned dimensions
     here is that a generic error message could not be implemented. */
-bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<double>& vCoordinates,
-                                            int & iScanCount, int iWordOffSet) {
+bool CSaTScanData::ReadCartesianCoordinates(StringParser & Parser, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet) {
   const char  * pCoordinate;
   int           i;
 
@@ -259,9 +258,8 @@ bool CSaTScanData::ReadCoordinatesFile() {
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
-  int                           i, iScanCount=0;
-  bool                          bValidRecord, bValid=true, bEmpty=true;
-  const char                  * pCoordinate, * pDimension;
+  short                         iScanCount=0;
+  bool                          bValid=true, bEmpty=true;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
   StringParser                  Parser(gPrint);
@@ -348,8 +346,6 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
     is printed, that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered   */
 bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
-  int                           iScanCount;
-  const char                  * pCoordinate;
   bool                          bValid=true, bEmpty=true;
   ZdString                      TractIdentifier;
   std::vector<double>           vCoordinates;
@@ -441,9 +437,8 @@ bool CSaTScanData::ReadGridFile() {
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered          */
 bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
-  bool                          bValidRecord, bValid=true, bEmpty=true;
-  int                           i, iScanCount;
-  const char                  * pCoordinate;
+  bool                          bValid=true, bEmpty=true;
+  short                         iScanCount;
   std::vector<double>           vCoordinates;
   StringParser                  Parser(gPrint);
   ZdString                      sId;
@@ -499,7 +494,6 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
    Return value: true = success, false = errors encountered           */
 bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
   bool    	                bValid=true, bEmpty=true;
-  const char                  * pCoordinate;
   std::vector<double>           vCoordinates;
   StringParser                  Parser(gPrint);
   ZdString                      sId;
@@ -550,7 +544,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
     coordinates. Checks that coordinates are in range and converts to cartesian
     coordinates. */
 bool CSaTScanData::ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                    int iWordOffSet, const char * sSourceFile) {
+                                                    short iWordOffSet, const char * sSourceFile) {
   const char  * pCoordinate;
   double        dLatitude, dLongitude;
 
