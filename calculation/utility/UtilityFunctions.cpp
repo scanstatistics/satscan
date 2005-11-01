@@ -175,8 +175,8 @@ bool StringParser::HasWords() {
 }
 
 /** Returns number of words in string -- this could be better  */
-int StringParser::GetNumberWords() {
-  int   iWords=0;
+short StringParser::GetNumberWords() {
+  short   iWords=0;
 
   while (GetWord(iWords) != 0)
        ++iWords;

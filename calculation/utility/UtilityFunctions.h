@@ -41,7 +41,7 @@ class StringParser {
     ~StringParser();
 
     bool                        HasWords();
-    int                         GetNumberWords();
+    short                       GetNumberWords();
     long                        GetReadCount() const {return glReadCount;}
     const char                * GetString() const {return gsReadBuffer;}
     const char                * GetWord(short wWordIndex);
