@@ -1031,7 +1031,6 @@ void DBFFile::Create(const char * sFilename, ZdVector<ZdField*> &vFields, unsign
 unsigned long DBFFile::DataAppend  ( const ZdFileRecord &Record )
 {
    unsigned long ulResult;
-   xbShort rc;
    const DBFRecord * pRecord(dynamic_cast<const DBFRecord *>(&Record));
    try
       {
@@ -1738,8 +1737,6 @@ void DBFFile::SetupDefaultFilterForField(ZdField & theField)
 //xbDbf has locking, but I haven't figured it out, yet.
 bool DBFFile::TryLock ( ZdIOFlag iLock )
 {
-   bool bRetVal;
-
    try
       {
 //      bRetVal = gFile.TryLock ( iLock );
