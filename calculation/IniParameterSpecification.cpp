@@ -32,7 +32,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_6_0_x_ParameterList();
+  Build_6_x_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -69,7 +69,7 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
   else if (Version.iMajor == 5  && Version.iMinor == 0)
     Build_5_0_x_ParameterList();
   else
-    Build_6_0_x_ParameterList();
+    Build_6_x_x_ParameterList();
 }
 
 /** destructor */
@@ -253,7 +253,7 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
 }
 
 /** Version 6.0.x */
-void IniParameterSpecification::Build_6_0_x_ParameterList() {
+void IniParameterSpecification::Build_6_x_x_ParameterList() {
   Build_5_1_x_ParameterList();
 
   //Flexible start and end range where in wrong section
@@ -266,6 +266,7 @@ void IniParameterSpecification::Build_6_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"ExecutionType"));
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"NumberParallelProcesses"));
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"LogRunToHistoryFile"));
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"SuppressWarnings"));
 }
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */

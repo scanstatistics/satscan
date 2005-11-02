@@ -397,6 +397,7 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, EXECUTION_TYPE, GetParameterString(EXECUTION_TYPE, s), GetParameterComment(EXECUTION_TYPE));
     WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s), GetParameterComment(NUM_PROCESSES));
     WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s), GetParameterComment(LOG_HISTORY));
+    WriteIniParameter(WriteFile, SUPPRESS_WARNINGS, GetParameterString(SUPPRESS_WARNINGS, s), GetParameterComment(SUPPRESS_WARNINGS));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");

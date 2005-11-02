@@ -23,7 +23,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
-                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY};
+                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -161,6 +161,7 @@ class CParameters {
     struct CreationVersion              gCreationVersion;
     long                                glRandomizationSeed;                    /** randomization seed */
     bool                                gbReportCriticalValues;                 /** indicates whether to report critical llr values */
+    bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
@@ -270,6 +271,7 @@ class CParameters {
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
+    bool                                GetSuppressingWarnings() const {return gbSuppressWarnings;}
     bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
     long                                GetTimeAggregationLength() const {return glTimeAggregationLength;}
     DatePrecisionType                   GetTimeAggregationUnitsType() const {return geTimeAggregationUnitsType;}
@@ -344,6 +346,7 @@ class CParameters {
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
+    void                                SetSuppressingWarnings(bool b) {gbSuppressWarnings=b;}
     void                                SetTerminateSimulationsEarly(bool b) {gbEarlyTerminationSimulations = b;}
     void                                SetTimeAggregationLength(long lTimeAggregationLength);
     void                                SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits);

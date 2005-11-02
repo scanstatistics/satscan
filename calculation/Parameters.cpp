@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 73;
+const int CParameters::giNumParameters 	              = 74;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -112,7 +112,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   //if (glRandomizationSeed                 != rhs.glRandomizationSeed) return false;
   if (gbReportCriticalValues              != rhs.gbReportCriticalValues) return false;
   //if (geExecutionType                     != rhs.geExecutionType) return false;
-  if (giNumRequestedParallelProcesses     != rhs.giNumRequestedParallelProcesses) return false;      
+  if (giNumRequestedParallelProcesses     != rhs.giNumRequestedParallelProcesses) return false;
+  if (gbSuppressWarnings                  != rhs.gbSuppressWarnings) return false;            
   return true;
 }
 
@@ -231,6 +232,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbReportCriticalValues              = rhs.gbReportCriticalValues;
     geExecutionType                     = rhs.geExecutionType;
     giNumRequestedParallelProcesses     = rhs.giNumRequestedParallelProcesses;
+    gbSuppressWarnings                  = rhs.gbSuppressWarnings;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -664,6 +666,7 @@ void CParameters::SetAsDefaulted() {
   gbReportCriticalValues                = false;
   geExecutionType                       = AUTOMATIC;
   giNumRequestedParallelProcesses       = 0;
+  gbSuppressWarnings                    = false;
 }
 
 /** Sets dimensions of input data. */

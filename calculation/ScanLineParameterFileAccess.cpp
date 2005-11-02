@@ -92,7 +92,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case REPORT_CRITICAL_VALUES    : return "Report Critical Value (line 70)";
       case EXECUTION_TYPE            : return "Analysis Execution Type (line 71)";
       case NUM_PROCESSES             : return "Number Parallel Processes (line 72)";
-      case LOG_HISTORY               : return "Log Run to History File (line 73)";   
+      case LOG_HISTORY               : return "Log Run to History File (line 73)";
+      case SUPPRESS_WARNINGS         : return "Suppress Warnings (line 74)";    
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
