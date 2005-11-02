@@ -3,7 +3,7 @@
 #include "PrintScreen.h"
 
 /** constructor */
-PrintScreen::PrintScreen() : BasePrint() {}
+PrintScreen::PrintScreen(bool bSuppressWarnings) : BasePrint(bSuppressWarnings) {}
 
 /** destructor */
 PrintScreen::~PrintScreen() {}

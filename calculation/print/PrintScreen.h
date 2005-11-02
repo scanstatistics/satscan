@@ -4,16 +4,18 @@
 //*****************************************************************************
 #include "BasePrint.h"
 
-class PrintScreen : public BasePrint
-{
-   public:
-      PrintScreen();
-      ~PrintScreen();
+class PrintScreen : public BasePrint {
+  protected:
+    inline void PrintError(const char * sMessage) {printf(sMessage);}
+    inline void PrintNotice(const char * sMessage) {printf(sMessage);}
+    inline void PrintStandard(const char * sMessage) {printf(sMessage);}
+    inline void PrintWarning(const char * sMessage) {printf(sMessage);}
+  
+  public:
+    PrintScreen(bool bSuppressWarnings);
+    virtual ~PrintScreen();
 
-   inline bool GetIsCanceled() const {return false;}    
-   inline void PrintLine(char *s) {printf(s);}
-   inline void PrintWarningLine(char *s) {printf(s);}
+    inline bool GetIsCanceled() const {return false;}
 };
-
 //*****************************************************************************
 #endif
