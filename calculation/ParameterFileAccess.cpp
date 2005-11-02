@@ -129,6 +129,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case EXECUTION_TYPE           : return " analysis execution method  (Automatic=0, Successively=1, Centrically=2)";
       case NUM_PROCESSES            : return " number of parallel processes to execute (All Processors=0, At Most X Processors=x)";
       case LOG_HISTORY              : return " log analysis run to history file? (y/n)";
+      case SUPPRESS_WARNINGS        : return " suppressing warnings? (y/n)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -224,6 +225,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case EXECUTION_TYPE           : return AsString(s, gParameters.GetExecutionType());
       case NUM_PROCESSES            : return AsString(s, gParameters.GetNumRequestedParallelProcesses());
       case LOG_HISTORY              : return AsString(s, gParameters.GetIsLoggingHistory());
+      case SUPPRESS_WARNINGS        : return AsString(s, gParameters.GetSuppressingWarnings());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -317,14 +319,15 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case EXECUTION_TYPE           : sDefaultValue = gParameters.GetExecutionType(); break;
       case NUM_PROCESSES            : sDefaultValue << gParameters.GetNumRequestedParallelProcesses(); break;
       case LOG_HISTORY              : sDefaultValue = (gParameters.GetIsLoggingHistory() ? "y" : "n"); break;
+      case SUPPRESS_WARNINGS        : sDefaultValue = (gParameters.GetSuppressingWarnings() ? "y" : "n"); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
     if (sDefaultValue.GetLength()) {
       gvParametersMissingDefaulted.push_back(static_cast<int>(eParameterType)); //and default retained.
-      PrintDirection.SatScanPrintWarning("Warning: The parameter '%s' is missing from the parameter file,\n"
-                                         "         defaulted value '%s' assigned.\n",
-                                         GetParameterLabel(eParameterType), sDefaultValue.GetCString());
+      PrintDirection.Printf("Notice: The parameter '%s' is missing from the parameter file,\n"
+                            "        defaulted value '%s' assigned.\n", BasePrint::P_NOTICE,
+                            GetParameterLabel(eParameterType), sDefaultValue.GetCString());
     }
   }
   catch (ZdException & x) {
@@ -671,12 +674,13 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetExecutionType((ExecutionType)iValue); break;
       case NUM_PROCESSES             : gParameters.SetNumParallelProcessesToExecute(ReadUnsignedInt(sParameter, eParameterType)); break;
       case LOG_HISTORY               : gParameters.SetIsLoggingHistory(ReadBoolean(sParameter, eParameterType)); break;
+      case SUPPRESS_WARNINGS         : gParameters.SetSuppressingWarnings(ReadBoolean(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }
   catch (InvalidParameterException &x) {
     gbReadStatusError = true;
-    PrintDirection.SatScanPrintWarning(x.GetErrorMessage());
+    PrintDirection.Print(x.GetErrorMessage(), BasePrint::P_ERROR);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetParameter()","AbtractParameterFileAccess");
