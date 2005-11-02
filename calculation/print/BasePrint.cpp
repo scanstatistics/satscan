@@ -1,17 +1,19 @@
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//******************************************************************************
 #include "BasePrint.h"
 
-const int MAX_INPUT_FILE_WARNING_LIMIT = 75;
+const int BasePrint::MAX_READ_ERRORS = 75;
 
-//---------------------------------------------------------------------------
-BasePrint::BasePrint()
-{
+/** constructor */
+BasePrint::BasePrint(bool bSuppressWarnings) : gbSuppressWarnings(bSuppressWarnings) {
    SetImpliedInputFileType(CASEFILE);
    gsMessage = new char[1];
    gsMessage[0] = 0;
 }
-//---------------------------------------------------------------------------
+
+/** destructor */
 BasePrint::~BasePrint() {
   try {
     delete [] gsMessage;
@@ -19,64 +21,59 @@ BasePrint::~BasePrint() {
   catch (...){}
 }
 
-void BasePrint::SatScanPrintf(const char * sMessage, ... )
-{
-   va_list   varArgs;
-
-   va_start ( varArgs, sMessage );
-   PrintMessage ( varArgs, sMessage );
-   PrintLine(gsMessage);
-   va_end ( varArgs );
+/** Directs message to appropriate output based  upon PrintType. */
+void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
+   switch (ePrintType) {
+     case P_STDOUT    : PrintStandard(sMessage); break;
+     case P_NOTICE    : PrintNotice(sMessage); break; 
+     case P_WARNING   : if (!gbSuppressWarnings)
+                          PrintWarning(sMessage);
+                        break;
+     case P_READERROR : PrintReadError(sMessage); break;
+     case P_ERROR     :
+     default          : PrintError(sMessage);
+   };
 }
 
-void BasePrint::SatScanPrintWarning(const char * sMessage, ... )
-{
+void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
    va_list   varArgs;
 
-   va_start ( varArgs, sMessage );
-   PrintMessage ( varArgs, sMessage );
-   PrintWarningLine(gsMessage);
-   va_end ( varArgs );
+   va_start(varArgs, ePrintType);
+   SetMessageFromArgs(varArgs, sMessage);
+   va_end (varArgs);
+
+   Print(gsMessage, ePrintType);
 }
 
-// function for printing out input file warning messages, this function will print out MAX_INPUT_FILE_WARNING_LIMIT
+// function for printing out input file warning messages, this function will print out MAX_READ_ERRORS
 // number of input file messages from each input file type, then will print a warning telling the user to check the
 // input file format
 // pre : none
 // post : increments the counter in the global map for the message type (or starts a new counter if not found) and
 //       if the number of messages for that file type is less than the maximum then it just prints as normal
-void BasePrint::PrintInputWarning(const char* sMessage, ...)
-{
+void BasePrint::PrintReadError(const char * sMessage) {
    bool bPrintAsNormal(true);
    std::map<eInputFileType, int>::iterator iter = gInputFileWarningsMap.find(geInputFileType);
 
-   if (iter == gInputFileWarningsMap.end()) {
+   if (iter == gInputFileWarningsMap.end())
       gInputFileWarningsMap.insert(std::make_pair(geInputFileType, 1));
-   }
    else {
-      iter->second++;
-
-      // print the excessive warning message on the MAX_INPUT_FILE_WARNING_LIMIT time - else print nothing past -- AJV
-      if (iter->second == MAX_INPUT_FILE_WARNING_LIMIT) {
-         bPrintAsNormal = false;
-         std::string message;
-         message = "Error: Excessive number of warnings in  ";
-         message += GetImpliedFileTypeString().c_str();
-         message += ".\n";
-         PrintWarningLine(const_cast<char*>(message.c_str()));
-      }
-      else if(iter->second > MAX_INPUT_FILE_WARNING_LIMIT)
-         bPrintAsNormal = false;
+     iter->second++;
+     // print the excessive warning message on the MAX_READ_ERRORS time - else print nothing past -- AJV
+     if (iter->second == MAX_READ_ERRORS) {
+       bPrintAsNormal = false;
+       std::string message;
+       message = "Error: Excessive number of warnings in  ";
+       message += GetImpliedFileTypeString().c_str();
+       message += ".\n";
+       PrintError(message.c_str());
+     }
+     else if(iter->second > MAX_READ_ERRORS)
+       bPrintAsNormal = false;
    }
 
-   if(bPrintAsNormal) {  // just some code stolen from the SatScanPrintWarning function
-      va_list   varArgs;
-
-      va_start ( varArgs, sMessage );
-      PrintMessage ( varArgs, sMessage );
-      PrintWarningLine(gsMessage);
-      va_end ( varArgs );
-   }
+   if (bPrintAsNormal)
+     PrintError(sMessage);
 }
 
 //---------------------------------------------------------------------------
@@ -90,7 +87,7 @@ void BasePrint::PrintInputWarning(const char* sMessage, ...)
 #ifdef INTEL_BASED
 // This function sets the current exception message.  If a NULL is passed in, the current
 // message is cleared.
-void BasePrint::PrintMessage(va_list varArgs, const char * sMessage) {
+void BasePrint::SetMessageFromArgs(va_list varArgs, const char * sMessage) {
   int   iStringLength;   // Holds the length of the formatted output
   int   iCurrentLength;  // Current length of the buffer
 
@@ -115,7 +112,7 @@ void BasePrint::PrintMessage(va_list varArgs, const char * sMessage) {
 #else
 // This function sets the current exception message.  If a NULL is passed in, the current
 // message is cleared.
-void BasePrint::PrintMessage(va_list varArgs, const char * sMessage ) {
+void BasePrint::SetMessageFromArgs(va_list varArgs, const char * sMessage ) {
    int   iCurrentLength;  // Current length of the buffer
    int   iStringLength;   // Holds the length of the formatted output
 
