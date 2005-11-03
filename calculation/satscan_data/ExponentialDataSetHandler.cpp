@@ -216,32 +216,33 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-      gPrint.PrintInputWarning("Error: Unknown location ID in the %s, record %ld.\n", gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(0));
+      gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
+                    "       Location ID '%s' was not specified in the coordinates file.\n",
+                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount(), Parser.GetWord(0));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(1) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n",
-                                  Parser.GetWord(1), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-       gPrint.PrintInputWarning("       Case count must be an integer.\n");
+       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
+                     "       Case count must be an integer.\n", BasePrint::P_READERROR, Parser.GetWord(1),
+                     Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
     }
     else {
-      gPrint.PrintInputWarning("Error: Record %ld, in the %s, does not contain case count.\n",
-                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
+                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gPrint.PrintInputWarning("Error: Case count in record %ld, of the %s, is negative.\n",
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Case count in record %ld, of the %s, is negative.\n",
+                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
-        gPrint.PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(),
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
+                      BasePrint::P_READERROR, Parser.GetWord(1), std::numeric_limits<count_t>::max(),
+                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (!ConvertCountDateToJulian(Parser, nDate))
@@ -250,18 +251,18 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     // read continuous variable
     iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
     if (!Parser.GetWord(iContiVariableIndex)) {
-      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the continuous variable.\n",
-                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
+                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (sscanf(Parser.GetWord(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
-       gPrint.PrintInputWarning("Error: The continuous variable value '%s' in record %ld, of the %s, is not a number.\n",
-                                Parser.GetWord(iContiVariableIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+       gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of the %s, is not a number.\n",
+                                BasePrint::P_READERROR, Parser.GetWord(iContiVariableIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
     if (tContinuousVariable <= 0) {
-       gPrint.PrintInputWarning("Error: The continuous variable '%g' in record %ld of the %s, is not greater than zero.\n",
-                                tContinuousVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+       gPrint.Printf("Error: The continuous variable '%g' in record %ld of the %s, is not greater than zero.\n",
+                     BasePrint::P_READERROR, tContinuousVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
 
@@ -269,9 +270,9 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
     if (Parser.GetWord(iCensoredAttributeIndex) != 0) {
       if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
-       gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n",
-                                  Parser.GetWord(iCensoredAttributeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-       gPrint.PrintInputWarning("       Censoring attribute must be either 0 or 1.\n");
+       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n"
+                     "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
+                     Parser.GetWord(iCensoredAttributeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
       //treat values greater than one as indication that patient was censored
@@ -337,16 +338,16 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bReadSuccessful)
-      gPrint.SatScanPrintWarning("Please see the 'case file' section in the user guide for help.\n");
+      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_READERROR);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.SatScanPrintWarning("Error: %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str());
       bReadSuccessful = false;
     }
     //validate that data set contains minimum number of non-censored cases
     else if (tTotalCases < gtMinimumNotCensoredCases) {
-      gPrint.SatScanPrintWarning("Error: Data set does not contain the required minimum of %i non-censored case%s.\n",
-                                 gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
+      gPrint.Printf("Error: Data set does not contain the required minimum of %i non-censored case%s.\n",
+                    BasePrint::P_READERROR, gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
       bReadSuccessful = false;
     }
     else {
@@ -375,9 +376,9 @@ bool ExponentialDataSetHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (GetNumDataSets() == 1)
-         gPrint.SatScanPrintf("Reading the case file\n");
+         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
-         gPrint.SatScanPrintf("Reading the cae file for data set %u\n", t + 1);
+         gPrint.Printf("Reading the cae file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

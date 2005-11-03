@@ -185,7 +185,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   int                   iNumReportedNeighbors, iNumNeighbors;
 
-  gPrintDirection.SatScanPrintf("Constructing the circles\n");
+  gPrintDirection.Printf("Constructing the circles\n", BasePrint::P_STDOUT);
   //Calculate neighboring locations about each centroid for circular regions
   for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
      CalculateNeighborsAboutCentroid(0, t);
@@ -206,7 +206,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
   if (!gDataHub.GetParameters().GetNumRequestedEllipses())
     return;
 
-  gPrintDirection.SatScanPrintf("Constructing the ellipsoids\n");
+  gPrintDirection.Printf("Constructing the ellipsoids\n", BasePrint::P_STDOUT);
   //Calculate neighboring locations about each centroid for elliptical regions
   for (int i=1; i <= gDataHub.GetParameters().GetNumTotalEllipses(); ++i) {
      for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {

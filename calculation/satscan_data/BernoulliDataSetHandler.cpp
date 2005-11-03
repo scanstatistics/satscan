@@ -193,8 +193,8 @@ bool BernoulliDataSetHandler::ReadControlFile(size_t tSetIndex) {
 
   try {
     if ((fp = fopen(gParameters.GetControlFileName(tSetIndex + 1).c_str(), "r")) == NULL) {
-      gPrint.SatScanPrintWarning("Error: Could not open the control file:\n'%s'.\n",
-                                   gParameters.GetControlFileName(tSetIndex + 1).c_str());
+      gPrint.Printf("Error: Could not open the control file:\n'%s'.\n",
+                    BasePrint::P_ERROR, gParameters.GetControlFileName(tSetIndex + 1).c_str());
       return false;
     }
     gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumDataSets() == 1 ? 0 : tSetIndex + 1));
@@ -217,15 +217,15 @@ bool BernoulliDataSetHandler::ReadData() {
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        GetDataSet(t).SetAggregateCovariateCategories(true);
        if (GetNumDataSets() == 1)
-         gPrint.SatScanPrintf("Reading the case file\n");
+         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
-         gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
+         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(t))
          return false;
        if (GetNumDataSets() == 1)
-         gPrint.SatScanPrintf("Reading the control file\n");
+         gPrint.Printf("Reading the control file\n", BasePrint::P_STDOUT);
        else
-         gPrint.SatScanPrintf("Reading the control file for data set %u\n", t + 1);
+         gPrint.Printf("Reading the control file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadControlFile(t))
          return false;
     }
