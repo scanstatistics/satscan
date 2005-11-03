@@ -35,8 +35,10 @@ class BasePrint {
     eInputFileType                      GetImpliedInputFileType() const {return geInputFileType;}
     const std::string                 & GetImpliedFileTypeString() const {return gsInputFileString;}
     virtual bool                        GetIsCanceled() const = 0;
+    bool                                GetMaximumReadErrorsPrinted() const;
     virtual void                        Printf(const char * sMessage, PrintType ePrintType, ...);
     void                                SetImpliedInputFileType(eInputFileType eType, unsigned int iDataSet=0);
+    void                                SetSuppressWarnings(bool b) {gbSuppressWarnings=b;}
 };
 
 //******************************************************************************

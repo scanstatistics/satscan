@@ -21,6 +21,14 @@ BasePrint::~BasePrint() {
   catch (...){}
 }
 
+/** Returns indication of whether maximum number of read errors have been printed
+    through this object. */
+bool BasePrint::GetMaximumReadErrorsPrinted() const {
+  std::map<eInputFileType, int>::const_iterator iter = gInputFileWarningsMap.find(geInputFileType);
+
+  return (iter == gInputFileWarningsMap.end() ? false : iter->second == MAX_READ_ERRORS);
+}
+
 /** Directs message to appropriate output based  upon PrintType. */
 void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
    switch (ePrintType) {
@@ -63,9 +71,9 @@ void BasePrint::PrintReadError(const char * sMessage) {
      if (iter->second == MAX_READ_ERRORS) {
        bPrintAsNormal = false;
        std::string message;
-       message = "Error: Excessive number of warnings in  ";
+       message = "Error: Excessive number of errors reading ";
        message += GetImpliedFileTypeString().c_str();
-       message += ".\n";
+       message += " data.\n";
        PrintError(message.c_str());
      }
      else if(iter->second > MAX_READ_ERRORS)
