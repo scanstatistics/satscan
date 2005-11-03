@@ -69,8 +69,8 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
 
   //Parameter settings indicate that there should be a date in each case record.
   if (!Parser.GetWord(guCountDateIndex)) {
-    gPrint.PrintInputWarning("Error: Record %ld in %s does not contain a date.\n",
-                              Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+    gPrint.Printf("Error: Record %ld in %s does not contain a date.\n",
+                  BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
     return false;
   }
   //Attempt to convert string into Julian equivalence.
@@ -79,33 +79,34 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
   switch (eStatus) {
     case DateStringParser::VALID_DATE       : break;
     case DateStringParser::AMBIGUOUS_YEAR   :
-      gPrint.PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
-                               "       to determine century for two digit year in %s, record %ld.\n"
-                               "       Please use four digit years.\n",
-                               gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+      gPrint.Printf("Error: Due to the study period being greater than 100 years, unable\n"
+                    "       to determine century for two digit year in %s, record %ld.\n"
+                    "       Please use four digit years.\n", BasePrint::P_READERROR,
+                    gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       return false;
     case DateStringParser::LESSER_PRECISION : {
        ZdString sBuffer;
        //Dates in the case/control files must be at least as precise as ePrecision units.
-       gPrint.PrintInputWarning("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
-                                "       as specified by %s units.\n",
-                                Parser.GetWord(guCountDateIndex), Parser.GetReadCount(),
-                                gPrint.GetImpliedFileTypeString().c_str(),
-                                GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
-                                (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
+       gPrint.Printf("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
+                     "       as specified by %s units.\n", BasePrint::P_READERROR,
+                     Parser.GetWord(guCountDateIndex), Parser.GetReadCount(),
+                     gPrint.GetImpliedFileTypeString().c_str(),
+                     GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
+                     (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
       return false; }
     case DateStringParser::INVALID_DATE     :
     default                                 :
-      gPrint.PrintInputWarning("Error: Invalid date '%s' in the %s, record %ld.\n", Parser.GetWord(guCountDateIndex),
-                               gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+      gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n", BasePrint::P_READERROR,
+                    Parser.GetWord(guCountDateIndex), gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
       return false;
   };
   //validate that date is between study period start and end dates
   if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
-    gPrint.PrintInputWarning("Error: The date '%s' in record %ld of the %s is not\n", Parser.GetWord(2),
-                             Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-    gPrint.PrintInputWarning("       within the study period beginning %s and ending %s.\n",
-                             gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+    gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n"
+                  "       within the study period beginning %s and ending %s.\n",
+                  BasePrint::P_READERROR, Parser.GetWord(2), Parser.GetReadCount(),
+                  gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(),
+                  gParameters.GetStudyPeriodEndDate().c_str());
     return false;
   }
   return true;
@@ -165,34 +166,34 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(guLocationIndex))) == -1) {
-      gPrint.PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
-                                 gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(guLocationIndex));
+      gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
+                    "       Location ID '%s' was not specified in the coordinates file.\n",
+                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
+                    Parser.GetReadCount(), Parser.GetWord(guLocationIndex));
       return false;
     }
     //read and validate count
     if (Parser.GetWord(guCountIndex) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gPrint.PrintInputWarning("Error: The value '%s' of record %ld in %s could not be read as case count.\n",
-                                  Parser.GetWord(guCountIndex), Parser.GetReadCount(),
-                                  gPrint.GetImpliedFileTypeString().c_str());
-       gPrint.PrintInputWarning("       Case count must be an integer.\n");
+       gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
+                     "       Case count must be an integer.\n", BasePrint::P_READERROR,
+                     Parser.GetWord(guCountIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
     }
     else {
-      gPrint.PrintInputWarning("Error: Record %ld in %s does not contain case count.\n",
-                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: Record %ld in %s does not contain case count.\n",
+                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(guCountIndex), "-"))
-        gPrint.PrintInputWarning("Error: Record %ld, of the %s, contains a negative case count.\n",
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Record %ld, of the %s, contains a negative case count.\n",
+                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
-        gPrint.PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                                   Parser.GetWord(1), std::numeric_limits<count_t>::max(), Parser.GetReadCount(),
-                                   gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
+                      BasePrint::P_READERROR, Parser.GetWord(1), std::numeric_limits<count_t>::max(),
+                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (!ConvertCountDateToJulian(Parser, nDate))
@@ -224,25 +225,26 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
       if (!gParameters.UsePopulationFile() && iNumCovariatesScanned) {
         //If the population data was not gotten from a population file, then there can not
         //be covariates in other files, namely the case file.
-        gPrint.PrintInputWarning("Error: Record %ld of %s contains %d covariate%s but covariates are not permitted\n"
-                                 "       in the %s when a population file is not specified.\n" ,
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
-                                   iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
-                                   gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but covariates are not permitted\n"
+                      "       in the %s when a population file is not specified.\n", BasePrint::P_READERROR,
+                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
+                      iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
+                      gPrint.GetImpliedFileTypeString().c_str());
         return false;
       }
       if (iNumCovariatesScanned != thePopulation.GetNumCovariatesPerCategory()) {
-        gPrint.PrintInputWarning("Error: Record %ld of %s contains %d covariate%s but the population file\n",
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
-                                   iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"));
-        gPrint.PrintInputWarning("       defined the number of covariates as %d.\n", thePopulation.GetNumCovariatesPerCategory());
+        gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but the population file\n"
+                      "       defined the number of covariates as %d.\n", BasePrint::P_READERROR,
+                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
+                      iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
+                      thePopulation.GetNumCovariatesPerCategory());
         return false;
       }
       //category should already exist
       if ((iCategoryIndex = thePopulation.GetCovariateCategoryIndex(vCategoryCovariates)) == -1) {
-        gPrint.PrintInputWarning("Error: Record %ld of %s refers to a population category that\n",
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-        gPrint.PrintInputWarning("       does not match an existing category as read from the population file.");
+        gPrint.Printf("Error: Record %ld of %s refers to a population category that\n"
+                      "       does not match an existing category as read from the population file.",
+                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
         return false;
       }
     }
@@ -283,8 +285,8 @@ bool DataSetHandler::ReadCaseFile(size_t iSetIndex) {
 
   try {
     if ((fp = fopen(gParameters.GetCaseFileName(iSetIndex + 1).c_str(), "r")) == NULL) {
-      gPrint.SatScanPrintWarning("Error: Could not open the case file:\n'%s'.\n",
-                                   gParameters.GetCaseFileName(iSetIndex + 1).c_str());
+      gPrint.Printf("Error: Could not open the case file:\n'%s'.\n",
+                    BasePrint::P_ERROR, gParameters.GetCaseFileName(iSetIndex + 1).c_str());
       return false;
     }                                                                  
     gPrint.SetImpliedInputFileType(BasePrint::CASEFILE, (GetNumDataSets() == 1 ? 0 : iSetIndex + 1));
@@ -344,10 +346,10 @@ bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescri
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gPrint.SatScanPrintWarning("Please see the '%s file' section in the user guide for help.\n", szDescription);
+      gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.SatScanPrintWarning("Error: The %s file does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: The %s file does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
   }
@@ -360,8 +362,9 @@ bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescri
 
 /** reports whether any dataset has cases with a zero population. */
 void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
-  for (size_t t=0; t < gvDataSets.size(); ++t)
-    gvDataSets[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+  if (!gParameters.GetSuppressingWarnings())
+    for (size_t t=0; t < gvDataSets.size(); ++t)
+      gvDataSets[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
 }
 
 void DataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
