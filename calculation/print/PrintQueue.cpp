@@ -30,8 +30,8 @@
 //constructor
 //ensure
 //  is_released : GetThreshold() == 0
-PrintQueue::PrintQueue(BasePrint & Target)
- : BasePrint()
+PrintQueue::PrintQueue(BasePrint & Target, bool bSuppressWarnings)
+ : BasePrint(bSuppressWarnings)
  , gTarget(Target)
  , gpThresholdPolicy(new default_threshold_policy())
  , glThreshold(0)
@@ -50,8 +50,9 @@ PrintQueue::PrintQueue(BasePrint & Target)
 //constructor
 //ensure
 //  threshold_set : GetThreshold() == lThreshold
-PrintQueue::PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdPolicy)
- : gTarget(Target)
+PrintQueue::PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdPolicy, bool bSuppressWarnings)
+ : BasePrint(bSuppressWarnings),
+   gTarget(Target)
  , gpThresholdPolicy(ThresholdPolicy.Clone())
  , glThreshold(0)
 {
@@ -111,12 +112,12 @@ void PrintQueue::SetThreshold(long lNewThreshold)
 }
 
 //Print a (non-warning) line.
-void PrintQueue::PrintLine(char *s)
+void PrintQueue::PrintStandard(const char * sMessage)
 {
    try
    {
       UpdateThreshold();
-      PrintWarningQualifiedLine(false, s);
+      PrintWarningQualifiedLine(BasePrint::P_STDOUT, sMessage);
    }
    catch (ZdException & e)
    {
@@ -125,25 +126,52 @@ void PrintQueue::PrintLine(char *s)
    }
 }
 
-//Print a "warning" line.
-void PrintQueue::PrintWarningLine(char *s)
-{
+//Print a "error" line.
+void PrintQueue::PrintError(const char * sMessage) {
    try
    {
       UpdateThreshold();
-      PrintWarningQualifiedLine(true, s);
+      PrintWarningQualifiedLine(BasePrint::P_ERROR, sMessage);
    }
    catch (ZdException & e)
    {
-      e.AddCallpath("PrintWarningLine(char *)", "PrintQueue");
+      e.AddCallpath("PrintError(const char*)", "PrintQueue");
       throw;
    }
 }
 
-//Print a line.  'bIsWarning' indicates whether or not 's' is a "warning" line.
-void PrintQueue::PrintWarningQualifiedLine(bool bIsWarning, const char * s)
+//Print a "notice" line.
+void PrintQueue::PrintNotice(const char * sMessage) {
+   try
+   {
+      UpdateThreshold();
+      PrintWarningQualifiedLine(BasePrint::P_NOTICE, sMessage);
+   }
+   catch (ZdException & e)
+   {
+      e.AddCallpath("PrintError(const char*)", "PrintQueue");
+      throw;
+   }
+}
+
+//Print a "warning" line.
+void PrintQueue::PrintWarning(const char * sMessage) {
+   try
+   {
+      UpdateThreshold();
+      PrintWarningQualifiedLine(BasePrint::P_WARNING, sMessage);
+   }
+   catch (ZdException & e)
+   {
+      e.AddCallpath("PrintWarning(const char*)", "PrintQueue");
+      throw;
+   }
+}
+
+//Print a line. 'ePrintType' indicates type of message being printed.
+void PrintQueue::PrintWarningQualifiedLine(BasePrint::PrintType ePrintType, const char * s)
 {
-   std::pair<bool, std::string> arg_line(bIsWarning, std::string(s));
+   std::pair<BasePrint::PrintType, std::string> arg_line(ePrintType, std::string(s));
    try
    {
       if ((gOutputLines.size() < static_cast<unsigned>(GetThreshold())) || (GetThreshold() < 0))
@@ -154,7 +182,7 @@ void PrintQueue::PrintWarningQualifiedLine(bool bIsWarning, const char * s)
       {
          if (gOutputLines.size() > 0)
          {
-            std::pair<bool, std::string> dequeued_line(gOutputLines.front());
+            std::pair<BasePrint::PrintType, std::string> dequeued_line(gOutputLines.front());
             gOutputLines.push_back(arg_line);
             try{ PrintWarningQualifiedLineToTarget(dequeued_line.first, dequeued_line.second.c_str());
             }catch(...){ gOutputLines.pop_back(); throw; }
@@ -173,20 +201,12 @@ void PrintQueue::PrintWarningQualifiedLine(bool bIsWarning, const char * s)
    }
 }
 
-//Send a line to gTarget. 'bIsWarning' indicates whether gTarget.PrintWarningLine(...)
-// or gTarget.PrintLine(...) is called.
-void PrintQueue::PrintWarningQualifiedLineToTarget(bool bIsWarning, const char * s)
+//Send a line to gTarget. 'ePrintType' indicates type of message being printed.
+void PrintQueue::PrintWarningQualifiedLineToTarget(BasePrint::PrintType ePrintType, const char * s)
 {
    try
    {
-      if (bIsWarning)
-      {
-         gTarget.PrintWarningLine(const_cast<char*>(s));
-      }
-      else
-      {
-      	 gTarget.PrintLine(const_cast<char*>(s));
-      }
+     gTarget.Print(s, ePrintType);
    }
    catch (ZdException & e)
    {

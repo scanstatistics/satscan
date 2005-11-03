@@ -33,21 +33,25 @@ public:
 private:
    BasePrint & gTarget;
    std::auto_ptr<threshold_policy_i> gpThresholdPolicy;
-   std::deque< std::pair<bool, std::string> > gOutputLines;//holds lines, along with an indicator that tells whether or not the line is a "warning" line (true==is).
+   std::deque< std::pair<BasePrint::PrintType, std::string> > gOutputLines;//holds lines, along with an indicator that tells whether or not the line is a "warning" line (true==is).
    long glThreshold;
 
-   void PrintWarningQualifiedLine(bool bIsWarning, const char * s);
-   void PrintWarningQualifiedLineToTarget(bool bIsWarning, const char * s);
+   void PrintWarningQualifiedLine(BasePrint::PrintType, const char * s);
+   void PrintWarningQualifiedLineToTarget(BasePrint::PrintType, const char * s);
    void UpdateThreshold();
 
+protected:
+   virtual void PrintError(const char * sMessage);
+   virtual void PrintNotice(const char * sMessage);
+   virtual void PrintStandard(const char * sMessage);
+   virtual void PrintWarning(const char * sMessage);
+
 public:
-   PrintQueue(BasePrint & Target);
-   PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdPolicy);
+   PrintQueue(BasePrint & Target, bool bSuppressWarnings);
+   PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdPolicy, bool bSuppressWarnings);
    ~PrintQueue();
 
    inline bool GetIsCanceled() const { const_cast<PrintQueue&>(*this).UpdateThreshold(); return gTarget.GetIsCanceled(); }
-   void PrintLine(char *s);
-   void PrintWarningLine(char *s);
 
    long GetThreshold() const { return glThreshold; }
    void SetThreshold(long lNewThreshold);//ensure: GetThreshold() == lNewThreshold;
