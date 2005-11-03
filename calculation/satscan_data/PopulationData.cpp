@@ -480,7 +480,7 @@ int PopulationData::CreateCovariateCategory(StringParser& Parser, short iScanOff
     gvCovariateCategoryControlCount.resize(1, 0);
   }
   else if (iNumCovariatesScanned != giNumberCovariatesPerCategory){
-    PrintDirection.Printf("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.",
+    PrintDirection.Printf("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.\n",
                           BasePrint::P_READERROR, Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
                           iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
                           giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
