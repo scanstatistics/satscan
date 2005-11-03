@@ -335,7 +335,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
     }
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
         //skip lines that do not contain data
         if (!Parser.HasWords())
           continue;
@@ -372,7 +372,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
       //reset for second read
       fseek(fp, 0L, SEEK_SET);
       //We can ignore error checking for population date and population since we already did this above.
-      while (Parser.ReadString(fp)) {
+      while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
           if (!Parser.HasWords()) // Skip Blank Lines
             continue;
           ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate);

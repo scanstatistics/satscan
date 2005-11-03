@@ -260,7 +260,7 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
 
     ppCounts = DataSet.GetCaseArray();
     //Read data, parse and if no errors, increment count for tract at date.
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuousVariable)) {

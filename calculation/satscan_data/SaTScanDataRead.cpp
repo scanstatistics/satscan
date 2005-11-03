@@ -80,7 +80,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
     }
 
     gRelativeRiskAdjustments.Empty();
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
         //skip lines that do not contain data
         if (!Parser.HasWords())
           continue;
@@ -264,7 +264,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
   StringParser                  Parser(gPrint);
 
   try {
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          //skip records with no data
          if (!Parser.HasWords())
            continue;
@@ -356,7 +356,7 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(FILE * fp) {
     const_cast<CParameters&>(gParameters).SetDimensionsOfData(3/*for conversion*/);
     gTractHandler.tiSetDimensions(gParameters.GetDimensionsOfData());
     gCentroidsHandler.giSetDimensions(gParameters.GetDimensionsOfData());
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
         //skip records with no data 
         if (! Parser.HasWords())
           continue;
@@ -446,7 +446,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(FILE * fp) {
 
   try {
     vCoordinates.resize(gParameters.GetDimensionsOfData(), 0);
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
         //skip blank lines
         if (!Parser.HasWords())
           continue;
@@ -501,7 +501,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(FILE * fp) {
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
         //skip lines with no data
         if (!Parser.HasWords())
           continue;
@@ -624,7 +624,7 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     gvMaxCirclePopulation.resize(m_nTracts, 0);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
         ++iRecNum;
         //skip lines that do not contain data
         if (!Parser.HasWords())

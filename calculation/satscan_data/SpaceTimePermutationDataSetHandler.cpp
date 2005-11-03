@@ -168,7 +168,7 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp,
     ppCounts = DataSet.GetCaseArray();
 
     //Read data, parse and if no errors, increment count for tract at date.
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCountLine(DataSet.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {

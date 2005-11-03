@@ -261,7 +261,7 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
     StringParser Parser(gPrint);
 
     //read, parse, validate and update data structures for each record in data file
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          if (Parser.HasWords()) { // ignore records which contain no data
            bEmpty = false;
            //parse record into parts: location index, # of cases, date, ordinal catgory

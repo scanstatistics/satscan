@@ -310,7 +310,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     if (!pRandomizer)
       ZdGenerateException("Data set randomizer not ExponentialRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
-    while (Parser.ReadString(fp)) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute)) {
