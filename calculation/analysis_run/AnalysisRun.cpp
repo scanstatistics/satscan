@@ -133,7 +133,7 @@ void AnalysisRunner::CreateRelativeRiskFile() {
 
   try {
     if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles()) {
-      gPrintDirection.SatScanPrintf("Reporting relative risk estimates...\n");
+      gPrintDirection.Print("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
       gpDataHub->DisplayRelativeRisksForEachTract();
     }
   }
@@ -178,13 +178,13 @@ void AnalysisRunner::CreateReport() {
     is performing. */
 void AnalysisRunner::DisplayFindClusterHeading() {
   if (!gParameters.GetIsSequentialScanning())
-    gPrintDirection.SatScanPrintf("Finding the most likely clusters.\n");
+    gPrintDirection.Print("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
   else {
     switch(giAnalysisCount) {
-      case  1: gPrintDirection.SatScanPrintf("Finding the most likely cluster.\n"); break;
-      case  2: gPrintDirection.SatScanPrintf("Finding the second most likely cluster.\n"); break;
-      case  3: gPrintDirection.SatScanPrintf("Finding the third most likely cluster.\n"); break;
-      default: gPrintDirection.SatScanPrintf("Finding the %ith most likely cluster.\n", giAnalysisCount);
+      case  1: gPrintDirection.Print("Finding the most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  2: gPrintDirection.Print("Finding the second most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  3: gPrintDirection.Print("Finding the third most likely cluster.\n", BasePrint::P_STDOUT); break;
+      default: gPrintDirection.Printf("Finding the %ith most likely cluster.\n", BasePrint::P_STDOUT, giAnalysisCount);
     }
   }
 }
@@ -194,11 +194,11 @@ void AnalysisRunner::DisplayFindClusterHeading() {
 void AnalysisRunner::DisplayTopClusterLogLikelihood() {
   //if any clusters were retained, display either loglikelihood or test statistic
   if (gTopClustersContainer.GetNumClustersRetained() == 0)
-    gPrintDirection.SatScanPrintf("No clusters retained.\n");
+    gPrintDirection.Print("No clusters retained.\n", BasePrint::P_STDOUT);
   else
-    gPrintDirection.SatScanPrintf("SaTScan %s for the most likely cluster: %7.2lf\n",
-                                  (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
-                                  gTopClustersContainer.GetTopRankedCluster().m_nRatio);
+    gPrintDirection.Printf("SaTScan %s for the most likely cluster: %7.2lf\n", BasePrint::P_STDOUT,
+                           (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
+                           gTopClustersContainer.GetTopRankedCluster().m_nRatio);
 }
 
 /** Prints most likely cluster information, if retained, to result file. This
@@ -274,7 +274,7 @@ void AnalysisRunner::DisplayTopClusters() {
     OpenReportFile(fp, true);
 
     for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i) {
-       gPrintDirection.SatScanPrintf("Reporting cluster %i of %i\n", i + 1, gTopClustersContainer.GetNumClustersRetained());
+       gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, gTopClustersContainer.GetNumClustersRetained());
        //report estimate of time to report all clusters
        if (i==9)
          ReportTimeEstimate(StartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
@@ -435,7 +435,7 @@ void AnalysisRunner::ExecuteSuccessively() {
       UpdateReport();
       //log history for first analysis run
       if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.SatScanPrintf("Logging run history...\n");
+        gPrintDirection.Print("Logging run history...\n", BasePrint::P_STDOUT);
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
         macroRunTimeStopSerial();
@@ -490,7 +490,7 @@ void AnalysisRunner::FinalizeReport() {
   ZdString            sBuffer;
 
   try {
-    gPrintDirection.SatScanPrintf("Printing analysis settings to the results file...\n");
+    gPrintDirection.Print("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
     OpenReportFile(fp, true);
     PrintFormat.SetMarginsAsOverviewSection();
     //if zero clusters retained in real data, then no clusters of significance were retained.  
@@ -727,7 +727,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       DataHandler.GetRandomizerContainer(RandomizationContainer);
       //set data gateway object
       DataHandler.GetDataGateway(*DataSetGateway);
-      gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
       if (gParameters.GetOutputSimulationData())
         remove(gParameters.GetSimulationDataOutputFilename().c_str());
       //create simulation data sets -- randomize each and set corresponding data gateway object
@@ -772,7 +772,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //analyze real and simulation data about each centroid
       {
         stsCentricAlgoJobSource::result_type purelyTemporalExecutionExceptionStatus;//if (.first) then (.second) is the exception message and callpath.
-        PrintQueue tmpPrintDirection(gPrintDirection);
+        PrintQueue tmpPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
         AsynchronouslyAccessible<PrintQueue> tmpThreadsafePrintDirection(tmpPrintDirection);
         stsCentricAlgoJobSource jobSource(gpDataHub->m_nGridTracts, ::GetCurrentTime_HighResolution(), tmpThreadsafePrintDirection);
         typedef contractor<stsCentricAlgoJobSource> contractor_type;
@@ -846,7 +846,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       UpdateReport();
       //log history for first analysis run
       if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.SatScanPrintf("Logging run history...\n");
+        gPrintDirection.Print("Logging run history...\n", BasePrint::P_STDOUT);
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
         macroRunTimeStopSerial();
@@ -908,7 +908,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       //set data gateway object
       DataHandler.GetDataGateway(*DataSetGateway);
 
-      gPrintDirection.SatScanPrintf("Calculating simulation data for %u simulations\n\n", gParameters.GetNumReplicationsRequested());
+      gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
       if (gParameters.GetOutputSimulationData())
         remove(gParameters.GetSimulationDataOutputFilename().c_str());
       //create simulation data sets -- randomize each and set corresponding data gateway object
@@ -947,7 +947,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       //analyze real and simulation data about each centroid
       boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
       for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
-         gPrintDirection.SatScanPrintf("Evaluating centroid %i of %i\n", c + 1, gpDataHub->m_nGridTracts);
+         gPrintDirection.Printf("Evaluating centroid %i of %i\n", BasePrint::P_STDOUT, c + 1, gpDataHub->m_nGridTracts);
          CentricAnalysis->ExecuteAboutCentroid(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
          //report estimation of total execution time
          if (c==9)
@@ -957,7 +957,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       if (gPrintDirection.GetIsCanceled())
         return;
       if (gParameters.GetIncludePurelyTemporalClusters()) {
-        gPrintDirection.SatScanPrintf("Evaluating purely temporal clusters\n");
+        gPrintDirection.Print("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
         CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
       }
 
@@ -997,7 +997,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       UpdateReport();
       //log history for first analysis run
       if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.SatScanPrintf("Logging run history...\n");
+        gPrintDirection.Print("Logging run history...\n", BasePrint::P_STDOUT);
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
         macroRunTimeStopSerial();
@@ -1053,7 +1053,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
       remove(gParameters.GetSimulationDataOutputFilename().c_str());
 
     {
-      PrintQueue lclPrintDirection(gPrintDirection);
+      PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
       stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), gTopClustersContainer, lclPrintDirection, sReplicationFormatString, *this);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
@@ -1127,7 +1127,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     //start clock for estimating approximate time to complete
     boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
     {//block for the scope of SimulationPrintDirection
-      PrintQueue SimulationPrintDirection(gPrintDirection);
+      PrintQueue SimulationPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
 
       for (giNumSimsExecuted=0, iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
         ++giNumSimsExecuted;
@@ -1161,8 +1161,8 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
           SimulationPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
         }
         //report simulated loglikelihood ratio to print direction
-        SimulationPrintDirection.SatScanPrintf(sReplicationFormatString, iSimulationNumber,
-                                               gParameters.GetNumReplicationsRequested(), dSimulatedRatio);
+        SimulationPrintDirection.Printf(sReplicationFormatString, BasePrint::P_STDOUT, iSimulationNumber,
+                                        gParameters.GetNumReplicationsRequested(), dSimulatedRatio);
         //check that simulations are not terminated early
         if (CheckForEarlyTermination(iSimulationNumber))
           break;
@@ -1185,7 +1185,7 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
     if (gParameters.GetNumReplicationsRequested() > 0) {
       //recompute neighbors if settings indicate that smaller clusters are reported
       gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
-      gPrintDirection.SatScanPrintf("Doing the Monte Carlo replications\n");
+      gPrintDirection.Print("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
       if (gParameters.GetNumParallelProcessesToExecute() == 1)
         PerformSuccessiveSimulations_Serial();
       else
@@ -1339,7 +1339,7 @@ void AnalysisRunner::UpdateReport() {
   ZdString              sBuffer;
 
   try {
-    gPrintDirection.SatScanPrintf("Printing analysis results to file...\n");
+    gPrintDirection.Print("Printing analysis results to file...\n", BasePrint::P_STDOUT);
     if (gParameters.GetIsSequentialScanning())
       DisplayTopCluster();
     else
