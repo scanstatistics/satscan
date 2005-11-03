@@ -27,16 +27,16 @@ __fastcall CalcThread::~CalcThread() {
 }
 
 /** Synchronizes text output to run analysis form in the main application thread. */
-void CalcThread::AddLineToProgress(char * sText) {
-  if (sText ) {
+void CalcThread::AddLineToProgress(const char * sText) {
+  if (sText) {
     gsPrintString = sText;
     Synchronize((TThreadMethod)&PrintLineToProgress);
   }
 }
 
 /** Synchronizes text output to run analysis form in the main application thread. */
-void CalcThread::AddWarningToProgress(char * sText) {
-  if (sText ) {
+void CalcThread::AddWarningToProgress(const char * sText) {
+  if (sText) {
     gsPrintString = sText;
     Synchronize((TThreadMethod)&PrintWarningLineToProgress);
   }
@@ -63,7 +63,7 @@ void __fastcall CalcThread::Execute() {
   ZdString      Acknowledgment;
 
   try {
-    gpPrintWindow->SatScanPrintf(GetToolkit().GetAcknowledgment(Acknowledgment));
+    gpPrintWindow->Printf(GetToolkit().GetAcknowledgment(Acknowledgment), BasePrint::P_STDOUT);
 
     time(&RunTime);         // Pass to analysis to include in report
 
@@ -75,9 +75,8 @@ void __fastcall CalcThread::Execute() {
     
     //report completion
     if (!IsCancelled()) {
-      gpPrintWindow->SatScanPrintf("\nSaTScan completed successfully.\n");
-      gpPrintWindow->SatScanPrintf("The results have been written to: \n");
-      gpPrintWindow->SatScanPrintf("  %s\n\n",gpParameters->GetOutputFileName().c_str());
+      gpPrintWindow->Printf("\nSaTScan completed successfully.\nThe results have been written to: \n"
+                            "  %s\n\n", BasePrint::P_STDOUT, gpParameters->GetOutputFileName().c_str());
       Synchronize((TThreadMethod)&LoadResultsFromFile);
     }
 
@@ -93,8 +92,7 @@ void __fastcall CalcThread::Execute() {
   catch (ResolvableException &x) {
     //handle exceptions that occured from user or data errors
     x.AddCallpath("Execute()", "CalcThread");
-    gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
-    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    gpPrintWindow->Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.GetErrorMessage());
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
@@ -103,11 +101,11 @@ void __fastcall CalcThread::Execute() {
   catch (ZdMemoryException &x) {
     //handle memory exceptions
     x.AddCallpath("Execute()", "CalcThread");
-    gpPrintWindow->SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insuffient memory.\n");
-    gpPrintWindow->SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
     gsProgramErrorCallPath = x.GetCallpath();
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
-    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    gpPrintWindow->Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
+                          "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                          "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
@@ -116,19 +114,17 @@ void __fastcall CalcThread::Execute() {
   catch (ZdException &x) {
     //handle exceptions that occured from unexcepted program error
     x.AddCallpath("Execute()", "CalcThread");
-    gpPrintWindow->SatScanPrintWarning("\nProgram Error Detected:\n");
-    gpPrintWindow->SatScanPrintWarning(x.GetErrorMessage());
     gsProgramErrorCallPath = x.GetCallpath();
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
-    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    gpPrintWindow->Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.GetErrorMessage());
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
   catch (...) {
-    gpPrintWindow->SatScanPrintWarning("\nUnknown Program Error Encountered\n");
-    gpPrintWindow->SatScanPrintWarning("\nEnd of Warnings and Errors");
+    gpPrintWindow->Printf("\nUnknown Program Error Encountered\n"
+                          "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
@@ -242,7 +238,7 @@ void __fastcall CalcThread::SetProgressWarnings(void) {
 void CalcThread::Setup(const CParameters& Parameters) {
   try {
     gpParameters = new CParameters(Parameters);
-    gpPrintWindow = new PrintWindow(*this);
+    gpPrintWindow = new PrintWindow(*this, gpParameters->GetSuppressingWarnings());
     gpParameters->SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     Priority = tpNormal;  
     FreeOnTerminate = false;
