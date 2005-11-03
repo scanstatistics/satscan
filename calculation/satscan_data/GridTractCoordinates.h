@@ -30,8 +30,8 @@ class GInfo {
     ~GInfo();
 
     void                giCleanup();
-    void                giDisplayGridTractInfo(BasePrint& PrintDirection);
-    bool                giFindDuplicateCoords(FILE* pDisplay, BasePrint& PrintDirection);
+    void                giDisplayGridTractInfo(FILE* pDisplay);
+    bool                giFindDuplicateCoords(FILE* pDisplay);
     tract_t             giGetNumTracts();
     tract_t             giGetTractNum(const char *gid);
     void                giGetCoords(tract_t t, double** pCoords) const;

@@ -204,18 +204,18 @@ void GInfo::giGetCoords2(tract_t t, double* pCoord) const
 /**********************************************************************
  Display tract info - x and y coordinates.
  **********************************************************************/
-void GInfo::giDisplayGridTractInfo(BasePrint& PrintDirection)
+void GInfo::giDisplayGridTractInfo(FILE* pDisplay)
 {
    int i;
 
    try
       {
-      PrintDirection.SatScanPrintf("GID        x           y\n");
+      fprintf(pDisplay, "GID        x           y\n");
       for (i=0; i<NumGridTracts; i++)
          {
-        PrintDirection.SatScanPrintf("%s   %f   %f\n", GridTractInfo[i].gid, GridTractInfo[i].pCoords[0], GridTractInfo[i].pCoords[1]);
+        fprintf(pDisplay, "%s   %f   %f\n", GridTractInfo[i].gid, GridTractInfo[i].pCoords[0], GridTractInfo[i].pCoords[1]);
         }
-      PrintDirection.SatScanPrintf("\n");
+      fprintf(pDisplay, "\n");
       }
    catch (ZdException & x)
       {
@@ -249,7 +249,7 @@ void GInfo::giCleanup()
 Look for grid tract with identical coordinates.  Copied from tinfo
 version, 7/6/98, G. Gherman
  **********************************************************************/
-bool GInfo::giFindDuplicateCoords(FILE* pDisplay, BasePrint& PrintDirection) {
+bool GInfo::giFindDuplicateCoords(FILE* pDisplay) {
    bool bFirstTime = true;
    bool bFoundDuplicates = false;
    double* pCoords = 0;
@@ -284,15 +284,11 @@ bool GInfo::giFindDuplicateCoords(FILE* pDisplay, BasePrint& PrintDirection) {
            bFirstTime = false;
            fprintf(pDisplay, "  Error: Duplicate coordinates found for grid tracts %s and %s Coords=(",
              GridTractInfo[i].gid, GridTractInfo[j].gid);
-           PrintDirection.SatScanPrintWarning("  Error: Duplicate coordinates found for grid tracts %s and %s Coords=(",
-               GridTractInfo[i].gid, GridTractInfo[j].gid);
            for (nDims=0; nDims<(nDimensions-1); nDims++)
            {
               fprintf(pDisplay, "%.0f, ", pCoords[nDims]);
             }
            fprintf(pDisplay, "%.0f).\n\n", pCoords[nDimensions-1]);
-           PrintDirection.SatScanPrintWarning("Note: The grid file has multiple identical coordinates.\n");
-           PrintDirection.SatScanPrintWarning("      This does not effect the results, but the program will run faster if duplicates are removed.\n\n");
            }
         free(pCoords);
         i++;
