@@ -1597,7 +1597,7 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
     //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal 
     if (gAnalysisSettings.GetModelControlType() == ORDINAL && rdoAdjustmentByDataSets->Enabled && rdoAdjustmentByDataSets->Checked)
       GenerateAFException("For the ordinal probability model with input data defined in multiple data sets,\n"
-                          "the purpose for multiple sets is not implemented for 'Adjustment'.","ValidateInputFiles()", *rdoAdjustmentByDataSets, INPUT_TABS);
+                          "the adjustment option has not been implemented.","ValidateInputFiles()", *rdoAdjustmentByDataSets, INPUT_TABS);
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateInputFiles()", "TfrmAdvancedParameters");
