@@ -206,7 +206,7 @@ void PrintQueue::PrintWarningQualifiedLineToTarget(BasePrint::PrintType ePrintTy
 {
    try
    {
-     gTarget.Print(s, ePrintType);
+     gTarget.Printf(s, ePrintType);
    }
    catch (ZdException & e)
    {
