@@ -249,7 +249,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
      //sort by descending m_ratio
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
      if (eClusterInclusionCriterion != NORESTRICTIONS)
-       gPrintDirection.SatScanPrintf("Checking the Overlapping Nature of Clusters\n");
+       gPrintDirection.Print("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
      //remove geographically overlapping clusters
      if (gvTopClusterList.size() > 0) {
        std::vector<CCluster *> vRetainedClusters;
