@@ -67,17 +67,17 @@ bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateStri
       case DateStringParser::VALID_DATE       :
         bValidDate = true; break;
       case DateStringParser::AMBIGUOUS_YEAR   :
-        gPrint.PrintInputWarning("Error: Due to the study period being greater than 100 years, unable\n"
-                                   "       to determine century for two digit year in %s, record %ld.\n"
-                                   "       Please use four digit years.\n",
-                                   gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
-                                   bValidDate = false;
-                                   break;
+        gPrint.Printf("Error: Due to the study period being greater than 100 years, unable\n"
+                      "       to determine century for two digit year in %s, record %ld.\n"
+                      "       Please use four digit years.\n", BasePrint::P_READERROR,
+                      gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
+        bValidDate = false;
+        break;
       case DateStringParser::INVALID_DATE     :
       case DateStringParser::LESSER_PRECISION :
       default                                 :
-        gPrint.PrintInputWarning("Error: Invalid date '%s' in %s, record %ld.\n",
-                                   sDateString, gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
+        gPrint.Printf("Error: Invalid date '%s' in %s, record %ld.\n",
+                      BasePrint::P_READERROR, sDateString, gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
         bValidDate = false;                           
     };
   }
@@ -277,18 +277,18 @@ bool PoissonDataSetHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (gParameters.UsePopulationFile()) { //read population data file
-         if (GetNumDataSets() == 1) gPrint.SatScanPrintf("Reading the population file\n");
-         else gPrint.SatScanPrintf("Reading the population file for data set %u\n", t + 1);
+         if (GetNumDataSets() == 1) gPrint.Printf("Reading the population file\n", BasePrint::P_STDOUT);
+         else gPrint.Printf("Reading the population file for data set %u\n", BasePrint::P_STDOUT, t + 1);
          if (!ReadPopulationFile(t)) return false;
        }
        else { //create population data without input data
-         if (GetNumDataSets() == 1) gPrint.SatScanPrintf("Creating the population\n");
-         else gPrint.SatScanPrintf("Creating the population for data set %u\n", t + 1);
+         if (GetNumDataSets() == 1) gPrint.Printf("Creating the population\n", BasePrint::P_STDOUT);
+         else gPrint.Printf("Creating the population for data set %u\n", BasePrint::P_STDOUT, t + 1);
          if (!CreatePopulationData(t)) return false;
        }
        //read case data file
-       if (GetNumDataSets() == 1) gPrint.SatScanPrintf("Reading the case file\n");
-       else gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
+       if (GetNumDataSets() == 1) gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
+       else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(t)) return false;
        //validate population data against case data (if population was read from file)  
        if (gParameters.UsePopulationFile()) GetDataSet(t).CheckPopulationDataCases(gDataHub);
@@ -329,8 +329,8 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
     StringParser Parser(gPrint);
 
     if ((fp = fopen(gParameters.GetPopulationFileName(tSetIndex + 1).c_str(), "r")) == NULL) {
-      gPrint.SatScanPrintWarning("Error: Could not open the population file:\n'%s'.\n",
-                                   gParameters.GetPopulationFileName(tSetIndex + 1).c_str());
+      gPrint.Printf("Error: Could not open the population file:\n'%s'.\n",
+                    BasePrint::P_READERROR, gParameters.GetPopulationFileName(tSetIndex + 1).c_str());
       return false;
     }
 
@@ -342,8 +342,8 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
         bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
         if (!Parser.GetWord(1)) {
-            gPrint.PrintInputWarning("Error: Record %ld, of the %s, is missing the date.\n",
-                                       Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+            gPrint.Printf("Error: Record %ld, of the %s, is missing the date.\n",
+                          BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
         }
@@ -377,26 +377,26 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
             continue;
           ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate);
           if (!Parser.GetWord(2)) {
-            gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing the population number.\n",
-                                       Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+            gPrint.Printf("Error: Record %d, of the %s, is missing the population number.\n",
+                          BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
           }
           if (sscanf(Parser.GetWord(2), "%f", &fPopulation) != 1) {
-            gPrint.PrintInputWarning("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
-                                       Parser.GetWord(2), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+            gPrint.Printf("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
+                          BasePrint::P_READERROR, Parser.GetWord(2), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
           }
           //validate that population is not negative or exceeding type precision
           if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
             if (strstr(Parser.GetWord(2), "-"))
-              gPrint.PrintInputWarning("Error: Negative population in record %ld of %s.\n",
-                                         Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+              gPrint.Printf("Error: Negative population in record %ld of %s.\n",
+                            BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
             else
-              gPrint.PrintInputWarning("Error: The population '%s', in record %ld of the %s, exceeds the maximum allowed value of %i.\n",
-                                         Parser.GetWord(2), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
-                                         std::numeric_limits<float>::max());
+              gPrint.Printf("Error: The population '%s', in record %ld of the %s, exceeds the maximum allowed value of %i.\n",
+                            BasePrint::P_READERROR, Parser.GetWord(2), Parser.GetReadCount(),
+                            gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<float>::max());
             bValid = false;
             continue;
           }
@@ -408,9 +408,9 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
           }
           //Validate that tract identifer is one of those defined in the coordinates file.
           if ((TractIdentifierIndex = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
-            gPrint.PrintInputWarning("Error: Unknown location ID in %s, record %ld.\n",
-                                       gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-            gPrint.PrintInputWarning("       '%s' not specified in the coordinates file.\n", Parser.GetWord(0));
+            gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
+                          "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
+                          gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount(),  Parser.GetWord(0));
             bValid = false;
             continue;
           }
@@ -423,10 +423,10 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gPrint.PrintWarningLine("Please see the 'population file' section in the user guide for help.\n");
+      gPrint.Printf("Please see the 'population file' section in the user guide for help.\n", BasePrint::P_ERROR);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.SatScanPrintWarning("Error: %s contains no data.\n", gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
     if (!DataSet.GetPopulationData().CheckZeroPopulations(stderr, gPrint))

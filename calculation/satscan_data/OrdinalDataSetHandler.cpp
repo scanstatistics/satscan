@@ -189,32 +189,34 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(guLocationIndex))) == -1) {
-      gPrint.PrintInputWarning("Error: Unknown location ID in the %s, record %ld.\n", gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
-      gPrint.PrintInputWarning("       Location ID '%s' was not specified in the coordinates file.\n", Parser.GetWord(guLocationIndex));
+      gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
+                    "       Location ID '%s' was not specified in the coordinates file.\n",
+                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
+                    Parser.GetReadCount(), Parser.GetWord(guLocationIndex));
       return false;
     }
     //read case count
     if (Parser.GetWord(guCountIndex) != 0) {
       if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
-       gPrint.PrintInputWarning("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n",
-                                  Parser.GetWord(guCountIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
-       gPrint.PrintInputWarning("       Case count must be an integer.\n");
+       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
+                    "       Case count must be an integer.\n", BasePrint::P_READERROR,
+                    Parser.GetWord(guCountIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
     }
     else {
-      gPrint.PrintInputWarning("Error: Record %ld, in the %s, does not contain case count.\n",
-                                 Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
+                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Parser.GetWord(1), "-"))
-        gPrint.PrintInputWarning("Error: Case count in record %ld, of the %s, is not greater than zero.\n",
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Case count in record %ld, of the %s, is not greater than zero.\n",
+                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       else
-        gPrint.PrintInputWarning("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                                   Parser.GetWord(guCountIndex), std::numeric_limits<count_t>::max(),
-                                   Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
+                      BasePrint::P_READERROR, Parser.GetWord(guCountIndex), std::numeric_limits<count_t>::max(),
+                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     // read date
@@ -223,13 +225,13 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
     // read ordinal category
     iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (!Parser.GetWord(iCategoryIndex)) {
-      gPrint.PrintInputWarning("Error: Record %d, of the %s, is missing ordinal data field.\n",
-                               Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: Record %d, of the %s, is missing ordinal data field.\n",
+                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (sscanf(Parser.GetWord(iCategoryIndex), "%lf", &tContinuousVariable) != 1) {
-       gPrint.PrintInputWarning("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
-                                  Parser.GetWord(iCategoryIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+       gPrint.Printf("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
+                     BasePrint::P_READERROR, Parser.GetWord(iCategoryIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
   }
@@ -291,32 +293,32 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (!bReadSuccessful)
-      gPrint.SatScanPrintWarning("Please see the 'case file' section in the user guide for help.\n");
+      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.SatScanPrintWarning("Error: %s does not contain data.\n", gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bReadSuccessful = false;
     }
     //validate that input data contained minimum number of ordinal categories
     else if (DataSet.GetPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
       if (DataSet.GetPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
-        gPrint.SatScanPrintWarning("Error: Data set case file specifies %i categories with cases but a minimum\n"
-                                   "       of %i categories is required.\n",
-                                   DataSet.GetPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
+        gPrint.Printf("Error: Data set case file specifies %i categories with cases but a minimum\n"
+                      "       of %i categories is required.\n", BasePrint::P_ERROR,
+                      DataSet.GetPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
         bReadSuccessful = false;
       }
       else {
-        gPrint.SatScanPrintWarning("Error: The number of categories with cases is required to be a mimumum of %i.\n"
-                                   "       Data set case file specifies %i categories with %i of them containing no cases.\n",
-                                   gtMinimumCategories, vReadCategories.size(),
-                                   vReadCategories.size() - DataSet.GetPopulationData().GetNumOrdinalCategories());
+        gPrint.Printf("Error: The number of categories with cases is required to be a mimumum of %i.\n"
+                      "       Data set case file specifies %i categories with %i of them containing no cases.\n",
+                      BasePrint::P_ERROR, gtMinimumCategories, vReadCategories.size(),
+                      vReadCategories.size() - DataSet.GetPopulationData().GetNumOrdinalCategories());
         bReadSuccessful = false;
       }
     }
     //validate that data set contains at least minimum number of cases
     else if (tTotalCases < gtMinimumCases) {
-      gPrint.SatScanPrintWarning("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
-                                 tTotalCases, gtMinimumCases);
+      gPrint.Printf("Error: Data set contains %i cases but a minimum of %i cases is required for ordinal data.\n",
+                    BasePrint::P_ERROR, tTotalCases, gtMinimumCases);
       bReadSuccessful = false;
     }
     //record total cases and total population to data set object
@@ -340,9 +342,9 @@ bool OrdinalDataSetHandler::ReadData() {
     //read case file of each data set
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (GetNumDataSets() == 1)
-         gPrint.SatScanPrintf("Reading the case file\n");
+         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
-         gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
+         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

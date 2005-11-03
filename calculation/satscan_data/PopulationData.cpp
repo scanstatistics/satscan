@@ -421,7 +421,7 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
           JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
           if (pDisplay)
             fprintf(pDisplay, "Error: The population is zero for all location IDs in %d.\n", year);
-          PrintDirection.SatScanPrintWarning("Error: The population is zero for all location IDs in %d.\n", year);
+          PrintDirection.Printf("Error: The population is zero for all location IDs in %d.\n", BasePrint::P_ERROR, year);
        }
     }
 
@@ -480,10 +480,10 @@ int PopulationData::CreateCovariateCategory(StringParser& Parser, short iScanOff
     gvCovariateCategoryControlCount.resize(1, 0);
   }
   else if (iNumCovariatesScanned != giNumberCovariatesPerCategory){
-    PrintDirection.PrintInputWarning("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.",
-                                     Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
-                                     iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
-                                     giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
+    PrintDirection.Printf("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.",
+                          BasePrint::P_READERROR, Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
+                          iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
+                          giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
     iCategoryIndex = -1;
   }
   else {
@@ -507,15 +507,15 @@ void PopulationData::Display(BasePrint& PrintDirection) const {
   size_t        t, j;
 
   try {
-    PrintDirection.SatScanPrintf("DISPLAY: Number of categories = %i\n", gvCovariateCategories.size());
-    PrintDirection.SatScanPrintf("\n#   Category Combination\n");
+    PrintDirection.Printf("DISPLAY: Number of categories = %i\n", BasePrint::P_STDOUT, gvCovariateCategories.size());
+    PrintDirection.Printf("\n#   Category Combination\n", BasePrint::P_STDOUT);
     for (t=0; t < gvCovariateCategories.size(); t++) {
-       PrintDirection.SatScanPrintf("%d     ",  t);
+       PrintDirection.Printf("%d     ", BasePrint::P_STDOUT, t);
        for (j=0; j < gvCovariateCategories[t].size(); j++)
-          PrintDirection.SatScanPrintf("%s  ", gvCovariateNames[gvCovariateCategories[t][j]].c_str());
-       PrintDirection.SatScanPrintf("\n");
+          PrintDirection.Printf("%s  ", BasePrint::P_STDOUT, gvCovariateNames[gvCovariateCategories[t][j]].c_str());
+       PrintDirection.Printf("\n", BasePrint::P_STDOUT);
     }
-    PrintDirection.SatScanPrintf("\n");
+    PrintDirection.Printf("\n", BasePrint::P_STDOUT);
   }
   catch (ZdException &x) {
     x.AddCallpath("Display()", "PopulationData");
@@ -930,13 +930,14 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
               AsciiPrintFormat::PrintSectionSeparatorString(pDisplay, 0, 2);
               fprintf(pDisplay,"Warning: According to the input data, the following locations have a\n");
               fprintf(pDisplay,"         population totaling zero for the specified date(s).\n\n");
-              PrintDirection.SatScanPrintWarning("Warning: According to the input data, the following locations have a\n");
-              PrintDirection.SatScanPrintWarning("         population totaling zero for the specified date(s).\n\n");
+              PrintDirection.Printf("Warning: According to the input data, the following locations have a\n"
+                                    "         population totaling zero for the specified date(s).\n\n",
+                                    BasePrint::P_WARNING);
             }
             JulianToChar(sDateBuffer, gvPopulationDates[j]);
             if (pDisplay)
               fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
-            PrintDirection.SatScanPrintWarning("         Location %s, %s\n", Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
+            PrintDirection.Printf("         Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->tiGetTid(i, sBuffer), sDateBuffer);
           }
        }
     }
