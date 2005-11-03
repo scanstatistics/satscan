@@ -342,7 +342,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
       (guAutoAbortCheckIdx < guAutoAbortCheckCount)//auto-abort checking
      ? guPreviousAutoAbortCheckPoint + gAutoAbortResultsRegistered.count()
      : (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.SatScanPrintf(gszReplicationFormatString, uiJobsProcessedCount, guiJobCount, rResult.dSuccessfulResult);
+    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, uiJobsProcessedCount, guiJobCount, rResult.dSuccessfulResult);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       ZdTimestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
