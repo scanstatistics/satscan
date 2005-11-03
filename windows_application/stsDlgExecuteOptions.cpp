@@ -16,6 +16,7 @@ __fastcall TdlgExecutionOptions::TdlgExecutionOptions(TComponent* Owner, TfrmAna
   else
     rdoAllProcessors->Checked = true;
   chkLogRunHistory->Checked = frmAnalysis.gParameters.GetIsLoggingHistory();
+  chkSuppressWarnings->Checked = frmAnalysis.gParameters.GetSuppressingWarnings();
 }
 
 /** TButton OnClick event - sets CParameter object of TfrmAnalysis object. */
@@ -28,6 +29,7 @@ void __fastcall TdlgExecutionOptions::btnOkClick(TObject *Sender) {
   else
     gfrmAnalysis.gParameters.SetNumParallelProcessesToExecute(edtAtMostProcesses->Text.Trim().ToInt());
   gfrmAnalysis.gParameters.SetIsLoggingHistory(chkLogRunHistory->Checked);  
+  gfrmAnalysis.gParameters.SetSuppressingWarnings(chkSuppressWarnings->Checked);  
 }
 
 /** OnClick event - sets 'rdoAtMostProcesses' to checked and focused if not checked. */

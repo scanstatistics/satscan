@@ -4,7 +4,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
   BorderIcons = [biSystemMenu]
   BorderStyle = bsDialog
   Caption = 'Session Execution Options'
-  ClientHeight = 131
+  ClientHeight = 157
   ClientWidth = 282
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -20,7 +20,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
     Left = 204
     Top = 0
     Width = 78
-    Height = 131
+    Height = 157
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 0
@@ -48,7 +48,7 @@ object dlgExecutionOptions: TdlgExecutionOptions
     Left = 0
     Top = 0
     Width = 204
-    Height = 131
+    Height = 157
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 1
@@ -113,6 +113,16 @@ object dlgExecutionOptions: TdlgExecutionOptions
       Checked = True
       State = cbChecked
       TabOrder = 1
+    end
+    object chkSuppressWarnings: TCheckBox
+      Left = 8
+      Top = 128
+      Width = 185
+      Height = 17
+      Caption = 'Do not report warning messages'
+      Checked = True
+      State = cbChecked
+      TabOrder = 2
     end
   end
 end
