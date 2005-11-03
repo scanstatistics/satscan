@@ -196,10 +196,10 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp,
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gPrint.SatScanPrintWarning("Please see the '%s file' section in the user guide for help.\n", szDescription);
+      gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.SatScanPrintWarning("Error: The %s file does not contain data.\n", szDescription);
+      gPrint.Printf("Error: The %s file does not contain data.\n", BasePrint::P_ERROR, szDescription);
       bValid = false;
     }
 
@@ -219,9 +219,9 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (GetNumDataSets() == 1)
-         gPrint.SatScanPrintf("Reading the case file\n");
+         gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
-         gPrint.SatScanPrintf("Reading the case file for data set %u\n", t + 1);
+         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(t))
          return false;
     }

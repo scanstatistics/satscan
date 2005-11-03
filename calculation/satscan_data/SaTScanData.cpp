@@ -276,7 +276,7 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
 void CSaTScanData::CalculateExpectedCases() {
   size_t        t;
 
-  gPrint.SatScanPrintf("Calculating the expected number of cases\n");
+  gPrint.Printf("Calculating the expected number of cases\n", BasePrint::P_STDOUT);
   //calculates expected cases for each dataset
   for (t=0; t < gpDataSets->GetNumDataSets(); ++t) {
      CalculateMeasure(gpDataSets->GetDataSet(t));
