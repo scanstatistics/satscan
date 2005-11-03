@@ -3,8 +3,8 @@
 #pragma hdrstop
 
 /** Constructor */
-PrintWindow::PrintWindow(CalcThread & CalculationThread)
-            :BasePrint(), gCalculationThread(CalculationThread) {}
+PrintWindow::PrintWindow(CalcThread & CalculationThread, bool bSuppressWarnings)
+            :BasePrint(bSuppressWarnings), gCalculationThread(CalculationThread) {}
 
 /** Destructor */
 PrintWindow::~PrintWindow(){}
@@ -14,20 +14,37 @@ bool PrintWindow::GetIsCanceled() const {
   return gCalculationThread.IsCancelled();
 }
 
-/** Prints text to run analysis window via calculation thread. */
-void PrintWindow::PrintLine(char *s) {
-  if (s) {//if "s" ends with a "\n" then remove it... ???
-    if (s[strlen(s)-1] == '\n')
-      s[strlen(s)-1] = '\0';
-    gCalculationThread.AddLineToProgress(s);
+void PrintWindow::PrintError(const char * sMessage) {
+  gCalculationThread.AddWarningToProgress(sMessage);
+}
+
+void PrintWindow::PrintNotice(const char * sMessage) {
+  gCalculationThread.AddWarningToProgress(sMessage);
+}
+
+void PrintWindow::PrintStandard(const char * sMessage) {
+  gCalculationThread.AddLineToProgress(sMessage);
+}
+
+void PrintWindow::PrintWarning(const char * sMessage) {
+  gCalculationThread.AddWarningToProgress(sMessage);
+}
+
+void PrintWindow::Print(const char * sMessage, PrintType ePrintType) {
+  if (sMessage) {
+    if (sMessage[strlen(sMessage)-1] == '\n')
+      const_cast<char*>(sMessage)[strlen(sMessage)-1] = '\0';
+    BasePrint::Print(sMessage, ePrintType);
   }
 }
 
-/** Prints to run analysis window via calculation thread. */
-void PrintWindow::PrintWarningLine(char *s) {
-  if (s) {//if "s" ends with a "\n" then remove it...
-    if (s[strlen(s)-1] == '\n')
-      s[strlen(s)-1] = '\0';
-    gCalculationThread.AddWarningToProgress(s);
-   }
+void PrintWindow::Printf(const char * sMessage, PrintType ePrintType, ...) {
+  if (sMessage) {
+    va_list   varArgs;
+    va_start(varArgs, ePrintType);
+    SetMessageFromArgs(varArgs, sMessage);
+    va_end (varArgs);
+    Print(gsMessage, ePrintType);
+  }
 }
+

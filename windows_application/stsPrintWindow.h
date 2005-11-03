@@ -7,13 +7,19 @@
 
 /** Print direction class that quietly suppresses printing messages. */
 class PrintNull : public BasePrint {
+   protected:
+    virtual void        PrintError(const char * sMessage) {}
+    virtual void        PrintNotice(const char * sMessage) {}
+    virtual void        PrintStandard(const char * sMessage) {}
+    virtual void        PrintWarning(const char * sMessage) {}
+
    public:
-     PrintNull() : BasePrint() {}
-     ~PrintNull() {}
+     PrintNull(bool bSuppressWarnings=true) : BasePrint(bSuppressWarnings) {}
+     virtual ~PrintNull() {}
 
      bool               GetIsCanceled() const {return false;}
-     void               PrintLine(char*) {}
-     void               PrintWarningLine(char*) {}
+     virtual void       Print(const char * sMessage, PrintType ePrintType) {}
+     virtual void       Printf(const char * sMessage, PrintType ePrintType, ...) {}
 };
 
 /** Print direction class that directs messages to calculation thread so
@@ -21,16 +27,21 @@ class PrintNull : public BasePrint {
     VCL thread. */
 class CalcThread;
 class PrintWindow : public BasePrint {
-  private:
+  protected:
     CalcThread        & gCalculationThread;
 
+    virtual void        PrintError(const char * sMessage);
+    virtual void        PrintNotice(const char * sMessage);
+    virtual void        PrintStandard(const char * sMessage);
+    virtual void        PrintWarning(const char * sMessage);
+
    public:
-     PrintWindow(CalcThread & CalculationThread);
-     ~PrintWindow();
+     PrintWindow(CalcThread & CalculationThread, bool bSuppressWarnings);
+     virtual ~PrintWindow();
 
      bool               GetIsCanceled() const;
-     void               PrintLine(char *s);
-     void               PrintWarningLine(char *s);
+     virtual void       Print(const char * sMessage, PrintType ePrintType);
+     virtual void       Printf(const char * sMessage, PrintType ePrintType, ...);
 };
 //---------------------------------------------------------------------------
 #endif
