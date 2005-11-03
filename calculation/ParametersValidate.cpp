@@ -131,10 +131,10 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
         bValid = false;
     }
     else {
-      PrintDirection.Print("Warning: Parameters will not be validated, in accordance with the setting of the validation\n"
-                           "         parameter in the parameters file.\n"
-                           "         This may have adverse effects on analysis results and/or program operation.\n\n",
-                           BasePrint::P_ERROR);
+      PrintDirection.Print("Notice: Parameters will not be validated, in accordance with the setting of the validation\n"
+                           "        parameter in the parameters file.\n"
+                           "        This may have adverse effects on analysis results and/or program operation.\n\n",
+                           BasePrint::P_NOTICE);
     }
 
   }
@@ -1113,7 +1113,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         //The SVTT analysis has hooks for temporal adjustments, but that code needs
         //much closer examination before it can be used, even experimentally.
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-          PrintDirection.Print("Warning: For the Bernoulli model, adjusting for temporal trends is not permitted.\n", BasePrint::P_ERROR);
+          PrintDirection.Print("Notice: For the Bernoulli model, adjusting for temporal trends is not permitted.\n"
+                               "        Temporal trends adjustment settings will be ignored.", BasePrint::P_NOTICE);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
@@ -1123,17 +1124,19 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case NORMAL               :
       case RANK                 :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-          PrintDirection.Printf("Warning: For the %s model, adjusting for temporal trends is not permitted.\n",
-                                BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+          PrintDirection.Printf("Notice: For the %s model, adjusting for temporal trends is not permitted.\n"
+                                "        Temporal trends adjustment settings will be ignored.",
+                                BasePrint::P_NOTICE, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
       case SPACETIMEPERMUTATION :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-          PrintDirection.Print("Warning: For the space-time permutation model, adjusting for temporal trends\n"
-                                "         is not permitted nor needed, as this model automatically adjusts for\n"
-                                "         any temporal variation.\n", BasePrint::P_ERROR);
+          PrintDirection.Print("Notice: For the space-time permutation model, adjusting for temporal trends\n"
+                               "        is not permitted nor needed, as this model automatically adjusts for\n"
+                               "        any temporal variation. Temporal trends adjustment settings will be ignored.\n",
+                               BasePrint::P_NOTICE);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
