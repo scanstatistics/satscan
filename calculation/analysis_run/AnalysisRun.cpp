@@ -133,7 +133,7 @@ void AnalysisRunner::CreateRelativeRiskFile() {
 
   try {
     if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles()) {
-      gPrintDirection.Print("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
+      gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
       gpDataHub->DisplayRelativeRisksForEachTract();
     }
   }
@@ -178,12 +178,12 @@ void AnalysisRunner::CreateReport() {
     is performing. */
 void AnalysisRunner::DisplayFindClusterHeading() {
   if (!gParameters.GetIsSequentialScanning())
-    gPrintDirection.Print("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
+    gPrintDirection.Printf("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
   else {
     switch(giAnalysisCount) {
-      case  1: gPrintDirection.Print("Finding the most likely cluster.\n", BasePrint::P_STDOUT); break;
-      case  2: gPrintDirection.Print("Finding the second most likely cluster.\n", BasePrint::P_STDOUT); break;
-      case  3: gPrintDirection.Print("Finding the third most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  1: gPrintDirection.Printf("Finding the most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  2: gPrintDirection.Printf("Finding the second most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  3: gPrintDirection.Printf("Finding the third most likely cluster.\n", BasePrint::P_STDOUT); break;
       default: gPrintDirection.Printf("Finding the %ith most likely cluster.\n", BasePrint::P_STDOUT, giAnalysisCount);
     }
   }
@@ -194,7 +194,7 @@ void AnalysisRunner::DisplayFindClusterHeading() {
 void AnalysisRunner::DisplayTopClusterLogLikelihood() {
   //if any clusters were retained, display either loglikelihood or test statistic
   if (gTopClustersContainer.GetNumClustersRetained() == 0)
-    gPrintDirection.Print("No clusters retained.\n", BasePrint::P_STDOUT);
+    gPrintDirection.Printf("No clusters retained.\n", BasePrint::P_STDOUT);
   else
     gPrintDirection.Printf("SaTScan %s for the most likely cluster: %7.2lf\n", BasePrint::P_STDOUT,
                            (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
@@ -435,7 +435,7 @@ void AnalysisRunner::ExecuteSuccessively() {
       UpdateReport();
       //log history for first analysis run
       if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.Print("Logging run history...\n", BasePrint::P_STDOUT);
+        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
         macroRunTimeStopSerial();
@@ -490,7 +490,7 @@ void AnalysisRunner::FinalizeReport() {
   ZdString            sBuffer;
 
   try {
-    gPrintDirection.Print("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
+    gPrintDirection.Printf("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
     OpenReportFile(fp, true);
     PrintFormat.SetMarginsAsOverviewSection();
     //if zero clusters retained in real data, then no clusters of significance were retained.  
@@ -846,7 +846,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       UpdateReport();
       //log history for first analysis run
       if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.Print("Logging run history...\n", BasePrint::P_STDOUT);
+        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
         macroRunTimeStopSerial();
@@ -957,7 +957,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       if (gPrintDirection.GetIsCanceled())
         return;
       if (gParameters.GetIncludePurelyTemporalClusters()) {
-        gPrintDirection.Print("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
+        gPrintDirection.Printf("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
         CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
       }
 
@@ -997,7 +997,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       UpdateReport();
       //log history for first analysis run
       if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.Print("Logging run history...\n", BasePrint::P_STDOUT);
+        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
         macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
         stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
         macroRunTimeStopSerial();
@@ -1185,7 +1185,7 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
     if (gParameters.GetNumReplicationsRequested() > 0) {
       //recompute neighbors if settings indicate that smaller clusters are reported
       gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
-      gPrintDirection.Print("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
+      gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
       if (gParameters.GetNumParallelProcessesToExecute() == 1)
         PerformSuccessiveSimulations_Serial();
       else
@@ -1339,7 +1339,7 @@ void AnalysisRunner::UpdateReport() {
   ZdString              sBuffer;
 
   try {
-    gPrintDirection.Print("Printing analysis results to file...\n", BasePrint::P_STDOUT);
+    gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
     if (gParameters.GetIsSequentialScanning())
       DisplayTopCluster();
     else

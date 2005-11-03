@@ -65,7 +65,7 @@ stsCentricAlgoFunctor::result_type stsCentricAlgoFunctor::operator() (param_type
 void stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::operator() ()
 {
   try {
-    grPrintDirection.Locked().Value().Print("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
+    grPrintDirection.Locked().Value().Printf("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
     grCentricAnalysis.ExecuteAboutPurelyTemporalCluster(grDataSetGateway, grSimDataGateways);
   }
   catch (ZdMemoryException & e)

@@ -397,7 +397,7 @@ bool ValidateMeasures(const TractHandler *pTInfo,
 
                 //DO NOT THROW EXCEPTION HERE... PRINT THE INFO...
                 //EXCEPTION THROW BELOW !!!
-                pPrintDirection->Print(sMessage, BasePrint::P_WARNING);
+                pPrintDirection->Printf(sMessage, BasePrint::P_WARNING);
     	 }
       } /* for t=0-<nTracts */
     
@@ -480,7 +480,7 @@ bool ValidateAllCountsArePossitive(tract_t   nTracts,
          for (i=0; i<nTimeIntervals; i++ )
             if (Counts[i][t]<0)
             {
-            pPrintDirection->Print("Error: Negative value found.\n", BasePrint::P_ERROR);
+            pPrintDirection->Printf("Error: Negative value found.\n", BasePrint::P_ERROR);
             return(false);
             }
          nSumCount += Counts[0][t];
@@ -512,7 +512,7 @@ bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
          {
          if (Counts[i]<0)
             {
-            pPrintDirection->Print("Error: Negative value found.\n", BasePrint::P_ERROR);
+            pPrintDirection->Printf("Error: Negative value found.\n", BasePrint::P_ERROR);
             return(false);
             }
          nSumCount += Counts[i];

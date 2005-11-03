@@ -30,21 +30,17 @@ void PrintWindow::PrintWarning(const char * sMessage) {
   gCalculationThread.AddWarningToProgress(sMessage);
 }
 
-void PrintWindow::Print(const char * sMessage, PrintType ePrintType) {
-  if (sMessage) {
-    if (sMessage[strlen(sMessage)-1] == '\n')
-      const_cast<char*>(sMessage)[strlen(sMessage)-1] = '\0';
-    BasePrint::Print(sMessage, ePrintType);
-  }
-}
-
 void PrintWindow::Printf(const char * sMessage, PrintType ePrintType, ...) {
   if (sMessage) {
     va_list   varArgs;
     va_start(varArgs, ePrintType);
     SetMessageFromArgs(varArgs, sMessage);
     va_end (varArgs);
-    Print(gsMessage, ePrintType);
+
+    if (gsMessage[strlen(gsMessage)-1] == '\n')
+      const_cast<char*>(gsMessage)[strlen(gsMessage)-1] = '\0';
+      
+    BasePrint::Print(gsMessage, ePrintType);
   }
 }
 

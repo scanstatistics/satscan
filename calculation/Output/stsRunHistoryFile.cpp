@@ -489,7 +489,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
 #endif      
    }
    catch(ZdException &x) {
-     gpPrintDirection->Print("Notice: Unable to record analysis information to the log history file:\n", BasePrint::P_NOTICE);
+     gpPrintDirection->Printf("Notice: Unable to record analysis information to the log history file:\n", BasePrint::P_NOTICE);
      if(pTransaction)
        pFile->EndTransaction(pTransaction);   // if there is a pTransaction then there must be a pFile, so this is valid
      pTransaction = 0;

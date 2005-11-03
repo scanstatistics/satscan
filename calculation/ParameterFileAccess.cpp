@@ -680,7 +680,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
   }
   catch (InvalidParameterException &x) {
     gbReadStatusError = true;
-    PrintDirection.Print(x.GetErrorMessage(), BasePrint::P_ERROR);
+    PrintDirection.Printf(x.GetErrorMessage(), BasePrint::P_ERROR);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetParameter()","AbtractParameterFileAccess");

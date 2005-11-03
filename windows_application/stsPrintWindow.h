@@ -40,7 +40,6 @@ class PrintWindow : public BasePrint {
      virtual ~PrintWindow();
 
      bool               GetIsCanceled() const;
-     virtual void       Print(const char * sMessage, PrintType ePrintType);
      virtual void       Printf(const char * sMessage, PrintType ePrintType, ...);
 };
 //---------------------------------------------------------------------------
