@@ -27,12 +27,12 @@ __fastcall TfrmAnalysisRun::~TfrmAnalysisRun() {
   catch (...){}
 }
 /** adds string to analysis output memo control */
-void TfrmAnalysisRun::AddLine(char *sLine) {
+void TfrmAnalysisRun::AddLine(const char *sLine) {
   rteAnalysisBox->Lines->Add(sLine);
 }
 
 /** adds string to warning output memo control */
-void TfrmAnalysisRun::AddWarningLine(char *sLine) {
+void TfrmAnalysisRun::AddWarningLine(const char *sLine) {
   rteWarningsBox->Lines->Add(sLine);
 }
 

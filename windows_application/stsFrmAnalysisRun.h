@@ -43,8 +43,8 @@ class TfrmAnalysisRun : public stsBaseAnalysisChildForm  {
     void                        Setup(const CParameters & Parameters);
 
   protected:
-    void                        AddLine(char *sLine);
-    void                        AddWarningLine(char *sLine);
+    void                        AddLine(const char *sLine);
+    void                        AddWarningLine(const char *sLine);
     void                        CancelJob();
     virtual void                EnableActions(bool bEnable);
     void                        ForceThreadTermination();
