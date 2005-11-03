@@ -338,16 +338,16 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bReadSuccessful)
-      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_READERROR);
+      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bReadSuccessful = false;
     }
     //validate that data set contains minimum number of non-censored cases
     else if (tTotalCases < gtMinimumNotCensoredCases) {
       gPrint.Printf("Error: Data set does not contain the required minimum of %i non-censored case%s.\n",
-                    BasePrint::P_READERROR, gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
+                    BasePrint::P_ERROR, gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
       bReadSuccessful = false;
     }
     else {
