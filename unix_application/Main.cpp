@@ -19,18 +19,18 @@ int main(int argc, char *argv[]) {
   int                   i;
   time_t                RunTime;
   CParameters           Parameters;
-  PrintScreen           ConsolePrint;
   ZdString              sMessage;
+  PrintScreen           Console(false);
 
   try {
     BasisInit(); //initialize basis/zero dimension libraries
     BasisSetToolkit(new SaTScanToolkit(argv[0])); //Set toolkit
     ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
-    ConsolePrint.SatScanPrintf(GetToolkit().GetAcknowledgment(sMessage));
+    Console.Printf(GetToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     if (argc < 2)
       GenerateUsageException(argv[0]);
     time(&RunTime); //get start time
-    if (!ParameterAccessCoordinator(Parameters).Read(argv[1], ConsolePrint)) {
+    if (!ParameterAccessCoordinator(Parameters).Read(argv[1], Console)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
@@ -45,50 +45,49 @@ int main(int argc, char *argv[]) {
        else
          GenerateUsageException(argv[0]);
     }
+    Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     //validate parameters - print errors to console
-    if (! ParametersValidate(Parameters).Validate(ConsolePrint)) {
+    if (! ParametersValidate(Parameters).Validate(Console)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
-    //create analysis runner object and execute analysis 
-    AnalysisRunner(Parameters, RunTime, ConsolePrint);
+    //create analysis runner object and execute analysis
+    AnalysisRunner(Parameters, RunTime, Console);
 
     //report completion
-    ConsolePrint.SatScanPrintf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",
-                               Parameters.GetOutputFileName().c_str());
+    Console.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",
+                   BasePrint::P_STDOUT, Parameters.GetOutputFileName().c_str());
     BasisExit();
   }
   catch (ResolvableException & x) {
-    ConsolePrint.SatScanPrintf(x.GetErrorMessage());
-    ConsolePrint.SatScanPrintf("\n\nJob cancelled.");
+    Console.Printf("%s\n\nJob cancelled.", BasePrint::P_STDOUT, x.GetErrorMessage());
     BasisExit();
     return 1;
   }
   catch (UsageException & x) {
-    ConsolePrint.SatScanPrintf(x.GetErrorMessage());
+    Console.Printf(x.GetErrorMessage(), BasePrint::P_STDOUT);
     BasisExit();
     return 1;
   }
   catch (ZdMemoryException &x) {
-    ConsolePrint.SatScanPrintWarning("\nSaTScan is unable to perform analysis due to insufficient memory.\n");
-    ConsolePrint.SatScanPrintWarning("Please see 'Memory Requirements' in user guide for suggested solutions.\n");
+    Console.Printf("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
+                "Please see 'Memory Requirements' in user guide for suggested solutions.\n", BasePrint::P_STDOUT);
     BasisExit();
     return 1;
   }
   catch (ZdException & x) {
-    ConsolePrint.SatScanPrintf("\n\nJob cancelled due to an unexpected program error.\n\n");
-    ConsolePrint.SatScanPrintf("Please contact technical support with the following information:\n");
-    ConsolePrint.SatScanPrintf("%s\n", x.GetErrorMessage());
-    ConsolePrint.SatScanPrintf(x.GetCallpath());
+    Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
+                 "Please contact technical support with the following information:\n"
+                 "%s\n%s\n", BasePrint::P_ERROR, x.GetErrorMessage(), x.GetCallpath());
     BasisExit();
     return 1;
   }
   catch (...) {
-    ConsolePrint.SatScanPrintf("\n\nJob cancelled due to an unexpected program error.\n\n");
-    ConsolePrint.SatScanPrintf("Please contact technical support with the following information:\n");
-    ConsolePrint.SatScanPrintf("Unknown program error encountered.");
+    Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
+                "Please contact technical support with the following information:\n"
+                "Unknown program error encountered.", BasePrint::P_ERROR);
     BasisExit();
     return 1;
   }
