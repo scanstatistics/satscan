@@ -92,7 +92,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case SEQPVAL                  : return " max p-value for sequential scan before cutoff (0.000-1.000)";
       case VALIDATE                 : return " validate parameters prior to analysis execution? (y/n)";
       case OUTPUT_RR_ASCII          : return " output relative risks in ASCII format? (y/n)";
-      case ELLIPSES                 : return " number of ellipses to scan, other than circle (0-10)";
+      case WINDOW_SHAPE             : return " window shape (0=Circular, 1=Elliptic)";
       case ESHAPES                  : return " elliptic shapes - one value for each ellipse (comma separated decimal values)";
       case ENUMBERS                 : return " elliptic angles - one value for each ellipse (comma separated integer values)";
       case START_PROSP_SURV         : return " prospective surveillance start date (YYYY/MM/DD)";
@@ -180,13 +180,13 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case SEQPVAL                  : return AsString(s, gParameters.GetSequentialCutOffPValue());
       case VALIDATE                 : return AsString(s, gParameters.GetValidatingParameters());
       case OUTPUT_RR_ASCII          : return AsString(s, gParameters.GetOutputRelativeRisksAscii());
-      case ELLIPSES                 : return AsString(s, gParameters.GetNumRequestedEllipses());
+      case WINDOW_SHAPE             : return AsString(s, gParameters.GetSpatialWindowType());
       case ESHAPES                  : s << ZdString::reset;
-                                      for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
+                                      for (size_t i=0; i < gParameters.GetEllipseShapes().size(); ++i)
                                          s << (i == 0 ? "" : ",") << gParameters.GetEllipseShapes()[i];
                                       return s;
       case ENUMBERS                 :  s << ZdString::reset;
-                                      for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
+                                      for (size_t i=0; i < gParameters.GetEllipseRotations().size(); ++i)
                                          s << (i == 0 ? "" : ",") << gParameters.GetEllipseRotations()[i];
                                       return s;
       case START_PROSP_SURV         : s = gParameters.GetProspectiveStartDate().c_str(); return s;
@@ -279,7 +279,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case SEQPVAL                  : sDefaultValue = gParameters.GetSequentialCutOffPValue(); break;
       case VALIDATE                 : sDefaultValue = (gParameters.GetValidatingParameters() ? "y" : "n"); break;
       case OUTPUT_RR_ASCII          : sDefaultValue = (gParameters.GetOutputRelativeRisksAscii() ? "y" : "n"); break;
-      case ELLIPSES                 : sDefaultValue = gParameters.GetNumRequestedEllipses(); break;
+      case WINDOW_SHAPE             : sDefaultValue = gParameters.GetSpatialWindowType(); break;
       case ESHAPES                  : sDefaultValue = "<blank>"; break;
       case ENUMBERS                 : sDefaultValue = "<blank>"; break;
       case START_PROSP_SURV         : sDefaultValue = gParameters.GetProspectiveStartDate().c_str(); break;
@@ -436,16 +436,16 @@ double AbtractParameterFileAccess::ReadDouble(const ZdString & sValue, Parameter
     the number of rotations ellipse will make. No attempt to convert is made if no
     ellipses defined.  Throws InvalidParameterException. */
 void AbtractParameterFileAccess::ReadEllipseRotations(const ZdString& sParameter) const {
-  int                   i, iNumTokens, iReadNumberRotations;
+  int                   i, iNumTokens, iReadRotations;
   ZdString              sLabel;
 
   try {
-    if (sParameter.GetLength() && gParameters.GetNumRequestedEllipses()) {
+    if (sParameter.GetLength()) {
       ZdStringTokenizer     Tokenizer(sParameter, (sParameter.Find(',') == -1 ? " " : "," ));
       iNumTokens = Tokenizer.GetNumTokens();
       for (i=0; i < iNumTokens; i++) {
-         if (sscanf(Tokenizer.GetToken(i).GetCString(), "%i", &iReadNumberRotations))
-           gParameters.SetNumberEllipsoidRotations(iReadNumberRotations);
+         if (sscanf(Tokenizer.GetToken(i).GetCString(), "%i", &iReadRotations))
+           gParameters.AddEllipsoidRotations(iReadRotations, (i == 0));
          else
            InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not an integer.\n", "ReadEllipseRotations()",
                                                GetParameterLabel(ENUMBERS), Tokenizer.GetToken(i).GetCString());
@@ -466,12 +466,12 @@ void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) c
   double                dReadShape;
 
   try {
-    if (sParameter.GetLength() && gParameters.GetNumRequestedEllipses()) {
+    if (sParameter.GetLength()) {
       ZdStringTokenizer     Tokenizer(sParameter, (sParameter.Find(',') == -1 ? " " : "," ));
       iNumTokens = Tokenizer.GetNumTokens();
       for (i=0; i < iNumTokens; i++) {
          if (sscanf(Tokenizer.GetToken(i).GetCString(), "%lf", &dReadShape))
-           gParameters.SetEllipsoidShape(dReadShape);
+           gParameters.AddEllipsoidShape(dReadShape, (i == 0));
          else
            InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not an decimal number.\n",
                                                "ReadEllipseShapes()", GetParameterLabel(ESHAPES), Tokenizer.GetToken(i).GetCString());
@@ -625,7 +625,14 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case SEQPVAL                   : gParameters.SetSequentialCutOffPValue(ReadDouble(sParameter, eParameterType)); break;
       case VALIDATE                  : gParameters.SetValidatePriorToCalculation(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_RR_ASCII           : gParameters.SetOutputRelativeRisksAscii(ReadBoolean(sParameter, eParameterType)); break;
-      case ELLIPSES                  : gParameters.SetNumberEllipses(ReadInt(sParameter, eParameterType)); break;
+      case WINDOW_SHAPE              : iValue = ReadInt(sParameter, eParameterType);
+                                       //This parameter used to be 'number of ellipses' before v6.1, so set window shape to elliptic
+                                       //if it is not zero and version warrents.
+                                       if ((gParameters.GetCreationVersion().iMajor < 6 ||
+                                           (gParameters.GetCreationVersion().iMajor == 6 && gParameters.GetCreationVersion().iMinor == 0)) && iValue > 1)
+                                         iValue = 1;
+                                       gParameters.SetSpatialWindowType((SpatialWindowType)ReadEnumeration(iValue, eParameterType, CIRCULAR, ELLIPTIC));
+                                       break;
       case ESHAPES                   : ReadEllipseShapes(sParameter); break;
       case ENUMBERS                  : ReadEllipseRotations(sParameter); break;
       case START_PROSP_SURV          : ReadDate(sParameter, eParameterType); break;
