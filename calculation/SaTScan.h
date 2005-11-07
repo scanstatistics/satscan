@@ -77,12 +77,11 @@
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "6"
-#define VERSION_MINOR   "0"
+#define VERSION_MINOR   "1"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "October 24, 2005"
-/** New defines for ellipsoid calculations. */
-#define MAXELLIPSESHAPES 10
+#define VERSION_PHASE   "development" /** testing phase name - leave blank for release */
+#define VERSION_DATE    ""
+
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
 #define PI 3.1415926535897932384626433832795028841972
