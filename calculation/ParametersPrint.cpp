@@ -316,42 +316,32 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
 
 /** Prints 'Elliptic Scan' parameters to file stream. */
 void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
-  try {
-    if (gParameters.GetNumRequestedEllipses() > 0) {
-      fprintf(fp, "\nElliptic Scan\n-------------\n");
-      fprintf(fp, "  Number of Ellipse Shapes Requested       : %i\n", gParameters.GetNumRequestedEllipses());
-      fprintf(fp, "  Shape for Each Ellipse                   : ");
-      for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
-         fprintf(fp, "%g ", gParameters.GetEllipseShapes()[i]);
-      fprintf(fp, "\n  Number of Angles for Each Ellipse Shape  : ");
-      for (int i=0; i < gParameters.GetNumRequestedEllipses(); ++i)
-         fprintf(fp, "%i ", gParameters.GetEllipseRotations()[i]);
-      fprintf(fp, "\n  Non-Compactness Penalty                  : ");
-      fprintf(fp, (gParameters.GetNonCompactnessPenalty() ? "Yes\n" : "No\n"));
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintEllipticScanParameters()","ParametersPrint");
-    throw;
+  if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
+    fprintf(fp, "\nElliptic Scan\n-------------\n");
+    fprintf(fp, "  Number of Ellipse Shapes Requested       : %i\n", gParameters.GetNumRequestedEllipses());
+    fprintf(fp, "  Shape for Each Ellipse                   : ");
+    fprintf(fp, "%g", gParameters.GetEllipseShapes()[0]);
+    for (size_t i=1; i < gParameters.GetEllipseShapes().size(); ++i)
+       fprintf(fp, ", %g", gParameters.GetEllipseShapes()[i]);
+    fprintf(fp, "\n  Number of Angles for Each Ellipse Shape  : ");
+    fprintf(fp, "%i", gParameters.GetEllipseRotations()[0]);
+    for (size_t i=1; i < gParameters.GetEllipseRotations().size(); ++i)
+       fprintf(fp, ", %i", gParameters.GetEllipseRotations()[i]);
+    fprintf(fp, "\n  Non-Compactness Penalty                  : ");
+    fprintf(fp, (gParameters.GetNonCompactnessPenalty() ? "Yes\n" : "No\n"));
   }
 }
 
 /** Prints 'Inference' tab parameters to file stream. */
 void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
-  try {
-    fprintf(fp, "\nInference\n---------\n");
-    fprintf(fp, "  Early Termination             : %s\n", (gParameters.GetTerminateSimulationsEarly() ? "Yes" : "No"));
-    if (gParameters.GetIsProspectiveAnalysis()) {
-      fprintf(fp, "  Adjusted for Earlier Analyses : %s\n", (gParameters.GetAdjustForEarlierAnalyses() ? "Yes" : "No"));
-      if (gParameters.GetAdjustForEarlierAnalyses())
-       fprintf(fp, "  Prospective Start Date        : %s\n", gParameters.GetProspectiveStartDate().c_str());
-    }
-    fprintf(fp, "  Report Critical Values        : %s\n", (gParameters.GetReportCriticalValues() ? "Yes" : "No"));
+  fprintf(fp, "\nInference\n---------\n");
+  fprintf(fp, "  Early Termination             : %s\n", (gParameters.GetTerminateSimulationsEarly() ? "Yes" : "No"));
+  if (gParameters.GetIsProspectiveAnalysis()) {
+    fprintf(fp, "  Adjusted for Earlier Analyses : %s\n", (gParameters.GetAdjustForEarlierAnalyses() ? "Yes" : "No"));
+    if (gParameters.GetAdjustForEarlierAnalyses())
+     fprintf(fp, "  Prospective Start Date        : %s\n", gParameters.GetProspectiveStartDate().c_str());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintInferenceParameters()","ParametersPrint");
-    throw;
-  }
+  fprintf(fp, "  Report Critical Values        : %s\n", (gParameters.GetReportCriticalValues() ? "Yes" : "No"));
 }
 
 /** Prints 'Input' tab parameters to file stream. */
