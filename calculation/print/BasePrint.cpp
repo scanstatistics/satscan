@@ -33,7 +33,9 @@ bool BasePrint::GetMaximumReadErrorsPrinted() const {
 void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
    switch (ePrintType) {
      case P_STDOUT    : PrintStandard(sMessage); break;
-     case P_NOTICE    : PrintNotice(sMessage); break;
+     case P_NOTICE    : if (!gbSuppressWarnings)
+                          PrintNotice(sMessage);
+                        break;
      case P_WARNING   : if (!gbSuppressWarnings)
                           PrintWarning(sMessage);
                         break;
