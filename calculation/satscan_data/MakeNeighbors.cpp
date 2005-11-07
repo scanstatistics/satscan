@@ -203,7 +203,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
   int                           iNumReportedNeighbors, iNumNeighbors;
 
   //only perform calculation if ellipses requested
-  if (!gDataHub.GetParameters().GetNumRequestedEllipses())
+  if (!gDataHub.GetParameters().GetSpatialWindowType() == ELLIPTIC)
     return;
 
   gPrintDirection.Printf("Constructing the ellipsoids\n", BasePrint::P_STDOUT);

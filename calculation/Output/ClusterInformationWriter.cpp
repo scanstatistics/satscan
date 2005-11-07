@@ -71,7 +71,7 @@ void ClusterInformationWriter::DefineFields() {
          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
       }
     }
-    if (gParameters.GetNumRequestedEllipses()) {
+    if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
       CreateField(E_MINOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
       CreateField(E_MAJOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
       CreateField(E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
@@ -87,7 +87,7 @@ void ClusterInformationWriter::DefineFields() {
       CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     else {
       CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
-      if (gParameters.GetNumRequestedEllipses())
+      if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
     if (!gbExcludePValueField)
@@ -198,7 +198,7 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
     WriteCoordinates(Record, theCluster);
     Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() =
         theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
-    if (gParameters.GetNumRequestedEllipses()) { // ellipse shape and angle - if requested
+    if (gParameters.GetSpatialWindowType() == ELLIPTIC) { // ellipse shape and angle - if requested
       WriteEllipseAngle(Record, theCluster);
       WriteEllipseShape(Record, theCluster);
     }
@@ -218,7 +218,7 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
       Record.GetFieldValue(LOG_LIKL_RATIO_FIELD).AsDouble() = theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty();
-      if (gParameters.GetNumRequestedEllipses())
+      if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
     if (iNumSimsCompleted > 98)
@@ -274,7 +274,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                              sBuffer << ZdString::reset << COORD_Z_FIELD << (i - 1);
                              Record.GetFieldValue(sBuffer).AsDouble() = pCoords[i];
                           }
-                          if (gParameters.GetNumRequestedEllipses()) {
+                          if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
                             //to mimic behavior in CCluster reporting, cast down to float
                             fRadius = static_cast<float>(thisCluster.GetCartesianRadius());
                             Record.GetFieldValue(E_MINOR_FIELD).AsDouble() = fRadius;

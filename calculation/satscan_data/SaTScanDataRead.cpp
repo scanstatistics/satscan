@@ -226,7 +226,7 @@ bool CSaTScanData::ReadCoordinatesFile() {
     switch (gParameters.GetCoordinatesType()) {
       case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(fp);
                        //now that the number of dimensions is known, validate against requested ellipses
-                       if (gParameters.GetDimensionsOfData() > 2 && gParameters.GetNumRequestedEllipses() &&
+                       if (gParameters.GetDimensionsOfData() > 2 && gParameters.GetSpatialWindowType() == ELLIPTIC &&
                            !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS ||
                             gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
                          gPrint.Printf("Error: Invalid parameter setting for ellipses. SaTScan permits only two\n"
