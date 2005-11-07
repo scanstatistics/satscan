@@ -201,54 +201,45 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
   size_t        t;
 
   try {
-    if (gParameters.GetNumRequestedEllipses() < 0 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
+    if (gParameters.GetSpatialWindowType() != ELLIPTIC) return true;
+    
+    if (gParameters.GetNumRequestedEllipses() < 1 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
       bValid = false;
-      PrintDirection.Printf("Error: The number of requested ellipses '%d' is not within allowable range of 0 - %d.\n",
+      PrintDirection.Printf("Error: The number of requested ellipses '%d' is not within allowable range of 1 - %d.\n",
                             BasePrint::P_ERROR, gParameters.GetNumRequestedEllipses(), CParameters::MAXIMUM_ELLIPSOIDS);
     }
-    if (gParameters.GetNumRequestedEllipses()) {
-      //analyses with ellipses can not be performed with coordinates defiend in latitude/longitude system (currently)
-      if (gParameters.GetCoordinatesType() == LATLON) {
-        bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting for ellipses.\n"
-                              "       SaTScan does not support lat/long coordinates when ellipses are used.\n"
-                              "       Please use the Cartesian coordinate system.\n", BasePrint::P_ERROR);
-      }
-      if (gParameters.GetNumRequestedEllipses() != (int)gParameters.GetEllipseShapes().size()) {
-        bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting, %d ellipses requested but %d shapes were specified.\n",
-                              BasePrint::P_ERROR, gParameters.GetNumRequestedEllipses(), (int)gParameters.GetEllipseShapes().size());
-      }
-      for (t=0; t < gParameters.GetEllipseShapes().size(); t++)
-         if (gParameters.GetEllipseShapes()[t] < 1) {
-           bValid = false;
-           PrintDirection.Printf("Error: Invalid parameter setting, ellipse shape '%g' is invalid.\n"
-                                 "       The shape can not be less than one.\n",
-                                 BasePrint::P_ERROR, gParameters.GetEllipseShapes()[t]);
-
-         }
-      if (gParameters.GetNumRequestedEllipses() != (int)gParameters.GetEllipseRotations().size()) {
-        bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting, %d ellipses requested but %d angle numbers were specified.\n",
-                              BasePrint::P_ERROR, gParameters.GetNumRequestedEllipses(), (int)gParameters.GetEllipseRotations().size());
-      }
-      for (t=0; t < gParameters.GetEllipseRotations().size(); t++)
-         if (gParameters.GetEllipseRotations()[t] < 1) {
-           bValid = false;
-           PrintDirection.Printf("Error: Invalid parameter setting. The number of ellipse angles '%d' that were requested is invalid.\n"
-                                 "       The number of angles can not be less than one.\n",
-                                 BasePrint::P_ERROR, gParameters.GetEllipseRotations()[t]);
-         }
-      if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetNonCompactnessPenalty()) {
-        bValid = false;
-        PrintDirection.Printf("Error: The non-compactness penalty for elliptic scans can not be applied\n"
-                              "       with the centric analysis execution.\n", BasePrint::P_ERROR);
-      }
+    //analyses with ellipses can not be performed with coordinates defiend in latitude/longitude system (currently)
+    if (gParameters.GetCoordinatesType() == LATLON) {
+      bValid = false;
+      PrintDirection.Printf("Error: Invalid parameter setting for ellipses.\n"
+                            "       SaTScan does not support lat/long coordinates when ellipses are used.\n"
+                            "       Please use the Cartesian coordinate system.\n", BasePrint::P_ERROR);
     }
-    else
-      //If there are no ellipses, then these variables must be reset to ensure that no code that
-      //accesses them will wrongly think there are elipses.
-      const_cast<CParameters&>(gParameters).ClearEllipseSettings();
+    if (gParameters.GetEllipseShapes().size() != gParameters.GetEllipseRotations().size()) {
+      bValid = false;
+      PrintDirection.Printf("Error: Invalid parameters; settings indicate %i elliptic shapes\n"
+                            "       but %i variables for respective angles of rotation.\n",
+                            BasePrint::P_ERROR, gParameters.GetEllipseShapes().size(), gParameters.GetEllipseRotations().size());
+    }
+    for (t=0; t < gParameters.GetEllipseShapes().size(); ++t)
+       if (gParameters.GetEllipseShapes()[t] < 1) {
+         bValid = false;
+         PrintDirection.Printf("Error: Invalid parameter setting, ellipse shape '%g' is invalid.\n"
+                               "       The shape can not be less than one.\n",
+                               BasePrint::P_ERROR, gParameters.GetEllipseShapes()[t]);
+       }
+    for (t=0; t < gParameters.GetEllipseRotations().size(); t++)
+       if (gParameters.GetEllipseRotations()[t] < 1) {
+         bValid = false;
+         PrintDirection.Printf("Error: Invalid parameter setting. The number of angles, '%d', is invalid.\n"
+                               "       The number can not be less than one.\n",
+                               BasePrint::P_ERROR, gParameters.GetEllipseRotations()[t]);
+       }
+    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetNonCompactnessPenalty()) {
+      bValid = false;
+      PrintDirection.Printf("Error: The non-compactness penalty for elliptic scans can not be applied\n"
+                            "       with the centric analysis execution.\n", BasePrint::P_ERROR);
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateEllipseParameters()","ParametersValidate");
