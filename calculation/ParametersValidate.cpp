@@ -18,6 +18,13 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
   bool         bValid=true;
 
   try {
+    //before version 3, there were no restrictions for secondary clusters
+    if (gParameters.GetCreationVersion().iMajor < 3)
+      const_cast<CParameters&>(gParameters).SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS);
+    //before version 6, critical values were always reported
+    if (gParameters.GetCreationVersion().iMajor < 6)
+      const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
+
     if (gParameters.GetValidatingParameters()) {
       //prevent access to Spatial Variation and Temporal Trends analysis -- still in development
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
@@ -62,9 +69,6 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                               "       purely spatial analyses with isotonic scan\n"
                               "       spatial variation of temporal trends analysis\n", BasePrint::P_ERROR);
       }
-      //before version 6, critical values were always reported
-      if (gParameters.GetCreationVersion().iMajor < 6)
-        const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
 
       //validate dates
       if (! ValidateDateParameters(PrintDirection))
