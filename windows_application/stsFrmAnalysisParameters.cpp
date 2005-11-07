@@ -461,8 +461,6 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
     gParameters.SetAnalysisType(PURELYSPATIAL);
   gParameters.SetSequentialScanning(false);
-  gParameters.SetNumberEllipses(0);
-  gParameters.SetNonCompactnessPenalty(false);
   gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   gParameters.SetValidatePriorToCalculation(true);
@@ -499,6 +497,17 @@ void TfrmAnalysis::DefaultHiddenParameters() {
   //to YEAR is safe since it is permittable to have more precise dates.
   if (gParameters.GetCreationVersion().iMajor == 4)
     gParameters.SetPrecisionOfTimesType(gParameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : gParameters.GetTimeAggregationUnitsType());
+  //Default elliptic shapes and rotations.  
+  gParameters.AddEllipsoidShape(1.5, true);
+  gParameters.AddEllipsoidRotations(4, true);
+  gParameters.AddEllipsoidShape(2, false);
+  gParameters.AddEllipsoidRotations(6, false);
+  gParameters.AddEllipsoidShape(3, false);
+  gParameters.AddEllipsoidRotations(9, false);
+  gParameters.AddEllipsoidShape(4, false);
+  gParameters.AddEllipsoidRotations(12, false);
+  gParameters.AddEllipsoidShape(5, false);
+  gParameters.AddEllipsoidRotations(15, false);
 }
 //---------------------------------------------------------------------------
 /** event triggered when case file edit control text changes */
