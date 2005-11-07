@@ -53,7 +53,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case SEQPVAL                   : return "Sequential Scan P-Value Cutoff (line 34)";  
       case VALIDATE                  : return "Validate Settings (line 35)";  
       case OUTPUT_RR_ASCII           : return "Output Relative Risks - ASCII? (line 36)";  
-      case ELLIPSES                  : return "Num Ellipse Specified (line 37)";  
+      case WINDOW_SHAPE              : return "Spatial Window Shape (line 37)";  
       case ESHAPES                   : return "Ellipse Shapes (line 38)";  
       case ENUMBERS                  : return "Ellipse Angles (line 39)";  
       case START_PROSP_SURV          : return "Prospective Surveillance Start Date (line 40)";  
@@ -152,36 +152,13 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
         gParameters.SetAnalysisType(PURELYTEMPORAL);
       else if (gParameters.GetAnalysisType() == PURELYTEMPORAL)
         gParameters.SetAnalysisType(SPACETIME);
-
-      if (gParameters.GetNumRequestedEllipses() > 0) {
-        //version 2.1.3
-        //... VALIDATE, OUTPUTRR, EXTRA1, EXTRA2, EXTRA3, EXTRA4 };
-        //There is no documentation as to what these extra parameter
-        //items were meant for. But they were displayed in parameters file.
-        //As seen in parameter file:
-        //0                     // Extra Parameter #1
-        //0                     // Extra Parameter #2
-        //0                     // Extra Parameter #3
-        //0                     // Extra Parameter #4
-        //pre-version 3.0
-        //... VALIDATE, OUTPUTRR, ELLIPSES, ESHAPES, ENUMBERS, START_PROSP_SURV,
-        //    OUTPUT_CENSUS_AREAS, OUTPUT_MOST_LIKE_CLUSTERS, CRITERIA_SECOND_CLUSTERS};
-        //Only Dr. Kulldorph and small others should have gotten this version
-        //as it was not offically released. If number of ellipse is not zero then someone
-        //has set to run with ellipses...
-        //The ability to restrict secondary clusters wasn't present at that time.
-        //So SaTScan wasn't restricting anything. Now that the default restriction
-        //is no overlapping, a person running SaTScan in batch mode wouldn't know
-        //what what line to modify as it doesn't exist yet in file.
-        //We'll keep up the hidden attribute for this situation.
-        gParameters.SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS); // no restrictions like pre v3.0
-      }
     }
 
     if (iLinesRead <= START_PROSP_SURV) {
       //2.1.3 was the last version with documentation or with available executable to produce param file 
       CParameters::CreationVersion Version = {2, 1, 3};
       gParameters.SetVersion(Version);
+      gParameters.SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS); // no restrictions before 3.0
     }
     else {
       //versions 3.0.0 - 3.0.5 all had same number of parameters; this also was the last version
