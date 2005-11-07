@@ -119,9 +119,13 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
     gParameters.SetSourceFileName(sFileName);
     gParameters.SetAsDefaulted();
 
+    //initialize as 2.1.3, the last version with documentation or with available executable to produce param file
+    CParameters::CreationVersion Version = {2, 1, 3};
+    gParameters.SetVersion(Version);
+
     while (iLinesRead < gParameters.GetNumReadParameters() && !bEOF) {
          bEOF = !ParametersFile.ReadLine(sLineBuffer);
-         if (! bEOF) {
+         if (!bEOF) {
            ++iLinesRead;
            //Pre-process parameters that have descriptions, strip decription off.
            if (!((ParameterType)iLinesRead == CASEFILE || (ParameterType)iLinesRead == POPFILE ||
@@ -154,16 +158,10 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
         gParameters.SetAnalysisType(SPACETIME);
     }
 
-    if (iLinesRead <= START_PROSP_SURV) {
-      //2.1.3 was the last version with documentation or with available executable to produce param file 
-      CParameters::CreationVersion Version = {2, 1, 3};
-      gParameters.SetVersion(Version);
-      gParameters.SetCriteriaForReportingSecondaryClusters(NORESTRICTIONS); // no restrictions before 3.0
-    }
-    else {
+    if (iLinesRead > START_PROSP_SURV) {
       //versions 3.0.0 - 3.0.5 all had same number of parameters; this also was the last version
       //which saved parameters in line based format; subsequent versions saved as ini file
-      CParameters::CreationVersion Version = {3, 0, 5};
+      Version.iMajor=3; Version.iMinor=0; Version.iRelease=5;
       gParameters.SetVersion(Version);
     }
 
