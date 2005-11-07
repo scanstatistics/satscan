@@ -334,7 +334,7 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
     Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
 
     //print coordinates differently when ellipses are requested
-    if (Data.GetParameters().GetNumRequestedEllipses() == 0)  {
+    if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
       PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
       for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
          sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
@@ -509,7 +509,7 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
   else {
     PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
     fprintf(fp, "%lf\n", m_nRatio/m_NonCompactnessPenalty);
-    if (DataHub.GetParameters().GetNumRequestedEllipses()) {
+    if (DataHub.GetParameters().GetSpatialWindowType() == ELLIPTIC) {
       PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
       fprintf(fp, "%lf\n", m_nRatio);
     }
