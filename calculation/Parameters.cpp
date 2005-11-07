@@ -1,5 +1,5 @@
 //***************************************************************************
-#include "SaTScan.h"                                                                                   
+#include "SaTScan.h"
 #pragma hdrstop
 //***************************************************************************
 #include "Parameters.h"
@@ -36,7 +36,7 @@ CParameters &CParameters::operator=(const CParameters &rhs) {
 }
 
 bool  CParameters::operator==(const CParameters& rhs) const {
-  if (giNumberEllipses                    != rhs.giNumberEllipses) return false;
+  if (geSpatialWindowType                 != rhs.geSpatialWindowType) return false;
   if (gvEllipseShapes                     != rhs.gvEllipseShapes) return false;
   if (gvEllipseRotations                  != rhs.gvEllipseRotations) return false;
   if (gbNonCompactnessPenalty             != rhs.gbNonCompactnessPenalty) return false;
@@ -113,12 +113,29 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbReportCriticalValues              != rhs.gbReportCriticalValues) return false;
   //if (geExecutionType                     != rhs.geExecutionType) return false;
   if (giNumRequestedParallelProcesses     != rhs.giNumRequestedParallelProcesses) return false;
-  if (gbSuppressWarnings                  != rhs.gbSuppressWarnings) return false;            
+  if (gbSuppressWarnings                  != rhs.gbSuppressWarnings) return false;
   return true;
 }
 
 bool  CParameters::operator!=(const CParameters& rhs) const{
    return !(*this == rhs);
+}
+
+/** Add ellipsoid rotations to collection of spatial shapes evaluated. */
+void CParameters::AddEllipsoidRotations(int iRotations, bool bEmptyFirst) {
+  if (bEmptyFirst) gvEllipseRotations.clear();
+  gvEllipseRotations.push_back(iRotations);
+
+  //re-calculate number of total ellispes
+  glTotalNumEllipses = 0;
+  for (size_t t=0; t < gvEllipseRotations.size(); ++t)
+     glTotalNumEllipses += gvEllipseRotations[t];
+}
+
+/** Add ellipsoid shape to collection of spatial shapes evaluated. */
+void CParameters::AddEllipsoidShape(double dShape, bool bEmptyFirst) {
+  if (bEmptyFirst) gvEllipseShapes.clear();
+  gvEllipseShapes.push_back(dShape);
 }
 
 /** If passed filename contains a slash, then assumes that path is complete and
@@ -129,7 +146,7 @@ bool  CParameters::operator!=(const CParameters& rhs) const{
     location and sample parameter files run immediately without having to edit
     input file paths. */
 void CParameters::ConvertRelativePath(std::string & sInputFilename) {
-  ZdFileName    fParameterFilename;                              
+  ZdFileName    fParameterFilename;
   ZdFileName    fFilename;
   std::string   sFile;
 
@@ -155,7 +172,7 @@ void CParameters::ConvertRelativePath(std::string & sInputFilename) {
 /** Copies all class variables from the given CParameters object (rhs) into this one */
 void CParameters::Copy(const CParameters &rhs) {
   try {
-    giNumberEllipses                    = rhs.giNumberEllipses;
+    geSpatialWindowType                 = rhs.geSpatialWindowType;
     gvEllipseShapes                     = rhs.gvEllipseShapes;
     gvEllipseRotations                  = rhs.gvEllipseRotations;
     gbNonCompactnessPenalty             = rhs.gbNonCompactnessPenalty;
@@ -240,15 +257,6 @@ void CParameters::Copy(const CParameters &rhs) {
   }
 }
 
-/** resets ellipse parameters to zero ellipse settings */
-void CParameters::ClearEllipseSettings(){
-  gbNonCompactnessPenalty = false;
-  glTotalNumEllipses = 0;
-  giNumberEllipses = 0;
-  gvEllipseShapes.clear();
-  gvEllipseRotations.clear();
-}
-
 /** Returns analysis type as string. */
 const char * CParameters::GetAnalysisTypeAsString() const {
   const char * sAnalysisType;
@@ -312,7 +320,8 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
-  return (geProbabilityModelType == SPACETIMEPERMUTATION || (giNumberEllipses && gbNonCompactnessPenalty));
+  return (geProbabilityModelType == SPACETIMEPERMUTATION ||
+          (geSpatialWindowType == ELLIPTIC && gbNonCompactnessPenalty));
 }
 
 /** Returns number of parallel processes to run. */
@@ -632,9 +641,22 @@ void CParameters::SetAsDefaulted() {
   gbSequentialCutOffPValue              = 0.0;
   gbValidatePriorToCalc                 = true;
   gbOutputRelativeRisksAscii            = false;
-  giNumberEllipses                      = 0;
+  geSpatialWindowType                   = CIRCULAR;
   gvEllipseShapes.clear();
+  gvEllipseShapes.push_back(1.5);
+  gvEllipseShapes.push_back(2);
+  gvEllipseShapes.push_back(3);
+  gvEllipseShapes.push_back(4);
+  gvEllipseShapes.push_back(5);
   gvEllipseRotations.clear();
+  gvEllipseRotations.push_back(4);
+  gvEllipseRotations.push_back(6);
+  gvEllipseRotations.push_back(9);
+  gvEllipseRotations.push_back(12);
+  gvEllipseRotations.push_back(15);
+  glTotalNumEllipses = 0;
+  for (size_t t=0; t < gvEllipseRotations.size(); ++t)
+     glTotalNumEllipses += gvEllipseRotations[t];
   gsProspectiveStartDate                = "2000/12/31";
   gbOutputAreaSpecificAscii             = false;
   gbOutputClusterLevelAscii             = false;
@@ -678,23 +700,6 @@ void CParameters::SetDimensionsOfData(int iDimensions) {
   }
   catch (ZdException &x) {
     x.AddCallpath("SetDimensionsOfData()","CParameters");
-    throw;
-  }
-}
-
-/** Sets ellipsoid shape for ellipse at index. If index = -1, value is pushed back on list. */
-void CParameters::SetEllipsoidShape(double dShape, int iEllipsoidIndex) {
-  try {
-    if (iEllipsoidIndex < -1 || iEllipsoidIndex > giNumberEllipses - 1)
-      ZdException::Generate("Index '%d' out of range(0 - %d).", "SetEllipsoidShape()", iEllipsoidIndex, giNumberEllipses - 1);
-
-    if (iEllipsoidIndex >= 0)
-      gvEllipseShapes[iEllipsoidIndex] = dShape;
-    else
-      gvEllipseShapes.push_back(dShape);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("SetEllipsoidShape()","CParameters");
     throw;
   }
 }
@@ -823,45 +828,6 @@ void CParameters::SetNumDataSets(size_t iNumDataSets) {
   }
   catch (ZdException & x) {
     x.AddCallpath("SetNumDataSets()","CParameters");
-    throw;
-  }
-}
-
-/** Sets number of ellipses requested. */
-void CParameters::SetNumberEllipses(int iNumEllipses) {
-  ZdString      sLabel;
-
-  try {
-    if (iNumEllipses < 0)
-      ZdException::Generate("Number of ellipses can not be less than 0.", "SetNumberEllipses()", iNumEllipses);
-    giNumberEllipses = iNumEllipses;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetNumberEllipses()","CParameters");
-    throw;
-  }
-}
-
-/** Sets ellipsoid rotations for ellipse at index. */
-void CParameters::SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex) {
-  size_t        t;
-
-  try {
-    if (iEllipsoidIndex < -1 || iEllipsoidIndex > giNumberEllipses - 1)
-      ZdException::Generate("Index '%d' out of range(0 - %d).\n", "SetNumberEllipsoidRotations()", -1, giNumberEllipses - 1);
-
-    if (iEllipsoidIndex >= 0)
-      gvEllipseRotations[iEllipsoidIndex] = iNumberRotations;
-    else
-      gvEllipseRotations.push_back(iNumberRotations);
-
-    //re-calculate number of total ellispes
-    glTotalNumEllipses = 0;
-    for (t=0; t < gvEllipseRotations.size(); t++)
-       glTotalNumEllipses += gvEllipseRotations[t];
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("SetNumberEllipsoidRotations()","CParameters");
     throw;
   }
 }
@@ -1089,6 +1055,21 @@ void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustm
   }
   catch (ZdException &x) {
     x.AddCallpath("SetSpatialAdjustmentType()","CParameters");
+    throw;
+  }
+}
+
+/** Set spatial window shape type. Throws exception if out of range. */
+void  CParameters::SetSpatialWindowType(SpatialWindowType eSpatialWindowType) {
+  ZdString      sLabel;
+
+  try {
+    if (eSpatialWindowType < CIRCULAR || eSpatialWindowType > ELLIPTIC)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetSpatialWindowType()", eSpatialWindowType, CIRCULAR, ELLIPTIC);
+    geSpatialWindowType = eSpatialWindowType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetSpatialWindowType()","CParameters");
     throw;
   }
 }

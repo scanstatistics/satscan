@@ -1,6 +1,6 @@
 //*****************************************************************************
-#ifndef __PARAMETERS_H
-#define __PARAMETERS_H
+#ifndef __PARAMETERS_H_
+#define __PARAMETERS_H_
 //*****************************************************************************
 #include "SaTScan.h"
 #include "JulianDates.h"
@@ -13,7 +13,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     CLUSTERS, EXACTTIMES, TIME_AGGREGATION_UNITS, TIME_AGGREGATION, PURESPATIAL,
                                     TIMESIZE, REPLICAS, MODEL, RISKFUNCTION, POWERCALC, POWERX, POWERY, TIMETREND,
                                     TIMETRENDPERC, PURETEMPORAL, CONTROLFILE, COORDTYPE, OUTPUT_SIM_LLR_ASCII,
-                                    SEQUENTIAL, SEQNUM, SEQPVAL, VALIDATE, OUTPUT_RR_ASCII, ELLIPSES, ESHAPES,
+                                    SEQUENTIAL, SEQNUM, SEQPVAL, VALIDATE, OUTPUT_RR_ASCII, WINDOW_SHAPE, ESHAPES,
                                     ENUMBERS, START_PROSP_SURV, OUTPUT_AREAS_ASCII, OUTPUT_MLC_ASCII,
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
@@ -55,6 +55,8 @@ enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
 enum MultipleDataSetPurposeType    {MULTIVARIATE=0, ADJUSTMENT};
 /** analysis execution type */
 enum ExecutionType                 {AUTOMATIC=0, SUCCESSIVELY, CENTRICALLY};
+/** spatial window shape */
+enum SpatialWindowType             {CIRCULAR=0, ELLIPTIC};
 
 class DataSetHandler; /** forward class declaration */
 
@@ -102,7 +104,6 @@ class CParameters {
     int                                 giDimensionsOfData;                     /** dimensions in geographic data */
     CoordinatesType                     geCoordinatesType;                      /** coordinates type for coordinates/special grid */
         /* Ellipse variables */
-    int                                 giNumberEllipses;                       /** number of ellipsoids requested */
     long                                glTotalNumEllipses;                     /** total number of ellipses (ellipses by number rotations) */
     std::vector<double>                 gvEllipseShapes;                        /** shape of each ellipsoid */
     std::vector<int>                    gvEllipseRotations;                     /** number of rotations for each ellipsoid */
@@ -162,6 +163,7 @@ class CParameters {
     long                                glRandomizationSeed;                    /** randomization seed */
     bool                                gbReportCriticalValues;                 /** indicates whether to report critical llr values */
     bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
+    SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
@@ -180,7 +182,8 @@ class CParameters {
     bool                                operator==(const CParameters& rhs) const;
     bool                                operator!=(const CParameters& rhs) const;
 
-    void                                ClearEllipseSettings();
+    void                                AddEllipsoidShape(double dShape, bool bEmptyFirst);
+    void                                AddEllipsoidRotations(int iRotations, bool bEmptyFirst);
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
@@ -226,9 +229,9 @@ class CParameters {
     unsigned int                        GetNumParallelProcessesToExecute() const;
     int                                 GetNumReadParameters() const {return giNumParameters;}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
-    int                                 GetNumRequestedEllipses() const {return giNumberEllipses;}
+    int                                 GetNumRequestedEllipses() const {return (int)gvEllipseShapes.size();}
     unsigned int                        GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
-    long                                GetNumTotalEllipses() const {return glTotalNumEllipses;}
+    long                                GetNumTotalEllipses() const {return (geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
     bool                                GetOutputAreaSpecificFiles() const;
@@ -266,6 +269,7 @@ class CParameters {
     SimulationType                      GetSimulationType() const {return geSimulationType;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
     SpatialAdjustmentType               GetSpatialAdjustmentType() const {return geSpatialAdjustmentType;}
+    SpatialWindowType                   GetSpatialWindowType() const {return geSpatialWindowType;}
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
@@ -293,7 +297,6 @@ class CParameters {
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
-    void                                SetEllipsoidShape(double dShape, int iEllipsoidIndex=-1);
     void                                SetIncludeClustersType(IncludeClustersType eIncludeClustersType);
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
@@ -308,8 +311,6 @@ class CParameters {
     void                                SetNonCompactnessPenalty(bool b) {gbNonCompactnessPenalty = b;}
     void                                SetNumDataSets(size_t iNumDataSets);
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
-    void                                SetNumberEllipses(int iNumEllipses);
-    void                                SetNumberEllipsoidRotations(int iNumberRotations, int iEllipsoidIndex=-1);
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);
     void                                SetNumSequentialScans(int iNumSequentialScans);
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
@@ -341,6 +342,7 @@ class CParameters {
     void                                SetSimulationType(SimulationType eSimulationType);
     void                                SetSourceFileName(const char * sParametersSourceFileName);
     void                                SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType);
+    void                                SetSpatialWindowType(SpatialWindowType eSpatialWindowType);
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
     void                                SetStartRangeEndDate(const char * sStartRangeEndDate);
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
