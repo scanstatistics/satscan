@@ -32,7 +32,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_6_x_x_ParameterList();
+  Build_6_1_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -53,8 +53,9 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
     //Attempt to determine which version, 3.1 was first version with ini structure:
     //  with 3.1.0 - 3.1.2 having the same number of parameters
     //  with 4.0.0 - 4.0.3 having the same number of parameters
-    //So this parameter file will either be 3.1.2 or 4.0.3 and since the early termination
-    //of simulations feature was added in version 4.0.0; we'll use that help determine which.
+    //So this parameter file will either be marked as 3.1.2 or 4.0.3 and since the
+    //early termination of simulations feature was added in version 4.0.0; we'll
+    //use this knowledge to help determine which.
     if ((lSectionIndex = SourceFile.GetSectionIndex(AdvancedFeatures)) > -1) {
       const ZdIniSection * pSection = SourceFile.GetSection(lSectionIndex);
       if ((lKeyIndex = pSection->FindKey("EarlySimulationTermination")) > -1)
@@ -68,8 +69,12 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
   }
   else if (Version.iMajor == 5  && Version.iMinor == 0)
     Build_5_0_x_ParameterList();
+  else if (Version.iMajor == 5  && Version.iMinor == 1)
+    Build_5_1_x_ParameterList();
+  else if (Version.iMajor == 6  && Version.iMinor == 0)
+    Build_6_0_x_ParameterList();
   else
-    Build_6_x_x_ParameterList();
+    Build_6_1_x_ParameterList();
 }
 
 /** destructor */
@@ -253,10 +258,10 @@ void IniParameterSpecification::Build_5_1_x_ParameterList() {
 }
 
 /** Version 6.0.x */
-void IniParameterSpecification::Build_6_x_x_ParameterList() {
+void IniParameterSpecification::Build_6_0_x_ParameterList() {
   Build_5_1_x_ParameterList();
 
-  //Flexible start and end range where in wrong section
+  //Flexible start and end range were in wrong section
   gvParameterInfo[INTERVAL_STARTRANGE - 1] = std::make_pair(TemporalWindow, (const char*)"IntervalStartRange");
   gvParameterInfo[INTERVAL_ENDRANGE - 1] = std::make_pair(TemporalWindow, (const char*)"IntervalEndRange");
 
@@ -266,8 +271,17 @@ void IniParameterSpecification::Build_6_x_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"ExecutionType"));
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"NumberParallelProcesses"));
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"LogRunToHistoryFile"));
+}
+
+/** Version 6.1.x */
+void IniParameterSpecification::Build_6_1_x_ParameterList() {
+  Build_6_0_x_ParameterList();
+
+  //Elliptic parameter replaced by spatial window type 
+  gvParameterInfo[WINDOW_SHAPE - 1] = std::make_pair(SpatialWindow, (const char*)"SpatialWindowShapeType");
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"SuppressWarnings"));
 }
+
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
     Returns true if parameter found else false. */
 bool IniParameterSpecification::GetParameterIniInfo(ParameterType eParameterType,  const char ** sSectionName, const char ** sKey) const {
