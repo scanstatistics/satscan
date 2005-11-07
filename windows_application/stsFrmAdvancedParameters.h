@@ -119,6 +119,11 @@ __published:	// IDE-managed Components
    TCheckBox *chkIncludePureSpacClust;
    TGroupBox *grpReportCriticalValues;
    TCheckBox *chkReportCriticalValues;
+        TGroupBox *grpWindowShape;
+        TRadioButton *rdoCircular;
+        TRadioButton *rdoElliptic;
+        TStaticText *stNonCompactnessPenalty;
+        TComboBox *cmbNonCompactnessPenalty;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -169,6 +174,8 @@ __published:	// IDE-managed Components
    void __fastcall edtControlFileNameChange(TObject *Sender);
    void __fastcall edtPopFileNameChange(TObject *Sender);
    void __fastcall rdgSpatialAdjustmentsClick(TObject *Sender);
+        void __fastcall OnWindowShapeClick(TObject *Sender);
+        void __fastcall OnNonCompactnessPenaltyChange(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;

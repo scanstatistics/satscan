@@ -522,6 +522,54 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         TabOrder = 1
         OnClick = OnControlExit
       end
+      object grpWindowShape: TGroupBox
+        Left = 8
+        Top = 192
+        Width = 425
+        Height = 82
+        Caption = 'Window Shape'
+        TabOrder = 2
+        object rdoCircular: TRadioButton
+          Left = 16
+          Top = 24
+          Width = 60
+          Height = 17
+          Caption = 'Circular'
+          TabOrder = 0
+          OnClick = OnWindowShapeClick
+        end
+        object rdoElliptic: TRadioButton
+          Left = 16
+          Top = 48
+          Width = 53
+          Height = 17
+          Caption = 'Elliptic'
+          TabOrder = 1
+          OnClick = OnWindowShapeClick
+        end
+        object stNonCompactnessPenalty: TStaticText
+          Left = 104
+          Top = 48
+          Width = 130
+          Height = 17
+          Caption = 'Non-compactness penalty:'
+          TabOrder = 2
+        end
+        object cmbNonCompactnessPenalty: TComboBox
+          Left = 240
+          Top = 48
+          Width = 91
+          Height = 21
+          Style = csDropDownList
+          ItemHeight = 13
+          TabOrder = 3
+          OnChange = OnNonCompactnessPenaltyChange
+          Items.Strings = (
+            'None'
+            'Medium'
+            'Full')
+        end
+      end
     end
     object tsTemporal: TTabSheet
       Caption = 'Temporal Window'

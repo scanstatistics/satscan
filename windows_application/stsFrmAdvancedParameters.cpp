@@ -857,6 +857,8 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtMaxSpatialRadius->Text.ToDouble() == 1);
    bReturn &= (edtMaxCirclePopulationFilename->Text == "");
    bReturn &= (chkInclPureTempClust->Checked == false);
+   bReturn &= (rdoCircular->Checked == true);
+   bReturn &= (cmbNonCompactnessPenalty->ItemIndex == 0);
 
    // Temporal tab
    bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
@@ -975,6 +977,7 @@ void TfrmAdvancedParameters::Init() {
   rdgCriteriaSecClusters->ItemIndex = 0;
   giCategory = 0;
   giDataSetNum = 2;
+  cmbNonCompactnessPenalty->ItemIndex = 0;
 }
 //---------------------------------------------------------------------------
 /** Modally shows import dialog. */
@@ -1162,6 +1165,8 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
        }
     }
     ref.SetMultipleDataSetPurposeType(rdoAdjustmentByDataSets->Checked ? ADJUSTMENT: MULTIVARIATE);
+    ref.SetSpatialWindowType(rdoCircular->Checked ? CIRCULAR : ELLIPTIC);
+    ref.SetNonCompactnessPenalty(cmbNonCompactnessPenalty->ItemIndex); //this needs further investigation
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -1190,6 +1195,8 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    edtMaxSpatialRadius->Text = "1";
    edtMaxCirclePopulationFilename->Text = "";
    chkInclPureTempClust->Checked = false;
+   rdoCircular->Checked = true;
+   cmbNonCompactnessPenalty->ItemIndex = 0;
    SetSpatialDistanceCaption();
    SetReportingSmallerClustersText();
 
@@ -1340,15 +1347,20 @@ void TfrmAdvancedParameters::SetReportingSmallerClustersText() {
 //---------------------------------------------------------------------------
 /** Sets caption of spatial distance radio button based upon coordinates group setting. */
 void TfrmAdvancedParameters::SetSpatialDistanceCaption() {
+  AnsiString    sRadioCaption, sLabelCaption;
+  
   try {
+    sRadioCaption.printf("is a %s with a", (rdoCircular->Checked ? "circle" : "ellipse"));
+    rdoSpatialDistance->Caption = sRadioCaption;
     switch (gAnalysisSettings.rgpCoordinates->ItemIndex) {
-      case 0  : lblMaxRadius->Caption = "Cartesian units radius";
+      case 0  : sLabelCaption.printf("Cartesian units %s", (rdoCircular->Checked ? "radius" : "minor axis"));
                 break;
-      case 1  : lblMaxRadius->Caption = "kilometer radius";
+      case 1  : sLabelCaption.printf("kilometer %s", (rdoCircular->Checked ? "radius" : "minor axis"));
                 break;
       default : ZdException::Generate("Unknown coordinates radio button index: '%i'.",
                                       "rgpCoordinatesClick()", gAnalysisSettings.rgpCoordinates->ItemIndex);
     }
+    lblMaxRadius->Caption = sLabelCaption;
   }
   catch (ZdException & x) {
     x.AddCallpath("SetSpatialDistanceCaption()", "TfrmAdvancedParameters");
@@ -1378,6 +1390,11 @@ void TfrmAdvancedParameters::Setup() {
       SetMaxSpatialClusterSizeControl(ref.GetMaximumGeographicClusterSize());
       edtMaxCirclePopulationFilename->Text = ref.GetMaxCirclePopulationFileName().c_str();
       chkInclPureTempClust->Checked = ref.GetIncludePurelyTemporalClusters();
+
+      rdoCircular->Checked = ref.GetSpatialWindowType() == CIRCULAR;
+      rdoElliptic->Checked = ref.GetSpatialWindowType() == ELLIPTIC;
+      cmbNonCompactnessPenalty->ItemIndex = (ref.GetNonCompactnessPenalty() ? 2 : 0);
+
       SetSpatialDistanceCaption();
       SetReportingSmallerClustersText();
 
@@ -1883,6 +1900,19 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
 void __fastcall TfrmAdvancedParameters::rdgSpatialAdjustmentsClick(TObject *Sender) {
   DoControlExit();
   EnableSettingsForAnalysisModelCombination();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAdvancedParameters::OnWindowShapeClick(TObject *Sender) {
+  stNonCompactnessPenalty->Enabled = rdoElliptic->Checked;
+  cmbNonCompactnessPenalty->Enabled = rdoElliptic->Checked;
+  SetSpatialDistanceCaption();
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAdvancedParameters::OnNonCompactnessPenaltyChange(TObject *Sender) {
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 
