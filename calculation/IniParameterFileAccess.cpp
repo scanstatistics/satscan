@@ -213,7 +213,7 @@ void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, ELLIPSES, GetParameterString(ELLIPSES, s), GetParameterComment(ELLIPSES));
+    WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s), GetParameterComment(WINDOW_SHAPE));
     WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s), GetParameterComment(ESHAPES));
     WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s), GetParameterComment(ENUMBERS));
     WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s), GetParameterComment(NON_COMPACTNESS_PENALTY));
