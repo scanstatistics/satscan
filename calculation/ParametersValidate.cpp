@@ -502,6 +502,10 @@ bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDire
 
   try {
     if (gParameters.GetIsPowerCalculated()) {
+      if (gParameters.GetNumReplicationsRequested() == 0) {
+        PrintDirection.Printf("Error: The power calculation feature requires that Monte Carlo simulations be performed.\n", BasePrint::P_ERROR);
+        return false;
+      }
       if (0.0 > gParameters.GetPowerCalculationX() || gParameters.GetPowerCalculationX() > std::numeric_limits<double>::max()) {
         bValid = false;
         PrintDirection.Printf("Error: Invalid parameter setting for the power calculation value X.\n"
@@ -759,7 +763,11 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
   bool  bValid=true;
 
   try {
-    if (gParameters.GetIsSequentialScanning() && gParameters.GetNumSequentialScansRequested() > 0) {
+    if (gParameters.GetIsSequentialScanning()) {
+      if (gParameters.GetNumReplicationsRequested() == 0) {
+        PrintDirection.Printf("Error: The sequential scan feature requires that Monte Carlo simulations be performed.\n", BasePrint::P_ERROR);
+        return false;
+      }
       if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
         //code only implemented for purley spatial analyses
         PrintDirection.Printf("Error: The sequential scan feature is only implemented for purely spatial analyses.\n", BasePrint::P_ERROR);
