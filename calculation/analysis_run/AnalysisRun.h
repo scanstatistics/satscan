@@ -47,6 +47,10 @@ class AnalysisRunner {
     void                                PerformSuccessiveSimulations_Parallel();
     void                                PerformSuccessiveSimulations_Serial();
     void                                PerformSuccessiveSimulations();
+    void                                PrintCriticalValuesStatus(FILE* fp);
+    void                                PrintEarlyTerminationStatus(FILE* fp);
+    void                                PrintPowerCalculationsStatus(FILE* fp);
+    void                                PrintRetainedClustersStatus(FILE* fp, bool bClusterReported);
     void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
     void                                Setup();

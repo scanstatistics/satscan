@@ -208,17 +208,18 @@ void AnalysisRunner::DisplayTopClusterLogLikelihood() {
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopCluster() {
-  FILE          * fp=0;
+  FILE        * fp=0;
+  bool          bReportedCluster=false;
 
   try {
-    if (gTopClustersContainer.GetNumClustersRetained() > 0) {
-      //open result output file
-      OpenReportFile(fp, true);
+    //open result output file
+    OpenReportFile(fp, true);
+    if (gTopClustersContainer.GetNumClustersRetained()) {
       //get most likely cluster
       const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
       //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
       if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
-        ++giClustersReported;
+        ++giClustersReported; bReportedCluster=true;
         switch(giAnalysisCount) {
           case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
           case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
@@ -238,9 +239,17 @@ void AnalysisRunner::DisplayTopCluster() {
         if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
           ++guwSignificantAt005;
       }
-      fprintf(fp, "\n");
-      fclose(fp); fp=0;
     }
+
+    //if no clusters reported in this iteration but clusters were reported previuosly, print spacer
+    if (!bReportedCluster && giClustersReported)
+      fprintf(fp, "                  _____________________________\n\n");
+
+    PrintRetainedClustersStatus(fp, bReportedCluster);
+    PrintCriticalValuesStatus(fp);
+    PrintPowerCalculationsStatus(fp);
+    PrintEarlyTerminationStatus(fp);
+    fclose(fp); fp=0;
   }
   catch (ZdException &x) {
     fclose(fp);
@@ -249,7 +258,7 @@ void AnalysisRunner::DisplayTopCluster() {
   }
 }
 
-/** Prints most likely cluster information, if any retained, to result file. 
+/** Prints most likely cluster information, if any retained, to result file.
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
 void AnalysisRunner::DisplayTopClusters() {
@@ -278,7 +287,7 @@ void AnalysisRunner::DisplayTopClusters() {
        //report estimate of time to report all clusters
        if (i==9)
          ReportTimeEstimate(StartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
-       //get reference to i'th top cluster  
+       //get reference to i'th top cluster
        const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
        //write cluster details to 'cluster information' file
        if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
@@ -306,7 +315,10 @@ void AnalysisRunner::DisplayTopClusters() {
        if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER)
          gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
     }
-    fprintf(fp, "\n");
+    PrintRetainedClustersStatus(fp, giClustersReported);
+    PrintCriticalValuesStatus(fp);
+    PrintPowerCalculationsStatus(fp);
+    PrintEarlyTerminationStatus(fp);
     fclose(fp); fp=0;
   }
   catch (ZdException &x) {
@@ -418,6 +430,7 @@ void AnalysisRunner::ExecuteSuccessively() {
     do {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
+      giNumSimsExecuted = 0;
       //calculate most likely clusters
       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
       CalculateMostLikelyClusters();
@@ -493,34 +506,13 @@ void AnalysisRunner::FinalizeReport() {
     gPrintDirection.Printf("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
     OpenReportFile(fp, true);
     PrintFormat.SetMarginsAsOverviewSection();
-    //if zero clusters retained in real data, then no clusters of significance were retained.  
-    if (gTopClustersContainer.GetNumClustersRetained() == 0) {
-      fprintf(fp, "No clusters were found.\n");
-      if (gParameters.GetAreaScanRateType() == HIGH)
-        sBuffer = "All areas scanned had either only one case or equal or fewer cases than expected.";
-      else if (gParameters.GetAreaScanRateType() == LOW)
-        sBuffer = "All areas scanned had either only one case or equal or greater cases than expected.";
-      else
-        sBuffer = "All areas scanned had either only one case or cases equal to expected.";
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
-    }
-    else if (giClustersReported == 0) {
-      fprintf(fp, "No clusters reported.\n");
-      if (gTopClustersContainer.GetTopRankedCluster().GetRatio() < gdMinRatioToReport)
-        sBuffer.printf("All clusters had a %s less than %g.",
-                        (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
-                        gdMinRatioToReport);
-      else
-        sBuffer.printf("All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);  
-    }
-    else if (gParameters.GetNumReplicationsRequested() == 0) {
+    if (giClustersReported && gParameters.GetNumReplicationsRequested() == 0) {
       fprintf(fp, "\n");
       sBuffer = "Note: As the number of Monte Carlo replications was set to "
                 "zero, no hypothesis testing was done and no p-values are reported.";
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
-    else if (gParameters.GetNumReplicationsRequested() <= 98) {
+    if (giClustersReported && gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetNumReplicationsRequested() <= 98) {
       fprintf(fp, "\n");
       sBuffer = "Note: The number of Monte Carlo replications was set too low, "
                 "and a meaningful hypothesis test cannot be done. Consequently, "
@@ -1038,6 +1030,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
   unsigned long               ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.GetNumReplicationsRequested());
 
   try {
+    giNumSimsExecuted = 0;
     if (gParameters.GetNumReplicationsRequested() == 0)
       return;
     //set print message format string
@@ -1047,7 +1040,6 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
       sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
     //set/reset loglikelihood ratio significance indicator
     if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-    giNumSimsExecuted = 0;
     //if writing simulation data to file, delete file now
     if (gParameters.GetOutputSimulationData())
       remove(gParameters.GetSimulationDataOutputFilename().c_str());
@@ -1098,6 +1090,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
   std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
 
   try {
+    giNumSimsExecuted = 0;
     if (gParameters.GetNumReplicationsRequested() == 0)
       return;
     //set print message format string
@@ -1129,7 +1122,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     {//block for the scope of SimulationPrintDirection
       PrintQueue SimulationPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
 
-      for (giNumSimsExecuted=0, iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
+      for (iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
         ++giNumSimsExecuted;
         //randomize data
         macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
@@ -1195,6 +1188,77 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
   catch (ZdException &x) {
     x.AddCallpath("PerformSuccessiveSimulations()","AnalysisRunner");
     throw;
+  }
+}
+
+/** Prints calculated critical values to report file. */
+void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
+  AsciiPrintFormat      PrintFormat;
+  ZdString              sBuffer;
+
+  if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19) {
+    PrintFormat.SetMarginsAsOverviewSection();
+    fprintf(fp,"\n");
+    sBuffer.printf("A cluster is statistically significant when its %s "
+                   "is greater than the critical value, which is, for significance level:",
+                   (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    if (giNumSimsExecuted >= 99)
+      fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
+    if (giNumSimsExecuted >= 19)
+      fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
+  }
+}
+
+/** Prints early termination status to report file. */
+void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
+  if (gTopClustersContainer.GetNumClustersRetained() && giNumSimsExecuted < gParameters.GetNumReplicationsRequested()) {
+    fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate the\n");
+    fprintf(fp, "      simulations early for large p-values. This means that the\n");
+    fprintf(fp, "      reported p-values are slightly conservative.\n");
+  }
+}
+
+/** Prints power calculations status to report file. */
+void AnalysisRunner::PrintPowerCalculationsStatus(FILE* fp) {
+  AsciiPrintFormat      PrintFormat;
+  ZdString              sBuffer;
+
+  if (gParameters.GetIsPowerCalculated() && giNumSimsExecuted) {
+    fprintf(fp, "\n");
+    sBuffer = "Percentage of Monte Carlo replications with a likelihood greater than";
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(), ((double)giPower_X_Count)/giNumSimsExecuted);
+    fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(), ((double)giPower_Y_Count)/giNumSimsExecuted);
+  }
+}
+
+/** Prints indication of whether no clusters were retained nor reported. */
+void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported) {
+  AsciiPrintFormat    PrintFormat;
+  ZdString            sBuffer;
+
+  PrintFormat.SetMarginsAsOverviewSection();
+  //if zero clusters retained in real data, then no clusters of significance were retained.
+  if (gTopClustersContainer.GetNumClustersRetained() == 0) {
+    fprintf(fp, "\nNo clusters were found.\n");
+    if (gParameters.GetAreaScanRateType() == HIGH)
+      sBuffer = "All areas scanned had either only one case or equal or fewer cases than expected.";
+    else if (gParameters.GetAreaScanRateType() == LOW)
+      sBuffer = "All areas scanned had either only one case or equal or greater cases than expected.";
+    else
+      sBuffer = "All areas scanned had either only one case or cases equal to expected.";
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
+  else if (!bClusterReported) {
+    fprintf(fp, "\nNo clusters reported.\n");
+    if (gTopClustersContainer.GetTopRankedCluster().GetRatio() < gdMinRatioToReport)
+      sBuffer.printf("All clusters had a %s less than %g.",
+                      (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
+                      gdMinRatioToReport);
+    else
+      sBuffer.printf("All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
 }
 
@@ -1333,49 +1397,14 @@ void AnalysisRunner::UpdatePowerCounts(double r) {
     - indication of when simulations terminated early */
 void AnalysisRunner::UpdateReport() {
   macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-
-  FILE                * fp=0;
-  AsciiPrintFormat      PrintFormat;
-  ZdString              sBuffer;
-
   try {
     gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
     if (gParameters.GetIsSequentialScanning())
       DisplayTopCluster();
     else
       DisplayTopClusters();
-    //open result output file stream
-    OpenReportFile(fp, true);
-    PrintFormat.SetMarginsAsOverviewSection();
-    if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19 && giClustersReported > 0) {
-      // For space-time permutation, ratio is technically no longer a likelihood ratio test statistic.
-      sBuffer.printf("A cluster is statistically significant when its %s "
-                     "is greater than the critical value, which is, for significance level:",
-                     (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);             
-      if (giNumSimsExecuted >= 99)
-        fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
-      if (giNumSimsExecuted >= 19)
-        fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
-    }
-    if (gParameters.GetIsPowerCalculated()) {
-      fprintf(fp, "\n");
-      sBuffer = "Percentage of Monte Carlo replications with a likelihood greater than";
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-      fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(),
-              ((double)giPower_X_Count)/giNumSimsExecuted);
-      fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(),
-              ((double)giPower_Y_Count)/giNumSimsExecuted);
-    }
-    if (giClustersReported > 0 && giNumSimsExecuted < gParameters.GetNumReplicationsRequested()) {
-      fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate the\n");
-      fprintf(fp, "      simulations early for large p-values. This means that the\n");
-      fprintf(fp, "      reported p-values are slightly conservative.\n");
-    }
-    fclose(fp);
   }
   catch (ZdException &x) {
-    fclose(fp);
     x.AddCallpath("UpdateReport()","AnalysisRunner");
     throw;
   }
