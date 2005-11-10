@@ -63,7 +63,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
 
   try {
     //display process heading
-    DisplayFindClusterHeading();
+    PrintFindClusterHeading();
     //allocate date gateway object
     pDataSetGateway = gpDataHub->GetDataSetHandler().GetNewDataGatewayObject();
     gpDataHub->GetDataSetHandler().GetDataGateway(*pDataSetGateway);
@@ -79,7 +79,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     //display the loglikelihood of most likely cluster
     if (!gPrintDirection.GetIsCanceled()) {
       gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
-      DisplayTopClusterLogLikelihood();
+      PrintTopClusterLogLikelihood();
     }
   }
   catch (ZdException &x) {
@@ -170,162 +170,6 @@ void AnalysisRunner::CreateReport() {
   }
   
   macroRunTimeStopSerial();
-}
-
-/** Displays progress information to print direction indicating that analysis
-    is calculating the most likely clusters in data. If sequential scan option
-    was requested, the message printed reflects which iteration of the scan it
-    is performing. */
-void AnalysisRunner::DisplayFindClusterHeading() {
-  if (!gParameters.GetIsSequentialScanning())
-    gPrintDirection.Printf("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
-  else {
-    switch(giAnalysisCount) {
-      case  1: gPrintDirection.Printf("Finding the most likely cluster.\n", BasePrint::P_STDOUT); break;
-      case  2: gPrintDirection.Printf("Finding the second most likely cluster.\n", BasePrint::P_STDOUT); break;
-      case  3: gPrintDirection.Printf("Finding the third most likely cluster.\n", BasePrint::P_STDOUT); break;
-      default: gPrintDirection.Printf("Finding the %ith most likely cluster.\n", BasePrint::P_STDOUT, giAnalysisCount);
-    }
-  }
-}
-
-/** Displays most likely clusters loglikelihood ratio(test statistic) to print
-    direction. If no clusters were retained, indicating message is printed. */
-void AnalysisRunner::DisplayTopClusterLogLikelihood() {
-  //if any clusters were retained, display either loglikelihood or test statistic
-  if (gTopClustersContainer.GetNumClustersRetained() == 0)
-    gPrintDirection.Printf("No clusters retained.\n", BasePrint::P_STDOUT);
-  else
-    gPrintDirection.Printf("SaTScan %s for the most likely cluster: %7.2lf\n", BasePrint::P_STDOUT,
-                           (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
-                           gTopClustersContainer.GetTopRankedCluster().m_nRatio);
-}
-
-/** Prints most likely cluster information, if retained, to result file. This
-    function only prints THE most likely cluster, as part of reporting with
-    the sequential scan option. So printing is directed by the particular
-    iteration of the sequential scan. 
-    If user requested 'location information' output file(s), they are created
-    simultaneously with reported clusters. */
-void AnalysisRunner::DisplayTopCluster() {
-  FILE        * fp=0;
-  bool          bReportedCluster=false;
-
-  try {
-    //open result output file
-    OpenReportFile(fp, true);
-    if (gTopClustersContainer.GetNumClustersRetained()) {
-      //get most likely cluster
-      const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
-      //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-      if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
-        ++giClustersReported; bReportedCluster=true;
-        switch(giAnalysisCount) {
-          case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-          case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-          default : fprintf(fp, "                  _____________________________\n\n");
-        }
-        //print cluster definition to file stream
-        TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
-        //print cluster definition to 'cluster information' record buffer
-        if (gParameters.GetOutputClusterLevelFiles())
-          ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99, giAnalysisCount > 1).Write(TopCluster, 1, giNumSimsExecuted);
-        //print cluster definition to 'location information' record buffer
-        if (gParameters.GetOutputAreaSpecificFiles()) {
-          LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
-          TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
-        }
-        //check track of whether this cluster was significant in top five percentage
-        if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
-          ++guwSignificantAt005;
-      }
-    }
-
-    //if no clusters reported in this iteration but clusters were reported previuosly, print spacer
-    if (!bReportedCluster && giClustersReported)
-      fprintf(fp, "                  _____________________________\n\n");
-
-    PrintRetainedClustersStatus(fp, bReportedCluster);
-    PrintCriticalValuesStatus(fp);
-    PrintPowerCalculationsStatus(fp);
-    PrintEarlyTerminationStatus(fp);
-    fclose(fp); fp=0;
-  }
-  catch (ZdException &x) {
-    fclose(fp);
-    x.AddCallpath("DisplayTopCluster()","AnalysisRunner");
-    throw;
-  }
-}
-
-/** Prints most likely cluster information, if any retained, to result file.
-    If user requested 'location information' output file(s), they are created
-    simultaneously with reported clusters. */
-void AnalysisRunner::DisplayTopClusters() {
-  std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
-  std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
-  boost::posix_time::ptime                 StartTime(0);
-  FILE                                   * fp=0;
-
-  try {
-    //if creating 'location information' files, create record data buffers
-    if (gParameters.GetOutputAreaSpecificFiles())
-      ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, giNumSimsExecuted < 99));
-
-    //if creating 'cluster information' files, create record data buffers
-    if (gParameters.GetOutputClusterLevelFiles())
-      ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99));
-
-    //if  no replications requested, attempt to display up to top 10 clusters
-    tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
-    StartTime = ::GetCurrentTime_HighResolution(); //get clock for calculating output time
-    //open result output file
-    OpenReportFile(fp, true);
-
-    for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i) {
-       gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, gTopClustersContainer.GetNumClustersRetained());
-       //report estimate of time to report all clusters
-       if (i==9)
-         ReportTimeEstimate(StartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
-       //get reference to i'th top cluster
-       const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
-       //write cluster details to 'cluster information' file
-       if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
-         ClusterWriter->Write(TopCluster, i+1, giNumSimsExecuted);
-       //write cluster details to results file and 'location information' files -- only report
-       //cluster if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-       if (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank() <= giNumSimsExecuted)) {
-           ++giClustersReported;
-           switch (giClustersReported) {
-             case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-             case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-             default : fprintf(fp, "\n"); break;
-           }
-           //print cluster definition to file stream
-           TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
-           //check track of whether this cluster was significant in top five percentage
-           if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
-             ++guwSignificantAt005;
-           //print cluster definition to 'location information' record buffer
-           if (gParameters.GetOutputAreaSpecificFiles())
-             TopCluster.Write(*ClusterLocationWriter, *gpDataHub, giClustersReported, giNumSimsExecuted);
-       }
-       //we no longer will be requesting neighbor information for this centroid - we can delete
-       //neighbor information - which might have been just calculated at beginning of this loop
-       if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER)
-         gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
-    }
-    PrintRetainedClustersStatus(fp, giClustersReported);
-    PrintCriticalValuesStatus(fp);
-    PrintPowerCalculationsStatus(fp);
-    PrintEarlyTerminationStatus(fp);
-    fclose(fp); fp=0;
-  }
-  catch (ZdException &x) {
-    fclose(fp);
-    x.AddCallpath("DisplayTopClusters()","AnalysisRunner");
-    throw;
-  }
 }
 
 /** Executes analysis - conditionally running successive or centric processes. */
@@ -430,6 +274,7 @@ void AnalysisRunner::ExecuteSuccessively() {
     do {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
+      giPower_X_Count = giPower_Y_Count = 0;
       giNumSimsExecuted = 0;
       //calculate most likely clusters
       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
@@ -701,6 +546,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
     do {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
+      giPower_X_Count = giPower_Y_Count = 0;
       giNumSimsExecuted = 0;
 
       //simualtion data randomizer
@@ -818,8 +664,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
 
       //report calculated simulation llr values
-      if (GetIsCalculatingSignificantRatios())
-        gpSignificantRatios->Initialize();
+      if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
       if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
         RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
       std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
@@ -876,6 +721,7 @@ void AnalysisRunner::PerformCentric_Serial() {
     do {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
+      giPower_X_Count = giPower_Y_Count = 0;
       giNumSimsExecuted = 0;
 
       //simualtion data randomizer
@@ -969,8 +815,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
 
       //report calculated simulation llr values
-      if (GetIsCalculatingSignificantRatios())
-        gpSignificantRatios->Initialize();
+      if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
       if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
         RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
       std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
@@ -1219,6 +1064,23 @@ void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
   }
 }
 
+/** Displays progress information to print direction indicating that analysis
+    is calculating the most likely clusters in data. If sequential scan option
+    was requested, the message printed reflects which iteration of the scan it
+    is performing. */
+void AnalysisRunner::PrintFindClusterHeading() {
+  if (!gParameters.GetIsSequentialScanning())
+    gPrintDirection.Printf("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
+  else {
+    switch(giAnalysisCount) {
+      case  1: gPrintDirection.Printf("Finding the most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  2: gPrintDirection.Printf("Finding the second most likely cluster.\n", BasePrint::P_STDOUT); break;
+      case  3: gPrintDirection.Printf("Finding the third most likely cluster.\n", BasePrint::P_STDOUT); break;
+      default: gPrintDirection.Printf("Finding the %ith most likely cluster.\n", BasePrint::P_STDOUT, giAnalysisCount);
+    }
+  }
+}
+
 /** Prints power calculations status to report file. */
 void AnalysisRunner::PrintPowerCalculationsStatus(FILE* fp) {
   AsciiPrintFormat      PrintFormat;
@@ -1259,6 +1121,145 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
     else
       sBuffer.printf("All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
+}
+
+/** Prints most likely cluster information, if any retained, to result file.
+    If user requested 'location information' output file(s), they are created
+    simultaneously with reported clusters. */
+void AnalysisRunner::PrintTopClusters() {
+  std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
+  std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
+  boost::posix_time::ptime                 StartTime(0);
+  FILE                                   * fp=0;
+
+  try {
+    //if creating 'location information' files, create record data buffers
+    if (gParameters.GetOutputAreaSpecificFiles())
+      ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, giNumSimsExecuted < 99));
+
+    //if creating 'cluster information' files, create record data buffers
+    if (gParameters.GetOutputClusterLevelFiles())
+      ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99));
+
+    //if  no replications requested, attempt to display up to top 10 clusters
+    tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
+    StartTime = ::GetCurrentTime_HighResolution(); //get clock for calculating output time
+    //open result output file
+    OpenReportFile(fp, true);
+
+    for (int i=0; i < gTopClustersContainer.GetNumClustersRetained(); ++i) {
+       gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, gTopClustersContainer.GetNumClustersRetained());
+       //report estimate of time to report all clusters
+       if (i==9)
+         ReportTimeEstimate(StartTime, gTopClustersContainer.GetNumClustersRetained(), i, &gPrintDirection);
+       //get reference to i'th top cluster
+       const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
+       //write cluster details to 'cluster information' file
+       if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
+         ClusterWriter->Write(TopCluster, i+1, giNumSimsExecuted);
+       //write cluster details to results file and 'location information' files -- only report
+       //cluster if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
+       if (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank() <= giNumSimsExecuted)) {
+           ++giClustersReported;
+           switch (giClustersReported) {
+             case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+             case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
+             default : fprintf(fp, "\n"); break;
+           }
+           //print cluster definition to file stream
+           TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+           //check track of whether this cluster was significant in top five percentage
+           if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
+             ++guwSignificantAt005;
+           //print cluster definition to 'location information' record buffer
+           if (gParameters.GetOutputAreaSpecificFiles())
+             TopCluster.Write(*ClusterLocationWriter, *gpDataHub, giClustersReported, giNumSimsExecuted);
+       }
+       //we no longer will be requesting neighbor information for this centroid - we can delete
+       //neighbor information - which might have been just calculated at beginning of this loop
+       if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+         gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
+    }
+    PrintRetainedClustersStatus(fp, giClustersReported);
+    PrintCriticalValuesStatus(fp);
+    PrintPowerCalculationsStatus(fp);
+    PrintEarlyTerminationStatus(fp);
+    fclose(fp); fp=0;
+  }
+  catch (ZdException &x) {
+    fclose(fp);
+    x.AddCallpath("PrintTopClusters()","AnalysisRunner");
+    throw;
+  }
+}
+
+/** Displays most likely clusters loglikelihood ratio(test statistic) to print
+    direction. If no clusters were retained, indicating message is printed. */
+void AnalysisRunner::PrintTopClusterLogLikelihood() {
+  //if any clusters were retained, display either loglikelihood or test statistic
+  if (gTopClustersContainer.GetNumClustersRetained() == 0)
+    gPrintDirection.Printf("No clusters retained.\n", BasePrint::P_STDOUT);
+  else
+    gPrintDirection.Printf("SaTScan %s for the most likely cluster: %7.2lf\n", BasePrint::P_STDOUT,
+                           (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
+                           gTopClustersContainer.GetTopRankedCluster().m_nRatio);
+}
+
+/** Prints most likely cluster information, if retained, to result file. This
+    function only prints THE most likely cluster, as part of reporting with
+    the sequential scan option. So printing is directed by the particular
+    iteration of the sequential scan.
+    If user requested 'location information' output file(s), they are created
+    simultaneously with reported clusters. */
+void AnalysisRunner::PrintTopSequentialScanCluster() {
+  FILE        * fp=0;
+  bool          bReportedCluster=false;
+
+  try {
+    //open result output file
+    OpenReportFile(fp, true);
+    if (gTopClustersContainer.GetNumClustersRetained()) {
+      //get most likely cluster
+      const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
+      //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
+      if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
+        ++giClustersReported; bReportedCluster=true;
+        switch(giAnalysisCount) {
+          case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+          case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
+          default : fprintf(fp, "                  _____________________________\n\n");
+        }
+        //print cluster definition to file stream
+        TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+        //print cluster definition to 'cluster information' record buffer
+        if (gParameters.GetOutputClusterLevelFiles())
+          ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99, giAnalysisCount > 1).Write(TopCluster, 1, giNumSimsExecuted);
+        //print cluster definition to 'location information' record buffer
+        if (gParameters.GetOutputAreaSpecificFiles()) {
+          LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
+          TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
+        }
+        //check track of whether this cluster was significant in top five percentage
+        if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
+          ++guwSignificantAt005;
+      }
+    }
+
+    //if no clusters reported in this iteration but clusters were reported previuosly, print spacer
+    if (!bReportedCluster && giClustersReported)
+      fprintf(fp, "                  _____________________________\n\n");
+
+    PrintRetainedClustersStatus(fp, bReportedCluster);
+    PrintCriticalValuesStatus(fp);
+    PrintPowerCalculationsStatus(fp);
+    PrintEarlyTerminationStatus(fp);
+    fclose(fp); fp=0;
+  }
+  catch (ZdException &x) {
+    fclose(fp);
+    x.AddCallpath("PrintTopSequentialScanCluster()","AnalysisRunner");
+    throw;
   }
 }
 
@@ -1400,9 +1401,9 @@ void AnalysisRunner::UpdateReport() {
   try {
     gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
     if (gParameters.GetIsSequentialScanning())
-      DisplayTopCluster();
+      PrintTopSequentialScanCluster();
     else
-      DisplayTopClusters();
+      PrintTopClusters();
   }
   catch (ZdException &x) {
     x.AddCallpath("UpdateReport()","AnalysisRunner");

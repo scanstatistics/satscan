@@ -31,13 +31,9 @@ class AnalysisRunner {
     void                                Execute();
     void                                ExecuteCentrically();
     void                                ExecuteSuccessively();
-    void                                DisplayFindClusterHeading();
-    void                                DisplayTopClusterLogLikelihood();
     void                                CalculateMostLikelyClusters();
     void                                CreateRelativeRiskFile();
     void                                CreateReport();
-    void                                DisplayTopClusters();
-    void                                DisplayTopCluster();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
     void                                Init();
@@ -49,8 +45,12 @@ class AnalysisRunner {
     void                                PerformSuccessiveSimulations();
     void                                PrintCriticalValuesStatus(FILE* fp);
     void                                PrintEarlyTerminationStatus(FILE* fp);
+    void                                PrintFindClusterHeading();
     void                                PrintPowerCalculationsStatus(FILE* fp);
     void                                PrintRetainedClustersStatus(FILE* fp, bool bClusterReported);
+    void                                PrintTopClusters();
+    void                                PrintTopClusterLogLikelihood();
+    void                                PrintTopSequentialScanCluster();
     void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
     void                                Setup();
