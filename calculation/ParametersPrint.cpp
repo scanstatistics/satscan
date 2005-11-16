@@ -520,7 +520,7 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
         fprintf(fp, "  LLR2                       : %lf\n", gParameters.GetPowerCalculationY());
       }
       if (gParameters.GetSimulationType() != STANDARD) {
-        fprintf(fp, "\n  Simulation Method          : ");
+        fprintf(fp, "  Simulation Method          : ");
         switch (gParameters.GetSimulationType()) {
           //case STANDARD         : fprintf(fp, "Null Randomization\n"); break;
           case HA_RANDOMIZATION : fprintf(fp, "HA Randomization\n"); break;
@@ -533,7 +533,7 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
         };
       }
       if (bPrintingSimulationData) {
-        fprintf(fp, "\n  Output Simulation Data     : Yes\n");
+        fprintf(fp, "  Output Simulation Data     : Yes\n");
         fprintf(fp, "  Simulation Data Output     : %s\n", gParameters.GetSimulationDataOutputFilename().c_str());
       }
     }
