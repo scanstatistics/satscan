@@ -1,6 +1,6 @@
 
-SATSCAN     := /home/hostovic/prj/satscan
-BASIS       := /home/hostovic/prj/satscan/basisdev/
+SATSCAN     := /prj/satscan/linux.unix.build.dir/satscan
+BASIS       := /prj/satscan/linux.unix.build.dir/basisdev/
 
 CC          := g++
 APPLICATION := SaTScan
