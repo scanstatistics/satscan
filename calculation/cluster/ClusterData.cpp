@@ -269,6 +269,8 @@ ProspectiveSpatialData & ProspectiveSpatialData::operator=(const ProspectiveSpat
     indexes; as well as 'pMeasureList' and either 'ppSorted_UShort_T' or
     'ppSorted_Tract_T' point to valid data structures. */
 void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList) {
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+
   unsigned int           i, j, iWindowEnd;
   count_t             ** ppCases = Interface.GetCaseArray();
   measure_t           ** ppMeasure = Interface.GetMeasureArray();
@@ -289,13 +291,13 @@ void ProspectiveSpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef
        gpCases[j] += ppCases[i][tNeighborIndex];
        gpMeasure[j] += ppMeasure[i][tNeighborIndex];
     }
-    macroRunTimeStartFocused(FocusRunTimeComponent::AddingMeasureList);
     //update measure list
     for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd)
        pMeasureList->AddMeasure(gpCases[0] - gpCases[iWindowEnd], gpMeasure[0] - gpMeasure[iWindowEnd]);
     pMeasureList->AddMeasure(gpCases[0], gpMeasure[0]);
-    macroRunTimeStopFocused(FocusRunTimeComponent::AddingMeasureList);
   }
+
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
@@ -456,6 +458,7 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
                                               const DataSetInterface& Interface,
                                               CTimeIntervals& TimeIntervals,
                                               CMeasureList& MeasureList) {
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 
   unsigned int          i, iIntervals = giAllocationSize - 1;
   count_t            ** ppCases = Interface.GetCaseArray();
@@ -475,6 +478,8 @@ void SpaceTimeData::AddNeighborDataAndCompare(const CentroidNeighbors& CentroidD
      }
      TimeIntervals.CompareMeasures(*this, MeasureList);
   }
+
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
 /** Adds neighbor data to accumulation - caller is responsible for ensuring that

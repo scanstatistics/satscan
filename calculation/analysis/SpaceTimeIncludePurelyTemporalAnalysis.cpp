@@ -110,7 +110,9 @@ double C_ST_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
 
   gpMeasureList->Reset();
   //compare purely temporal cluster in same ratio correction as circle
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);
