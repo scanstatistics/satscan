@@ -127,7 +127,9 @@ void CPurelyTemporalAnalysis::Init() {
 /** Returns log likelihood ratio for Monte Carlo replication. */
 double CPurelyTemporalAnalysis::MonteCarlo(const DataSetInterface&) {
   gpMeasureList->Reset();
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   gpTimeIntervals->CompareMeasures(*gpClusterData, *gpMeasureList);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   return gpMeasureList->GetMaximumLogLikelihoodRatio();
 }
 

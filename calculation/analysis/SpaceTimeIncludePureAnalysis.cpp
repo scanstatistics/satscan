@@ -108,7 +108,9 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);
@@ -129,7 +131,9 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Inter
   gpMeasureList->Reset();
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   gpTimeIntervals->CompareMeasures(*gpPTClusterData, *gpMeasureList);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);

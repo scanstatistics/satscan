@@ -107,7 +107,9 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
       //perform simulation about purely temporal data
       for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrMeasureList) {
         PTClusterData->Reassociate(*(*itrGateway));
+        macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
         gTimeIntervals_S->CompareMeasures(*PTClusterData, *(*itrMeasureList));
+        macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
       }
     }
     else {
