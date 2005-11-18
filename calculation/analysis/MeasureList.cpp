@@ -128,7 +128,7 @@ void CMinMeasureList::Display(FILE* pFile) const {
     probability model is Bernoulli. Calls AddMaximumLogLikelihood() to add
     result to internal list. */
 void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
   int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
@@ -161,13 +161,13 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
 
   //Now store maximum loglikelihood for comparison against other iterations
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
-  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
   int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
@@ -199,7 +199,7 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   //Now store maximum loglikelihood for comparison against other iterations
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
 
-  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListCalcLL);  
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
 /** Internal initialization */
@@ -266,7 +266,7 @@ void CMaxMeasureList::Display(FILE* pFile) const {
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   double        dLogLikelihood, dTotalMeasure(gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure()),
@@ -283,13 +283,13 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   //Now store maximum loglikelihood for comparison against other iterations
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
 
-  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   double        dLogLikelihood, dMaximumLogLikelihood(gLikelihoodCalculator.GetLogLikelihoodForTotal());
@@ -305,7 +305,7 @@ void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   //Now store maximum loglikelihood for comparison against other iterations
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
 
-  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListCalcLL);  
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
 /** Internal initialization */
@@ -379,7 +379,7 @@ void CMinMaxMeasureList::Display(FILE* pFile) const {
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
   int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
@@ -424,13 +424,13 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
   //Now store maximum loglikelihood for comparison against other iterations
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
 
-  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
 /** Calculates log likelihood for accumulated data. Calls AddMaximumLogLikelihood()
     to add result to internal list. */
 void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListCalcLL);
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 
   int           i, iHalfListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases()/2,
                 iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
@@ -471,7 +471,7 @@ void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   //Now store maximum loglikelihood for comparison against other iterations
   AddMaximumLogLikelihood(dMaximumLogLikelihood, iIteration);
 
-  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListCalcLL);  
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListRatioCalculation);
 }
 
 /** Internal initialization */
