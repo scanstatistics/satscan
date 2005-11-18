@@ -75,8 +75,6 @@ void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCl
     AbstractTemporalClusterData object. For each evaluated window, calls method
     CMeasureList::AddMeasure(cases,measure). */
 void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
-  macroRunTimeStartFocused(FocusRunTimeComponent::AddingMeasureList);
-
   int                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   count_t             * pCases = ((TemporalData&)ClusterData).gpCases;
   measure_t           * pMeasure = ((TemporalData&)ClusterData).gpMeasure;
@@ -90,8 +88,6 @@ void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& Cluster
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
         MeasureList.AddMeasure(pCases[iWindowStart] - pCases[iWindowEnd], pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
   }
-
-  macroRunTimeStopFocused(FocusRunTimeComponent::AddingMeasureList);
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
