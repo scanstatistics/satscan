@@ -15,8 +15,8 @@ RunTimeComponentManager::~RunTimeComponentManager() {}
     type belongs to. */
 SerialRunTimeComponent::Type RunTimeComponentManager::GetCorrespondingRunTimeComponent(FocusRunTimeComponent::Type eType) const {
   switch (eType) {
-    case FocusRunTimeComponent::AddingMeasureList  : return SerialRunTimeComponent::ScanningSimulatedData;
-    case FocusRunTimeComponent::MeasureListCalcLL  : return SerialRunTimeComponent::ScanningSimulatedData;
+    case FocusRunTimeComponent::MeasureListScanningAdding   : return SerialRunTimeComponent::ScanningSimulatedData;
+    case FocusRunTimeComponent::MeasureListRatioCalculation : return SerialRunTimeComponent::ScanningSimulatedData;
   }
   return SerialRunTimeComponent::CatchAll;
 }
@@ -38,8 +38,8 @@ const char * RunTimeComponentManager::GetLabel(SerialRunTimeComponent::Type eCom
 /** Returns label associated with FocusRunTimeComponent type. */
 const char * RunTimeComponentManager::GetLabel(FocusRunTimeComponent::Type eComponent) const {
   switch (eComponent) {
-    case FocusRunTimeComponent::AddingMeasureList  : return "Add Measure List";
-    case FocusRunTimeComponent::MeasureListCalcLL  : return "Measure List CalcLogLikelihood";
+    case FocusRunTimeComponent::MeasureListScanningAdding   : return "MeasureList - Scan/Add";
+    case FocusRunTimeComponent::MeasureListRatioCalculation : return "MeasureList - Ratio Calculation";
   }
   return "?";
 }
@@ -49,20 +49,22 @@ ZdString & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, ZdStrin
   short                 uwDays, uwHours, uwMinutes;
   ZdString              sBuffer;
 
-  uwDays = static_cast<short>(dTimeInSeconds / 86400);
-  dTimeInSeconds -= uwDays * 86400;
-  uwHours = static_cast<short>(dTimeInSeconds / 3600);
-  dTimeInSeconds -= uwHours * 3600;
-  uwMinutes = static_cast<short>(dTimeInSeconds / 60);
-  dTimeInSeconds -= uwMinutes * 60;
-
   sTimeString.Clear();
-  if (uwDays)
-    sTimeString << uwDays << " d ";
-  if (uwHours)
-    sTimeString << uwHours << " h ";
-  if (uwMinutes)
-    sTimeString << uwMinutes << " m ";
+
+//  uwDays = static_cast<short>(dTimeInSeconds / 86400);
+//  dTimeInSeconds -= uwDays * 86400;
+//  uwHours = static_cast<short>(dTimeInSeconds / 3600);
+//  dTimeInSeconds -= uwHours * 3600;
+//  uwMinutes = static_cast<short>(dTimeInSeconds / 60);
+//  dTimeInSeconds -= uwMinutes * 60;
+
+//  if (uwDays)
+//    sTimeString << uwDays << " d ";
+//  if (uwHours)
+//    sTimeString << uwHours << " h ";
+//  if (uwMinutes)
+//    sTimeString << uwMinutes << " m ";
+
   sBuffer.printf("%g", std::max(dTimeInSeconds, 0.0));
   sTimeString << sBuffer << " s ";
 
