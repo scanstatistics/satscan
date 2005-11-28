@@ -4,21 +4,6 @@
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
 
-/** Class representing a premuted attribute which is a continuous variable,
-    or any other numberic attribute. Note that an order index field is present
-    which is needed to maintain consistancy of output when running in parallel. */
-class PermutedVariable : public PermutedAttribute {
-  protected:
-    double		      gdVariable;
-
-  public:
-    PermutedVariable(double dVariable);
-    virtual ~PermutedVariable();
-
-    virtual PermutedVariable* Clone() const;
-    inline double	      GetVariable() const {return gdVariable;}
-};
-
 /** class representing the stationary space-time attributes in a permutated randomization. */
 class SpaceTimeStationaryAttribute {
   protected:
@@ -39,7 +24,7 @@ class SpaceTimeStationaryAttribute {
 class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
   public:
     typedef std::vector<SpaceTimeStationaryAttribute> StationaryContainer_t;
-    typedef std::vector<PermutedVariable>             PermutedContainer_t;
+    typedef std::vector<PermutedAttribute<double> >    PermutedContainer_t;
 
   protected:
     StationaryContainer_t       gvStationaryAttribute;

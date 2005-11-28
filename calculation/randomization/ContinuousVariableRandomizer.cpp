@@ -5,18 +5,6 @@
 #include "ContinuousVariableRandomizer.h"
 
 /** constructor */
-PermutedVariable::PermutedVariable(double dVariable) : PermutedAttribute(), gdVariable(dVariable) {}
-
-/** destructor */
-PermutedVariable::~PermutedVariable() {}
-
-/** returns pointer to newly cloned PermutatedVariable */
-PermutedVariable * PermutedVariable::Clone() const {
-  return new PermutedVariable(*this);
-}
-
-
-/** constructor */
 SpaceTimeStationaryAttribute::SpaceTimeStationaryAttribute(int iTimeInterval, count_t tTractIndex)
                              :giTimeIntervalIndex(iTimeInterval), gtTractIndex(tTractIndex) {}
 
@@ -41,8 +29,8 @@ void ContinuousVariableRandomizer::SortPermutedAttribute() {
   // consistancy of output when running in parallel.
   gvPermutedAttribute = gvOriginalPermutedAttribute;
 
-  std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute(gRandomNumberGenerator));
-  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute());
+  std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute<double>(gRandomNumberGenerator));
+  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute<double>());
 }
 
 
@@ -62,9 +50,9 @@ void NormalRandomizer::AddCase(int iTimeInterval, tract_t tTractIndex, measure_t
   //add stationary values
   gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
   //add permutated value
-  gvPermutedAttribute.push_back(PermutedVariable(tContinuousVariable));
+  gvPermutedAttribute.push_back(PermutedAttribute<double>(tContinuousVariable));
   //add to vector which maintains original order
-  gvOriginalPermutedAttribute.push_back(PermutedVariable(tContinuousVariable));
+  gvOriginalPermutedAttribute.push_back(PermutedAttribute<double>(tContinuousVariable));
 }
 
 /** Assigns data in randomizer to measure structures.
@@ -77,8 +65,8 @@ void NormalRandomizer::AssignMeasure(measure_t ** ppMeasure, measure_t ** ppSqMe
 
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += itr_permuted->GetVariable();
-     ppSqMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += pow(itr_permuted->GetVariable(), 2);
+     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += itr_permuted->GetPermutedVariable();
+     ppSqMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += pow(itr_permuted->GetPermutedVariable(), 2);
   }
 
   //now set as cumulative
@@ -114,9 +102,9 @@ void RankRandomizer::AddCase(int iTimeInterval, tract_t tTractIndex, measure_t t
   //add stationary values
   gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
   //add permutated value
-  gvPermutedAttribute.push_back(PermutedVariable(tContinuousVariable));
+  gvPermutedAttribute.push_back(PermutedAttribute<double>(tContinuousVariable));
   //add to vector which maintains original order
-  gvOriginalPermutedAttribute.push_back(PermutedVariable(tContinuousVariable));
+  gvOriginalPermutedAttribute.push_back(PermutedAttribute<double>(tContinuousVariable));
 }
 
 /** Assigns data in randomizer to measure structures.
@@ -129,7 +117,7 @@ void RankRandomizer::AssignMeasure(measure_t ** ppMeasure, int iNumTimeIntervals
 
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_permuted, ++itr_stationary)
-     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += itr_permuted->GetVariable();
+     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += itr_permuted->GetPermutedVariable();
 
   //now set as cumulative
   for (tTract=0; tTract < iNumTracts; ++tTract)
