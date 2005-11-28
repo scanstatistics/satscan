@@ -34,6 +34,7 @@ class PermutedAttribute {
 
     inline T	        GetPermutedVariable() const {return gPermutedVariable;}
     inline float	GetRandomNumber() const {return gfRandomNumber;}
+    inline T	      & ReferencePermutedVariable() {return gPermutedVariable;}
     inline void		SetRandomNumber(float f) {gfRandomNumber = f;}
 };
 
