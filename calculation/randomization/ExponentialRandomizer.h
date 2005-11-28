@@ -4,29 +4,15 @@
 //******************************************************************************
 #include "ContinuousVariableRandomizer.h"
 
-/** class representing a permuted attribute which is a continuous variable
-    and censored atribute. */
-class PermutedExponentialAttribute : public PermutedVariable {
-  protected:
-    unsigned short                          guCensoredAttribute;
-
-  public:
-    PermutedExponentialAttribute(double dVariable, unsigned short uCensoreddAttribute);
-    virtual ~PermutedExponentialAttribute();
-
-    virtual PermutedExponentialAttribute  * Clone() const;
-    double                                  Calibrate(double dCalibration) {gdVariable *= dCalibration; return gdVariable; }
-    inline unsigned short                   GetCensoredAttribute() const {return guCensoredAttribute;}
-};
-
 /** Randomizes data of dataset for a 'Exponetial' probablility model.
     Instead of assigning data to simulation case structures, assigns
     randomized data to simulation meaure structures. */
 class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
   public:
-    typedef std::vector<SpaceTimeStationaryAttribute> StationaryContainer_t;
-    typedef std::vector<PermutedExponentialAttribute> PermutedContainer_t;
-     
+    typedef std::vector<SpaceTimeStationaryAttribute>              StationaryContainer_t;
+    typedef std::pair<double, unsigned short>                      ExponentialPermuted_t;
+    typedef std::vector<PermutedAttribute<ExponentialPermuted_t> > PermutedContainer_t;
+
   protected:
     StationaryContainer_t	        gvStationaryAttribute;
     PermutedContainer_t                 gvOriginalPermutedAttribute;
