@@ -6,17 +6,6 @@
 #include "DataSet.h"
 
 /** constructor */
-PermutedTime::PermutedTime(int iTimeInterval) : PermutedAttribute(), giTimeIntervalIndex(iTimeInterval) {}
-
-/** destructor */
-PermutedTime::~PermutedTime() {}
-
-/** returns a newly cloned PermutedTime */
-PermutedTime * PermutedTime::Clone() const {
-  return new PermutedTime(*this);
-}
-
-/** constructor */
 SpaceTimeRandomizer::SpaceTimeRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
 
 /** destructor */
@@ -47,7 +36,7 @@ void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, S
      itr_permuted = Permuted.begin();
      itr_end = Permuted.end();
      for (; itr_permuted != itr_end; ++itr_permuted, ++itr_stationary)
-        ppSimCases[itr_permuted->GetTimeInterval()][*itr_stationary]++;
+        ppSimCases[itr_permuted->GetPermutedVariable()][*itr_stationary]++;
   }
 
   //now set as cumulative
@@ -80,7 +69,7 @@ void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet
            for (k=0; k < iNumCases; ++k) {
               theseCategoryAttributes.gvStationaryAttribute.push_back(j);
               //add to vector which will maintain original order
-              theseCategoryAttributes.gvOriginalPermutedAttribute.push_back(PermutedTime(i));
+              theseCategoryAttributes.gvOriginalPermutedAttribute.push_back(PermutedAttribute<int>(i));
            }
            vCummulatedCases[j] += iNumCases;
         }
@@ -97,9 +86,9 @@ void SpaceTimeRandomizer::SortPermutedAttribute() {
     // consistancy of output when running in parallel.
     theseAttributes = gCategoryAttributes[t].gvOriginalPermutedAttribute;
     //assign random number to each
-    std::for_each(theseAttributes.begin(), theseAttributes.end(), AssignPermutedAttribute(gRandomNumberGenerator));
+    std::for_each(theseAttributes.begin(), theseAttributes.end(), AssignPermutedAttribute<int>(gRandomNumberGenerator));
     //randomize time intervals
-    std::sort(theseAttributes.begin(), theseAttributes.end(), ComparePermutedAttribute());
+    std::sort(theseAttributes.begin(), theseAttributes.end(), ComparePermutedAttribute<int>());
   }
 }
 

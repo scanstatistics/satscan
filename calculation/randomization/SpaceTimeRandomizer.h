@@ -4,27 +4,13 @@
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
 
-/** class representing a premutated attribute which is a time interval. */
-class PermutedTime : public PermutedAttribute {
-  protected:
-    int			         giTimeIntervalIndex;
-
-  public:
-    PermutedTime(int iTimeInterval);
-    virtual ~PermutedTime();
-
-    virtual PermutedTime       * Clone() const;
-
-    inline int 		         GetTimeInterval() const {return giTimeIntervalIndex;}
-};
-
 class DataSet; /** forward class declaration */
 
 /** Randomizes data of dataset for a 'space-time permutation' probablility model. */
 class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
   public:
-    typedef std::vector<tract_t>                StationaryContainer_t;
-    typedef std::vector<PermutedTime>           PermutedContainer_t;
+    typedef std::vector<tract_t>                 StationaryContainer_t;
+    typedef std::vector<PermutedAttribute<int> > PermutedContainer_t;
 
   class CategoryGrouping {
     public:
