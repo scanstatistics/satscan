@@ -19,31 +19,53 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
     virtual void	RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
 };
 
-/** abstract permutation attribute - used to randomize permuted attribute */
+/** Class representing a permuted attribute which is a continuous variable,
+    time index or any other attribute that need be permuted. */
+template <class T>
 class PermutedAttribute {
   protected:
+    T		        gPermutedVariable;
     float		gfRandomNumber;
 
   public:
-    PermutedAttribute();
+    PermutedAttribute(T Variable);
     virtual ~PermutedAttribute();
+    virtual PermutedAttribute  * Clone() const;
 
+    inline T	        GetPermutedVariable() const {return gPermutedVariable;}
     inline float	GetRandomNumber() const {return gfRandomNumber;}
     inline void		SetRandomNumber(float f) {gfRandomNumber = f;}
 };
 
+/** constructor */
+template <class T>
+PermutedAttribute<T>::PermutedAttribute(T Variable) : gPermutedVariable(Variable), gfRandomNumber(0) {}
+
+/** destructor */
+template <class T>
+PermutedAttribute<T>::~PermutedAttribute() {}
+
+/** returns pointer to newly cloned PermutatedVariable */
+template <class T>
+PermutedAttribute<T> * PermutedAttribute<T>::Clone() const {
+  return new PermutedAttribute(*this);
+}
+
 /** Function object used to compare permuted attributes. */
+template <class T>
 class ComparePermutedAttribute {
   public:
-    inline bool operator() (const PermutedAttribute& plhs, const PermutedAttribute& prhs);
+    inline bool operator() (const PermutedAttribute<T>& plhs, const PermutedAttribute<T>& prhs);
 };
 
 /** compares permuted attribute by assigned random number */
-inline bool ComparePermutedAttribute::operator() (const PermutedAttribute& plhs, const PermutedAttribute& prhs) {
+template <class T>
+inline bool ComparePermutedAttribute<T>::operator() (const PermutedAttribute<T>& plhs, const PermutedAttribute<T>& prhs) {
   return (plhs.GetRandomNumber() < prhs.GetRandomNumber());
 }
 
 /** Function object used to assign random number to permuted attribute. */
+template <class T>
 class AssignPermutedAttribute {
   protected:
      RandomNumberGenerator      & gGenerator;
@@ -52,11 +74,20 @@ class AssignPermutedAttribute {
     AssignPermutedAttribute(RandomNumberGenerator & Generator);
     virtual ~AssignPermutedAttribute();
 
-    inline void operator() (PermutedAttribute& pAttribute);
+    inline void operator() (PermutedAttribute<T>& pAttribute);
 };
 
-inline void AssignPermutedAttribute::operator() (PermutedAttribute& pAttribute) {
-  pAttribute.SetRandomNumber(gGenerator.GetRandomFloat());
+/** constructor */
+template <class T>
+AssignPermutedAttribute<T>::AssignPermutedAttribute(RandomNumberGenerator & Generator) : gGenerator(Generator) {}
+
+/** destructor */
+template <class T>
+AssignPermutedAttribute<T>::~AssignPermutedAttribute() {}
+
+template <class T>
+inline void AssignPermutedAttribute<T>::operator() (PermutedAttribute<T>& Attribute) {
+  Attribute.SetRandomNumber(gGenerator.GetRandomFloat());
 }
 //******************************************************************************
 #endif

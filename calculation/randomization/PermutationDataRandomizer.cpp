@@ -21,17 +21,3 @@ void AbstractPermutedDataRandomizer::RandomizeData(const RealDataSet& thisRealSe
   AssignRandomizedData(thisRealSet, thisSimSet);
 };
 
-
-/** constructor */
-PermutedAttribute::PermutedAttribute() : gfRandomNumber(0) {}
-
-/** destructor */
-PermutedAttribute::~PermutedAttribute() {}
-
-
-/** constructor */
-AssignPermutedAttribute::AssignPermutedAttribute(RandomNumberGenerator & Generator) : gGenerator(Generator) {}
-
-/** destructor */
-AssignPermutedAttribute::~AssignPermutedAttribute() {}
-
