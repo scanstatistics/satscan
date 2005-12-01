@@ -305,7 +305,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
     }
     if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
       fprintf(fp, "  Only clusters smaller than %g %s reported.\n", gParameters.GetMaximumReportedGeoClusterSize(),
-          (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE ?
+          (gParameters.GetMaxReportedGeographicClusterSizeType() == MAXDISTANCE ?
               (gParameters.GetCoordinatesType() == CARTESIAN ? "Cartesian units" : "km") : "percent of population at risk"));
   }
   catch (ZdException &x) {
@@ -650,19 +650,19 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
       return;
       
     fprintf(fp, "\nSpatial Window\n--------------\n");
-    if (gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE)
-      fprintf(fp, "  Max Circle Size File         : %s\n\n", gParameters.GetMaxCirclePopulationFileName().c_str());
+    if (gParameters.UseMaxCirclePopulationFile())
+      fprintf(fp, "  Max Circle Size File                  : %s\n", gParameters.GetMaxCirclePopulationFileName().c_str());
     fprintf(fp, "  Maximum Spatial Cluster Size          : %.2f", gParameters.GetMaximumGeographicClusterSize());
     switch (gParameters.GetMaxGeographicClusterSizeType()) {
-      case PERCENTOFPOPULATIONFILETYPE :
-      case PERCENTOFPOPULATIONTYPE     : fprintf(fp, " %%\n"); break;
-      case DISTANCETYPE                : fprintf(fp, (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units\n" : " km\n")); break;
+      case PERCENTOFMAXCIRCLEFILE      : fprintf(fp, "%% of population defined in max circle file\n"); break;
+      case PERCENTOFPOPULATION         : fprintf(fp, "%% of population at risk\n"); break;
+      case MAXDISTANCE                 : fprintf(fp, (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units\n" : " km\n")); break;
       default : ZdException::Generate("Unknown maximum spatial cluster size type '%d'.\n",
                                       "PrintSpatialWindowParameters()", gParameters.GetMaxGeographicClusterSizeType());
     }
     if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
-       fprintf(fp, "  Also Include Purely Temporal Clusters : ");
-       fprintf(fp, (gParameters.GetIncludePurelyTemporalClusters() ? "Yes\n" : "No\n"));
+      fprintf(fp, "  Also Include Purely Temporal Clusters : ");
+      fprintf(fp, (gParameters.GetIncludePurelyTemporalClusters() ? "Yes\n" : "No\n"));
     }
   }
   catch (ZdException &x) {
