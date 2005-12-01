@@ -201,6 +201,7 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
     WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
     WriteIniParameter(WriteFile, REPORTED_GEOSIZE, GetParameterString(REPORTED_GEOSIZE, s), GetParameterComment(REPORTED_GEOSIZE));
     WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s), GetParameterComment(USE_REPORTED_GEOSIZE));
+    WriteIniParameter(WriteFile, MAX_REPORTED_SPATIAL_TYPE, GetParameterString(MAX_REPORTED_SPATIAL_TYPE, s), GetParameterComment(MAX_REPORTED_SPATIAL_TYPE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteClustersReportedSettings()","IniParameterFileAccess");
