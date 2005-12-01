@@ -40,8 +40,6 @@ class CSaTScanData {
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
     ThreeDimensionArrayHandler<tract_t>       * gpSortedIntHandler;
     ThreeDimensionArrayHandler<unsigned short>* gpSortedUShortHandler;
-    double                                      m_nMaxCircleSize;
-    double                                      m_nMaxReportedCircleSize;
     double                                      m_nAnnualRatePop;
     std::vector<double>                         gvEllipseAngles;
     std::vector<double>                         gvEllipseShapes;                /* temp storage for the angles, shapes of each "possible" ellipsoid */
@@ -126,8 +124,7 @@ class CSaTScanData {
     inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
     bool                                        GetIsNullifiedLocation(tract_t tLocationIndex) const;
     const std::vector<measure_t>              & GetMaxCirclePopulationArray() const {return gvMaxCirclePopulation;}
-    double                                      GetMaxCircleSize() const {return m_nMaxCircleSize;}
-    double                                      GetMaxReportedCircleSize() const {return m_nMaxReportedCircleSize;}
+    measure_t                                   GetMaxCirclePopulationSize() const {return m_nTotalMaxCirclePopulation;}
     double                                      GetMeasureAdjustment(size_t iSetIndex) const;
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius=-1) const;
     inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
@@ -161,7 +158,6 @@ class CSaTScanData {
     bool                                        ReadSpaceTimePermutationData();
     void                                        RemoveTractSignificance(tract_t tTractIndex);
     void                                        SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType);
-    void                                        SetMaxCircleSize();
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
     inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gpDataSets->GetDataSet(iSetIndex).GetTotalMeasure();}
@@ -220,11 +216,9 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
       gvCentroidNeighborStore[t] = new CentroidNeighbors();
       CentroidNeighbors& NeighborInfo = *gvCentroidNeighborStore[t];
       if (dClusterRadius != -1)
-        CentroidNeighborCalculatorByDistance(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
-      else if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
-        CentroidNeighborCalculatorByDistance(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
-      else
-        CentroidNeighborCalculatorByPopulation(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
+        CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
+      else  
+        CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);
       return NeighborInfo.GetNeighborTractIndex(nearness - 1);
     }
   }

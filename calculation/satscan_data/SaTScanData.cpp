@@ -142,7 +142,7 @@ void CSaTScanData::AdjustNeighborCounts() {
   try {
     //Re-calculate neighboring locations about each centroid.
     if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased()) {
-      CentroidNeighborCalculatorByPopulation(*this, gPrint).CalculateNeighbors();
+      CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
       gvCentroidNeighborStore.DeleteAllElements();
     }
   }
@@ -284,7 +284,6 @@ void CSaTScanData::CalculateExpectedCases() {
      gtTotalCases += gpDataSets->GetDataSet(t).GetTotalCases();
      gtTotalPopulation += gpDataSets->GetDataSet(t).GetTotalPopulation();
   }
-  SetMaxCircleSize();
   FreeRelativeRisksAdjustments();
 }
 
@@ -399,10 +398,7 @@ measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** pp
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 void CSaTScanData::FindNeighbors() {
   try {
-    if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
-      CentroidNeighborCalculatorByDistance(*this, gPrint).CalculateNeighbors();
-    else
-      CentroidNeighborCalculatorByPopulation(*this, gPrint).CalculateNeighbors();
+    CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
   }
   catch (ZdException &x) {
     x.AddCallpath("FindNeighbors()","CSaTScanData");
@@ -500,7 +496,6 @@ void CSaTScanData::Init() {
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
   m_nAnnualRatePop = 100000;
-  m_nMaxReportedCircleSize = 0;
   m_nTotalMaxCirclePopulation = 0;
   gtTotalMeasure=0;
   gtTotalCases=0;
@@ -891,53 +886,6 @@ void CSaTScanData::SetIntervalStartTimes() {
     ZdException::Generate("The number of time intervals was calculated as one. Temporal\n"
                           "and space-time analyses can not be performed on less than one\n"
                           "time interval.\n", "SetIntervalStartTimes()");
-}
-
-/** Causes maximum circle size to be set based on parameters settings. */
-void CSaTScanData::SetMaxCircleSize() {
-  measure_t tPopulation, tTotalPopulation=0;
-
-  try {
-    switch (gParameters.GetMaxGeographicClusterSizeType()) {
-      case PERCENTOFPOPULATIONFILETYPE :
-           m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
-           if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * m_nTotalMaxCirclePopulation;
-           break;
-      case PERCENTOFPOPULATIONTYPE :
-           //NOTE: The measure from the first dataset is used when calculating
-           //      the maximum circle size; at least for the time being.
-           for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-              if (gParameters.GetProbabilityModelType() == ORDINAL)
-                tPopulation = gpDataSets->GetDataSet(t).GetTotalCases();
-              else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
-                tPopulation = gpDataSets->GetDataSet(t).GetTotalPopulation();
-              else
-                tPopulation = gpDataSets->GetDataSet(t).GetTotalMeasure();
-
-             if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
-               GenerateResolvableException("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
-                                           "SetMaxCircleSize()", std::numeric_limits<measure_t>::max());
-             tTotalPopulation += tPopulation;
-           }
-
-           m_nMaxCircleSize = (gParameters.GetMaximumGeographicClusterSize() / 100.0) * tTotalPopulation;
-           if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = (gParameters.GetMaximumReportedGeoClusterSize() / 100.0) * tTotalPopulation;
-           break;
-      case DISTANCETYPE :
-           m_nMaxCircleSize = gParameters.GetMaximumGeographicClusterSize();
-           if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-             m_nMaxReportedCircleSize = gParameters.GetMaximumReportedGeoClusterSize();
-           break;
-      default : ZdException::Generate("Unknown maximum spatial cluster type: '%i'.", "SetMaxCircleSize()",
-                                      gParameters.GetMaxGeographicClusterSizeType());
-    };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMaxCircleSize()","CSaTScanData");
-    throw;
-  }
 }
 
 /* Calculates which time interval the prospective surveillance start date is in.*/
