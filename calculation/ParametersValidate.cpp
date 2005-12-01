@@ -258,8 +258,6 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
   size_t        t;
 
   try {
-    //validate number of datasets files match
-
     //validate case file
     if (!gParameters.GetCaseFileNames().size()) {
       bValid = false;
@@ -269,7 +267,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
        if (access(gParameters.GetCaseFileNames()[t].c_str(), 00)) {
          bValid = false;
          PrintDirection.Printf("Error: The case file '%s' does not exist.\n"
-                               "       Please check to make sure the path is correct.\n",
+                               "       Please ensure the path is correct.\n",
                                BasePrint::P_ERROR, gParameters.GetCaseFileNames()[t].c_str());
        }
     }
@@ -294,7 +292,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
               if (access(gParameters.GetPopulationFileNames()[t].c_str(), 00)) {
                 bValid = false;
                 PrintDirection.Printf("Error: The population file '%s' does not exist.\n"
-                                      "       Please check to make sure the path is correct.\n",
+                                      "       Please ensure the path is correct.\n",
                                       BasePrint::P_ERROR, gParameters.GetPopulationFileNames()[t].c_str());
               }
            }
@@ -311,7 +309,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
           if (access(gParameters.GetPopulationFileNames()[t].c_str(), 00)) {
             bValid = false;
             PrintDirection.Printf("Error: The population file '%s' does not exist.\n"
-                                  "       Please check to make sure the path is correct.\n",
+                                  "       Please ensure the path is correct.\n",
                                   BasePrint::P_ERROR, gParameters.GetPopulationFileNames()[t].c_str());
           }
         }
@@ -327,7 +325,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         if (access(gParameters.GetControlFileNames()[t].c_str(), 00)) {
           bValid = false;
           PrintDirection.Printf("Error: The control file '%s' does not exist.\n"
-                                "       Please check to make sure the path is correct.\n",
+                                "       Please ensure the path is correct.\n",
                                 BasePrint::P_ERROR, gParameters.GetControlFileNames()[t].c_str());
         }
       }
@@ -340,7 +338,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     else if (access(gParameters.GetCoordinatesFileName().c_str(), 00)) {
       bValid = false;
       PrintDirection.Printf("Error: The coordinates file '%s' does not exist.\n"
-                             "       Please check to make sure the path is correct.\n",
+                             "       Please ensure the path is correct.\n",
                              BasePrint::P_ERROR, gParameters.GetCoordinatesFileName().c_str());
     }
     //validate special grid file
@@ -351,7 +349,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     else if (gParameters.UseSpecialGrid() && access(gParameters.GetSpecialGridFileName().c_str(), 00)) {
       bValid = false;
       PrintDirection.Printf("Error: The grid file '%s' does not exist.\n"
-                            "       Please check to make sure the path is correct.\n",
+                            "       Please ensure the path is correct.\n",
                             BasePrint::P_ERROR, gParameters.GetSpecialGridFileName().c_str());
     }
     //validate adjustment for known relative risks file
@@ -363,7 +361,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       else if (gParameters.UseAdjustmentForRelativeRisksFile() && access(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(), 00)) {
         bValid = false;
         PrintDirection.Printf("Error: The adjustments file '%s' does not exist.\n"
-                              "       Please check to make sure the path is correct.\n",
+                              "       Please ensure the path is correct.\n",
                               BasePrint::P_ERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
       }
     }
@@ -374,7 +372,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     //defined as a percentage of the population and adjusting for earlier analyses.
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME &&
         gParameters.GetAdjustForEarlierAnalyses() &&
-        gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONTYPE) {
+        gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATION) {
       bValid = false;
       PrintDirection.Printf("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
                             "       cluster size must be defined as a percentage of the population as defined in a max\n"
@@ -382,19 +380,24 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                             "       Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
                             "       max circle size file is not required.\n", BasePrint::P_ERROR);
     }
-    if (gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE) {
-      if (gParameters.GetMaxCirclePopulationFileName().empty()) {
+    if (gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE ||
+        (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaxReportedGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE)) {
+      if (gParameters.GetMaxCirclePopulationFileName().empty() && gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE) {
         bValid = false;
-        PrintDirection.Printf("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
-                              "       cluster size must be defined as a percentage of the population as defined in a max\n"
-                              "       circle size file.\n"
-                              "       Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
-                              "       max circle size file is not required.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Error: The settings indicate to the use a max circle size file, but a file name was not specified.\n", BasePrint::P_ERROR);
+      }
+      else if (gParameters.GetMaxCirclePopulationFileName().empty() &&
+               gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaxReportedGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE) {
+        bValid = false;
+        PrintDirection.Printf("Error: Maximum circle size file name was not specified.\n"
+                              "       A maximum circle file is required when restricting the maximum\n"
+                              "       reported spatial cluster size by a population defined in that\n"
+                              "       maximum circle file.\n", BasePrint::P_ERROR);
       }
       else if (access(gParameters.GetMaxCirclePopulationFileName().c_str(), 00)) {
         bValid = false;
         PrintDirection.Printf("Error: The max circle size file '%s' does not exist.\n"
-                              "       Please check to make sure the path is correct.\n",
+                              "       Please ensure the path is correct.\n",
                               BasePrint::P_ERROR, gParameters.GetMaxCirclePopulationFileName().c_str());
       }
     }
@@ -820,7 +823,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
           else if (access(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(), 00)) {
             bValid = false;
             PrintDirection.Printf("Error: The adjustments file '%s' does not exist.\n"
-                                  "       Please check to make sure the path is correct.\n",
+                                  "       Please ensure the path is correct.\n",
                                   BasePrint::P_ERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
           }
         }
@@ -848,7 +851,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
         else if (access(gParameters.GetSimulationDataSourceFilename().c_str(), 00)) {
           bValid = false;
           PrintDirection.Printf("Error: The simulated data input file '%s' does not exist.\n"
-                                "       Please check to make sure the path is correct.\n",
+                                "       Please ensure the path is correct.\n",
                                 BasePrint::P_ERROR, gParameters.GetSimulationDataSourceFilename().c_str());
         }
         if (gParameters.GetOutputSimulationData() && gParameters.GetSimulationDataSourceFilename() == gParameters.GetSimulationDataOutputFilename()) {
@@ -894,14 +897,6 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
         PrintDirection.Printf("Error: The maximum spatial cluster size of '%2g%%' for reported clusters is invalid. It must be greater than zero.\n",
                               BasePrint::P_ERROR, gParameters.GetMaximumGeographicClusterSize());
       }
-      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaximumReportedGeoClusterSize() > gParameters.GetMaximumGeographicClusterSize()) {
-        bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting of '%2g' for maximum reported spatial cluster size.\n"
-                               "       The settings can not be greater than the maximum spatial cluster size.\n",
-                               BasePrint::P_ERROR, gParameters.GetMaximumReportedGeoClusterSize());
-      }
-      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaximumReportedGeoClusterSize() == gParameters.GetMaximumGeographicClusterSize())
-        const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
     }
     else {
       //Purely temporal clusters should default maximum geographical clusters size to 50 of population.
@@ -909,8 +904,10 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       //finding neighbors which purely temporal analyses don't utilize. The finding neighbors
       //routine should really be skipped for this analysis type.
       const_cast<CParameters&>(gParameters).SetMaximumGeographicClusterSize(50.0); //KR980707 0 GG980716;
-      const_cast<CParameters&>(gParameters).SetMaximumSpacialClusterSizeType(PERCENTOFPOPULATIONTYPE);
+      const_cast<CParameters&>(gParameters).SetMaximumSpatialClusterSizeType(PERCENTOFPOPULATION);
       const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
+      const_cast<CParameters&>(gParameters).SetMaximumReportedGeographicalClusterSize(50.0);
+      const_cast<CParameters&>(gParameters).SetMaximumReportedSpatialClusterSizeType(PERCENTOFPOPULATION);
     }
 
     if (gParameters.GetIncludePurelySpatialClusters()) {
