@@ -130,6 +130,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case NUM_PROCESSES            : return " number of parallel processes to execute (All Processors=0, At Most X Processors=x)";
       case LOG_HISTORY              : return " log analysis run to history file? (y/n)";
       case SUPPRESS_WARNINGS        : return " suppressing warnings? (y/n)";
+      case MAX_REPORTED_SPATIAL_TYPE: return " how max spatial size should be interpretted for reported clusters (0=Percentage, 1=Distance, 2=Percentage of max circle population file)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -226,6 +227,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case NUM_PROCESSES            : return AsString(s, gParameters.GetNumRequestedParallelProcesses());
       case LOG_HISTORY              : return AsString(s, gParameters.GetIsLoggingHistory());
       case SUPPRESS_WARNINGS        : return AsString(s, gParameters.GetSuppressingWarnings());
+      case MAX_REPORTED_SPATIAL_TYPE: return AsString(s, gParameters.GetMaxReportedGeographicClusterSizeType());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -320,6 +322,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case NUM_PROCESSES            : sDefaultValue << gParameters.GetNumRequestedParallelProcesses(); break;
       case LOG_HISTORY              : sDefaultValue = (gParameters.GetIsLoggingHistory() ? "y" : "n"); break;
       case SUPPRESS_WARNINGS        : sDefaultValue = (gParameters.GetSuppressingWarnings() ? "y" : "n"); break;
+      case MAX_REPORTED_SPATIAL_TYPE: sDefaultValue = gParameters.GetMaxReportedGeographicClusterSizeType(); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -642,8 +645,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)iValue); break;
       case MAX_TEMPORAL_TYPE         : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTAGETYPE, TIMETYPE);
                                        gParameters.SetMaximumTemporalClusterSizeType((TemporalSizeType)ReadInt(sParameter, eParameterType)); break;
-      case MAX_SPATIAL_TYPE          : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATIONTYPE, PERCENTOFPOPULATIONFILETYPE);
-                                       gParameters.SetMaximumSpacialClusterSizeType((SpatialSizeType)iValue); break;
+      case MAX_SPATIAL_TYPE          : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
+                                       gParameters.SetMaximumSpatialClusterSizeType((SpatialSizeType)iValue); break;
       case RUN_HISTORY_FILENAME      : //Run History no longer scanned from parameters file. Set through setters/getters and copy() only.
                                        break;
       case OUTPUT_MLC_DBASE          : gParameters.SetOutputClusterLevelDBase(ReadBoolean(sParameter, eParameterType)); break;
@@ -682,6 +685,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case NUM_PROCESSES             : gParameters.SetNumParallelProcessesToExecute(ReadUnsignedInt(sParameter, eParameterType)); break;
       case LOG_HISTORY               : gParameters.SetIsLoggingHistory(ReadBoolean(sParameter, eParameterType)); break;
       case SUPPRESS_WARNINGS         : gParameters.SetSuppressingWarnings(ReadBoolean(sParameter, eParameterType)); break;
+      case MAX_REPORTED_SPATIAL_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
+                                       gParameters.SetMaximumReportedSpatialClusterSizeType((SpatialSizeType)iValue); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }
