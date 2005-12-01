@@ -61,7 +61,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case OUTPUT_MLC_ASCII          : return "Output Cluster Information - ASCII? (line 42)";  
       case CRITERIA_SECOND_CLUSTERS  : return "Criteria Secondary Clusters Type (line 43)";  
       case MAX_TEMPORAL_TYPE         : return "Max Temporal Cluster Size Type (line 44)";  
-      case MAX_SPATIAL_TYPE          : return "Max Spatial Cluster Size Type (line 45)";  
+      case MAX_SPATIAL_TYPE          : return "Max Spatial Cluster Size Type (line 45)";
       case RUN_HISTORY_FILENAME      : return "*Not Used* (line 46)";  
       case OUTPUT_MLC_DBASE          : return "Output Cluster Information - dBase? (line 47)";  
       case OUTPUT_AREAS_DBASE        : return "Output Location Information - dBase? (line 48)";  
@@ -93,7 +93,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case EXECUTION_TYPE            : return "Analysis Execution Type (line 71)";
       case NUM_PROCESSES             : return "Number Parallel Processes (line 72)";
       case LOG_HISTORY               : return "Log Run to History File (line 73)";
-      case SUPPRESS_WARNINGS         : return "Suppress Warnings (line 74)";    
+      case SUPPRESS_WARNINGS         : return "Suppress Warnings (line 74)";
+      case MAX_REPORTED_SPATIAL_TYPE : return "Max Spatial Cluster Size Type - Reported Clusters (line 75)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
@@ -188,7 +189,7 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
       GenerateResolvableException("Error: Lined based parameter file can not write with multiple data sets.\n", "Write()");
 
     //open output file
-    parameters.open(sFilename, ios::trunc);
+    parameters.open(sFilename, std::ios::trunc);
     if (!parameters)
       GenerateResolvableException("Error: Could not open parameter file '%s' for write.\n", "Write()", sFilename);
 
