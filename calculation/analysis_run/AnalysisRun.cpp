@@ -194,9 +194,9 @@ void AnalysisRunner::Execute() {
     case AUTOMATIC    :
     default           :
       switch (gParameters.GetMaxGeographicClusterSizeType()) {
-        case PERCENTOFPOPULATIONTYPE     :
-        case PERCENTOFPOPULATIONFILETYPE : dPercentage = gParameters.GetMaximumGeographicClusterSize() / 100.0; break;
-        case DISTANCETYPE                : //Purely as a guess, we'll assume that the distance the user specified
+        case PERCENTOFPOPULATION         :
+        case PERCENTOFMAXCIRCLEFILE      : dPercentage = gParameters.GetMaximumGeographicClusterSize() / 100.0; break;
+        case MAXDISTANCE                 : //Purely as a guess, we'll assume that the distance the user specified
                                            //equates to 10% of the population. There might be a better way to due this!
                                            dPercentage = 0.1; break;
         default                          :
@@ -594,17 +594,9 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //construct centric-analyses and centroid calculators for each thread:
       std::deque<boost::shared_ptr<AbstractCentricAnalysis> > seqCentricAnalyses(ulParallelProcessCount);
       std::deque<boost::shared_ptr<CentroidNeighborCalculator> > seqCentroidCalculators(ulParallelProcessCount);
-      if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE) {
-        for (unsigned u=0; u<ulParallelProcessCount; ++u) {
-          seqCentricAnalyses[u].reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
-          seqCentroidCalculators[u].reset(new CentroidNeighborCalculatorByDistance(*gpDataHub, gPrintDirection));
-        }
-      }
-      else {
-        for (unsigned u=0; u<ulParallelProcessCount; ++u) {
-          seqCentricAnalyses[u].reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
-          seqCentroidCalculators[u].reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
-        }
+      for (unsigned u=0; u<ulParallelProcessCount; ++u) {
+        seqCentricAnalyses[u].reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
+        seqCentroidCalculators[u].reset(new CentroidNeighborCalculator(*gpDataHub, gPrintDirection));
       }
 
       //analyze real and simulation data about each centroid
@@ -777,10 +769,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       //allocate analysis object
       CentricAnalysis.reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
       //allocate centroid neigbor calculator
-      if (gParameters.GetMaxGeographicClusterSizeType() == DISTANCETYPE)
-        CentroidCalculator.reset(new CentroidNeighborCalculatorByDistance(*gpDataHub, gPrintDirection));
-      else
-        CentroidCalculator.reset(new CentroidNeighborCalculatorByPopulation(*gpDataHub, gPrintDirection));
+      CentroidCalculator.reset(new CentroidNeighborCalculator(*gpDataHub, gPrintDirection));
 
       //analyze real and simulation data about each centroid
       boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
@@ -1292,8 +1281,6 @@ void AnalysisRunner::RemoveTopClusterData() {
          //could be negative.
          //--m_pData->m_nTracts;
        }
-       //re-calculate max circle size 
-       gpDataHub->SetMaxCircleSize();
        //re-calculate neighbors counts about each centroid 
        gpDataHub->AdjustNeighborCounts();
      }
