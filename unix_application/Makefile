@@ -125,6 +125,7 @@ SRC         := Main.cpp \
 	             $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/OrdinalLikelihoodCalculation.cpp \
 	             $(SATDATA)/GridTractCoordinates.cpp \
+	             $(SATDATA)/CentroidNeighbors.cpp \
 	             $(SATDATA)/MakeNeighbors.cpp \
 	             $(SATDATA)/PopulationData.cpp \
 	             $(SATDATA)/PurelySpatialData.cpp \

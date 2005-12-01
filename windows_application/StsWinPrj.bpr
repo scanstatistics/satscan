@@ -138,7 +138,8 @@
       ..\calculation\RunTimeComponents.obj stsDlgExecuteOptions.obj 
       ..\calculation\utility\stsCentricAlgoJobSource.obj 
       ..\calculation\utility\stsCentricAlgoFunctor.obj 
-      ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj"/>
+      ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj 
+      ..\calculation\satscan_data\CentroidNeighbors.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

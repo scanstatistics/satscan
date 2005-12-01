@@ -131,7 +131,8 @@
       ..\calculation\utility\stsCentricAlgoJobSource.obj 
       ..\calculation\utility\stsCentricAlgoFunctor.obj 
       ..\calculation\utility\AsynchronouslyAccessible.obj 
-      ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj"/>
+      ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj 
+      ..\calculation\satscan_data\CentroidNeighbors.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
