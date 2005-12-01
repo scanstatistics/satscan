@@ -23,7 +23,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
-                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS};
+                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -48,7 +48,7 @@ enum CriteriaSecondaryClustersType {NOGEOOVERLAP=0, NOCENTROIDSINOTHER, NOCENTRO
 /** interperation types for maximum temporal size */
 enum TemporalSizeType              {PERCENTAGETYPE=0, TIMETYPE};
 /** interperation types for maximum spatial size */
-enum SpatialSizeType               {PERCENTOFPOPULATIONTYPE=0, DISTANCETYPE, PERCENTOFPOPULATIONFILETYPE};
+enum SpatialSizeType               {PERCENTOFPOPULATION=0, MAXDISTANCE, PERCENTOFMAXCIRCLEFILE};
 /** defines how simulated data will be created - only pertinent for Poisson */
 enum SimulationType                {STANDARD=0, HA_RANDOMIZATION, FILESOURCE};
 /** purpose of multiple data sets */
@@ -90,6 +90,7 @@ class CParameters {
     SpatialSizeType                     geMaxGeographicClusterSizeType;         /** maximum spatial cluster value type */
     bool                                gbRestrictReportedClusters;             /** indicates whether reported clusters are limited to specified maximum size */
     float                               gfMaxReportedGeographicClusterSize;     /** maximum spatial cluster size reported */
+    SpatialSizeType                     geMaxReportedGeographicClusterSizeType; /** maximum spatial cluster value type for reported clusters */
     /* Maximum temporal cluster variables */
     float                               gfMaxTemporalClusterSize;               /** maximum value for temporal cluster */
     TemporalSizeType                    geMaxTemporalClusterSizeType;           /** maximum temporal cluster value type */
@@ -217,11 +218,12 @@ class CParameters {
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     float                               GetMaximumGeographicClusterSize() const {return gfMaxGeographicClusterSize;}
     SpatialSizeType                     GetMaxGeographicClusterSizeType() const {return geMaxGeographicClusterSizeType;}
-    bool                                GetMaxGeoClusterSizeTypeIsPopulationBased() const {return geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONTYPE ||
-                                                                                                  geMaxGeographicClusterSizeType == PERCENTOFPOPULATIONFILETYPE;}
+    bool                                GetMaxGeoClusterSizeTypeIsPopulationBased() const {return geMaxGeographicClusterSizeType == PERCENTOFPOPULATION ||
+                                                                                                  geMaxGeographicClusterSizeType == PERCENTOFMAXCIRCLEFILE;}
     float                               GetMaximumTemporalClusterSize() const {return gfMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
+    SpatialSizeType                     GetMaxReportedGeographicClusterSizeType() const {return geMaxReportedGeographicClusterSizeType;}
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
     bool                                GetNonCompactnessPenalty() const {return gbNonCompactnessPenalty;}
     unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
@@ -304,7 +306,8 @@ class CParameters {
     void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false);
     void                                SetMaximumGeographicClusterSize(float fMaxGeographicClusterSize);
     void                                SetMaximumReportedGeographicalClusterSize(float fMaxReportedGeographicClusterSize);
-    void                                SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType);
+    void                                SetMaximumReportedSpatialClusterSizeType(SpatialSizeType eSpatialSizeType);
+    void                                SetMaximumSpatialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);

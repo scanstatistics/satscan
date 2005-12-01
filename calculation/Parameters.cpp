@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 74;
+const int CParameters::giNumParameters 	              = 75;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -36,84 +36,85 @@ CParameters &CParameters::operator=(const CParameters &rhs) {
 }
 
 bool  CParameters::operator==(const CParameters& rhs) const {
-  if (geSpatialWindowType                 != rhs.geSpatialWindowType) return false;
-  if (gvEllipseShapes                     != rhs.gvEllipseShapes) return false;
-  if (gvEllipseRotations                  != rhs.gvEllipseRotations) return false;
-  if (gbNonCompactnessPenalty             != rhs.gbNonCompactnessPenalty) return false;
-  if (glTotalNumEllipses                  != rhs.glTotalNumEllipses) return false;
-  if (geAnalysisType                      != rhs.geAnalysisType) return false;
-  if (geAreaScanRate                      != rhs.geAreaScanRate) return false;
-  if (geProbabilityModelType              != rhs.geProbabilityModelType) return false;
-  if (geRiskFunctionType                  != rhs.geRiskFunctionType) return false;
-  if (giReplications                      != rhs.giReplications) return false;
-  if (gbPowerCalculation                  != rhs.gbPowerCalculation) return false;
-  if (gdPower_X                           != rhs.gdPower_X) return false;
-  if (gdPower_Y                           != rhs.gdPower_Y) return false;
-  if (gsStudyPeriodStartDate              != rhs.gsStudyPeriodStartDate) return false;
-  if (gsStudyPeriodEndDate                != rhs.gsStudyPeriodEndDate) return false;
-  if (gfMaxGeographicClusterSize          != rhs.gfMaxGeographicClusterSize) return false;
-  if (gfMaxTemporalClusterSize            != rhs.gfMaxTemporalClusterSize) return false;
-  if (geIncludeClustersType               != rhs.geIncludeClustersType) return false;
-  if (geTimeAggregationUnitsType          != rhs.geTimeAggregationUnitsType) return false;
-  if (glTimeAggregationLength             != rhs.glTimeAggregationLength) return false;
-  if (geTimeTrendAdjustType               != rhs.geTimeTrendAdjustType) return false;
-  if (gdTimeTrendAdjustPercentage         != rhs.gdTimeTrendAdjustPercentage) return false;
-  if (gbIncludePurelySpatialClusters      != rhs.gbIncludePurelySpatialClusters) return false;
-  if (gbIncludePurelyTemporalClusters     != rhs.gbIncludePurelyTemporalClusters) return false;
-  if (gvCaseFilenames                     != rhs.gvCaseFilenames) return false;
-  if (gvControlFilenames                  != rhs.gvControlFilenames) return false;
-  if (gvPopulationFilenames               != rhs.gvPopulationFilenames) return false;
-  if (gsCoordinatesFileName               != rhs.gsCoordinatesFileName) return false;
-  if (gsSpecialGridFileName               != rhs.gsSpecialGridFileName) return false;
-  if (gbUseSpecialGridFile                != rhs.gbUseSpecialGridFile) return false;
-  if (gsMaxCirclePopulationFileName       != rhs.gsMaxCirclePopulationFileName) return false;
-  if (gePrecisionOfTimesType              != rhs.gePrecisionOfTimesType) return false;
-  if (giDimensionsOfData                  != rhs.giDimensionsOfData) return false;
-  if (geCoordinatesType                   != rhs.geCoordinatesType) return false;
-  if (gsOutputFileName                    != rhs.gsOutputFileName) return false;
-  if (gbOutputSimLogLikeliRatiosAscii     != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
-  if (gbOutputRelativeRisksAscii          != rhs.gbOutputRelativeRisksAscii) return false;
-  if (gbSequentialRuns                    != rhs.gbSequentialRuns) return false;
-  if (giNumSequentialRuns                 != rhs.giNumSequentialRuns) return false;
-  if (gbSequentialCutOffPValue            != rhs.gbSequentialCutOffPValue) return false;
-  if (gbValidatePriorToCalc               != rhs.gbValidatePriorToCalc) return false;
-  if (gsProspectiveStartDate              != rhs.gsProspectiveStartDate) return false;
-  if (gbOutputAreaSpecificAscii           != rhs.gbOutputAreaSpecificAscii) return false;
-  if (gbOutputClusterLevelAscii           != rhs.gbOutputClusterLevelAscii) return false;
-  if (geCriteriaSecondClustersType        != rhs.geCriteriaSecondClustersType) return false;
-  if (geMaxTemporalClusterSizeType        != rhs.geMaxTemporalClusterSizeType) return false;
-  if (geMaxGeographicClusterSizeType      != rhs.geMaxGeographicClusterSizeType) return false;
-  if (gbOutputClusterLevelDBase           != rhs.gbOutputClusterLevelDBase) return false;
-  if (gbOutputAreaSpecificDBase           != rhs.gbOutputAreaSpecificDBase) return false;
-  if (gbOutputRelativeRisksDBase          != rhs.gbOutputRelativeRisksDBase) return false;
-  if (gbOutputSimLogLikeliRatiosDBase     != rhs.gbOutputSimLogLikeliRatiosDBase) return false;
-  if (gsRunHistoryFilename                != rhs.gsRunHistoryFilename) return false;
-  if (gbLogRunHistory                     != rhs.gbLogRunHistory) return false;
-  if (gsParametersSourceFileName          != rhs.gsParametersSourceFileName) return false;
-  if (gsEndRangeStartDate                 != rhs.gsEndRangeStartDate) return false;
-  if (gsEndRangeEndDate                   != rhs.gsEndRangeEndDate) return false;
-  if (gsStartRangeStartDate               != rhs.gsStartRangeStartDate) return false;
-  if (gsStartRangeEndDate                 != rhs.gsStartRangeEndDate) return false;
-  if (gdTimeTrendConverge		  != rhs.gdTimeTrendConverge) return false;
-  if (gbEarlyTerminationSimulations       != rhs.gbEarlyTerminationSimulations) return false;
-  if (gbRestrictReportedClusters          != rhs.gbRestrictReportedClusters) return false;
-  if (gfMaxReportedGeographicClusterSize  != rhs.gfMaxReportedGeographicClusterSize) return false;
-  if (geSimulationType                    != rhs.geSimulationType) return false;
-  if (gsSimulationDataSourceFileName      != rhs.gsSimulationDataSourceFileName) return false;
-  if (gsAdjustmentsByRelativeRisksFileName!= rhs.gsAdjustmentsByRelativeRisksFileName) return false;
-  if (gbOutputSimulationData              != rhs.gbOutputSimulationData) return false;
-  if (gsSimulationDataOutputFilename      != rhs.gsSimulationDataOutputFilename) return false;
-  if (gbAdjustForEarlierAnalyses          != rhs.gbAdjustForEarlierAnalyses) return false;
-  if (gbUseAdjustmentsForRRFile           != rhs.gbUseAdjustmentsForRRFile) return false;
-  if (geSpatialAdjustmentType             != rhs.geSpatialAdjustmentType) return false;
-  if (geMultipleSetPurposeType            != rhs.geMultipleSetPurposeType) return false;
-  //if (gCreationVersion                    != rhs.gCreationVersion) return false;
-  if (gbUsePopulationFile                 != rhs.gbUsePopulationFile) return false;
-  //if (glRandomizationSeed                 != rhs.glRandomizationSeed) return false;
-  if (gbReportCriticalValues              != rhs.gbReportCriticalValues) return false;
-  //if (geExecutionType                     != rhs.geExecutionType) return false;
-  if (giNumRequestedParallelProcesses     != rhs.giNumRequestedParallelProcesses) return false;
-  if (gbSuppressWarnings                  != rhs.gbSuppressWarnings) return false;
+  if (geSpatialWindowType                    != rhs.geSpatialWindowType) return false;
+  if (gvEllipseShapes                        != rhs.gvEllipseShapes) return false;
+  if (gvEllipseRotations                     != rhs.gvEllipseRotations) return false;
+  if (gbNonCompactnessPenalty                != rhs.gbNonCompactnessPenalty) return false;
+  if (glTotalNumEllipses                     != rhs.glTotalNumEllipses) return false;
+  if (geAnalysisType                         != rhs.geAnalysisType) return false;
+  if (geAreaScanRate                         != rhs.geAreaScanRate) return false;
+  if (geProbabilityModelType                 != rhs.geProbabilityModelType) return false;
+  if (geRiskFunctionType                     != rhs.geRiskFunctionType) return false;
+  if (giReplications                         != rhs.giReplications) return false;
+  if (gbPowerCalculation                     != rhs.gbPowerCalculation) return false;
+  if (gdPower_X                              != rhs.gdPower_X) return false;
+  if (gdPower_Y                              != rhs.gdPower_Y) return false;
+  if (gsStudyPeriodStartDate                 != rhs.gsStudyPeriodStartDate) return false;
+  if (gsStudyPeriodEndDate                   != rhs.gsStudyPeriodEndDate) return false;
+  if (gfMaxGeographicClusterSize             != rhs.gfMaxGeographicClusterSize) return false;
+  if (gfMaxTemporalClusterSize               != rhs.gfMaxTemporalClusterSize) return false;
+  if (geIncludeClustersType                  != rhs.geIncludeClustersType) return false;
+  if (geTimeAggregationUnitsType             != rhs.geTimeAggregationUnitsType) return false;
+  if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
+  if (geTimeTrendAdjustType                  != rhs.geTimeTrendAdjustType) return false;
+  if (gdTimeTrendAdjustPercentage            != rhs.gdTimeTrendAdjustPercentage) return false;
+  if (gbIncludePurelySpatialClusters         != rhs.gbIncludePurelySpatialClusters) return false;
+  if (gbIncludePurelyTemporalClusters        != rhs.gbIncludePurelyTemporalClusters) return false;
+  if (gvCaseFilenames                        != rhs.gvCaseFilenames) return false;
+  if (gvControlFilenames                     != rhs.gvControlFilenames) return false;
+  if (gvPopulationFilenames                  != rhs.gvPopulationFilenames) return false;
+  if (gsCoordinatesFileName                  != rhs.gsCoordinatesFileName) return false;
+  if (gsSpecialGridFileName                  != rhs.gsSpecialGridFileName) return false;
+  if (gbUseSpecialGridFile                   != rhs.gbUseSpecialGridFile) return false;
+  if (gsMaxCirclePopulationFileName          != rhs.gsMaxCirclePopulationFileName) return false;
+  if (gePrecisionOfTimesType                 != rhs.gePrecisionOfTimesType) return false;
+  if (giDimensionsOfData                     != rhs.giDimensionsOfData) return false;
+  if (geCoordinatesType                      != rhs.geCoordinatesType) return false;
+  if (gsOutputFileName                       != rhs.gsOutputFileName) return false;
+  if (gbOutputSimLogLikeliRatiosAscii        != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
+  if (gbOutputRelativeRisksAscii             != rhs.gbOutputRelativeRisksAscii) return false;
+  if (gbSequentialRuns                       != rhs.gbSequentialRuns) return false;
+  if (giNumSequentialRuns                    != rhs.giNumSequentialRuns) return false;
+  if (gbSequentialCutOffPValue               != rhs.gbSequentialCutOffPValue) return false;
+  if (gbValidatePriorToCalc                  != rhs.gbValidatePriorToCalc) return false;
+  if (gsProspectiveStartDate                 != rhs.gsProspectiveStartDate) return false;
+  if (gbOutputAreaSpecificAscii              != rhs.gbOutputAreaSpecificAscii) return false;
+  if (gbOutputClusterLevelAscii              != rhs.gbOutputClusterLevelAscii) return false;
+  if (geCriteriaSecondClustersType           != rhs.geCriteriaSecondClustersType) return false;
+  if (geMaxTemporalClusterSizeType           != rhs.geMaxTemporalClusterSizeType) return false;
+  if (geMaxGeographicClusterSizeType         != rhs.geMaxGeographicClusterSizeType) return false;
+  if (gbOutputClusterLevelDBase              != rhs.gbOutputClusterLevelDBase) return false;
+  if (gbOutputAreaSpecificDBase              != rhs.gbOutputAreaSpecificDBase) return false;
+  if (gbOutputRelativeRisksDBase             != rhs.gbOutputRelativeRisksDBase) return false;
+  if (gbOutputSimLogLikeliRatiosDBase        != rhs.gbOutputSimLogLikeliRatiosDBase) return false;
+  if (gsRunHistoryFilename                   != rhs.gsRunHistoryFilename) return false;
+  if (gbLogRunHistory                        != rhs.gbLogRunHistory) return false;
+  if (gsParametersSourceFileName             != rhs.gsParametersSourceFileName) return false;
+  if (gsEndRangeStartDate                    != rhs.gsEndRangeStartDate) return false;
+  if (gsEndRangeEndDate                      != rhs.gsEndRangeEndDate) return false;
+  if (gsStartRangeStartDate                  != rhs.gsStartRangeStartDate) return false;
+  if (gsStartRangeEndDate                    != rhs.gsStartRangeEndDate) return false;
+  if (gdTimeTrendConverge		                 != rhs.gdTimeTrendConverge) return false;
+  if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
+  if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
+  if (gfMaxReportedGeographicClusterSize     != rhs.gfMaxReportedGeographicClusterSize) return false;
+  if (geSimulationType                       != rhs.geSimulationType) return false;
+  if (gsSimulationDataSourceFileName         != rhs.gsSimulationDataSourceFileName) return false;
+  if (gsAdjustmentsByRelativeRisksFileName   != rhs.gsAdjustmentsByRelativeRisksFileName) return false;
+  if (gbOutputSimulationData                 != rhs.gbOutputSimulationData) return false;
+  if (gsSimulationDataOutputFilename         != rhs.gsSimulationDataOutputFilename) return false;
+  if (gbAdjustForEarlierAnalyses             != rhs.gbAdjustForEarlierAnalyses) return false;
+  if (gbUseAdjustmentsForRRFile              != rhs.gbUseAdjustmentsForRRFile) return false;
+  if (geSpatialAdjustmentType                != rhs.geSpatialAdjustmentType) return false;
+  if (geMultipleSetPurposeType               != rhs.geMultipleSetPurposeType) return false;
+  //if (gCreationVersion                       != rhs.gCreationVersion) return false;
+  if (gbUsePopulationFile                    != rhs.gbUsePopulationFile) return false;
+  //if (glRandomizationSeed                    != rhs.glRandomizationSeed) return false;
+  if (gbReportCriticalValues                 != rhs.gbReportCriticalValues) return false;
+  //if (geExecutionType                        != rhs.geExecutionType) return false;
+  if (giNumRequestedParallelProcesses        != rhs.giNumRequestedParallelProcesses) return false;
+  if (gbSuppressWarnings                     != rhs.gbSuppressWarnings) return false;
+  if (geMaxReportedGeographicClusterSizeType != rhs.geMaxReportedGeographicClusterSizeType) return false;
   return true;
 }
 
@@ -172,84 +173,85 @@ void CParameters::ConvertRelativePath(std::string & sInputFilename) {
 /** Copies all class variables from the given CParameters object (rhs) into this one */
 void CParameters::Copy(const CParameters &rhs) {
   try {
-    geSpatialWindowType                 = rhs.geSpatialWindowType;
-    gvEllipseShapes                     = rhs.gvEllipseShapes;
-    gvEllipseRotations                  = rhs.gvEllipseRotations;
-    gbNonCompactnessPenalty             = rhs.gbNonCompactnessPenalty;
-    glTotalNumEllipses                  = rhs.glTotalNumEllipses;
-    geAnalysisType                      = rhs.geAnalysisType;
-    geAreaScanRate                      = rhs.geAreaScanRate;
-    geProbabilityModelType              = rhs.geProbabilityModelType;
-    geRiskFunctionType                  = rhs.geRiskFunctionType;
-    giReplications                      = rhs.giReplications;
-    gbPowerCalculation                  = rhs.gbPowerCalculation;
-    gdPower_X                           = rhs.gdPower_X;
-    gdPower_Y                           = rhs.gdPower_Y;
-    gsStudyPeriodStartDate              = rhs.gsStudyPeriodStartDate;
-    gsStudyPeriodEndDate                = rhs.gsStudyPeriodEndDate;
-    gfMaxGeographicClusterSize          = rhs.gfMaxGeographicClusterSize;
-    gfMaxTemporalClusterSize            = rhs.gfMaxTemporalClusterSize;
-    geIncludeClustersType               = rhs.geIncludeClustersType;
-    geTimeAggregationUnitsType          = rhs.geTimeAggregationUnitsType;
-    glTimeAggregationLength             = rhs.glTimeAggregationLength;
-    geTimeTrendAdjustType               = rhs.geTimeTrendAdjustType;
-    gdTimeTrendAdjustPercentage         = rhs.gdTimeTrendAdjustPercentage;
-    gbIncludePurelySpatialClusters      = rhs.gbIncludePurelySpatialClusters;
-    gbIncludePurelyTemporalClusters     = rhs.gbIncludePurelyTemporalClusters;
-    gvCaseFilenames                     = rhs.gvCaseFilenames;
-    gvControlFilenames                  = rhs.gvControlFilenames;
-    gvPopulationFilenames               = rhs.gvPopulationFilenames;
-    gsCoordinatesFileName               = rhs.gsCoordinatesFileName;
-    gsSpecialGridFileName               = rhs.gsSpecialGridFileName;
-    gbUseSpecialGridFile                = rhs.gbUseSpecialGridFile;
-    gsMaxCirclePopulationFileName       = rhs.gsMaxCirclePopulationFileName;
-    gePrecisionOfTimesType              = rhs.gePrecisionOfTimesType;
-    giDimensionsOfData                  = rhs.giDimensionsOfData;
-    geCoordinatesType                   = rhs.geCoordinatesType;
-    gsOutputFileName                    = rhs.gsOutputFileName;
-    gbOutputSimLogLikeliRatiosAscii     = rhs.gbOutputSimLogLikeliRatiosAscii;
-    gbOutputRelativeRisksAscii          = rhs.gbOutputRelativeRisksAscii;
-    gbSequentialRuns                    = rhs.gbSequentialRuns;
-    giNumSequentialRuns                 = rhs.giNumSequentialRuns;
-    gbSequentialCutOffPValue            = rhs.gbSequentialCutOffPValue;
-    gbValidatePriorToCalc               = rhs.gbValidatePriorToCalc;
-    gsProspectiveStartDate              = rhs.gsProspectiveStartDate;
-    gbOutputAreaSpecificAscii           = rhs.gbOutputAreaSpecificAscii;
-    gbOutputClusterLevelAscii           = rhs.gbOutputClusterLevelAscii;
-    geCriteriaSecondClustersType        = rhs.geCriteriaSecondClustersType;
-    geMaxTemporalClusterSizeType        = rhs.geMaxTemporalClusterSizeType;
-    geMaxGeographicClusterSizeType      = rhs.geMaxGeographicClusterSizeType;
-    gbOutputClusterLevelDBase           = rhs.gbOutputClusterLevelDBase;
-    gbOutputAreaSpecificDBase           = rhs.gbOutputAreaSpecificDBase;
-    gbOutputRelativeRisksDBase          = rhs.gbOutputRelativeRisksDBase;
-    gbOutputSimLogLikeliRatiosDBase     = rhs.gbOutputSimLogLikeliRatiosDBase;
-    gsRunHistoryFilename                = rhs.gsRunHistoryFilename;
-    gbLogRunHistory                     = rhs.gbLogRunHistory;
-    gsParametersSourceFileName          = rhs.gsParametersSourceFileName;
-    gsEndRangeStartDate                 = rhs.gsEndRangeStartDate;
-    gsEndRangeEndDate                   = rhs.gsEndRangeEndDate;
-    gsStartRangeStartDate               = rhs.gsStartRangeStartDate;
-    gsStartRangeEndDate                 = rhs.gsStartRangeEndDate;
-    gdTimeTrendConverge			= rhs.gdTimeTrendConverge;
-    gbEarlyTerminationSimulations       = rhs.gbEarlyTerminationSimulations;
-    gbRestrictReportedClusters          = rhs.gbRestrictReportedClusters;
-    gfMaxReportedGeographicClusterSize  = rhs.gfMaxReportedGeographicClusterSize;
-    geSimulationType                    = rhs.geSimulationType;
-    gsSimulationDataSourceFileName      = rhs.gsSimulationDataSourceFileName;
-    gsAdjustmentsByRelativeRisksFileName= rhs.gsAdjustmentsByRelativeRisksFileName;
-    gbOutputSimulationData              = rhs.gbOutputSimulationData;
-    gsSimulationDataOutputFilename      = rhs.gsSimulationDataOutputFilename;
-    gbAdjustForEarlierAnalyses          = rhs.gbAdjustForEarlierAnalyses;
-    gbUseAdjustmentsForRRFile           = rhs.gbUseAdjustmentsForRRFile;
-    geSpatialAdjustmentType             = rhs.geSpatialAdjustmentType;
-    geMultipleSetPurposeType            = rhs.geMultipleSetPurposeType;
-    gCreationVersion                    = rhs.gCreationVersion;
-    gbUsePopulationFile                 = rhs.gbUsePopulationFile;
-    glRandomizationSeed                 = rhs.glRandomizationSeed;
-    gbReportCriticalValues              = rhs.gbReportCriticalValues;
-    geExecutionType                     = rhs.geExecutionType;
-    giNumRequestedParallelProcesses     = rhs.giNumRequestedParallelProcesses;
-    gbSuppressWarnings                  = rhs.gbSuppressWarnings;
+    geSpatialWindowType                    = rhs.geSpatialWindowType;
+    gvEllipseShapes                        = rhs.gvEllipseShapes;
+    gvEllipseRotations                     = rhs.gvEllipseRotations;
+    gbNonCompactnessPenalty                = rhs.gbNonCompactnessPenalty;
+    glTotalNumEllipses                     = rhs.glTotalNumEllipses;
+    geAnalysisType                         = rhs.geAnalysisType;
+    geAreaScanRate                         = rhs.geAreaScanRate;
+    geProbabilityModelType                 = rhs.geProbabilityModelType;
+    geRiskFunctionType                     = rhs.geRiskFunctionType;
+    giReplications                         = rhs.giReplications;
+    gbPowerCalculation                     = rhs.gbPowerCalculation;
+    gdPower_X                              = rhs.gdPower_X;
+    gdPower_Y                              = rhs.gdPower_Y;
+    gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
+    gsStudyPeriodEndDate                   = rhs.gsStudyPeriodEndDate;
+    gfMaxGeographicClusterSize             = rhs.gfMaxGeographicClusterSize;
+    gfMaxTemporalClusterSize               = rhs.gfMaxTemporalClusterSize;
+    geIncludeClustersType                  = rhs.geIncludeClustersType;
+    geTimeAggregationUnitsType             = rhs.geTimeAggregationUnitsType;
+    glTimeAggregationLength                = rhs.glTimeAggregationLength;
+    geTimeTrendAdjustType                  = rhs.geTimeTrendAdjustType;
+    gdTimeTrendAdjustPercentage            = rhs.gdTimeTrendAdjustPercentage;
+    gbIncludePurelySpatialClusters         = rhs.gbIncludePurelySpatialClusters;
+    gbIncludePurelyTemporalClusters        = rhs.gbIncludePurelyTemporalClusters;
+    gvCaseFilenames                        = rhs.gvCaseFilenames;
+    gvControlFilenames                     = rhs.gvControlFilenames;
+    gvPopulationFilenames                  = rhs.gvPopulationFilenames;
+    gsCoordinatesFileName                  = rhs.gsCoordinatesFileName;
+    gsSpecialGridFileName                  = rhs.gsSpecialGridFileName;
+    gbUseSpecialGridFile                   = rhs.gbUseSpecialGridFile;
+    gsMaxCirclePopulationFileName          = rhs.gsMaxCirclePopulationFileName;
+    gePrecisionOfTimesType                 = rhs.gePrecisionOfTimesType;
+    giDimensionsOfData                     = rhs.giDimensionsOfData;
+    geCoordinatesType                      = rhs.geCoordinatesType;
+    gsOutputFileName                       = rhs.gsOutputFileName;
+    gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
+    gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
+    gbSequentialRuns                       = rhs.gbSequentialRuns;
+    giNumSequentialRuns                    = rhs.giNumSequentialRuns;
+    gbSequentialCutOffPValue               = rhs.gbSequentialCutOffPValue;
+    gbValidatePriorToCalc                  = rhs.gbValidatePriorToCalc;
+    gsProspectiveStartDate                 = rhs.gsProspectiveStartDate;
+    gbOutputAreaSpecificAscii              = rhs.gbOutputAreaSpecificAscii;
+    gbOutputClusterLevelAscii              = rhs.gbOutputClusterLevelAscii;
+    geCriteriaSecondClustersType           = rhs.geCriteriaSecondClustersType;
+    geMaxTemporalClusterSizeType           = rhs.geMaxTemporalClusterSizeType;
+    geMaxGeographicClusterSizeType         = rhs.geMaxGeographicClusterSizeType;
+    gbOutputClusterLevelDBase              = rhs.gbOutputClusterLevelDBase;
+    gbOutputAreaSpecificDBase              = rhs.gbOutputAreaSpecificDBase;
+    gbOutputRelativeRisksDBase             = rhs.gbOutputRelativeRisksDBase;
+    gbOutputSimLogLikeliRatiosDBase        = rhs.gbOutputSimLogLikeliRatiosDBase;
+    gsRunHistoryFilename                   = rhs.gsRunHistoryFilename;
+    gbLogRunHistory                        = rhs.gbLogRunHistory;
+    gsParametersSourceFileName             = rhs.gsParametersSourceFileName;
+    gsEndRangeStartDate                    = rhs.gsEndRangeStartDate;
+    gsEndRangeEndDate                      = rhs.gsEndRangeEndDate;
+    gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
+    gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
+    gdTimeTrendConverge			               = rhs.gdTimeTrendConverge;
+    gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
+    gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
+    gfMaxReportedGeographicClusterSize     = rhs.gfMaxReportedGeographicClusterSize;
+    geSimulationType                       = rhs.geSimulationType;
+    gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
+    gsAdjustmentsByRelativeRisksFileName   = rhs.gsAdjustmentsByRelativeRisksFileName;
+    gbOutputSimulationData                 = rhs.gbOutputSimulationData;
+    gsSimulationDataOutputFilename         = rhs.gsSimulationDataOutputFilename;
+    gbAdjustForEarlierAnalyses             = rhs.gbAdjustForEarlierAnalyses;
+    gbUseAdjustmentsForRRFile              = rhs.gbUseAdjustmentsForRRFile;
+    geSpatialAdjustmentType                = rhs.geSpatialAdjustmentType;
+    geMultipleSetPurposeType               = rhs.geMultipleSetPurposeType;
+    gCreationVersion                       = rhs.gCreationVersion;
+    gbUsePopulationFile                    = rhs.gbUsePopulationFile;
+    glRandomizationSeed                    = rhs.glRandomizationSeed;
+    gbReportCriticalValues                 = rhs.gbReportCriticalValues;
+    geExecutionType                        = rhs.geExecutionType;
+    giNumRequestedParallelProcesses        = rhs.giNumRequestedParallelProcesses;
+    gbSuppressWarnings                     = rhs.gbSuppressWarnings;
+    geMaxReportedGeographicClusterSizeType = rhs.geMaxReportedGeographicClusterSizeType;    
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -597,51 +599,51 @@ void CParameters::SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClus
 
 /** initializes global variables to default values */
 void CParameters::SetAsDefaulted() {
-  geAnalysisType                        = PURELYSPATIAL;
-  geAreaScanRate                        = HIGH;
+  geAnalysisType                           = PURELYSPATIAL;
+  geAreaScanRate                           = HIGH;
   gvCaseFilenames.resize(1);
   gvPopulationFilenames.resize(1);
-  gsCoordinatesFileName                 = "";
-  gsOutputFileName                      = "";
-  gsMaxCirclePopulationFileName         = "";
-  gePrecisionOfTimesType                = YEAR;
-  giDimensionsOfData                    = 0;
-  gbUseSpecialGridFile                  = false;
-  gsSpecialGridFileName                 = "";
-  gfMaxGeographicClusterSize            = 50.0; //GG980716
-  geMaxGeographicClusterSizeType        = PERCENTOFPOPULATIONTYPE;
-  gsStudyPeriodStartDate                = "2000/1/1";
-  gsStudyPeriodEndDate                  = "2000/12/31";
-  geIncludeClustersType                 = ALLCLUSTERS;
-  geTimeAggregationUnitsType            = NONE;
-  glTimeAggregationLength               = 0;
-  gbIncludePurelySpatialClusters        = false;
-  gfMaxTemporalClusterSize              = 50.0;//KR980707 0 GG980716;
-  geMaxTemporalClusterSizeType          = PERCENTAGETYPE;
-  giReplications                        = 999;
-  gbOutputClusterLevelDBase             = false;
-  gbOutputAreaSpecificDBase             = false;
-  gbOutputRelativeRisksDBase            = false;
-  gbOutputSimLogLikeliRatiosDBase       = false;
-  gsRunHistoryFilename                  = "";
-  gbLogRunHistory                       = true;
-  geProbabilityModelType                 = POISSON;
-  geRiskFunctionType                    = STANDARDRISK;
-  gbPowerCalculation                    = false;
-  gdPower_X                             = 0.0;
-  gdPower_Y                             = 0.0;
-  geTimeTrendAdjustType                 = NOTADJUSTED;
-  gdTimeTrendAdjustPercentage           = 0;
-  gbIncludePurelyTemporalClusters       = false;
+  gsCoordinatesFileName                    = "";
+  gsOutputFileName                         = "";
+  gsMaxCirclePopulationFileName            = "";
+  gePrecisionOfTimesType                   = YEAR;
+  giDimensionsOfData                       = 0;
+  gbUseSpecialGridFile                     = false;
+  gsSpecialGridFileName                    = "";
+  gfMaxGeographicClusterSize               = 50.0;
+  geMaxGeographicClusterSizeType           = PERCENTOFPOPULATION;
+  gsStudyPeriodStartDate                   = "2000/1/1";
+  gsStudyPeriodEndDate                     = "2000/12/31";
+  geIncludeClustersType                    = ALLCLUSTERS;
+  geTimeAggregationUnitsType               = NONE;
+  glTimeAggregationLength                  = 0;
+  gbIncludePurelySpatialClusters           = false;
+  gfMaxTemporalClusterSize                 = 50.0;
+  geMaxTemporalClusterSizeType             = PERCENTAGETYPE;
+  giReplications                           = 999;
+  gbOutputClusterLevelDBase                = false;
+  gbOutputAreaSpecificDBase                = false;
+  gbOutputRelativeRisksDBase               = false;
+  gbOutputSimLogLikeliRatiosDBase          = false;
+  gsRunHistoryFilename                     = "";
+  gbLogRunHistory                          = true;
+  geProbabilityModelType                   = POISSON;
+  geRiskFunctionType                       = STANDARDRISK;
+  gbPowerCalculation                       = false;
+  gdPower_X                                = 0.0;
+  gdPower_Y                                = 0.0;
+  geTimeTrendAdjustType                    = NOTADJUSTED;
+  gdTimeTrendAdjustPercentage              = 0;
+  gbIncludePurelyTemporalClusters          = false;
   gvControlFilenames.resize(1);
-  geCoordinatesType                     = LATLON;
-  gbOutputSimLogLikeliRatiosAscii       = false;
-  gbSequentialRuns                      = false;
-  giNumSequentialRuns                   = 0;
-  gbSequentialCutOffPValue              = 0.0;
-  gbValidatePriorToCalc                 = true;
-  gbOutputRelativeRisksAscii            = false;
-  geSpatialWindowType                   = CIRCULAR;
+  geCoordinatesType                        = LATLON;
+  gbOutputSimLogLikeliRatiosAscii          = false;
+  gbSequentialRuns                         = false;
+  giNumSequentialRuns                      = 0;
+  gbSequentialCutOffPValue                 = 0.0;
+  gbValidatePriorToCalc                    = true;
+  gbOutputRelativeRisksAscii               = false;
+  geSpatialWindowType                      = CIRCULAR;
   gvEllipseShapes.clear();
   gvEllipseShapes.push_back(1.5);
   gvEllipseShapes.push_back(2);
@@ -657,38 +659,39 @@ void CParameters::SetAsDefaulted() {
   glTotalNumEllipses = 0;
   for (size_t t=0; t < gvEllipseRotations.size(); ++t)
      glTotalNumEllipses += gvEllipseRotations[t];
-  gsProspectiveStartDate                = "2000/12/31";
-  gbOutputAreaSpecificAscii             = false;
-  gbOutputClusterLevelAscii             = false;
-  geCriteriaSecondClustersType          = NOGEOOVERLAP;
-  glTotalNumEllipses                    = 0;
-  gbNonCompactnessPenalty               = false;
-  gsEndRangeStartDate                   = gsStudyPeriodStartDate;
-  gsEndRangeEndDate                     = gsStudyPeriodEndDate;
-  gsStartRangeStartDate                 = gsStudyPeriodStartDate;
-  gsStartRangeEndDate                   = gsStudyPeriodEndDate;
-  gdTimeTrendConverge			= 0.0000001;
-  gbEarlyTerminationSimulations         = false;
-  gbRestrictReportedClusters            = false;
-  gfMaxReportedGeographicClusterSize    = gfMaxGeographicClusterSize;
-  geSimulationType                      = STANDARD;
-  gsSimulationDataSourceFileName        = "";
-  gsAdjustmentsByRelativeRisksFileName  = "";
-  gbOutputSimulationData                = false;
-  gsSimulationDataOutputFilename        = "";
-  gbAdjustForEarlierAnalyses            = false;
-  gbUseAdjustmentsForRRFile             = false;
-  geSpatialAdjustmentType               = NO_SPATIAL_ADJUSTMENT;
-  geMultipleSetPurposeType              = MULTIVARIATE;
-  gCreationVersion.iMajor               = atoi(VERSION_MAJOR);
-  gCreationVersion.iMinor               = atoi(VERSION_MINOR);
-  gCreationVersion.iRelease             = atoi(VERSION_RELEASE);
-  gbUsePopulationFile                   = false;
-  glRandomizationSeed                   = RandomNumberGenerator::glDefaultSeed;
-  gbReportCriticalValues                = false;
-  geExecutionType                       = AUTOMATIC;
-  giNumRequestedParallelProcesses       = 0;
-  gbSuppressWarnings                    = false;
+  gsProspectiveStartDate                   = "2000/12/31";
+  gbOutputAreaSpecificAscii                = false;
+  gbOutputClusterLevelAscii                = false;
+  geCriteriaSecondClustersType             = NOGEOOVERLAP;
+  glTotalNumEllipses                       = 0;
+  gbNonCompactnessPenalty                  = false;
+  gsEndRangeStartDate                      = gsStudyPeriodStartDate;
+  gsEndRangeEndDate                        = gsStudyPeriodEndDate;
+  gsStartRangeStartDate                    = gsStudyPeriodStartDate;
+  gsStartRangeEndDate                      = gsStudyPeriodEndDate;
+  gdTimeTrendConverge			                 = 0.0000001;
+  gbEarlyTerminationSimulations            = false;
+  gbRestrictReportedClusters               = false;
+  gfMaxReportedGeographicClusterSize       = gfMaxGeographicClusterSize;
+  geSimulationType                         = STANDARD;
+  gsSimulationDataSourceFileName           = "";
+  gsAdjustmentsByRelativeRisksFileName     = "";
+  gbOutputSimulationData                   = false;
+  gsSimulationDataOutputFilename           = "";
+  gbAdjustForEarlierAnalyses               = false;
+  gbUseAdjustmentsForRRFile                = false;
+  geSpatialAdjustmentType                  = NO_SPATIAL_ADJUSTMENT;
+  geMultipleSetPurposeType                 = MULTIVARIATE;
+  gCreationVersion.iMajor                  = atoi(VERSION_MAJOR);
+  gCreationVersion.iMinor                  = atoi(VERSION_MINOR);
+  gCreationVersion.iRelease                = atoi(VERSION_RELEASE);
+  gbUsePopulationFile                      = false;
+  glRandomizationSeed                      = RandomNumberGenerator::glDefaultSeed;
+  gbReportCriticalValues                   = false;
+  geExecutionType                          = AUTOMATIC;
+  giNumRequestedParallelProcesses          = 0;
+  gbSuppressWarnings                       = false;
+  geMaxReportedGeographicClusterSizeType   = PERCENTOFPOPULATION;
 }
 
 /** Sets dimensions of input data. */
@@ -776,18 +779,34 @@ void CParameters::SetMaximumReportedGeographicalClusterSize(float fMaxReportedGe
   gfMaxReportedGeographicClusterSize = fMaxReportedGeographicClusterSize;
 }
 
-/** Sets maximum spacial cluster size type. Throws exception if out of range. */
-void CParameters::SetMaximumSpacialClusterSizeType(SpatialSizeType eSpatialSizeType) {
+/** Sets maximum spatial cluster size type for reported clusters. Throws exception if out of range. */
+void CParameters::SetMaximumReportedSpatialClusterSizeType(SpatialSizeType eSpatialSizeType) {
   ZdString      sLabel;
 
   try {
-    if (PERCENTOFPOPULATIONTYPE > eSpatialSizeType || PERCENTOFPOPULATIONFILETYPE < eSpatialSizeType)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMaximumSpacialClusterSizeType()",
-                            eSpatialSizeType, PERCENTOFPOPULATIONTYPE, PERCENTOFPOPULATIONFILETYPE);
+    if (PERCENTOFPOPULATION > eSpatialSizeType || PERCENTOFMAXCIRCLEFILE < eSpatialSizeType)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMaximumReportedSpatialClusterSizeType()",
+                            eSpatialSizeType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
+    geMaxReportedGeographicClusterSizeType = eSpatialSizeType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetMaximumReportedSpatialClusterSizeType()","CParameters");
+    throw;
+  }
+}
+
+/** Sets maximum spatial cluster size type. Throws exception if out of range. */
+void CParameters::SetMaximumSpatialClusterSizeType(SpatialSizeType eSpatialSizeType) {
+  ZdString      sLabel;
+
+  try {
+    if (PERCENTOFPOPULATION > eSpatialSizeType || PERCENTOFMAXCIRCLEFILE < eSpatialSizeType)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMaximumSpatialClusterSizeType()",
+                            eSpatialSizeType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
     geMaxGeographicClusterSizeType = eSpatialSizeType;
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetMaximumSpacialClusterSizeType()","CParameters");
+    x.AddCallpath("SetMaximumSpatialClusterSizeType()","CParameters");
     throw;
   }
 }
@@ -1243,10 +1262,11 @@ void CParameters::SetVersion(const CreationVersion& vVersion) {
 bool CParameters::UseMaxCirclePopulationFile() const {
   bool  bRequiredForProspective, bAskForByUser;
 
-  bAskForByUser = GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE;
+  bAskForByUser = GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE ||
+                  GetMaxReportedGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE;
   bAskForByUser &= GetAnalysisType() != PURELYTEMPORAL && GetAnalysisType() != PROSPECTIVEPURELYTEMPORAL;
   bRequiredForProspective = GetAnalysisType() == PROSPECTIVESPACETIME;
-  bRequiredForProspective &= GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATIONFILETYPE;
+  bRequiredForProspective &= GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE;
   bRequiredForProspective &= GetAdjustForEarlierAnalyses();
 
   return bAskForByUser || bRequiredForProspective;
