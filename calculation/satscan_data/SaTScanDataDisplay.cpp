@@ -219,7 +219,6 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
     fprintf(fp, "TotalPop............: %.0f\n", gpDataSets->GetDataSet(t).GetTotalPopulation());
     fprintf(fp, "TotalMeasureAtStart.: %.0f\n", gpDataSets->GetDataSet(t).GetTotalMeasureAtStart());
     fprintf(fp, "TotalMeasure........: %.0f\n", gpDataSets->GetDataSet(t).GetTotalMeasure());
-    fprintf(fp, "MaxCircleSize.......: %.2f\n", m_nMaxCircleSize);
   }
   AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
 }
