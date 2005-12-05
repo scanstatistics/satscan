@@ -677,7 +677,7 @@ void CCluster::SetCenter(tract_t nCenter) {
 /** Set ellipse offset as defined in CSaTScanData. */
 void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
   m_iEllipseOffset = iOffset;
-  SetNonCompactnessPenalty(iOffset == 0 || !DataHub.GetParameters().GetNonCompactnessPenalty() ? 1 : DataHub.GetEllipseShape(iOffset));
+  SetNonCompactnessPenalty(DataHub.GetEllipseShape(iOffset), DataHub.GetParameters().GetNonCompactnessPenaltyPower());
 }
 
 /** Set class member 'm_MostCentralLocation' from neighbor information obtained
@@ -687,8 +687,8 @@ void CCluster::SetMostCentralLocationIndex(const CSaTScanData& DataHub) {
 }
 
 /** Sets non compactness penalty for shape. */
-void CCluster::SetNonCompactnessPenalty(double dEllipseShape) {
-  m_NonCompactnessPenalty = CalculateNonCompactnessPenalty(dEllipseShape);
+void CCluster::SetNonCompactnessPenalty(double dEllipseShape, double dPower) {
+  m_NonCompactnessPenalty = CalculateNonCompactnessPenalty(dEllipseShape, dPower);
 }
 
 /** Set class members 'm_CartesianRadius' and 'm_MostCentralLocation' from

@@ -108,7 +108,7 @@ class CCluster {
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
     virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
-    void                          SetNonCompactnessPenalty(double dEllipseShape);
+    void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
     void                          SetRate(int nRate);
     virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
