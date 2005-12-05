@@ -1,19 +1,16 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #ifndef stsFrmAdvancedParametersH
 #define stsFrmAdvancedParametersH
-//---------------------------------------------------------------------------
-#include <Classes.hpp>
-#include <Controls.hpp>
-#include <StdCtrls.hpp>
-#include <Forms.hpp>
-#include <ExtCtrls.hpp>
+//******************************************************************************
 #include "stsFrmAnalysisParameters.h"
-#include <Dialogs.hpp>
-#include <ComCtrls.hpp>
-#include "Grids_ts.hpp"
-#include "TSGrid.hpp"
 #include <Buttons.hpp>
-//---------------------------------------------------------------------------
+#include <Classes.hpp>
+#include <ComCtrls.hpp>
+#include <Controls.hpp>
+#include <Dialogs.hpp>
+#include <ExtCtrls.hpp>
+#include <StdCtrls.hpp>
+
 const int INPUT_TABS     = 1;
 const int ANALYSIS_TABS  = 2;
 const int OUTPUT_TABS    = 3;
@@ -54,9 +51,6 @@ __published:	// IDE-managed Components
    TCheckBox *chkAdjustForKnownRelativeRisks;
    TTabSheet *tsClustersReported;
    TTabSheet *tbSpatial;
-   TCheckBox *chkRestrictReportedClusters;
-   TEdit *edtReportClustersSmallerThan;
-   TLabel *lblReportSmallerClusters;
    TTabSheet *tsInference;
    TGroupBox *grpAnalysis;
    TCheckBox *chkTerminateEarly;
@@ -119,11 +113,22 @@ __published:	// IDE-managed Components
    TCheckBox *chkIncludePureSpacClust;
    TGroupBox *grpReportCriticalValues;
    TCheckBox *chkReportCriticalValues;
-        TGroupBox *grpWindowShape;
-        TRadioButton *rdoCircular;
-        TRadioButton *rdoElliptic;
-        TStaticText *stNonCompactnessPenalty;
-        TComboBox *cmbNonCompactnessPenalty;
+   TGroupBox *grpWindowShape;
+   TRadioButton *rdoCircular;
+   TRadioButton *rdoElliptic;
+   TStaticText *stNonCompactnessPenalty;
+   TComboBox *cmbNonCompactnessPenalty;
+   TGroupBox *rdgReportedSpatialOptions;
+   TLabel *lblReportedPercentOfPopulation;
+   TLabel *lblMaxReportedRadius;
+   TLabel *lblReportedPercentageOfPopFile;
+   TEdit *edtMaxReportedSpatialClusterSize;
+   TRadioButton *rdoReportedSpatialPercentage;
+   TRadioButton *rdoReportedSpatialDistance;
+   TRadioButton *rdoReportedSpatialPopulationFile;
+   TEdit *edtMaxReportedSpatialRadius;
+   TEdit *edtMaxReportedSpatialPercentFile;
+   TCheckBox *chkRestrictReportedClusters;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -142,16 +147,12 @@ __published:	// IDE-managed Components
    void __fastcall chkRestrictTemporalRangeClick(TObject *Sender);
    void __fastcall chkRestrictReportedClustersClick(TObject *Sender);
    void __fastcall edtMaxCirclePopulationFilenameChange(TObject *Sender);
-   void __fastcall edtMaxSpatialClusterSizeChange(TObject *Sender);
    void __fastcall edtMaxSpatialClusterSizeExit(TObject *Sender);
-   void __fastcall edtMaxSpatialPercentFileChange(TObject *Sender);
    void __fastcall edtMaxSpatialPercentFileExit(TObject *Sender);
-   void __fastcall edtMaxSpatialRadiusChange(TObject *Sender);
    void __fastcall edtMaxSpatialRadiusExit(TObject *Sender);
    void __fastcall edtMaxTemporalClusterSizeExit(TObject *Sender) ;
    void __fastcall edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) ;
    void __fastcall edtProspectiveStartDateExit(TObject *Sender);
-   void __fastcall edtReportClustersSmallerThanExit(TObject *Sender);
    void __fastcall edtStartRangeStartDateExit(TObject *Sender);
    void __fastcall edtEndRangeStartDateExit(TObject *Sender);
    void __fastcall edtStartRangeEndDateExit(TObject *Sender);
@@ -174,8 +175,11 @@ __published:	// IDE-managed Components
    void __fastcall edtControlFileNameChange(TObject *Sender);
    void __fastcall edtPopFileNameChange(TObject *Sender);
    void __fastcall rdgSpatialAdjustmentsClick(TObject *Sender);
-        void __fastcall OnWindowShapeClick(TObject *Sender);
-        void __fastcall OnNonCompactnessPenaltyChange(TObject *Sender);
+   void __fastcall OnWindowShapeClick(TObject *Sender);
+   void __fastcall OnNonCompactnessPenaltyChange(TObject *Sender);
+   void __fastcall edtMaxReportedSpatialClusterSizeExit(TObject *Sender);
+   void __fastcall edtMaxReportedSpatialPercentFileExit(TObject *Sender);
+   void __fastcall edtMaxReportedSpatialRadiusExit(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -200,8 +204,8 @@ __published:	// IDE-managed Components
    void                     EnableOutputOptions(bool bEnable);
    void                     EnableProspectiveStartDate();
    void                     EnableProspectiveSurveillanceGroup(bool bEnable);
+   void                     EnableReportedSpatialOptionsGroup(bool bEnable);
    void                     EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
-   void                     EnableSpatialOutputOptions(bool bEnable);
    void                     EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
    void                     EnableTemporalRanges(bool bEnable, bool bEnableRanges);
    SpatialAdjustmentType    GetAdjustmentSpatialControlType() const;
@@ -226,28 +230,30 @@ __published:	// IDE-managed Components
 public:
    __fastcall TfrmAdvancedParameters(const TfrmAnalysis& AnalysisSettings);
 
-   void                  EnableSettingsForAnalysisModelCombination();
-   void                  EnableDatesByTimePrecisionUnits();
-   bool                  GetDefaultsSetForAnalysisOptions();
-   bool                  GetDefaultsSetForInputOptions();
-   bool                  GetDefaultsSetForOutputOptions();
-   SpatialSizeType       GetMaxSpatialClusterSizeControlType() const;
-   float                 GetMaxSpatialClusterSizeFromControl() const;
-   TemporalSizeType      GetMaxTemporalClusterSizeControlType() const;
-   float                 GetMaxTemporalClusterSizeFromControl() const;
-   unsigned int          GetNumAdditionalDataSets() const {return lstInputDataSets->Items->Count;}
-   void                  SaveParameterSettings();
-   void                  SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
-   void                  SetMaxSpatialClusterSizeControl(float fMaxSize);
-   void                  SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
-   void                  SetMaxTemporalClusterSizeControl(float fMaxSize);
-   void                  SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
-   void                  SetReportingClustersText(const ZdString& sText);
-   void                  SetReportingSmallerClustersText();
-   void                  SetSpatialDistanceCaption();
-   void                  SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
-   void                  ShowDialog(TWinControl * pFocusControl=0, int iCategory=-1);
-   void                  Validate();
+   void                     EnableSettingsForAnalysisModelCombination();
+   void                     EnableDatesByTimePrecisionUnits();
+   bool                     GetDefaultsSetForAnalysisOptions();
+   bool                     GetDefaultsSetForInputOptions();
+   bool                     GetDefaultsSetForOutputOptions();
+   SpatialSizeType          GetMaxReportedSpatialClusterSizeControlType() const;
+   float                    GetMaxReportedSpatialClusterSizeFromControl() const;
+   SpatialSizeType          GetMaxSpatialClusterSizeControlType() const;
+   float                    GetMaxSpatialClusterSizeFromControl() const;
+   TemporalSizeType         GetMaxTemporalClusterSizeControlType() const;
+   float                    GetMaxTemporalClusterSizeFromControl() const;
+   unsigned int             GetNumAdditionalDataSets() const {return lstInputDataSets->Items->Count;}
+   void                     SaveParameterSettings();
+   void                     SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
+   void                     SetMaxReportedSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
+   void                     SetMaxReportedSpatialClusterSizeControl(float fMaxSize);
+   void                     SetMaxSpatialClusterSizeControl(float fMaxSize);
+   void                     SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
+   void                     SetMaxTemporalClusterSizeControl(float fMaxSize);
+   void                     SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
+   void                     SetSpatialDistanceCaption();
+   void                     SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
+   void                     ShowDialog(TWinControl * pFocusControl=0, int iCategory=-1);
+   void                     Validate();
 };
 
 class AdvancedFeaturesException : public virtual ZdException {
@@ -264,6 +270,6 @@ class AdvancedFeaturesException : public virtual ZdException {
 };
 
 void GenerateAFException(const char * sMessage, const char * sSourceModule, TWinControl & FocusControl, int iTabCategory, ...);
-
-//---------------------------------------------------------------------------
+//******************************************************************************
 #endif
+

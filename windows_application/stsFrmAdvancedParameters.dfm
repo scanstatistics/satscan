@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 187
-  Top = 168
+  Left = 202
+  Top = 320
   ActiveControl = PageControl
   BorderIcons = []
   BorderStyle = bsDialog
@@ -361,19 +361,19 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 425
-        Height = 146
+        Height = 131
         Caption = 'Maximum Spatial Cluster Size'
         TabOrder = 0
         object lblPercentOfPopulation: TLabel
           Left = 78
-          Top = 25
+          Top = 23
           Width = 263
           Height = 13
           Caption = 'percent of the population at risk (<= 50%, default = 50%)'
         end
         object lblMaxRadius: TLabel
           Left = 174
-          Top = 111
+          Top = 105
           Width = 73
           Height = 13
           Caption = 'kilometer radius'
@@ -390,14 +390,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxSpatialClusterSize: TEdit
           Left = 39
-          Top = 23
+          Top = 22
           Width = 34
           Height = 21
           AutoSelect = False
           MaxLength = 5
           TabOrder = 1
           Text = '50'
-          OnChange = edtMaxSpatialClusterSizeChange
           OnExit = edtMaxSpatialClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
@@ -414,10 +413,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object rdoSpatialDistance: TRadioButton
           Left = 7
-          Top = 111
-          Width = 97
+          Top = 104
+          Width = 115
           Height = 17
-          Caption = 'is a circle with a'
+          Caption = 'is a cirlce with a'
           TabOrder = 7
           OnClick = rdoMaxSpatialTypeClick
         end
@@ -432,30 +431,28 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxSpatialRadius: TEdit
           Left = 110
-          Top = 110
+          Top = 103
           Width = 58
           Height = 21
           TabOrder = 8
           Text = '1'
-          OnChange = edtMaxSpatialRadiusChange
           OnExit = edtMaxSpatialRadiusExit
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxSpatialPercentFile: TEdit
           Left = 39
-          Top = 49
+          Top = 48
           Width = 34
           Height = 21
           MaxLength = 5
           TabOrder = 3
           Text = '50'
-          OnChange = edtMaxSpatialPercentFileChange
           OnExit = edtMaxSpatialPercentFileExit
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
           Left = 26
-          Top = 81
+          Top = 76
           Width = 280
           Height = 21
           ParentShowHint = False
@@ -466,7 +463,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object btnBrowseMaxCirclePopFile: TButton
           Left = 312
-          Top = 81
+          Top = 75
           Width = 23
           Height = 22
           Hint = 'Browse for max circle size file ...'
@@ -484,7 +481,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object btnImportMaxCirclePopFile: TBitBtn
           Left = 340
-          Top = 81
+          Top = 75
           Width = 23
           Height = 22
           Hint = 'Import max circle size file ...'
@@ -514,7 +511,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object chkInclPureTempClust: TCheckBox
         Left = 8
-        Top = 165
+        Top = 149
         Width = 305
         Height = 17
         Caption = 'Include Purely Temporal Clusters (Spatial Size = 100%)'
@@ -524,9 +521,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpWindowShape: TGroupBox
         Left = 8
-        Top = 192
+        Top = 173
         Width = 425
-        Height = 82
+        Height = 75
         Caption = 'Window Shape'
         TabOrder = 2
         object rdoCircular: TRadioButton
@@ -540,7 +537,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object rdoElliptic: TRadioButton
           Left = 16
-          Top = 48
+          Top = 45
           Width = 53
           Height = 17
           Caption = 'Elliptic'
@@ -549,7 +546,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object stNonCompactnessPenalty: TStaticText
           Left = 104
-          Top = 48
+          Top = 45
           Width = 130
           Height = 17
           Caption = 'Non-compactness penalty:'
@@ -557,7 +554,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object cmbNonCompactnessPenalty: TComboBox
           Left = 240
-          Top = 48
+          Top = 45
           Width = 91
           Height = 21
           Style = csDropDownList
@@ -576,9 +573,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       ImageIndex = 1
       object grpFlexibleTemporalWindowDefinition: TGroupBox
         Left = 8
-        Top = 131
+        Top = 122
         Width = 421
-        Height = 111
+        Height = 110
         Caption = 'Flexible Temporal Window Definition'
         TabOrder = 2
         object chkRestrictTemporalRange: TCheckBox
@@ -602,7 +599,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 154
           Top = 46
           Width = 31
-          Height = 21
+          Height = 18
           MaxLength = 4
           TabOrder = 2
           Text = '1900'
@@ -613,7 +610,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 194
           Top = 46
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 3
@@ -625,7 +622,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 223
           Top = 46
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 4
@@ -637,7 +634,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 280
           Top = 46
           Width = 31
-          Height = 21
+          Height = 18
           MaxLength = 4
           TabOrder = 6
           Text = '1900'
@@ -648,7 +645,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 320
           Top = 46
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 7
@@ -660,7 +657,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 349
           Top = 46
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 8
@@ -689,7 +686,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 154
           Top = 78
           Width = 31
-          Height = 21
+          Height = 18
           MaxLength = 4
           TabOrder = 10
           Text = '1900'
@@ -700,7 +697,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 194
           Top = 78
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 11
@@ -712,7 +709,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 223
           Top = 78
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 12
@@ -732,7 +729,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 280
           Top = 78
           Width = 31
-          Height = 21
+          Height = 18
           MaxLength = 4
           TabOrder = 14
           Text = '1900'
@@ -743,7 +740,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 320
           Top = 78
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 15
@@ -755,7 +752,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 349
           Top = 78
           Width = 20
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 16
@@ -768,7 +765,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 421
-        Height = 84
+        Height = 80
         Caption = 'Maximum Temporal Cluster Size'
         TabOrder = 0
         object lblPercentageOfStudyPeriod: TLabel
@@ -780,16 +777,16 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object lblMaxTemporalTimeUnits: TLabel
           Left = 81
-          Top = 50
+          Top = 52
           Width = 25
           Height = 13
           Caption = 'years'
         end
         object edtMaxTemporalClusterSize: TEdit
           Left = 39
-          Top = 23
+          Top = 22
           Width = 34
-          Height = 21
+          Height = 18
           MaxLength = 5
           TabOrder = 1
           Text = '50'
@@ -809,7 +806,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object rdoTimeTemporal: TRadioButton
           Left = 7
-          Top = 49
+          Top = 51
           Width = 28
           Height = 17
           Caption = 'is'
@@ -818,9 +815,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object edtMaxTemporalClusterSizeUnits: TEdit
           Left = 39
-          Top = 49
+          Top = 50
           Width = 34
-          Height = 21
+          Height = 18
           MaxLength = 6
           TabOrder = 3
           Text = '1'
@@ -830,7 +827,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object chkIncludePureSpacClust: TCheckBox
         Left = 8
-        Top = 104
+        Top = 98
         Width = 297
         Height = 17
         Caption = 'Include Purely Spatial Clusters (Temporal Size = 100%)'
@@ -864,7 +861,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 134
         Top = 68
         Width = 34
-        Height = 21
+        Height = 18
         Enabled = False
         MaxLength = 5
         TabOrder = 1
@@ -1001,9 +998,9 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object gbxProspectiveSurveillance: TGroupBox
         Left = 8
-        Top = 76
+        Top = 66
         Width = 417
-        Height = 103
+        Height = 95
         Caption = 'Prospective Surveillance'
         TabOrder = 1
         object lblProspectiveStartYear: TLabel
@@ -1049,7 +1046,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 41
           Top = 64
           Width = 41
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 4
           TabOrder = 1
@@ -1061,7 +1058,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 101
           Top = 64
           Width = 25
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 2
@@ -1073,7 +1070,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 147
           Top = 64
           Width = 25
-          Height = 21
+          Height = 18
           Enabled = False
           MaxLength = 2
           TabOrder = 3
@@ -1093,7 +1090,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpReportCriticalValues: TGroupBox
         Left = 8
-        Top = 194
+        Top = 167
         Width = 421
         Height = 50
         Caption = 'Critical Values'
@@ -1112,39 +1109,11 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     object tsClustersReported: TTabSheet
       Caption = 'Clusters Reported'
       ImageIndex = 2
-      object lblReportSmallerClusters: TLabel
-        Left = 221
-        Top = 222
-        Width = 213
-        Height = 27
-        AutoSize = False
-        Caption = 'percent of population at risk.'
-        WordWrap = True
-      end
-      object chkRestrictReportedClusters: TCheckBox
-        Left = 8
-        Top = 222
-        Width = 175
-        Height = 17
-        Caption = 'Report only clusters smaller than'
-        TabOrder = 0
-        OnClick = chkRestrictReportedClustersClick
-      end
-      object edtReportClustersSmallerThan: TEdit
-        Left = 183
-        Top = 220
-        Width = 34
-        Height = 21
-        TabOrder = 1
-        Text = '50'
-        OnExit = edtReportClustersSmallerThanExit
-        OnKeyPress = PositiveFloatKeyPress
-      end
       object rdgCriteriaSecClusters: TRadioGroup
         Left = 8
         Top = 8
         Width = 421
-        Height = 197
+        Height = 142
         Caption = 'Criteria for Reporting Secondary Clusters'
         Items.Strings = (
           'No Geographical Overlap'
@@ -1153,8 +1122,109 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'No Cluster Centers in Less Likely Clusters'
           'No Pairs of Centers Both in Each Others Clusters'
           'No Restrictions = Most Likely Cluster for Each Grid Point')
-        TabOrder = 2
+        TabOrder = 0
         OnClick = OnControlExit
+      end
+      object rdgReportedSpatialOptions: TGroupBox
+        Left = 8
+        Top = 155
+        Width = 425
+        Height = 121
+        Caption = 'Maximum Reported Spatial Cluster Size'
+        TabOrder = 1
+        object lblReportedPercentOfPopulation: TLabel
+          Left = 87
+          Top = 42
+          Width = 263
+          Height = 13
+          Caption = 'percent of the population at risk (<= 50%, default = 50%)'
+        end
+        object lblMaxReportedRadius: TLabel
+          Left = 180
+          Top = 94
+          Width = 73
+          Height = 13
+          Caption = 'kilometer radius'
+        end
+        object lblReportedPercentageOfPopFile: TLabel
+          Left = 87
+          Top = 67
+          Width = 316
+          Height = 13
+          Caption = 
+            'percent of the population defined in the max circle size file (<' +
+            '= 50%)'
+          WordWrap = True
+        end
+        object edtMaxReportedSpatialClusterSize: TEdit
+          Left = 48
+          Top = 40
+          Width = 34
+          Height = 18
+          AutoSelect = False
+          MaxLength = 5
+          TabOrder = 1
+          Text = '50'
+          OnExit = edtMaxReportedSpatialClusterSizeExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object rdoReportedSpatialPercentage: TRadioButton
+          Left = 27
+          Top = 42
+          Width = 15
+          Height = 17
+          Checked = True
+          TabOrder = 0
+          TabStop = True
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object rdoReportedSpatialDistance: TRadioButton
+          Left = 27
+          Top = 93
+          Width = 117
+          Height = 17
+          Caption = 'a circle with a'
+          TabOrder = 4
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object rdoReportedSpatialPopulationFile: TRadioButton
+          Left = 27
+          Top = 68
+          Width = 18
+          Height = 17
+          TabOrder = 2
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object edtMaxReportedSpatialRadius: TEdit
+          Left = 116
+          Top = 91
+          Width = 58
+          Height = 18
+          TabOrder = 5
+          Text = '1'
+          OnExit = edtMaxReportedSpatialRadiusExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object edtMaxReportedSpatialPercentFile: TEdit
+          Left = 48
+          Top = 66
+          Width = 34
+          Height = 18
+          MaxLength = 5
+          TabOrder = 3
+          Text = '50'
+          OnExit = edtMaxReportedSpatialPercentFileExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object chkRestrictReportedClusters: TCheckBox
+          Left = 8
+          Top = 18
+          Width = 181
+          Height = 17
+          Caption = 'Report only clusters smaller than:'
+          TabOrder = 6
+          OnClick = chkRestrictReportedClustersClick
+        end
       end
     end
   end
