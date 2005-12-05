@@ -1159,7 +1159,6 @@ void __fastcall TfrmAnalysis::rdoProbabilityModelClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::rgpCoordinatesClick(TObject *Sender) {
   try {
     gpfrmAdvancedParameters->SetSpatialDistanceCaption();
-    gpfrmAdvancedParameters->SetReportingSmallerClustersText();
   }
   catch (ZdException & x) {
     x.AddCallpath("rgCoordinatesClick()", "TfrmAnalysis");
@@ -1232,7 +1231,7 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetNumberMonteCarloReplications(static_cast<unsigned long>(edtMontCarloReps->Text.ToDouble()));
     // (previously in Scanning Window Tab)
     gParameters.SetMaximumGeographicClusterSize(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeFromControl());
-    gParameters.SetMaximumSpacialClusterSizeType(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeControlType());
+    gParameters.SetMaximumSpatialClusterSizeType(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeControlType());
     gParameters.SetMaxCirclePopulationFileName(gpfrmAdvancedParameters->edtMaxCirclePopulationFilename->Text.c_str(), false);
     gParameters.SetMaximumTemporalClusterSize(gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl());
     gParameters.SetMaximumTemporalClusterSizeType(gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType());
