@@ -62,11 +62,12 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
         {Version.iMajor = 4; Version.iMinor = 0; Version.iRelease = 3;}
     }
   }
+  //Set creation version now, we'll need to know this for parameters which read differently
+  //based upon version; such as WINDOW_SHAPE and NON_COMPACTNESS_PENALTY.
+  Parameters.SetVersion(Version);
 
-  if (Version.iMajor <= 4) {
-    Parameters.SetVersion(Version); //version section not present before v5.0
+  if (Version.iMajor <= 4)
     Build_4_0_x_ParameterList();
-  }
   else if (Version.iMajor == 5  && Version.iMinor == 0)
     Build_5_0_x_ParameterList();
   else if (Version.iMajor == 5  && Version.iMinor == 1)
