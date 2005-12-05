@@ -106,7 +106,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_AREAS_DBASE       : return " output location information in dBase format? (y/n)";
       case OUTPUT_RR_DBASE          : return " output relative risks in dBase format? (y/n)";
       case OUTPUT_SIM_LLR_DBASE     : return " output simulated log likelihoods ratios in dBase format? (y/n)";
-      case NON_COMPACTNESS_PENALTY  : return " elliptic non-compactness penalty? (y/n)";
+      case NON_COMPACTNESS_PENALTY  : return " elliptic non-compactness penalty (0=NoPenalty, 1=MediumPenalty, 2=FullPenalty)";
       case INTERVAL_STARTRANGE      : return " flexible temporal window start range (YYYY/MM/DD,YYYY/MM/DD)";
       case INTERVAL_ENDRANGE        : return " flexible temporal window end range (YYYY/MM/DD,YYYY/MM/DD)";
       case TIMETRENDCONVRG	    : return " time trend convergence for SVTT analysis (> 0)";
@@ -201,7 +201,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case OUTPUT_AREAS_DBASE       : return AsString(s, gParameters.GetOutputAreaSpecificDBase());
       case OUTPUT_RR_DBASE          : return AsString(s, gParameters.GetOutputRelativeRisksDBase());
       case OUTPUT_SIM_LLR_DBASE     : return AsString(s, gParameters.GetOutputSimLoglikeliRatiosDBase());
-      case NON_COMPACTNESS_PENALTY  : return AsString(s, gParameters.GetNonCompactnessPenalty());
+      case NON_COMPACTNESS_PENALTY  : return AsString(s, gParameters.GetNonCompactnessPenaltyType());
       case INTERVAL_STARTRANGE      : s.printf("%s,%s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
                                       return s;
       case INTERVAL_ENDRANGE        : s.printf("%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
@@ -295,7 +295,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case OUTPUT_AREAS_DBASE       : sDefaultValue = (gParameters.GetOutputAreaSpecificDBase() ? "y" : "n"); break;
       case OUTPUT_RR_DBASE          : sDefaultValue = (gParameters.GetOutputRelativeRisksDBase() ? "y" : "n"); break;
       case OUTPUT_SIM_LLR_DBASE     : sDefaultValue = (gParameters.GetOutputSimLoglikeliRatiosDBase() ? "y" : "n"); break;
-      case NON_COMPACTNESS_PENALTY  : sDefaultValue = (gParameters.GetNonCompactnessPenalty() ? "y" : "n"); break;
+      case NON_COMPACTNESS_PENALTY  : sDefaultValue = gParameters.GetNonCompactnessPenaltyType(); break;
       case INTERVAL_STARTRANGE      : sDefaultValue.printf("%s,%s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
                                       break;
       case INTERVAL_ENDRANGE        : sDefaultValue.printf("%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
@@ -653,7 +653,15 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case OUTPUT_AREAS_DBASE        : gParameters.SetOutputAreaSpecificDBase(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_RR_DBASE           : gParameters.SetOutputRelativeRisksDBase(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_SIM_LLR_DBASE      : gParameters.SetOutputSimLogLikeliRatiosDBase(ReadBoolean(sParameter, eParameterType)); break;
-      case NON_COMPACTNESS_PENALTY   : gParameters.SetNonCompactnessPenalty(ReadBoolean(sParameter, eParameterType)); break;
+      case NON_COMPACTNESS_PENALTY   : //This parameter used to be a boolean type, updated to be an enumeration in version 6.1.
+                                       if (gParameters.GetCreationVersion().iMajor < 6 || (gParameters.GetCreationVersion().iMajor == 6 && gParameters.GetCreationVersion().iMinor == 0)) {
+                                         iValue = ReadBoolean(sParameter, eParameterType);
+                                         //if boolean true, set to full penalty - which is equivalent to previous versions
+                                         if (iValue) iValue = FULLPENALTY;
+                                       }
+                                       else
+                                         iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOPENALTY, FULLPENALTY);
+                                       gParameters.SetNonCompactnessPenalty((NonCompactnessPenaltyType)iValue); break;
       case INTERVAL_STARTRANGE       : ReadDateRange(sParameter, eParameterType, Range);
                                        gParameters.SetStartRangeStartDate(Range.first.c_str());
                                        gParameters.SetStartRangeEndDate(Range.second.c_str()); break;
