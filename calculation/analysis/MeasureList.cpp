@@ -21,12 +21,9 @@ void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIterat
 
   dTotal = gLikelihoodCalculator.GetLogLikelihoodForTotal();
   dMaxLogLikelihoodRatio = dMaxLogLikelihood - dTotal;
-  if (iIteration > 0 && gSaTScanData.GetParameters().GetSpatialWindowType() == ELLIPTIC && gSaTScanData.GetParameters().GetNonCompactnessPenalty()) {
-    dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetEllipseShape(iIteration));
-    gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dNonCompactnessPenalty);
-  }
-  else
-    gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio);
+
+  dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetEllipseShape(iIteration), gSaTScanData.GetParameters().GetNonCompactnessPenaltyPower());
+  gvMaximumLogLikelihoodRatios.push_back(dMaxLogLikelihoodRatio * dNonCompactnessPenalty);
 }
 
 /** Returns maximum loglikelihood ratio for all iterations(shapes) */
@@ -80,7 +77,7 @@ void CMeasureList::SetForNextIteration(int iIteration) {
 void CMeasureList::Setup() {
   int   iEllipse, iBoundry=0, iNumRequestedEllipses=gSaTScanData.GetParameters().GetNumRequestedEllipses();
 
-  if (gSaTScanData.GetParameters().GetNonCompactnessPenalty()) {
+  if (gSaTScanData.GetParameters().GetNonCompactnessPenaltyType() != NOPENALTY) {
     //If penalizing for compactness, accumulate best measure for each shape.
     //Set calculation boundries between circle/each ellipse shape.
     gvCalculationBoundries.push_back(iBoundry); //circle
