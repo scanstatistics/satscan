@@ -57,6 +57,8 @@ enum MultipleDataSetPurposeType    {MULTIVARIATE=0, ADJUSTMENT};
 enum ExecutionType                 {AUTOMATIC=0, SUCCESSIVELY, CENTRICALLY};
 /** spatial window shape */
 enum SpatialWindowType             {CIRCULAR=0, ELLIPTIC};
+/** non-compactness penalty type */
+enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, FULLPENALTY};
 
 class DataSetHandler; /** forward class declaration */
 
@@ -108,7 +110,7 @@ class CParameters {
     long                                glTotalNumEllipses;                     /** total number of ellipses (ellipses by number rotations) */
     std::vector<double>                 gvEllipseShapes;                        /** shape of each ellipsoid */
     std::vector<int>                    gvEllipseRotations;                     /** number of rotations for each ellipsoid */
-    bool                                gbNonCompactnessPenalty;                /** indicates whether narrower ellipses should be penalized */
+    NonCompactnessPenaltyType           geNonCompactnessPenaltyType;            /** indicates penalty for narrower ellipses */
         /* Pure Clusters variables */
     bool                                gbIncludePurelySpatialClusters,         /** indicates whether to include purely spatial clusters */
                                         gbIncludePurelyTemporalClusters;        /** indicates whether to include purely temporal clusters */
@@ -225,7 +227,8 @@ class CParameters {
     float                               GetMaximumReportedGeoClusterSize() const {return gfMaxReportedGeographicClusterSize;}
     SpatialSizeType                     GetMaxReportedGeographicClusterSizeType() const {return geMaxReportedGeographicClusterSizeType;}
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
-    bool                                GetNonCompactnessPenalty() const {return gbNonCompactnessPenalty;}
+    double                              GetNonCompactnessPenaltyPower() const {return (geNonCompactnessPenaltyType == NOPENALTY ? 0.0 : (geNonCompactnessPenaltyType == MEDIUMPENALTY ? .5 : 1.0));}
+    NonCompactnessPenaltyType           GetNonCompactnessPenaltyType() const {return geNonCompactnessPenaltyType;}
     unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
     unsigned int                        GetNumRequestedParallelProcesses() const {return giNumRequestedParallelProcesses;}
     unsigned int                        GetNumParallelProcessesToExecute() const;
@@ -311,7 +314,7 @@ class CParameters {
     void                                SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
-    void                                SetNonCompactnessPenalty(bool b) {gbNonCompactnessPenalty = b;}
+    void                                SetNonCompactnessPenalty(NonCompactnessPenaltyType e);
     void                                SetNumDataSets(size_t iNumDataSets);
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);

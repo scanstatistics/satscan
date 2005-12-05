@@ -39,7 +39,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geSpatialWindowType                    != rhs.geSpatialWindowType) return false;
   if (gvEllipseShapes                        != rhs.gvEllipseShapes) return false;
   if (gvEllipseRotations                     != rhs.gvEllipseRotations) return false;
-  if (gbNonCompactnessPenalty                != rhs.gbNonCompactnessPenalty) return false;
+  if (geNonCompactnessPenaltyType            != rhs.geNonCompactnessPenaltyType) return false;
   if (glTotalNumEllipses                     != rhs.glTotalNumEllipses) return false;
   if (geAnalysisType                         != rhs.geAnalysisType) return false;
   if (geAreaScanRate                         != rhs.geAreaScanRate) return false;
@@ -176,7 +176,7 @@ void CParameters::Copy(const CParameters &rhs) {
     geSpatialWindowType                    = rhs.geSpatialWindowType;
     gvEllipseShapes                        = rhs.gvEllipseShapes;
     gvEllipseRotations                     = rhs.gvEllipseRotations;
-    gbNonCompactnessPenalty                = rhs.gbNonCompactnessPenalty;
+    geNonCompactnessPenaltyType            = rhs.geNonCompactnessPenaltyType;
     glTotalNumEllipses                     = rhs.glTotalNumEllipses;
     geAnalysisType                         = rhs.geAnalysisType;
     geAreaScanRate                         = rhs.geAreaScanRate;
@@ -323,7 +323,7 @@ bool CParameters::GetIsSpaceTimeAnalysis() const {
 /** Returns description for LLR. */
 bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
   return (geProbabilityModelType == SPACETIMEPERMUTATION ||
-          (geSpatialWindowType == ELLIPTIC && gbNonCompactnessPenalty));
+          (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
 }
 
 /** Returns number of parallel processes to run. */
@@ -664,7 +664,7 @@ void CParameters::SetAsDefaulted() {
   gbOutputClusterLevelAscii                = false;
   geCriteriaSecondClustersType             = NOGEOOVERLAP;
   glTotalNumEllipses                       = 0;
-  gbNonCompactnessPenalty                  = false;
+  geNonCompactnessPenaltyType              = MEDIUMPENALTY;
   gsEndRangeStartDate                      = gsStudyPeriodStartDate;
   gsEndRangeEndDate                        = gsStudyPeriodEndDate;
   gsStartRangeStartDate                    = gsStudyPeriodStartDate;
@@ -830,6 +830,19 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMaximumTemporalClusterSizeType()","CParameters");
+    throw;
+  }
+}
+
+/** Set ellipse non-compactness penalty type. */
+void CParameters::SetNonCompactnessPenalty(NonCompactnessPenaltyType eType) {
+  try {
+    if (eType < NOPENALTY || eType > FULLPENALTY)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetNonCompactnessPenalty()", eType, NOPENALTY, FULLPENALTY);
+    geNonCompactnessPenaltyType = eType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetNonCompactnessPenalty()","CParameters");
     throw;
   }
 }
