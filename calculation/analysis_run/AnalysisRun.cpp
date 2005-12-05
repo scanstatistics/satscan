@@ -238,7 +238,7 @@ void AnalysisRunner::Execute() {
      //Everything else considered equal, which algorithm has lesser memory needs?
      if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
          (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)) ||
-          (gParameters.GetSpatialWindowType() == ELLIPTIC && gParameters.GetNonCompactnessPenalty()) ||
+          (gParameters.GetSpatialWindowType() == ELLIPTIC && gParameters.GetNonCompactnessPenaltyType() > NOPENALTY) ||
           gParameters.GetTerminateSimulationsEarly() ||
           dSuccessiveMemoryDemands < GetAvailablePhysicalMemory() || dSuccessiveMemoryDemands < dCentricMemoryDemands)
        // execute analysis successively from real data set to each simulated data set if any of following:
