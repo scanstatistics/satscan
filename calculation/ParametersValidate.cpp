@@ -239,7 +239,7 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
                                "       The number can not be less than one.\n",
                                BasePrint::P_ERROR, gParameters.GetEllipseRotations()[t]);
        }
-    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetNonCompactnessPenalty()) {
+    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetNonCompactnessPenaltyType() > NOPENALTY) {
       bValid = false;
       PrintDirection.Printf("Error: The non-compactness penalty for elliptic scans can not be applied\n"
                             "       with the centric analysis execution.\n", BasePrint::P_ERROR);

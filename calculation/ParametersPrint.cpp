@@ -328,7 +328,13 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
     for (size_t i=1; i < gParameters.GetEllipseRotations().size(); ++i)
        fprintf(fp, ", %i", gParameters.GetEllipseRotations()[i]);
     fprintf(fp, "\n  Non-Compactness Penalty                  : ");
-    fprintf(fp, (gParameters.GetNonCompactnessPenalty() ? "Yes\n" : "No\n"));
+    switch (gParameters.GetNonCompactnessPenaltyType()) {
+      case NOPENALTY     : fprintf(fp, "None\n"); break;
+      case MEDIUMPENALTY : fprintf(fp, "Meduim\n"); break;
+      case FULLPENALTY   : fprintf(fp, "Full\n"); break;
+      default : ZdException::Generate("Unknown non-compactness penalty type '%d'.\n",
+                                      "PrintEllipticScanParameters()", gParameters.GetNonCompactnessPenaltyType());
+    }
   }
 }
 
