@@ -1,5 +1,7 @@
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
+//******************************************************************************
 #include "UtilityFunctions.h"
 #include <cmath>
 
@@ -51,9 +53,10 @@ void ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords) {
   *Latitude = (float)((pCoords[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / PI);
 }
 
-/** Return non-compactness penalty coefficient. */
-double CalculateNonCompactnessPenalty(double dEllipseShape) {
-  return ( 4*dEllipseShape/(pow(dEllipseShape + 1, 2)) );
+/** Return non-compactness penalty coefficient for specified elliptic shape and
+    compactness penalty power. */
+double CalculateNonCompactnessPenalty(double dEllipseShape, double dPower) {
+  return pow((4*dEllipseShape/(pow(dEllipseShape + 1, 2))), dPower);
 }
 
 //What is the current time? (UTC | Coordinated Universal Time)

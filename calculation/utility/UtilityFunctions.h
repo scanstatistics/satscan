@@ -1,12 +1,12 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __UTILITYFUNCTIONS_H
 #define __UTILITYFUNCTIONS_H
-//*****************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 
 void 	     ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
 void 	     ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
-double       CalculateNonCompactnessPenalty(double dEllipseShape);
+double       CalculateNonCompactnessPenalty(double dEllipseShape, double dPower);
 const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural=true, bool bCapitalizeFirstLetter=false);
 unsigned int GetNumSystemProcessors();
 void         ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
@@ -48,5 +48,6 @@ class StringParser {
     const char                * ReadString(FILE * pSourceFile);
     void                        Reset();
 };
-//*****************************************************************************
-#endif 
+//******************************************************************************
+#endif
+
