@@ -6,10 +6,10 @@
 
 class PrintScreen : public BasePrint {
   protected:
-    inline void PrintError(const char * sMessage) {printf(sMessage);}
-    inline void PrintNotice(const char * sMessage) {printf(sMessage);}
-    inline void PrintStandard(const char * sMessage) {printf(sMessage);}
-    inline void PrintWarning(const char * sMessage) {printf(sMessage);}
+    inline void PrintError(const char * sMessage) {fprintf(stderr, sMessage);}
+    inline void PrintNotice(const char * sMessage) {fprintf(stderr, sMessage);}
+    inline void PrintStandard(const char * sMessage) {fprintf(stdout, sMessage);}
+    inline void PrintWarning(const char * sMessage) {fprintf(stderr, sMessage);}
   
   public:
     PrintScreen(bool bSuppressWarnings);
