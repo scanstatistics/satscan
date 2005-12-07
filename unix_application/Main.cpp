@@ -62,18 +62,18 @@ int main(int argc, char *argv[]) {
     BasisExit();
   }
   catch (ResolvableException & x) {
-    Console.Printf("%s\n\nJob cancelled.", BasePrint::P_STDOUT, x.GetErrorMessage());
+    Console.Printf("%s\n\nJob cancelled.", BasePrint::P_ERROR, x.GetErrorMessage());
     BasisExit();
     return 1;
   }
   catch (UsageException & x) {
-    Console.Printf(x.GetErrorMessage(), BasePrint::P_STDOUT);
+    Console.Printf(x.GetErrorMessage(), BasePrint::P_ERROR);
     BasisExit();
     return 1;
   }
   catch (ZdMemoryException &x) {
     Console.Printf("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
-                "Please see 'Memory Requirements' in user guide for suggested solutions.\n", BasePrint::P_STDOUT);
+                "Please see 'Memory Requirements' in user guide for suggested solutions.\n", BasePrint::P_ERROR);
     BasisExit();
     return 1;
   }
