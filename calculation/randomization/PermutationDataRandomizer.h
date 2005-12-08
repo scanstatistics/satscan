@@ -4,23 +4,35 @@
 //******************************************************************************
 #include "Randomizer.h"
 
-/** abstract permutation randomizer class */
-class AbstractPermutedDataRandomizer : public AbstractRandomizer {
+/** class representing the stationary attribute in a permuted randomization. */
+template <class T>
+class StationaryAttribute {
   protected:
-    BinomialGenerator   gBinomialGenerator;
-
-    virtual void        AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) = 0;
-    virtual void        SortPermutedAttribute() = 0;
+    T		        gStationaryVariable;
 
   public:
-    AbstractPermutedDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~AbstractPermutedDataRandomizer();
+    StationaryAttribute(T Variable);
+    virtual ~StationaryAttribute();
+    virtual StationaryAttribute * Clone() const;
 
-    virtual void	RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    inline const T    & GetStationaryVariable() const {return gStationaryVariable;}
 };
 
-/** Class representing a permuted attribute which is a continuous variable,
-    time index or any other attribute that need be permuted. */
+/** constructor */
+template <class T>
+StationaryAttribute<T>::StationaryAttribute(T Variable) : gStationaryVariable(Variable) {}
+
+/** destructor */
+template <class T>
+StationaryAttribute<T>::~StationaryAttribute() {}
+
+/** returns pointer to newly cloned StationaryAttribute */
+template <class T>
+StationaryAttribute<T> * StationaryAttribute<T>::Clone() const {
+  return new StationaryAttribute(*this);
+}
+
+/** class representing the permuted attribute in a permuted randomization. */
 template <class T>
 class PermutedAttribute {
   protected:
@@ -32,7 +44,7 @@ class PermutedAttribute {
     virtual ~PermutedAttribute();
     virtual PermutedAttribute  * Clone() const;
 
-    inline T	        GetPermutedVariable() const {return gPermutedVariable;}
+    inline const T    & GetPermutedVariable() const {return gPermutedVariable;}
     inline float	GetRandomNumber() const {return gfRandomNumber;}
     inline T	      & ReferencePermutedVariable() {return gPermutedVariable;}
     inline void		SetRandomNumber(float f) {gfRandomNumber = f;}
@@ -56,12 +68,12 @@ PermutedAttribute<T> * PermutedAttribute<T>::Clone() const {
 template <class T>
 class ComparePermutedAttribute {
   public:
-    inline bool operator() (const PermutedAttribute<T>& plhs, const PermutedAttribute<T>& prhs);
+    inline bool operator() (const T& plhs, const T& prhs);
 };
 
 /** compares permuted attribute by assigned random number */
 template <class T>
-inline bool ComparePermutedAttribute<T>::operator() (const PermutedAttribute<T>& plhs, const PermutedAttribute<T>& prhs) {
+inline bool ComparePermutedAttribute<T>::operator() (const T& plhs, const T& prhs) {
   return (plhs.GetRandomNumber() < prhs.GetRandomNumber());
 }
 
@@ -73,9 +85,9 @@ class AssignPermutedAttribute {
 
   public:
     AssignPermutedAttribute(RandomNumberGenerator & Generator);
-    virtual ~AssignPermutedAttribute();
+    ~AssignPermutedAttribute();
 
-    inline void operator() (PermutedAttribute<T>& pAttribute);
+    inline void operator() (T& pAttribute);
 };
 
 /** constructor */
@@ -87,9 +99,50 @@ template <class T>
 AssignPermutedAttribute<T>::~AssignPermutedAttribute() {}
 
 template <class T>
-inline void AssignPermutedAttribute<T>::operator() (PermutedAttribute<T>& Attribute) {
+inline void AssignPermutedAttribute<T>::operator() (T& Attribute) {
   Attribute.SetRandomNumber(gGenerator.GetRandomFloat());
 }
+
+/** abstract permutation randomizer class */
+template <class S, class P>
+class AbstractPermutedDataRandomizer : public AbstractRandomizer {
+  public:
+    typedef std::vector<S>      StationaryContainer_t;
+    typedef std::vector<P>      PermutedContainer_t;
+
+  protected:
+    StationaryContainer_t       gvStationaryAttribute;
+    PermutedContainer_t         gvOriginalPermutedAttribute;
+    PermutedContainer_t         gvPermutedAttribute;
+
+    virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) = 0;
+    virtual void                SortPermutedAttribute() = 0;
+
+  public:
+    AbstractPermutedDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    virtual ~AbstractPermutedDataRandomizer();
+
+    virtual void	        RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+};
+
+/** constructor */
+template <class S, class P>
+AbstractPermutedDataRandomizer<S, P>::AbstractPermutedDataRandomizer(long lInitialSeed) : AbstractRandomizer(lInitialSeed) {}
+
+/** destructor */
+template <class S, class P>
+AbstractPermutedDataRandomizer<S, P>::~AbstractPermutedDataRandomizer() {}
+
+/** randomizes data of dataset */
+template <class S, class P>
+void AbstractPermutedDataRandomizer<S, P>::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+  //set seed for simulation number
+  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  //assign random numbers to permuted attribute and sort
+  SortPermutedAttribute();
+  //re-assign dataset's simulation data
+  AssignRandomizedData(thisRealSet, thisSimSet);
+};
 //******************************************************************************
 #endif
 
