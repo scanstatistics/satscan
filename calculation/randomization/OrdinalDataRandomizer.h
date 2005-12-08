@@ -20,7 +20,7 @@ class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRa
     static const size_t gtMaximumCategories;
 };
 
-typedef StationaryAttribute<std::pair<int, count_t> >   OrdinalStationary_t;
+typedef StationaryAttribute<std::pair<int, tract_t> >   OrdinalStationary_t;
 typedef PermutedAttribute<int>                          OrdinalPermuted_t;
 
 /** Randomizer which has a stationary space-time attribute and a randomized continuous variable.
