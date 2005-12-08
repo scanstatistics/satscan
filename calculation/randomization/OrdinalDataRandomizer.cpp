@@ -66,15 +66,6 @@ void OrdinalDenominatorDataRandomizer::SetMeasure(const RealDataSet& thisRealSet
   }
 }
 
-/** constructor */
-OrdinalPermutedDataRandomizer::OrdinalPermutedDataRandomizer(const RealDataSet& thisRealSet, long lInitialSeed)
-                              :AbstractPermutedDataRandomizer(lInitialSeed) {
-  CreateRandomizationData(thisRealSet);
-}
-
-/** destructor */
-OrdinalPermutedDataRandomizer::~OrdinalPermutedDataRandomizer() {}
-
 /** returns pointer to newly cloned PermutatedVariable */
 OrdinalPermutedDataRandomizer * OrdinalPermutedDataRandomizer::Clone() const {
   return new OrdinalPermutedDataRandomizer(*this);
@@ -94,7 +85,7 @@ void OrdinalPermutedDataRandomizer::AssignRandomizedData(const RealDataSet& this
 
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted)
-    ++thisSimSet.GetCasesByCategory()[itr_permuted->GetPermutedVariable()]->GetArray()[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()];
+    ++thisSimSet.GetCasesByCategory()[itr_permuted->GetPermutedVariable()]->GetArray()[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
 
   //now set as cumulative
   for (size_t c=0; c < thisSimSet.GetCasesByCategory().size(); ++c) {
@@ -120,7 +111,7 @@ void OrdinalPermutedDataRandomizer::CreateRandomizationData(const RealDataSet& t
         for (t=0; t < thisRealSet.GetNumTracts(); ++t) {
            tCaseCount = (i == iNumIntervals - 1 ? ppCases[i][t] : ppCases[i][t] - ppCases[i+1][t]);
            for (tCase=0; tCase < tCaseCount; ++tCase) {
-             gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(i, t));
+             gvStationaryAttribute.push_back(OrdinalStationary_t(std::make_pair(i, t)));
              gvPermutedAttribute.push_back(PermutedAttribute<int>(c));
              gvOriginalPermutedAttribute.push_back(PermutedAttribute<int>(c));
            }
@@ -134,7 +125,7 @@ void OrdinalPermutedDataRandomizer::SortPermutedAttribute() {
   // consistancy of output when running in parallel.
   gvPermutedAttribute = gvOriginalPermutedAttribute;
 
-  std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute<int>(gRandomNumberGenerator));
-  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute<int>());
+  std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute<OrdinalPermuted_t>(gRandomNumberGenerator));
+  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute<OrdinalPermuted_t>());
 }
 

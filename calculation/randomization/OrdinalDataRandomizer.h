@@ -3,7 +3,7 @@
 #define __OrdinalDataRandomizer_H
 //******************************************************************************
 #include "DenominatorDataRandomizer.h"
-#include "ContinuousVariableRandomizer.h"
+#include "PermutationDataRandomizer.h"
 
 /** Randomizes data of dataset for a 'Ordinal' probablility model. */
 class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
@@ -20,30 +20,29 @@ class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRa
     static const size_t gtMaximumCategories;
 };
 
+typedef StationaryAttribute<std::pair<int, count_t> >   OrdinalStationary_t;
+typedef PermutedAttribute<int>                          OrdinalPermuted_t;
+
 /** Randomizer which has a stationary space-time attribute and a randomized continuous variable.
 
     NOTE: Testing indicates that this randomizer does not perform faster that denominator
           randomizer in situations where it was expected (many categories, many locations,
           fewer cases). As such, it will not be used at this time. */
-class OrdinalPermutedDataRandomizer : public AbstractPermutedDataRandomizer {
-  public:
-    typedef std::vector<SpaceTimeStationaryAttribute> StationaryContainer_t;
-    typedef std::vector<PermutedAttribute<int> >      PermutedContainer_t;
-
+class OrdinalPermutedDataRandomizer : public AbstractPermutedDataRandomizer<OrdinalStationary_t, OrdinalPermuted_t> {
   protected:
-    StationaryContainer_t       gvStationaryAttribute;
-    PermutedContainer_t         gvOriginalPermutedAttribute;
-    PermutedContainer_t         gvPermutedAttribute;
-
     virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
     void                        CreateRandomizationData(const RealDataSet& thisRealSet);
     virtual void                SortPermutedAttribute();
 
   public:
-    OrdinalPermutedDataRandomizer(const RealDataSet& thisRealSet, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~OrdinalPermutedDataRandomizer();
+           OrdinalPermutedDataRandomizer::OrdinalPermutedDataRandomizer(const RealDataSet& thisRealSet, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+                                         :AbstractPermutedDataRandomizer<OrdinalStationary_t, OrdinalPermuted_t>(lInitialSeed) {
+               CreateRandomizationData(thisRealSet);
+           }
+    virtual ~OrdinalPermutedDataRandomizer() {}
     virtual OrdinalPermutedDataRandomizer * Clone() const;
 };
+
 //******************************************************************************
 #endif
 
