@@ -6,19 +6,23 @@
 
 class DataSet; /** forward class declaration */
 
-/** Randomizes data of dataset for a 'space-time permutation' probablility model. */
-class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
+/** Derived randomizer that generates simulation data through isolating data by
+    previously defined categories, keeping a location index fixed and permuting
+    associated time interval index.  */
+class SpaceTimeRandomizer : public AbstractRandomizer {
   public:
     typedef std::vector<tract_t>                 StationaryContainer_t;
     typedef std::vector<PermutedAttribute<int> > PermutedContainer_t;
 
-  class CategoryGrouping {
-    public:
-      StationaryContainer_t	                gvStationaryAttribute;
-      PermutedContainer_t                       gvOriginalPermutedAttribute;
-      PermutedContainer_t                       gvPermutedAttribute;
-  };
-  typedef std::vector<CategoryGrouping>         CategoryContainer_t;
+  private:
+    class CategoryGrouping {
+      public:
+        StationaryContainer_t     gvStationaryAttribute;
+        PermutedContainer_t       gvOriginalPermutedAttribute;
+        PermutedContainer_t       gvPermutedAttribute;
+    };
+
+    typedef std::vector<CategoryGrouping>  CategoryContainer_t;
 
   protected:
     CategoryContainer_t              gCategoryAttributes;
@@ -33,6 +37,7 @@ class SpaceTimeRandomizer : public AbstractPermutedDataRandomizer {
     virtual SpaceTimeRandomizer    * Clone() const;
 
     void                             CreateRandomizationData(const RealDataSet& thisRealSet);
+    virtual void	             RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

@@ -6,7 +6,7 @@
 #include "DataSet.h"
 
 /** constructor */
-SpaceTimeRandomizer::SpaceTimeRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
+SpaceTimeRandomizer::SpaceTimeRandomizer(long lInitialSeed) : AbstractRandomizer(lInitialSeed) {}
 
 /** destructor */
 SpaceTimeRandomizer::~SpaceTimeRandomizer() {}
@@ -16,7 +16,7 @@ SpaceTimeRandomizer * SpaceTimeRandomizer::Clone() const {
   return new SpaceTimeRandomizer(*this);
 }
 
-/** Assigns randomized data to datasets' simulation case array. */
+/** Assigns randomized data to SimDataSet objects' 'interval by location' case array. */
 void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) {
   int                                   iInterval, tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
   unsigned int                          tTract, tNumTracts = thisRealSet.GetNumTracts();
@@ -45,39 +45,44 @@ void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, S
         ppSimCases[iInterval][tTract] = ppSimCases[iInterval+1][tTract] + ppSimCases[iInterval][tTract];
 }
 
-/** Creates structures used during randomizations - this functions should be
-    called once all cases data has been read from file.
+/** Creates structures used during randomizations - this function should be
+    called once all case data has been read from file.
     NOTE: Inorder for this randomization process to remain consistant with
-          previous versions, this function and the sorting of the time interval
-          in SortPermutedAttribute() must be done. */
+          previous versions, this function must performed as is; otherwise the initial
+          ordering, when randomization starts, will differ. */
 void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet) {
-  int	                i;
-  unsigned int          j, k, c, iNumCases, iNumCategories(thisRealSet.GetPopulationData().GetNumCovariateCategories());
-  std::vector<int>      vCummulatedCases;
+  int	                iNumIntervals=thisRealSet.GetNumTimeIntervals();
+  unsigned int          iNumCases, iNumCategories(thisRealSet.GetPopulationData().GetNumCovariateCategories());
   count_t            ** ppCases=0;
 
   gCategoryAttributes.resize(iNumCategories);
-  vCummulatedCases.resize(thisRealSet.GetNumTracts());
-  
-  for (c=0; c < iNumCategories; ++c) {
+  for (unsigned int c=0; c < iNumCategories; ++c) {
      CategoryGrouping & theseCategoryAttributes = gCategoryAttributes[c];
-     memset(&vCummulatedCases[0], 0, thisRealSet.GetNumTracts()*sizeof(int));
      ppCases = thisRealSet.GetCategoryCaseArray(c);
-     for (i=thisRealSet.GetNumTimeIntervals() - 1; i >= 0; --i) {
-        for (j=0; j < thisRealSet.GetNumTracts(); ++j) {
-           iNumCases = ppCases[i][j] - vCummulatedCases[j];
-           for (k=0; k < iNumCases; ++k) {
+     for (int i=iNumIntervals; i > 0; --i) {
+        for (unsigned int j=0; j < thisRealSet.GetNumTracts(); ++j) {
+           iNumCases = ppCases[i-1][j] - (i == iNumIntervals ? 0 : ppCases[i][j]);
+           for (unsigned int k=0; k < iNumCases; ++k) {
               theseCategoryAttributes.gvStationaryAttribute.push_back(j);
               //add to vector which will maintain original order
-              theseCategoryAttributes.gvOriginalPermutedAttribute.push_back(PermutedAttribute<int>(i));
+              theseCategoryAttributes.gvOriginalPermutedAttribute.push_back(PermutedAttribute<int>(i-1));
            }
-           vCummulatedCases[j] += iNumCases;
-        }
+         }
      }
   }
 }
 
-/** Re-assigns random number to permuted attribute and sorts. */
+/** Generates randomized data, assigning to 'interval by location' case array of SimDataSet object. */
+void SpaceTimeRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+  //set seed for simulation number
+  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  //assign random numbers to permuted attribute and sort
+  SortPermutedAttribute();
+  //re-assign dataset's simulation data
+  AssignRandomizedData(thisRealSet, thisSimSet);
+}
+
+/** Re-assigns random number of permuted attribute and sorts. */
 void SpaceTimeRandomizer::SortPermutedAttribute() {
   for (size_t t=0; t < gCategoryAttributes.size(); ++t) {
     PermutedContainer_t & theseAttributes = gCategoryAttributes[t].gvPermutedAttribute;
@@ -86,9 +91,9 @@ void SpaceTimeRandomizer::SortPermutedAttribute() {
     // consistancy of output when running in parallel.
     theseAttributes = gCategoryAttributes[t].gvOriginalPermutedAttribute;
     //assign random number to each
-    std::for_each(theseAttributes.begin(), theseAttributes.end(), AssignPermutedAttribute<int>(gRandomNumberGenerator));
+    std::for_each(theseAttributes.begin(), theseAttributes.end(), AssignPermutedAttribute<PermutedAttribute<int> >(gRandomNumberGenerator));
     //randomize time intervals
-    std::sort(theseAttributes.begin(), theseAttributes.end(), ComparePermutedAttribute<int>());
+    std::sort(theseAttributes.begin(), theseAttributes.end(), ComparePermutedAttribute<PermutedAttribute<int> >());
   }
 }
 
