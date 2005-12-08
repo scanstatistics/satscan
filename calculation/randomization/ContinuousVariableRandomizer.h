@@ -4,39 +4,22 @@
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
 
-/** class representing the stationary space-time attributes in a permutated randomization. */
-class SpaceTimeStationaryAttribute {
+typedef StationaryAttribute<std::pair<int, tract_t> >   ContinuousVariableStationary_t;
+typedef PermutedAttribute<double>                       ContinuousVariablePermuted_t;
+
+/** Randomizer which has a stationary space-time attribute and a randomized continuous variable. */
+class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer<ContinuousVariableStationary_t, ContinuousVariablePermuted_t> {
   protected:
-    int		        giTimeIntervalIndex;
-    count_t             gtTractIndex;
-
-  public:
-    SpaceTimeStationaryAttribute(int iTimeInterval, count_t tTractIndex);
-    virtual ~SpaceTimeStationaryAttribute();
-    virtual SpaceTimeStationaryAttribute * Clone() const;
-
-    inline int		GetTimeInterval() const {return giTimeIntervalIndex;}
-    inline int		GetTractIndex() const {return gtTractIndex;}
-};
-
-/** Randomizer which has a stationary space-time attribute
-    and a randomized continuous variable. */
-class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer {
-  public:
-    typedef std::vector<SpaceTimeStationaryAttribute> StationaryContainer_t;
-    typedef std::vector<PermutedAttribute<double> >    PermutedContainer_t;
-
-  protected:
-    StationaryContainer_t       gvStationaryAttribute;
-    PermutedContainer_t         gvOriginalPermutedAttribute;
-    PermutedContainer_t         gvPermutedAttribute;
-
     virtual void                SortPermutedAttribute();
 
   public:
     ContinuousVariableRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~ContinuousVariableRandomizer();
 };
+
+/** constructor */
+ContinuousVariableRandomizer::ContinuousVariableRandomizer(long lInitialSeed)
+                             :AbstractPermutedDataRandomizer<ContinuousVariableStationary_t, ContinuousVariablePermuted_t>(lInitialSeed) {}
 
 /** Randomizes data of dataset for a 'normal' probablility model.
     Instead of assigning data to simulation case structures, assigns
