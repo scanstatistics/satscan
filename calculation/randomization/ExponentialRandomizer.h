@@ -4,20 +4,14 @@
 //******************************************************************************
 #include "ContinuousVariableRandomizer.h"
 
+typedef StationaryAttribute<std::pair<int, tract_t> >         ExponentialStationary_t;
+typedef PermutedAttribute<std::pair<double, unsigned short> > ExponentialPermuted_t;
+
 /** Randomizes data of dataset for a 'Exponetial' probablility model.
     Instead of assigning data to simulation case structures, assigns
     randomized data to simulation meaure structures. */
-class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
-  public:
-    typedef std::vector<SpaceTimeStationaryAttribute>              StationaryContainer_t;
-    typedef std::pair<double, unsigned short>                      ExponentialPermuted_t;
-    typedef std::vector<PermutedAttribute<ExponentialPermuted_t> > PermutedContainer_t;
-
+class ExponentialRandomizer : public AbstractPermutedDataRandomizer<ExponentialStationary_t, ExponentialPermuted_t> {
   protected:
-    StationaryContainer_t	        gvStationaryAttribute;
-    PermutedContainer_t                 gvOriginalPermutedAttribute;
-    PermutedContainer_t                 gvPermutedAttribute;
-
     void                                Assign(const PermutedContainer_t& vPermutedAttributes,
                                                count_t ** ppCases, measure_t ** ppMeasure,
                                                int iNumTimeIntervals, int iNumTracts) const;
@@ -25,7 +19,8 @@ class ExponentialRandomizer : public AbstractPermutedDataRandomizer {
     virtual void                        SortPermutedAttribute();
 
   public:
-    ExponentialRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+                          :AbstractPermutedDataRandomizer<ExponentialStationary_t, ExponentialPermuted_t> (lInitialSeed) {}
     virtual ~ExponentialRandomizer();
 
     virtual ExponentialRandomizer     * Clone() const;

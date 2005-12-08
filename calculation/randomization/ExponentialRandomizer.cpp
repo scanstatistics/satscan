@@ -4,9 +4,6 @@
 //******************************************************************************
 #include "ExponentialRandomizer.h"
 
-/** constructor */
-ExponentialRandomizer::ExponentialRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer(lInitialSeed) {}
-
 /** destructor */
 ExponentialRandomizer::~ExponentialRandomizer() {}
 
@@ -19,9 +16,9 @@ ExponentialRandomizer * ExponentialRandomizer::Clone() const {
 void ExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored) {
   for (count_t i=0; i < tNumPatients; ++i) {
     //add stationary values
-    gvStationaryAttribute.push_back(SpaceTimeStationaryAttribute(iTimeInterval, tTractIndex));
+    gvStationaryAttribute.push_back(ExponentialStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
     //add permutated value
-    gvOriginalPermutedAttribute.push_back(PermutedAttribute<ExponentialPermuted_t>(std::make_pair(tContinuousVariable, static_cast<unsigned short>(tCensored))));
+    gvOriginalPermutedAttribute.push_back(ExponentialPermuted_t(std::make_pair(tContinuousVariable, static_cast<unsigned short>(tCensored))));
   }
 }
 
@@ -36,8 +33,8 @@ void ExponentialRandomizer::Assign(const PermutedContainer_t& vPermutedAttribute
 
   //assign randomized continuous data to measure
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
-     ppMeasure[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += (*itr_permuted).GetPermutedVariable().first;
-     ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()] += ((*itr_permuted).GetPermutedVariable().second ? 0 : 1);
+     ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += (*itr_permuted).GetPermutedVariable().first;
+     ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += ((*itr_permuted).GetPermutedVariable().second ? 0 : 1);
   }
 
   //now set as cumulative
@@ -62,7 +59,7 @@ void ExponentialRandomizer::AssignCensoredIndividuals(TwoDimCountArray_t& tCenso
   //assign censored cases to array
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary)
      if ((*itr_permuted).GetPermutedVariable().second)
-       ++ppCases[itr_stationary->GetTimeInterval()][itr_stationary->GetTractIndex()];
+       ++ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
 
   //now set as cumulative
   for (unsigned int t=0; t < tCensoredArray.Get2ndDimension(); ++t) {
@@ -91,7 +88,7 @@ std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(st
 
   //assign population array for accumulated data
   for (; itr_stationary != gvStationaryAttribute.end();  ++itr_stationary)
-     ++vMaxCirclePopulation[itr_stationary->GetTractIndex()];
+     ++vMaxCirclePopulation[itr_stationary->GetStationaryVariable().second];
      
   return vMaxCirclePopulation;
 }
@@ -121,6 +118,4 @@ void ExponentialRandomizer::SortPermutedAttribute() {
   std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute<ExponentialPermuted_t>(gRandomNumberGenerator));
   std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute<ExponentialPermuted_t>());
 }
-
-
 
