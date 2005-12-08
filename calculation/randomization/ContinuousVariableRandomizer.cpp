@@ -4,9 +4,6 @@
 //******************************************************************************
 #include "ContinuousVariableRandomizer.h"
 
-/** destructor */
-ContinuousVariableRandomizer::~ContinuousVariableRandomizer() {}
-
 /** re-initializes and  sorts permutated attribute */
 void ContinuousVariableRandomizer::SortPermutedAttribute() {
   // Reset permuted attributes to original order - this is needed to maintain

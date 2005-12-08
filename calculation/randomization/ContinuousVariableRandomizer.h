@@ -13,13 +13,10 @@ class ContinuousVariableRandomizer : public AbstractPermutedDataRandomizer<Conti
     virtual void                SortPermutedAttribute();
 
   public:
-    ContinuousVariableRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~ContinuousVariableRandomizer();
+           ContinuousVariableRandomizer::ContinuousVariableRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+                                        :AbstractPermutedDataRandomizer<ContinuousVariableStationary_t, ContinuousVariablePermuted_t>(lInitialSeed) {}
+    virtual ~ContinuousVariableRandomizer() {}
 };
-
-/** constructor */
-ContinuousVariableRandomizer::ContinuousVariableRandomizer(long lInitialSeed)
-                             :AbstractPermutedDataRandomizer<ContinuousVariableStationary_t, ContinuousVariablePermuted_t>(lInitialSeed) {}
 
 /** Randomizes data of dataset for a 'normal' probablility model.
     Instead of assigning data to simulation case structures, assigns
