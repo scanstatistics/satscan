@@ -26,7 +26,7 @@ void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, S
   PermutedContainer_t::const_iterator   itr_permuted, itr_end;
 
   //reset simulation case structure to zero
-  thisSimSet.ResetCumulativeCaseArray();
+  thisSimSet.GetCaseArrayHandler().Set(0);
 
   //assign permuted attribute to simulation case array
   for (; itr_category != itr_cat_end; ++itr_category) {
