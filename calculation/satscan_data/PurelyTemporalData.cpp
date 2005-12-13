@@ -100,8 +100,7 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
                                         SimulationDataContainer_t& SimDataContainer,
                                         unsigned int iSimulationNumber) const {
   try {
-    CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
-    gpDataSets->SetPurelyTemporalSimulationData(SimDataContainer);
+    gpDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CPurelyTemporalData");
