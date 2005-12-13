@@ -146,13 +146,13 @@ void DataSet::AllocatePTCasesArray() {
     Initializes data to zero. If array already exists, only initialization occurs.
     Note that data in this array will be cumulated with respect to time intervals
     such that each earlier time interval will include later intervals data. */
-void DataSet::AllocatePTCategoryCasesArray() {
+void DataSet::AllocatePTCategoryCasesArray(unsigned int iNumCategories) {
   try {
     if (!gpPTCategoryCasesHandler)
       //allocate to # time intervals plus one -- a pointer to this array will be
       //passed directly CTimeIntervals object, where it is assumed element at index
       //'giNumTimeIntervals' is accessible and set to zero
-      gpPTCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(gvCasesByCategory.size(), giNumTimeIntervals+1);
+      gpPTCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(iNumCategories, giNumTimeIntervals+1);
     gpPTCategoryCasesHandler->Set(0);
   }
   catch (ZdException &x) {
@@ -243,6 +243,23 @@ count_t ** DataSet::GetCaseArray() const {
     throw;
   }
   return gpCasesHandler->GetArray();
+}
+
+/** Returns reference to object to manages the two dimensional array representing
+    case data stratified by time interval index / location index.
+    Throws exception of not allocated.
+    Note that data in this array is cumulated with respect to time intervals
+    such that each earlier time interval includes later intervals data. */
+TwoDimCountArray_t & DataSet::GetCaseArrayHandler() {
+  try {
+    if (!gpCasesHandler)
+      ZdGenerateException("Cumulative case array not allocated.","GetCaseArrayHandler()");
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetCaseArrayHandler()","DataSet");
+    throw;
+  }
+  return *gpCasesHandler;
 }
 
 /** Returns pointer to one dimensional array representing case data for each
@@ -392,16 +409,16 @@ measure_t ** DataSet::GetNCMeasureArray() const {
     exception of not allocated.
     Note that data in this array is cumulated with respect to time intervals
     such that each earlier time interval includes later intervals data. */
-count_t ** DataSet::GetPTCategoryCasesArray() const {
+TwoDimCountArray_t & DataSet::GetPTCategoryCasesArrayHandler() const {
   try {
     if (!gpPTCategoryCasesHandler)
       ZdGenerateException("Purely temporal category case array not allocated.","GetPTCategoryCasesArray()");
   }
   catch (ZdException &x) {
-    x.AddCallpath("GetPTCategoryCasesArray()","DataSet");
+    x.AddCallpath("GetPTCategoryCasesArrayHandler()","DataSet");
     throw;
   }
-  return gpPTCategoryCasesHandler->GetArray();
+  return *gpPTCategoryCasesHandler;
 }
 
 /** Returns pointer to one dimensional array representing expected case data
@@ -505,7 +522,7 @@ void DataSet::SetPTCategoryCasesArray() {
     if (!gvCasesByCategory.size())
       ZdGenerateException("Cumulative category cases array not allocated.","SetPTCategoryCasesArray()");
 
-    AllocatePTCategoryCasesArray();
+    AllocatePTCategoryCasesArray(gvCasesByCategory.size());
     for (c=0; c < gvCasesByCategory.size(); ++c) {
        ppCases = gvCasesByCategory[c]->GetArray();
        pPTCategoryCases = gpPTCategoryCasesHandler->GetArray()[c];
@@ -1008,22 +1025,6 @@ void SimDataSet::ReadSimulationDataStandard(std::ifstream& filestream, unsigned 
   for (t=0; t < tNumTracts; ++t)
      for (i=0; i < tNumTimeIntervals; ++i)
         filestream >> ppSimCases[i][t];
-}
-
-/** Resets to all zero, the two dimensional array representing simulated case data,
-    stratified by time interval index / location index and cumulative by time
-    intervals. Throws exception if array not allocated. */
-void SimDataSet::ResetCumulativeCaseArray() {
-  try {
-    if (!gpCasesHandler)
-      ZdGenerateException("Cumulative simulation case array is not allocated.","ResetCumulativeSimCaseArray()");
-
-    gpCasesHandler->Set(0);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ResetCumulativeSimCaseArray()","SimDataSet");
-    throw;
-  }
 }
 
 /** Prints the simulated data to a file. Format printed to file matches

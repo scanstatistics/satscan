@@ -67,12 +67,13 @@ class DataSet {
     void                        AllocateMeasureArray();
     void                        AllocateSqMeasureArray();
     void                        AllocatePTCasesArray();
-    void                        AllocatePTCategoryCasesArray();
+    void                        AllocatePTCategoryCasesArray(unsigned int iNumCategories);
     void                        AllocatePTMeasureArray();
     void                        AllocatePTSqMeasureArray();
     void                        AllocateNCMeasureArray();
     void                        AllocateNCCasesArray();
     count_t                  ** GetCaseArray() const;
+    TwoDimCountArray_t        & GetCaseArrayHandler();
     const CasesByCategory_t   & GetCasesByCategory() const {return gvCasesByCategory;}
     count_t                   * GetCasesPerTimeIntervalArray() const;
     measure_t                ** GetMeasureArray() const;
@@ -84,7 +85,7 @@ class DataSet {
     inline unsigned int         GetNumTimeIntervals() const {return giNumTimeIntervals;}
     inline unsigned int         GetNumTracts() const {return giNumTracts;}
     count_t                   * GetPTCasesArray() const;
-    count_t                  ** GetPTCategoryCasesArray() const;
+    TwoDimCountArray_t        & GetPTCategoryCasesArrayHandler() const;
     measure_t                 * GetPTMeasureArray() const;
     measure_t                 * GetPTSqMeasureArray() const {return gpPTSqMeasureArray;}
     CTimeTrend                & GetTimeTrend() {return gTimeTrend;}
@@ -185,7 +186,6 @@ class SimDataSet : public DataSet {
 
     virtual SimDataSet        * Clone() const;
     virtual void                ReadSimulationData(const CParameters& Parameters, unsigned int iSimulation);
-    void                        ResetCumulativeCaseArray();
     virtual void                WriteSimulationData(const CParameters& Parameters, int iSimulation) const;
 };
 //*****************************************************************************
