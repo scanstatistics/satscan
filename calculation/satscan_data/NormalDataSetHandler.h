@@ -3,18 +3,18 @@
 #define __NormalDataSetHandler_H
 //******************************************************************************
 #include "DataSetHandler.h"
-#include "ContinuousVariableRandomizer.h"
+#include "NormalRandomizer.h"
 
 class NormalDataSetHandler : public DataSetHandler {
   protected:
-    virtual void                        AllocateCaseStructures(size_t tSetIndex);
+    virtual void                        AllocateCaseStructures(size_t tSetIndex) {/* no action */}
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
     virtual void                        SetRandomizers();
 
   public:
-    NormalDataSetHandler(CSaTScanData& DataHub, BasePrint& pPrint);
-    virtual ~NormalDataSetHandler();
+    NormalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
+    virtual ~NormalDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;

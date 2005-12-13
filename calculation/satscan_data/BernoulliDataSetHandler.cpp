@@ -5,13 +5,6 @@
 #include "SaTScanData.h"
 #include "BernoulliDataSetHandler.h"
 
-/** constructor */
-BernoulliDataSetHandler::BernoulliDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-                           :DataSetHandler(DataHub, Print) {}
-
-/** destructor */
-BernoulliDataSetHandler::~BernoulliDataSetHandler() {}
-
 /** allocates cases structures for dataset*/
 void BernoulliDataSetHandler::AllocateControlStructures(size_t tSetIndex) {
   try {
@@ -26,42 +19,38 @@ void BernoulliDataSetHandler::AllocateControlStructures(size_t tSetIndex) {
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateCasesArray();
-        break;
-    case PURELYTEMPORAL :
-    case PROSPECTIVEPURELYTEMPORAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocatePTCasesArray();
-        }
-        break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t]->AllocatePTCasesArray();
-        }
-        break;
-    case SPATIALVARTEMPTREND :
-        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+    case PURELYSPATIAL             : for (; itr != itr_end; ++itr)
+                                       (*itr)->AllocateCasesArray();
+                                     break;
+    case PURELYTEMPORAL            :
+    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr)
+                                       (*itr)->AllocatePTCasesArray();
+                                     break;
+    case SPACETIME                 :
+    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocateCasesArray();
+                                       if (gParameters.GetIncludePurelyTemporalClusters())
+                                         (*itr)->AllocatePTCasesArray();
+                                     }
+                                     break;
+    case SPATIALVARTEMPTREND       :
+       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+    default                        :
+       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
 
 /** returns new data gateway for real data */
 AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                        t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases and measure
@@ -104,12 +93,11 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSet
 
 /** returns new data gateway for simulation data */
 AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                        t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to real and simulation datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
       const SimDataSet& S_DataSet = *Container[t];
@@ -244,7 +232,10 @@ void BernoulliDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          gvDataSetRandomizers[0] = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
+          if (gParameters.GetIsPurelyTemporalAnalysis())
+            gvDataSetRandomizers[0] = new BernoulliPurelyTemporalNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
+          else
+            gvDataSetRandomizers[0] = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
           gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());

@@ -9,17 +9,15 @@ class ExponentialDataSetHandler : public DataSetHandler {
   protected:
     static const count_t                gtMinimumNotCensoredCases;
 
-    virtual void                        AllocateCaseStructures(size_t tSetIndex);
-    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
-                                                          count_t& nCount, Julian& nDate,
-                                                          measure_t& tContinuousVariable,
-                                                          count_t& tCensorAttribute);
+    virtual void                        AllocateCaseStructures(size_t tSetIndex) {/* no action */}
+    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate,
+                                                          measure_t& tContinuousVariable, count_t& tCensorAttribute);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
     virtual void                        SetRandomizers();
 
   public:
-    ExponentialDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
-    virtual ~ExponentialDataSetHandler();
+    ExponentialDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
+    virtual ~ExponentialDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;

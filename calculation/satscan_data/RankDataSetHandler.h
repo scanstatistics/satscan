@@ -3,27 +3,26 @@
 #define __RankDataSetHandler_H
 //******************************************************************************
 #include "DataSetHandler.h"
-#include "ContinuousVariableRandomizer.h"
+#include "RankRandomizer.h"
 
 class RankDataSetHandler : public DataSetHandler {
   protected:
-    virtual void                        AllocateCaseStructures(size_t iSetIndex);
-    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
-                                                          count_t& nCount, Julian& nDate,
-                                                          measure_t& tContinuousVariable);
-    virtual bool                        ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescription);
-    virtual void                        SetRandomizers();
+    virtual void                         AllocateCaseStructures(size_t iSetIndex) {/* no action */}
+    virtual bool                         ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount,
+                                                           Julian& nDate, measure_t& tContinuousVariable);
+    virtual bool                         ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescription);
+    virtual void                         SetRandomizers();
 
   public:
-    RankDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
-    virtual ~RankDataSetHandler();
+    RankDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
+    virtual ~RankDataSetHandler() {}
 
-    virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
+    virtual SimulationDataContainer_t  & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
     virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const;
-    virtual bool                        ReadData();
-    virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
+    virtual double                       GetSimulationDataSetAllocationRequirements() const;
+    virtual bool                         ReadData();
+    virtual void                         SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };
 //******************************************************************************
 #endif

@@ -6,45 +6,34 @@
 #include "SaTScanData.h"
 #include "DateStringParser.h"
 
-/** class constructor */
-PoissonDataSetHandler::PoissonDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-                         :DataSetHandler(DataHub, Print) {}
-
-/** class destructor */
-PoissonDataSetHandler::~PoissonDataSetHandler() {}
-
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateCasesArray();
-        break;
-    case PURELYTEMPORAL :
-    case PROSPECTIVEPURELYTEMPORAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocatePTCasesArray();
-        }
-        break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t]->AllocatePTCasesArray();
-        }
-        break;
-    case SPATIALVARTEMPTREND :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocateNCCasesArray();
-          Container[t]->AllocatePTCasesArray();
-        }
-        break;
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+    case PURELYSPATIAL             : for (; itr != itr_end; ++itr)
+                                       (*itr)->AllocateCasesArray();
+                                     break;
+    case PURELYTEMPORAL            :
+    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr)
+                                       (*itr)->AllocatePTCasesArray();
+                                     break;
+    case SPACETIME                 :
+    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocateCasesArray();
+                                       if (gParameters.GetIncludePurelyTemporalClusters())
+                                         (*itr)->AllocatePTCasesArray();
+                                     }
+                                     break;
+    case SPATIALVARTEMPTREND       : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocateCasesArray();
+                                       (*itr)->AllocateNCCasesArray();
+                                       (*itr)->AllocatePTCasesArray();
+                                     }
+                                     break;
+    default                        :
+       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -123,12 +112,11 @@ bool PoissonDataSetHandler::CreatePopulationData(size_t tSetIndex) {
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                        t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases and measure
@@ -181,12 +169,11 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                        t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
       const SimDataSet& S_DataSet = *Container[t];
@@ -453,6 +440,8 @@ void PoissonDataSetHandler::SetRandomizers() {
             gvDataSetRandomizers[0] = new PoissonTimeStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
             gvDataSetRandomizers[0] = new PoissonSpatialStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
+          else if (gParameters.GetIsPurelyTemporalAnalysis())
+            gvDataSetRandomizers[0] = new PoissonPurelyTemporalNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else
             gvDataSetRandomizers[0] = new PoissonNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;

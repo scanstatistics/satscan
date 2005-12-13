@@ -7,72 +7,48 @@
 
 const count_t ExponentialDataSetHandler::gtMinimumNotCensoredCases         = 1;
 
-/** constructor */
-ExponentialDataSetHandler::ExponentialDataSetHandler(CSaTScanData& Data, BasePrint& Print)
-                          :DataSetHandler(Data, Print) {}
-
-/** destructor */
-ExponentialDataSetHandler::~ExponentialDataSetHandler() {}
-
-/** allocates cases structures for dataset */
-void ExponentialDataSetHandler::AllocateCaseStructures(size_t tSetIndex) {
-  try {
-    gvDataSets[tSetIndex]->AllocateCasesArray();
-    gvDataSets[tSetIndex]->AllocateCensoredCasesArray();
-    gvDataSets[tSetIndex]->AllocateMeasureArray();
-  }
-  catch(ZdException &x) {
-    x.AddCallpath("AllocateCaseStructures()","ExponentialDataSetHandler");
-    throw;
-  }
-}
-
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocateMeasureArray();
-        }
-        break;
-    case PURELYTEMPORAL :
-    case PROSPECTIVEPURELYTEMPORAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocatePTCasesArray();
-          Container[t]->AllocateMeasureArray();
-          Container[t]->AllocatePTMeasureArray();
-        }
-        break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCasesArray();
-          Container[t]->AllocateMeasureArray();
-          if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Container[t]->AllocatePTCasesArray();
-            Container[t]->AllocatePTMeasureArray();
-          }
-        }
-        break;
-    case SPATIALVARTEMPTREND :
-        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+    case PURELYSPATIAL             : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocateCasesArray();
+                                       (*itr)->AllocateMeasureArray();
+                                     }
+                                     break;
+    case PURELYTEMPORAL            :
+    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocatePTCasesArray();
+                                       (*itr)->AllocatePTMeasureArray();
+                                     }
+                                     break;
+    case SPACETIME                 :
+    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocateCasesArray();
+                                       (*itr)->AllocateMeasureArray();
+                                       if (gParameters.GetIncludePurelyTemporalClusters()) {
+                                         (*itr)->AllocatePTCasesArray();
+                                         (*itr)->AllocatePTMeasureArray();
+                                       }  
+                                     }
+                                     break;
+    case SPATIALVARTEMPTREND       :
+       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+    default                        :
+       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
 
 /** returns new data gateway for real data */
 AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                        t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases and measure
@@ -115,12 +91,11 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
 
 /** returns new data gateway for simulation data */
 AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                        t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
       const SimDataSet& S_DataSet = *Container[t];
@@ -294,21 +269,21 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*) {
-  bool                   bReadSuccessful=true, bEmpty=true;
-  Julian                 Date;
-  tract_t                tTractIndex;
-  count_t                tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
-  measure_t              tContinuousVariable, tTotalMeasure=0;
-  ExponentialRandomizer* pRandomizer;
+  bool                            bReadSuccessful=true, bEmpty=true;
+  Julian                          Date;
+  tract_t                         tTractIndex;
+  count_t                         tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
+  measure_t                       tContinuousVariable, tTotalMeasure=0;
+  AbstractExponentialRandomizer * pRandomizer;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
     StringParser Parser(gPrint);
 
     // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
-    pRandomizer = dynamic_cast<ExponentialRandomizer*>(gvDataSetRandomizers[tSetIndex]);         
+    pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers[tSetIndex]);
     if (!pRandomizer)
-      ZdGenerateException("Data set randomizer not ExponentialRandomizer type.", "ReadCounts()");
+      ZdGenerateException("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
@@ -351,15 +326,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
       bReadSuccessful = false;
     }
     else {
-      //calibrate measure -- multiply by (tTotalCases/tTotalMeasure) and assign data accumulated in randomizer to data set
-      tTotalMeasure = pRandomizer->CalibrateAndAssign((double)tTotalCases/tTotalMeasure, DataSet);
-      if (fabs(tTotalCases - tTotalMeasure) > 0.0001)
-        ZdGenerateException("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n",
-                            "ReadCounts()", tTotalMeasure, tTotalCases);
-      //assign data accumulated in randomizer to data set censored case array
-      pRandomizer->AssignCensoredIndividuals(DataSet.GetCensoredCasesArrayHandler());
-      DataSet.SetTotalCases(tTotalCases); //total non-censored cases
-      DataSet.SetTotalMeasure(tTotalMeasure); //total survival times
+      pRandomizer->AssignFromAttributes(tTotalCases, tTotalMeasure, DataSet);
       DataSet.SetTotalPopulation(tTotalPopuation); //total censored and non-censored cases
     }
   }
@@ -391,11 +358,13 @@ bool ExponentialDataSetHandler::ReadData() {
 }
 
 /** sets purely temporal structures used in simulations */
-void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
+void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   try {
-    for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t]->SetPTCasesArray();
-       SimDataContainer[t]->SetPTMeasureArray();
+    for (; itr != itr_end; ++itr) {
+       (*itr)->SetPTCasesArray();
+       (*itr)->SetPTMeasureArray();
     }
   }
   catch (ZdException &x) {
@@ -411,12 +380,14 @@ void ExponentialDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          gvDataSetRandomizers[0] = new ExponentialRandomizer(gParameters.GetRandomizationSeed());
+          if (gParameters.GetIsPurelyTemporalAnalysis())
+            gvDataSetRandomizers[0] = new ExponentialPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+          else
+            gvDataSetRandomizers[0] = new ExponentialRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :
-      default :
-          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+      default : ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)

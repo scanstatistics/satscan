@@ -10,15 +10,15 @@ class OrdinalDataSetHandler : public DataSetHandler {
     static const size_t                 gtMinimumCategories;
     static const count_t                gtMinimumCases;
 
-    virtual void                        AllocateCaseStructures(size_t tSetIndex);
+    virtual void                        AllocateCaseStructures(size_t tSetIndex) {/*no action*/}
     virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
                                                           count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char*);
     virtual void                        SetRandomizers();
 
   public:
-    OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
-    virtual ~OrdinalDataSetHandler();
+    OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
+    virtual ~OrdinalDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;

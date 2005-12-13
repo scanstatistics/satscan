@@ -30,8 +30,8 @@ class PoissonDataSetHandler : public DataSetHandler {
     virtual void                        SetRandomizers();
 
   public:
-    PoissonDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
-    virtual ~PoissonDataSetHandler();
+    PoissonDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
+    virtual ~PoissonDataSetHandler() {}
 
     virtual SimulationDataContainer_t&  AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;

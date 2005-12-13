@@ -12,8 +12,8 @@ class BernoulliDataSetHandler : public DataSetHandler {
     virtual void                        SetRandomizers();
 
   public:
-    BernoulliDataSetHandler(CSaTScanData& DataHub, BasePrint& Print);
-    virtual ~BernoulliDataSetHandler();
+    BernoulliDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
+    virtual ~BernoulliDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;

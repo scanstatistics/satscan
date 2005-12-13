@@ -8,56 +8,44 @@
 const size_t OrdinalDataSetHandler::gtMinimumCategories        = 3;
 const count_t OrdinalDataSetHandler::gtMinimumCases            = 4;
 
-/** constructor */
-OrdinalDataSetHandler::OrdinalDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-                         :DataSetHandler(DataHub, Print) {}
-
-/** destructor */
-OrdinalDataSetHandler::~OrdinalDataSetHandler() {}
-
-/** empty function - data set case structures allocated as new ordinal categories
-    are encountered in read of case file */
-void OrdinalDataSetHandler::AllocateCaseStructures(size_t) {/*no action*/}
-
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData().GetNumOrdinalCategories());
-        break;
-    case PURELYTEMPORAL :
+    case PURELYSPATIAL             :
+       for (; itr != itr_end; ++itr)
+         (*itr)->AllocateCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+       break;
+    case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData().GetNumOrdinalCategories());
-          Container[t]->AllocatePTCategoryCasesArray();
-        }
-        break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateCategoryCasesArray(gDataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData().GetNumOrdinalCategories());
-          if (gParameters.GetIncludePurelyTemporalClusters())
-             Container[t]->AllocatePTCategoryCasesArray();
-        }
-        break;
-    case SPATIALVARTEMPTREND :
-        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+       for (; itr != itr_end; ++itr)
+         (*itr)->AllocatePTCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+       break;
+    case SPACETIME                 :
+    case PROSPECTIVESPACETIME      :
+       for (; itr != itr_end; ++itr) {
+         (*itr)->AllocateCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+         if (gParameters.GetIncludePurelyTemporalClusters())
+           (*itr)->AllocatePTCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+       }
+       break;
+    case SPATIALVARTEMPTREND       :
+       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+    default                        :
+       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
 
 /** returns new data gateway for real data - caller resonsible for deletion object */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                     t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases
@@ -70,13 +58,13 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
        case PURELYTEMPORAL             :
-          Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArray());
+          Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArrayHandler().GetArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCategoryCaseArrays(DataSet.GetCasesByCategory());
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArray());
+            Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArrayHandler().GetArray());
           break;
        case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
@@ -95,12 +83,11 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
 
 /** returns new data gateway for simulation data - caller resonsible for deletion object */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                     t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
       const SimDataSet& S_DataSet = *Container[t];
@@ -114,13 +101,13 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArray());
+          Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArrayHandler().GetArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCategoryCaseArrays(S_DataSet.GetCasesByCategory());
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArray());
+            Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArrayHandler().GetArray());
          break;
         case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
@@ -357,10 +344,12 @@ bool OrdinalDataSetHandler::ReadData() {
 }
 
 /** sets purely temporal structures used in simulations */
-void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
+void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   try {
-    for (size_t t=0; t < SimDataContainer.size(); ++t)
-       SimDataContainer[t]->SetPTCategoryCasesArray();
+    for (; itr != itr_end; ++itr)
+       (*itr)->SetPTCategoryCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimulationData()","OrdinalDataSetHandler");
@@ -376,7 +365,10 @@ void OrdinalDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          gvDataSetRandomizers[0] = new OrdinalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
+          if (gParameters.GetIsPurelyTemporalAnalysis())
+            gvDataSetRandomizers[0] = new OrdinalPurelyTemporalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
+          else
+            gvDataSetRandomizers[0] = new OrdinalDenominatorDataRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
           gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());

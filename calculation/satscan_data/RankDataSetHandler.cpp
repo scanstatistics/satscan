@@ -5,64 +5,41 @@
 #include "SaTScanData.h"
 #include "RankDataSetHandler.h"
 
-/** constructor */
-RankDataSetHandler::RankDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-                   :DataSetHandler(DataHub, Print) {}
-
-/** destructor */
-RankDataSetHandler::~RankDataSetHandler() {}
-
-/** allocates cases structures for dataset at index */
-void RankDataSetHandler::AllocateCaseStructures(size_t iSetIndex) {
-  try {
-    gvDataSets[iSetIndex]->AllocateCasesArray();
-    gvDataSets[iSetIndex]->AllocateMeasureArray();
-  }
-  catch(ZdException &x) {
-    x.AddCallpath("AllocateCaseStructures()","RankDataSetHandler");
-    throw;
-  }
-}
-
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t & RankDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container[t]->AllocateMeasureArray();
-        break;
-    case PURELYTEMPORAL :
-    case PROSPECTIVEPURELYTEMPORAL :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateMeasureArray();
-          Container[t]->AllocatePTMeasureArray();
-        }
-        break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t) {
-          Container[t]->AllocateMeasureArray();
-          if (gParameters.GetIncludePurelyTemporalClusters())
-            Container[t]->AllocatePTMeasureArray();
-        }
-        break;
-    case SPATIALVARTEMPTREND :
-        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
-    default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+    case PURELYSPATIAL             : for (; itr != itr_end; ++itr)
+                                       (*itr)->AllocateMeasureArray();
+                                     break;
+    case PURELYTEMPORAL            :
+    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr)
+                                       (*itr)->AllocatePTMeasureArray();
+                                     break;
+    case SPACETIME                 :
+    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
+                                       (*itr)->AllocateMeasureArray();
+                                       if (gParameters.GetIncludePurelyTemporalClusters())
+                                          (*itr)->AllocatePTMeasureArray();
+                                     }
+                                     break;
+    case SPATIALVARTEMPTREND       :
+      ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+    default                        :
+      ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
 
 /** returns new data gateway for real data */
 AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                     t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases and measure
@@ -137,12 +114,11 @@ double RankDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
 
 /** returns new data gateway for simulation data */
 AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface           Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
-  size_t                     t;
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
   try {
     DataGatway.Clear();
-    for (t=0; t < gvDataSets.size(); ++t) {
+    for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to real and simulation datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
       const SimDataSet& S_DataSet = *Container[t];
@@ -184,9 +160,7 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
   return DataGatway;
 }
 
-bool RankDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
-                                              count_t& nCount, Julian& nDate,
-                                              measure_t& tContinuousVariable) {
+bool RankDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
@@ -247,36 +221,26 @@ bool RankDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
-  bool          bValid=true, bEmpty=true;
-  Julian        Date;
-  tract_t       TractIndex;
-  int           i;
-  count_t       Count, ** ppCounts, tTotalCases=0;
-  measure_t     tContinuousVariable, tTotalMeasure=0;
+  bool                          bValid=true, bEmpty=true;
+  Julian                        Date;
+  tract_t                       TractIndex;
+  int                           i;
+  count_t                       Count, tTotalCases=0;
+  measure_t                     tContinuousVariable, tTotalMeasure=0;
+  AbstractRankRandomizer      * pRandomizer;
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
     StringParser Parser(gPrint);
 
-    ppCounts = DataSet.GetCaseArray();
+    if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers[tSetIndex])) == 0)
+      ZdGenerateException("Data set randomizer not AbstractRankRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCaseFileLine(Parser, TractIndex, Count, Date, tContinuousVariable)) {
-             //cumulatively add count to time by location structure
-             ppCounts[0][TractIndex] += Count;
-             if (ppCounts[0][TractIndex] < 0)
-               GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                           tSetIndex, std::numeric_limits<count_t>::max());
-             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-               ppCounts[i][TractIndex] += Count;
-             //record count as a case or control  
-//             DataSet.GetPopulationData().AddCaseCount(0, Count);
-             if (gParameters.GetSimulationType() != FILESOURCE)
-               for (i=0; i < Count; ++i)
-                  ((RankRandomizer*)gvDataSetRandomizers[tSetIndex])->AddCase(gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
-
+             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
              tTotalCases += Count;
              tTotalMeasure += tContinuousVariable;
            }
@@ -293,12 +257,10 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    else if (gParameters.GetSimulationType() != FILESOURCE) {
-     ((RankRandomizer*)gvDataSetRandomizers[tSetIndex])->AssignMeasure(DataSet.GetMeasureArray(),
-                                                                       DataSet.GetNumTimeIntervals(),
-                                                                       DataSet.GetNumTracts());
-     DataSet.SetTotalCases(tTotalCases);
-     DataSet.SetTotalMeasure(tTotalMeasure);
+    else {
+      pRandomizer->AssignFromAttributes(DataSet);
+      DataSet.SetTotalCases(tTotalCases);
+      DataSet.SetTotalMeasure(tTotalMeasure);
     }
 
   }
@@ -308,7 +270,6 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, FILE* fp, const char*) {
   }
   return bValid;
 }
-
 
 bool RankDataSetHandler::ReadData() {
   try {
@@ -330,10 +291,12 @@ bool RankDataSetHandler::ReadData() {
 }
 
 /** sets purely temporal structures used in simulations */
-void RankDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
+void RankDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
+  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
+
   try {
-    for (size_t t=0; t < SimDataContainer.size(); ++t)
-       SimDataContainer[t]->SetPTMeasureArray();
+    for (; itr != itr_end; ++itr)
+       (*itr)->SetPTMeasureArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimulationData()","RankDataSetHandler");
@@ -347,14 +310,14 @@ void RankDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          gvDataSetRandomizers[0] = new RankRandomizer(gParameters.GetRandomizationSeed());
+          if (gParameters.GetIsPurelyTemporalAnalysis())
+            gvDataSetRandomizers[0] = new RankPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+          else
+            gvDataSetRandomizers[0] = new RankRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
-          break;
       case HA_RANDOMIZATION :
-      default :
-          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+      default : ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
@@ -365,5 +328,4 @@ void RankDataSetHandler::SetRandomizers() {
     throw;
   }
 }
-
 
