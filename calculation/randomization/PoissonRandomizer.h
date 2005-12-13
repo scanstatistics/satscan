@@ -6,69 +6,82 @@
 #include <iostream>
 #include <fstream>
 
-/** abstract base class for Poisson randomizers */
+/** Abstraction for Poisson data randomizers */
 class PoissonRandomizer : public AbstractDenominatorDataRandomizer {
   protected:
     const CParameters & gParameters;
 
   public:
-    PoissonRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~PoissonRandomizer();
+    PoissonRandomizer(const CParameters& Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+       : AbstractDenominatorDataRandomizer(lInitialSeed), gParameters(Parameters) {}
+    virtual ~PoissonRandomizer() {}
 };
 
-/** Randomizes Poisson dataset under null hypothesis */
+/** Poisson randomizer for null hypothesis. */
 class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
   public:
-    PoissonNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~PoissonNullHypothesisRandomizer();
-    virtual PoissonNullHypothesisRandomizer * Clone() const;
+    PoissonNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+       : PoissonRandomizer(Parameters, lInitialSeed) {}
+    virtual ~PoissonNullHypothesisRandomizer() {}
 
-    virtual void  RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual PoissonNullHypothesisRandomizer * Clone() const {return new PoissonNullHypothesisRandomizer(*this);}
+
+    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
 };
 
-/** Randomizes Poisson dataset in time stratified manner. */
+/** Poisson randomizer for null hypothesis. Optimized for purely temporal analyses. */
+class PoissonPurelyTemporalNullHypothesisRandomizer : public PoissonRandomizer {
+  public:
+    PoissonPurelyTemporalNullHypothesisRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+       : PoissonRandomizer(Parameters, lInitialSeed) {}
+    virtual ~PoissonPurelyTemporalNullHypothesisRandomizer() {}
+
+    virtual PoissonPurelyTemporalNullHypothesisRandomizer * Clone() const {return new PoissonPurelyTemporalNullHypothesisRandomizer(*this);}
+
+    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+};
+
+/** Poisson randomizer for null hypothesis applying the time stratified adjustment. */
 class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
   public:
-    PoissonTimeStratifiedRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~PoissonTimeStratifiedRandomizer();
-    virtual PoissonTimeStratifiedRandomizer * Clone() const;
+    PoissonTimeStratifiedRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+        : PoissonRandomizer(Parameters, lInitialSeed) {}
+    virtual ~PoissonTimeStratifiedRandomizer() {}
+    virtual PoissonTimeStratifiedRandomizer * Clone() const {return new PoissonTimeStratifiedRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
 };
 
-/** Randomizes Poisson dataset in spatial stratified manner. */
+/** Poisson randomizer for null hypothesis applying the spatial stratified adjustment. */
 class PoissonSpatialStratifiedRandomizer : public PoissonRandomizer {
   public:
-    PoissonSpatialStratifiedRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~PoissonSpatialStratifiedRandomizer();
-    virtual PoissonSpatialStratifiedRandomizer * Clone() const;
+    PoissonSpatialStratifiedRandomizer(const CParameters & Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+        : PoissonRandomizer(Parameters, lInitialSeed) {}
+    virtual ~PoissonSpatialStratifiedRandomizer() {}
+    virtual PoissonSpatialStratifiedRandomizer * Clone() const {return new PoissonSpatialStratifiedRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
 };
 
 class CSaTScanData; /** forward class declaration */
 
-/** Randomizes Poisson dataset under alternate hypothesis.
-    NOTE: This unit has note been thoughly tested, especially with multiple
-          datasets. */
+/** Poisson randomizer for alternate hypothesis.
+    !!! This unit has note been thoughly tested, especially with multiple datasets. !!! */
 class AlternateHypothesisRandomizer : public PoissonRandomizer {
-  private:
-    void                                        Init() {gpAlternativeMeasure=0;}
-    void                                        Setup();
-
   protected:
     std::vector<float>                          gvRelativeRisks;
     std::vector<measure_t>                      gvMeasure;
-    TwoDimensionArrayHandler<measure_t>       * gpAlternativeMeasure;
-    CSaTScanData                              & gData;
+    TwoDimensionArrayHandler<measure_t>         gAlternativeMeasure;
+    CSaTScanData                              & gDataHub;
 
   public:
-    AlternateHypothesisRandomizer(CSaTScanData & Data, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer & rhs);
-    virtual ~AlternateHypothesisRandomizer();
-    virtual AlternateHypothesisRandomizer     * Clone() const;
+    AlternateHypothesisRandomizer(CSaTScanData& gDataHub, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
+    AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer& rhs);
+    virtual ~AlternateHypothesisRandomizer() {}
+    
+    virtual AlternateHypothesisRandomizer     * Clone() const {return new AlternateHypothesisRandomizer(*this);}
 
-    virtual void	                        RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void	                        RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

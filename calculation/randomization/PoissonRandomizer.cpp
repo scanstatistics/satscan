@@ -5,35 +5,15 @@
 #include "PoissonRandomizer.h"
 #include "SaTScanData.h"
 
-/** constructor */
-PoissonRandomizer::PoissonRandomizer(const CParameters& Parameters, long lInitialSeed)
-                  :AbstractDenominatorDataRandomizer(lInitialSeed), gParameters(Parameters) {}
+/** Creates randomized under the null hypothesis for Poisson model, assigning data to SimDataSet objects structures.
+    Random number generator seed initialized based upon 'iSimulation' index. */
+void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          t, tNumTracts = RealSet.GetNumTracts(),
+                        i, tNumTimeIntervals = RealSet.GetNumTimeIntervals();
+  count_t               c, d, cumcases=0, tTotalCases = RealSet.GetTotalCases(), ** ppSimCases = SimSet.GetCaseArray();
+  measure_t             cummeasure=0, tTotalMeasure = RealSet.GetTotalMeasure(), ** ppMeasure(RealSet.GetMeasureArray());
 
-/** destructor */
-PoissonRandomizer::~PoissonRandomizer() {}
-
-/** constructor */
-PoissonNullHypothesisRandomizer::PoissonNullHypothesisRandomizer(const CParameters& Parameters, long lInitialSeed)
-                                :PoissonRandomizer(Parameters, lInitialSeed) {}
-
-/** destructor */
-PoissonNullHypothesisRandomizer::~PoissonNullHypothesisRandomizer() {}
-
-/** returns newly cloned PoissonNullHypothesisRandomizer */
-PoissonNullHypothesisRandomizer * PoissonNullHypothesisRandomizer::Clone() const {
-   return new PoissonNullHypothesisRandomizer(*this);
-}
-
-/** Generate case counts under the null hypothesis (standard) */
-void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
-  unsigned int          t, tNumTracts = thisRealSet.GetNumTracts(),
-                        i, tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
-  count_t               c, d, cumcases=0, tTotalCases = thisRealSet.GetTotalCases(),
-                     ** ppSimCases = thisSimSet.GetCaseArray();
-  measure_t             cummeasure=0, tTotalMeasure = thisRealSet.GetTotalMeasure(),
-                     ** ppMeasure(thisRealSet.GetMeasureArray());
-                     
-  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  SetSeed(iSimulation, SimSet.GetSetIndex());
   for (t=0; t < tNumTracts; ++t) {
      if (tTotalMeasure-cummeasure > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases - cumcases,
@@ -55,30 +35,41 @@ void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealS
   }
 }
 
+//******************************************************************************
 
-/** constructor */
-PoissonTimeStratifiedRandomizer::PoissonTimeStratifiedRandomizer(const CParameters& Parameters, long lInitialSeed)
-                                :PoissonRandomizer(Parameters, lInitialSeed) {}
+/** Creates randomized under the null hypothesis for Poisson model, assigning data to SimDataSet objects structures.
+    Random number generator seed initialized based upon 'iSimulation' index. */
+void PoissonPurelyTemporalNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          i, tNumTimeIntervals = RealSet.GetNumTimeIntervals();
+  count_t               d, tTotalCases = RealSet.GetTotalCases();
+  measure_t             tTotalMeasure = RealSet.GetTotalMeasure();
 
-/** destructor */
-PoissonTimeStratifiedRandomizer::~PoissonTimeStratifiedRandomizer() {}
-
-/** returns newly cloned PoissonTimeStratifiedRandomizer */
-PoissonTimeStratifiedRandomizer * PoissonTimeStratifiedRandomizer::Clone() const {
-  return new PoissonTimeStratifiedRandomizer(*this);
+  SimSet.AllocatePTCasesArray();
+  count_t * pSimPTCases = SimSet.GetPTCasesArray();
+  measure_t * pPTMeasure = RealSet.GetPTMeasureArray();
+  SetSeed(iSimulation, SimSet.GetSetIndex());
+  pSimPTCases[0] = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases, pPTMeasure[0]/tTotalMeasure, gRandomNumberGenerator);
+  for (i=0; i < tNumTimeIntervals-1; ++i) {
+    if (pPTMeasure[i] > 0)
+      d = gBinomialGenerator.GetBinomialDistributedVariable(pSimPTCases[i], 1 - pPTMeasure[i+1]/pPTMeasure[i], gRandomNumberGenerator);
+    else
+      d = 0;
+    pSimPTCases[i+1] = pSimPTCases[i] - d;
+  }
 }
 
-/** Randomizes data of dataset, stratified by time */
-void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
-  unsigned int          tract, tNumTracts = thisRealSet.GetNumTracts();
-  count_t               c, cumcases=0, * pCasesPerInterval = thisRealSet.GetCasesPerTimeIntervalArray(),
-                     ** ppSimCases = thisSimSet.GetCaseArray();
-  measure_t             cummeasure=0, * pMeasurePerInterval = thisRealSet.GetMeasurePerTimeIntervalArray(),
-                     ** ppMeasure = thisRealSet.GetMeasureArray();
+//******************************************************************************
+
+/** Creates randomized under the null hypothesis for Poisson model, non-parametric (time stratified), and assigning
+    data to SimDataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
+void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          tract, tNumTracts = RealSet.GetNumTracts();
+  count_t               c, cumcases=0, * pCasesPerInterval = RealSet.GetCasesPerTimeIntervalArray(), ** ppSimCases = SimSet.GetCaseArray();
+  measure_t             cummeasure=0, * pMeasurePerInterval = RealSet.GetMeasurePerTimeIntervalArray(), ** ppMeasure = RealSet.GetMeasureArray();
   int                   interval;
 
-  SetSeed(iSimulation, thisSimSet.GetSetIndex());
-  interval = thisRealSet.GetNumTimeIntervals() - 1;
+  SetSeed(iSimulation, SimSet.GetSetIndex());
+  interval = RealSet.GetNumTimeIntervals() - 1;
   for (tract=0; tract < tNumTracts; ++tract) {
      if (pCasesPerInterval[interval] - cumcases > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(pCasesPerInterval[interval] - cumcases,
@@ -107,32 +98,21 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& thisRealS
  }
 }
 
-/** constructor */
-PoissonSpatialStratifiedRandomizer::PoissonSpatialStratifiedRandomizer(const CParameters& Parameters, long lInitialSeed)
-                                :PoissonRandomizer(Parameters, lInitialSeed) {}
+//******************************************************************************
 
-/** destructor */
-PoissonSpatialStratifiedRandomizer::~PoissonSpatialStratifiedRandomizer() {}
-
-/** returns newly cloned PoissonTimeStratifiedRandomizer */
-PoissonSpatialStratifiedRandomizer * PoissonSpatialStratifiedRandomizer::Clone() const {
-  return new PoissonSpatialStratifiedRandomizer(*this);
-}
-
-/** Randomizes data of dataset, stratified by space */
-void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+/** Creates randomized under the null hypothesis for Poisson model, non-parametric (location stratified), and assigning
+    data to SimDataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
+void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
   int                   interval;
   unsigned int          tract;
-  count_t               tCases, tCumCases=0,
-                     ** ppCases = thisRealSet.GetCaseArray(),
-                     ** ppSimCases = thisSimSet.GetCaseArray();
-  measure_t             tCumMeasure=0, ** ppMeasure = thisRealSet.GetMeasureArray();
+  count_t               tCases, tCumCases=0, ** ppCases = RealSet.GetCaseArray(), ** ppSimCases = SimSet.GetCaseArray();
+  measure_t             tCumMeasure=0, ** ppMeasure = RealSet.GetMeasureArray();
 
   //reset seed for simulation number
-  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  SetSeed(iSimulation, SimSet.GetSetIndex());
   //create randomized data for each tract's last time interval
-  interval = thisRealSet.GetNumTimeIntervals() - 1;
-  for (tract=0; tract < thisRealSet.GetNumTracts(); ++tract) {
+  interval = RealSet.GetNumTimeIntervals() - 1;
+  for (tract=0; tract < RealSet.GetNumTracts(); ++tract) {
      if (ppCases[0][tract])
        ppSimCases[interval][tract] = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract],
                                            ppMeasure[interval][tract]/(ppMeasure[0][tract]), gRandomNumberGenerator);
@@ -140,10 +120,10 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& thisRe
        ppSimCases[interval][tract] = 0;
   }
   //create randomized data for each tract's remaining time intervals
-  for (tract=0; tract < thisRealSet.GetNumTracts(); ++tract) {
+  for (tract=0; tract < RealSet.GetNumTracts(); ++tract) {
      tCumCases = 0;
      tCumMeasure = 0;
-     interval = thisRealSet.GetNumTimeIntervals() - 2;
+     interval = RealSet.GetNumTimeIntervals() - 2;
      for (; interval >= 0; --interval) {
         if (ppCases[0][tract] - tCumCases)
           tCases = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract] - tCumCases,
@@ -158,76 +138,49 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& thisRe
   }
 }
 
+//******************************************************************************
+
 /** constructor */
-AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(CSaTScanData& Data, long lInitialSeed)
-                              :PoissonRandomizer(Data.GetParameters(), lInitialSeed), gData(Data) {
-  try {
-    Init();
-    Setup();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","AlternateHypothesisRandomizer");
-    throw;
-  }
-}
+AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(CSaTScanData& DataHub, long lInitialSeed)
+                              :PoissonRandomizer(DataHub.GetParameters(), lInitialSeed), gDataHub(DataHub),
+                               gvRelativeRisks(DataHub.GetNumTracts(), 0), gvMeasure(DataHub.GetNumTracts(), 0),
+                               gAlternativeMeasure(DataHub.GetNumTimeIntervals(), DataHub.GetNumTracts(), 0) {}
 
 /** copy constructor */
-AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer & rhs)
-                              :PoissonRandomizer(rhs), gData(rhs.gData) {
-  try {
-    Init();
-    gvRelativeRisks = rhs.gvRelativeRisks;
-    gvMeasure = rhs.gvMeasure;
-    gpAlternativeMeasure = new TwoDimensionArrayHandler<measure_t>(gData.GetNumTimeIntervals(), gData.GetNumTracts(), 0);
-    (*gpAlternativeMeasure) = (*rhs.gpAlternativeMeasure);
-  }
-  catch (ZdException &x) {
-    delete gpAlternativeMeasure;
-    x.AddCallpath("copy constructor()","AlternateHypothesisRandomizer");
-    throw;
-  }
+AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer& rhs)
+                              :PoissonRandomizer(rhs), gDataHub(rhs.gDataHub),
+                               gAlternativeMeasure(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), 0) {
+  gvRelativeRisks = rhs.gvRelativeRisks;
+  gvMeasure = rhs.gvMeasure;
+  gAlternativeMeasure = rhs.gAlternativeMeasure;
 }
 
-/** desctructor */
-AlternateHypothesisRandomizer::~AlternateHypothesisRandomizer() {
-  try {
-    delete gpAlternativeMeasure;
-  }
-  catch (...){}
-}
-
-/** returns pointer to newly cloned AlternateHypothesisRandomizer */
-AlternateHypothesisRandomizer * AlternateHypothesisRandomizer::Clone() const {
-  return new AlternateHypothesisRandomizer(*this);
-}
-
-/** Randomizes data of dataset under alternate hypothesis.
-    NOTE: This procedure is in an experiential stage. */
-void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
-  unsigned int          j, t, i, tNumTracts = thisRealSet.GetNumTracts(),
-                        tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
+/** Creates randomized under an alternative hypothesis for Poisson model and assigning data to SimDataSet
+    objects structures. Random number generator seed initialized based upon 'iSimulation' index.
+    !!! This class is in the experiential stage. !!! */
+void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          j, t, i, tNumTracts = RealSet.GetNumTracts(), tNumTimeIntervals = RealSet.GetNumTimeIntervals();
   std::ifstream         RelativeRiskFile;
   std::string           sTractId;
   tract_t               tractIndex;
-  measure_t             cummeasure=0, TotalMeasure = thisRealSet.GetTotalMeasure(),
-                     ** ppMeasure = thisRealSet.GetMeasureArray();
-  count_t               c, d, cumcases=0, ** ppSimCases = thisSimSet.GetCaseArray();
+  measure_t             cummeasure=0, TotalMeasure = RealSet.GetTotalMeasure(), ** ppMeasure = RealSet.GetMeasureArray();
+  count_t               c, d, cumcases=0, ** ppSimCases = SimSet.GetCaseArray();
 
   //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
   //the gvRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
   for (t=0; t < tNumTracts; ++t)
      for (i=0; i < tNumTimeIntervals; ++i)
-        gpAlternativeMeasure->GetArray()[i][t] = ppMeasure[i][t];
+        gAlternativeMeasure.GetArray()[i][t] = ppMeasure[i][t];
 
   //initialize the gvRelativeRisks[] to be 1.0
   for (t=0; t < tNumTracts; ++t)
      gvRelativeRisks[t] = 1.0;
 
   //read in the RR's for those tracts with higher risks
-  RelativeRiskFile.open(gData.GetParameters().GetAdjustmentsByRelativeRisksFilename().c_str());
+  RelativeRiskFile.open(gDataHub.GetParameters().GetAdjustmentsByRelativeRisksFilename().c_str());
   while (!RelativeRiskFile.eof()) {
        RelativeRiskFile >> sTractId;
-       if ((tractIndex = gData.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
+       if ((tractIndex = gDataHub.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
          GenerateResolvableException("The Location ID '%s', in power estimation file, is not specified the coordinates file.",
                                      "RandomizeData()", sTractId.c_str());
         RelativeRiskFile >> gvRelativeRisks[tractIndex];
@@ -237,12 +190,12 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet
   //modify the measures
  for (t=0; t < tNumTracts; ++t) {
      gvMeasure[t] = ppMeasure[0][t];
-     for (i=tNumTimeIntervals-1; i >= 30/* ??? */ ; i--) {
+     for (i=tNumTimeIntervals-1; i >= 30/* what is this constant? */ ; i--) {
         if (i == tNumTimeIntervals-1) {//if the last interval, the cummulative measure is the measure itself
           gvMeasure[t] = gvMeasure[t] + ppMeasure[i][t] * (gvRelativeRisks[t]-1);
           TotalMeasure = TotalMeasure + ppMeasure[i][t] * (gvRelativeRisks[t]-1);
           for (j=0; j <= i; ++j)
-             gpAlternativeMeasure->GetArray()[j][t] += ppMeasure[i][t] * (gvRelativeRisks[t]-1);
+             gAlternativeMeasure.GetArray()[j][t] += ppMeasure[i][t] * (gvRelativeRisks[t]-1);
         }
         else {
           //if not the last interval, the measure belongs to the interval  is the difference between
@@ -251,7 +204,7 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet
           gvMeasure[t] = gvMeasure[t] + (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
           TotalMeasure = TotalMeasure + (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
           for (j=0; j <= i; ++j)
-             gpAlternativeMeasure->GetArray()[j][t] += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
+             gAlternativeMeasure.GetArray()[j][t] += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
         }
      }
   }
@@ -259,7 +212,7 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet
    //start alternative simulations
   for (t=0; t < tNumTracts; ++t) {
     if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(thisRealSet.GetTotalCases() - cumcases,
+        c = gBinomialGenerator.GetBinomialDistributedVariable(RealSet.GetTotalCases() - cumcases,
                                                               gvMeasure[t] / (TotalMeasure-cummeasure),
                                                               gRandomNumberGenerator);
     else
@@ -269,9 +222,9 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet
     cummeasure += gvMeasure[t];
 
    for (i=0; i < tNumTimeIntervals-1; ++i) {
-       if (gpAlternativeMeasure->GetArray()[i][t] > 0)
+       if (gAlternativeMeasure.GetArray()[i][t] > 0)
         d = gBinomialGenerator.GetBinomialDistributedVariable(ppSimCases[i][t],
-              1 - gpAlternativeMeasure->GetArray()[i+1][t] / gpAlternativeMeasure->GetArray()[i][t], gRandomNumberGenerator);
+              1 - gAlternativeMeasure.GetArray()[i+1][t] / gAlternativeMeasure.GetArray()[i][t], gRandomNumberGenerator);
       else
         d = 0;
 
@@ -279,18 +232,4 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& thisRealSet
     }
   }
 }
-
-/** Internal setup function */
-void AlternateHypothesisRandomizer::Setup() {
-  try {
-    gvRelativeRisks.resize(gData.GetNumTracts(), 0);
-    gvMeasure.resize(gData.GetNumTracts(), 0);
-    gpAlternativeMeasure = new TwoDimensionArrayHandler<measure_t>(gData.GetNumTimeIntervals(), gData.GetNumTracts(), 0);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","AlternateHypothesisRandomizer");
-    throw;
-  }
-}
-
 

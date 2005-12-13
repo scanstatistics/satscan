@@ -5,44 +5,72 @@
 #include "DenominatorDataRandomizer.h"
 #include "PermutationDataRandomizer.h"
 
-/** Randomizes data of dataset for a 'Ordinal' probablility model. */
+/** Ordinal denominator-data randomizer. */
 class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
-  protected:
-    void                SetMeasure(const RealDataSet& thisRealSet, TwoDimensionArrayHandler<measure_t>& Measure);
-
   public:
-    OrdinalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~OrdinalDenominatorDataRandomizer();
-    virtual OrdinalDenominatorDataRandomizer * Clone() const;
+    OrdinalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+        : AbstractOrdinalDenominatorDataRandomizer(lInitialSeed) {}
+    virtual ~OrdinalDenominatorDataRandomizer() {}
+    
+    virtual OrdinalDenominatorDataRandomizer * Clone() const {return new OrdinalDenominatorDataRandomizer(*this);}
 
-    virtual void        RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void        RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
 
     static const size_t gtMaximumCategories;
+};
+
+/** Ordinal denominator-data randomizer. Optimaized for purely temporal analyses. */
+class OrdinalPurelyTemporalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
+  public:
+    OrdinalPurelyTemporalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+        : AbstractOrdinalDenominatorDataRandomizer(lInitialSeed) {}
+    virtual ~OrdinalPurelyTemporalDenominatorDataRandomizer() {}
+    
+    virtual OrdinalPurelyTemporalDenominatorDataRandomizer * Clone() const {return new OrdinalPurelyTemporalDenominatorDataRandomizer(*this);}
+
+    virtual void        RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
 };
 
 typedef StationaryAttribute<std::pair<int, tract_t> >   OrdinalStationary_t;
 typedef PermutedAttribute<int>                          OrdinalPermuted_t;
 
-/** Randomizer which has a stationary space-time attribute and a randomized continuous variable.
+/** Ordinal permuted-data randomizer.
 
     NOTE: Testing indicates that this randomizer does not perform faster that denominator
           randomizer in situations where it was expected (many categories, many locations,
           fewer cases). As such, it will not be used at this time. */
 class OrdinalPermutedDataRandomizer : public AbstractPermutedDataRandomizer<OrdinalStationary_t, OrdinalPermuted_t> {
   protected:
-    virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
-    void                        CreateRandomizationData(const RealDataSet& thisRealSet);
-    virtual void                SortPermutedAttribute();
+    virtual void                AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    void                        Setup(const RealDataSet& RealSet);
 
   public:
-           OrdinalPermutedDataRandomizer::OrdinalPermutedDataRandomizer(const RealDataSet& thisRealSet, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
-                                         :AbstractPermutedDataRandomizer<OrdinalStationary_t, OrdinalPermuted_t>(lInitialSeed) {
-               CreateRandomizationData(thisRealSet);
-           }
+    OrdinalPermutedDataRandomizer(const RealDataSet& RealSet, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+       : AbstractPermutedDataRandomizer<OrdinalStationary_t, OrdinalPermuted_t>(lInitialSeed) { Setup(RealSet); }
     virtual ~OrdinalPermutedDataRandomizer() {}
-    virtual OrdinalPermutedDataRandomizer * Clone() const;
+    
+    virtual OrdinalPermutedDataRandomizer * Clone() const {return new OrdinalPermutedDataRandomizer(*this);}
 };
 
+typedef StationaryAttribute<int>   OrdinalPurelyTemporalStationary_t;
+
+/** Ordinal permuted-data randomizer. Optimized for purely temporal analyses.
+
+    NOTE: Testing indicates that this randomizer does not perform faster that denominator
+          randomizer in situations where it was expected (many categories, many locations,
+          fewer cases). As such, it will not be used at this time. */
+class OrdinalPurelyTemporalPermutedDataRandomizer : public AbstractPermutedDataRandomizer<OrdinalPurelyTemporalStationary_t, OrdinalPermuted_t> {
+  protected:
+    virtual void                AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    void                        Setup(const RealDataSet& RealSet);
+
+  public:
+    OrdinalPurelyTemporalPermutedDataRandomizer(const RealDataSet& RealSet, long lInitialSeed=RandomNumberGenerator::glDefaultSeed)
+       : AbstractPermutedDataRandomizer<OrdinalPurelyTemporalStationary_t, OrdinalPermuted_t>(lInitialSeed) { Setup(RealSet); }
+    virtual ~OrdinalPurelyTemporalPermutedDataRandomizer() {}
+    
+    virtual OrdinalPurelyTemporalPermutedDataRandomizer * Clone() const {return new OrdinalPurelyTemporalPermutedDataRandomizer(*this);}
+};
 //******************************************************************************
 #endif
 
