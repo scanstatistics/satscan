@@ -834,10 +834,12 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
         }
         break;
       case FILESOURCE       :
-        if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
+        if (gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == NORMAL ||
+            gParameters.GetProbabilityModelType() == RANK) {
           bValid = false;
           PrintDirection.Printf("Error: The feature to read simulated data from a file is not implemented for\n"
-                                "       the exponential probability model.\n", BasePrint::P_ERROR);
+                                "       the %s probability model.\n", BasePrint::P_ERROR,
+                                gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
         }
         if (gParameters.GetNumDataSets() > 1){
           bValid = false;
