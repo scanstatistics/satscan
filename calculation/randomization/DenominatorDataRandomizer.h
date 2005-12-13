@@ -4,28 +4,29 @@
 //******************************************************************************
 #include "Randomizer.h"
 
-/** abstract denominator data randomizer class */
+/** Abstraction for denominator data randomizer. */
 class AbstractDenominatorDataRandomizer : public AbstractRandomizer {
   protected:
     BinomialGenerator   gBinomialGenerator;
 
   public:
-            AbstractDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~AbstractDenominatorDataRandomizer();
+    AbstractDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRandomizer(lInitialSeed) {}
+    virtual ~AbstractDenominatorDataRandomizer() {}
 };
 
-/** abstract ordinal denominator data randomizer class */
+/** Abstraction for ordinal denominator data randomizers. */
 class AbstractOrdinalDenominatorDataRandomizer : public AbstractDenominatorDataRandomizer {
   protected:
 
     void                MakeDataB(count_t tTotalCounts, measure_t tTotalMeasure, std::vector<count_t>& RandCounts);
-    void                RandomizeOrdinalData(count_t tTotalCases, count_t tTotalControls,
-                                             count_t** ppSimCases, measure_t** ppMeasure,
-                                             int tNumTracts, int tNumTimeIntervals);
+    void                RandomizeOrdinalData(count_t tNumCases, count_t tNumControls, count_t** ppSimCases,
+                                             measure_t** ppMeasure, int tNumTracts, int tNumTimeIntervals);
+    void                RandomizePurelyTemporalOrdinalData(count_t tNumCases, count_t tNumControls,
+                                                           count_t* pSimCases, measure_t* pMeasure, int tNumTimeIntervals);
 
   public:
-            AbstractOrdinalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
-    virtual ~AbstractOrdinalDenominatorDataRandomizer();
+    AbstractOrdinalDenominatorDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractDenominatorDataRandomizer(lInitialSeed) {}
+    virtual ~AbstractOrdinalDenominatorDataRandomizer() {}
 };
 //******************************************************************************
 #endif
