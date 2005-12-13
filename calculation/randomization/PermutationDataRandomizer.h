@@ -116,7 +116,7 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
     PermutedContainer_t         gvPermutedAttribute;
 
     virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) = 0;
-    virtual void                SortPermutedAttribute() = 0;
+    virtual void                SortPermutedAttribute();
 
   public:
     AbstractPermutedDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
@@ -142,7 +142,18 @@ void AbstractPermutedDataRandomizer<S, P>::RandomizeData(const RealDataSet& this
   SortPermutedAttribute();
   //re-assign dataset's simulation data
   AssignRandomizedData(thisRealSet, thisSimSet);
-};
+}
+
+/** re-initializes and  sorts permutated attribute */
+template <class S, class P>
+void AbstractPermutedDataRandomizer<S, P>::SortPermutedAttribute() {
+  // Reset permuted attributes to original order - this is needed to maintain
+  // consistancy of output when running in parallel.
+  gvPermutedAttribute = gvOriginalPermutedAttribute;
+
+  std::for_each(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), AssignPermutedAttribute<P>(gRandomNumberGenerator));
+  std::sort(gvPermutedAttribute.begin(), gvPermutedAttribute.end(), ComparePermutedAttribute<P>());
+}
 //******************************************************************************
 #endif
 
