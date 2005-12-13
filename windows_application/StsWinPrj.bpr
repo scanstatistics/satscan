@@ -83,7 +83,6 @@
       ..\calculation\Output\stsASCIIFileWriter.obj 
       ..\calculation\Output\AsciiPrintFormat.obj 
       ..\calculation\randomization\SpaceTimeRandomizer.obj 
-      ..\calculation\randomization\ContinuousVariableRandomizer.obj 
       ..\calculation\randomization\DenominatorDataRandomizer.obj 
       ..\calculation\randomization\PermutationDataRandomizer.obj 
       ..\calculation\randomization\PoissonRandomizer.obj 
@@ -139,7 +138,9 @@
       ..\calculation\utility\stsCentricAlgoJobSource.obj 
       ..\calculation\utility\stsCentricAlgoFunctor.obj 
       ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj 
-      ..\calculation\satscan_data\CentroidNeighbors.obj"/>
+      ..\calculation\satscan_data\CentroidNeighbors.obj 
+      ..\calculation\randomization\NormalRandomizer.obj 
+      ..\calculation\randomization\RankRandomizer.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

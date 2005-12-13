@@ -110,13 +110,14 @@ SRC         := Main.cpp \
 	             $(PROBMODEL)/OrdinalModel.cpp \
 	             $(RANDOMIZER)/BernoulliRandomizer.cpp \
 	             $(RANDOMIZER)/PoissonRandomizer.cpp \
-	             $(RANDOMIZER)/ContinuousVariableRandomizer.cpp \
 	             $(RANDOMIZER)/DenominatorDataRandomizer.cpp \
 	             $(RANDOMIZER)/PermutationDataRandomizer.cpp \
 	             $(RANDOMIZER)/ExponentialRandomizer.cpp \
 	             $(RANDOMIZER)/Randomizer.cpp \
 	             $(RANDOMIZER)/SpaceTimeRandomizer.cpp \
 	             $(RANDOMIZER)/OrdinalDataRandomizer.cpp \
+	             $(RANDOMIZER)/RankRandomizer.cpp \
+	             $(RANDOMIZER)/NormalRandomizer.cpp \
 	             $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \

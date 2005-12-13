@@ -72,7 +72,6 @@
       ..\calculation\Output\AsciiPrintFormat.obj 
       ..\calculation\randomization\Randomizer.obj 
       ..\calculation\randomization\SpaceTimeRandomizer.obj 
-      ..\calculation\randomization\ContinuousVariableRandomizer.obj 
       ..\calculation\randomization\BernoulliRandomizer.obj 
       ..\calculation\randomization\PoissonRandomizer.obj 
       ..\calculation\randomization\DenominatorDataRandomizer.obj 
@@ -132,7 +131,9 @@
       ..\calculation\utility\stsCentricAlgoFunctor.obj 
       ..\calculation\utility\AsynchronouslyAccessible.obj 
       ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj 
-      ..\calculation\satscan_data\CentroidNeighbors.obj"/>
+      ..\calculation\satscan_data\CentroidNeighbors.obj 
+      ..\calculation\randomization\NormalRandomizer.obj 
+      ..\calculation\randomization\RankRandomizer.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

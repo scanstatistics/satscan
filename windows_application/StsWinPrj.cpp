@@ -97,7 +97,6 @@ USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\stsASCIIFileWriter.cpp");
 USEUNIT("..\calculation\Output\AsciiPrintFormat.cpp");
 USEUNIT("..\calculation\randomization\SpaceTimeRandomizer.cpp");
-USEUNIT("..\calculation\randomization\ContinuousVariableRandomizer.cpp");
 USEUNIT("..\calculation\randomization\DenominatorDataRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PermutationDataRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PoissonRandomizer.cpp");
@@ -159,6 +158,8 @@ USEUNIT("..\calculation\utility\stsCentricAlgoFunctor.cpp");
 USEUNIT("..\calculation\ParametersPrint.cpp");
 USEUNIT("..\calculation\ParametersValidate.cpp");
 USEUNIT("..\calculation\satscan_data\CentroidNeighbors.cpp");
+USEUNIT("..\calculation\randomization\NormalRandomizer.cpp");
+USEUNIT("..\calculation\randomization\RankRandomizer.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

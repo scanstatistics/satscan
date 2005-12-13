@@ -72,7 +72,6 @@ USEUNIT("..\calculation\Output\stsDBaseFileWriter.cpp");
 USEUNIT("..\calculation\Output\AsciiPrintFormat.cpp");
 USEUNIT("..\calculation\randomization\Randomizer.cpp");
 USEUNIT("..\calculation\randomization\SpaceTimeRandomizer.cpp");
-USEUNIT("..\calculation\randomization\ContinuousVariableRandomizer.cpp");
 USEUNIT("..\calculation\randomization\BernoulliRandomizer.cpp");
 USEUNIT("..\calculation\randomization\PoissonRandomizer.cpp");
 USEUNIT("..\calculation\randomization\DenominatorDataRandomizer.cpp");
@@ -139,6 +138,8 @@ USEUNIT("..\calculation\utility\AsynchronouslyAccessible.cpp");
 USEUNIT("..\calculation\ParametersPrint.cpp");
 USEUNIT("..\calculation\ParametersValidate.cpp");
 USEUNIT("..\calculation\satscan_data\CentroidNeighbors.cpp");
+USEUNIT("..\calculation\randomization\NormalRandomizer.cpp");
+USEUNIT("..\calculation\randomization\RankRandomizer.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
