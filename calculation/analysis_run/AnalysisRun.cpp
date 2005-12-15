@@ -1119,7 +1119,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
 void AnalysisRunner::PrintTopClusters() {
   std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
   std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
-  boost::posix_time::ptime                 StartTime(0);
+  boost::posix_time::ptime                 StartTime = ::GetCurrentTime_HighResolution();
   FILE                                   * fp=0;
 
   try {
@@ -1133,7 +1133,6 @@ void AnalysisRunner::PrintTopClusters() {
 
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
-    StartTime = ::GetCurrentTime_HighResolution(); //get clock for calculating output time
     //open result output file
     OpenReportFile(fp, true);
 
