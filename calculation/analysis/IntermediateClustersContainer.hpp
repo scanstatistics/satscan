@@ -1,3 +1,6 @@
+
+#include "SaTScanData.h"
+
 /** constructor */
 template <class T>
 IntermediateClustersContainer<T>::IntermediateClustersContainer(const CSaTScanData& Data)
