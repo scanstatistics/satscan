@@ -5,6 +5,9 @@ BASIS       := /prj/satscan/linux.unix.build.dir/basisdev/
 CC          := g++
 APPLICATION := SaTScan
 DEBUG       := -gstabs+ 
+COMPILATION := -m32
+OPTIMIZATION := -O3
+COMPONENT_REPORT := #-DRPRTCMPT_RUNTIMES
 
 CALCULATION    := $(SATSCAN)/calculation
 ANALYSIS       := $(SATSCAN)/calculation/analysis
@@ -18,32 +21,25 @@ UTILITY        := $(SATSCAN)/calculation/utility
 RANDOMIZER     := $(SATSCAN)/calculation/randomization
 LOGLIKELIHOOD  := $(SATSCAN)/calculation/loglikelihood
 
-
 ZDANNEX     := /sprj/imsdev/zd
 ZDDIR       := /opt/net/utils/imsdev
-#ZDANNEX     := /opt/net/utils/imsdev/gcc3.2.2
-#ZDDIR       := /opt/net/utils/imsdev/gcc3.2.2
 ZDVER       := 543
 XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
-BOOSTDIR    := $(SATSCAN)/../boost/release_1_29_0
-
-
+BOOSTDIR    := $(SATSCAN)/../boost/boost_1_33_1
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
 	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR)
 
 DEFINES     := -D__BASIS_NO_VCL \
-               -D__BATCH_COMPILE
-#DEFINES     := -D__BASIS_NO_VCL \
-#               -DRPRTCMPT_RUNTIMES \
-#               -D__BATCH_COMPILE
+               -D__BATCH_COMPILE \
+               -DBOOST_ALL_NO_LIB
 
-CFLAGS      := -c -m32 -Wno-deprecated -O3 $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG)
+CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
 
-LFLAGS      := -m32 -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lxbaseg -lm -lzd$(ZDVER)g -Wl,-Bdynamic -lrt -lpthread
+LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lxbaseg -lm -lzd$(ZDVER)g -Wl,-Bdynamic -lrt -lpthread
 
 SRC         := Main.cpp \
                $(ANALYSIS)/Analysis.cpp \
@@ -180,7 +176,8 @@ SRC         := Main.cpp \
 	             $(BOOSTDIR)/libs/thread/src/once.cpp \
 	             $(BOOSTDIR)/libs/thread/src/recursive_mutex.cpp \
 	             $(BOOSTDIR)/libs/thread/src/thread.cpp \
-	             $(BOOSTDIR)/libs/thread/src/condition.cpp
+	             $(BOOSTDIR)/libs/thread/src/condition.cpp \
+	             $(BOOSTDIR)/libs/thread/src/tss_hooks.cpp
 
 
 OBJS        := $(SRC:.cpp=.o)
