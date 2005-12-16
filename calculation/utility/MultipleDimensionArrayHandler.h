@@ -32,7 +32,7 @@
 template <class T>
 class MultipleDimesionArrayHandler {
   protected:
-    static unsigned int giGrowthSize;
+    static const unsigned int giGrowthSize = 3;
 
     virtual void        Allocate() = 0;
     virtual void        Deallocate() = 0;

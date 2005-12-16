@@ -1,8 +1,5 @@
 
 template<class T>
-unsigned int MultipleDimesionArrayHandler<T>::giGrowthSize = 3;
-
-template<class T>
 TwoDimensionArrayHandler<T>::TwoDimensionArrayHandler(unsigned int FirstDimension, unsigned int SecondDimension)
                             :MultipleDimesionArrayHandler<T>(), g1stDimension(FirstDimension), g2ndDimension(SecondDimension) {
   try {
@@ -92,7 +89,7 @@ void TwoDimensionArrayHandler<T>::Deallocate() {
 
 template<class T>
 void TwoDimensionArrayHandler<T>::ExpandSecondDimension(const T& t) {
-  ResizeSecondDimension(g2ndDimension + giGrowthSize, t);
+  ResizeSecondDimension(g2ndDimension + TwoDimensionArrayHandler<T>::giGrowthSize, t);
 }
 
 template<class T>
@@ -249,7 +246,7 @@ void ThreeDimensionArrayHandler<T>::Deallocate() {
 
 template<class T>
 void ThreeDimensionArrayHandler<T>::ExpandThirdDimension(const T& t) {
-  ResizeThirdDimension(g3rdDimension + giGrowthSize, t);
+  ResizeThirdDimension(g3rdDimension + ThreeDimensionArrayHandler<T>::giGrowthSize, t);
 }
 
 template<class T>
