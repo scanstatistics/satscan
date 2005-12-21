@@ -8,7 +8,7 @@
 
 /** constructor */
 ScanLineParameterFileAccess::ScanLineParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection)
-                                :AbtractParameterFileAccess(Parameters, PrintDirection) {}
+                                :AbtractParameterFileAccess(Parameters, PrintDirection, true) {}
 
 /** destructor */
 ScanLineParameterFileAccess::~ScanLineParameterFileAccess() {}
@@ -181,7 +181,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
 /** Write parameters to file - not implemented for multiple data sets. */
 void ScanLineParameterFileAccess::Write(const char * sFilename) {
   std::ofstream parameters;
-  ZdString      s;
+  ZdString      s, c;
   unsigned int  iLen;
 
   try {
@@ -203,7 +203,11 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
              (ParameterType)eParameterType == SIMULATION_DATA_OUTFILE || (ParameterType)eParameterType == ADJ_BY_RR_FILE )) {
           iLen = s.GetLength();
           while (++iLen < 30) parameters << ' ';
-          parameters << "   // " << GetParameterComment((ParameterType)eParameterType);
+          //older versions of SaTScan limited each line to 150 characters - so print just enough of comment
+          //to get idea what is it.
+          c = GetParameterComment((ParameterType)eParameterType);
+          c.Truncate(std::min(c.GetLength(), (unsigned long)50));
+          parameters << "   // " << c.GetCString();
         }
        parameters << std::endl;
     }
