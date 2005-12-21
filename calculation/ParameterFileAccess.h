@@ -41,12 +41,13 @@ class AbtractParameterFileAccess {
     BasePrint                 & gPrintDirection;
     std::vector<int>            gvParametersMissingDefaulted;           /** collection of missing ParameterTypes on read from file */
     bool                        gbReadStatusError;                      /** marker of errors encountered while reading parameters from file */
+    bool                        gbWriteBooleanAsDigit;
 
     ZdString                  & AsString(ZdString& ref, int i) const {ref = i; return ref;}
     ZdString                  & AsString(ZdString& ref, unsigned int i) const {ref.Clear(); ref << i; return ref;}
     ZdString                  & AsString(ZdString& ref, float f) const {ref = f; return ref;}
     ZdString                  & AsString(ZdString& ref, double d) const {ref = d; return ref;}
-    ZdString                  & AsString(ZdString& ref, bool b) const {ref = (b ? "y" : "n"); return ref;}
+    ZdString                  & AsString(ZdString& ref, bool b) const {ref = (b ? (gbWriteBooleanAsDigit ? "1" : "y") : (gbWriteBooleanAsDigit ? "0" : "n")); return ref;}
     ZdString                  & AsString(ZdString& ref, const CParameters::CreationVersion& v) const {ref.printf("%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
     const char                * GetParameterComment(ParameterType eParameterType) const;
     ZdString                  & GetParameterString(ParameterType eParameterType, ZdString& s) const;
@@ -54,7 +55,7 @@ class AbtractParameterFileAccess {
     void                        SetParameter(ParameterType eParameterType, const ZdString& sParameter, BasePrint& PrintDirection);
 
   public:
-     AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection);
+     AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit=false);
      virtual ~AbtractParameterFileAccess();
 
      virtual bool               Read(const char* szFilename) = 0;

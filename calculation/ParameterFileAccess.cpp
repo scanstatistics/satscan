@@ -46,8 +46,8 @@ void ParameterAccessCoordinator::Write(const char * sFilename, BasePrint& PrintD
 
 
 /** constructor */
-AbtractParameterFileAccess::AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection)
-                           :gParameters(Parameters), gPrintDirection(PrintDirection) {}
+AbtractParameterFileAccess::AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit)
+                           :gParameters(Parameters), gPrintDirection(PrintDirection), gbWriteBooleanAsDigit(bWriteBooleanAsDigit) {}
 
 /** destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
@@ -152,14 +152,14 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case COORDFILE                : s = gParameters.GetCoordinatesFileName().c_str(); return s;
       case OUTPUTFILE               : s = gParameters.GetOutputFileName().c_str(); return s;
       case PRECISION                : return AsString(s, gParameters.GetPrecisionOfTimesType());
-      case DIMENSION                : s = " n/a"; return s;
+      case DIMENSION                : s = "0"; return s;
       case SPECIALGRID              : return AsString(s, gParameters.UseSpecialGrid());
       case GRIDFILE                 : s = gParameters.GetSpecialGridFileName().c_str(); return s;
       case GEOSIZE                  : return AsString(s, gParameters.GetMaximumGeographicClusterSize());
       case STARTDATE                : s = gParameters.GetStudyPeriodStartDate().c_str(); return s;
       case ENDDATE                  : s = gParameters.GetStudyPeriodEndDate().c_str(); return s;
       case CLUSTERS                 : return AsString(s, gParameters.GetIncludeClustersType());
-      case EXACTTIMES               : s = " n/a"; return s;
+      case EXACTTIMES               : s = "0"; return s;
       case TIME_AGGREGATION_UNITS   : return AsString(s, gParameters.GetTimeAggregationUnitsType());
       case TIME_AGGREGATION         : return AsString(s, (int)gParameters.GetTimeAggregationLength());
       case PURESPATIAL              : return AsString(s, gParameters.GetIncludePurelySpatialClusters());
@@ -196,7 +196,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case CRITERIA_SECOND_CLUSTERS : return AsString(s, gParameters.GetCriteriaSecondClustersType());
       case MAX_TEMPORAL_TYPE        : return AsString(s, gParameters.GetMaximumTemporalClusterSizeType());
       case MAX_SPATIAL_TYPE         : return AsString(s, gParameters.GetMaxGeographicClusterSizeType());
-      case RUN_HISTORY_FILENAME     : s = " n/a"; return s;
+      case RUN_HISTORY_FILENAME     : s = "0"; return s;
       case OUTPUT_MLC_DBASE         : return AsString(s, gParameters.GetOutputClusterLevelDBase());
       case OUTPUT_AREAS_DBASE       : return AsString(s, gParameters.GetOutputAreaSpecificDBase());
       case OUTPUT_RR_DBASE          : return AsString(s, gParameters.GetOutputRelativeRisksDBase());
