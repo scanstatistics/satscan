@@ -8,7 +8,7 @@
 RecordBuffer::RecordBuffer(const ZdPointerVector<ZdField>& vFields) : vFieldDefinitions(vFields) {
   for (size_t t=0; t < vFieldDefinitions.size(); ++t) {
      gvFieldValues.push_back(ZdFieldValue(vFieldDefinitions[t]->GetType()));
-     gvBlankFields.push_back(false);
+     gvBlankFields.push_back(true);
   }
 }
 
@@ -19,7 +19,7 @@ RecordBuffer::~RecordBuffer() {}
 const ZdField & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const {
   try {
     if (iFieldIndex >= vFieldDefinitions.size())
-      ZdGenerateException("Invalid index, out of range", "GetFieldValue()");
+      ZdGenerateException("Invalid index, out of range", "GetFieldDefinition()");
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFieldDefinition()","RecordBuffer");
@@ -63,10 +63,12 @@ unsigned int RecordBuffer::GetFieldIndex(const ZdString& sFieldName) const {
   return iPosition;
 }
 
-/** Returns field value for named field. */
+/** Returns reference to field value for named field, setting field 'blank' indicator to false. */
 ZdFieldValue& RecordBuffer::GetFieldValue(const ZdString& sFieldName) {
   try {
-    return gvFieldValues[GetFieldIndex(sFieldName)];
+    unsigned int iFieldIndex = GetFieldIndex(sFieldName);
+    gvBlankFields[iFieldIndex] = false;
+    return gvFieldValues[iFieldIndex];
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFieldValue()","RecordBuffer");
@@ -80,6 +82,7 @@ ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) {
   try {
     if (iFieldIndex >= gvFieldValues.size())
       ZdGenerateException("Invalid index, out of range", "GetFieldValue()");
+    gvBlankFields[iFieldIndex] = false;
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFieldValue()","RecordBuffer");
@@ -103,8 +106,8 @@ const ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) const 
 }
 
 /** Sets all blank indicators as not blank. */
-void RecordBuffer::SetAllFieldsNotBlank() {
-  std::fill(gvBlankFields.begin(), gvBlankFields.end(), false);
+void RecordBuffer::SetAllFieldsBlank(bool bBlank) {
+  std::fill(gvBlankFields.begin(), gvBlankFields.end(), bBlank);
 }
 
 /** Sets the field at fieldnumber to either be blank or non-blank. */
@@ -131,14 +134,17 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
   }
 }
 
-
-const char * AbstractDataFileWriter::CLUST_NUM_FIELD 	  = "CLUSTER";
-const char * AbstractDataFileWriter::LOC_ID_FIELD   	  = "LOC_ID";
-const char * AbstractDataFileWriter::P_VALUE_FLD  	  = "P_VALUE";
-const char * AbstractDataFileWriter::OBSERVED_FIELD	  = "OBSERVED";
-const char * AbstractDataFileWriter::EXPECTED_FIELD	  = "EXPECTED";
-const char * AbstractDataFileWriter::LOG_LIKL_RATIO_FIELD = "LLR";
-const char * AbstractDataFileWriter::TST_STAT_FIELD       = "TEST_STAT";
+const char * AbstractDataFileWriter::CLUST_NUM_FIELD                    = "CLUSTER";
+const char * AbstractDataFileWriter::LOC_ID_FIELD   	                = "LOC_ID";
+const char * AbstractDataFileWriter::P_VALUE_FLD  	                = "P_VALUE";
+const char * AbstractDataFileWriter::OBSERVED_FIELD	                = "OBSERVED";
+const char * AbstractDataFileWriter::EXPECTED_FIELD	                = "EXPECTED";
+const char * AbstractDataFileWriter::LOG_LIKL_RATIO_FIELD               = "LLR";
+const char * AbstractDataFileWriter::TST_STAT_FIELD                     = "TEST_STAT";
+const char * AbstractDataFileWriter::DATASET_FIELD                      = "SET";
+const char * AbstractDataFileWriter::CATEGORY_FIELD                     = "CATEGORY";
+const char * AbstractDataFileWriter::OBSERVED_DIV_EXPECTED_FIELD        = "ODE";
+const char * AbstractDataFileWriter::RELATIVE_RISK_FIELD                = "REL_RISK";
 
 /** constructor */
 AbstractDataFileWriter::AbstractDataFileWriter(const CParameters& Parameters)
@@ -154,17 +160,17 @@ AbstractDataFileWriter::~AbstractDataFileWriter() {
 }
 
 /** Defines field definition and assigns to accumulation. */
-void AbstractDataFileWriter::CreateField(const std::string& sFieldName, char cType, short wLength,
-                                         short wPrecision, unsigned short& uwOffset, bool bCreateIndex) {
+void AbstractDataFileWriter::CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, char cType,
+                                         short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex) {
   try {
-    vFieldDefinitions.push_back(new ZdField);
-    vFieldDefinitions.back()->SetName(sFieldName.c_str());
-    vFieldDefinitions.back()->SetType(cType);
-    vFieldDefinitions.back()->SetLength(wLength);
-    vFieldDefinitions.back()->SetPrecision(wPrecision);
-    vFieldDefinitions.back()->SetOffset(uwOffset);
+    vFields.push_back(new ZdField);
+    vFields.back()->SetName(sFieldName.c_str());
+    vFields.back()->SetType(cType);
+    vFields.back()->SetLength(wLength);
+    vFields.back()->SetPrecision(wPrecision);
+    vFields.back()->SetOffset(uwOffset);
     uwOffset += wLength;
-    if (bCreateIndex) vFieldDefinitions.back()->SetIndexCount(1);
+    if (bCreateIndex) vFields.back()->SetIndexCount(1);
   }
   catch (ZdException &x) {
     x.AddCallpath("CreateField()","AbstractDataFileWriter");

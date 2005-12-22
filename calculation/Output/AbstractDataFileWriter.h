@@ -24,7 +24,7 @@ class RecordBuffer {
       ZdFieldValue                    & GetFieldValue(unsigned int iFieldIndex);
       const ZdFieldValue              & GetFieldValue(unsigned int iFieldIndex) const;
       unsigned int                      GetNumFields() const { return gvFieldValues.size();}
-      void                              SetAllFieldsNotBlank();
+      void                              SetAllFieldsBlank(bool bBlank);
       void                              SetFieldIsBlank(const ZdString& sFieldName, bool bBlank);
       void                              SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank);
 };
@@ -44,9 +44,13 @@ class AbstractDataFileWriter {
     static const char         * EXPECTED_FIELD;
     static const char         * LOG_LIKL_RATIO_FIELD;
     static const char         * TST_STAT_FIELD;
+    static const char         * DATASET_FIELD;
+    static const char         * CATEGORY_FIELD;
+    static const char         * OBSERVED_DIV_EXPECTED_FIELD;
+    static const char         * RELATIVE_RISK_FIELD;
 
-    void                        CreateField(const std::string& sFieldName, char cType, short wLength,
-                                            short wPrecision, unsigned short& uwOffset, bool bCreateIndex=false);
+    void                        CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, char cType,
+                                            short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex=false);
 
   public:
     AbstractDataFileWriter(const CParameters& Parameters);

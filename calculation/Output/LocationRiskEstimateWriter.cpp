@@ -8,10 +8,6 @@
 
 const char * LocationRiskEstimateWriter::REL_RISK_EXT                     = ".rr";
 const char * LocationRiskEstimateWriter::TIME_TREND_FIELD                 = "TIME_TREND";
-const char * LocationRiskEstimateWriter::DATASET_FIELD                    = "SET";
-const char * LocationRiskEstimateWriter::CATEGORY_FIELD                   = "CATEGORY";
-const char * LocationRiskEstimateWriter::OBSERVED_DIV_EXPECTED_FIELD      = "ODE";
-const char * LocationRiskEstimateWriter::RELATIVE_RISK_FIELD              = "REL_RISK";
 
 /** class constructor */
 LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CParameters& Parameters)
@@ -43,17 +39,17 @@ void LocationRiskEstimateWriter::DefineFields() {
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       ZdGenerateException("Cluster Information file not implemented for SVTT and Ordinal model.","SetupFields()");
-    CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
     if (gParameters.GetNumDataSets() > 1)
-      CreateField(DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == ORDINAL)
-      CreateField(CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-    CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-    CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-    CreateField(OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-    CreateField(RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(vFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(vFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      CreateField(TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","LocationRiskEstimateWriter");
@@ -109,10 +105,11 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
        }
        // for each category in data set, record relative risk data
        for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
-          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
+          GetLocationId(sBuffer, t, DataHub);
           for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
              pCases = DataSet.GetCategoryCaseArray(j)[0];
-             Record.SetAllFieldsNotBlank();
+             Record.SetAllFieldsBlank(true);
+             Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = sBuffer;
              if (gParameters.GetNumDataSets() > 1)
                Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
              Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = j + 1;
@@ -125,12 +122,6 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
                dDenominator = Population.GetNumOrdinalCategoryCases(j) - dExpected;
                if (dDenominator && dNumerator/dDenominator)
                  Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
-               else
-                 Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
-             }
-             else {
-               Record.SetFieldIsBlank(OBSERVED_DIV_EXPECTED_FIELD, true);
-               Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
              }
              if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
              if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
@@ -159,7 +150,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
        pCases = DataHub.GetDataSetHandler().GetDataSet(i).GetCaseArray()[0];
        pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).GetMeasureArray()[0];
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
-          Record.SetAllFieldsNotBlank();
+          Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
@@ -172,12 +163,6 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
             dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
               Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
-            else
-              Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
-          }
-          else {
-            Record.SetFieldIsBlank(OBSERVED_DIV_EXPECTED_FIELD, true);
-            Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
           }
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
@@ -211,6 +196,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
        ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).GetNCCaseArray();
        ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).GetNCMeasureArray();
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
+          Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
@@ -223,12 +209,6 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
             dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
               Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
-            else
-              Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
-          }
-          else {
-            Record.SetFieldIsBlank(OBSERVED_DIV_EXPECTED_FIELD, true);
-            Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
           }
           //calculate total cases by time intervals for this tract
           for (j=0; j < (unsigned int)DataHub.GetNumTimeIntervals(); ++j) {
