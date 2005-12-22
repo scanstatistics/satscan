@@ -1276,11 +1276,13 @@ void TfrmAnalysis::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsBy
 //---------------------------------------------------------------------------
 /** sets analysis type control for AnalysisType */
 void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
+  DatePrecisionType     eDatePrecisionType(GetPrecisionOfTimesControlType());
+
   switch (eAnalysisType) {
-    case PURELYTEMPORAL                 : rdoRetrospectivePurelyTemporal->Checked = true; break;
-    case SPACETIME                      : rdoRetrospectiveSpaceTime->Checked = true; break;
-    case PROSPECTIVEPURELYTEMPORAL      : rdoProspectivePurelyTemporal->Checked = true; break;
-    case PROSPECTIVESPACETIME           : rdoProspectiveSpaceTime->Checked = true; break;
+    case PURELYTEMPORAL                 : if (rdoRetrospectivePurelyTemporal->Enabled && eDatePrecisionType != NONE) {rdoRetrospectivePurelyTemporal->Checked = true; break;}
+    case SPACETIME                      : if (rdoRetrospectiveSpaceTime->Enabled && eDatePrecisionType != NONE) {rdoRetrospectiveSpaceTime->Checked = true; break;}
+    case PROSPECTIVEPURELYTEMPORAL      : if (rdoProspectivePurelyTemporal->Enabled && eDatePrecisionType != NONE) {rdoProspectivePurelyTemporal->Checked = true; break;}
+    case PROSPECTIVESPACETIME           : if (rdoProspectiveSpaceTime->Enabled && eDatePrecisionType != NONE) {rdoProspectiveSpaceTime->Checked = true; break;}
     case SPATIALVARTEMPTREND            :
     case PURELYSPATIAL                  :
     default                             : rdoRetrospectivePurelySpatial->Checked = true;
@@ -1346,10 +1348,10 @@ void TfrmAnalysis::SetMaximumCirclePopulationFile(const char * sMaximumCirclePop
 /** sets probaiity model type control for ProbabilityModelType */
 void TfrmAnalysis::SetModelControl(ProbabilityModelType eProbabilityModelType) {
   switch (eProbabilityModelType) {
-    case BERNOULLI            : rdoBernoulliModel->Checked = true; break;
-    case SPACETIMEPERMUTATION : rdoSpaceTimePermutationModel->Checked = true; break;
-    case ORDINAL              : rdoOrdinalModel->Checked = true; break;
-    case EXPONENTIAL          : rdoExponentialModel->Checked = true; break;
+    case BERNOULLI            : if (rdoBernoulliModel->Enabled) {rdoBernoulliModel->Checked = true; break;}
+    case SPACETIMEPERMUTATION : if (rdoSpaceTimePermutationModel->Enabled) {rdoSpaceTimePermutationModel->Checked = true; break;}
+    case ORDINAL              : if (rdoOrdinalModel->Enabled) {rdoOrdinalModel->Checked = true; break;}
+    case EXPONENTIAL          : if (rdoExponentialModel->Enabled) {rdoExponentialModel->Checked = true; break;}
     case POISSON              :
     default                   : rdoPoissonModel->Checked = true;
   }
