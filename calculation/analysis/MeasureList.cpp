@@ -206,6 +206,8 @@ void CMinMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMinMeasureList::SetMeasures() {
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1;
   count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure();
@@ -217,6 +219,8 @@ void CMinMeasureList::SetMeasures() {
   else
     for (i=0; i < iListSize; ++i)
        gpMinMeasures[i] = i;
+
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
 /** Internal setup */
@@ -312,6 +316,8 @@ void CMaxMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMaxMeasureList::SetMeasures() {
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1;
   count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure();
@@ -323,6 +329,8 @@ void CMaxMeasureList::SetMeasures() {
   else
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = i;
+
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
 /** Internal initialization */
@@ -479,6 +487,8 @@ void CMinMaxMeasureList::Init() {
 
 /** Set/Resets measure arrays. */
 void CMinMaxMeasureList::SetMeasures() {
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+
   int           i, iListSize = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases() + 1;
   count_t       tTotalCases = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalCases();
   measure_t     tTotalMeasure = gSaTScanData.GetDataSetHandler().GetDataSet().GetTotalMeasure();
@@ -490,6 +500,8 @@ void CMinMaxMeasureList::SetMeasures() {
   else
     for (i=0; i < iListSize; ++i)
        gpMaxMeasures[i] = gpMinMeasures[i] = i;
+
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
 /** Internal setup */
