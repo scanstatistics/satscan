@@ -27,7 +27,6 @@
 #endif
 #include "Salloc.h"//now zd543.h will declare std::zd_auto_ptr.
 #include "BasePrint.h"
-#include "SSException.h"
 #include <Basis540Unix.h>
 #if defined(LINUX_BASED) && (__GNUC__ == 2) && ( __GNUC_MINOR__ <= 96)
 //now take away the defs so that the rest of the code references std::auto_ptr :

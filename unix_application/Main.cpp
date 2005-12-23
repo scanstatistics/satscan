@@ -14,6 +14,7 @@
 #include "AnalysisRun.h"
 #include "ParameterFileAccess.h"
 #include "ParametersValidate.h"
+#include "SSException.h" 
 
 int main(int argc, char *argv[]) {
   int                   i;

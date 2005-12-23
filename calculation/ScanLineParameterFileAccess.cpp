@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "ScanLineParameterFileAccess.h"
+#include "SSException.h" 
 #include <iostream>
 #include <fstream>
 
