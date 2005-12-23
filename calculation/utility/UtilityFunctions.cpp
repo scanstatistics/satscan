@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "UtilityFunctions.h"
+#include "SSException.h"
 #include <cmath>
 
 // Conversion routines for Latitude/Longitude option for data input

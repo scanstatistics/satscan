@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "PoissonRandomizer.h"
 #include "SaTScanData.h"
+#include "SSException.h" 
 
 /** Creates randomized under the null hypothesis for Poisson model, assigning data to SimDataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */

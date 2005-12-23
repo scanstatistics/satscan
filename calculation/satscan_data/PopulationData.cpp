@@ -6,6 +6,7 @@
 #include "UtilityFunctions.h"
 #include "SaTScanData.h"
 #include "AsciiPrintFormat.h"
+#include "SSException.h" 
 
 /** Constructor */
 CovariateCategory::CovariateCategory(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {

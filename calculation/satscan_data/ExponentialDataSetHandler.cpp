@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "ExponentialDataSetHandler.h"
+#include "SSException.h" 
 
 const count_t ExponentialDataSetHandler::gtMinimumNotCensoredCases         = 1;
 

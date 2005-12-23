@@ -11,6 +11,7 @@
 #include "BernoulliDataSetHandler.h"
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "OrdinalDataSetHandler.h"
+#include "SSException.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)

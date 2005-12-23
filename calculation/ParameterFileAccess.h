@@ -3,6 +3,7 @@
 #define __ParameterFileAccess_H
 //***************************************************************************
 #include "Parameters.h"
+#include "SSException.h" 
 
 /** Coordinates the reading/writing of parameters to file. */
 class ParameterAccessCoordinator {

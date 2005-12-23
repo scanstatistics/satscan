@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "CalculateMeasure.h"
 #include "MultipleDimensionArrayHandler.h"
+#include "SSException.h"
 
 //#define DEBUGMEASURE 0
 

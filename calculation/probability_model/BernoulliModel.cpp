@@ -2,7 +2,8 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //******************************************************************************
-#include "BernoulliModel.h"                                                
+#include "BernoulliModel.h"
+#include "SSException.h"                                               
 
 /** Constructor */
 CBernoulliModel::CBernoulliModel() : CModel() {}

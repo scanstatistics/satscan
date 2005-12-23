@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "SaTScanData.h"
+#include "SSException.h" 
 
 /** constructor */
 SpaceTimePermutationDataSetHandler::SpaceTimePermutationDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)

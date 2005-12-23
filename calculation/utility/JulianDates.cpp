@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "JulianDates.h"
+#include "SSException.h"
 
 /* Date module - SaTScan                                  */
 /*                                                        */

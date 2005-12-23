@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "SpaceTimePermutationModel.h"
+#include "SSException.h"
 
 /** constructor */
 CSpaceTimePermutationModel::CSpaceTimePermutationModel() : CModel() {}

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "BasePrint.h"
-#include "SSException.h"
+//#include "SSException.h"
 
 /**********************************************************************
  file: Salloc.h

@@ -5,6 +5,7 @@
 #include "Tracts.h"
 #include "SaTScanData.h"
 #include "AsciiPrintFormat.h"
+#include "SSException.h"
 
 /** Constructor */
 TractDescriptor::TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions) {

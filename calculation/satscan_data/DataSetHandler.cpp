@@ -5,6 +5,7 @@
 #include "DataSetHandler.h"
 #include "SaTScanData.h"
 #include "DateStringParser.h"
+#include "SSException.h" 
 
 const short DataSetHandler::guLocationIndex             = 0;
 const short DataSetHandler::guCountIndex                = 1;

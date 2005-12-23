@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "PoissonModel.h"
+#include "SSException.h"
 
 const double CPoissonModel::gTimeTrendConvergence = 0.0000001;
 

@@ -31,6 +31,7 @@
 #include "SpaceTimeIncludePurelyTemporalCentricAnalysis.h"
 #include "SpaceTimeIncludePureCentricAnalysis.h"
 #include "ParametersPrint.h"
+#include "SSException.h" 
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)

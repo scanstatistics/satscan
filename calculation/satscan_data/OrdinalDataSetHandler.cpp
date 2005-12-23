@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "OrdinalDataSetHandler.h"
+#include "SSException.h" 
 
 const size_t OrdinalDataSetHandler::gtMinimumCategories        = 3;
 const count_t OrdinalDataSetHandler::gtMinimumCases            = 4;

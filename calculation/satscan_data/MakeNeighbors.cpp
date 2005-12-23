@@ -5,6 +5,7 @@
 #include "MakeNeighbors.h"
 #include "SaTScanData.h"
 #include "ExponentialRandomizer.h"
+#include "SSException.h" 
 
 /** constructor */
 CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection)

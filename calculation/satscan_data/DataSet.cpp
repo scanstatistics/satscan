@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "DataSet.h"
 #include "SaTScanData.h"
+#include "SSException.h" 
 
 /** constructor */
 DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex)

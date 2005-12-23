@@ -28,7 +28,7 @@ double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, co
     switch (Cluster.GetClusterType()) {
      case PURELYTEMPORALCLUSTER            :
         for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t) {
-          count_t * pCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTCategoryCasesArray()[t];
+          count_t * pCases = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTCategoryCasesArrayHandler().GetArray()[t];
           dPopulation += pCases[Cluster.m_nFirstInterval] - pCases[Cluster.m_nLastInterval];
         }
         break;

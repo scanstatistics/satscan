@@ -1,6 +1,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "AdjustmentHandler.h"
+#include "SSException.h" 
 
 /** constructor */
 RelativeRiskAdjustment::RelativeRiskAdjustment(measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {

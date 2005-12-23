@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
+#include "SSException.h" 
 
 unsigned long MostLikelyClustersContainer::MAX_RANKED_CLUSTERS  = 500;
 
