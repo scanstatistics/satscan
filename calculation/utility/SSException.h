@@ -2,7 +2,7 @@
 #ifndef  __EXCEPTIONCLASS_H
 #define  __EXCEPTIONCLASS_H
 //*****************************************************************************
-#include "zd543.h"
+#include "SaTScan.h"
 
 /** SaTScan exception class
     ZdException : program error, unexpected program problem
