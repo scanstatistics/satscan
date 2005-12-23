@@ -9,6 +9,7 @@
 #include "AbstractAnalysis.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
+const char * ClusterInformationWriter::CLUSTERDATA_FILE_EXT	  = ".col.dat";
 const char * ClusterInformationWriter::START_DATE_FLD	          = "START_DATE";
 const char * ClusterInformationWriter::END_DATE_FLD	          = "END_DATE";
 const char * ClusterInformationWriter::RADIUS_FIELD	          = "RADIUS";
@@ -25,20 +26,25 @@ const char * ClusterInformationWriter::COORD_Z_FIELD              = "Z";
 const char * ClusterInformationWriter::OBS_FIELD_PART  	          = "OBS";
 const char * ClusterInformationWriter::EXP_FIELD_PART             = "EXP";
 const char * ClusterInformationWriter::OBS_DIV_EXP_FIELD          = "ODE";
-const char * ClusterInformationWriter::RELATIVE_RISK_FIELD        = "RR";
+const char * ClusterInformationWriter::__RELATIVE_RISK_FIELD      = "RR";
 const char * ClusterInformationWriter::CATEGORY_FIELD_PART        = "_CAT";
 const char * ClusterInformationWriter::SET_FIELD_PART             = "_DS";
 const char * ClusterInformationWriter::SET_CATEGORY_FIELD_PART    = "C";
 
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend)
-               :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub), gbExcludePValueField(bExcludePValueField) {
+               :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
+                gbExcludePValueField(bExcludePValueField), gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0) {
   try {
     DefineFields();
-    if (gParameters.GetOutputClusterLevelAscii())
+    if (gParameters.GetOutputClusterLevelAscii()) {
       gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
-    if (gParameters.GetOutputClusterLevelDBase())
+      gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, CLUSTERDATA_FILE_EXT, bAppend);
+    }
+    if (gParameters.GetOutputClusterLevelDBase()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
+      gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERDATA_FILE_EXT, bAppend);
+    }
   }
   catch (ZdException &x) {
     delete gpASCIIFileWriter;
@@ -49,115 +55,62 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
 }
 
 /** class destructor */
-ClusterInformationWriter::~ClusterInformationWriter() {}
+ClusterInformationWriter::~ClusterInformationWriter() {
+  try {
+    delete gpASCIIFileDataWriter;
+    delete gpDBaseFileDataWriter;
+  }
+  catch (...){}
+}
 
 /** Defines fields of output file. */
 void ClusterInformationWriter::DefineFields() {
-  unsigned short uwOffset = 0;    // this is altered by the create new field function, so this must be here as is-AJV 9/30/2002
+  unsigned short uwOffset=0;
   unsigned int   i;
   ZdString       sBuffer;
 
   try {
-    CreateField(CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    CreateField(LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
-    CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
-    CreateField((gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
-    // Only Cartesian coordinates have more than two dimensions. Lat/Long is consistently assigned to 3 dims
-    // throughout the program eventhough the third dim is never used. When you print the third it is blank
-    // and meaningless and thus does not need to be included here. - AJV 10/2/2002
-    if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.GetDimensionsOfData() > 2) {
+    //define fields of data file that describes cluster properties
+    CreateField(vFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+    CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
+    CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
+    //only Cartesian coordinates can have more than two dimensions
+    if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.GetDimensionsOfData() > 2)
       for (i=3; i <= (unsigned int)gParameters.GetDimensionsOfData(); ++i) {
          sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
-         CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
+         CreateField(vFieldDefinitions, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
       }
-    }
     if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
-      CreateField(E_MINOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(E_MAJOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, E_MINOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, E_MAJOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
     }
-    else {
-      CreateField(RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-    }
-    CreateField(START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-    CreateField(END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-    CreateField(NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    else
+      CreateField(vFieldDefinitions, RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    CreateField(vFieldDefinitions, START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+    CreateField(vFieldDefinitions, END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
+    CreateField(vFieldDefinitions, NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
-      CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
+      CreateField(vFieldDefinitions, TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     else {
-      CreateField(LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
+      CreateField(vFieldDefinitions, LOG_LIKL_RATIO_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
       if (gParameters.GetSpatialWindowType() == ELLIPTIC)
-        CreateField(TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
+        CreateField(vFieldDefinitions, TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
-    if (!gbExcludePValueField)
-      CreateField(P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
-/*
-    Suppress printing cluster information for ordinal in this version, we will
-    be updating this in v6.1.
-
-    if (gParameters.GetProbabilityModelType() == ORDINAL) {
-      for (i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
-         const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
-         for (size_t t=1; t <= Population.GetNumOrdinalCategories(); ++t) {
-            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-              sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, t);
-            else
-              sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
-            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-              sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, t);
-            else
-              sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART ,t);
-            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-              sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, t);
-            else
-              sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-            if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-              sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, CATEGORY_FIELD_PART, t);
-            else
-              sBuffer.printf("%s%s%i%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, t);
-            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-         }
-      }
-    }
-    else {
-*/
-   if (gParameters.GetProbabilityModelType() != ORDINAL) {
-      for (i=1; i <= gParameters.GetNumDataSets(); ++i) {
-        if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-          CreateField(OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-        else {
-          sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, i);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 0, uwOffset);
-        }
-        if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-          CreateField(EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-        else {
-          sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, i);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-        }
-        if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-          CreateField(OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-        else {
-          sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i);
-          CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-        }
-        if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
-          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-            CreateField(RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-          else {
-            sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i);
-            CreateField(sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 2, uwOffset);
-          }
-        }
-      }
-   }
-/*
-    }
-*/
+    if (!gbExcludePValueField) CreateField(vFieldDefinitions, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);    
+    //define fields for secondary cluster data file
+    uwOffset=0;
+    CreateField(vDataFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+    if (gParameters.GetNumDataSets() > 1)
+      CreateField(vDataFieldDefinitions, DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    if (gParameters.GetProbabilityModelType() == ORDINAL)
+      CreateField(vDataFieldDefinitions, CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(vDataFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(vDataFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    CreateField(vDataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","ClusterInformationWriter");
@@ -165,9 +118,7 @@ void ClusterInformationWriter::DefineFields() {
   }
 }
 
-// formats the string for the Area ID
-// pre: none
-// post: sTempvalue will contain the legible area id
+/** formats string for the Area ID */
 ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster& thisCluster) const {
   std::string   sBuffer;
 
@@ -189,31 +140,19 @@ ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster&
     pre: pCluster has been initialized with calculated data
     post: function will record the appropriate data into the cluster record   */
 void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
-  ZdString       sBuffer;
-  RecordBuffer   Record(vFieldDefinitions);
+  ZdString          sBuffer;
+  RecordBuffer      Record(vFieldDefinitions);
 
   try {
-    Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetAreaID(sBuffer, theCluster);
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
+    Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetAreaID(sBuffer, theCluster);
     WriteCoordinates(Record, theCluster);
     Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() =
         theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
-    if (gParameters.GetSpatialWindowType() == ELLIPTIC) { // ellipse shape and angle - if requested
+    if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
       WriteEllipseAngle(Record, theCluster);
       WriteEllipseShape(Record, theCluster);
     }
-
-/*
-    Suppress printing cluster information for ordinal in this version, we will
-    be updating this in v6.1.
-
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
-      WriteCountDataAsOrdinal(Record, theCluster);
-    else
-*/
-    if (gParameters.GetProbabilityModelType() != ORDINAL)
-      WriteCountDataStandard(Record, theCluster);
-
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
@@ -225,9 +164,13 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
       Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
     Record.GetFieldValue(START_DATE_FLD).AsZdString() = theCluster.GetStartDate(sBuffer, gDataHub);
     Record.GetFieldValue(END_DATE_FLD).AsZdString() = theCluster.GetEndDate(sBuffer, gDataHub);
-    
     if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
     if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
+    //now write to secondary cluster information file
+    if (gParameters.GetProbabilityModelType() == ORDINAL)
+      WriteCountOrdinalData(theCluster, iClusterNumber);
+    else
+      WriteCountData(theCluster, iClusterNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("Write()","ClusterInformationWriter");
@@ -235,44 +178,29 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
   }
 }
 
-// pre : none
-// post : sets the values for long, lat, sAdditCoords, and radius
+/** Writes cluster coordinates to passed record buffer, with consideration for whether coordinate
+    system is lat/long or Cartesian. Fields left blank for purely temporal clusters. */
 void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CCluster& thisCluster) {
-  int           i;
-  double      * pCoords=0, * pCoords2=0, dRadius;
-  float         fLatitude, fLongitude, fRadius;
-  unsigned int  iFirstCoordIndex, iSecondCoordIndex;
-  ZdString      sBuffer;
-  tract_t       tTractIndex;
+  double                dRadius;
+  std::vector<double>   vCoordinates;
+  float                 fLatitude, fLongitude, fRadius;
+  unsigned int          iFirstCoordIndex, iSecondCoordIndex;
+  ZdString              sBuffer;
+  tract_t               tTractIndex;
 
    try {
-     iFirstCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LAT_FIELD : COORD_X_FIELD);
-     iSecondCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
-
-     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER) {
-       Record.SetFieldIsBlank(iFirstCoordIndex, true);
-       Record.SetFieldIsBlank(iSecondCoordIndex, true);
-       if (gParameters.GetCoordinatesType() == CARTESIAN) {
-         for (i=2; i < gParameters.GetDimensionsOfData(); ++i) {
-            sBuffer << ZdString::reset << COORD_Z_FIELD << (i - 1);
-            Record.SetFieldIsBlank(sBuffer, true);
-         }
-       }
-       Record.SetFieldIsBlank(RADIUS_FIELD, true);
-     }
-     else {
-       gDataHub.GetGInfo()->giGetCoords(thisCluster.GetCentroidIndex(), &pCoords);
-       tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(),
-                                          thisCluster.GetCentroidIndex(),
-                                          thisCluster.GetNumTractsInnerCircle(),
-                                          thisCluster.GetCartesianRadius());
-       gDataHub.GetTInfo()->tiGetCoords(tTractIndex, &pCoords2);
+     if (thisCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
+       iFirstCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LAT_FIELD : COORD_X_FIELD);
+       iSecondCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
+       gDataHub.GetGInfo()->giRetrieveCoords(thisCluster.GetCentroidIndex(), vCoordinates);
+       tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(),
+                                          thisCluster.GetNumTractsInnerCircle(), thisCluster.GetCartesianRadius());
        switch (gParameters.GetCoordinatesType()) {
-         case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  pCoords[0];
-                          Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  pCoords[1];
-                          for (i=2; i < gParameters.GetDimensionsOfData(); ++i) {
+         case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  vCoordinates[0];
+                          Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  vCoordinates[1];
+                          for (int i=2; i < gParameters.GetDimensionsOfData(); ++i) {
                              sBuffer << ZdString::reset << COORD_Z_FIELD << (i - 1);
-                             Record.GetFieldValue(sBuffer).AsDouble() = pCoords[i];
+                             Record.GetFieldValue(sBuffer).AsDouble() = vCoordinates[i];
                           }
                           if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
                             //to mimic behavior in CCluster reporting, cast down to float
@@ -286,29 +214,52 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                             Record.GetFieldValue(RADIUS_FIELD).AsDouble() = fRadius;
                           }
                           break;
-         case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, pCoords);
+         case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, &vCoordinates[0]);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() = fLongitude;
                           dRadius = 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
                           Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
                           break;
-         default : ZdGenerateException("Unknown coordinate type '%d'.","SetCoordinates()", gParameters.GetCoordinatesType());
+         default : ZdGenerateException("Unknown coordinate type '%d'.","WriteCoordinates()", gParameters.GetCoordinatesType());
        }
-       free(pCoords);
-       free(pCoords2);
      }
    }
    catch (ZdException &x) {
-      free(pCoords);
-      free(pCoords2);
-      x.AddCallpath("WriteCoordinates()", "stsClusterData");
-      throw;
+     x.AddCallpath("WriteCoordinates()", "stsClusterData");
+     throw;
    }
 }
 
+/** Writes obvserved, expected and  observed/expected to file(s).*/
+void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iClusterNumber) const {
+  double                                        dRelativeRisk;
+  RecordBuffer                                  Record(vDataFieldDefinitions);
+  std::vector<unsigned int>                     vComprisedDataSetIndexes;
+  std::vector<unsigned int>::iterator           itr_Index;
+  std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
+
+  theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+  for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
+    Record.SetAllFieldsBlank(true);
+    Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
+    if (gParameters.GetNumDataSets() > 1)
+      Record.GetFieldValue(DATASET_FIELD).AsDouble() = iSetIndex + 1;
+    itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
+    if (itr_Index != vComprisedDataSetIndexes.end()) {
+      Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
+      Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
+      Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
+      if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
+          (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
+         Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
+    }
+    if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
+    if (gpDBaseFileDataWriter) gpDBaseFileDataWriter->WriteRecord(Record);
+ }
+}
+
 /** Write obvserved, expected and  observed/expected to record for ordinal data.*/
-/*
-void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, const CCluster& theCluster) const {
+void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster, int iClusterNumber) const {
   ZdString                                              sBuffer;
   OrdinalLikelihoodCalculator                           Calculator(gDataHub);
   std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
@@ -316,103 +267,42 @@ void ClusterInformationWriter::WriteCountDataAsOrdinal(RecordBuffer& Record, con
   const AbstractCategoricalClusterData                * pClusterData=0;
   measure_t                                             tObservedDivExpected;
   double                                                tRelativeRisk;
+  RecordBuffer                                          Record(vDataFieldDefinitions);
 
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(theCluster.GetClusterData())) == 0)
-    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n",
-                        "WriteCountDataAsOrdinal()");
+    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n","WriteCountOrdinalData()");
 
+  Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
   for (size_t i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
-    const PopulationData& Population = gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData();
+    if (gDataHub.GetDataSetHandler().GetNumDataSets() > 1)
+      Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
     //retrieve ordinal categories in combined state
     pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, i);
-    //for each combined category
+    //for each combined category                                                 
     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
-       //calculate summation of observed/expected for each catgeory in this combined category
-       tObservedDivExpected=0;
-       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
-          tObservedDivExpected += theCluster.GetObservedDivExpectedOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
-       //calculate summation of relative for each catgeory in this combined category
-       tRelativeRisk=0;
-       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
-          tRelativeRisk += theCluster.GetRelativeRisk(theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m)),
-                                                      theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m)),
-                                                      gDataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases());
+       //calculate observed/expected and relative risk for combined categories
+       count_t tObserved=0, tTotalCategoryCases=0;
+       measure_t tExpected=0;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
-          //record observed cases - not combining categories
-          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-            sBuffer.printf("%s%s%i", OBS_FIELD_PART, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          else
-            sBuffer.printf("%s%s%i%s%i", OBS_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
-          //record expected cases - not combining categories
-          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-            sBuffer.printf("%s%s%i", EXP_FIELD_PART, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          else
-            sBuffer.printf("%s%s%i%s%i", EXP_FIELD_PART, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
-          //record observed/expected cases - categories which were combined will have the same value
-          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-            sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          else
-            sBuffer.printf("%s%s%i%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = tObservedDivExpected;
-          //record relative risk - categories which were combined will have the same value
-          if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
-            sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          else
-            sBuffer.printf("%s%s%i%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, i + 1, SET_CATEGORY_FIELD_PART, itrCategory->GetCategoryIndex(m) + 1);
-          Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = tRelativeRisk;
+          tObserved += theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+          tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
-    }
-  }
-}
-*/
-
-/** Write obvserved, expected and  observed/expected to record.*/
-void ClusterInformationWriter::WriteCountDataStandard(RecordBuffer& Record, const CCluster& theCluster) const {
-  ZdString      sBuffer;
-  double        dRelativeRisk;
-
-  if (gParameters.GetNumDataSets() == 1) {
-    Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
-    Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
-    Record.GetFieldValue(OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
-    if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
-      if ((dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) == -1)
-        Record.SetFieldIsBlank(RELATIVE_RISK_FIELD, true);
-      else
-        Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
-    }    
-  }
-  else {
-    std::vector<unsigned int>                     vComprisedDataSetIndexes;
-    std::vector<unsigned int>::iterator           itr_Index;
-    std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
-
-    theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
-    for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
-       itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
-       sBuffer.printf("%s%s%i", OBS_FIELD_PART, SET_FIELD_PART, iSetIndex + 1);
-       if (itr_Index == vComprisedDataSetIndexes.end())
-         Record.SetFieldIsBlank(sBuffer.GetCString(), true);
-       else
-         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedCount(iSetIndex);
-       sBuffer.printf("%s%s%i", EXP_FIELD_PART, SET_FIELD_PART, iSetIndex + 1);
-       if (itr_Index == vComprisedDataSetIndexes.end())
-         Record.SetFieldIsBlank(sBuffer.GetCString(), true);
-       else
-         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
-       sBuffer.printf("%s%s%i", OBS_DIV_EXP_FIELD, SET_FIELD_PART, iSetIndex + 1);
-       if (itr_Index == vComprisedDataSetIndexes.end())
-         Record.SetFieldIsBlank(sBuffer.GetCString(), true);
-       else
-         Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
-       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) {
-         sBuffer.printf("%s%s%i", RELATIVE_RISK_FIELD, SET_FIELD_PART, iSetIndex + 1);
-         if (itr_Index == vComprisedDataSetIndexes.end() || (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) == -1)
-           Record.SetFieldIsBlank(sBuffer.GetCString(), true);
-         else
-           Record.GetFieldValue(sBuffer.GetCString()).AsDouble() = dRelativeRisk;
+       tObservedDivExpected = (tExpected ? (double)tObserved/tExpected  : 0);
+       tRelativeRisk = theCluster.GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
+       for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
+          Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = itrCategory->GetCategoryIndex(m) + 1;
+          //record observed cases - not combining categories
+          Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+          //record expected cases - not combining categories
+          Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
+          //record observed/expected cases - categories which were combined will have the same value
+          Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = tObservedDivExpected;
+          //record relative risk - categories which were combined will have the same value
+          if (tRelativeRisk != -1 /*indicator of infinity*/)
+            Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = tRelativeRisk;
+          if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
+          if (gpDBaseFileDataWriter) gpDBaseFileDataWriter->WriteRecord(Record);
        }
     }
   }
