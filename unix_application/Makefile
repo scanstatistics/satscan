@@ -34,8 +34,9 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTE
 
 DEFINES     := -D__BASIS_NO_VCL \
                -D__BATCH_COMPILE \
-               -DBOOST_ALL_NO_LIB
-
+               -DBOOST_ALL_NO_LIB \
+               -DZDHEADER=\"zd$(ZDVER).h\"
+                              
 CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
 
