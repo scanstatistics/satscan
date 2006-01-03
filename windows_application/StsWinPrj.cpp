@@ -125,8 +125,6 @@ USEUNIT("..\calculation\ParameterFileAccess.cpp");
 USEUNIT("..\calculation\ScanLineParameterFileAccess.cpp");
 USEUNIT("..\calculation\IniParameterFileAccess.cpp");
 USEUNIT("..\calculation\IniParameterSpecification.cpp");
-USELIB("..\..\zero.dimension\zd543.lib");
-USELIB("..\..\zero.dimension\zdannex543.lib");
 USEUNIT("..\calculation\probability_model\OrdinalModel.cpp");
 USEUNIT("..\calculation\randomization\OrdinalDataRandomizer.cpp");
 USEUNIT("..\calculation\satscan_data\OrdinalDataSetHandler.cpp");

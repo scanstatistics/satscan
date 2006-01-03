@@ -90,7 +90,7 @@
       ..\..\boost\boost_1_33_1\libs\thread\src\recursive_mutex.obj 
       ..\..\boost\boost_1_33_1\libs\thread\src\thread.obj 
       ..\..\boost\boost_1_33_1\libs\thread\src\condition.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\tss_hooks.obj       
+      ..\..\boost\boost_1_33_1\libs\thread\src\tss_hooks.obj 
       ..\calculation\utility\stsMonteCarloSimFunctor.obj 
       ..\calculation\utility\contractor.obj 
       ..\calculation\utility\DateStringParser.obj 
@@ -138,8 +138,7 @@
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
-    <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib ..\..\zero.dimension\zd543.lib 
-      ..\..\zero.dimension\zdannex543.lib"/>
+    <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
     <LIBRARIES value="Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi Vcldb50.bpi Vclbde50.bpi vcldbx50.bpi bcbie50.bpi 
@@ -153,7 +152,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;RPRTCMPT_RUNTIMES"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl"/>
@@ -236,10 +235,12 @@ Item0=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basis
 Item1=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [HistoryLists\hlConditionals]
-Count=3
-Item0=INTEL_BASED;__BATCH_COMPILE
-Item1=INTEL_BASED;__BATCH_COMPILE;_DEBUG
-Item2=INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS
+Count=5
+Item0=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;RPRTCMPT_RUNTIMES
+Item1=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB
+Item2=INTEL_BASED;__BATCH_COMPILE
+Item3=INTEL_BASED;__BATCH_COMPILE;_DEBUG
+Item4=INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
