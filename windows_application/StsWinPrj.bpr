@@ -161,7 +161,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB"/>
+    <USERDEFINES value="INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;..\..\zero.dimension;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
@@ -231,15 +231,18 @@ Item0=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd543;C:\Pr
 Item1=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [HistoryLists\hlConditionals]
-Count=8
-Item0=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
-Item1=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
-Item2=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;
-Item3=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG;RPRTCMPT_RUNTIMES
-Item4=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG
-Item5=INTEL_BASED;WIN32
-Item6=INTEL_BASED;WIN32;_DEBUG
-Item7=INTEL_BASED;WIN32;PARALLEL_SIMULATIONS
+Count=11
+Item0=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
+Item1=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;_DEBUG
+Item2=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;_DEBUG
+Item3=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
+Item4=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
+Item5=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG;RPRTCMPT_RUNTIMES;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;
+Item6=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG;RPRTCMPT_RUNTIMES
+Item7=INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;_DEBUG
+Item8=INTEL_BASED;WIN32
+Item9=INTEL_BASED;WIN32;_DEBUG
+Item10=INTEL_BASED;WIN32;PARALLEL_SIMULATIONS
 
 [Debugging]
 DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
