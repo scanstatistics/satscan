@@ -480,7 +480,7 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const As
 
   switch (DataHub.GetParameters().GetProbabilityModelType()) {
     case POISSON :
-      if (!DataHub.GetParameters().UsePopulationFile())
+      if (!DataHub.GetParameters().UsePopulationFile() || GetClusterType() == PURELYTEMPORALCLUSTER)
         break;
     case BERNOULLI :
       PrintFormat.PrintSectionLabel(fp, "Population", false, true);

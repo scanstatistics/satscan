@@ -30,7 +30,6 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                        DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                        DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {}
-    virtual void                        DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
     virtual AbstractClusterData       * GetClusterData() {return gpClusterData;}
     virtual const AbstractClusterData * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                 GetClusterType() const {return PURELYTEMPORALCLUSTER;}
