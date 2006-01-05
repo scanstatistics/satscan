@@ -45,14 +45,29 @@ void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
    };
 }
 
+/** Creates formatted output from variable number of parameter arguments and calls class Print() method. */
 void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
-   va_list   varArgs;
+  va_list       varArgs;
+  int           iStringLength, iCurrentLength;
 
-   va_start(varArgs, ePrintType);
-   SetMessageFromArgs(varArgs, sMessage);
-   va_end (varArgs);
+  if (!sMessage || sMessage == gsMessage) return;
 
-   Print(gsMessage, ePrintType);
+  try {
+    iCurrentLength = strlen (gsMessage);
+    va_start(varArgs, ePrintType);
+    iStringLength = vsnprintf(gsMessage, iCurrentLength + 1, sMessage, varArgs);
+    va_end(varArgs);
+    if (iStringLength > iCurrentLength) {
+      delete [] gsMessage; gsMessage=0;
+      gsMessage = new char[iStringLength + 1];
+      va_start(varArgs, ePrintType);
+      vsnprintf (gsMessage, iStringLength + 1, sMessage, varArgs);
+      va_end(varArgs);
+    }
+  }
+  catch (...) {}
+
+  Print(gsMessage, ePrintType);
 }
 
 // function for printing out input file warning messages, this function will print out MAX_READ_ERRORS
@@ -85,70 +100,6 @@ void BasePrint::PrintReadError(const char * sMessage) {
    if (bPrintAsNormal)
      PrintError(sMessage);
 }
-
-//---------------------------------------------------------------------------
-//*** There are two different versions of this function because vsnprintf behaves
-//*** in completely different ways on the two platforms. Under BCB 5, vsnprintf()
-//*** will return the length of the required buffer if the length parameter is
-//*** zero and otherwise returns the number of bytes output. Under Solaris,
-//*** vsnprintf() will return -1 if a zero is passed and otherwise _always_
-//*** returns the number of bytes output.
-//---------------------------------------------------------------------------
-#ifdef INTEL_BASED
-// This function sets the current exception message.  If a NULL is passed in, the current
-// message is cleared.
-void BasePrint::SetMessageFromArgs(va_list varArgs, const char * sMessage) {
-  int   iStringLength;   // Holds the length of the formatted output
-  int   iCurrentLength;  // Current length of the buffer
-
-  try {
-    // vsnprintf will calculate the required length, not including the NULL,
-    // for the format string when given a NULL pointer and a zero length as
-    // the first two parameters.
-
-    iCurrentLength = strlen (gsMessage);
-
-    iStringLength = vsnprintf(gsMessage, iCurrentLength + 1, sMessage, varArgs);
-    //iStringLength = vsnprintf ( 0, 0, sMessage, varArgs );
-
-    if ( iStringLength > iCurrentLength ) {
-      delete [] gsMessage; gsMessage=0;
-      gsMessage = new char[iStringLength + 1];
-      vsnprintf (gsMessage, iStringLength + 1, sMessage, varArgs);
-    }
-  }
-  catch (...) {}
-}
-#else
-// This function sets the current exception message.  If a NULL is passed in, the current
-// message is cleared.
-void BasePrint::SetMessageFromArgs(va_list varArgs, const char * sMessage ) {
-   int   iCurrentLength;  // Current length of the buffer
-   int   iStringLength;   // Holds the length of the formatted output
-
-   try
-      {
-      if (sMessage && (sMessage != gsMessage) )
-         {
-         iCurrentLength = strlen ( gsMessage );
-
-         // vsnprintf will always return the length needed to format the string.
-         iStringLength = vsnprintf ( gsMessage, iCurrentLength + 1, sMessage, varArgs );
-
-         if ( iStringLength > iCurrentLength )
-            {
-            delete [] gsMessage; gsMessage = 0;
-            gsMessage = new char[iStringLength + 1];
-
-            vsnprintf ( gsMessage, iStringLength + 1, sMessage, varArgs );
-            }
-         }
-      else
-         gsMessage[0] = 0;
-      }
-   catch (...) {};
-}
-#endif
 
 void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int) {
   geInputFileType = eType;

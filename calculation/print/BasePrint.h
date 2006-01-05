@@ -26,7 +26,6 @@ class BasePrint {
     virtual void                        PrintReadError(const char * sMessage);
     virtual void                        PrintStandard(const char * sMessage) = 0;
     virtual void                        PrintWarning(const char * sMessage) = 0;
-    void                                SetMessageFromArgs(va_list varArgs, const char * sMessage);
 
   public:
     BasePrint(bool bSuppressWarnings);
