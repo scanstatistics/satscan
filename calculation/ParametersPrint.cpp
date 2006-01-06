@@ -472,9 +472,13 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     if (gParameters.GetOutputClusterLevelAscii()) {
       AdditionalOutputFile.SetExtension(".col.txt");
       fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+      AdditionalOutputFile.SetExtension(".col.dat.txt");
+      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
     }
     if (gParameters.GetOutputClusterLevelDBase()) {
       AdditionalOutputFile.SetExtension(".col.dbf");
+      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+      AdditionalOutputFile.SetExtension(".col.dat.dbf");
       fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
     }
     // area specific files
