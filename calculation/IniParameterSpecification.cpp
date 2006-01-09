@@ -280,6 +280,7 @@ void IniParameterSpecification::Build_6_1_x_ParameterList() {
 
   //Elliptic parameter replaced by spatial window type 
   gvParameterInfo[WINDOW_SHAPE - 1] = std::make_pair(SpatialWindow, (const char*)"SpatialWindowShapeType");
+  gvParameterInfo[NON_COMPACTNESS_PENALTY - 1] = std::make_pair(SpatialWindow, (const char*)"NonCompactnessPenalty");
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"SuppressWarnings"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"MaxReportedSpatialSizeInterpretation"));
 }
