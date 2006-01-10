@@ -303,7 +303,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
                                          "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
       }
     }
-    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
+    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
       fprintf(fp, "  Only clusters smaller than %.2f", gParameters.GetMaximumReportedGeoClusterSize());
       switch (gParameters.GetMaxReportedGeographicClusterSizeType()) {
         case MAXDISTANCE :
@@ -315,6 +315,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
          default : ZdException::Generate("Unknown cluster size type '%d'.\n",
                                          "PrintClustersReportedParameters()", gParameters.GetMaxReportedGeographicClusterSizeType());
       }
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintClustersReportedParameters()","ParametersPrint");
