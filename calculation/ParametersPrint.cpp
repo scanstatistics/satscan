@@ -304,9 +304,17 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
       }
     }
     if (gParameters.GetRestrictingMaximumReportedGeoClusterSize())
-      fprintf(fp, "  Only clusters smaller than %g %s reported.\n", gParameters.GetMaximumReportedGeoClusterSize(),
-          (gParameters.GetMaxReportedGeographicClusterSizeType() == MAXDISTANCE ?
-              (gParameters.GetCoordinatesType() == CARTESIAN ? "Cartesian units" : "km") : "percent of population at risk"));
+      fprintf(fp, "  Only clusters smaller than %.2f", gParameters.GetMaximumReportedGeoClusterSize());
+      switch (gParameters.GetMaxReportedGeographicClusterSizeType()) {
+        case MAXDISTANCE :
+          fprintf(fp, " %s reported.\n", (gParameters.GetCoordinatesType() == CARTESIAN ? "Cartesian units" : "km")); break;
+        case PERCENTOFPOPULATION :
+          fprintf(fp, " %s reported.\n", "percent of population at risk"); break;
+        case PERCENTOFMAXCIRCLEFILE :
+          fprintf(fp, " %s reported.\n", "percent of population defined in max circle file"); break;
+         default : ZdException::Generate("Unknown cluster size type '%d'.\n",
+                                         "PrintClustersReportedParameters()", gParameters.GetMaxReportedGeographicClusterSizeType());
+      }
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintClustersReportedParameters()","ParametersPrint");
