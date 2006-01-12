@@ -1159,6 +1159,7 @@ void __fastcall TfrmAnalysis::rdoProbabilityModelClick(TObject *Sender) {
 void __fastcall TfrmAnalysis::rgpCoordinatesClick(TObject *Sender) {
   try {
     gpfrmAdvancedParameters->SetSpatialDistanceCaption();
+    gpfrmAdvancedParameters->EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException & x) {
     x.AddCallpath("rgCoordinatesClick()", "TfrmAnalysis");

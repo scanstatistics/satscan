@@ -676,6 +676,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
         EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(true, false, true);
+        EnableWindowShapeGroup(true);
         EnableTemporalOptionsGroup(false, false, false);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
@@ -684,6 +685,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(false, false, false);
+        EnableWindowShapeGroup(false);
         EnableTemporalOptionsGroup(true, false, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(false);
@@ -694,6 +696,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
                                                  bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(bPoisson, GetAdjustmentTimeTrendControlType() != STRATIFIED_RANDOMIZATION);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, true);
+        EnableWindowShapeGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
@@ -704,6 +707,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
                                                  bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(bPoisson, GetAdjustmentTimeTrendControlType() != STRATIFIED_RANDOMIZATION);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation, !chkAdjustForEarlierAnalyses->Checked);
+        EnableWindowShapeGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(true);
@@ -712,6 +716,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(false, false, false);
+        EnableWindowShapeGroup(false);
         EnableTemporalOptionsGroup(true, false, false);
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(false);
@@ -785,6 +790,16 @@ void TfrmAdvancedParameters::EnableTemporalOptionsGroup(bool bEnable, bool bEnab
 
   chkIncludePureSpacClust->Enabled = bEnable && bEnableIncludePurelySpatial;
   EnableTemporalRanges(bEnable, bEnableRanges);
+}
+//---------------------------------------------------------------------------
+/** enables or disables the window shape options group control */
+void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
+   grpWindowShape->Enabled = bEnable;
+   rdoCircular->Enabled = bEnable;
+   rdoElliptic->Enabled = bEnable && (CoordinatesType)gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN;
+   stNonCompactnessPenalty->Enabled = rdoElliptic->Enabled;
+   cmbNonCompactnessPenalty->Enabled = rdoElliptic->Enabled;
+   if (!rdoElliptic->Enabled && rdoElliptic->Checked && rdoCircular->Enabled) rdoCircular->Checked = true;  
 }
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */

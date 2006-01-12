@@ -208,6 +208,7 @@ __published:	// IDE-managed Components
    void                     EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
    void                     EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
    void                     EnableTemporalRanges(bool bEnable, bool bEnableRanges);
+   void                     EnableWindowShapeGroup(bool bEnable);
    SpatialAdjustmentType    GetAdjustmentSpatialControlType() const;
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
    void                     Init();
