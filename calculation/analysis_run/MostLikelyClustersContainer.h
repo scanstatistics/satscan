@@ -44,7 +44,7 @@ public:
     std::vector<double>::const_iterator itrOtherCurr(other.gvCoordinates.begin());
     std::vector<double>::const_iterator itrEnd(gvCoordinates.end());
     for (; itrCurr != itrEnd; ++itrCurr, ++itrOtherCurr) {
-      dSum += std::pow(*itrCurr - *itrOtherCurr, 2);
+      dSum += (*itrCurr - *itrOtherCurr) * (*itrCurr - *itrOtherCurr); 
     }
     return std::sqrt(dSum);
   }
