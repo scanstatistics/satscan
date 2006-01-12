@@ -16,6 +16,7 @@ class NormalLikelihoodCalculator : public AbstractLikelihoodCalculator {
     virtual double      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) const;
     virtual double      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure) const;
     virtual double      GetLogLikelihoodForTotal() const;
+    virtual double      GetLogLikelihoodRatio(double dLogLikelihood) const;
 };
 //*****************************************************************************
 #endif
