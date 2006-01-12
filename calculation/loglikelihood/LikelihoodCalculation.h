@@ -32,6 +32,7 @@ class AbstractLikelihoodCalculator {
     virtual double                      CalcSVTTLogLikelihood(size_t tSetIndex, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend) const;
     const CSaTScanData                & GetDataHub() const {return gDataHub;}
     virtual double                      GetLogLikelihoodForTotal() const = 0;
+    virtual double                      GetLogLikelihoodRatio(double dLogLikelihood) const = 0;
     AbstractLoglikelihoodRatioUnifier & GetUnifier() const;
 };
 //******************************************************************************
