@@ -22,6 +22,8 @@ class PoissonLikelihoodCalculator : public AbstractLikelihoodCalculator {
     virtual double      CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const;
     virtual double      CalcSVTTLogLikelihood(size_t tSetIndex, CSVTTCluster* Cluster, const CTimeTrend& GlobalTimeTrend) const;
     virtual double      GetLogLikelihoodForTotal() const;
+    virtual double      GetLogLikelihoodRatio(double dLogLikelihood) const;   
+
 };
 //*****************************************************************************
 #endif

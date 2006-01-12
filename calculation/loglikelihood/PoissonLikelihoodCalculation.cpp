@@ -190,4 +190,12 @@ double PoissonLikelihoodCalculator::GetLogLikelihoodForTotal() const {
 
   return N*log(N/U);
 }
- 
+
+/** Returns log likelihood ratio given passed log likelihood.  */
+double PoissonLikelihoodCalculator::GetLogLikelihoodRatio(double dLogLikelihood) const {
+  count_t   N = gtTotalCasesInFirstDataSet;
+  measure_t U = gtTotalMeasureInFirstDataSet;
+
+  return dLogLikelihood - (N*log(N/U));
+}
+
