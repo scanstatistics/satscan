@@ -64,8 +64,16 @@ double BernoulliLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_
 double BernoulliLikelihoodCalculator::GetLogLikelihoodForTotal() const {
   count_t   N = gtTotalCasesInFirstDataSet;
   measure_t U = gtTotalMeasureInFirstDataSet;
-  
+
   return (N*log(N/U) + (U-N)*log((U-N)/U));
+}
+
+/** Returns log likelihood ratio given passed log likelihood.  */
+double BernoulliLikelihoodCalculator::GetLogLikelihoodRatio(double dLogLikelihood) const {
+  count_t   N = gtTotalCasesInFirstDataSet;
+  measure_t U = gtTotalMeasureInFirstDataSet;
+
+  return dLogLikelihood - (N*log(N/U) + (U-N)*log((U-N)/U));
 }
 
 /** calculates loglikelihood ratio for purely spatial monotone analysis given passed cluster */
