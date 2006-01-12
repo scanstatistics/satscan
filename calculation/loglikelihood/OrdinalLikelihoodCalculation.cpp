@@ -83,7 +83,7 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) co
   return 0;
 }
 
-/** calculates the Poisson log likelihood ratio given the number of observed and expected cases 
+/** calculates the Poisson log likelihood ratio given the number of observed and expected cases
     - not implemented - throws exception */
 double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) const {
   ZdGenerateException("CalcLogLikelihoodRatio() not implementated.","OrdinalLikelihoodCalculator");
@@ -281,9 +281,15 @@ bool OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea(double dPk, dou
          (dQk && dQi && dPk/dQk >= dPi/dQi);
 }
 
-/** returns log likelihood for total  - not implemented - throws exception */
+/** returns log likelihood for total - not implemented - throws exception. */
 double OrdinalLikelihoodCalculator::GetLogLikelihoodForTotal() const {
   ZdGenerateException("GetLogLikelihoodForTotal() not implementated.","OrdinalLikelihoodCalculator");
+  return 0;
+}
+
+/** Returns log likelihood ratio given passed log likelihood - not implemented - throws exception.  */
+double OrdinalLikelihoodCalculator::GetLogLikelihoodRatio(double dLogLikelihood) const {
+  ZdGenerateException("GetLogLikelihoodRatio() not implementated.","OrdinalLikelihoodCalculator");
   return 0;
 }
 

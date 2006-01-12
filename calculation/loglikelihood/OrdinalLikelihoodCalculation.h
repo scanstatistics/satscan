@@ -47,6 +47,8 @@ class OrdinalLikelihoodCalculator : public AbstractLikelihoodCalculator {
     virtual double      CalcLogLikelihoodRatioOrdinalLowRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual void        CalculateOrdinalCombinedCategories(const std::vector<count_t>& vOrdinalCases, std::vector<OrdinalCombinedCategory>& vOrdinalCategories, size_t tSetIndex=0) const;
     virtual double      GetLogLikelihoodForTotal() const;
+    virtual double      GetLogLikelihoodRatio(double dLogLikelihood) const;
+
 };
 //******************************************************************************
 #endif
