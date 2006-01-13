@@ -289,8 +289,8 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
 /** Prints 'Clusters Reported' tab parameters to file stream. */
 void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   try {
-    fprintf(fp, "\nClusters Reported\n-----------------\n");
     if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+      fprintf(fp, "\nClusters Reported\n-----------------\n");
       fprintf(fp, "  Criteria for Reporting Secondary Clusters : ");
       switch (gParameters.GetCriteriaSecondClustersType()) {
          case NOGEOOVERLAP          : fprintf(fp, "No Geographical Overlap\n"); break;
@@ -302,19 +302,19 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
          default : ZdException::Generate("Unknown secondary clusters type '%d'.\n",
                                          "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
       }
-    }
-    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
-      fprintf(fp, "  Only clusters smaller than %.2f", gParameters.GetMaximumReportedGeoClusterSize());
-      switch (gParameters.GetMaxReportedGeographicClusterSizeType()) {
-        case MAXDISTANCE :
-          fprintf(fp, " %s reported.\n", (gParameters.GetCoordinatesType() == CARTESIAN ? "Cartesian units" : "km")); break;
-        case PERCENTOFPOPULATION :
-          fprintf(fp, " %s reported.\n", "percent of population at risk"); break;
-        case PERCENTOFMAXCIRCLEFILE :
-          fprintf(fp, " %s reported.\n", "percent of population defined in max circle file"); break;
-         default : ZdException::Generate("Unknown cluster size type '%d'.\n",
-                                         "PrintClustersReportedParameters()", gParameters.GetMaxReportedGeographicClusterSizeType());
-      }
+      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
+        fprintf(fp, "  Only clusters smaller than %.2f", gParameters.GetMaximumReportedGeoClusterSize());
+        switch (gParameters.GetMaxReportedGeographicClusterSizeType()) {
+          case MAXDISTANCE :
+            fprintf(fp, " %s reported.\n", (gParameters.GetCoordinatesType() == CARTESIAN ? "Cartesian units" : "km")); break;
+          case PERCENTOFPOPULATION :
+            fprintf(fp, " %s reported.\n", "percent of population at risk"); break;
+          case PERCENTOFMAXCIRCLEFILE :
+            fprintf(fp, " %s reported.\n", "percent of population defined in max circle file"); break;
+           default : ZdException::Generate("Unknown cluster size type '%d'.\n",
+                                           "PrintClustersReportedParameters()", gParameters.GetMaxReportedGeographicClusterSizeType());
+       }
+     }
     }
   }
   catch (ZdException &x) {
@@ -325,10 +325,9 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
 
 /** Prints 'Elliptic Scan' parameters to file stream. */
 void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
-  if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
+  if (!gParameters.GetIsPurelyTemporalAnalysis() && gParameters.GetSpatialWindowType() == ELLIPTIC) {
     fprintf(fp, "\nElliptic Scan\n-------------\n");
-    fprintf(fp, "  Number of Ellipse Shapes Requested       : %i\n", gParameters.GetNumRequestedEllipses());
-    fprintf(fp, "  Shape for Each Ellipse                   : ");
+    fprintf(fp, "  Ellipse Shapes                           : ");
     fprintf(fp, "%g", gParameters.GetEllipseShapes()[0]);
     for (size_t i=1; i < gParameters.GetEllipseShapes().size(); ++i)
        fprintf(fp, ", %g", gParameters.GetEllipseShapes()[i]);
@@ -336,14 +335,7 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
     fprintf(fp, "%i", gParameters.GetEllipseRotations()[0]);
     for (size_t i=1; i < gParameters.GetEllipseRotations().size(); ++i)
        fprintf(fp, ", %i", gParameters.GetEllipseRotations()[i]);
-    fprintf(fp, "\n  Non-Compactness Penalty                  : ");
-    switch (gParameters.GetNonCompactnessPenaltyType()) {
-      case NOPENALTY     : fprintf(fp, "None\n"); break;
-      case MEDIUMPENALTY : fprintf(fp, "Meduim\n"); break;
-      case FULLPENALTY   : fprintf(fp, "Full\n"); break;
-      default : ZdException::Generate("Unknown non-compactness penalty type '%d'.\n",
-                                      "PrintEllipticScanParameters()", gParameters.GetNonCompactnessPenaltyType());
-    }
+    fprintf(fp, "\n");
   }
 }
 
@@ -584,10 +576,9 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
                                         "PrintRunOptionsParameters()", gParameters.GetExecutionType());
       };
     }
-    if (!gParameters.GetValidatingParameters())
-      fprintf(fp, "  Validate Parameters : No\n");
-    if (!gParameters.GetIsLoggingHistory())
-      fprintf(fp, "  Analysis Logged     : No\n");
+    fprintf(fp, "  Logging Analysis    : %s\n", (gParameters.GetIsLoggingHistory() ? "Yes" : "No"));
+    fprintf(fp, "  Suppress Warnings   : %s\n", (gParameters.GetSuppressingWarnings() ? "Yes" : "No"));
+    if (!gParameters.GetValidatingParameters()) fprintf(fp, "  Validate Parameters : No\n");
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
@@ -680,9 +671,25 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
                                       "PrintSpatialWindowParameters()", gParameters.GetMaxGeographicClusterSizeType());
     }
     if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
-      fprintf(fp, "  Also Include Purely Temporal Clusters : ");
+      fprintf(fp, "  Include Purely Temporal Clusters      : ");
       fprintf(fp, (gParameters.GetIncludePurelyTemporalClusters() ? "Yes\n" : "No\n"));
     }
+    fprintf(fp, "  Window Shape                          : ");
+    switch (gParameters.GetSpatialWindowType()) {
+      case CIRCULAR : fprintf(fp, "Circular\n"); break;
+      case ELLIPTIC : fprintf(fp, "Elliptic\n");
+                      fprintf(fp, "  Non-Compactness Penalty               : ");
+                      switch (gParameters.GetNonCompactnessPenaltyType()) {
+                        case NOPENALTY     : fprintf(fp, "None\n"); break;
+                        case MEDIUMPENALTY : fprintf(fp, "Meduim\n"); break;
+                        case FULLPENALTY   : fprintf(fp, "Full\n"); break;
+                        default : ZdException::Generate("Unknown non-compactness penalty type '%d'.\n",
+                                                         "PrintSpatialWindowParameters()", gParameters.GetNonCompactnessPenaltyType());
+                      }
+                      break;
+      default : ZdException::Generate("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
+    }
+
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintSpatialWindowParameters()","ParametersPrint");
@@ -714,14 +721,14 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
     fprintf(fp, "\nTemporal Window\n---------------\n");
     fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", gParameters.GetMaximumTemporalClusterSize());
     switch (gParameters.GetMaximumTemporalClusterSizeType()) {
-      case PERCENTAGETYPE : fprintf(fp, " %%\n"); break;
+      case PERCENTAGETYPE : fprintf(fp, "%%\n"); break;
       case TIMETYPE       : fprintf(fp, " %s\n",
                             GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sBuffer, gParameters.GetMaximumTemporalClusterSize() != 1, true)); break;
       default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n",
                                       "PrintTemporalWindowParameters()", gParameters.GetMaximumTemporalClusterSizeType());
     }
     if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
-      fprintf(fp, "  Also Include Purely Spatial Clusters  : ");
+      fprintf(fp, "  Include Purely Spatial Clusters       : ");
       fprintf(fp, (gParameters.GetIncludePurelySpatialClusters() ? "Yes\n" : "No\n"));
     }
     if (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == SPACETIME) {
