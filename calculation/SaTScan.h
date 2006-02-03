@@ -68,18 +68,6 @@
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
 #define PI 3.1415926535897932384626433832795028841972
-/** Average number of days in year and month. */
-#define AVERAGE_DAYS_IN_YEAR 364.2425
-#define AVERAGE_DAYS_IN_MONTH (364.2425/12)
-/** Maximum length of a line in input file (scanf). */
-#define MAX_LINESIZE 4096
-/** Maximum string length - used in static allocating of character arrays. */
-#define MAX_STR_LEN 150
-/** Maximum string length - used in static allocating of character arrays
-    for reading file infomation in scanf format. */
-#define MAX_LINEITEMSIZE 512
-/** Growth increment for GInfo in GridTractCoordinates.cpp */
-#define TI_GROW 100
 /*radius of earth in km*/
 #define EARTH_RADIUS_km 6367
 /** case count type */
