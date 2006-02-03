@@ -17,6 +17,8 @@ struct gnode {              /* grid tract record    */
 
 class GInfo {
   private:
+    static const int    TI_GROW = 100; /** Growth increment for GInfo */
+
     struct gnode      * GridTractInfo;  /* grid tract info vector           */
     tract_t             gi_length;  /* allocated len of GridTractInfo   */
     tract_t             NumGridTracts;  /* number of grid tracts filled     */
