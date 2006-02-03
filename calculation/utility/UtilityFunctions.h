@@ -26,12 +26,15 @@ boost::posix_time::ptime GetCurrentTime_HighResolution();
           3 - there may be other concerns/problems as this hasn't been completely thought through */
 class StringParser {
   private:
+    static const int            MAX_LINESIZE = 4096; /** Maximum length of a line in input file (scanf). */
+    static const int            MAX_LINEITEMSIZE = 512; /** Maximum string length*/
     char                        gsReadBuffer[MAX_LINESIZE];
     char                      * gpWord;
     int                         giSizeOfWordBuffer;
     short                       gwCurrentWordIndex;
     long                        glReadCount;
     BasePrint                 & gPrint;
+
 
     void                        ClearWordIndex() {gwCurrentWordIndex=-1;}
     void                        ThrowAsciiException();
