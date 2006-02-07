@@ -37,7 +37,6 @@ class GInfo {
     tract_t             giGetNumTracts();
     tract_t             giGetTractNum(const char *gid);
     void                giGetCoords(tract_t t, double** pCoords) const;
-    void                giGetCoords2(tract_t t, double* pCoord) const;
     int                 giGetNumDimensions() const;
     void                giInsertGnode(const char *gid, std::vector<double>& vCoordinates);
     void                giRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;

@@ -176,29 +176,6 @@ void GInfo::giRetrieveCoords(tract_t t, std::vector<double> & vRepository) const
   std::copy(GridTractInfo[t].pCoords, GridTractInfo[t].pCoords + nDimensions, vRepository.begin());
 }
 
-/**********************************************************************
- Returns the tract coords for the given tract_t index.  The allocation
- of pCoords is made in the calling function.
- **********************************************************************/
-void GInfo::giGetCoords2(tract_t t, double* pCoord) const
-{
-   int i;
-
-   try
-      {
-      if (0 <= t && t < NumGridTracts)
-         {
-         for (i=0; i<nDimensions; i++)
-    	    pCoord[i] = GridTractInfo[t].pCoords[i];
-         }
-      }
-   catch (ZdException & x)
-      {
-      x.AddCallpath("giGetCoords2()", "GInfo");
-      throw;
-      }
-} /* giGetCoords2() */
-
 /* =========================== Display Routines ============================ */
 
 /**********************************************************************
