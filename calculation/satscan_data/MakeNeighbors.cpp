@@ -369,7 +369,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
     for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
        gvCentroidToLocationDistances[k].SetTractNumber(k);
        gLocationInfo.tiRetrieveCoords(k, vLocationCoordinates);
-       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(&vCentroidCoordinates[0], &vLocationCoordinates[0])));
+       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(vCentroidCoordinates, vLocationCoordinates)));
     }
   }
   else {
@@ -384,7 +384,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
        vLocationCoordinates[0] = gvLocationEllipticCoordinates[k].first;
        vLocationCoordinates[1] = gvLocationEllipticCoordinates[k].second;
        gvCentroidToLocationDistances[k].SetTractNumber(k);
-       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(&vCentroidCoordinates[0], &vLocationCoordinates[0])));
+       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(vCentroidCoordinates, vLocationCoordinates)));
     }
   }
 }
