@@ -181,12 +181,13 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
 /** Writes cluster coordinates to passed record buffer, with consideration for whether coordinate
     system is lat/long or Cartesian. Fields left blank for purely temporal clusters. */
 void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CCluster& thisCluster) {
-  double                dRadius;
-  std::vector<double>   vCoordinates;
-  float                 fLatitude, fLongitude, fRadius;
-  unsigned int          iFirstCoordIndex, iSecondCoordIndex;
-  ZdString              sBuffer;
-  tract_t               tTractIndex;
+  double                        dRadius;
+  std::vector<double>           vCoordinates;
+  std::pair<double, double>     prLatitudeLongitude;
+  float                         fRadius;
+  unsigned int                  iFirstCoordIndex, iSecondCoordIndex;
+  ZdString                      sBuffer;
+  tract_t                       tTractIndex;
 
    try {
      if (thisCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
@@ -214,9 +215,9 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
                             Record.GetFieldValue(RADIUS_FIELD).AsDouble() = fRadius;
                           }
                           break;
-         case LATLON    : ConvertToLatLong(&fLatitude, &fLongitude, &vCoordinates[0]);
-                          Record.GetFieldValue(iFirstCoordIndex).AsDouble() = fLatitude;
-                          Record.GetFieldValue(iSecondCoordIndex).AsDouble() = fLongitude;
+         case LATLON    : prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+                          Record.GetFieldValue(iFirstCoordIndex).AsDouble() = prLatitudeLongitude.first;
+                          Record.GetFieldValue(iSecondCoordIndex).AsDouble() = prLatitudeLongitude.second;
                           dRadius = 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
                           Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
                           break;
