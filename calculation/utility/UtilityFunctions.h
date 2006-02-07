@@ -4,13 +4,13 @@
 //******************************************************************************
 #include "SaTScan.h"
 
-void 	     ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
-void 	     ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords);
-double       CalculateNonCompactnessPenalty(double dEllipseShape, double dPower);
-const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural=true, bool bCapitalizeFirstLetter=false);
-unsigned int GetNumSystemProcessors();
-void         ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
-boost::posix_time::ptime GetCurrentTime_HighResolution();
+void 	                        ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
+std::pair<double, double>       ConvertToLatLong(const std::vector<double>& vCoordinates);
+double                          CalculateNonCompactnessPenalty(double dEllipseShape, double dPower);
+const char                    * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural=true, bool bCapitalizeFirstLetter=false);
+unsigned int                    GetNumSystemProcessors();
+void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
+boost::posix_time::ptime        GetCurrentTime_HighResolution();
 
 /** The data read routines of CSaTScanData used to use function:
     const char * GetWord(const char *s, int num, BasePrint *pPrintDirection)

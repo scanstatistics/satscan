@@ -27,31 +27,35 @@ void ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& 
   vCoordinates[2] = (RADIUS * sin(Latitude*PI/180.0));														// z coordinate
 }
 
-/** converts passed coordinates to latitude/longitude
-    NOTE: This function takes doubles and converts to floats. To keep
-          consistancy with output, this function is intentionally left this way.
-          Currently, this function is used soley for reporting of cluster
-          coordinates in results and cluster data output files. Switching to
-          doubles causes different output results due to greater precision. */
-void ConvertToLatLong(float* Latitude, float* Longitude, double* pCoords) {
-  float RADIUS = 6367; // Constant; radius of earth in km)
+/** Converts passed coordinates in Cartesian system to latitude/longitude system.
+    Returns pair of doubles <latitude, longtitude>. Throws ZdException if number of
+    coordinates in passed vector is not 3. */
+std::pair<double, double> ConvertToLatLong(const std::vector<double>& vCoordinates) {
+  std::pair<double, double>     prLatitudeLongitude;
+  double RADIUS = 6367; // Constant; radius of earth in km)
 
-  if (pCoords[0] != 0) {
-    *Longitude = (float)(atan(pCoords[1] / pCoords[0]) * 180.0 / PI);
-    if (pCoords[0] < 0 && pCoords[1] > 0)
-      *Longitude += 180.0;
-    else if (pCoords[0] < 0 && pCoords[1] < 0)
-      *Longitude -= 180.0;
+  if (vCoordinates.size() != 3)
+    ZdGenerateException("Conversion to latitude/longitude requires a vector of 3 elements.\n"
+                        "Passed vector contains %u elements.","ConvertToLatLong()", vCoordinates.size());
+
+  if (vCoordinates[0] != 0) {
+    prLatitudeLongitude.second = atan(vCoordinates[1] / vCoordinates[0]) * 180.0 / (double)PI;
+    if (vCoordinates[0] < 0 && vCoordinates[1] > 0)
+      prLatitudeLongitude.second += 180.0;
+    else if (vCoordinates[0] < 0 && vCoordinates[1] < 0)
+      prLatitudeLongitude.second -= 180.0;
   }
-  else if (pCoords[1] > 0)
-    *Longitude = 90.0;
-  else if (pCoords[1] < 0)
-    *Longitude = -90.0;
-  else if (pCoords[1] == 0)
-    *Longitude = 0.0;
+  else if (vCoordinates[1] > 0)
+    prLatitudeLongitude.second = 90.0;
+  else if (vCoordinates[1] < 0)
+    prLatitudeLongitude.second = -90.0;
+  else if (vCoordinates[1] == 0)
+    prLatitudeLongitude.second = 0.0;
 
-  float tmp = sqrt((pCoords[0]*pCoords[0] + pCoords[1]*pCoords[1])/(RADIUS*RADIUS));
-  *Latitude = (float)((pCoords[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / PI);
+  double tmp = sqrt((vCoordinates[0]*vCoordinates[0] + vCoordinates[1]*vCoordinates[1])/(RADIUS*RADIUS));
+  prLatitudeLongitude.first = (vCoordinates[2] >= 0 ? (1.0) : (-1.0)) * acos(tmp) * 180.0 / (double)PI;
+
+  return prLatitudeLongitude;
 }
 
 /** Return non-compactness penalty coefficient for specified elliptic shape and
