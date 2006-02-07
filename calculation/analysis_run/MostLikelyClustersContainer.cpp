@@ -83,7 +83,7 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
                                                                theCluster.GetCentroidIndex(),
                                                                theCluster.GetNumTractsInnerCircle()),
                                                                vCoordsOfNeighborCluster);
-      dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+      dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
     }
   }
   catch (ZdException &x) {
