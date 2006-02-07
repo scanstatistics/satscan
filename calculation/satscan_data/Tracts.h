@@ -36,7 +36,6 @@ class TractDescriptor {
     bool                                CompareCoordinates(const double * pCoordinates, int iDimensions) const;
     bool                                CompareCoordinates(const TractDescriptor & Descriptor, const TractHandler & theTractHandler) const;
     const double                      *	GetCoordinates() const {return gpCoordinates;}
-    double                            *	GetCoordinates(double* pCoordinates, const TractHandler & theTractHandler) const;
     double                            	GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const;
     int                                 GetNumTractIdentifiers() const;
     const char                        * GetTractIdentifier() const {return gsTractIdentifiers;}
@@ -80,10 +79,8 @@ class TractHandler {
 
     tract_t                             tiCombineDuplicatesByCoordinates();
     void                                tiConcaticateDuplicateTractIdentifiers();
-    void                                tiGetCoords(tract_t t, double** pCoords) const;
-    void                                tiGetCoords2(tract_t t, double* pCoords) const;
     int                                 tiGetDimensions() const {return nDimensions;}
-    double                              tiGetDistanceSq(double* pCoords, double* pCoords2) const;
+    double                              tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) const;
     tract_t                             tiGetNumTracts() const {return (int)gvTractDescriptors.size();}
     const char                        * tiGetTid(tract_t t, std::string& sFirst) const;
     double                              tiGetTractCoordinate(tract_t t, int iDimension) const;

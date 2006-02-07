@@ -69,21 +69,6 @@ bool TractDescriptor::CompareCoordinates(const double * pCoordinates, int iDimen
   return !memcmp(GetCoordinates(), pCoordinates, iDimensions * sizeof(double));
 }
 
-/** Returns coordinates of tract. */
-double * TractDescriptor::GetCoordinates(double* pCoordinates, const TractHandler & theTractHandler) const {
-  try {
-    if (! pCoordinates)
-      ZdGenerateException("Null pointer.","GetCoordinates(double*)");
-
-    memcpy(pCoordinates, gpCoordinates, theTractHandler.tiGetDimensions() * sizeof(double));
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetCoordinates()","TractDescriptor");
-    throw;
-  }
-  return pCoordinates;
-}
-
 /** Get coordinates of tract. */
 void TractDescriptor::RetrieveCoordinates(TractHandler const & theTractHandler, std::vector<double> & vRepository) const {
   vRepository.resize(theTractHandler.tiGetDimensions());
@@ -260,20 +245,6 @@ void TractHandler::tiConcaticateDuplicateTractIdentifiers() {
   }
 }
 
-/** Returns the tract coords for the given tract_t index.
-    Allocate memory for array - caller is responsible for freeing. */
-void TractHandler::tiGetCoords(tract_t t, double** pCoords) const {
-  try {
-    *pCoords = (double*)Smalloc(nDimensions * sizeof(double));
-    if (0 <= t && t < (tract_t)gvTractDescriptors.size())
-      gvTractDescriptors[t]->GetCoordinates(*pCoords, *this);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("tiGetCoords()", "TractHandler");
-    throw;
-  }
-}
-
 /**
 Get the tract coords for the given tract_t index.
 */
@@ -283,25 +254,15 @@ void TractHandler::tiRetrieveCoords(tract_t t, std::vector<double> & vRepository
   gvTractDescriptors[t]->RetrieveCoordinates(*this, vRepository);
 }
 
-/** Returns the tract coords for the given tract_t index. */
-void TractHandler::tiGetCoords2(tract_t t, double* pCoords) const {
-  try {
-    if (0 <= t || t < (tract_t)gvTractDescriptors.size())
-      gvTractDescriptors[t]->GetCoordinates(pCoords, *this);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("tiGetCoords2()", "TractHandler");
-    throw;
-  }
-}
-
 /** Compute distance squared between 2 tracts. */
-double TractHandler::tiGetDistanceSq(double* pCoords, double* pCoords2) const {
-  int           i;
+double TractHandler::tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) const {
   double        dDistanceSquared=0;
 
-  for (i=0; i < nDimensions; i++)
-     dDistanceSquared += (pCoords[i] - pCoords2[i]) * (pCoords[i] - pCoords2[i]);
+  if (vFirstPoint.size() != vSecondPoint.size())
+    ZdGenerateException("First point has %u coordinates and second point has %u.", "tiGetDistanceSq()", vFirstPoint.size(), vSecondPoint.size());
+
+  for (size_t i=0; i < vFirstPoint.size(); ++i)
+     dDistanceSquared += (vFirstPoint[i] - vSecondPoint[i]) * (vFirstPoint[i] - vSecondPoint[i]);
 
   return dDistanceSquared;
 }
