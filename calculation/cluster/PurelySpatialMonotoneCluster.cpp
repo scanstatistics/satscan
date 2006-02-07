@@ -207,71 +207,62 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
 
 /** Prints cartesian coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double      * pCoords=0, * pCoords2=0;
-  float         nRadius;
-  int           i;
-  ZdString      sBuffer, sWork;
+  std::vector<double>   vCoordinates, vCoodinatesOfStep;
+  float                 nRadius;
+  ZdString              sBuffer, sWork;
 
   try {
-    Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
+    Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
     PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
-    for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
-       sWork.printf("%s%g,", (i == 0 ? "(" : "" ), pCoords[i]);
+    for (size_t t=0; t < vCoordinates.size() - 1; ++t) {
+       sWork.printf("%s%g,", (t == 0 ? "(" : "" ), vCoordinates[t]);
        sBuffer << sWork;
     }
-    sWork.printf("%g)", pCoords[Data.GetParameters().GetDimensionsOfData() - 1]);
+    sWork.printf("%g)", vCoordinates.back());
     sBuffer << sWork;
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     sBuffer << ZdString::reset;
-    for (i=0; i < m_nSteps; ++i) {
-       Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
-       nRadius = (float)sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2));
-       free(pCoords2);
+    for (int i=0; i < m_nSteps; ++i) {
+       Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), vCoodinatesOfStep);
+       nRadius = (float)sqrt(Data.GetTInfo()->tiGetDistanceSq(vCoordinates, vCoodinatesOfStep));
        sWork.printf("%s%4.2f", (i > 0 ? ", " : ""), nRadius);
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-    free(pCoords);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayCoordinates()","CPSMonotoneCluster");
-    free(pCoords);
-    free(pCoords2);
     throw;
   }
 }
 
 /** Prints latitude/longitude coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double        dRadius, * pCoords=0, * pCoords2=0;
-  int           i;
-  float         Latitude, Longitude;
-  char          cNorthSouth, cEastWest;
-  ZdString      sBuffer, sWork;
+  double                        dRadius, * pCoords2=0;
+  std::vector<double>           vCoordinates, vCoodinatesOfStep;
+  std::pair<double, double>     prLatitudeLongitude;
+  char                          cNorthSouth, cEastWest;
+  ZdString                      sBuffer, sWork;
 
   try {
-    Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
-    ConvertToLatLong(&Latitude, &Longitude, pCoords);
-    Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
-    Longitude >= 0 ? cEastWest = 'W' : cEastWest = 'E';
+    Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
+    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+    prLatitudeLongitude.first >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
+    prLatitudeLongitude.second >= 0 ? cEastWest = 'W' : cEastWest = 'E';
     PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
-    fprintf(fp, "(%.6f %c, %.6f %c)\n", fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest);
+    fprintf(fp, "(%.6f %c, %.6f %c)\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest);
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
-    for (i=0; i < m_nSteps; ++i) {
-      Data.GetTInfo()->tiGetCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), &pCoords2);
-      dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(pCoords, pCoords2))/(2 * EARTH_RADIUS_km));
-      free(pCoords2);
+    for (int i=0; i < m_nSteps; ++i) {
+      Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), vCoodinatesOfStep);
+      dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(vCoordinates, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
       sWork.printf("%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
       sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
-    free(pCoords);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayLatLongCoords()", "CPSMonotoneCluster");
-    free(pCoords);
-    free(pCoords2);
     throw;
   }
 }

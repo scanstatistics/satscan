@@ -374,21 +374,19 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
 
 /** Writes clusters lat/long coordinates in format required by result output file. */
 void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double      * pCoords = 0;
-  float         Latitude, Longitude;
-  char          cNorthSouth, cEastWest;
+  std::vector<double>           vCoordinates;
+  std::pair<double, double>     prLatitudeLongitude;
+  char                          cNorthSouth, cEastWest;
 
   try {
-    Data.GetGInfo()->giGetCoords(m_Center, &pCoords);
-    ConvertToLatLong(&Latitude, &Longitude, pCoords);
-    Latitude >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
-    Longitude >= 0 ? cEastWest = 'E' : cEastWest = 'W';
+    Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
+    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+    prLatitudeLongitude.first >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
+    prLatitudeLongitude.second >= 0 ? cEastWest = 'E' : cEastWest = 'W';
     PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
-    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n", fabs(Latitude), cNorthSouth, fabs(Longitude), cEastWest, GetLatLongRadius());
-    free(pCoords);
+    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest, GetLatLongRadius());
   }
   catch (ZdException &x) {
-    free(pCoords);
     x.AddCallpath("DisplayLatLongCoords()","CCluster");
     throw;
   }
@@ -666,7 +664,7 @@ void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
   if (ClusterDefined()) {
     DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
     DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), vCoordsOfNeighborCluster);
-    m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+    m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
   }  
 }
 
@@ -701,7 +699,7 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
   if (ClusterDefined()) {
     DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
     DataHub.GetTInfo()->tiRetrieveCoords(Neighbors.GetNeighborTractIndex(m_nTracts - 1), vCoordsOfNeighborCluster);
-    m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(&vCoordsOfCluster.begin()[0],&vCoordsOfNeighborCluster.begin()[0]));
+    m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
     m_MostCentralLocation = Neighbors.GetNeighborTractIndex(0);
   }
 }
