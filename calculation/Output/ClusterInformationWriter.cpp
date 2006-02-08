@@ -110,7 +110,12 @@ void ClusterInformationWriter::DefineFields() {
     CreateField(vDataFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     CreateField(vDataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-    CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    //Relative risk field only reported for these probability models
+    //   - relative risk calculation not defined for STP, Exponential, another to be model
+    if (gParameters.GetProbabilityModelType() == POISSON  ||
+        gParameters.GetProbabilityModelType() == BERNOULLI ||
+        gParameters.GetProbabilityModelType() == ORDINAL)
+      CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","ClusterInformationWriter");
@@ -250,6 +255,8 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
       Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
       Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
+      //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
+      //because the relative risk could not be calculated 
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
