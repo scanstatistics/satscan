@@ -33,7 +33,6 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * SET_CATEGORY_FIELD_PART;
       
       const CSaTScanData      & gDataHub;
-      bool                      gbExcludePValueField;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
       DBaseDataFileWriter     * gpDBaseFileDataWriter;
       ZdPointerVector<ZdField>  vDataFieldDefinitions;
@@ -47,7 +46,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       void                      WriteEllipseShape(RecordBuffer& Record, const CCluster& thisCluster) const;
 
   public:
-    ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend=false);
+    ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~ClusterInformationWriter();
     
     void                      Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);

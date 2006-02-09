@@ -32,9 +32,9 @@ const char * ClusterInformationWriter::SET_FIELD_PART             = "_DS";
 const char * ClusterInformationWriter::SET_CATEGORY_FIELD_PART    = "C";
 
 /** class constructor */
-ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend)
+ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
-                gbExcludePValueField(bExcludePValueField), gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0) {
+                gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0) {
   try {
     DefineFields();
     if (gParameters.GetOutputClusterLevelAscii()) {
@@ -99,7 +99,8 @@ void ClusterInformationWriter::DefineFields() {
       if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         CreateField(vFieldDefinitions, TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
-    if (!gbExcludePValueField) CreateField(vFieldDefinitions, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);    
+    CreateField(vFieldDefinitions, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
+        
     //define fields for secondary cluster data file
     uwOffset=0;
     CreateField(vDataFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
@@ -165,7 +166,7 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
       if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
-    if (iNumSimsCompleted > 98)
+    if (iNumSimsCompleted >= 99)
       Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
     Record.GetFieldValue(START_DATE_FLD).AsZdString() = theCluster.GetStartDate(sBuffer, gDataHub);
     Record.GetFieldValue(END_DATE_FLD).AsZdString() = theCluster.GetEndDate(sBuffer, gDataHub);

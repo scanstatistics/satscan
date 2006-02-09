@@ -1130,7 +1130,7 @@ void AnalysisRunner::PrintTopClusters() {
 
     //if creating 'cluster information' files, create record data buffers
     if (gParameters.GetOutputClusterLevelFiles())
-      ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99));
+      ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
 
     //if  no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
@@ -1223,7 +1223,7 @@ void AnalysisRunner::PrintTopSequentialScanCluster() {
         TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
         //print cluster definition to 'cluster information' record buffer
         if (gParameters.GetOutputClusterLevelFiles())
-          ClusterInformationWriter(*gpDataHub, giNumSimsExecuted < 99, giAnalysisCount > 1).Write(TopCluster, 1, giNumSimsExecuted);
+          ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, 1, giNumSimsExecuted);
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles()) {
           LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
