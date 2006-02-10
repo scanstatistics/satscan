@@ -746,10 +746,10 @@ void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnabl
    edtMaxSpatialPercentFile->Enabled = bEnable && rdoSpatialPopulationFile->Checked;
    edtMaxSpatialPercentFile->Color = bEnable && rdoSpatialPopulationFile->Checked ? clWindow : clInactiveBorder;
    lblPercentageOfPopFile->Enabled = bEnable;
-   edtMaxCirclePopulationFilename->Enabled = bEnable;// && rdoSpatialPopulationFile->Checked;
-   edtMaxCirclePopulationFilename->Color = bEnable /* && rdoSpatialPopulationFile->Checked*/ ? clWindow : clInactiveBorder;
-   btnBrowseMaxCirclePopFile->Enabled = bEnable;// && rdoSpatialPopulationFile->Checked;
-   btnImportMaxCirclePopFile->Enabled = bEnable;// && rdoSpatialPopulationFile->Checked;
+   edtMaxCirclePopulationFilename->Enabled = bEnable;
+   edtMaxCirclePopulationFilename->Color = bEnable ? clWindow : clInactiveBorder;
+   btnBrowseMaxCirclePopFile->Enabled = bEnable;
+   btnImportMaxCirclePopFile->Enabled = bEnable;
 
    rdoSpatialDistance->Enabled = bEnable;
    edtMaxSpatialRadius->Enabled = bEnable && rdoSpatialDistance->Checked;
@@ -1308,7 +1308,7 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
 /** Sets default values for Output related tab and respective controls
     PAG:  pulled these default values from the CParameter class */
 void TfrmAdvancedParameters::SetDefaultsForOutputTab() {
-   rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP;
+   rdgCriteriaSecClusters->ItemIndex = NOGEOOVERLAP;
    chkRestrictReportedClusters->Checked = false;
    SetMaxReportedSpatialClusterSizeTypeControl(PERCENTOFPOPULATION);
    edtMaxReportedSpatialClusterSize->Text = "50";
