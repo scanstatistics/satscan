@@ -682,7 +682,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
                       switch (gParameters.GetNonCompactnessPenaltyType()) {
                         case NOPENALTY     : fprintf(fp, "None\n"); break;
                         case MEDIUMPENALTY : fprintf(fp, "Meduim\n"); break;
-                        case FULLPENALTY   : fprintf(fp, "Full\n"); break;
+                        case STRONGPENALTY : fprintf(fp, "Strong\n"); break;
                         default : ZdException::Generate("Unknown non-compactness penalty type '%d'.\n",
                                                          "PrintSpatialWindowParameters()", gParameters.GetNonCompactnessPenaltyType());
                       }

@@ -58,7 +58,7 @@ enum ExecutionType                 {AUTOMATIC=0, SUCCESSIVELY, CENTRICALLY};
 /** spatial window shape */
 enum SpatialWindowType             {CIRCULAR=0, ELLIPTIC};
 /** non-compactness penalty type */
-enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, FULLPENALTY};
+enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, STRONGPENALTY};
 
 class DataSetHandler; /** forward class declaration */
 

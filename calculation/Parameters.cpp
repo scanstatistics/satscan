@@ -837,8 +837,8 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
 /** Set ellipse non-compactness penalty type. */
 void CParameters::SetNonCompactnessPenalty(NonCompactnessPenaltyType eType) {
   try {
-    if (eType < NOPENALTY || eType > FULLPENALTY)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetNonCompactnessPenalty()", eType, NOPENALTY, FULLPENALTY);
+    if (eType < NOPENALTY || eType > STRONGPENALTY)
+      ZdException::Generate("'%d' is out of range(%d - %d).", "SetNonCompactnessPenalty()", eType, NOPENALTY, STRONGPENALTY);
     geNonCompactnessPenaltyType = eType;
   }
   catch (ZdException &x) {
