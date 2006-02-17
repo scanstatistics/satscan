@@ -524,7 +524,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 173
         Width = 425
         Height = 75
-        Caption = 'Window Shape'
+        Caption = 'Spatial Window Shape'
         TabOrder = 2
         object rdoCircular: TRadioButton
           Left = 16
@@ -564,7 +564,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Items.Strings = (
             'None'
             'Medium'
-            'Full')
+            'Strong')
         end
       end
     end
