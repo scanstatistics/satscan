@@ -9,7 +9,7 @@
 #include "AbstractAnalysis.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
-const char * ClusterInformationWriter::CLUSTERDATA_FILE_EXT	  = ".col.dat";
+const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	  = ".cci";
 const char * ClusterInformationWriter::START_DATE_FLD	          = "START_DATE";
 const char * ClusterInformationWriter::END_DATE_FLD	          = "END_DATE";
 const char * ClusterInformationWriter::RADIUS_FIELD	          = "RADIUS";
@@ -26,7 +26,6 @@ const char * ClusterInformationWriter::COORD_Z_FIELD              = "Z";
 const char * ClusterInformationWriter::OBS_FIELD_PART  	          = "OBS";
 const char * ClusterInformationWriter::EXP_FIELD_PART             = "EXP";
 const char * ClusterInformationWriter::OBS_DIV_EXP_FIELD          = "ODE";
-const char * ClusterInformationWriter::__RELATIVE_RISK_FIELD      = "RR";
 const char * ClusterInformationWriter::CATEGORY_FIELD_PART        = "_CAT";
 const char * ClusterInformationWriter::SET_FIELD_PART             = "_DS";
 const char * ClusterInformationWriter::SET_CATEGORY_FIELD_PART    = "C";
@@ -36,15 +35,18 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
                 gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0) {
   try {
-    DefineFields();
-    if (gParameters.GetOutputClusterLevelAscii()) {
+    if (gParameters.GetOutputClusterLevelFiles())
+      DefineClusterInformationFields();
+    if (gParameters.GetOutputClusterCaseFiles())
+      DefineClusterCaseInformationFields();
+    if (gParameters.GetOutputClusterLevelAscii())
       gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
-      gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, CLUSTERDATA_FILE_EXT, bAppend);
-    }
-    if (gParameters.GetOutputClusterLevelDBase()) {
+    if (gParameters.GetOutputClusterCaseAscii())
+      gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, CLUSTERCASE_FILE_EXT, bAppend);
+    if (gParameters.GetOutputClusterLevelDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
-      gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERDATA_FILE_EXT, bAppend);
-    }
+    if (gParameters.GetOutputClusterCaseDBase())
+      gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
   }
   catch (ZdException &x) {
     delete gpASCIIFileWriter;
@@ -63,8 +65,8 @@ ClusterInformationWriter::~ClusterInformationWriter() {
   catch (...){}
 }
 
-/** Defines fields of output file. */
-void ClusterInformationWriter::DefineFields() {
+/** Defines fields of cluster information output file. */
+void ClusterInformationWriter::DefineClusterInformationFields() {
   unsigned short uwOffset=0;
   unsigned int   i;
   ZdString       sBuffer;
@@ -100,14 +102,32 @@ void ClusterInformationWriter::DefineFields() {
         CreateField(vFieldDefinitions, TST_STAT_FIELD, ZD_NUMBER_FLD, 19, 6, uwOffset);
     }
     CreateField(vFieldDefinitions, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
-        
+
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+      CreateField(vFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
+        CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("DefineClusterInformationFields()","ClusterInformationWriter");
+    throw;
+  }
+}
+
+/** Defines fields of ocluster case information utput file. */
+void ClusterInformationWriter::DefineClusterCaseInformationFields() {
+  unsigned short uwOffset=0;
+  unsigned int   i;
+  ZdString       sBuffer;
+
+  try {
     //define fields for secondary cluster data file
-    uwOffset=0;
     CreateField(vDataFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    if (gParameters.GetNumDataSets() > 1)
-      CreateField(vDataFieldDefinitions, DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
-      CreateField(vDataFieldDefinitions, CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(vDataFieldDefinitions, DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+    CreateField(vDataFieldDefinitions, CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     CreateField(vDataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
@@ -146,8 +166,40 @@ ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster&
     pre: pCluster has been initialized with calculated data
     post: function will record the appropriate data into the cluster record   */
 void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
+  try {
+    if (gParameters.GetOutputClusterLevelFiles())
+      WriteClusterInformation(theCluster, iClusterNumber, iNumSimsCompleted);
+    if (gParameters.GetOutputClusterCaseFiles())
+      WriteClusterCaseInformation(theCluster, iClusterNumber);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Write()","ClusterInformationWriter");
+    throw;
+  }
+}
+
+void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber) {
   ZdString          sBuffer;
   RecordBuffer      Record(vFieldDefinitions);
+  double            dRelativeRisk;
+
+  try {
+    //now write to secondary cluster information file
+    if (gParameters.GetProbabilityModelType() == ORDINAL)
+      WriteCountOrdinalData(theCluster, iClusterNumber);
+    else
+      WriteCountData(theCluster, iClusterNumber);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("WriteClusterCaseInformation()","ClusterInformationWriter");
+    throw;
+  }
+}
+
+void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
+  ZdString          sBuffer;
+  RecordBuffer      Record(vFieldDefinitions);
+  double            dRelativeRisk;  
 
   try {
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
@@ -170,16 +222,21 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
       Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
     Record.GetFieldValue(START_DATE_FLD).AsZdString() = theCluster.GetStartDate(sBuffer, gDataHub);
     Record.GetFieldValue(END_DATE_FLD).AsZdString() = theCluster.GetEndDate(sBuffer, gDataHub);
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+      Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
+      Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
+      Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
+      //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
+      //because the relative risk could not be calculated
+      if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
+          (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
+          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
+    }
     if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
     if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
-    //now write to secondary cluster information file
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
-      WriteCountOrdinalData(theCluster, iClusterNumber);
-    else
-      WriteCountData(theCluster, iClusterNumber);
   }
   catch (ZdException &x) {
-    x.AddCallpath("Write()","ClusterInformationWriter");
+    x.AddCallpath("WriteClusterInformation()","ClusterInformationWriter");
     throw;
   }
 }
@@ -249,8 +306,8 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
   for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-    if (gParameters.GetNumDataSets() > 1)
-      Record.GetFieldValue(DATASET_FIELD).AsDouble() = iSetIndex + 1;
+    Record.GetFieldValue(DATASET_FIELD).AsDouble() = iSetIndex + 1;
+    Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = 1;
     itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
     if (itr_Index != vComprisedDataSetIndexes.end()) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
@@ -277,39 +334,42 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
   measure_t                                             tObservedDivExpected;
   double                                                tRelativeRisk;
   RecordBuffer                                          Record(vDataFieldDefinitions);
+  std::vector<unsigned int>                             vComprisedDataSetIndexes;
+  std::vector<unsigned int>::iterator                   itr_Index;
 
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(theCluster.GetClusterData())) == 0)
     ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n","WriteCountOrdinalData()");
 
-  Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-  for (size_t i=0; i < gDataHub.GetDataSetHandler().GetNumDataSets(); ++i) {
-    if (gDataHub.GetDataSetHandler().GetNumDataSets() > 1)
-      Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
+  theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, Calculator, vComprisedDataSetIndexes);
+  for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
     //retrieve ordinal categories in combined state
-    pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, i);
-    //for each combined category                                                 
+    pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, *itr_Index);
+    //for each combined category
     for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
+       Record.SetAllFieldsBlank(true);
+       Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
+       Record.GetFieldValue(DATASET_FIELD).AsDouble() = *itr_Index + 1;
        //calculate observed/expected and relative risk for combined categories
        count_t tObserved=0, tTotalCategoryCases=0;
        measure_t tExpected=0;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
-          tObserved += theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
-          tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
-          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(i).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
+          tObserved += theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
+          tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr_Index).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
+       //record observed/expected cases - categories which were combined will have the same value
        tObservedDivExpected = (tExpected ? (double)tObserved/tExpected  : 0);
+       Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = tObservedDivExpected;
+       //record relative risk - categories which were combined will have the same value
        tRelativeRisk = theCluster.GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases);
+       if (tRelativeRisk != -1 /*indicator of infinity*/)
+         Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = tRelativeRisk;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = itrCategory->GetCategoryIndex(m) + 1;
           //record observed cases - not combining categories
-          Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCountOrdinal(i, itrCategory->GetCategoryIndex(m));
+          Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           //record expected cases - not combining categories
-          Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, i, itrCategory->GetCategoryIndex(m));
-          //record observed/expected cases - categories which were combined will have the same value
-          Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = tObservedDivExpected;
-          //record relative risk - categories which were combined will have the same value
-          if (tRelativeRisk != -1 /*indicator of infinity*/)
-            Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = tRelativeRisk;
+          Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
           if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
           if (gpDBaseFileDataWriter) gpDBaseFileDataWriter->WriteRecord(Record);
        }

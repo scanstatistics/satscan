@@ -10,7 +10,7 @@ class CSaTScanData;   /** forward class declaration */
 class ClusterInformationWriter : public AbstractDataFileWriter {
   protected:
       static const char       * CLUSTER_FILE_EXT;
-      static const char       * CLUSTERDATA_FILE_EXT;
+      static const char       * CLUSTERCASE_FILE_EXT;
       static const char       * START_DATE_FLD;
       static const char       * END_DATE_FLD;
       static const char       * RADIUS_FIELD;
@@ -27,7 +27,6 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * OBS_FIELD_PART;
       static const char       * EXP_FIELD_PART;
       static const char       * OBS_DIV_EXP_FIELD;
-      static const char       * __RELATIVE_RISK_FIELD;
       static const char       * CATEGORY_FIELD_PART;
       static const char       * SET_FIELD_PART;
       static const char       * SET_CATEGORY_FIELD_PART;
@@ -37,8 +36,11 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       DBaseDataFileWriter     * gpDBaseFileDataWriter;
       ZdPointerVector<ZdField>  vDataFieldDefinitions;
 
-      void                      DefineFields();
+      void                      DefineClusterInformationFields();
+      void                      DefineClusterCaseInformationFields();
       ZdString                & GetAreaID(ZdString& sAreaId, const CCluster& thisCluster) const;
+      void                      WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber);
+      void                      WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
       void                      WriteCoordinates(RecordBuffer& Record, const CCluster& pCluster);
       void                      WriteCountData(const CCluster& thisCluster, int iClusterNumber) const;
       void                      WriteCountOrdinalData(const CCluster& thisCluster, int iClusterNumber) const;
@@ -48,8 +50,8 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
   public:
     ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~ClusterInformationWriter();
-    
-    void                      Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
+
+      void                      Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
 };
 //******************************************************************************
 #endif
