@@ -23,7 +23,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_SOURCEFILE, ADJ_BY_RR_FILE, OUTPUT_SIMULATION_DATA,
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
-                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE};
+                                    EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE,
+                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -121,6 +122,8 @@ class CParameters {
                                         gbOutputRelativeRisksDBase;             /** indicates whether to output relative risks for each tract/location in dBase format */
     bool                                gbOutputClusterLevelAscii,              /** indicates whether to output most likely clusters for each centroid in ascii format */
                                         gbOutputClusterLevelDBase;              /** indicates whether to output most likely clusters for each centroid in dBase format */
+    bool                                gbOutputClusterCaseAscii,              /** indicates whether to output most likely cluster cases for each centroid in ascii format */
+                                        gbOutputClusterCaseDBase;               /** indicates whether to output most likely cluster cases for each centroid in dBase format */
     bool                                gbOutputAreaSpecificAscii,              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
                                         gbOutputAreaSpecificDBase;              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
         /* Sequential scans variables */
@@ -240,6 +243,9 @@ class CParameters {
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
     bool                                GetOutputAreaSpecificFiles() const;
+    bool                                GetOutputClusterCaseAscii() const {return gbOutputClusterCaseAscii;}
+    bool                                GetOutputClusterCaseDBase() const {return gbOutputClusterCaseDBase;}
+    bool                                GetOutputClusterCaseFiles() const;
     bool                                GetOutputClusterLevelAscii() const {return gbOutputClusterLevelAscii;}
     bool                                GetOutputClusterLevelDBase() const {return gbOutputClusterLevelDBase;}
     bool                                GetOutputClusterLevelFiles() const;
@@ -321,6 +327,8 @@ class CParameters {
     void                                SetNumSequentialScans(int iNumSequentialScans);
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
     void                                SetOutputAreaSpecificDBase(bool b) {gbOutputAreaSpecificDBase = b;}
+    void                                SetOutputClusterCaseAscii(bool b) {gbOutputClusterCaseAscii = b;}
+    void                                SetOutputClusterCaseDBase(bool b) {gbOutputClusterCaseDBase = b;}
     void                                SetOutputClusterLevelAscii(bool b) {gbOutputClusterLevelAscii = b;}
     void                                SetOutputClusterLevelDBase(bool b) {gbOutputClusterLevelDBase = b;}
     void                                SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);

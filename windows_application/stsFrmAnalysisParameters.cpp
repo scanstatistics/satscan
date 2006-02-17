@@ -1254,6 +1254,8 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetOutputFileName(edtResultFile->Text.c_str());
     gParameters.SetOutputClusterLevelAscii(chkClustersInColumnFormatAscii->Checked);
     gParameters.SetOutputClusterLevelDBase(chkClustersInColumnFormatDBase->Checked);
+    gParameters.SetOutputClusterCaseAscii(chkClusterCaseInColumnFormatAscii->Checked);
+    gParameters.SetOutputClusterCaseDBase(chkClusterCaseInColumnFormatDBase->Checked);
     gParameters.SetOutputAreaSpecificAscii(chkCensusAreasReportedClustersAscii->Checked);
     gParameters.SetOutputAreaSpecificDBase(chkCensusAreasReportedClustersDBase->Checked);
     gParameters.SetOutputRelativeRisksAscii(chkRelativeRiskEstimatesAreaAscii->Enabled && chkRelativeRiskEstimatesAreaAscii->Checked);
@@ -1475,6 +1477,8 @@ void TfrmAnalysis::SetupInterface() {
     chkCensusAreasReportedClustersAscii->Checked    = gParameters.GetOutputAreaSpecificAscii();  // Output Census areas in Reported Clusters
     chkClustersInColumnFormatAscii->Checked = gParameters.GetOutputClusterLevelAscii();  // Output Most Likely Cluster for each Centroid
     chkClustersInColumnFormatDBase->Checked = gParameters.GetOutputClusterLevelDBase();
+    chkClusterCaseInColumnFormatAscii->Checked = gParameters.GetOutputClusterCaseAscii();  // Output Most Likely Cluster for each Centroid
+    chkClusterCaseInColumnFormatDBase->Checked = gParameters.GetOutputClusterCaseDBase();
     chkCensusAreasReportedClustersDBase->Checked = gParameters.GetOutputAreaSpecificDBase();
     EnableSettingsForAnalysisModelCombination();
     EnableAdvancedButtons();

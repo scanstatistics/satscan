@@ -131,6 +131,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case LOG_HISTORY              : return " log analysis run to history file? (y/n)";
       case SUPPRESS_WARNINGS        : return " suppressing warnings? (y/n)";
       case MAX_REPORTED_SPATIAL_TYPE: return " how max spatial size should be interpretted for reported clusters (0=Percentage, 1=Distance, 2=Percentage of max circle population file)";
+      case OUTPUT_MLC_CASE_ASCII    : return " output cluster case information in ASCII format? (y/n)";
+      case OUTPUT_MLC_CASE_DBASE    : return " output cluster case information in dBase format? (y/n)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -192,7 +194,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
                                       return s;
       case START_PROSP_SURV         : s = gParameters.GetProspectiveStartDate().c_str(); return s;
       case OUTPUT_AREAS_ASCII       : return AsString(s, gParameters.GetOutputAreaSpecificAscii());
-      case OUTPUT_MLC_ASCII         : return AsString(s, gParameters.GetOutputAreaSpecificAscii());
+      case OUTPUT_MLC_ASCII         : return AsString(s, gParameters.GetOutputClusterLevelAscii());
       case CRITERIA_SECOND_CLUSTERS : return AsString(s, gParameters.GetCriteriaSecondClustersType());
       case MAX_TEMPORAL_TYPE        : return AsString(s, gParameters.GetMaximumTemporalClusterSizeType());
       case MAX_SPATIAL_TYPE         : return AsString(s, gParameters.GetMaxGeographicClusterSizeType());
@@ -228,6 +230,8 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case LOG_HISTORY              : return AsString(s, gParameters.GetIsLoggingHistory());
       case SUPPRESS_WARNINGS        : return AsString(s, gParameters.GetSuppressingWarnings());
       case MAX_REPORTED_SPATIAL_TYPE: return AsString(s, gParameters.GetMaxReportedGeographicClusterSizeType());
+      case OUTPUT_MLC_CASE_ASCII    : return AsString(s, gParameters.GetOutputClusterCaseAscii());
+      case OUTPUT_MLC_CASE_DBASE    : return AsString(s, gParameters.GetOutputClusterCaseDBase());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -323,6 +327,8 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case LOG_HISTORY              : sDefaultValue = (gParameters.GetIsLoggingHistory() ? "y" : "n"); break;
       case SUPPRESS_WARNINGS        : sDefaultValue = (gParameters.GetSuppressingWarnings() ? "y" : "n"); break;
       case MAX_REPORTED_SPATIAL_TYPE: sDefaultValue = gParameters.GetMaxReportedGeographicClusterSizeType(); break;
+      case OUTPUT_MLC_CASE_ASCII    : sDefaultValue = (gParameters.GetOutputClusterCaseAscii() ? "y" : "n"); break;
+      case OUTPUT_MLC_CASE_DBASE    : sDefaultValue = (gParameters.GetOutputClusterCaseDBase() ? "y" : "n"); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -695,6 +701,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case SUPPRESS_WARNINGS         : gParameters.SetSuppressingWarnings(ReadBoolean(sParameter, eParameterType)); break;
       case MAX_REPORTED_SPATIAL_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
                                        gParameters.SetMaximumReportedSpatialClusterSizeType((SpatialSizeType)iValue); break;
+      case OUTPUT_MLC_CASE_ASCII     : gParameters.SetOutputClusterCaseAscii(ReadBoolean(sParameter, eParameterType)); break;
+      case OUTPUT_MLC_CASE_DBASE     : gParameters.SetOutputClusterCaseDBase(ReadBoolean(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

@@ -473,14 +473,19 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     if (gParameters.GetOutputClusterLevelAscii()) {
       AdditionalOutputFile.SetExtension(".col.txt");
       fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
-      AdditionalOutputFile.SetExtension(".col.dat.txt");
-      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
     }
     if (gParameters.GetOutputClusterLevelDBase()) {
       AdditionalOutputFile.SetExtension(".col.dbf");
       fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
-      AdditionalOutputFile.SetExtension(".col.dat.dbf");
-      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
+    }
+    // cluster case information files
+    if (gParameters.GetOutputClusterCaseAscii()) {
+      AdditionalOutputFile.SetExtension(".cci.txt");
+      fprintf(fp, "  Cluster Case File     : %s\n", AdditionalOutputFile.GetFullPath());
+    }
+    if (gParameters.GetOutputClusterCaseDBase()) {
+      AdditionalOutputFile.SetExtension(".cci.dbf");
+      fprintf(fp, "  Cluster Case File     : %s\n", AdditionalOutputFile.GetFullPath());
     }
     // area specific files
     if (gParameters.GetOutputAreaSpecificAscii()) {

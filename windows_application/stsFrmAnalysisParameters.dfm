@@ -903,7 +903,7 @@ object frmAnalysis: TfrmAnalysis
         Left = 8
         Top = 59
         Width = 477
-        Height = 153
+        Height = 182
         Caption = 'Optional Output Files:'
         TabOrder = 1
         object lblClustersInColumnFormat: TLabel
@@ -915,21 +915,21 @@ object frmAnalysis: TfrmAnalysis
         end
         object lblCensusAreasReportedClusters: TLabel
           Left = 16
-          Top = 72
+          Top = 96
           Width = 96
           Height = 13
           Caption = 'Location Information'
         end
         object lblRelativeRiskEstimatesArea: TLabel
           Left = 16
-          Top = 96
+          Top = 120
           Width = 156
           Height = 13
           Caption = 'Risk Estimates for Each Location'
         end
         object lblSimulatedLogLikelihoodRatios: TLabel
           Left = 16
-          Top = 120
+          Top = 144
           Width = 222
           Height = 13
           Caption = 'Simulated Log Likelihood Ratios/Test Statistics'
@@ -960,9 +960,16 @@ object frmAnalysis: TfrmAnalysis
           Font.Style = [fsUnderline]
           ParentFont = False
         end
+        object lblClusterCaseInColumnFormat: TLabel
+          Left = 16
+          Top = 72
+          Width = 114
+          Height = 13
+          Caption = 'Cluster Case Information'
+        end
         object chkCensusAreasReportedClustersAscii: TCheckBox
           Left = 344
-          Top = 72
+          Top = 96
           Width = 16
           Height = 17
           ParentShowHint = False
@@ -983,7 +990,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkRelativeRiskEstimatesAreaAscii: TCheckBox
           Left = 344
-          Top = 96
+          Top = 120
           Width = 16
           Height = 17
           ParentShowHint = False
@@ -992,7 +999,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkSimulatedLogLikelihoodRatiosAscii: TCheckBox
           Left = 344
-          Top = 120
+          Top = 144
           Width = 16
           Height = 17
           TabOrder = 6
@@ -1008,7 +1015,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkCensusAreasReportedClustersDBase: TCheckBox
           Left = 414
-          Top = 72
+          Top = 96
           Width = 16
           Height = 17
           BiDiMode = bdLeftToRight
@@ -1017,17 +1024,35 @@ object frmAnalysis: TfrmAnalysis
         end
         object chkRelativeRiskEstimatesAreaDBase: TCheckBox
           Left = 414
-          Top = 96
+          Top = 120
           Width = 16
           Height = 17
           TabOrder = 5
         end
         object chkSimulatedLogLikelihoodRatiosDBase: TCheckBox
           Left = 414
-          Top = 120
+          Top = 144
           Width = 16
           Height = 17
           TabOrder = 7
+        end
+        object chkClusterCaseInColumnFormatAscii: TCheckBox
+          Left = 344
+          Top = 72
+          Width = 16
+          Height = 17
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 8
+        end
+        object chkClusterCaseInColumnFormatDBase: TCheckBox
+          Left = 414
+          Top = 72
+          Width = 16
+          Height = 17
+          BiDiMode = bdLeftToRight
+          ParentBiDiMode = False
+          TabOrder = 9
         end
       end
       object pnlTop: TPanel

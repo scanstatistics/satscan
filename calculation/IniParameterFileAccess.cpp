@@ -358,6 +358,8 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_AREAS_DBASE, GetParameterString(OUTPUT_AREAS_DBASE, s), GetParameterComment(OUTPUT_AREAS_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, GetParameterString(OUTPUT_MLC_ASCII, s), GetParameterComment(OUTPUT_MLC_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s), GetParameterComment(OUTPUT_MLC_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteOutputSettings()","IniParameterFileAccess");

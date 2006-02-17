@@ -283,6 +283,8 @@ void IniParameterSpecification::Build_6_1_x_ParameterList() {
   gvParameterInfo[NON_COMPACTNESS_PENALTY - 1] = std::make_pair(SpatialWindow, (const char*)"NonCompactnessPenalty");
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"SuppressWarnings"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"MaxReportedSpatialSizeInterpretation"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"MostLikelyClusterCaseInfoEachCentroidASCII"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"MostLikelyClusterCaseInfoEachCentroidDBase"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

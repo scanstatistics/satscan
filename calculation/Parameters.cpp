@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 75;
+const int CParameters::giNumParameters 	              = 77;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -115,6 +115,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (giNumRequestedParallelProcesses        != rhs.giNumRequestedParallelProcesses) return false;
   if (gbSuppressWarnings                     != rhs.gbSuppressWarnings) return false;
   if (geMaxReportedGeographicClusterSizeType != rhs.geMaxReportedGeographicClusterSizeType) return false;
+  if (gbOutputClusterCaseAscii               != rhs.gbOutputClusterCaseAscii) return false;
+  if (gbOutputClusterCaseDBase               != rhs.gbOutputClusterCaseDBase) return false;
   return true;
 }
 
@@ -252,6 +254,8 @@ void CParameters::Copy(const CParameters &rhs) {
     giNumRequestedParallelProcesses        = rhs.giNumRequestedParallelProcesses;
     gbSuppressWarnings                     = rhs.gbSuppressWarnings;
     geMaxReportedGeographicClusterSizeType = rhs.geMaxReportedGeographicClusterSizeType;    
+    gbOutputClusterCaseAscii               = rhs.gbOutputClusterCaseAscii;
+    gbOutputClusterCaseDBase               = rhs.gbOutputClusterCaseDBase;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -350,6 +354,11 @@ unsigned int CParameters::GetNumParallelProcessesToExecute() const {
 /** Returns whether any area specific files are outputed. */
 bool CParameters::GetOutputAreaSpecificFiles() const  {
   return gbOutputAreaSpecificAscii || gbOutputAreaSpecificDBase;
+}
+
+/** Returns whether any cluster case files are outputed. */
+bool CParameters::GetOutputClusterCaseFiles() const {
+  return gbOutputClusterCaseAscii || gbOutputClusterCaseDBase;
 }
 
 /** Returns whether any cluster level files are outputed. */
@@ -692,6 +701,8 @@ void CParameters::SetAsDefaulted() {
   giNumRequestedParallelProcesses          = 0;
   gbSuppressWarnings                       = false;
   geMaxReportedGeographicClusterSizeType   = PERCENTOFPOPULATION;
+  gbOutputClusterCaseAscii                 = false;
+  gbOutputClusterCaseDBase                 = false;
 }
 
 /** Sets dimensions of input data. */
