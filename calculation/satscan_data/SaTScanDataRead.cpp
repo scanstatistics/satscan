@@ -297,7 +297,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
            gPrint.Printf("Error: Record %ld in the coordinates file contains %d dimension%s but the\n"
                          "       first record defined the number of dimensions as %d.\n", BasePrint::P_READERROR,
-                         gParameters.GetDimensionsOfData(), Parser.GetReadCount(), iScanCount, (iScanCount == 1 ? "" : "s"));
+                         Parser.GetReadCount(), iScanCount, (iScanCount == 1 ? "" : "s"), gParameters.GetDimensionsOfData());
            bValid = false;
            continue;
          }
