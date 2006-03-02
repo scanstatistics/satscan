@@ -11,10 +11,10 @@ class CPSMonotoneCluster : public CCluster {
 
   protected:
     tract_t                     m_nMaxCircles;        // Maximum number of circles possible
-    count_t                   * m_pCasesList;         // Number of cases in each circle
-    measure_t                 * m_pMeasureList;       // Expected count for each circle
-    tract_t                   * m_pFirstNeighborList; // 1st neighbor in circle
-    tract_t                   * m_pLastNeighborList;  // Last neighbor in circle
+    std::vector<count_t>        gvCasesList;          // Number of cases in each circle
+    std::vector<measure_t>      gvMeasureList;        // Expected count for each circle
+    std::vector<tract_t>        gvFirstNeighborList;  // 1st neighbor in circle
+    std::vector<tract_t>        gvLastNeighborList;   // Last neighbor in circle
     bool                        m_bRatioSet;          // Has the loglikelihood ratio been set?
     count_t                     m_nCases;             // Number of cases in cluster
     measure_t                   m_nMeasure;           // Expected count for cluster
@@ -49,7 +49,6 @@ class CPSMonotoneCluster : public CCluster {
     virtual void                DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
-    virtual void                DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {}
     virtual void                Initialize(tract_t nCenter=0);
     virtual AbstractClusterData * GetClusterData();
@@ -60,7 +59,7 @@ class CPSMonotoneCluster : public CCluster {
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     tract_t                     GetLastCircleIndex() const {return m_nSteps-1;};
     tract_t                     GetNumCircles() const {return m_nSteps;}
-    virtual tract_t             GetNumTractsInnerCircle() const {return m_pLastNeighborList[0];}
+    virtual tract_t             GetNumTractsInnerCircle() const {return gvLastNeighborList.at(0);}
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return m_nCases;}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     double                      GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const;

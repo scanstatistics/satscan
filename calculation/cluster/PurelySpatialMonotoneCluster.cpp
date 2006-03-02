@@ -8,71 +8,44 @@
 /** class constructor - const AbstractDataSetGateway */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const AbstractDataSetGateway & DataGateway, int iRate)
-                   :CCluster() {
-  m_nMaxCircles        = 0;
-  m_pCasesList         = 0;
-  m_pMeasureList       = 0;
-  m_pFirstNeighborList = 0;
-  m_pLastNeighborList  = 0;
-  Initialize(0);
-}
+                   :CCluster(), m_nMaxCircles(0), m_bRatioSet(false), m_nCases(0), m_nMeasure(0), m_nSteps(0), m_nLogLikelihood(0) {}
 
 /** class constructor - const DataSetInterface */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const DataSetInterface & Interface, int iRate)
-                   :CCluster() {
-  m_nMaxCircles        = 0;
-  m_pCasesList         = 0;
-  m_pMeasureList       = 0;
-  m_pFirstNeighborList = 0;
-  m_pLastNeighborList  = 0;
+                   :CCluster(), m_nMaxCircles(0), m_bRatioSet(false), m_nCases(0), m_nMeasure(0), m_nSteps(0), m_nLogLikelihood(0) {
   Initialize(0);
 }
 
 /** class copy constructor */
-CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs) : CCluster(rhs) {
+CPSMonotoneCluster::CPSMonotoneCluster(const CPSMonotoneCluster& rhs)
+                   :CCluster(rhs), m_nMaxCircles(0), m_bRatioSet(false), m_nCases(0), m_nMeasure(0), m_nSteps(0), m_nLogLikelihood(0) {
   *this = rhs;
 }
 
 /** class destructor */
-CPSMonotoneCluster::~CPSMonotoneCluster() {
-  try {
-    free(m_pCasesList);
-    free(m_pMeasureList);
-    free(m_pFirstNeighborList);
-    free(m_pLastNeighborList);
-  }
-  catch (...){}
-}
+CPSMonotoneCluster::~CPSMonotoneCluster() {}
 
 /** overloaded assigment operator */
 CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs) {
   try {
-    m_Center         = rhs.m_Center;
+    m_Center              = rhs.m_Center;
     m_MostCentralLocation = rhs.m_MostCentralLocation;
-    m_nCases         = rhs.m_nCases;
-    m_nMeasure       = rhs.m_nMeasure;
-    m_nTracts        = rhs.m_nTracts;
-    m_nRatio         = rhs.m_nRatio;
-    m_nLogLikelihood = rhs.m_nLogLikelihood;
-    m_nRank          = rhs.m_nRank;
-    m_nFirstInterval = rhs.m_nFirstInterval;
-    m_nLastInterval  = rhs.m_nLastInterval;
-    m_nSteps         = rhs.m_nSteps;
-    m_bRatioSet      = rhs.m_bRatioSet;
-    m_nMaxCircles    = rhs.m_nSteps;
-    free(m_pCasesList);
-    m_pCasesList = (count_t*)Smalloc(rhs.m_nSteps * sizeof(count_t));
-    memcpy(m_pCasesList, rhs.m_pCasesList, rhs.m_nMaxCircles * sizeof(count_t));
-    free(m_pMeasureList);
-    m_pMeasureList = (measure_t*)Smalloc(rhs.m_nSteps * sizeof(measure_t));
-    memcpy(m_pMeasureList, rhs.m_pMeasureList, rhs.m_nMaxCircles * sizeof(measure_t));
-    free(m_pFirstNeighborList);
-    m_pFirstNeighborList = (tract_t*)Smalloc(rhs.m_nSteps * sizeof(tract_t));
-    memcpy(m_pFirstNeighborList, rhs.m_pFirstNeighborList, rhs.m_nMaxCircles * sizeof(tract_t));
-    free(m_pLastNeighborList);
-    m_pLastNeighborList = (tract_t*)Smalloc(rhs.m_nSteps * sizeof(tract_t));
-    memcpy(m_pLastNeighborList, rhs.m_pLastNeighborList, rhs.m_nMaxCircles * sizeof(tract_t));
+    m_nCases              = rhs.m_nCases;
+    m_nMeasure            = rhs.m_nMeasure;
+    m_nTracts             = rhs.m_nTracts;
+    m_nRatio              = rhs.m_nRatio;
+    m_nLogLikelihood      = rhs.m_nLogLikelihood;
+    m_nRank               = rhs.m_nRank;
+    m_nFirstInterval      = rhs.m_nFirstInterval;
+    m_nLastInterval       = rhs.m_nLastInterval;
+    m_nSteps              = rhs.m_nSteps;
+    m_bRatioSet           = rhs.m_bRatioSet;
+    m_nMaxCircles         = rhs.m_nSteps;
+    gvCasesList           = rhs.gvCasesList;
+    gvMeasureList         = rhs.gvMeasureList;
+    gvFirstNeighborList   = rhs.gvFirstNeighborList;
+    gvLastNeighborList    = rhs.gvLastNeighborList;
   }
   catch (ZdException &x) {
     x.AddCallpath("operator=","CPSMonotoneCluster");
@@ -91,28 +64,28 @@ void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, cou
   m_nCases   += pCases[0][nNeighbor];
   m_nMeasure += pMeasure[nNeighbor];
 
-  m_pCasesList[m_nSteps-1]         = pCases[0][nNeighbor];
-  m_pMeasureList[m_nSteps-1]       = pMeasure[nNeighbor];
-  m_pFirstNeighborList[m_nSteps-1] = n;
-  m_pLastNeighborList[m_nSteps-1]  = n;
+  gvCasesList.at(m_nSteps-1) = pCases[0][nNeighbor];
+  gvMeasureList.at(m_nSteps-1) = pMeasure[nNeighbor];
+  gvFirstNeighborList.at(m_nSteps-1) = n;
+  gvLastNeighborList.at(m_nSteps-1) = n;
 }
 
 /** no documentation */
 void CPSMonotoneCluster::AddRemainder(count_t nTotalCases, measure_t nTotalMeasure) {
   m_nSteps++;
 
-  m_pCasesList[m_nSteps-1]   = nTotalCases - m_nCases;
-  m_pMeasureList[m_nSteps-1] = nTotalMeasure - m_nMeasure;
+  gvCasesList.at(m_nSteps-1) = nTotalCases - m_nCases;
+  gvMeasureList.at(m_nSteps-1) = nTotalMeasure - m_nMeasure;
 }
 
 /** Allocates internal structures for number of circles in spatial cluster. */
 void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles) {
   try {
     m_nMaxCircles        = nCircles;
-    m_pCasesList         = (count_t*)  Smalloc(m_nMaxCircles * sizeof(count_t));
-    m_pMeasureList       = (measure_t*)Smalloc(m_nMaxCircles * sizeof(measure_t));
-    m_pFirstNeighborList = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t));
-    m_pLastNeighborList  = (tract_t*)  Smalloc(m_nMaxCircles * sizeof(tract_t));
+    gvCasesList.resize(m_nMaxCircles);
+    gvMeasureList.resize(m_nMaxCircles);
+    gvFirstNeighborList.resize(m_nMaxCircles);
+    gvLastNeighborList.resize(m_nMaxCircles);
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateForMaxCircles()","CPSMonotoneCluster");
@@ -123,7 +96,7 @@ void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles) {
 /** no documentation */
 void CPSMonotoneCluster::CheckCircle(tract_t n) {
   if (n != 0)
-    if (!m_pfRateOfInterest(m_pCasesList[n-1],m_pMeasureList[n-1], m_pCasesList[n],  m_pMeasureList[n])) {
+    if (!m_pfRateOfInterest(gvCasesList.at(n-1), gvMeasureList.at(n-1), gvCasesList.at(n), gvMeasureList.at(n))) {
       ConcatLastCircles();
       CheckCircle(n-1);
     }
@@ -137,14 +110,14 @@ CPSMonotoneCluster * CPSMonotoneCluster::Clone() const {
 /** no documentation */
 void CPSMonotoneCluster::ConcatLastCircles() {
   m_nSteps--;
-  m_pCasesList[m_nSteps-1]        += m_pCasesList[m_nSteps];
-  m_pMeasureList[m_nSteps-1]      += m_pMeasureList[m_nSteps];
-  m_pLastNeighborList[m_nSteps-1]  = m_pLastNeighborList[m_nSteps];
+  gvCasesList.at(m_nSteps-1) += gvCasesList.at(m_nSteps);
+  gvMeasureList.at(m_nSteps-1) += gvMeasureList.at(m_nSteps);
+  gvLastNeighborList.at(m_nSteps-1) = gvLastNeighborList.at(m_nSteps);
 
-  m_pCasesList[m_nSteps]         = 0;
-  m_pMeasureList[m_nSteps]       = 0;
-  m_pFirstNeighborList[m_nSteps] = 0;
-  m_pLastNeighborList[m_nSteps]  = 0;
+  gvCasesList.at(m_nSteps) = 0;
+  gvMeasureList.at(m_nSteps) = 0;
+  gvFirstNeighborList.at(m_nSteps) = 0;
+  gvLastNeighborList.at(m_nSteps) = 0;
 }
 
 /** no documentation */
@@ -191,12 +164,12 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
   ZdString      sBuffer;
 
   try {
-    PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);
+    PrintFormat.PrintSectionLabel(fp, "Steps in risk function", false, true);
+    fprintf(fp, "%i\n", m_nSteps);
     for (i=0; i < m_nSteps; ++i) {
-       fprintf(fp, "\n");                                                                        
        sBuffer.printf("  Step %i",i + 1);
        PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-       DisplayCensusTractsInStep(fp, Data, m_pFirstNeighborList[i], m_pLastNeighborList[i], PrintFormat);
+       DisplayCensusTractsInStep(fp, Data, gvFirstNeighborList.at(i), gvLastNeighborList.at(i), PrintFormat);
     }
   }
   catch (ZdException &x) {
@@ -224,7 +197,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     sBuffer << ZdString::reset;
     for (int i=0; i < m_nSteps; ++i) {
-       Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), vCoodinatesOfStep);
+       Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
        nRadius = (float)sqrt(Data.GetTInfo()->tiGetDistanceSq(vCoordinates, vCoodinatesOfStep));
        sWork.printf("%s%4.2f", (i > 0 ? ", " : ""), nRadius);
        sBuffer << sWork;
@@ -254,7 +227,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
     fprintf(fp, "(%.6f %c, %.6f %c)\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest);
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     for (int i=0; i < m_nSteps; ++i) {
-      Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, m_pLastNeighborList[i]), vCoodinatesOfStep);
+      Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
       dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(vCoordinates, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
       sWork.printf("%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
       sBuffer << sWork;
@@ -283,12 +256,6 @@ void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iData
     x.AddCallpath("DisplayObservedDivExpected()","CPSMonotoneCluster");
     throw;
   }
-}
-
-/** Prints number of steps to file pointer in ACSII format. */
-void CPSMonotoneCluster::DisplaySteps(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
-  PrintFormat.PrintSectionLabel(fp, "Steps in risk function", false, true);
-  fprintf(fp, "%i\n", m_nSteps);
 }
 
 /** Returns pointer cluster data object - not implemented, throws exception. */
@@ -335,7 +302,7 @@ double CPSMonotoneCluster::GetRatio() const {
 
 /** no documentation */
 double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const {
-  return ((double)(m_pCasesList[nStep]))/(m_pMeasureList[nStep] * DataHub.GetMeasureAdjustment(0));
+  return ((double)(gvCasesList.at(nStep)))/(gvMeasureList.at(nStep) * DataHub.GetMeasureAdjustment(0));
 }
 
 /** returns start date of defined cluster as formated string */
@@ -352,19 +319,19 @@ void CPSMonotoneCluster::Initialize(tract_t nCenter) {
   m_nMeasure = 0;
   m_nLogLikelihood = 0;
   m_nSteps = 0;
-  memset(m_pCasesList, 0, m_nMaxCircles * sizeof(count_t));
-  memset(m_pMeasureList, 0, m_nMaxCircles * sizeof(measure_t));
-  memset(m_pFirstNeighborList, 0, m_nMaxCircles * sizeof(tract_t));
-  memset(m_pLastNeighborList, 0, m_nMaxCircles * sizeof(tract_t));
+  std::fill(gvCasesList.begin(), gvCasesList.end(), 0);
+  std::fill(gvMeasureList.begin(), gvMeasureList.end(), 0);
+  std::fill(gvFirstNeighborList.begin(), gvFirstNeighborList.end(), 0);
+  std::fill(gvLastNeighborList.begin(), gvLastNeighborList.end(), 0);
 }
 
 /** no documentation */
 void CPSMonotoneCluster::RemoveRemainder() {
   m_nSteps--;
-  m_pCasesList[m_nSteps]         = 0;
-  m_pMeasureList[m_nSteps]       = 0;
-  m_pFirstNeighborList[m_nSteps] = 0;
-  m_pLastNeighborList[m_nSteps]  = 0;
+  gvCasesList.at(m_nSteps) = 0;
+  gvMeasureList.at(m_nSteps) = 0;
+  gvFirstNeighborList.at(m_nSteps) = 0;
+  gvLastNeighborList.at(m_nSteps) = 0;
 
   if (m_nSteps==0)
     Initialize(m_Center);
@@ -376,8 +343,8 @@ void CPSMonotoneCluster::SetCasesAndMeasures() {
   m_nMeasure = 0;
 
   for (int i=0; i < m_nSteps; ++i) {
-     m_nCases   += m_pCasesList[i];
-     m_nMeasure += m_pMeasureList[i];
+     m_nCases   += gvCasesList.at(i);
+     m_nMeasure += gvMeasureList.at(i);
   }
 }
 
@@ -386,8 +353,8 @@ double CPSMonotoneCluster::SetLogLikelihood() {
   m_nLogLikelihood = 0;
 
   for (int i=0; i<m_nSteps; i++) {
-    if (m_pCasesList[i] != 0)
-      m_nLogLikelihood += m_pCasesList[i] * log(m_pCasesList[i]/m_pMeasureList[i]);
+    if (gvCasesList.at(i) != 0)
+      m_nLogLikelihood += gvCasesList.at(i) * log(gvCasesList.at(i)/gvMeasureList.at(i));
   }
 
   return m_nLogLikelihood;
@@ -406,7 +373,7 @@ double CPSMonotoneCluster::SetRatio(double nLikelihoodForTotal) {
 void CPSMonotoneCluster::SetTotalTracts() {
   m_nTracts = 0;
   for (int i=0; i < m_nSteps; i++)
-    m_nTracts += m_pLastNeighborList[i] - m_pFirstNeighborList[i] + 1;
+    m_nTracts += gvLastNeighborList.at(i) - gvFirstNeighborList.at(i) + 1;
 }
 
 /** Writes cluster data to passed record buffer. */
@@ -417,7 +384,7 @@ void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter, const 
 
   try {
     for (i=0; i < m_nSteps; ++i) {
-       for (t=m_pFirstNeighborList[i]; t <= m_pLastNeighborList[i]; t++) {
+       for (t=gvFirstNeighborList.at(i); t <= gvLastNeighborList.at(i); t++) {
          tTract = Data.GetNeighbor(m_iEllipseOffset, m_Center, t);
          LocationWriter.Write(*this, Data, iClusterNumber, tTract, iNumSimsCompleted);
        }
