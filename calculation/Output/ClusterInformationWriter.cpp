@@ -302,7 +302,11 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
 
-  theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+  if (theCluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || theCluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
+    vComprisedDataSetIndexes.push_back(0);
+  else
+    theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+
   for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
