@@ -64,7 +64,6 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
     fprintf(fp, "%u.", iReportedCluster);
     DisplayCensusTracts(fp, DataHub, PrintFormat);
-    DisplaySteps(fp, PrintFormat);
     if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
       DisplayCoordinates(fp, DataHub, PrintFormat);
     else
@@ -299,7 +298,13 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
 
   DisplayPopulation(fp, DataHub, PrintFormat);
-  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+
+  if (GetClusterType() == PURELYSPATIALMONOTONECLUSTER || GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
+    vComprisedDataSetIndexes.push_back(0);
+  else
+    GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+
+
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (DataHub.GetDataSetHandler().GetNumDataSets() > 1) {
