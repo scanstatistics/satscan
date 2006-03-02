@@ -83,8 +83,8 @@ double BernoulliLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonoton
   measure_t u;
 
   for (int i=0; i < PSMCluster.m_nSteps; ++i) {
-     n = PSMCluster.m_pCasesList[i];
-     u = PSMCluster.m_pMeasureList[i];
+     n = PSMCluster.gvCasesList.at(i);
+     u = PSMCluster.gvMeasureList.at(i);
      if (n != 0  && n != u)
        nLogLikelihood += n*log(n/u) + (u-n)*log(1-(n/u));
      else if (n == 0)

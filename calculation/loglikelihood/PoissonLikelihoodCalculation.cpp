@@ -48,8 +48,8 @@ double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneC
   double nLogLikelihood=0;
 
   for (int i=0; i < PSMCluster.m_nSteps; i++) {
-     if (PSMCluster.m_pCasesList[i] != 0)
-       nLogLikelihood += PSMCluster.m_pCasesList[i] * log(PSMCluster.m_pCasesList[i]/PSMCluster.m_pMeasureList[i]);
+     if (PSMCluster.gvCasesList.at(i) != 0)
+       nLogLikelihood += PSMCluster.gvCasesList.at(i) * log(PSMCluster.gvCasesList.at(i)/PSMCluster.gvMeasureList.at(i));
   }
   return nLogLikelihood;
 }
