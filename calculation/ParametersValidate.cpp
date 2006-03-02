@@ -32,18 +32,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
         PrintDirection.Printf("Error: Please note that spatial variation in temporal trends analysis is not implemented\n"
                              "       in this version of SaTScan.\n", BasePrint::P_ERROR);
       }
-      if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK && gParameters.GetNumDataSets() > 1) {
+      if (!ValidateMonotoneRisk(PrintDirection))
         bValid = false;
-        PrintDirection.Printf("Error: Multiple data sets are not permitted with isotonic purely spatial analyses.\n", BasePrint::P_ERROR);
-      }
-      if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetRiskType() == MONOTONERISK) {
-        bValid = false;
-        PrintDirection.Printf("Error: Ordinal probablility model does not permit isotonic purely spatial analyses.\n", BasePrint::P_ERROR);
-      }
-      if (gParameters.GetProbabilityModelType() == EXPONENTIAL && gParameters.GetRiskType() == MONOTONERISK) {
-        bValid = false;
-        PrintDirection.Printf("Error: Exponential probablility model does not permit isotonic purely spatial analyses.\n", BasePrint::P_ERROR);
-      }
       if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.GetNumDataSets() > 1) {
         bValid = false;
         PrintDirection.Printf("Error: Multiple data sets are not permitted with the normal probablility model\n"
@@ -496,6 +486,32 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
     throw;
   }
   return true;
+}
+
+bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
+  bool  bReturn=true;
+
+  try {
+    if (gParameters.GetRiskType() == MONOTONERISK) {
+      if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
+        bReturn = false;
+        PrintDirection.Printf("Error: The isotonic scan is implemented only for the purely spatial analysis.\n", BasePrint::P_ERROR);
+      }
+      if (gParameters.GetNumDataSets() > 1) {
+        bReturn = false;
+        PrintDirection.Printf("Error: Multiple data sets are not permitted with isotonic scan in this version of SaTScan.\n", BasePrint::P_ERROR);
+      }
+      if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
+        bReturn = false;
+        PrintDirection.Printf("Error: The isotonic scan is implemented for only the Poisson and Bernoulli models.\n", BasePrint::P_ERROR);
+      }
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateMonotoneRisk()","ParametersValidate");
+    throw;
+  }
+  return bReturn;
 }
 
 /** Validates power calculation parameters.
