@@ -59,7 +59,6 @@ class CPSMonotoneCluster : public CCluster {
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     tract_t                     GetLastCircleIndex() const {return m_nSteps-1;};
     tract_t                     GetNumCircles() const {return m_nSteps;}
-    virtual tract_t             GetNumTractsInnerCircle() const {return gvLastNeighborList.at(0);}
     virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return m_nCases;}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     double                      GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const;
