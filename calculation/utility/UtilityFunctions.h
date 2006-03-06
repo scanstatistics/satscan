@@ -38,6 +38,7 @@ class StringParser {
 
     void                        ClearWordIndex() {gwCurrentWordIndex=-1;}
     void                        ThrowAsciiException();
+    void                        ThrowUnicodeException();
 
   public:
     StringParser(BasePrint& Print);

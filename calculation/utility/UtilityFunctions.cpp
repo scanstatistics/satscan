@@ -172,9 +172,15 @@ StringParser::~StringParser(){
 }
 
 void StringParser::ThrowAsciiException() {
-  GenerateResolvableException("Error: The %s contains data that are not ASCII formatted.\n"
+  GenerateResolvableException("Error: The %s contains data that is not ASCII formatted.\n"
                               "       Please see 'ASCII Input File Format' in the user guide for help.\n",
-                              "CheckIsASCII()", gPrint.GetImpliedFileTypeString().c_str());
+                              "ThrowAsciiException()", gPrint.GetImpliedFileTypeString().c_str());
+}
+
+void StringParser::ThrowUnicodeException() {
+  GenerateResolvableException("Error: The %s contains data that is Unicode formatted.\n"
+                              "       Please see 'ASCII Input File Format' in the user guide for help.\n",
+                              "ThrowUnicodeException()", gPrint.GetImpliedFileTypeString().c_str());
 }
 
 /** Returns whether string has words. */
@@ -237,7 +243,12 @@ const char * StringParser::GetWord(short wWordIndex) {
   cp = gpWord;
   //check that word is ascii characters
   while (*cp != '\0') {
-       if (!isascii(*cp))
+       //Attempt to snare files that are ASCII - sometimes users think Word and Excel files will work.
+       //If character is not printable ASCII nor possibly part of the extended set, which contains characters
+       //common to other languages such as: á or ü, then throw exception. Note that premitting all of the
+       //extended set does permit the original problem to possibly creep back in but we'd rather have that than
+       //prevent user from using a data file where there really isn't a problem.
+       if (!(isprint(*cp) || (unsigned char)(*cp) > 127))
          ThrowAsciiException();
        ++cp;
   }
@@ -248,6 +259,23 @@ const char * StringParser::GetWord(short wWordIndex) {
 /** Reads a string from file and resets class variables. */
 const char * StringParser::ReadString(FILE * pSourceFile) {
   ClearWordIndex();
+
+  //if first record, check that file is not unicode
+  if (!glReadCount) {
+    // Get the byte-order mark, if there is one
+    byte bom[4];
+    fread(bom, sizeof(byte), 4, pSourceFile);
+    //Since we don't know what the endian was on the machine that created the file we
+    //are reading, we'll need to check both ways.
+
+    if ((bom[0] == 0xef && bom[1] == 0xbb && bom[2] == 0xbf) ||             // utf-8
+        (bom[0] == 0 && bom[1] == 0 && bom[2] == 0xfe && bom[3] == 0xff) || // UTF-32, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe && bom[2] == 0 && bom[3] == 0) || // UTF-32, little-endian
+        (bom[0] == 0xfe && bom[1] == 0xff) ||                               // UTF-16, big-endian
+        (bom[0] == 0xff && bom[1] == 0xfe))                                 // UTF-16, little-endian
+      ThrowUnicodeException();
+    fseek(pSourceFile, SEEK_SET, 0);
+  }
   ++glReadCount;
   return fgets(gsReadBuffer, MAX_LINESIZE, pSourceFile);
 }
