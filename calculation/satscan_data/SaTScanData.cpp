@@ -740,10 +740,12 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
            // Remove observed and expected cases for location from data set
            tTotalCases = DataSet.GetTotalCases();
            tTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
+           gtTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
            DataSet.GetCaseArray()[0][tTractIndex] = 0;
            DataSet.SetTotalCases(tTotalCases);
            tTotalMeasure = DataSet.GetTotalMeasure();
            tTotalMeasure -= DataSet.GetMeasureArray()[0][tTractIndex];
+           gtTotalMeasure -= DataSet.GetMeasureArray()[0][tTractIndex];
            DataSet.GetMeasureArray()[0][tTractIndex] = 0;
            DataSet.SetTotalMeasure(tTotalMeasure);
            break;
@@ -757,6 +759,7 @@ void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
            tTotalCases = DataSet.GetTotalCases();
            for (size_t t=0; t < DataSet.GetCasesByCategory().size(); ++t) {
               tTotalCases -= DataSet.GetCategoryCaseArray(t)[0][tTractIndex];
+              gtTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
               //$$ NOTE: Depending on what information is to be printed for results, it might be
               //$$       necessary to store the initial number of category cases separately.
               thisPopulation.RemoveOrdinalCategoryCases(t, DataSet.GetCategoryCaseArray(t)[0][tTractIndex]);
