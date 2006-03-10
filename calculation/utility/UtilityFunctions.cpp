@@ -263,8 +263,8 @@ const char * StringParser::ReadString(FILE * pSourceFile) {
   //if first record, check that file is not unicode
   if (!glReadCount) {
     // Get the byte-order mark, if there is one
-    byte bom[4];
-    fread(bom, sizeof(byte), 4, pSourceFile);
+    unsigned char bom[4];
+    fread(bom, sizeof(unsigned char), 4, pSourceFile);
     //Since we don't know what the endian was on the machine that created the file we
     //are reading, we'll need to check both ways.
 
