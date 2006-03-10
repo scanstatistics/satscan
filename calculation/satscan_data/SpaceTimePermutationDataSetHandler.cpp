@@ -173,6 +173,9 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp,
          if (Parser.HasWords()) {
            bEmpty = false;
            if (ParseCountLine(DataSet.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {
+              //Ensure that category case array is allocated for this category. In the future, we might want
+              //to look into suppress categories with no cases.
+              ppCategoryCounts = DataSet.GetCategoryCaseArray(iCategoryIndex, true);
               if (Count > 0) {//ignore records that specify a count of zero
                 //cumulatively add count to time by location structure
                 ppCounts[0][TractIndex] += Count;
@@ -184,7 +187,6 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp,
                 //record count as a case
                 DataSet.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
                 //record count in structure(s) based upon population category
-                ppCategoryCounts = DataSet.GetCategoryCaseArray(iCategoryIndex, true);
                 ppCategoryCounts[0][TractIndex] += Count;
                 for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                    ppCategoryCounts[i][TractIndex] += Count;
