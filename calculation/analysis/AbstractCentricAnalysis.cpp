@@ -36,9 +36,11 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
        macroRunTimeStopSerial();
        //perform simulations about current centroid
        CentroidDef.SetMaximumClusterSize_SimulatedData();
-       macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
-       ExecuteSimulationsAboutCentroidDefinition(CentroidDef, vSimDataGateways);
-       macroRunTimeStopSerial();
+       if (gParameters.GetNumReplicationsRequested()) {
+         macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
+         ExecuteSimulationsAboutCentroidDefinition(CentroidDef, vSimDataGateways);
+         macroRunTimeStopSerial();
+       }
     }
     gRetainedClusters.push_back(GetTopCalculatedCluster().Clone());
   }

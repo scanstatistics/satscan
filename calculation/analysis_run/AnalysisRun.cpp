@@ -566,7 +566,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
       DataHandler.GetRandomizerContainer(RandomizationContainer);
       //set data gateway object
       DataHandler.GetDataGateway(*DataSetGateway);
-      gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
+      if (gParameters.GetNumReplicationsRequested())
+        gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
       if (gParameters.GetOutputSimulationData())
         remove(gParameters.GetSimulationDataOutputFilename().c_str());
       //create simulation data sets -- randomize each and set corresponding data gateway object
@@ -657,21 +658,23 @@ void AnalysisRunner::PerformCentric_Parallel() {
       gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
 
       //report calculated simulation llr values
-      if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-      if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
-      std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
-      for (; itr != itr_end; ++itr) {
-        //update most likely clusters given latest simulated loglikelihood ratio
-        gTopClustersContainer.UpdateTopClustersRank(*itr);
-        //update significance indicator
-        UpdateSignificantRatiosList(*itr);
-        //update power calculations
-        UpdatePowerCounts(*itr);
-        //update simulated loglikelihood record buffer
-        if(RatioWriter.get()) RatioWriter->Write(*itr);
-      }
-      SimulationRatios.reset();
+      if (SimulationRatios) {
+        if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
+        if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+          RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+        std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+        for (; itr != itr_end; ++itr) {
+          //update most likely clusters given latest simulated loglikelihood ratio
+          gTopClustersContainer.UpdateTopClustersRank(*itr);
+          //update significance indicator
+          UpdateSignificantRatiosList(*itr);
+          //update power calculations
+          UpdatePowerCounts(*itr);
+          //update simulated loglikelihood record buffer
+          if(RatioWriter.get()) RatioWriter->Write(*itr);
+        }
+        SimulationRatios.reset();
+      }  
       //report clusters
       UpdateReport();
       //log history for first analysis run
@@ -739,7 +742,8 @@ void AnalysisRunner::PerformCentric_Serial() {
       //set data gateway object
       DataHandler.GetDataGateway(*DataSetGateway);
 
-      gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
+      if (gParameters.GetNumReplicationsRequested())
+        gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
       if (gParameters.GetOutputSimulationData())
         remove(gParameters.GetSimulationDataOutputFilename().c_str());
       //create simulation data sets -- randomize each and set corresponding data gateway object
@@ -805,21 +809,23 @@ void AnalysisRunner::PerformCentric_Serial() {
       gTopClustersContainer.RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
 
       //report calculated simulation llr values
-      if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-      if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
-      std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
-      for (; itr != itr_end; ++itr) {
-        //update most likely clusters given latest simulated loglikelihood ratio
-        gTopClustersContainer.UpdateTopClustersRank(*itr);
-        //update significance indicator
-        UpdateSignificantRatiosList(*itr);
-        //update power calculations
-        UpdatePowerCounts(*itr);
-        //update simulated loglikelihood record buffer
-        if(RatioWriter.get()) RatioWriter->Write(*itr);
+      if (SimulationRatios) {
+        if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
+        if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
+          RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+        std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+        for (; itr != itr_end; ++itr) {
+          //update most likely clusters given latest simulated loglikelihood ratio
+          gTopClustersContainer.UpdateTopClustersRank(*itr);
+          //update significance indicator
+          UpdateSignificantRatiosList(*itr);
+          //update power calculations
+          UpdatePowerCounts(*itr);
+          //update simulated loglikelihood record buffer
+          if(RatioWriter.get()) RatioWriter->Write(*itr);
+        }
+        SimulationRatios.reset();
       }
-      SimulationRatios.reset();
       //report clusters
       UpdateReport();
       //log history for first analysis run

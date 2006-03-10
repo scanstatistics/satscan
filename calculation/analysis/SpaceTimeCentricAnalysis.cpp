@@ -96,28 +96,30 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
     if (TopCluster.ClusterDefined())
       gRetainedClusters.push_back(TopCluster.Clone());
 
-    //calculate simulated ratios  
-    ZdPointerVector<AbstractDataSetGateway>::const_iterator  itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
-    std::auto_ptr<AbstractTemporalClusterData>              PTClusterData;
+    //calculate simulated ratios
+    if (gParameters.GetNumReplicationsRequested()) {
+      ZdPointerVector<AbstractDataSetGateway>::const_iterator  itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
+      std::auto_ptr<AbstractTemporalClusterData>              PTClusterData;
 
-    PTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
+      PTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
 
-    if (geReplicationsProcessType == MeasureListEvaluation) {
-      MeasureListContainer_t::iterator  itrMeasureList=gvMeasureLists.begin();
-      //perform simulation about purely temporal data
-      for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrMeasureList) {
-        PTClusterData->Reassociate(*(*itrGateway));
-        macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
-        gTimeIntervals_S->CompareMeasures(*PTClusterData, *(*itrMeasureList));
-        macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+      if (geReplicationsProcessType == MeasureListEvaluation) {
+        MeasureListContainer_t::iterator  itrMeasureList=gvMeasureLists.begin();
+        //perform simulation about purely temporal data
+        for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrMeasureList) {
+          PTClusterData->Reassociate(*(*itrGateway));
+          macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+          gTimeIntervals_S->CompareMeasures(*PTClusterData, *(*itrMeasureList));
+          macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+        }
       }
-    }
-    else {
-      std::vector<double>::iterator  itrLoglikelihoodRatios=gCalculatedRatios->begin();
-      //perform simulation about purely temporal data
-      for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
-        PTClusterData->Reassociate(*(*itrGateway));
-        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeLoglikelihoodRatioClusterData(*PTClusterData));
+      else {
+        std::vector<double>::iterator  itrLoglikelihoodRatios=gCalculatedRatios->begin();
+        //perform simulation about purely temporal data
+        for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
+          PTClusterData->Reassociate(*(*itrGateway));
+          *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeLoglikelihoodRatioClusterData(*PTClusterData));
+        }
       }
     }
   }
