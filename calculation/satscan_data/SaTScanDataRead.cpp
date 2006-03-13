@@ -5,6 +5,7 @@
 #include "SaTScanData.h"
 #include "AdjustmentHandler.h"
 #include "DateStringParser.h"
+#include "SSException.h"
 
 /** Converts passed string specifiying a adjustment file date to a julian date.
     Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
@@ -61,7 +62,7 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(StringParser & Parser, Julian &
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
 bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
-  bool                                  bValid=true, bEmpty=true;
+  bool                                  bValid=true, bRestrictedLocations(!gParameters.UseCoordinatesFile()), bEmpty=true;
   tract_t                               TractIndex, iMaxTract;
   double                                dRelativeRisk;
   Julian                                StartDate, EndDate;
@@ -88,6 +89,14 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
         //read tract identifier
         if (!stricmp(Parser.GetWord(0),"all"))
           TractIndex = -1;
+        else if (bRestrictedLocations) {
+          GenerateResolvableException("Error: When adjusting for known relative risks using the purely temporal analysis\n"
+                                      "       without defining a coordinates file, it is not possible to adjust for known\n"
+                                      "       relative risks at the location level. In order to adjust for known relative\n"
+                                      "       risks at the location level, you must define a coordinates file. Alternatively,\n"
+                                      "       you may want to define known relative risks that apply to all locations.",
+                                      "ReadAdjustmentsByRelativeRisksFile()");
+        }
         else if ((TractIndex = gTractHandler.tiGetTractIndex(Parser.GetWord(0))) == -1) {
           gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
                         "       '%s' not specified in the coordinates file.\n",
@@ -215,6 +224,10 @@ bool CSaTScanData::ReadCoordinatesFile() {
   FILE        * fp=0; // Ptr to coordinates file
 
   try {
+    if (!gParameters.UseCoordinatesFile()) {
+      m_nTotalTractsAtStart = m_nTracts = gTractHandler.tiGetNumTracts();
+      return true;
+    }
     gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
     if ((fp = fopen(gParameters.GetCoordinatesFileName().c_str(), "r")) == NULL) {
       gPrint.Printf("Error: The coordinates file '%s' could not be opened.\n",
