@@ -92,9 +92,11 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   //print study period
   PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
   fprintf(fp,"%s - %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
-  //print number locations scanned
-  PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-  fprintf(fp, "%ld\n", (long) m_nTracts);
+  if (gParameters.UseCoordinatesFile()) {
+    //print number locations scanned
+    PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
+    fprintf(fp, "%ld\n", (long) m_nTracts);
+  }  
   //print total population per data set
   switch (gParameters.GetProbabilityModelType()) {
     //label for data is dependent on probability model
