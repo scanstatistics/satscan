@@ -113,5 +113,18 @@ class CCluster {
     virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
 };
+
+/** Attempts to dynamically cast AbstractClusterData object to class type T.
+    Throws ZdException if cast fails, otherwise returns reference to casted type. */
+template <class T>
+T & GetClusterDataAsType(AbstractClusterData& DataObject) {
+  T * t;
+
+  if ( (t = dynamic_cast<T*>( &DataObject ) ) == 0 )
+    ZdGenerateException("Unable to dynamically cast to type.","GetClusterDataAsType()");
+
+  return *t;
+}
+
 //*****************************************************************************
 #endif
