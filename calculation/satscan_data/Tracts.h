@@ -35,6 +35,7 @@ class TractDescriptor {
     void                                Combine(const TractDescriptor * pCategoryDescriptor, const TractHandler & theTractHandler);
     bool                                CompareCoordinates(const double * pCoordinates, int iDimensions) const;
     bool                                CompareCoordinates(const TractDescriptor & Descriptor, const TractHandler & theTractHandler) const;
+    bool                                CompareCoordinates(const TractHandler & theTractHandler, std::vector<double>& vCoordinates) const;
     const double                      *	GetCoordinates() const {return gpCoordinates;}
     double                            	GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const;
     int                                 GetNumTractIdentifiers() const;
@@ -86,7 +87,7 @@ class TractHandler {
     double                              tiGetTractCoordinate(tract_t t, int iDimension) const;
     void                                tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const;
     tract_t                             tiGetTractIndex(const char *tid) const;
-    int                                 tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
+    bool                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
     void                                tiSetDimensions(int iDimensions) {nDimensions = iDimensions;}

@@ -64,6 +64,11 @@ bool TractDescriptor::CompareCoordinates(const TractDescriptor & Descriptor, con
   return !memcmp(GetCoordinates(), Descriptor.GetCoordinates(), theTractHandler.tiGetDimensions() * sizeof(double));
 }
 
+bool TractDescriptor::CompareCoordinates(const TractHandler & theTractHandler, std::vector<double>& vCoordinates) const {
+  return ((size_t)theTractHandler.tiGetDimensions() != vCoordinates.size() ||
+          !memcmp(GetCoordinates(), &vCoordinates[0], theTractHandler.tiGetDimensions() * sizeof(double)));
+}
+
 /** Returns whether coordinate are equal. */
 bool TractDescriptor::CompareCoordinates(const double * pCoordinates, int iDimensions) const {
   return !memcmp(GetCoordinates(), pCoordinates, iDimensions * sizeof(double));
@@ -358,43 +363,42 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) const {
 /** Insert a tract into the vector sorting by tract identifier.
     Sorted insert appears to be done solely for TractHandler::tiGetTractIndex(char *tid).
 
-    Return value: 0 = duplicate tract ID 1 = success */
-int TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinates) {
+    Return value: false = duplicate tract ID,  true = successful insertion */
+bool TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinates) {
   std::map<std::string,TractDescriptor*>::iterator     itrmap;
-  ZdPointerVector<TractDescriptor>::iterator           itrCoordinates, itrPosition;
+  ZdPointerVector<TractDescriptor>::iterator           itrCoordinatesPosition, itrInsertPosition;
   TractDescriptor                                    * pTractDescriptor=0;
-  bool                                                 bDuplicate=false;
 
   try {
     //check for tract identifier is duplicates map
+    //first search for an existing location with 'tid' identifier
+    gpSearchTractDescriptor->SetTractIdentifier(tid);
+    itrInsertPosition = std::lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
+    if (itrInsertPosition != gvTractDescriptors.end() && !strcmp((*itrInsertPosition)->GetTractIdentifier(),tid))
+      //ignore the record if coordinates are identical, else return indication that this record is attempting to re-define coordinates for indentifier
+      return ((*itrInsertPosition)->CompareCoordinates(*this, vCoordinates) ? true : false);
+    //now check that location with 'tid' identifier in not in duplicates
     itrmap = gmDuplicateTracts.find(std::string(tid));
     if (itrmap != gmDuplicateTracts.end())
-      GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", tid);
-    else {//search for tract identifier in vector
-      gpSearchTractDescriptor->SetTractIdentifier(tid);
-      itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
-      if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
-        GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", tid);
-    }
-
-    //check that coordinates are not duplicate
-    for (itrCoordinates=gvTractDescriptors.begin(); itrCoordinates != gvTractDescriptors.end() && !bDuplicate; itrCoordinates++)
-       if ((*itrCoordinates)->CompareCoordinates(&vCoordinates[0], nDimensions)) {
-         gmDuplicateTracts[tid] = (*itrCoordinates);
-         bDuplicate = true;
+      //ignore the record if coordinates are identical, else return indication that this record is attempting to re-define coordinates for identifier
+      return (itrmap->second->CompareCoordinates(*this, vCoordinates) ? true : false);
+    //now check that coordinates are not already defined to another location
+    for (itrCoordinatesPosition=gvTractDescriptors.begin(); itrCoordinatesPosition != gvTractDescriptors.end(); ++itrCoordinatesPosition)
+       if ((*itrCoordinatesPosition)->CompareCoordinates(&vCoordinates[0], nDimensions)) {
+         //mark as duplicate and associate with existing TractDescriptor with those coordinates
+         gmDuplicateTracts[tid] = (*itrCoordinatesPosition);
+         return true;
        }
-
-    if (! bDuplicate) {
-      pTractDescriptor = new TractDescriptor(tid, &vCoordinates[0], nDimensions);
-      gvTractDescriptors.insert(itrPosition, pTractDescriptor);
-    }
+    //insert location identifier as new coordinate
+    pTractDescriptor = new TractDescriptor(tid, &vCoordinates[0], nDimensions);
+    gvTractDescriptors.insert(itrInsertPosition, pTractDescriptor);
   }
   catch (ZdException & x) {
     x.AddCallpath("tiInsertTnode()", "TractHandler");
     delete pTractDescriptor;
     throw;
   }
-  return(1);
+  return true;
 }
 
 /** Prints formatted message to file which details the locations of the coordinates
@@ -412,7 +416,7 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
   try {
     if (gmDuplicateTracts.size()) {
       PrintFormat.SetMarginsAsOverviewSection();
-      sBuffer = "Note: The coordinates file contains location IDs with identical "
+      sBuffer = "\nNote: The coordinates file contains location IDs with identical "
                 "coordinates that where combined into one location. In the "
                 "optional output files, combined locations are represented by a "
                 "single location ID as follows:";
