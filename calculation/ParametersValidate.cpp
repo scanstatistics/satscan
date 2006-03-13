@@ -321,10 +321,12 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       }
     }
     //validate coordinates file
-    if (gParameters.GetCoordinatesFileName().empty() && !gParameters.GetIsPurelyTemporalAnalysis()) {
-      bValid = false;
-      PrintDirection.Printf("Error: No coordinates file specified.\n", BasePrint::P_ERROR);
-    }
+    if (gParameters.GetCoordinatesFileName().empty()) {
+      if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+        bValid = false;
+        PrintDirection.Printf("Error: No coordinates file specified.\n", BasePrint::P_ERROR);
+      }
+    }  
     else if (access(gParameters.GetCoordinatesFileName().c_str(), 00)) {
       bValid = false;
       PrintDirection.Printf("Error: The coordinates file '%s' does not exist.\n"

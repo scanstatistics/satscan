@@ -1014,7 +1014,7 @@ void CSaTScanData::Setup() {
     }
   }
   //set tract handler object to aggregate locations when analysis type is purely temporal
-  if (gParameters.GetIsPurelyTemporalAnalysis())
+  if (!gParameters.UseCoordinatesFile())
     gTractHandler.tiSetAggregatingTracts();
 }
 
