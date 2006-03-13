@@ -374,7 +374,8 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       default : ZdException::Generate("Unknown probability model type '%d'.\n",
                                       "PrintInputParameters()", gParameters.GetProbabilityModelType());
     }
-    fprintf(fp, "  Coordinates File  %s : %s\n", sBlankDataSetLabel, gParameters.GetCoordinatesFileName().c_str());
+    if (gParameters.UseCoordinatesFile())
+      fprintf(fp, "  Coordinates File  %s : %s\n", sBlankDataSetLabel, gParameters.GetCoordinatesFileName().c_str());
     if (gParameters.UseSpecialGrid())
       fprintf(fp, "  Grid File         %s : %s\n", sBlankDataSetLabel, gParameters.GetSpecialGridFileName().c_str());
     if (gParameters.GetSimulationType() == FILESOURCE)
@@ -395,13 +396,15 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
     }
     fprintf(fp, "  Start Date         : %s\n", gParameters.GetStudyPeriodStartDate().c_str());
     fprintf(fp, "  End Date           : %s\n", gParameters.GetStudyPeriodEndDate().c_str());
-    fprintf(fp, "  Coordinates        : ");
-    switch (gParameters.GetCoordinatesType()) {
-      case CARTESIAN : fprintf(fp, "Cartesian\n"); break;
-      case LATLON    : fprintf(fp, "Latitude/Longitude\n"); break;
-      default : ZdException::Generate("Unknown coordinated type '%d'.\n",
-                                      "PrintInputParameters()", gParameters.GetCoordinatesType());
-    }
+    if (gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid()) {
+      fprintf(fp, "  Coordinates        : ");
+      switch (gParameters.GetCoordinatesType()) {
+        case CARTESIAN : fprintf(fp, "Cartesian\n"); break;
+        case LATLON    : fprintf(fp, "Latitude/Longitude\n"); break;
+        default : ZdException::Generate("Unknown coordinated type '%d'.\n",
+                                        "PrintInputParameters()", gParameters.GetCoordinatesType());
+      }
+    }  
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintInputParameters()","ParametersPrint");
