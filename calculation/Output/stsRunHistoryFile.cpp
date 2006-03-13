@@ -414,7 +414,10 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
 
       // coordinate type field
-      sTempValue = ((params.GetCoordinatesType() == CARTESIAN) ? "Cartesian" : "LatLong");
+      if (params.UseCoordinatesFile() || params.UseSpecialGrid())
+        sTempValue = ((params.GetCoordinatesType() == CARTESIAN) ? "Cartesian" : "LatLong");
+      else
+        sTempValue = "n/a";
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, COORD_TYPE_FIELD));
 
       // analysis type field
@@ -549,6 +552,10 @@ void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileN
       if(params.GetOutputClusterLevelDBase())
          ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
 
+      if(params.GetOutputClusterCaseAscii())
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".cci.txt");
+      if(params.GetOutputClusterCaseDBase())
+         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".cci.dbf");
    }
    catch (ZdException &x) {
       x.AddCallpath("SetAdditionalOutputFileNameString()", "stsRunHistoryFile");
