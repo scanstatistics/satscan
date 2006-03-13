@@ -59,11 +59,11 @@
 #define VERSION_ID      "11"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
-#define VERSION_MAJOR   "6"
-#define VERSION_MINOR   "1"
+#define VERSION_MAJOR   "7"
+#define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "March 13, 2006"
+#define VERSION_PHASE   "Development" /** testing phase name - leave blank for release */
+#define VERSION_DATE    ""
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
