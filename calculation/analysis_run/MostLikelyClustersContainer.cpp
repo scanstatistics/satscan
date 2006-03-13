@@ -236,6 +236,8 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
    CriteriaSecondaryClustersType        eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
 
    try {
+     //return if analysis is purely temporal -- there will be at most one cluster
+     if (Parameters.GetIsPurelyTemporalAnalysis()) return;
      if (DataHub.GetTInfo()->tiGetDimensions() < 2)
        ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
      //return from function if no clusters retained
