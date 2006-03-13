@@ -505,6 +505,7 @@ void CSaTScanData::Init() {
   m_nFlexibleWindowStartRangeEndIndex=0;
   m_nFlexibleWindowEndRangeStartIndex=0;
   m_nFlexibleWindowEndRangeEndIndex=0;
+  m_nGridTracts = 0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -1012,6 +1013,9 @@ void CSaTScanData::Setup() {
        }
     }
   }
+  //set tract handler object to aggregate locations when analysis type is purely temporal
+  if (gParameters.GetIsPurelyTemporalAnalysis())
+    gTractHandler.tiSetAggregatingTracts();
 }
 
 /** Throws exception if case(s) were observed for an interval/location
