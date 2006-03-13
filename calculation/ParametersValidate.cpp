@@ -321,18 +321,22 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       }
     }
     //validate coordinates file
-    if (gParameters.GetCoordinatesFileName().empty()) {
-      bValid = false;
-      PrintDirection.Printf("Error: No coordinates file specified.\n", BasePrint::P_ERROR);
-    }
-    else if (access(gParameters.GetCoordinatesFileName().c_str(), 00)) {
-      bValid = false;
-      PrintDirection.Printf("Error: The coordinates file '%s' does not exist.\n"
-                             "       Please ensure the path is correct.\n",
-                             BasePrint::P_ERROR, gParameters.GetCoordinatesFileName().c_str());
+    if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+      if (gParameters.GetCoordinatesFileName().empty()) {
+        bValid = false;
+        PrintDirection.Printf("Error: No coordinates file specified.\n", BasePrint::P_ERROR);
+      }
+      else if (access(gParameters.GetCoordinatesFileName().c_str(), 00)) {
+        bValid = false;
+        PrintDirection.Printf("Error: The coordinates file '%s' does not exist.\n"
+                              "       Please ensure the path is correct.\n",
+                               BasePrint::P_ERROR, gParameters.GetCoordinatesFileName().c_str());
+      }
     }
     //validate special grid file
-    if (gParameters.UseSpecialGrid() && gParameters.GetSpecialGridFileName().empty()) {
+    if (gParameters.GetIsPurelyTemporalAnalysis())
+      const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
+    else if (gParameters.UseSpecialGrid() && gParameters.GetSpecialGridFileName().empty()) {
       bValid = false;
       PrintDirection.Printf("Error: The settings indicate to the use a grid file, but a grid file name is not specified.\n", BasePrint::P_ERROR);
     }
