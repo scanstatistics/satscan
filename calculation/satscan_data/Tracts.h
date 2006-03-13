@@ -64,14 +64,15 @@ class CompareTractDescriptorIdentifier {
 };
 
 class CSaTScanData;
+
 class TractHandler {
   private:
     ZdPointerVector<TractDescriptor>             gvTractDescriptors;
     int                                          nDimensions;
     TractDescriptor                            * gpSearchTractDescriptor;
     std::map<std::string,TractDescriptor*>       gmDuplicateTracts;
+    bool                                         gbAggregatingTracts;
 
-    void                                Init();
     void                                Setup();
 
   public:
@@ -81,7 +82,7 @@ class TractHandler {
     tract_t                             tiCombineDuplicatesByCoordinates();
     void                                tiConcaticateDuplicateTractIdentifiers();
     int                                 tiGetDimensions() const {return nDimensions;}
-    double                              tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) const;
+    static double                       tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint);
     tract_t                             tiGetNumTracts() const {return (int)gvTractDescriptors.size();}
     const char                        * tiGetTid(tract_t t, std::string& sFirst) const;
     double                              tiGetTractCoordinate(tract_t t, int iDimension) const;
@@ -90,6 +91,7 @@ class TractHandler {
     bool                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
+    void                                tiSetAggregatingTracts();
     void                                tiSetDimensions(int iDimensions) {nDimensions = iDimensions;}
 };
 //*****************************************************************************

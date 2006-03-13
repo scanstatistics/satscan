@@ -188,8 +188,7 @@ void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordi
 }
 
 /** Constructor*/
-TractHandler::TractHandler() {
-  Init();
+TractHandler::TractHandler() : gbAggregatingTracts(false), nDimensions(0), gpSearchTractDescriptor(0) {
   Setup();
 }
 
@@ -199,12 +198,6 @@ TractHandler::~TractHandler() {
     delete gpSearchTractDescriptor;
   }
   catch(...){}
-}
-
-/** Internal initialization. */
-void TractHandler::Init() {
-  nDimensions   = 0;
-  gpSearchTractDescriptor=0;
 }
 
 /** Prints error when duplicate coordinates are found.
@@ -260,7 +253,7 @@ void TractHandler::tiRetrieveCoords(tract_t t, std::vector<double> & vRepository
 }
 
 /** Compute distance squared between 2 tracts. */
-double TractHandler::tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) const {
+double TractHandler::tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) {
   double        dDistanceSquared=0;
 
   if (vFirstPoint.size() != vSecondPoint.size())
@@ -272,13 +265,20 @@ double TractHandler::tiGetDistanceSq(const std::vector<double>& vFirstPoint, con
   return dDistanceSquared;
 }
 
-/** Returns first identifier for tract. */
+/** Returns first identifier for tract at index. */
 const char * TractHandler::tiGetTid(tract_t t, std::string& sFirst) const {
   try {
-    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
-      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
+    if (gbAggregatingTracts)
+      //when aggregation locations, retrieve the location identifier for dummy location
+      // - this method is not really useful in this sense but it method is potentially called
+      //   when a problem is detected in the algorithm and a program error is generated.
+      gvTractDescriptors.back()->GetTractIdentifier(0, sFirst);
+    else {
+      if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
+        ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
 
-    gvTractDescriptors[t]->GetTractIdentifier(0, sFirst);
+      gvTractDescriptors[t]->GetTractIdentifier(0, sFirst);
+    }  
   }
   catch (ZdException & x) {
     x.AddCallpath("tiGetTid()", "TractHandler");
@@ -287,19 +287,6 @@ const char * TractHandler::tiGetTid(tract_t t, std::string& sFirst) const {
   return sFirst.c_str();
 }
 
-
-///** Returns first tract name (tid)for the given tract_t index. */
-//const char * TractHandler::tiGetTid(tract_t t) const {
-//  try {
-//    if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
-//      ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
-//  }
-//  catch (ZdException & x) {
-//    x.AddCallpath("tiGetTid()", "TractHandler");
-//    throw;
-//  }
-// return gvTractDescriptors[t]->GetTractIdentifier();
-//}
 
 /** Returns coordinate for tract at specified dimension. */
 double TractHandler::tiGetTractCoordinate(tract_t t, int iDimension) const {
@@ -338,6 +325,10 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) const {
   tract_t                                                    tPosReturn;
 
   try {
+    if (gbAggregatingTracts)
+      //when aggregation locations, all tract identifiers refer to the same index
+      return 0;
+    
     //check for tract identifier is duplicates map
     itrmap = gmDuplicateTracts.find(std::string(tid));
     if (itrmap != gmDuplicateTracts.end()) {// if found, return position of descriptor in vector
@@ -370,7 +361,10 @@ bool TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordina
   TractDescriptor                                    * pTractDescriptor=0;
 
   try {
-    //check for tract identifier is duplicates map
+    if (gbAggregatingTracts)
+      //when aggregating locations, insertion process always succeeds
+      return true;
+
     //first search for an existing location with 'tid' identifier
     gpSearchTractDescriptor->SetTractIdentifier(tid);
     itrInsertPosition = std::lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
@@ -444,6 +438,16 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
     x.AddCallpath("tiReportDuplicateTracts()", "TractHandler");
     throw;
   }
+}
+
+/** Set this handler object to aggregating locations into one. */
+void TractHandler::tiSetAggregatingTracts() {
+  gvTractDescriptors.DeleteAllElements();
+  gmDuplicateTracts.clear();
+  gbAggregatingTracts = true;
+
+  double Coordinates[1] ={0};
+  gvTractDescriptors.push_back(new TractDescriptor("dummy_location", Coordinates, 1));
 }
 
 /** Internal setup function. */
