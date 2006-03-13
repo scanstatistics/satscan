@@ -375,7 +375,7 @@ class CParameters {
     void                                SetVersion(const CreationVersion& vVersion);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
-    bool                                UseCoordinatesFile() const {return !GetIsPurelyTemporalAnalysis();}
+    bool                                UseCoordinatesFile() const {return !(!gsCoordinatesFileName.size() && GetIsPurelyTemporalAnalysis());}
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     void                                SetPopulationFile(bool b) {gbUsePopulationFile = b;}  /******/
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}
