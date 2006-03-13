@@ -303,7 +303,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(FILE * fp) {
          }
          //add the tract identifier and coordinates to trac handler
          if (! gTractHandler.tiInsertTnode(Parser.GetWord(0), vCoordinates)) {
-           gPrint.Printf("Error: For record %ld in the coordinates file, location ID '%s' has already been specified.\n",
+           gPrint.Printf("Error: In record %ld of the coordinates file, coordinates for location ID '%s' are redefined.\n",
                          BasePrint::P_READERROR, Parser.GetReadCount(), Parser.GetWord(0));
            bValid = false;
            continue;
