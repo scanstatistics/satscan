@@ -1605,12 +1605,15 @@ void TfrmAnalysis::ValidateInputFiles() {
       }
     }
     //validate coordinates file
+    AnalysisType eAnalysisType(GetAnalysisControlType());
     if (edtCoordinateFileName->Text.IsEmpty()) {
-      PageControl1->ActivePage = tbInputFiles;
-      edtCoordinateFileName->SetFocus();
-      ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
-    }
-    if (!File_Exists(edtCoordinateFileName->Text.c_str())) {
+      if (!(eAnalysisType == PURELYTEMPORAL || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+        PageControl1->ActivePage = tbInputFiles;
+        edtCoordinateFileName->SetFocus();
+        ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
+      }
+    }  
+    else if (!File_Exists(edtCoordinateFileName->Text.c_str())) {
       PageControl1->ActivePage = tbInputFiles;
       edtCoordinateFileName->SetFocus();
       ZdException::GenerateNotification("Coordinates file could not be opened.","ValidateInputFiles()");
