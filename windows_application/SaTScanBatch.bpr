@@ -177,7 +177,7 @@
 IncludeVerInfo=1
 AutoIncBuild=0
 MajorVer=6
-MinorVer=0
+MinorVer=1
 Release=0
 Build=0
 Debug=0
@@ -191,22 +191,21 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=SaTScan
 FileDescription=SaTScan - Spatial and Space-Time Scan Statistics
-FileVersion=6.0.0.0
+FileVersion=6.1.0.0
 InternalName=
 LegalCopyright=
 LegalTrademarks=
 OriginalFilename=
 ProductName=SaTScan
-ProductVersion=6.0
-Comments=Released October 24, 2005
+ProductVersion=6.1
+Comments=Released March 13, 2006
 
 [Excluded Packages]
 $(BCB)\Bin\dcl31w50.bpl=Delphi 1.0 Compatibility Components
-$(BCB)\Bin\dclqrt50.bpl=QuickReport Components
+$(BCB)\Bin\dclqrt50.bpl=QuickReport 3 Package
 $(BCB)\Bin\dcltee50.bpl=TeeChart 5.0 Components
 $(BCB)\Bin\dcltqr50.bpl=TeeChart 5.0 for QuickReport Components Design Package
 $(BCB)\Bin\dclib50.bpl=InterBase Data Access Components
-$(BCB)\Bin\DBWEBXPRT.BPL=Borland Web Wizard Package
 $(BCB)\Bin\DCLNMF50.bpl=NetMasters Fastnet Tools
 $(BCB)\Bin\dclocx50.bpl=Borland Sample Imported ActiveX Controls
 $(BCB)\Bin\mfcwizard.bpl=MFC Wizard
