@@ -23,7 +23,6 @@ class ParametersPrint {
     void                PrintOutputParameters(FILE* fp) const;
     void                PrintPowerSimulationsParameters(FILE* fp) const;
     void                PrintRunOptionsParameters(FILE* fp) const;
-    void                PrintSequentialScanParameters(FILE* fp) const;
     void                PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const;
     void                PrintSpatialWindowParameters(FILE* fp) const;
     void                PrintSystemParameters(FILE* fp) const;

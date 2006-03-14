@@ -38,8 +38,6 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintEllipticScanParameters(fp);
     //print 'Isotonic Scan' settings
     PrintIsotonicScanParameters(fp);
-    //print 'Sequential Scan' settings
-    PrintSequentialScanParameters(fp);
     //print 'Power Simulations' settings
     PrintPowerSimulationsParameters(fp);
     //print 'RunOptions' settings
@@ -67,7 +65,7 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case NONPARAMETRIC :
         sBuffer = "Adjusted for time nonparametrically."; break;
       case LOGLINEAR_PERC :
-        sBuffer.printf("of %0.2f%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
+        sBuffer.printf("of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
         if (gParameters.GetTimeTrendAdjustmentPercentage() < 0)
           sBuffer.Insert("Adjusted for time with a decrease ", 0);
         else
@@ -227,7 +225,7 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
       sPrintString.printf("Adjusted for time trend with an annual decrease ");
     else
       sPrintString.printf("Adjusted for time trend with an annual increase ");
-    sWorkString.printf("of %0.2f%%.", fabs(SetHandler.GetDataSet(0).GetCalculatedTimeTrendPercentage()));
+    sWorkString.printf("of %g%%.", fabs(SetHandler.GetDataSet(0).GetCalculatedTimeTrendPercentage()));
     sPrintString << sWorkString;
   }
   else {//multiple datasets print
@@ -246,7 +244,7 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
                           fabs(SetHandler.GetDataSet(TrendIncrease.front()).GetCalculatedTimeTrendPercentage()));
        sPrintString << sWorkString;
        for (t=1; t < TrendIncrease.size(); ++t) {
-          sWorkString.printf((t < TrendIncrease.size() - 1) ? ", %0.2f%%" : " and %0.2f%%",
+          sWorkString.printf((t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%",
                              fabs(SetHandler.GetDataSet(TrendIncrease[t]).GetCalculatedTimeTrendPercentage()));
           sPrintString << sWorkString;
        }
@@ -267,7 +265,7 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
                          fabs(SetHandler.GetDataSet(TrendDecrease.front()).GetCalculatedTimeTrendPercentage()));
       sPrintString << sWorkString;
       for (t=1; t < TrendDecrease.size(); ++t) {
-         sWorkString.printf((t < TrendDecrease.size() - 1) ? ", %0.2f%%" : " and %0.2f%%",
+         sWorkString.printf((t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%",
                             fabs(SetHandler.GetDataSet(TrendDecrease[t]).GetCalculatedTimeTrendPercentage()));
          sPrintString << sWorkString;
       }
@@ -303,7 +301,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
                                          "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
       }
       if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
-        fprintf(fp, "  Only clusters smaller than %.2f", gParameters.GetMaximumReportedGeoClusterSize());
+        fprintf(fp, "  Only clusters smaller than %g", gParameters.GetMaximumReportedGeoClusterSize());
         switch (gParameters.GetMaxReportedGeographicClusterSizeType()) {
           case MAXDISTANCE :
             fprintf(fp, " %s reported.\n", (gParameters.GetCoordinatesType() == CARTESIAN ? "Cartesian units" : "km")); break;
@@ -349,6 +347,11 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
      fprintf(fp, "  Prospective Start Date        : %s\n", gParameters.GetProspectiveStartDate().c_str());
   }
   fprintf(fp, "  Report Critical Values        : %s\n", (gParameters.GetReportCriticalValues() ? "Yes" : "No"));
+  fprintf(fp, "  Sequential Scan               : %s\n", (gParameters.GetIsSequentialScanning() ? "Yes" : "No"));
+  if (gParameters.GetIsSequentialScanning()) {
+    fprintf(fp, "  Number of Scans               : %u\n", gParameters.GetNumSequentialScansRequested());
+    fprintf(fp, "  P-value Cutoff                : %g\n", gParameters.GetSequentialCutOffPValue());
+  }  
 }
 
 /** Prints 'Input' tab parameters to file stream. */
@@ -594,22 +597,6 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
   }
 }
 
-/** Prints 'Sequential Scan' parameters to file stream. */
-void ParametersPrint::PrintSequentialScanParameters(FILE* fp) const {
-  try {
-    if (gParameters.GetIsSequentialScanning() && gParameters.GetNumSequentialScansRequested() > 0) {
-      fprintf(fp, "\nSequential Scan\n---------------\n");
-      fprintf(fp, "  Sequential Scan : Yes\n");
-      fprintf(fp, "  Number of Scans : %u\n", gParameters.GetNumSequentialScansRequested());
-      fprintf(fp, "  P-value Cutoff  : %lf\n", gParameters.GetSequentialCutOffPValue());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintSequentialScanParameters()","ParametersPrint");
-    throw;
-  }
-}
-
 /** Prints 'Space And Time Adjustments' tab parameters to file stream. */
 void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
   bool bPrintingAdjustmentsFileParameters = (gParameters.GetSimulationType() == HA_RANDOMIZATION ||
@@ -670,7 +657,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     fprintf(fp, "\nSpatial Window\n--------------\n");
     if (gParameters.UseMaxCirclePopulationFile())
       fprintf(fp, "  Max Circle Size File                  : %s\n", gParameters.GetMaxCirclePopulationFileName().c_str());
-    fprintf(fp, "  Maximum Spatial Cluster Size          : %.2f", gParameters.GetMaximumGeographicClusterSize());
+    fprintf(fp, "  Maximum Spatial Cluster Size          : %g", gParameters.GetMaximumGeographicClusterSize());
     switch (gParameters.GetMaxGeographicClusterSizeType()) {
       case PERCENTOFMAXCIRCLEFILE      : fprintf(fp, "%% of population defined in max circle file\n"); break;
       case PERCENTOFPOPULATION         : fprintf(fp, "%% of population at risk\n"); break;
@@ -727,9 +714,9 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
       return;
 
     fprintf(fp, "\nTemporal Window\n---------------\n");
-    fprintf(fp, "  Maximum Temporal Cluster Size         : %.2f", gParameters.GetMaximumTemporalClusterSize());
+    fprintf(fp, "  Maximum Temporal Cluster Size         : %g", gParameters.GetMaximumTemporalClusterSize());
     switch (gParameters.GetMaximumTemporalClusterSizeType()) {
-      case PERCENTAGETYPE : fprintf(fp, "%%\n"); break;
+      case PERCENTAGETYPE : fprintf(fp, "%% of study period\n"); break;
       case TIMETYPE       : fprintf(fp, " %s\n",
                             GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sBuffer, gParameters.GetMaximumTemporalClusterSize() != 1, true)); break;
       default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n",
