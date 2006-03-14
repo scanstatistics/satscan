@@ -303,7 +303,6 @@ void AnalysisRunner::ExecuteSuccessively() {
       CreateRelativeRiskFile();
       //repeat analysis - sequential scan
       if ((bContinue = RepeatAnalysis()) == true) {
-        RemoveTopClusterData();
         //detect user cancellation
         if (gPrintDirection.GetIsCanceled())
           return;
@@ -660,8 +659,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //report calculated simulation llr values
       if (SimulationRatios) {
         if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-        if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-          RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
         std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
         for (; itr != itr_end; ++itr) {
           //update most likely clusters given latest simulated loglikelihood ratio
@@ -811,8 +809,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       //report calculated simulation llr values
       if (SimulationRatios) {
         if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-        if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-          RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
         std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
         for (; itr != itr_end; ++itr) {
           //update most likely clusters given latest simulated loglikelihood ratio
@@ -940,8 +937,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     else
       sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
     //create record buffers for simulated loglikelihood ratios, if user requested these output files
-    if (gParameters.GetOutputSimLoglikeliRatiosFiles() && giAnalysisCount == 1)
-      RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters));
+    RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
     //set/reset loglikelihood ratio significance indicator
     if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
     //get container for simulation data - this data will be modified in the randomize process
@@ -1229,7 +1225,7 @@ void AnalysisRunner::PrintTopSequentialScanCluster() {
         TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
         //print cluster definition to 'cluster information' record buffer
         if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
-          ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, 1, giNumSimsExecuted);
+          ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giClustersReported, giNumSimsExecuted);
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles()) {
           LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
@@ -1260,35 +1256,16 @@ void AnalysisRunner::PrintTopSequentialScanCluster() {
 
 /** If a most likely cluster is defined, removes data of each location contained
     within that cluster from consideration in next iteration of sequential scan.
-    This function is not defined for a most likely cluster that is purely temporal.
-
     NOTE: There maybe more work here considering randomizers that are based off
           information that is now being removed. Look at space-time permutation
           randomizer and other similar randomizers. */
 void AnalysisRunner::RemoveTopClusterData() {
    try {
-     if (gParameters.GetAnalysisType() != PURELYSPATIAL)
-       ZdGenerateException("Error: The sequential scan feature is currently defined for only\n"
-                           "       a purely spatial analysis.","RemoveTopClusterData()");
-
      if (gTopClustersContainer.GetNumClustersRetained()) {
        const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
-       for (int i=1; i <= TopCluster.GetNumTractsInnerCircle(); i++)  {
-         gpDataHub->RemoveTractSignificance(gpDataHub->GetNeighbor(0, TopCluster.GetCentroidIndex(), i));
-         //The next statement is believed to have been a mistake. There was no
-         //documentation as to it's purpose but I believe the coder was intending
-         //to remove the actual tract from the total tracts. Thinking this, the
-         //statement is actually assuming that tracts of cluster are always the
-         //last x tracts in set. The only results that are effected by its removal
-         //are the Relative Risks output file. But reporting the file has been moved
-         //to just after the first iteration of sequential scan. So, this file now
-         //reports all tracts relative risks before any data manipulation occurs.
-         //Also, potentially after many iterations of scan, the number of tracts
-         //could be negative.
-         //--m_pData->m_nTracts;
-       }
-       //re-calculate neighbors counts about each centroid 
-       gpDataHub->AdjustNeighborCounts();
+       gpDataHub->RemoveClusterSignificance(TopCluster);
+       if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER)
+          gpDataHub->AdjustNeighborCounts();
      }
      //clear top clusters container
      gTopClustersContainer.Empty();
@@ -1309,44 +1286,48 @@ void AnalysisRunner::RemoveTopClusterData() {
     - last iteration of simulations did not terminate early
     Indication of false is returned if user did not request sequential scan option. */
 bool AnalysisRunner::RepeatAnalysis() {
-  bool bCorrectAnalysisType, bTopCluster, bHasMoreSequentialScans,
-       bNotEarlyTerminated, bHasTractsAfterTopCluster, bModelCriterianMet=true,
-       bHasMinimumNumberOfCases=true, bReturn=false;
-
   //NOTE: Still in the air as to the minimum for STP model, set to 2 for now.
   count_t      tMinCases = (gParameters.GetProbabilityModelType() == ORDINAL ? 4 : 2);
 
   try {
-    if (gParameters.GetIsSequentialScanning()) {
-      bCorrectAnalysisType = gParameters.GetAnalysisType() == PURELYSPATIAL;
-      for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets() && bHasMinimumNumberOfCases; ++i)
-         bHasMinimumNumberOfCases = (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() >= tMinCases);
+    if (!gParameters.GetIsSequentialScanning()) return false;
+      if (giAnalysisCount >= gParameters.GetNumSequentialScansRequested())
+        return false;
+      //determine whether a top cluster was found and it's p-value mets cutoff
+      if (!gTopClustersContainer.GetNumClustersRetained())
+        return false;
+      //if user requested replications, validate that p-value does not exceed user defined cutoff  
+      if (gParameters.GetNumReplicationsRequested() && gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) > gParameters.GetSequentialCutOffPValue())
+         return false;
+
+      //now we need to modify the data sets - removing data of locations in top cluster  
+      RemoveTopClusterData();
+      //does the minimum number of cases remain in all data sets?
+      for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
+         if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() < tMinCases)
+           return false;
+
+      //are there locations left?
+      if (gParameters.UseCoordinatesFile() && ((size_t)gpDataHub->GetNumTracts() - gpDataHub->GetNumNullifiedLocations()) < 2)
+         return false;
+      //is the minimum number of cases per data data set remaining as required by probability model?
       if (gParameters.GetProbabilityModelType() == ORDINAL) {
         int iCategoriesWithCases=0;
-        for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets() && bModelCriterianMet; ++i) {
+        for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i) {
            const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).GetPopulationData();
            for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t)
               if (Population.GetNumOrdinalCategoryCases(t))
                 ++iCategoriesWithCases;
-           bModelCriterianMet = (iCategoriesWithCases >= 2);
+           if (iCategoriesWithCases < 2)
+             return false;
         }
       }
-      bTopCluster = gTopClustersContainer.GetNumClustersRetained() &&
-                    gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) < gParameters.GetSequentialCutOffPValue();
-      bHasTractsAfterTopCluster = bTopCluster && gpDataHub->GetNumTracts() - gTopClustersContainer.GetTopRankedCluster().GetNumTractsInnerCircle() > 0;
-      bHasMoreSequentialScans = giAnalysisCount < gParameters.GetNumSequentialScansRequested();
-      bNotEarlyTerminated = giNumSimsExecuted == gParameters.GetNumReplicationsRequested();
-
-      bReturn = bCorrectAnalysisType && bHasMinimumNumberOfCases
-                && bModelCriterianMet && bTopCluster
-                && bHasMoreSequentialScans && bNotEarlyTerminated && bHasTractsAfterTopCluster;
-    }
   }
   catch (ZdException &x) {
     x.AddCallpath("RepeatAnalysis()","AnalysisRunner");
     throw;
   }
-  return bReturn;
+  return true;
 }
 
 /** internal class setup - allocate CSaTScanData object(the data hub) */
