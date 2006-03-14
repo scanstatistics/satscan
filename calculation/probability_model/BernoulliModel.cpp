@@ -69,7 +69,7 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
      case SPACETIMECLUSTER                 :
         if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
           ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
-          for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+          for (int i=1; i <= Cluster.GetNumTractsInCluster(); ++i) {
             nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
             dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
           }
@@ -78,7 +78,7 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
      case PURELYSPATIALCLUSTER             :
      case PURELYSPATIALMONOTONECLUSTER     :
         ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
-        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+        for (int i=1; i <= Cluster.GetNumTractsInCluster(); ++i) {
           nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
           dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor];
         }
