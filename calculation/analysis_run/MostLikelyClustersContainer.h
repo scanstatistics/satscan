@@ -71,6 +71,10 @@ class MostLikelyClustersContainer {
                                        return true;
                                     if (pCluster2->GetClusterType() == PURELYTEMPORALCLUSTER)
                                        return false;
+                                    if (pCluster1->GetNumTractsInnerCircle() < pCluster2->GetNumTractsInnerCircle())
+                                       return true;
+                                    if (pCluster2->GetNumTractsInnerCircle() < pCluster1->GetNumTractsInnerCircle())
+                                       return false;
                                     //if ratios are equal, lesser centroid index ranks greater
                                     return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
                                   }
