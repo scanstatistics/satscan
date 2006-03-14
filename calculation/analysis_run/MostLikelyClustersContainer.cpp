@@ -59,7 +59,7 @@ void MostLikelyClustersContainer::Empty() {
 const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) const {
   try {
     if (tClusterIndex < 0 || (unsigned int)tClusterIndex > gvTopClusterList.size() - 1)
-      ZdGenerateException("Index '%d' out of range[%d-%d].","GetCluster()", 0, gvTopClusterList.size() - 1);
+      ZdGenerateException("Index %d out of range [size=%u].","GetCluster()", tClusterIndex, gvTopClusterList.size());
   }
   catch (ZdException &x) {
      x.AddCallpath("GetCluster()","MostLikelyClustersContainer");
@@ -81,7 +81,7 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
       DataHub.GetGInfo()->giRetrieveCoords(theCluster.GetCentroidIndex(), vCoordsOfCluster);
       DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(theCluster.GetEllipseOffset(),
                                                                theCluster.GetCentroidIndex(),
-                                                               theCluster.GetNumTractsInnerCircle()),
+                                                               theCluster.GetNumTractsInCluster()),
                                                                vCoordsOfNeighborCluster);
       dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
     }
@@ -111,8 +111,8 @@ const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
     clusters by examining tract locations to comprise the cluster.*/
 bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) {
   tract_t       t, v, tTract,
-                tTwoNumTracts = ClusterTwo.GetNumTractsInnerCircle(),
-                tOneNumTracts = ClusterOne.GetNumTractsInnerCircle(),
+                tTwoNumTracts = ClusterTwo.GetNumTractsInCluster(),
+                tOneNumTracts = ClusterOne.GetNumTractsInCluster(),
                 tTwoCentroid = ClusterTwo.GetCentroidIndex(), tOneCentroid = ClusterOne.GetCentroidIndex();
   int           iTwoOffset = ClusterTwo.GetEllipseOffset(), iOneOffset = ClusterOne.GetEllipseOffset();
 
@@ -200,7 +200,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
           fprintf(pFile, "  Ellipe Offset:  %i\n", gvTopClusterList[i]->GetEllipseOffset());
           fprintf(pFile, "         Center:  %i\n", gvTopClusterList[i]->GetCentroidIndex());
           fprintf(pFile, "        Measure:  %f\n", gvTopClusterList[i]->GetExpectedCount(DataHub));
-          fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInnerCircle());
+          fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInCluster());
           fprintf(pFile, "LikelihoodRatio:  %f\n", gvTopClusterList[i]->m_nRatio);
           fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
           fprintf(pFile, "   Cart. Radius:  %lf\n", gvTopClusterList[i]->GetCartesianRadius());
