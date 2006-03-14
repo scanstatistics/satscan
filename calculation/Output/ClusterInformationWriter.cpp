@@ -206,7 +206,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetAreaID(sBuffer, theCluster);
     WriteCoordinates(Record, theCluster);
     Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() =
-        theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumTractsInnerCircle();
+        theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumTractsInCluster();
     if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
       WriteEllipseAngle(Record, theCluster);
       WriteEllipseShape(Record, theCluster);
@@ -258,7 +258,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
        iSecondCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
        gDataHub.GetGInfo()->giRetrieveCoords(thisCluster.GetCentroidIndex(), vCoordinates);
        tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(),
-                                          thisCluster.GetNumTractsInnerCircle(), thisCluster.GetCartesianRadius());
+                                          thisCluster.GetNumTractsInCluster(), thisCluster.GetCartesianRadius());
        switch (gParameters.GetCoordinatesType()) {
          case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  vCoordinates[0];
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  vCoordinates[1];
