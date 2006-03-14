@@ -19,7 +19,7 @@ CMeasureList::~CMeasureList() {}
 void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration) {
   double dMaxLogLikelihoodRatio, dNonCompactnessPenalty;
 
-  dMaxLogLikelihoodRatio = gLikelihoodCalculator.GetLogLikelihoodRatio(dMaxLogLikelihood);
+  dMaxLogLikelihoodRatio = std::max(0.0, gLikelihoodCalculator.GetLogLikelihoodRatio(dMaxLogLikelihood));
 
 
   dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetEllipseShape(iIteration), gSaTScanData.GetParameters().GetNonCompactnessPenaltyPower());
