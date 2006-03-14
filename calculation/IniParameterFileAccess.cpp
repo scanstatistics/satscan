@@ -162,7 +162,6 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     //write settings as provided only through user mofication of parameter file and batch executable
     WriteEllipticScanSettings(WriteFile);
     WriteIsotonicScanSettings(WriteFile);
-    WriteSequentialScanSettings(WriteFile);
     WritePowerSimulationsSettings(WriteFile);
     WriteRunOptionSettings(WriteFile);
     WriteSystemSettings(WriteFile);
@@ -234,6 +233,9 @@ void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s), GetParameterComment(EARLY_SIM_TERMINATION));
     WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
     WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s), GetParameterComment(REPORT_CRITICAL_VALUES));
+    WriteIniParameter(WriteFile, SEQUENTIAL, GetParameterString(SEQUENTIAL, s), GetParameterComment(SEQUENTIAL));
+    WriteIniParameter(WriteFile, SEQNUM, GetParameterString(SEQNUM, s), GetParameterComment(SEQNUM));
+    WriteIniParameter(WriteFile, SEQPVAL, GetParameterString(SEQPVAL, s), GetParameterComment(SEQPVAL));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -404,21 +406,6 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Reads parameter settings grouped under '[Sequential Scan]'. */
-void IniParameterFileAccess::WriteSequentialScanSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
-
-  try {
-    WriteIniParameter(WriteFile, SEQUENTIAL, GetParameterString(SEQUENTIAL, s), GetParameterComment(SEQUENTIAL));
-    WriteIniParameter(WriteFile, SEQNUM, GetParameterString(SEQNUM, s), GetParameterComment(SEQNUM));
-    WriteIniParameter(WriteFile, SEQPVAL, GetParameterString(SEQPVAL, s), GetParameterComment(SEQPVAL));
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteSequentialScanSettings()","IniParameterFileAccess");
     throw;
   }
 }
