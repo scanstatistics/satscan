@@ -220,7 +220,7 @@ void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParam
       if(params.GetAnalysisType() == PURELYTEMPORAL)
          sTempValue = "n/a";
       else {
-         sTempValue.printf("%.2f", params.GetMaximumGeographicClusterSize());
+         sTempValue.printf("%.2lf", params.GetMaximumGeographicClusterSize());
          sTempValue << " ";
          if(params.GetMaxGeoClusterSizeTypeIsPopulationBased())
             sTempValue << "%";
