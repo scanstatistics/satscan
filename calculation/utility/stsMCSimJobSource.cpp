@@ -43,7 +43,7 @@ stsMCSimJobSource::stsMCSimJobSource(
   }
 
   if (rParameters.GetOutputSimLoglikeliRatiosFiles())
-    gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters));
+    gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, grRunner.giAnalysisCount > 1));
 }
 
 
