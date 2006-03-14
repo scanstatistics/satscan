@@ -8,12 +8,22 @@
 /** class constructor - const AbstractDataSetGateway */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const AbstractDataSetGateway & DataGateway, int iRate)
-                   :CCluster(), m_nMaxCircles(0), m_bRatioSet(false), m_nCases(0), m_nMeasure(0), m_nSteps(0), m_nLogLikelihood(0) {}
+                   :CCluster(), m_nMaxCircles(0), m_bRatioSet(false), m_nCases(0), m_nMeasure(0), m_nSteps(0), m_nLogLikelihood(0) {
+  //The last time interval for a purely spatial cluster equals the number of
+  //calculated time intervals. This would be 1 for a purely spatial analysis but
+  //for a space-time analysis, the index would be dependent on # of intervals requested.
+  m_nLastInterval = DataGateway.GetDataSetInterface().GetNumTimeIntervals();
+}
 
 /** class constructor - const DataSetInterface */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
                                        const DataSetInterface & Interface, int iRate)
                    :CCluster(), m_nMaxCircles(0), m_bRatioSet(false), m_nCases(0), m_nMeasure(0), m_nSteps(0), m_nLogLikelihood(0) {
+  //The last time interval for a purely spatial cluster equals the number of
+  //calculated time intervals. This would be 1 for a purely spatial analysis but
+  //for a space-time analysis, the index would be dependent on # of intervals requested.
+  m_nLastInterval = Interface.GetNumTimeIntervals();
+  
   Initialize(0);
 }
 
@@ -314,7 +324,6 @@ ZdString& CPSMonotoneCluster::GetStartDate(ZdString& sDateString, const CSaTScan
 void CPSMonotoneCluster::Initialize(tract_t nCenter) {
   CCluster::Initialize(nCenter);
   m_bRatioSet = false;
-  m_nLastInterval = 1;
   m_nCases = 0;
   m_nMeasure = 0;
   m_nLogLikelihood = 0;
