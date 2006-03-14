@@ -787,13 +787,12 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
 
   try {
     if (gParameters.GetIsSequentialScanning()) {
-      if (gParameters.GetNumReplicationsRequested() == 0) {
-        PrintDirection.Printf("Error: The sequential scan feature requires that Monte Carlo simulations be performed.\n", BasePrint::P_ERROR);
+      if (gParameters.GetSimulationType() == FILESOURCE) {
+        PrintDirection.Printf("Error: The sequential scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_ERROR);
         return false;
       }
-      if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
-        //code only implemented for purley spatial analyses
-        PrintDirection.Printf("Error: The sequential scan feature is only implemented for purely spatial analyses.\n", BasePrint::P_ERROR);
+      if (gParameters.GetOutputSimulationData()) {
+        PrintDirection.Printf("Error: The sequential scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_ERROR);
         return false;
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == ORDINAL)) {
@@ -808,7 +807,7 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
       }
       if (gParameters.GetSequentialCutOffPValue() < 0 || gParameters.GetSequentialCutOffPValue() > 1) {
         bValid = false;
-        PrintDirection.Printf("Error: : The sequential scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
+        PrintDirection.Printf("Error: The sequential scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
                               BasePrint::P_ERROR, gParameters.GetSequentialCutOffPValue());
       }
     }
