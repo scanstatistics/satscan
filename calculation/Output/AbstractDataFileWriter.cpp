@@ -19,7 +19,7 @@ RecordBuffer::~RecordBuffer() {}
 const ZdField & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const {
   try {
     if (iFieldIndex >= vFieldDefinitions.size())
-      ZdGenerateException("Invalid index, out of range", "GetFieldDefinition()");
+      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldDefinition()", iFieldIndex, vFieldDefinitions.size());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFieldDefinition()","RecordBuffer");
@@ -34,7 +34,7 @@ const ZdField & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const
 bool RecordBuffer::GetFieldIsBlank(unsigned int iFieldNumber) const {
   try {
     if (iFieldNumber >= gvBlankFields.size())
-      ZdGenerateException("Invalid index, out of range!", "GetFieldIsBlank()");
+      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFieldIsBlank()","RecordBuffer");
@@ -81,7 +81,7 @@ ZdFieldValue& RecordBuffer::GetFieldValue(const ZdString& sFieldName) {
 ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) {
   try {
     if (iFieldIndex >= gvFieldValues.size())
-      ZdGenerateException("Invalid index, out of range", "GetFieldValue()");
+      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
     gvBlankFields[iFieldIndex] = false;
   }
   catch (ZdException &x) {
@@ -96,7 +96,7 @@ ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) {
 const ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) const {
   try {
     if (iFieldIndex >= gvFieldValues.size())
-      ZdGenerateException("Invalid index, out of range", "GetFieldValue()");
+      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetFieldValue()","RecordBuffer");
@@ -125,7 +125,7 @@ void RecordBuffer::SetFieldIsBlank(const ZdString& sFieldName, bool bBlank) {
 void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
   try {
     if (iFieldNumber >= gvBlankFields.size())
-      ZdGenerateException("Invalid index, out of range!", "SetFieldIsBlank()");
+      ZdGenerateException("Index %u out of range [size=%u].", "SetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
     gvBlankFields[iFieldNumber] = bBlank;
   }
   catch (ZdException &x) {

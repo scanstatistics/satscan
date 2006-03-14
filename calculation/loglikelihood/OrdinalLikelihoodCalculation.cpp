@@ -27,7 +27,7 @@ void OrdinalCombinedCategory::Combine(int iCategoryIndex) {
 int OrdinalCombinedCategory::GetCategoryIndex(size_t tCatgoryPositionIndex) const {
   try {
     if (!gvCatorgiesIndexes.size() || tCatgoryPositionIndex > gvCatorgiesIndexes.size() - 1)
-      ZdGenerateException("Index %u out of range.","GetCategoryIndex()", tCatgoryPositionIndex);
+      ZdGenerateException("Index %u out of range [size=%u].","GetCategoryIndex()", tCatgoryPositionIndex, gvCatorgiesIndexes.size());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetCategoryIndex()","OrdinalCombinedCategory");
