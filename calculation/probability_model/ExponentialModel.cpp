@@ -27,13 +27,13 @@ double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster
     switch (Cluster.GetClusterType()) {
      case PURELYTEMPORALCLUSTER            :
         for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
-           dPopulation += ppCases[Cluster.m_nFirstInterval][t] - ppCases[Cluster.m_nLastInterval][t];
-           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - ppCensoredCases[Cluster.m_nLastInterval][t];
+           dPopulation += ppCases[Cluster.m_nFirstInterval][t] - (Cluster.m_nLastInterval == DataHub.GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][t]);
+           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - (Cluster.m_nLastInterval == DataHub.GetNumTimeIntervals() ? 0 : ppCensoredCases[Cluster.m_nLastInterval][t]);
         }
         break;
      case SPACETIMECLUSTER                 :
         if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
-          for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+          for (int i=1; i <= Cluster.GetNumTractsInCluster(); ++i) {
              tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i);
              dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCases[Cluster.m_nLastInterval][tNeighborIndex];
              dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][tNeighborIndex] - ppCensoredCases[Cluster.m_nLastInterval][tNeighborIndex];
@@ -41,7 +41,7 @@ double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster
           break;
         }        
      case PURELYSPATIALCLUSTER             :
-        for (int i=1; i <= Cluster.GetNumTractsInnerCircle(); ++i) {
+        for (int i=1; i <= Cluster.GetNumTractsInCluster(); ++i) {
            tNeighborIndex = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
            dPopulation += ppCases[Cluster.m_nFirstInterval][tNeighborIndex];
            dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][tNeighborIndex];
