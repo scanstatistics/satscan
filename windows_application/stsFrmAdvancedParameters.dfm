@@ -861,7 +861,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 134
         Top = 68
         Width = 34
-        Height = 18
+        Height = 21
         Enabled = False
         MaxLength = 5
         TabOrder = 1
@@ -998,14 +998,14 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object gbxProspectiveSurveillance: TGroupBox
         Left = 8
-        Top = 66
+        Top = 61
         Width = 417
-        Height = 95
+        Height = 68
         Caption = 'Prospective Surveillance'
         TabOrder = 1
         object lblProspectiveStartYear: TLabel
-          Left = 48
-          Top = 53
+          Left = 264
+          Top = 18
           Width = 19
           Height = 11
           Caption = 'Year'
@@ -1017,8 +1017,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
         end
         object lblProspectiveStartMonth: TLabel
-          Left = 100
-          Top = 53
+          Left = 316
+          Top = 18
           Width = 28
           Height = 11
           Caption = 'Month'
@@ -1030,8 +1030,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
         end
         object lblProspectiveStartDay: TLabel
-          Left = 151
-          Top = 53
+          Left = 367
+          Top = 18
           Width = 16
           Height = 11
           Caption = 'Day'
@@ -1043,44 +1043,44 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
         end
         object edtProspectiveStartDateYear: TEdit
-          Left = 41
-          Top = 64
+          Left = 257
+          Top = 29
           Width = 41
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 4
           TabOrder = 1
           Text = '1900'
-          OnExit = edtProspectiveStartDateExit
+          OnExit = edtNumSequentialScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
-          Left = 101
-          Top = 64
+          Left = 317
+          Top = 29
           Width = 25
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 2
           Text = '12'
-          OnExit = edtProspectiveStartDateExit
+          OnExit = edtNumSequentialScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateDay: TEdit
-          Left = 147
-          Top = 64
+          Left = 363
+          Top = 29
           Width = 25
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 3
           Text = '31'
-          OnExit = edtProspectiveStartDateExit
+          OnExit = edtNumSequentialScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object chkAdjustForEarlierAnalyses: TCheckBox
           Left = 14
-          Top = 28
+          Top = 21
           Width = 227
           Height = 17
           Caption = 'Adjust for earlier analyses performed since:'
@@ -1090,7 +1090,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpReportCriticalValues: TGroupBox
         Left = 8
-        Top = 167
+        Top = 132
         Width = 421
         Height = 50
         Caption = 'Critical Values'
@@ -1103,6 +1103,77 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'Report critical values for an observed cluster to be significant'
           TabOrder = 0
           OnClick = OnControlExit
+        end
+      end
+      object grpSequentialScan: TGroupBox
+        Left = 8
+        Top = 184
+        Width = 417
+        Height = 91
+        Caption = 'Sequential Scan'
+        TabOrder = 3
+        object lblMaxSequentialScans: TLabel
+          Left = 45
+          Top = 43
+          Width = 142
+          Height = 13
+          Caption = 'Maximum number of iterations:'
+        end
+        object lblSeqentialCutoff: TLabel
+          Left = 45
+          Top = 67
+          Width = 148
+          Height = 13
+          AutoSize = False
+          Caption = 'Stop when p-value greater:'
+        end
+        object edtNumSequentialScans: TEdit
+          Left = 198
+          Top = 37
+          Width = 41
+          Height = 21
+          Enabled = False
+          MaxLength = 4
+          TabOrder = 1
+          Text = '10'
+          OnExit = edtNumSequentialScansExit
+          OnKeyPress = NaturalNumberKeyPress
+        end
+        object chkPerformSequentialScan: TCheckBox
+          Left = 14
+          Top = 22
+          Width = 210
+          Height = 14
+          Caption = 'Adjusting for More Likely Clusters'
+          TabOrder = 0
+          OnClick = chkPerformSequentialScanClick
+        end
+        object edtSequentialScanCutoff: TEdit
+          Left = 198
+          Top = 63
+          Width = 41
+          Height = 21
+          Enabled = False
+          TabOrder = 2
+          Text = '.5'
+          OnExit = edtSequentialScanCutoffExit
+          OnKeyPress = PositiveFloatKeyPress
+        end
+        object stMaximumIterationsCriteria: TStaticText
+          Left = 250
+          Top = 38
+          Width = 114
+          Height = 17
+          Caption = '(between 1 and 32000)'
+          TabOrder = 3
+        end
+        object stStopPValue: TStaticText
+          Left = 250
+          Top = 68
+          Width = 89
+          Height = 17
+          Caption = ' (must be >0, <=1)'
+          TabOrder = 4
         end
       end
     end

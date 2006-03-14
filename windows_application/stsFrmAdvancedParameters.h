@@ -129,6 +129,14 @@ __published:	// IDE-managed Components
    TEdit *edtMaxReportedSpatialRadius;
    TEdit *edtMaxReportedSpatialPercentFile;
    TCheckBox *chkRestrictReportedClusters;
+   TGroupBox *grpSequentialScan;
+   TEdit *edtNumSequentialScans;
+   TCheckBox *chkPerformSequentialScan;
+   TLabel *lblMaxSequentialScans;
+   TEdit *edtSequentialScanCutoff;
+   TLabel *lblSeqentialCutoff;
+   TStaticText *stMaximumIterationsCriteria;
+   TStaticText *stStopPValue;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -152,7 +160,7 @@ __published:	// IDE-managed Components
    void __fastcall edtMaxSpatialRadiusExit(TObject *Sender);
    void __fastcall edtMaxTemporalClusterSizeExit(TObject *Sender) ;
    void __fastcall edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) ;
-   void __fastcall edtProspectiveStartDateExit(TObject *Sender);
+   void __fastcall edtNumSequentialScansExit(TObject *Sender);
    void __fastcall edtStartRangeStartDateExit(TObject *Sender);
    void __fastcall edtEndRangeStartDateExit(TObject *Sender);
    void __fastcall edtStartRangeEndDateExit(TObject *Sender);
@@ -180,6 +188,8 @@ __published:	// IDE-managed Components
    void __fastcall edtMaxReportedSpatialClusterSizeExit(TObject *Sender);
    void __fastcall edtMaxReportedSpatialPercentFileExit(TObject *Sender);
    void __fastcall edtMaxReportedSpatialRadiusExit(TObject *Sender);
+   void __fastcall chkPerformSequentialScanClick(TObject *Sender);
+   void __fastcall edtSequentialScanCutoffExit(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -205,6 +215,7 @@ __published:	// IDE-managed Components
    void                     EnableProspectiveStartDate();
    void                     EnableProspectiveSurveillanceGroup(bool bEnable);
    void                     EnableReportedSpatialOptionsGroup(bool bEnable);
+   void                     EnableSequentialScanOptionsGroup(bool bEnable);
    void                     EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal, bool bEnablePercentage);
    void                     EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
    void                     EnableTemporalRanges(bool bEnable, bool bEnableRanges);
@@ -237,19 +248,19 @@ public:
    bool                     GetDefaultsSetForInputOptions();
    bool                     GetDefaultsSetForOutputOptions();
    SpatialSizeType          GetMaxReportedSpatialClusterSizeControlType() const;
-   float                    GetMaxReportedSpatialClusterSizeFromControl() const;
+   double                   GetMaxReportedSpatialClusterSizeFromControl() const;
    SpatialSizeType          GetMaxSpatialClusterSizeControlType() const;
-   float                    GetMaxSpatialClusterSizeFromControl() const;
+   double                   GetMaxSpatialClusterSizeFromControl() const;
    TemporalSizeType         GetMaxTemporalClusterSizeControlType() const;
-   float                    GetMaxTemporalClusterSizeFromControl() const;
+   double                   GetMaxTemporalClusterSizeFromControl() const;
    unsigned int             GetNumAdditionalDataSets() const {return lstInputDataSets->Items->Count;}
    void                     SaveParameterSettings();
    void                     SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
    void                     SetMaxReportedSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
-   void                     SetMaxReportedSpatialClusterSizeControl(float fMaxSize);
-   void                     SetMaxSpatialClusterSizeControl(float fMaxSize);
+   void                     SetMaxReportedSpatialClusterSizeControl(double dMaxSize);
+   void                     SetMaxSpatialClusterSizeControl(double dMaxSize);
    void                     SetMaxSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
-   void                     SetMaxTemporalClusterSizeControl(float fMaxSize);
+   void                     SetMaxTemporalClusterSizeControl(double dMaxSize);
    void                     SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
    void                     SetSpatialDistanceCaption();
    void                     SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);

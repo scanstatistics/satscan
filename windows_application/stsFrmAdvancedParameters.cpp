@@ -294,19 +294,25 @@ void __fastcall TfrmAdvancedParameters::btnShowAllClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 /** event triggered when 'adjustment for ealier analyses' checkbox if clicked */
 void __fastcall TfrmAdvancedParameters::chkAdjustForEarlierAnalysesClick(TObject *Sender) {
-  EnableSettingsForAnalysisModelCombination();                          
+  EnableSettingsForAnalysisModelCombination();
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when adjust for known relative risks is clicked */
 void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObject *Sender) {
   bool  bEnabled = grpAdjustments->Enabled && chkAdjustForKnownRelativeRisks->Checked;
-  
+
   lblAdjustmentsByRelativeRisksFile->Enabled = bEnabled;
   edtAdjustmentsByRelativeRisksFile->Enabled = bEnabled;
   edtAdjustmentsByRelativeRisksFile->Color = bEnabled ? clWindow : clInactiveBorder;
   btnBrowseAdjustmentsFile->Enabled = bEnabled;
   btnImportAdjustmentsFile->Enabled = bEnabled;
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+/** event triggered when user selects perform sequential scans check box */
+void __fastcall TfrmAdvancedParameters::chkPerformSequentialScanClick(TObject *Sender) {
+  EnableSettingsForAnalysisModelCombination();
   DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -368,7 +374,7 @@ void __fastcall TfrmAdvancedParameters::edtEndRangeStartDateExit(TObject *Sender
 //---------------------------------------------------------------------------
 /** event triggered when loginear percentage control exited */
 void __fastcall TfrmAdvancedParameters::edtLogLinearExit(TObject *Sender) {
-  if (edtLogLinear->Text.IsEmpty() || atof(edtLogLinear->Text.c_str()) <= -100)
+  if (edtLogLinear->Text.IsEmpty() || edtLogLinear->Text.ToDouble() <= -100)
     edtLogLinear->Text = 0;
   DoControlExit();
 }
@@ -379,47 +385,47 @@ void __fastcall TfrmAdvancedParameters::edtMaxCirclePopulationFilenameChange(TOb
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAdvancedParameters::edtMaxReportedSpatialClusterSizeExit(TObject *Sender) {
-  if (edtMaxReportedSpatialClusterSize->Text.IsEmpty() || atof(edtMaxReportedSpatialClusterSize->Text.c_str()) == 0)
+  if (edtMaxReportedSpatialClusterSize->Text.IsEmpty() || edtMaxReportedSpatialClusterSize->Text.ToDouble() == 0)
     edtMaxReportedSpatialClusterSize->Text = 50;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAdvancedParameters::edtMaxReportedSpatialPercentFileExit(TObject *Sender) {
-  if (edtMaxReportedSpatialPercentFile->Text.IsEmpty() || atof(edtMaxReportedSpatialPercentFile->Text.c_str()) == 0)
+  if (edtMaxReportedSpatialPercentFile->Text.IsEmpty() || edtMaxReportedSpatialPercentFile->Text.ToDouble() == 0)
     edtMaxReportedSpatialPercentFile->Text = 50;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAdvancedParameters::edtMaxReportedSpatialRadiusExit(TObject *Sender) {
-  if (edtMaxReportedSpatialRadius->Text.IsEmpty() || atof(edtMaxReportedSpatialRadius->Text.c_str()) == 0)
+  if (edtMaxReportedSpatialRadius->Text.IsEmpty() || edtMaxReportedSpatialRadius->Text.ToDouble() == 0)
     edtMaxReportedSpatialRadius->Text = 1;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum spatial cluster size edit control is exited. */
 void __fastcall TfrmAdvancedParameters::edtMaxSpatialClusterSizeExit(TObject *Sender) {
-  if (edtMaxSpatialClusterSize->Text.IsEmpty() || atof(edtMaxSpatialClusterSize->Text.c_str()) == 0)
+  if (edtMaxSpatialClusterSize->Text.IsEmpty() || edtMaxSpatialClusterSize->Text.ToDouble() == 0)
     edtMaxSpatialClusterSize->Text = 50;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum spatial cluster size, as percentage of population file, edit control is exited. */
 void __fastcall TfrmAdvancedParameters::edtMaxSpatialPercentFileExit(TObject *Sender) {
-  if (edtMaxSpatialPercentFile->Text.IsEmpty() || atof(edtMaxSpatialPercentFile->Text.c_str()) == 0)
+  if (edtMaxSpatialPercentFile->Text.IsEmpty() || edtMaxSpatialPercentFile->Text.ToDouble() == 0)
     edtMaxSpatialPercentFile->Text = 50;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum spatial cluster size, as a radius, edit control is exited. */
 void __fastcall TfrmAdvancedParameters::edtMaxSpatialRadiusExit(TObject *Sender){
-  if (edtMaxSpatialRadius->Text.IsEmpty() || atof(edtMaxSpatialRadius->Text.c_str()) == 0)
+  if (edtMaxSpatialRadius->Text.IsEmpty() || edtMaxSpatialRadius->Text.ToDouble() == 0)
     edtMaxSpatialRadius->Text = 1;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when maximum temporal cluster size edit control is exited. */
 void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeExit(TObject *Sender) {
-  if (edtMaxTemporalClusterSize->Text.IsEmpty() || atof(edtMaxTemporalClusterSize->Text.c_str()) == 0)
+  if (edtMaxTemporalClusterSize->Text.IsEmpty() || edtMaxTemporalClusterSize->Text.ToDouble() == 0)
     edtMaxTemporalClusterSize->Text = 50;
   DoControlExit();
 }
@@ -427,7 +433,7 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeExit(TObject *S
 //---------------------------------------------------------------------------
 /** event triggered when maximum temporal cluster size edit control is exited. */
 void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) {
-  if (edtMaxTemporalClusterSizeUnits->Text.IsEmpty() || atof(edtMaxTemporalClusterSizeUnits->Text.c_str()) == 0)
+  if (edtMaxTemporalClusterSizeUnits->Text.IsEmpty() || edtMaxTemporalClusterSizeUnits->Text.ToDouble() == 0)
     edtMaxTemporalClusterSizeUnits->Text = 1;
   DoControlExit();
 }
@@ -438,14 +444,25 @@ void __fastcall TfrmAdvancedParameters::edtPopFileNameChange(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 /** event triggered when year control, of prospective start date, is exited. */
-void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
-  TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);
+void __fastcall TfrmAdvancedParameters::edtNumSequentialScansExit(TObject *Sender) {
+  if (edtNumSequentialScans->Text.IsEmpty() ||
+      atoi(edtNumSequentialScans->Text.c_str()) < 1 ||
+      atoi(edtNumSequentialScans->Text.c_str()) > CParameters::MAXIMUM_SEQUENTIAL_ANALYSES)
+    edtNumSequentialScans->Text = 10;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when start window end ranges year, month or day control is exited */
 void __fastcall TfrmAdvancedParameters::edtStartRangeEndDateExit(TObject *Sender) {
   TfrmAnalysis::ValidateDate(*edtStartRangeEndYear, *edtStartRangeEndMonth, *edtStartRangeEndDay);
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+/** event triggered when sequential scan cut off control is exited */
+void __fastcall TfrmAdvancedParameters::edtSequentialScanCutoffExit(TObject *Sender) {
+  if (edtSequentialScanCutoff->Text.IsEmpty() ||
+      edtSequentialScanCutoff->Text.ToDouble() <= 0 || edtSequentialScanCutoff->Text.ToDouble() > 1)
+    edtSequentialScanCutoff->Text = ".05";
   DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -666,9 +683,23 @@ void TfrmAdvancedParameters::EnableReportedSpatialOptionsGroup(bool bEnable) {
      rdoReportedSpatialDistance->Checked = true;
 }
 //---------------------------------------------------------------------------
+void TfrmAdvancedParameters::EnableSequentialScanOptionsGroup(bool bEnable) {
+  grpSequentialScan->Enabled = bEnable;
+  chkPerformSequentialScan->Enabled = bEnable;
+  edtNumSequentialScans->Enabled = chkPerformSequentialScan->Checked && bEnable;
+  edtNumSequentialScans->Color = edtNumSequentialScans->Enabled ? clWindow : clInactiveBorder;
+  lblMaxSequentialScans->Enabled = chkPerformSequentialScan->Checked && bEnable;
+  edtSequentialScanCutoff->Enabled = chkPerformSequentialScan->Checked && bEnable;
+  edtSequentialScanCutoff->Color = edtSequentialScanCutoff->Enabled ? clWindow : clInactiveBorder;
+  lblSeqentialCutoff->Enabled = chkPerformSequentialScan->Checked && bEnable;
+  stMaximumIterationsCriteria->Enabled = chkPerformSequentialScan->Checked && bEnable;
+  stStopPValue->Enabled = chkPerformSequentialScan->Checked && bEnable;
+}
+//---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
   bool  bPoisson(gAnalysisSettings.GetModelControlType() == POISSON),
-        bSpaceTimePermutation(gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION);
+        bSpaceTimePermutation(gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION),
+        bExponential(gAnalysisSettings.GetModelControlType() == EXPONENTIAL);
 
   try {
     switch (gAnalysisSettings.GetAnalysisControlType()) {
@@ -726,6 +757,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
                             "EnableSettingsForAnalysisModelCombination()",gAnalysisSettings.GetAnalysisControlType());
     }
     EnableAdjustmentsGroup(bPoisson);
+    EnableSequentialScanOptionsGroup(!bSpaceTimePermutation && !bExponential);
   }
   catch (ZdException &x) {
     x.AddCallpath("EnableSettingsForAnalysisModelCombination()","TfrmAdvancedParameters");
@@ -799,7 +831,8 @@ void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
    rdoElliptic->Enabled = bEnable && (CoordinatesType)gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN;
    stNonCompactnessPenalty->Enabled = rdoElliptic->Enabled;
    cmbNonCompactnessPenalty->Enabled = rdoElliptic->Enabled;
-   if (!rdoElliptic->Enabled && rdoElliptic->Checked && rdoCircular->Enabled) rdoCircular->Checked = true;  
+   cmbNonCompactnessPenalty->Color = cmbNonCompactnessPenalty->Enabled ? clWindow : clInactiveBorder;
+   if (!rdoElliptic->Enabled && rdoElliptic->Checked && rdoCircular->Enabled) rdoCircular->Checked = true;
 }
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */
@@ -864,6 +897,9 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900 || edtProspectiveStartDateYear->Text.ToInt() == 2000);
    bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
    bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
+   bReturn &= (chkPerformSequentialScan->Checked == false);
+   bReturn &= (edtNumSequentialScans->Text.ToInt() == 10);
+   bReturn &= (edtSequentialScanCutoff->Text.ToDouble() == .05);
 
    // Spatial Window tab
    bReturn &= (GetMaxSpatialClusterSizeControlType()==PERCENTOFPOPULATION);
@@ -873,7 +909,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtMaxCirclePopulationFilename->Text == "");
    bReturn &= (chkInclPureTempClust->Checked == false);
    bReturn &= (rdoCircular->Checked == true);
-   bReturn &= (cmbNonCompactnessPenalty->ItemIndex == 0);
+   bReturn &= (cmbNonCompactnessPenalty->ItemIndex == 1);
 
    // Temporal tab
    bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
@@ -950,16 +986,16 @@ SpatialSizeType TfrmAdvancedParameters::GetMaxReportedSpatialClusterSizeControlT
 }
 //---------------------------------------------------------------------------
 /** returns maximum spatial cluster size from appropriate control */
-float TfrmAdvancedParameters::GetMaxReportedSpatialClusterSizeFromControl() const {
-  float   fReturn;
+double TfrmAdvancedParameters::GetMaxReportedSpatialClusterSizeFromControl() const {
+  double dReturn;
 
   switch (GetMaxReportedSpatialClusterSizeControlType()) {
-    case MAXDISTANCE                 : fReturn = edtMaxReportedSpatialRadius->Text.ToDouble(); break;
-    case PERCENTOFMAXCIRCLEFILE      : fReturn = edtMaxReportedSpatialPercentFile->Text.ToDouble(); break;
+    case MAXDISTANCE                 : dReturn = edtMaxReportedSpatialRadius->Text.ToDouble(); break;
+    case PERCENTOFMAXCIRCLEFILE      : dReturn = edtMaxReportedSpatialPercentFile->Text.ToDouble(); break;
     case PERCENTOFPOPULATION         :
-    default                          : fReturn = edtMaxReportedSpatialClusterSize->Text.ToDouble();
+    default                          : dReturn = edtMaxReportedSpatialClusterSize->Text.ToDouble();
   }
-  return fReturn;
+  return dReturn;
 }
 //---------------------------------------------------------------------------
 /** returns maximum spatial cluster size type for control */
@@ -979,16 +1015,16 @@ SpatialSizeType TfrmAdvancedParameters::GetMaxSpatialClusterSizeControlType() co
 }
 //---------------------------------------------------------------------------
 /** returns maximum spatial cluster size from appropriate control */
-float TfrmAdvancedParameters::GetMaxSpatialClusterSizeFromControl() const {
-  float   fReturn;
+double TfrmAdvancedParameters::GetMaxSpatialClusterSizeFromControl() const {
+  double   dReturn;
 
   switch (GetMaxSpatialClusterSizeControlType()) {
-    case MAXDISTANCE                 : fReturn = edtMaxSpatialRadius->Text.ToDouble(); break;
-    case PERCENTOFMAXCIRCLEFILE      : fReturn = edtMaxSpatialPercentFile->Text.ToDouble(); break;
+    case MAXDISTANCE                 : dReturn = edtMaxSpatialRadius->Text.ToDouble(); break;
+    case PERCENTOFMAXCIRCLEFILE      : dReturn = edtMaxSpatialPercentFile->Text.ToDouble(); break;
     case PERCENTOFPOPULATION         :
-    default                          : fReturn = edtMaxSpatialClusterSize->Text.ToDouble();
+    default                          : dReturn = edtMaxSpatialClusterSize->Text.ToDouble();
   }
-  return fReturn;
+  return dReturn;
 }
 //---------------------------------------------------------------------------
 /** returns maximum temporal cluster size type for control */
@@ -1006,15 +1042,15 @@ TemporalSizeType TfrmAdvancedParameters::GetMaxTemporalClusterSizeControlType() 
 }
 //---------------------------------------------------------------------------
 /** returns maximum temporal cluster size from appropriate control */
-float TfrmAdvancedParameters::GetMaxTemporalClusterSizeFromControl() const {
-  float fReturn;
+double TfrmAdvancedParameters::GetMaxTemporalClusterSizeFromControl() const {
+  double dReturn;
 
   switch (GetMaxTemporalClusterSizeControlType()) {
-    case TIMETYPE        : fReturn = atof(edtMaxTemporalClusterSizeUnits->Text.c_str()); break;
+    case TIMETYPE        : dReturn = edtMaxTemporalClusterSizeUnits->Text.ToDouble(); break;
     case PERCENTAGETYPE  :
-    default              : fReturn = atof(edtMaxTemporalClusterSize->Text.c_str());
+    default              : dReturn = edtMaxTemporalClusterSize->Text.ToDouble();
   }
-  return fReturn;
+  return dReturn;
 }
 //---------------------------------------------------------------------------
 /** class initialization */
@@ -1023,7 +1059,7 @@ void TfrmAdvancedParameters::Init() {
   rdgCriteriaSecClusters->ItemIndex = 0;
   giCategory = 0;
   giDataSetNum = 2;
-  cmbNonCompactnessPenalty->ItemIndex = 0;
+  cmbNonCompactnessPenalty->ItemIndex = 1;
 }
 //---------------------------------------------------------------------------
 /** Modally shows import dialog. */
@@ -1181,10 +1217,13 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   ZdString      sString;
 
   try {
+    ref.SetSequentialCutOffPValue(edtSequentialScanCutoff->Text.ToDouble());
+    ref.SetSequentialScanning(chkPerformSequentialScan->Checked);
+    ref.SetNumSequentialScans(atoi(edtNumSequentialScans->Text.c_str()));
     ref.SetUseAdjustmentForRelativeRisksFile(chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked);
     ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
     ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
-    ref.SetTimeTrendAdjustmentPercentage(atof(edtLogLinear->Text.c_str()));
+    ref.SetTimeTrendAdjustmentPercentage(edtLogLinear->Text.ToDouble());
     if (rdgSpatialAdjustments->Enabled)
       ref.SetSpatialAdjustmentType((SpatialAdjustmentType)rdgSpatialAdjustments->ItemIndex);
     else
@@ -1252,6 +1291,9 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    edtProspectiveStartDateMonth->Text = "12";
    edtProspectiveStartDateDay->Text = "31";
    chkReportCriticalValues->Checked = false;
+   chkPerformSequentialScan->Checked = false;
+   edtNumSequentialScans->Text = "10";
+   edtSequentialScanCutoff->Text = ".05";
 
    // Spatial Window tab
    SetMaxSpatialClusterSizeTypeControl(PERCENTOFPOPULATION);
@@ -1261,7 +1303,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    edtMaxCirclePopulationFilename->Text = "";
    chkInclPureTempClust->Checked = false;
    rdoCircular->Checked = true;
-   cmbNonCompactnessPenalty->ItemIndex = 0;
+   cmbNonCompactnessPenalty->ItemIndex = 1;
    SetSpatialDistanceCaption();
 
    // Temporal tab
@@ -1317,26 +1359,26 @@ void TfrmAdvancedParameters::SetDefaultsForOutputTab() {
 }
 //---------------------------------------------------------------------------
 /** Set appropriate control for maximum spatial cluster size type. */
-void TfrmAdvancedParameters::SetMaxReportedSpatialClusterSizeControl(float fMaxSize) {
+void TfrmAdvancedParameters::SetMaxReportedSpatialClusterSizeControl(double dMaxSize) {
    switch (GetMaxReportedSpatialClusterSizeControlType()) {
      case MAXDISTANCE:
-        if (fMaxSize <= 0)
+        if (dMaxSize <= 0)
            edtMaxReportedSpatialRadius->Text = 1;
         else
-           edtMaxReportedSpatialRadius->Text = fMaxSize;
+           edtMaxReportedSpatialRadius->Text = dMaxSize;
         break;
      case PERCENTOFMAXCIRCLEFILE:
-        if (fMaxSize <= 0 || fMaxSize > 50)
+        if (dMaxSize <= 0 || dMaxSize > 50)
            edtMaxReportedSpatialPercentFile->Text = 50;
         else
-           edtMaxReportedSpatialPercentFile->Text = fMaxSize;
+           edtMaxReportedSpatialPercentFile->Text = dMaxSize;
         break;
     case PERCENTOFPOPULATION:
     default:
-        if (fMaxSize <= 0 || fMaxSize > 50)
+        if (dMaxSize <= 0 || dMaxSize > 50)
            edtMaxReportedSpatialClusterSize->Text = 50;
         else
-           edtMaxReportedSpatialClusterSize->Text = fMaxSize;
+           edtMaxReportedSpatialClusterSize->Text = dMaxSize;
    }
 }
 //---------------------------------------------------------------------------
@@ -1351,26 +1393,26 @@ void TfrmAdvancedParameters::SetMaxReportedSpatialClusterSizeTypeControl(Spatial
 }
 //---------------------------------------------------------------------------
 /** Set appropriate control for maximum spatial cluster size type. */
-void TfrmAdvancedParameters::SetMaxSpatialClusterSizeControl(float fMaxSize) {
+void TfrmAdvancedParameters::SetMaxSpatialClusterSizeControl(double dMaxSize) {
    switch (GetMaxSpatialClusterSizeControlType()) {
      case MAXDISTANCE:
-        if (fMaxSize <= 0)
+        if (dMaxSize <= 0)
            edtMaxSpatialRadius->Text = 1;
         else
-           edtMaxSpatialRadius->Text = fMaxSize;
+           edtMaxSpatialRadius->Text = dMaxSize;
         break;
      case PERCENTOFMAXCIRCLEFILE:
-        if (fMaxSize <= 0 || fMaxSize > 50)
+        if (dMaxSize <= 0 || dMaxSize > 50)
            edtMaxSpatialPercentFile->Text = 50;
         else
-           edtMaxSpatialPercentFile->Text = fMaxSize;
+           edtMaxSpatialPercentFile->Text = dMaxSize;
         break;
     case PERCENTOFPOPULATION:
     default:
-        if (fMaxSize <= 0 || fMaxSize > 50)
+        if (dMaxSize <= 0 || dMaxSize > 50)
            edtMaxSpatialClusterSize->Text = 50;
         else
-           edtMaxSpatialClusterSize->Text = fMaxSize;
+           edtMaxSpatialClusterSize->Text = dMaxSize;
    }
 }
 //---------------------------------------------------------------------------
@@ -1385,20 +1427,20 @@ void TfrmAdvancedParameters::SetMaxSpatialClusterSizeTypeControl(SpatialSizeType
 }
 //---------------------------------------------------------------------------
 /** Set appropriate control for maximum spatial cluster size type. */
-void TfrmAdvancedParameters::SetMaxTemporalClusterSizeControl(float fMaxSize) {
+void TfrmAdvancedParameters::SetMaxTemporalClusterSizeControl(double dMaxSize) {
   switch (GetMaxTemporalClusterSizeControlType()) {
     case TIMETYPE:
-       if (fMaxSize <= 0)
+       if (dMaxSize <= 0)
           edtMaxTemporalClusterSizeUnits->Text = 1;
        else
-          edtMaxTemporalClusterSizeUnits->Text = static_cast<int>(fMaxSize);
+          edtMaxTemporalClusterSizeUnits->Text = static_cast<int>(dMaxSize);
        break;
     case PERCENTAGETYPE :
     default             :
-       if (fMaxSize <= 0 || fMaxSize > 50)
+       if (dMaxSize <= 0 || dMaxSize > 50)
           edtMaxTemporalClusterSize->Text = 50;
        else
-          edtMaxTemporalClusterSize->Text = fMaxSize;
+          edtMaxTemporalClusterSize->Text = dMaxSize;
   }
 }
 //---------------------------------------------------------------------------
@@ -1496,6 +1538,9 @@ void TfrmAdvancedParameters::Setup() {
       // Inference tab
       chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
       chkReportCriticalValues->Checked = ref.GetReportCriticalValues();
+      chkPerformSequentialScan->Checked = ref.GetIsSequentialScanning();
+      edtNumSequentialScans->Text = (ref.GetNumSequentialScansRequested() < 1 || ref.GetNumSequentialScansRequested() > (unsigned int)CParameters::MAXIMUM_SEQUENTIAL_ANALYSES ? 10 : ref.GetNumSequentialScansRequested());
+      edtSequentialScanCutoff->Text = (ref.GetSequentialCutOffPValue() <= 0 || ref.GetSequentialCutOffPValue() > 1 ? 0.05 : ref.GetSequentialCutOffPValue());   
 
       // Output tab
       chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();
@@ -1934,3 +1979,4 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   throw theException;
 }
 //---------------------------------------------------------------------------
+
