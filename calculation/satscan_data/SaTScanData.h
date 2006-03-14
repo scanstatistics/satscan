@@ -130,6 +130,9 @@ class CSaTScanData {
     inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline size_t                               GetNumDataSets() const {return gpDataSets->GetNumDataSets();}
+
+    size_t                                      GetNumNullifiedLocations() const {return gvNullifiedLocations.size();}
+
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
@@ -156,7 +159,7 @@ class CSaTScanData {
     bool                                        ReadPoissonData();
     bool                                        ReadRankData();
     bool                                        ReadSpaceTimePermutationData();
-    void                                        RemoveTractSignificance(tract_t tTractIndex);
+    void                                        RemoveClusterSignificance(const CCluster& ClusterObj);
     void                                        SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType);
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 

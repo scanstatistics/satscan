@@ -711,80 +711,110 @@ bool CSaTScanData::ReadSpaceTimePermutationData() {
   return true;
 }
 
-/** For tract at tTractIndex - zeros case, control, and population data from data
-    set structures. This function is utilized by the optional sequential scan
-    feature and is designed only for purely spatial analyses at this time.*/
-void CSaTScanData::RemoveTractSignificance(tract_t tTractIndex) {
-  count_t       tTotalCases, tTotalControls;
-  measure_t     tTotalMeasure;
+/** Removes all cases/controls from data sets, geographically and temporally, for
+    location at tTractIndex in specified interval range. */
+void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
+  count_t       tCasesInInterval, ** ppCases;
+  measure_t     tCalibration, tAdjustedTotalMeasure, tMeasureInInterval, ** ppMeasure;
+  tract_t       tStopTract(0), tTractIndex(-1), iNeighborIndex=0;
 
   try {
-    // Previous iterations of sequential scan could have had this location as part of the most likely cluster.
-    if (GetIsNullifiedLocation(tTractIndex))
-      return;
-
-    for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-       RealDataSet& DataSet = gpDataSets->GetDataSet(t);
-       PopulationData& thisPopulation = DataSet.GetPopulationData();
-
-       //$$ This process will likely need further updates for the Exponential, Normal
-       //$$ and possibly the Rank model. Might be more fitting to have a virtual
-       //$$ method in DataSetHandler classes.
-       switch (gParameters.GetProbabilityModelType()) {
-         case BERNOULLI :
-           // Remove controls for location from data set
-           tTotalControls = DataSet.GetTotalControls();
-           tTotalControls -= DataSet.GetControlArray()[0][tTractIndex];
-           DataSet.GetControlArray()[0][tTractIndex] = 0;
-           DataSet.SetTotalControls(tTotalControls);
-         case POISSON :
-           // Remove observed and expected cases for location from data set
-           tTotalCases = DataSet.GetTotalCases();
-           tTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
-           gtTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
-           DataSet.GetCaseArray()[0][tTractIndex] = 0;
-           DataSet.SetTotalCases(tTotalCases);
-           tTotalMeasure = DataSet.GetTotalMeasure();
-           tTotalMeasure -= DataSet.GetMeasureArray()[0][tTractIndex];
-           gtTotalMeasure -= DataSet.GetMeasureArray()[0][tTractIndex];
-           DataSet.GetMeasureArray()[0][tTractIndex] = 0;
-           DataSet.SetTotalMeasure(tTotalMeasure);
-           break;
-         case SPACETIMEPERMUTATION :
-           // Since space-time permutation model only permitted with space-time analyses, this
-           // function is not useable at this time.
-           ZdGenerateException("RemoveTractSignificance() not implemented for space-time permutation model.",
-                               "RemoveTractSignificance()");
-         case ORDINAL :
-           // Remove observed cases for location from data set ordinal categories
-           tTotalCases = DataSet.GetTotalCases();
-           for (size_t t=0; t < DataSet.GetCasesByCategory().size(); ++t) {
-              tTotalCases -= DataSet.GetCategoryCaseArray(t)[0][tTractIndex];
-              gtTotalCases -= DataSet.GetCaseArray()[0][tTractIndex];
-              //$$ NOTE: Depending on what information is to be printed for results, it might be
-              //$$       necessary to store the initial number of category cases separately.
-              thisPopulation.RemoveOrdinalCategoryCases(t, DataSet.GetCategoryCaseArray(t)[0][tTractIndex]);
-              DataSet.GetCategoryCaseArray(t)[0][tTractIndex] = 0;
+    tStopTract = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? m_nTracts - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.GetNumTractsInCluster()));
+    while (tTractIndex != tStopTract) {
+       tTractIndex = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? tTractIndex + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
+       // Previous iterations of sequential scan could have had this location as part of the most likely cluster.
+       if (GetIsNullifiedLocation(tTractIndex)) continue;
+       if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
+         gtTotalCases = gtTotalMeasure = 0;
+         for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+           RealDataSet& DataSet = gpDataSets->GetDataSet(t);
+           ppCases = DataSet.GetCaseArray();
+           ppMeasure = DataSet.GetMeasureArray();
+           //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
+           tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+           tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+           //zero out cases/measure in clusters defined temporal window
+           for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i) {
+             ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+             ppMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
            }
-           DataSet.SetTotalCases(tTotalCases);
-           break;
-         case EXPONENTIAL :
-           // removes cases from case array, measure array and from randomizers (if not file source) -- not implemented yet(on hold)
-         default :
-           ZdGenerateException("Unknown probability model type '%d'.", "RemoveTractSignificance()", gParameters.GetProbabilityModelType());
-       };
+           //remove cases/measure from earlier intervals
+           for (int i=0; i < Cluster.m_nFirstInterval; ++i) {
+             ppCases[i][tTractIndex] -= tCasesInInterval;
+             ppMeasure[i][tTractIndex] -= tMeasureInInterval;
+           }
+           //update totals for data set
+           DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
+           DataSet.SetTotalMeasure(DataSet.GetTotalMeasure() - tMeasureInInterval);
+           //update class variables that defines totals across all data sets
+           gtTotalCases += DataSet.GetTotalCases();
+           gtTotalMeasure += DataSet.GetTotalMeasure();
+         }
+       }
+       else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+         gtTotalCases = 0;
+         for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+           RealDataSet& DataSet = gpDataSets->GetDataSet(t);
+           PopulationData& thisPopulation = DataSet.GetPopulationData();
+           // Remove observed cases for location from data set ordinal categories
+           for (size_t c=0; c < DataSet.GetCasesByCategory().size(); ++c) {
+             ppCases = DataSet.GetCategoryCaseArray(c);
+             //get cases in earliest interval - we'll need to remove these from intervals earlier than cluster window
+             tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+             //zero out cases/measure in clusters defined temporal window
+             for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
+               ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+             //remove cases/measure from earlier intervals
+             for (int i=0; i < Cluster.m_nFirstInterval; ++i)
+               ppCases[i][tTractIndex] -= tCasesInInterval;
+             //update category population
+             thisPopulation.RemoveOrdinalCategoryCases(c, tCasesInInterval);
+             //update totals for data set
+             DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
+           }
+           //update class variables that defines totals across all data sets
+           gtTotalCases += DataSet.GetTotalCases();
+         }
+       }
+       else
+         ZdGenerateException("RemoveClusterSignificance() not implemented for %s model.",
+                               "RemoveClusterSignificance()", gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+       // Remove location population data as specified in maximum circle population file
+       if (gvMaxCirclePopulation.size()) {
+         m_nTotalMaxCirclePopulation -= gvMaxCirclePopulation[tTractIndex];
+         gvMaxCirclePopulation[tTractIndex] = 0;
+       }
+       // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
+       if (Cluster.m_nFirstInterval == 0 && Cluster.m_nLastInterval == m_nTimeIntervals)
+         gvNullifiedLocations.push_back(tTractIndex);
     }
-
-    // Remove location population data as specified in maximum circle population file
-    if (gvMaxCirclePopulation.size()) {
-       m_nTotalMaxCirclePopulation -= gvMaxCirclePopulation[tTractIndex];
-       gvMaxCirclePopulation[tTractIndex] = 0;
+    //recalibrate the measure array to equal expected cases
+    if (gParameters.GetProbabilityModelType() == POISSON) {
+      //recalibrate the measure array to equal expected cases
+      gtTotalMeasure = 0;
+      for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+         tAdjustedTotalMeasure=0;
+         tCalibration  = (measure_t)(gpDataSets->GetDataSet(t).GetTotalCases())/(gpDataSets->GetDataSet(t).GetTotalMeasure());
+         for (int i=0; i < m_nTimeIntervals; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] *= tCalibration;
+         for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
+         gpDataSets->GetDataSet(t).SetTotalMeasure(tAdjustedTotalMeasure);
+         gtTotalMeasure += tAdjustedTotalMeasure;
+      }     
     }
-    // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
-    gvNullifiedLocations.push_back(tTractIndex);
+    //no recalculate purely temporal arrays as needed
+    if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
+      for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+        if (gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == POISSON) {
+          gpDataSets->GetDataSet(t).SetPTCasesArray();
+          gpDataSets->GetDataSet(t).SetPTMeasureArray();
+        }
+        if (gParameters.GetProbabilityModelType() == ORDINAL)
+          gpDataSets->GetDataSet(t).SetPTCategoryCasesArray();
+      }
+    }
   }
   catch (ZdException & x) {
-    x.AddCallpath("RemoveTractSignificance()", "CSaTScanData");
+    x.AddCallpath("RemoveClusterSignificance()", "CSaTScanData");
     throw;
   }
 }
