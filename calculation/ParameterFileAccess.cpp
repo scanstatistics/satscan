@@ -145,6 +145,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
 
 /** Assigns string representation to passed string class for parameter. */
 ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParameterType, ZdString& s) const {
+  ZdString      sWorker;
+
   try {
     switch (eParameterType) {
       case ANALYSISTYPE             : return AsString(s, gParameters.GetAnalysisType());
@@ -185,8 +187,10 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case OUTPUT_RR_ASCII          : return AsString(s, gParameters.GetOutputRelativeRisksAscii());
       case WINDOW_SHAPE             : return AsString(s, gParameters.GetSpatialWindowType());
       case ESHAPES                  : s << ZdString::reset;
-                                      for (size_t i=0; i < gParameters.GetEllipseShapes().size(); ++i)
-                                         s << (i == 0 ? "" : ",") << gParameters.GetEllipseShapes()[i];
+                                      for (size_t i=0; i < gParameters.GetEllipseShapes().size(); ++i) {
+                                         sWorker.printf("%g", gParameters.GetEllipseShapes()[i]);
+                                         s << (i == 0 ? "" : ",") << sWorker;
+                                      }
                                       return s;
       case ENUMBERS                 :  s << ZdString::reset;
                                       for (size_t i=0; i < gParameters.GetEllipseRotations().size(); ++i)
@@ -259,7 +263,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case DIMENSION                : /*  */ break;
       case SPECIALGRID              : sDefaultValue = (gParameters.UseSpecialGrid() ? "y" : "n"); break;
       case GRIDFILE                 : sDefaultValue = "<blank>"; break;
-      case GEOSIZE                  : sDefaultValue = gParameters.GetMaximumGeographicClusterSize(); break;
+      case GEOSIZE                  : sDefaultValue.printf("%g", gParameters.GetMaximumGeographicClusterSize()); break;
       case STARTDATE                : sDefaultValue = gParameters.GetStudyPeriodStartDate().c_str(); break;
       case ENDDATE                  : sDefaultValue = gParameters.GetStudyPeriodEndDate().c_str(); break;
       case CLUSTERS                 : sDefaultValue = gParameters.GetIncludeClustersType(); break;
@@ -429,7 +433,7 @@ double AbtractParameterFileAccess::ReadDouble(const ZdString & sValue, Parameter
       InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadDouble()",
                                           GetParameterLabel(eParameterType));
     }
-    else if (sscanf(sValue.GetCString(), "%lf", &dReadResult) != 1) {
+    if (sscanf(sValue.GetCString(), "%lf", &dReadResult) != 1) {
       InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid real number.\n", "ReadDouble()",
                                           GetParameterLabel(eParameterType), sValue.GetCString());
     }
@@ -497,7 +501,7 @@ void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) c
 int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const {
   try {
     if (iValue < iLow || iValue > iHigh)
-      InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range(%d - %d).\n", "SetCoordinatesType()",
+      InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range [%d,%d].\n", "SetCoordinatesType()",
                                           GetParameterLabel(eParameterType), iValue, iLow, iHigh);
   }
   catch (ZdException &x) {
@@ -506,28 +510,6 @@ int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParam
   }
   return iValue;
 }
-
-/** Attempts to interpret passed string as a float value. Throws InvalidParameterException. */
-float AbtractParameterFileAccess::ReadFloat(const ZdString& sValue, ParameterType eParameterType) const {
-  float         fReadResult;
-
-  try {
-    if (sValue.GetIsEmpty()) {
-      InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
-                                          "ReadFloat()", GetParameterLabel(eParameterType));
-    }
-    else if (sscanf(sValue.GetCString(), "%f", &fReadResult) != 1) {
-      InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid real number.\n",
-                                          "ReadFloat()", GetParameterLabel(eParameterType), sValue.GetCString());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadFloat()","AbtractParameterFileAccess");
-    throw;
-  }
-  return fReadResult;
-}
-
 
 /** Attempts to interpret passed string as an integer value. Throws InvalidParameterException. */
 int AbtractParameterFileAccess::ReadInt(const ZdString& sValue, ParameterType eParameterType) const {
@@ -603,7 +585,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        break;
       case SPECIALGRID               : gParameters.SetUseSpecialGrid(ReadBoolean(sParameter, eParameterType)); break;
       case GRIDFILE                  : gParameters.SetSpecialGridFileName(sParameter.GetCString(), true); break;
-      case GEOSIZE                   : gParameters.SetMaximumGeographicClusterSize(ReadFloat(sParameter, eParameterType)); break;
+      case GEOSIZE                   : gParameters.SetMaximumGeographicClusterSize(ReadDouble(sParameter, eParameterType)); break;
       case STARTDATE                 : ReadDate(sParameter, eParameterType); break;
       case ENDDATE                   : ReadDate(sParameter, eParameterType); break;
       case CLUSTERS                  : gParameters.SetIncludeClustersType((IncludeClustersType)ReadInt(sParameter, eParameterType)); break;
@@ -613,7 +595,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetTimeAggregationUnitsType((DatePrecisionType)iValue); break;
       case TIME_AGGREGATION          : gParameters.SetTimeAggregationLength((long)ReadInt(sParameter, eParameterType)); break;
       case PURESPATIAL               : gParameters.SetIncludePurelySpatialClusters(ReadBoolean(sParameter, eParameterType)); break;
-      case TIMESIZE                  : gParameters.SetMaximumTemporalClusterSize(ReadFloat(sParameter, eParameterType)); break;
+      case TIMESIZE                  : gParameters.SetMaximumTemporalClusterSize(ReadDouble(sParameter, eParameterType)); break;
       case REPLICAS                  : gParameters.SetNumberMonteCarloReplications(ReadUnsignedInt(sParameter, eParameterType)); break;
       case MODEL                     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, POISSON, RANK);
                                        gParameters.SetProbabilityModelType((ProbabilityModelType)iValue); break;
@@ -677,7 +659,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case TIMETRENDCONVRG           : /*gParameters.SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType));*/ break;
       case MAXCIRCLEPOPFILE          : gParameters.SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       case EARLY_SIM_TERMINATION     : gParameters.SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
-      case REPORTED_GEOSIZE          : gParameters.SetMaximumReportedGeographicalClusterSize(ReadFloat(sParameter, eParameterType)); break;
+      case REPORTED_GEOSIZE          : gParameters.SetMaximumReportedGeographicalClusterSize(ReadDouble(sParameter, eParameterType)); break;
       case USE_REPORTED_GEOSIZE      : gParameters.SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STANDARD, FILESOURCE);
                                        gParameters.SetSimulationType((SimulationType)iValue); break;

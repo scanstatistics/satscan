@@ -32,7 +32,6 @@ class AbtractParameterFileAccess {
     void                        ReadEllipseRotations(const ZdString& sParameter) const;
     void                        ReadEllipseShapes(const ZdString& sParameter) const;
     int                         ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const;
-    float                       ReadFloat(const ZdString& sValue, ParameterType eParameterType) const;
     int                         ReadInt(const ZdString& sValue, ParameterType eParameterType) const;
     int                         ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType) const;
     void                        ReadVersion(const ZdString& sValue) const;
@@ -46,8 +45,8 @@ class AbtractParameterFileAccess {
 
     ZdString                  & AsString(ZdString& ref, int i) const {ref = i; return ref;}
     ZdString                  & AsString(ZdString& ref, unsigned int i) const {ref.Clear(); ref << i; return ref;}
-    ZdString                  & AsString(ZdString& ref, float f) const {ref = f; return ref;}
-    ZdString                  & AsString(ZdString& ref, double d) const {ref = d; return ref;}
+    ZdString                  & AsString(ZdString& ref, float f) const {ref.printf("%g", f);; return ref;}
+    ZdString                  & AsString(ZdString& ref, double d) const {ref.printf("%g", d); return ref;}
     ZdString                  & AsString(ZdString& ref, bool b) const {ref = (b ? (gbWriteBooleanAsDigit ? "1" : "y") : (gbWriteBooleanAsDigit ? "0" : "n")); return ref;}
     ZdString                  & AsString(ZdString& ref, const CParameters::CreationVersion& v) const {ref.printf("%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
     const char                * GetParameterComment(ParameterType eParameterType) const;
