@@ -460,7 +460,6 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
 void TfrmAnalysis::DefaultHiddenParameters() {
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
     gParameters.SetAnalysisType(PURELYSPATIAL);
-  gParameters.SetSequentialScanning(false);
   gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   gParameters.SetValidatePriorToCalculation(true);
