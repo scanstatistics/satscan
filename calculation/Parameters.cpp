@@ -51,8 +51,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdPower_Y                              != rhs.gdPower_Y) return false;
   if (gsStudyPeriodStartDate                 != rhs.gsStudyPeriodStartDate) return false;
   if (gsStudyPeriodEndDate                   != rhs.gsStudyPeriodEndDate) return false;
-  if (gfMaxGeographicClusterSize             != rhs.gfMaxGeographicClusterSize) return false;
-  if (gfMaxTemporalClusterSize               != rhs.gfMaxTemporalClusterSize) return false;
+  if (gdMaxGeographicClusterSize             != rhs.gdMaxGeographicClusterSize) return false;
+  if (gdMaxTemporalClusterSize               != rhs.gdMaxTemporalClusterSize) return false;
   if (geIncludeClustersType                  != rhs.geIncludeClustersType) return false;
   if (geTimeAggregationUnitsType             != rhs.geTimeAggregationUnitsType) return false;
   if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
@@ -97,7 +97,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdTimeTrendConverge		                 != rhs.gdTimeTrendConverge) return false;
   if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
   if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
-  if (gfMaxReportedGeographicClusterSize     != rhs.gfMaxReportedGeographicClusterSize) return false;
+  if (gdMaxReportedGeographicClusterSize     != rhs.gdMaxReportedGeographicClusterSize) return false;
   if (geSimulationType                       != rhs.geSimulationType) return false;
   if (gsSimulationDataSourceFileName         != rhs.gsSimulationDataSourceFileName) return false;
   if (gsAdjustmentsByRelativeRisksFileName   != rhs.gsAdjustmentsByRelativeRisksFileName) return false;
@@ -190,8 +190,8 @@ void CParameters::Copy(const CParameters &rhs) {
     gdPower_Y                              = rhs.gdPower_Y;
     gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
     gsStudyPeriodEndDate                   = rhs.gsStudyPeriodEndDate;
-    gfMaxGeographicClusterSize             = rhs.gfMaxGeographicClusterSize;
-    gfMaxTemporalClusterSize               = rhs.gfMaxTemporalClusterSize;
+    gdMaxGeographicClusterSize             = rhs.gdMaxGeographicClusterSize;
+    gdMaxTemporalClusterSize               = rhs.gdMaxTemporalClusterSize;
     geIncludeClustersType                  = rhs.geIncludeClustersType;
     geTimeAggregationUnitsType             = rhs.geTimeAggregationUnitsType;
     glTimeAggregationLength                = rhs.glTimeAggregationLength;
@@ -236,7 +236,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gdTimeTrendConverge			               = rhs.gdTimeTrendConverge;
     gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
     gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
-    gfMaxReportedGeographicClusterSize     = rhs.gfMaxReportedGeographicClusterSize;
+    gdMaxReportedGeographicClusterSize     = rhs.gdMaxReportedGeographicClusterSize;
     geSimulationType                       = rhs.geSimulationType;
     gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
     gsAdjustmentsByRelativeRisksFileName   = rhs.gsAdjustmentsByRelativeRisksFileName;
@@ -288,7 +288,8 @@ const char * CParameters::GetAnalysisTypeAsString() const {
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
-      ZdGenerateException("Index out of range.","GetCaseFileName()");
+      ZdGenerateException("Index %d out of range [%d,%d].","GetCaseFileName()", iSetIndex,
+                          (gvCaseFilenames.size() ? 1 : -1), (gvCaseFilenames.size() ? gvCaseFilenames.size() : -1));
   }
   catch (ZdException & x) {
     x.AddCallpath("GetCaseFileName()","CParameters");
@@ -300,7 +301,8 @@ const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
 const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvControlFilenames.size())
-      ZdGenerateException("Index out of range.","GetControlFileName()");
+      ZdGenerateException("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
+                          (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? gvControlFilenames.size() : -1));
   }
   catch (ZdException & x) {
     x.AddCallpath("GetControlFileName()","CParameters");
@@ -347,7 +349,7 @@ unsigned int CParameters::GetNumParallelProcessesToExecute() const {
     iNumProcessors = std::min(giNumRequestedParallelProcesses, GetNumSystemProcessors());
     //iNumProcessors = giNumRequestedParallelProcesses;
 
-  return iNumProcessors;
+  return 2;//iNumProcessors;
 #endif  
 }
 
@@ -401,7 +403,8 @@ bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelTyp
 const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvPopulationFilenames.size())
-      ZdGenerateException("Index out of range.","GetPopulationFileName()");
+      ZdGenerateException("Index %d out of range [%d,%d].","GetPopulationFileName()", iSetIndex,
+                          (gvPopulationFilenames.size() ? 1 : -1), (gvPopulationFilenames.size() ? gvPopulationFilenames.size() : -1));
   }
   catch (ZdException & x) {
     x.AddCallpath("GetPopulationFileName()","CParameters");
@@ -485,7 +488,7 @@ void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
 
   try {
     if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PROSPECTIVEPURELYTEMPORAL)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
     geAnalysisType = eAnalysisType;
   }
   catch (ZdException &x) {
@@ -500,7 +503,7 @@ void CParameters::SetAreaRateType(AreaRateType eAreaRateType) {
 
   try {
     if (eAreaRateType < HIGH || eAreaRateType > HIGHANDLOW)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetAreaRateType()", eAreaRateType, HIGH, HIGHANDLOW);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAreaRateType()", eAreaRateType, HIGH, HIGHANDLOW);
     geAreaScanRate = eAreaRateType;
   }
   catch (ZdException &x) {
@@ -518,7 +521,7 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
       ZdGenerateException("Null pointer.", "SetCaseFileName()");
 
     if (!iSetIndex)
-      ZdGenerateException("Index out of range.", "SetCaseFileName()");
+      ZdGenerateException("Index %d out of range [1,].", "SetCaseFileName()", iSetIndex);
 
     if (iSetIndex > gvCaseFilenames.size())
       gvCaseFilenames.resize(iSetIndex);
@@ -542,7 +545,7 @@ void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrec
       ZdGenerateException("Null pointer.", "SetControlFileName()");
 
     if (!iSetIndex)
-      ZdGenerateException("Index out of range.", "SetControlFileName()");
+      ZdGenerateException("Index %d out of range [1,].", "SetControlFileName()", iSetIndex);
 
     if (iSetIndex > gvControlFilenames.size())
       gvControlFilenames.resize(iSetIndex);
@@ -581,7 +584,7 @@ void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
 
   try {
     if (eCoordinatesType < CARTESIAN || eCoordinatesType > LATLON)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetCoordinatesType()", eCoordinatesType, CARTESIAN, LATLON);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCoordinatesType()", eCoordinatesType, CARTESIAN, LATLON);
     geCoordinatesType = eCoordinatesType;
   }
   catch (ZdException &x) {
@@ -596,7 +599,7 @@ void CParameters::SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClus
 
   try {
     if (eCriteriaSecondaryClustersType < NOGEOOVERLAP || eCriteriaSecondaryClustersType > NORESTRICTIONS)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetCriteriaForReportingSecondaryClusters()",
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCriteriaForReportingSecondaryClusters()",
                             eCriteriaSecondaryClustersType, NOGEOOVERLAP, NORESTRICTIONS);
     geCriteriaSecondClustersType = eCriteriaSecondaryClustersType;
   }
@@ -619,7 +622,7 @@ void CParameters::SetAsDefaulted() {
   giDimensionsOfData                       = 0;
   gbUseSpecialGridFile                     = false;
   gsSpecialGridFileName                    = "";
-  gfMaxGeographicClusterSize               = 50.0;
+  gdMaxGeographicClusterSize               = 50.0;
   geMaxGeographicClusterSizeType           = PERCENTOFPOPULATION;
   gsStudyPeriodStartDate                   = "2000/1/1";
   gsStudyPeriodEndDate                     = "2000/12/31";
@@ -627,7 +630,7 @@ void CParameters::SetAsDefaulted() {
   geTimeAggregationUnitsType               = NONE;
   glTimeAggregationLength                  = 0;
   gbIncludePurelySpatialClusters           = false;
-  gfMaxTemporalClusterSize                 = 50.0;
+  gdMaxTemporalClusterSize                 = 50.0;
   geMaxTemporalClusterSizeType             = PERCENTAGETYPE;
   giReplications                           = 999;
   gbOutputClusterLevelDBase                = false;
@@ -649,7 +652,7 @@ void CParameters::SetAsDefaulted() {
   gbOutputSimLogLikeliRatiosAscii          = false;
   gbSequentialRuns                         = false;
   giNumSequentialRuns                      = 0;
-  gbSequentialCutOffPValue                 = 0.0;
+  gbSequentialCutOffPValue                 = 0.05;
   gbValidatePriorToCalc                    = true;
   gbOutputRelativeRisksAscii               = false;
   geSpatialWindowType                      = CIRCULAR;
@@ -678,10 +681,10 @@ void CParameters::SetAsDefaulted() {
   gsEndRangeEndDate                        = gsStudyPeriodEndDate;
   gsStartRangeStartDate                    = gsStudyPeriodStartDate;
   gsStartRangeEndDate                      = gsStudyPeriodEndDate;
-  gdTimeTrendConverge			                 = 0.0000001;
+  gdTimeTrendConverge			   = 0.0000001;
   gbEarlyTerminationSimulations            = false;
   gbRestrictReportedClusters               = false;
-  gfMaxReportedGeographicClusterSize       = gfMaxGeographicClusterSize;
+  gdMaxReportedGeographicClusterSize       = gdMaxGeographicClusterSize;
   geSimulationType                         = STANDARD;
   gsSimulationDataSourceFileName           = "";
   gsAdjustmentsByRelativeRisksFileName     = "";
@@ -752,8 +755,7 @@ void CParameters::SetEndRangeStartDate(const char * sEndRangeStartDate) {
 void CParameters::SetExecutionType(ExecutionType eExecutionType) {
   try {
     if (AUTOMATIC > eExecutionType || CENTRICALLY < eExecutionType)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetExecutionType()",
-                            eExecutionType, AUTOMATIC, CENTRICALLY);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetExecutionType()", eExecutionType, AUTOMATIC, CENTRICALLY);
     geExecutionType = eExecutionType;
   }
   catch (ZdException &x) {
@@ -766,8 +768,7 @@ void CParameters::SetExecutionType(ExecutionType eExecutionType) {
 void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersType) {
   try {
     if (ALLCLUSTERS > eIncludeClustersType || CLUSTERSINRANGE < eIncludeClustersType)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetIncludeClustersType()",
-                            eIncludeClustersType, ALLCLUSTERS, CLUSTERSINRANGE);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetIncludeClustersType()", eIncludeClustersType, ALLCLUSTERS, CLUSTERSINRANGE);
     geIncludeClustersType = eIncludeClustersType;
   }
   catch (ZdException &x) {
@@ -777,17 +778,17 @@ void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersTyp
 }
 
 /** Sets maximum geographic cluster size. */
-void CParameters::SetMaximumGeographicClusterSize(float fMaxGeographicClusterSize) {
+void CParameters::SetMaximumGeographicClusterSize(double dMaxGeographicClusterSize) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-  gfMaxGeographicClusterSize = fMaxGeographicClusterSize;
+  gdMaxGeographicClusterSize = dMaxGeographicClusterSize;
 }
 
 /** Sets maximum reported geographic cluster size. */
-void CParameters::SetMaximumReportedGeographicalClusterSize(float fMaxReportedGeographicClusterSize) {
+void CParameters::SetMaximumReportedGeographicalClusterSize(double dMaxReportedGeographicClusterSize) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-  gfMaxReportedGeographicClusterSize = fMaxReportedGeographicClusterSize;
+  gdMaxReportedGeographicClusterSize = dMaxReportedGeographicClusterSize;
 }
 
 /** Sets maximum spatial cluster size type for reported clusters. Throws exception if out of range. */
@@ -796,7 +797,7 @@ void CParameters::SetMaximumReportedSpatialClusterSizeType(SpatialSizeType eSpat
 
   try {
     if (PERCENTOFPOPULATION > eSpatialSizeType || PERCENTOFMAXCIRCLEFILE < eSpatialSizeType)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMaximumReportedSpatialClusterSizeType()",
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMaximumReportedSpatialClusterSizeType()",
                             eSpatialSizeType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
     geMaxReportedGeographicClusterSizeType = eSpatialSizeType;
   }
@@ -812,7 +813,7 @@ void CParameters::SetMaximumSpatialClusterSizeType(SpatialSizeType eSpatialSizeT
 
   try {
     if (PERCENTOFPOPULATION > eSpatialSizeType || PERCENTOFMAXCIRCLEFILE < eSpatialSizeType)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMaximumSpatialClusterSizeType()",
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMaximumSpatialClusterSizeType()",
                             eSpatialSizeType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
     geMaxGeographicClusterSizeType = eSpatialSizeType;
   }
@@ -823,10 +824,10 @@ void CParameters::SetMaximumSpatialClusterSizeType(SpatialSizeType eSpatialSizeT
 }
 
 /** Sets maximum temporal cluster size. */
-void CParameters::SetMaximumTemporalClusterSize(float fMaxTemporalClusterSize) {
+void CParameters::SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-  gfMaxTemporalClusterSize = fMaxTemporalClusterSize;
+  gdMaxTemporalClusterSize = dMaxTemporalClusterSize;
 }
 
 /** Sets maximum temporal cluster size type. Throws exception if out of range. */
@@ -835,7 +836,7 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
 
   try {
     if (PERCENTAGETYPE > eTemporalSizeType || TIMETYPE < eTemporalSizeType)
-      ZdException::Generate("'%d' is out of range(%d - %d).","SetMaximumTemporalClusterSizeType()",
+      ZdException::Generate("Enumeration %d out of range [%d,%d].","SetMaximumTemporalClusterSizeType()",
                             eTemporalSizeType, PERCENTAGETYPE, TIMETYPE);
     geMaxTemporalClusterSizeType = eTemporalSizeType;
   }
@@ -849,7 +850,7 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
 void CParameters::SetNonCompactnessPenalty(NonCompactnessPenaltyType eType) {
   try {
     if (eType < NOPENALTY || eType > STRONGPENALTY)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetNonCompactnessPenalty()", eType, NOPENALTY, STRONGPENALTY);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetNonCompactnessPenalty()", eType, NOPENALTY, STRONGPENALTY);
     geNonCompactnessPenaltyType = eType;
   }
   catch (ZdException &x) {
@@ -912,11 +913,11 @@ void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectF
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath, size_t tSetIndex) {
   try {
-    if (! sPopulationFileName)
+    if (!sPopulationFileName)
       ZdGenerateException("Null pointer.", "SetPopulationFileName()");
 
     if (!tSetIndex)
-      ZdGenerateException("Index out of range.", "SetPopulationFileName()");
+      ZdGenerateException("Index %s out of range [1,].", "SetPopulationFileName()", tSetIndex);
 
     if (tSetIndex > gvPopulationFilenames.size())
       gvPopulationFilenames.resize(tSetIndex);
@@ -969,7 +970,7 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
 
   try {
     if (eDatePrecisionType < NONE || eDatePrecisionType > DAY)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, DAY);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, DAY);
     gePrecisionOfTimesType = eDatePrecisionType;
   }
   catch (ZdException &x) {
@@ -984,7 +985,7 @@ void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModel
 
   try {
     if (eProbabilityModelType < POISSON || eProbabilityModelType > RANK)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
 
     geProbabilityModelType = eProbabilityModelType;
   }
@@ -1027,7 +1028,7 @@ void CParameters::SetRiskType(RiskType eRiskType) {
 
   try {
     if (eRiskType < STANDARDRISK || eRiskType > MONOTONERISK)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetRiskType()", eRiskType, STANDARDRISK, MONOTONERISK);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetRiskType()", eRiskType, STANDARDRISK, MONOTONERISK);
     geRiskFunctionType = eRiskType;
   }
   catch (ZdException &x) {
@@ -1042,7 +1043,7 @@ void CParameters::SetSimulationType(SimulationType eSimulationType) {
 
   try {
     if (eSimulationType < STANDARD || eSimulationType > FILESOURCE)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetSimulationType()", eSimulationType, STANDARD, FILESOURCE);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSimulationType()", eSimulationType, STANDARD, FILESOURCE);
     geSimulationType = eSimulationType;
   }
   catch (ZdException &x) {
@@ -1093,7 +1094,7 @@ void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustm
 
   try {
     if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
     geSpatialAdjustmentType = eSpatialAdjustmentType;
   }
   catch (ZdException &x) {
@@ -1108,7 +1109,7 @@ void  CParameters::SetSpatialWindowType(SpatialWindowType eSpatialWindowType) {
 
   try {
     if (eSpatialWindowType < CIRCULAR || eSpatialWindowType > ELLIPTIC)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetSpatialWindowType()", eSpatialWindowType, CIRCULAR, ELLIPTIC);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSpatialWindowType()", eSpatialWindowType, CIRCULAR, ELLIPTIC);
     geSpatialWindowType = eSpatialWindowType;
   }
   catch (ZdException &x) {
@@ -1189,7 +1190,7 @@ void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType
 
   try {
     if (eType < MULTIVARIATE || eType > ADJUSTMENT)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetMultipleDataSetPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMultipleDataSetPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
     geMultipleSetPurposeType = eType;
   }
   catch (ZdException &x) {
@@ -1239,7 +1240,7 @@ void CParameters::SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregation
 
   try {
     if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > DAY)
-      ZdException::Generate("'%d' is out of range(%d - %d).","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, DAY);
+      ZdException::Generate("Enumeration %d out of range [%d,%d].","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, DAY);
     geTimeAggregationUnitsType = eTimeAggregationUnits;
   }
   catch (ZdException &x) {
@@ -1261,7 +1262,7 @@ void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendA
 
   try {
     if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > STRATIFIED_RANDOMIZATION)
-      ZdException::Generate("'%d' is out of range(%d - %d).", "SetTimeTrendAdjustmentType()",
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
                             eTimeTrendAdjustmentType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
     geTimeTrendAdjustType = eTimeTrendAdjustmentType;
   }
