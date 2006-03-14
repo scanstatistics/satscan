@@ -41,27 +41,27 @@ TemporalDataEvaluator::~TemporalDataEvaluator() {
           It might be appropriate to introduce a common ancestor class for these
           classes someday.                                                      */
 void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
-  int            iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  int            iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
   count_t        tCases, tTotalCases(gData.GetTotalCases());
   measure_t      tMeasure, tTotalMeasure(gData.GetTotalMeasure());
-  TemporalData * pData = (TemporalData*)Running.GetClusterData();  //dynamic cast?
-  count_t      * pCases = pData->gpCases;
-  measure_t    * pMeasure = pData->gpMeasure;
+  TemporalData & Data =  GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
+  count_t      * pCases = Data.gpCases;
+  measure_t    * pMeasure = Data.gpMeasure;
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
         tCases = pCases[iWindowStart] - pCases[iWindowEnd];
         tMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
         if (fRateOfInterest(tCases, tMeasure, tTotalCases, tTotalMeasure)) {
           Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatio(tCases, tMeasure, tTotalCases, tTotalMeasure);
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
-            pData->gtCases = tCases;
-            pData->gtMeasure = tMeasure;
+            Data.gtCases = tCases;
+            Data.gtMeasure = tMeasure;
             TopCluster.AssignAsType(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
             TopCluster.m_nLastInterval = iWindowEnd;
@@ -76,8 +76,9 @@ void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCl
     CMeasureList::AddMeasure(cases,measure). */
 void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
   int                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  count_t             * pCases = ((TemporalData&)ClusterData).gpCases;
-  measure_t           * pMeasure = ((TemporalData&)ClusterData).gpMeasure;
+  TemporalData        & Data = GetClusterDataAsType<TemporalData>(ClusterData);
+  count_t             * pCases = Data.gpCases;
+  measure_t           * pMeasure = Data.gpMeasure;
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -97,9 +98,9 @@ double TemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTempo
   int            iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   count_t        tTotalCases(gData.GetTotalCases());
   measure_t      tTotalMeasure(gData.GetTotalMeasure());
-  TemporalData * pData = (TemporalData*)&ClusterData;  //dynamic cast?
-  count_t      * pCases = pData->gpCases;
-  measure_t    * pMeasure = pData->gpMeasure;
+  TemporalData & Data = GetClusterDataAsType<TemporalData>(ClusterData);
+  count_t      * pCases = Data.gpCases;
+  measure_t    * pMeasure = Data.gpMeasure;
   double         dRatio(0);
 
   //iterate through windows
@@ -109,10 +110,10 @@ double TemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTempo
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        pData->gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
-        pData->gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
-        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure))
-          dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatio(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure));
+        Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
+        Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
+        if (fRateOfInterest(Data.gtCases, Data.gtMeasure, tTotalCases, tTotalMeasure))
+          dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatio(Data.gtCases, Data.gtMeasure, tTotalCases, tTotalMeasure));
      }
   }
   return dRatio;
@@ -184,24 +185,23 @@ MultiSetTemporalDataEvaluator::MultiSetTemporalDataEvaluator(const CSaTScanData&
           with the deviation being the loop over multipe data sets and process
           of unifying the calculated log likelihood ratios. */
 void MultiSetTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
-  int                          iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  MultiSetTemporalData * pData = (MultiSetTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  int                                 iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
+  AbstractMultiSetTemporalData      & Data = GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
   AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+     for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
         Unifier.Reset();
-        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
-          TemporalData & Datum = *pData->gvSetClusterData[t];
+        for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
+          TemporalData & Datum = *(Data.gvSetClusterData[t]);
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure,
-                              Datum.gtTotalCases, Datum.gtTotalMeasure);
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure);
         }
         Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
         if (Running.m_nRatio > TopCluster.m_nRatio) {
@@ -223,7 +223,7 @@ void MultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&
     which we are interested in. Returns greatest loglikelihood ratio. */
 double MultiSetTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
   int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  MultiSetTemporalData                * pData = (MultiSetTemporalData*)&ClusterData; //dynamic cast ?
+  AbstractMultiSetTemporalData        & Data =  GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
   AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
   double                                dRatio(0);
 
@@ -235,8 +235,8 @@ double MultiSetTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(Abstr
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Unifier.Reset();
-        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
-          TemporalData & Datum = *pData->gvSetClusterData[t];
+        for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
+          TemporalData & Datum = *(Data.gvSetClusterData[t]);
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
           Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtTotalCases, Datum.gtTotalMeasure);
@@ -267,23 +267,23 @@ NormalTemporalDataEvaluator::NormalTemporalDataEvaluator(const CSaTScanData& Dat
     NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
           with the only deviation being the second measure. */
 void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
-  int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  int                  iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
   count_t              tTotalCases(gData.GetTotalCases());
   measure_t            tTotalMeasure(gData.GetTotalMeasure());
-  NormalTemporalData * pData = (NormalTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  NormalTemporalData & Data =  GetClusterDataAsType<NormalTemporalData>(*(Running.GetClusterData()));
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
-        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
-        pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
-        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure)) {
-          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(pData->gtCases, pData->gtMeasure, pData->gtSqMeasure, tTotalCases, tTotalMeasure);
+     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+     for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
+        Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
+        Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
+        Data.gtSqMeasure = Data.gpSqMeasure[iWindowStart] - Data.gpSqMeasure[iWindowEnd];
+        if (fRateOfInterest(Data.gtCases, Data.gtMeasure, tTotalCases, tTotalMeasure)) {
+          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtSqMeasure, tTotalCases, tTotalMeasure);
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
             TopCluster.AssignAsType(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
@@ -306,7 +306,7 @@ double NormalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(Abstrac
   int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   count_t              tTotalCases(gData.GetTotalCases());
   measure_t            tTotalMeasure(gData.GetTotalMeasure());
-  NormalTemporalData * pData = (NormalTemporalData*)&ClusterData; //dynamic cast ?
+  NormalTemporalData & Data = GetClusterDataAsType<NormalTemporalData>(ClusterData);
   double               dRatio(0);
 
   //iterate through windows
@@ -316,11 +316,11 @@ double NormalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(Abstrac
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        pData->gtCases = pData->gpCases[iWindowStart] - pData->gpCases[iWindowEnd];
-        pData->gtMeasure = pData->gpMeasure[iWindowStart] - pData->gpMeasure[iWindowEnd];
-        pData->gtSqMeasure = pData->gpSqMeasure[iWindowStart] - pData->gpSqMeasure[iWindowEnd];
-        if (fRateOfInterest(pData->gtCases, pData->gtMeasure, tTotalCases, tTotalMeasure))
-          dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(pData->gtCases, pData->gtMeasure, pData->gtSqMeasure, tTotalCases, tTotalMeasure));
+        Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
+        Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
+        Data.gtSqMeasure = Data.gpSqMeasure[iWindowStart] - Data.gpSqMeasure[iWindowEnd];
+        if (fRateOfInterest(Data.gtCases, Data.gtMeasure, tTotalCases, tTotalMeasure))
+          dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtSqMeasure, tTotalCases, tTotalMeasure));
      }
   }
 
@@ -349,19 +349,19 @@ CategoricalTemporalDataEvaluator::CategoricalTemporalDataEvaluator(const CSaTSca
     NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
           with the only deviation being the second measure. */
 void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CCluster& TopCluster) {
-  int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  CategoricalTemporalData * pData = (CategoricalTemporalData*)Running.GetClusterData(); //dynamic cast ?
+  int                       iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
+  CategoricalTemporalData & Data =  GetClusterDataAsType<CategoricalTemporalData>(*(Running.GetClusterData()));
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        for (size_t t=0; t < pData->gvCasesPerCategory.size(); ++t)
-          pData->gvCasesPerCategory[t] = pData->gppCategoryCases[t][iWindowStart] - pData->gppCategoryCases[t][iWindowEnd];
-        Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(pData->gvCasesPerCategory);
+     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+     for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
+        for (size_t t=0; t < Data.gvCasesPerCategory.size(); ++t)
+          Data.gvCasesPerCategory[t] = Data.gppCategoryCases[t][iWindowStart] - Data.gppCategoryCases[t][iWindowEnd];
+        Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(Data.gvCasesPerCategory);
         if (Running.m_nRatio  > TopCluster.m_nRatio) {
           TopCluster.AssignAsType(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
@@ -381,7 +381,7 @@ void CategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterDa
     which we are interested in. Returns greatest loglikelihood ratio. */
 double CategoricalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
   int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  CategoricalTemporalData * pData = (CategoricalTemporalData*)&ClusterData; //dynamic cast ?
+  CategoricalTemporalData & Data =  GetClusterDataAsType<CategoricalTemporalData>(ClusterData);
   double                    dRatio(0);    
 
   //iterate through windows
@@ -391,9 +391,9 @@ double CategoricalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(Ab
      iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
-        for (size_t t=0; t < pData->gvCasesPerCategory.size(); ++t)
-          pData->gvCasesPerCategory[t] = pData->gppCategoryCases[t][iWindowStart] - pData->gppCategoryCases[t][iWindowEnd];
-        dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(pData->gvCasesPerCategory));
+        for (size_t t=0; t < Data.gvCasesPerCategory.size(); ++t)
+          Data.gvCasesPerCategory[t] = Data.gppCategoryCases[t][iWindowStart] - Data.gppCategoryCases[t][iWindowEnd];
+        dRatio = std::max(dRatio, gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(Data.gvCasesPerCategory));
      }
   }
 
@@ -422,20 +422,20 @@ MultiSetCategoricalTemporalDataEvaluator::MultiSetCategoricalTemporalDataEvaluat
     NOTE: This algorithm is identical to TemporalDataEvaluator::CompareClusters(...)
           with the only deviation being the second measure. */
 void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CCluster& TopCluster) {
-  int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  AbstractMultiSetCategoricalTemporalData * pData = (AbstractMultiSetCategoricalTemporalData*)Running.GetClusterData(); //dynamic cast ?
-  AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
+  int                                       iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
+  AbstractMultiSetCategoricalTemporalData & Data = GetClusterDataAsType<AbstractMultiSetCategoricalTemporalData>(*(Running.GetClusterData()));
+  AbstractLoglikelihoodRatioUnifier       & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
   iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
   for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
-     for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
+     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
+     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+     for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
         Unifier.Reset();
-        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
-          CategoricalTemporalData& Datum = *pData->gvSetClusterData[t];
+        for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
+          CategoricalTemporalData& Datum = *(Data.gvSetClusterData[t]);
           for (size_t c=0; c < Datum.gvCasesPerCategory.size(); ++c)
              Datum.gvCasesPerCategory[c] = Datum.gppCategoryCases[c][iWindowStart] - Datum.gppCategoryCases[c][iWindowEnd];
           Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gvCasesPerCategory, t);
@@ -459,10 +459,10 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalC
     Calculates greatest loglikelihood ratio among clusterings that have rates
     which we are interested in. Returns greatest loglikelihood ratio. */
 double MultiSetCategoricalTemporalDataEvaluator::ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData) {
-  int                                           iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  AbstractMultiSetCategoricalTemporalData     * pData = (AbstractMultiSetCategoricalTemporalData*)&ClusterData; //dynamic cast ?
-  AbstractLoglikelihoodRatioUnifier           & Unifier = gLikelihoodCalculator.GetUnifier();
-  double                                        dRatio(0);
+  int                                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
+  AbstractMultiSetCategoricalTemporalData & Data = GetClusterDataAsType<AbstractMultiSetCategoricalTemporalData>(ClusterData);
+  AbstractLoglikelihoodRatioUnifier       & Unifier = gLikelihoodCalculator.GetUnifier();
+  double                                    dRatio(0);
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -472,8 +472,8 @@ double MultiSetCategoricalTemporalDataEvaluator::ComputeLoglikelihoodRatioCluste
      iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Unifier.Reset();
-        for (size_t t=0; t < pData->gvSetClusterData.size(); ++t) {
-          CategoricalTemporalData& Datum = *pData->gvSetClusterData[t];
+        for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
+          CategoricalTemporalData& Datum = *(Data.gvSetClusterData[t]);
           for (size_t c=0; c < Datum.gvCasesPerCategory.size(); ++c)
              Datum.gvCasesPerCategory[c] = Datum.gppCategoryCases[c][iWindowStart] - Datum.gppCategoryCases[c][iWindowEnd];
           Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gvCasesPerCategory, t);
