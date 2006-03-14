@@ -349,7 +349,7 @@ unsigned int CParameters::GetNumParallelProcessesToExecute() const {
     iNumProcessors = std::min(giNumRequestedParallelProcesses, GetNumSystemProcessors());
     //iNumProcessors = giNumRequestedParallelProcesses;
 
-  return 2;//iNumProcessors;
+  return iNumProcessors;
 #endif  
 }
 
