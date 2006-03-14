@@ -32,7 +32,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_6_1_x_ParameterList();
+  Build_7_0_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -74,8 +74,10 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
     Build_5_1_x_ParameterList();
   else if (Version.iMajor == 6  && Version.iMinor == 0)
     Build_6_0_x_ParameterList();
-  else
+  else if (Version.iMajor == 6  && Version.iMinor == 1)
     Build_6_1_x_ParameterList();
+  else
+    Build_7_0_x_ParameterList();
 }
 
 /** destructor */
@@ -285,6 +287,16 @@ void IniParameterSpecification::Build_6_1_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"MaxReportedSpatialSizeInterpretation"));
   gvParameterInfo.push_back(std::make_pair(Output, (const char*)"MostLikelyClusterCaseInfoEachCentroidASCII"));
   gvParameterInfo.push_back(std::make_pair(Output, (const char*)"MostLikelyClusterCaseInfoEachCentroidDBase"));
+}
+
+/** Version 7.0.x */
+void IniParameterSpecification::Build_7_0_x_ParameterList() {
+  Build_6_1_x_ParameterList();
+
+  //Sequential Scan parameters moved to Inference section - removed SequentialScan section
+  gvParameterInfo[SEQUENTIAL - 1] = std::make_pair(Inference, (const char*)"SequentialScan");
+  gvParameterInfo[SEQNUM - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxIterations");
+  gvParameterInfo[SEQPVAL - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxPValue");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
