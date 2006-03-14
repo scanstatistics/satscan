@@ -13,10 +13,9 @@ class LoglikelihoodRatioWriter : public AbstractDataFileWriter {
     RecordBuffer      * gpRecordBuffer;
 
     void                DefineFields();
-    void                Setup();
 
   public:
-    LoglikelihoodRatioWriter(const CParameters& Parameters);
+    LoglikelihoodRatioWriter(const CParameters& Parameters, bool bAppend);
     virtual ~LoglikelihoodRatioWriter();
 
     virtual void        Write(double dLoglikelihoodRatio);

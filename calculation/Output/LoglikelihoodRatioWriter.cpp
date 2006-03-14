@@ -9,16 +9,24 @@ const char * LoglikelihoodRatioWriter::LOG_LIKL_RATIO_FIELD    = "LLR";
 const char * LoglikelihoodRatioWriter::LOG_LIKELIHOOD_FILE_EXT = ".llr";
 
 /** constructor */
-LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const CParameters& Parameters)
+LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const CParameters& Parameters, bool bAppend)
                          :AbstractDataFileWriter(Parameters), gpRecordBuffer(0) {
   try {
-    Setup();
+    DefineFields();
+    gpRecordBuffer = new RecordBuffer(vFieldDefinitions);
+    if (gParameters.GetOutputSimLoglikeliRatiosAscii())
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, LOG_LIKELIHOOD_FILE_EXT, bAppend);
+    if (gParameters.GetOutputSimLoglikeliRatiosDBase())
+      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, LOG_LIKELIHOOD_FILE_EXT, bAppend);
   }
   catch (ZdException &x) {
+    delete gpRecordBuffer; gpRecordBuffer=0;
+    delete gpASCIIFileWriter; gpASCIIFileWriter=0;
+    delete gpDBaseFileWriter; gpDBaseFileWriter=0;
     x.AddCallpath("constructor()","LoglikelihoodRatioWriter");
     throw;
   }
-}	
+}
 
 /** destructor */
 LoglikelihoodRatioWriter::~LoglikelihoodRatioWriter() {
@@ -37,25 +45,6 @@ void LoglikelihoodRatioWriter::DefineFields() {
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","LoglikelihoodRatioWriter");
-    throw;
-  }
-}
-
-/** internal setup */
-void LoglikelihoodRatioWriter::Setup() {
-  try {
-    DefineFields();
-    gpRecordBuffer = new RecordBuffer(vFieldDefinitions);
-    if (gParameters.GetOutputSimLoglikeliRatiosAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, LOG_LIKELIHOOD_FILE_EXT);
-    if (gParameters.GetOutputSimLoglikeliRatiosDBase())
-      gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, LOG_LIKELIHOOD_FILE_EXT);
-  }
-  catch (ZdException &x) {
-    delete gpRecordBuffer;
-    delete gpASCIIFileWriter;
-    delete gpDBaseFileWriter;
-    x.AddCallpath("Setup()","LoglikelihoodRatioWriter");
     throw;
   }
 }
