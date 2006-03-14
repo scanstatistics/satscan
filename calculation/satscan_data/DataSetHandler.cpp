@@ -126,8 +126,7 @@ AbstractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
 /** Returns const pointer to randomizer object associated with data set at iSetIndex. */
 const AbstractRandomizer * DataSetHandler::GetRandomizer(size_t iSetIndex) const {
    if (iSetIndex >= gvDataSetRandomizers.size())
-     ZdGenerateException("Index '%u' is out of range, %u randomizers exist.","GetRandomizer()",
-                         iSetIndex, gvDataSetRandomizers.size());
+     ZdGenerateException("Index %u is out of range [size=%u].","GetRandomizer()", iSetIndex, gvDataSetRandomizers.size());
 
    return gvDataSetRandomizers[iSetIndex];
 }

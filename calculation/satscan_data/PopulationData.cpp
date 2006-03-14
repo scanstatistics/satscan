@@ -37,8 +37,7 @@ void CovariateCategory::AddPopulationAtDateIndex(float fPopluation, unsigned int
   try {
     //validate population date index
     if (iDateIndex > thePopulation.GetNumPopulationDates() - 1)
-      ZdGenerateException("Index %d out of range(0 - %d).","AddPopulationAtDateIndex()",
-                          iDateIndex, thePopulation.GetNumPopulationDates() -1);
+      ZdGenerateException("Index %d out of range [size=%u].","AddPopulationAtDateIndex()", iDateIndex, thePopulation.GetNumPopulationDates());
     //check numeric limits of data type will not be exceeded
     if (fPopluation > std::numeric_limits<float>::max() - gpPopulationList[iDateIndex]) {
       char      sDateString[20];
@@ -60,7 +59,8 @@ void CovariateCategory::AddPopulationAtDateIndex(float fPopluation, unsigned int
 float CovariateCategory::GetPopulationAtDateIndex(unsigned int iDateIndex, const PopulationData & thePopulation) const {
   try {
     if (iDateIndex > thePopulation.GetNumPopulationDates() - 1)
-      ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDateIndex, thePopulation.GetNumPopulationDates() - 1);
+      ZdGenerateException("Index %d out of range [size=%u].","GetPopulationAtDateIndex()",
+                          ZdException::Normal, iDateIndex, thePopulation.GetNumPopulationDates());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetPopulationAtDateIndex()","CovariateCategory");
@@ -86,7 +86,8 @@ CovariateCategory * CovariateCategory::SetNextDescriptor(int iPopulationListSize
 void CovariateCategory::SetPopulationAtDateIndex(float fPopluation, unsigned int iDateIndex, const PopulationData & thePopulation) {
   try {
     if (iDateIndex > thePopulation.GetNumPopulationDates() - 1)
-      ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDateIndex, thePopulation.GetNumPopulationDates() - 1);
+      ZdGenerateException("Index %u out of range [size=%u].","SetPopulationAtDateIndex()", ZdException::Normal,
+                          iDateIndex, thePopulation.GetNumPopulationDates());
     gpPopulationList[iDateIndex] = fPopluation;
   }
   catch (ZdException &x) {
@@ -192,7 +193,7 @@ void PopulationData::AddCovariateCategoryCaseCount(int iCategoryIndex, count_t t
 void PopulationData::AddCovariateCategoryControlCount(int iCategoryIndex, count_t Count) {
   // validate category index
   if (iCategoryIndex < 0 || iCategoryIndex > (int)gvCovariateCategoryControlCount.size() - 1)
-    ZdGenerateException("Index '%d' out of range.","AddCovariateCategoryControlCount()", iCategoryIndex);
+    ZdGenerateException("Index %d out of range [size=%u].","AddCovariateCategoryControlCount()", iCategoryIndex, gvCovariateCategoryControlCount.size());
   // validate count is not negative
   if (Count < 0)
     ZdGenerateException("Negative control count specifed '%ld'.","AddCovariateCategoryControlCount()", Count);
@@ -211,8 +212,8 @@ void PopulationData::AddCovariateCategoryControlCount(int iCategoryIndex, count_
 void PopulationData::AddCovariateCategoryPopulation(tract_t tTractIndex, unsigned int iCategoryIndex, const std::pair<Julian, DatePrecisionType>& prPopulationDate, float fPopulation) {
   try {
     if (0 > tTractIndex || tTractIndex > (tract_t)gCovariateCategoriesPerLocation.size() - 1 )
-      ZdGenerateException("Index %d out of range(0 - %d).","AddCovariateCategoryPopulation()",
-                          ZdException::Normal, tTractIndex, gCovariateCategoriesPerLocation.size() - 1);
+      ZdGenerateException("Index %d out of range [size=%u].","AddCovariateCategoryPopulation()",
+                          ZdException::Normal, tTractIndex, gCovariateCategoriesPerLocation.size());
 
     CovariateCategory & thisDescriptor = GetCovariateCategory(tTractIndex, iCategoryIndex, (int)gvPopulationDates.size());
     AssignPopulation(thisDescriptor, prPopulationDate.first, fPopulation, true);
@@ -536,7 +537,7 @@ double PopulationData::GetAlphaAdjustedPopulation(double& dPopulation, tract_t t
 
   try {
     if (0 > t || t > (tract_t)gCovariateCategoriesPerLocation.size() - 1)
-      ZdException::Generate("Index %d out of range(0 - %d)", "GetAlphaAdjustedPopulation()", t, gCovariateCategoriesPerLocation.size() - 1);
+      ZdException::Generate("Index %d out of range [size=%u]", "GetAlphaAdjustedPopulation()", t, gCovariateCategoriesPerLocation.size());
 
     pCategoryDescriptor = GetCovariateCategory(t, iCategoryIndex);
     if (pCategoryDescriptor) {
@@ -556,7 +557,7 @@ double PopulationData::GetAlphaAdjustedPopulation(double& dPopulation, tract_t t
 count_t PopulationData::GetNumCovariateCategoryCases(int iCategoryIndex) const {
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvCovariateCategoryCaseCount.size()) - 1)
-      ZdGenerateException("Index '%d' out of ranges.","GetNumCovariateCategoryCases()");
+      ZdGenerateException("Index %d out of range [size=%u].","GetNumCovariateCategoryCases()", iCategoryIndex, gvCovariateCategoryCaseCount.size());
 
     return gvCovariateCategoryCaseCount[iCategoryIndex];
   }
@@ -571,7 +572,7 @@ count_t PopulationData::GetNumCovariateCategoryCases(int iCategoryIndex) const {
 count_t PopulationData::GetNumCovariateCategoryControls(int iCategoryIndex) const {
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvCovariateCategoryControlCount.size()) - 1)
-      ZdGenerateException("Index '%d' out of ranges.","GetNumCovariateCategoryControls()");
+      ZdGenerateException("Index %d out of range [size=%u].","GetNumCovariateCategoryControls()", iCategoryIndex, gvCovariateCategoryControlCount.size());
 
     return gvCovariateCategoryControlCount[iCategoryIndex];
   }
@@ -586,7 +587,7 @@ count_t PopulationData::GetNumCovariateCategoryControls(int iCategoryIndex) cons
 count_t PopulationData::GetNumOrdinalCategoryCases(int iCategoryIndex) const {
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvOrdinalCategories.size()) - 1)
-      ZdGenerateException("Index '%d' out of ranges.","GetNumOrdinalCategoryCases()");
+      ZdGenerateException("Index %d out of range [size=%u].","GetNumOrdinalCategoryCases()", iCategoryIndex, gvOrdinalCategories.size());
 
     return gvOrdinalCategories[iCategoryIndex].GetTotalCases();
   }
@@ -611,7 +612,7 @@ CovariateCategory * PopulationData::GetCovariateCategory(tract_t tTractIndex, un
   bool                  bDone=false;
 
   if (tTractIndex < 0 || tTractIndex > static_cast<int>(gCovariateCategoriesPerLocation.size()) - 1)
-    ZdGenerateException("Index '%d' out of ranges.","GetCategoryDescriptor()");
+    ZdGenerateException("Index %d out of range [size=%u].","GetCategoryDescriptor()", tTractIndex, gCovariateCategoriesPerLocation.size());
 
   pCategoryDescriptor = gCovariateCategoriesPerLocation[tTractIndex];
   while (pCategoryDescriptor && !bDone) {
@@ -631,7 +632,7 @@ const CovariateCategory * PopulationData::GetCovariateCategory(tract_t tTractInd
   bool                  bDone=false;
 
   if (tTractIndex < 0 || tTractIndex > static_cast<int>(gCovariateCategoriesPerLocation.size()) - 1)
-    ZdGenerateException("Index '%d' out of ranges.","GetCategoryDescriptor()");
+    ZdGenerateException("Index %d out of range [size=%u].","GetCategoryDescriptor()", tTractIndex, gCovariateCategoriesPerLocation.size());
 
   pCategoryDescriptor = gCovariateCategoriesPerLocation[tTractIndex];
   while (pCategoryDescriptor && !bDone) {
@@ -651,7 +652,7 @@ CovariateCategory & PopulationData::GetCovariateCategory(tract_t tTractIndex, un
 
   try {
     if (0 > tTractIndex || tTractIndex > (tract_t)gCovariateCategoriesPerLocation.size() - 1)
-      ZdException::Generate("Index %d out of range(0 - %d)", "GetPopulationCategory()", tTractIndex, gCovariateCategoriesPerLocation.size() - 1);
+      ZdException::Generate("Index %d out of range [size=%u]", "GetPopulationCategory()", tTractIndex, gCovariateCategoriesPerLocation.size());
 
     if (!gCovariateCategoriesPerLocation[tTractIndex]) {
       gCovariateCategoriesPerLocation[tTractIndex] = new CovariateCategory(iPopulationListSize, iCategoryIndex);
@@ -686,8 +687,8 @@ const char * PopulationData::GetCovariateCategoryAsString(int iCategoryIndex, st
 
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > (int)(gvCovariateCategories.size() - 1))
-      ZdException::Generate("Index out of range '%d', range is 0 - %d.", "GetPopulationCategoryAsString()",
-                            iCategoryIndex, gvCovariateCategories.size() - 1);
+      ZdException::Generate("Index %d out of range [size=%u].", "GetPopulationCategoryAsString()",
+                            iCategoryIndex, gvCovariateCategories.size());
 
     sBuffer = "";
     for (t=0; t < gvCovariateCategories[iCategoryIndex].size(); t++) {
@@ -722,7 +723,7 @@ int PopulationData::GetCovariateCategoryIndex(const std::vector<std::string>& vC
 double PopulationData::GetOrdinalCategoryValue(int iCategoryIndex) const {
   try {
     if (iCategoryIndex < 0 || iCategoryIndex > static_cast<int>(gvOrdinalCategories.size()) - 1)
-      ZdGenerateException("Index '%d' out of ranges.","GetNumOrdinalCategoryCases()");
+      ZdGenerateException("Index %d out of range [size=%u].","GetNumOrdinalCategoryCases()", iCategoryIndex, gvOrdinalCategories.size());
 
     return gvOrdinalCategories[iCategoryIndex].GetOrdinalNumber();
   }
@@ -848,7 +849,7 @@ measure_t PopulationData::GetRiskAdjustedPopulation(measure_t& dMeanPopulation, 
 
   try {
     if (0 > t || t > (tract_t)gCovariateCategoriesPerLocation.size() - 1)
-      ZdException::Generate("Index %d out of range(0 - %d)", "GetRiskAdjustedPopulation()", t, gCovariateCategoriesPerLocation.size() - 1);
+      ZdException::Generate("Index %d out of range [size=%u]", "GetRiskAdjustedPopulation()", t, gCovariateCategoriesPerLocation.size());
 
     dMeanPopulation = 0.0;
     pCategoryDescriptor = gCovariateCategoriesPerLocation[t];
@@ -883,8 +884,8 @@ int PopulationData::LowerPopIndex(Julian Date) const {
 /** Removes cases from internal count for ordinal category. */
 void PopulationData::RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t tCount) {
   try {
-    if (iCategoryIndex >gvOrdinalCategories.size() - 1)
-      ZdGenerateException("Index '%d' out of ranges.","RemoveOrdinalCategoryCases()");
+    if (iCategoryIndex > gvOrdinalCategories.size() - 1)
+      ZdGenerateException("Index %d out of range [size=%u].","RemoveOrdinalCategoryCases()", iCategoryIndex, gvOrdinalCategories.size());
 
     gvOrdinalCategories[iCategoryIndex].DecrementCaseCount(tCount);
   }

@@ -84,7 +84,8 @@ void TractDescriptor::RetrieveCoordinates(TractHandler const & theTractHandler, 
 double TractDescriptor::GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const {
   try {
     if (0 > iDimension || iDimension > theTractHandler.tiGetDimensions() - 1)
-      ZdGenerateException("Index %d out of range(0 - %d).","", ZdException::Normal, iDimension, theTractHandler.tiGetDimensions() - 1);
+      ZdGenerateException("Index %d out of range [size=%d].", "GetCoordinatesAtDimension()", ZdException::Normal,
+                          iDimension, theTractHandler.tiGetDimensions());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetCoordinatesAtDimension()", "TractDescriptor");
@@ -115,8 +116,8 @@ const char * TractDescriptor::GetTractIdentifier(int iTractIdentifierIndex, std:
     ZdStringTokenizer Tokenizer(gsTractIdentifiers, "\t");
 
     if (0 > iTractIdentifierIndex || iTractIdentifierIndex > (int)Tokenizer.GetNumTokens() - 1)
-      ZdGenerateException("Index %d out of range(0 - %d).","GetTractIdentifier()", ZdException::Normal,
-                          iTractIdentifierIndex, (int)Tokenizer.GetNumTokens() - 1);
+      ZdGenerateException("Index %d out of range [size=%d].","GetTractIdentifier()", ZdException::Normal,
+                          iTractIdentifierIndex, Tokenizer.GetNumTokens());
 
     sIndentifier = Tokenizer.GetToken(iTractIdentifierIndex).GetCString();
   }
@@ -275,7 +276,7 @@ const char * TractHandler::tiGetTid(tract_t t, std::string& sFirst) const {
       gvTractDescriptors.back()->GetTractIdentifier(0, sFirst);
     else {
       if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
-        ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
+        ZdException::Generate("Index %d out of range [size=%u]", "tiGetTid()", t, gvTractDescriptors.size());
 
       gvTractDescriptors[t]->GetTractIdentifier(0, sFirst);
     }  
@@ -294,7 +295,7 @@ double TractHandler::tiGetTractCoordinate(tract_t t, int iDimension) const {
 
   try {
     if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
-       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTractCoordinate()", t, gvTractDescriptors.size() - 1);
+       ZdException::Generate("Index %d out of range [size=%u]", "tiGetTractCoordinate()", t, gvTractDescriptors.size());
 
     dReturn = gvTractDescriptors[t]->GetCoordinatesAtDimension(iDimension, *this);
   }
@@ -308,7 +309,7 @@ double TractHandler::tiGetTractCoordinate(tract_t t, int iDimension) const {
 void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const {
   try {
     if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
-       ZdException::Generate("Index %d out of range(0 - %d)", "tiGetTid()", t, gvTractDescriptors.size() - 1);
+       ZdException::Generate("Index %d out of range [size=%u]", "tiGetTid()", t, gvTractDescriptors.size());
 
     gvTractDescriptors[t]->GetTractIdentifiers(vIdentifiers);
   }

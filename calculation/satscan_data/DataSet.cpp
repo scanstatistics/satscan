@@ -706,7 +706,7 @@ void RealDataSet::FreePopulationMeasureArray() {
 /** Returns two dimensional array of intervals by locations for 'iCategoryIndex'. */
 count_t ** RealDataSet::GetCategoryCaseArray(unsigned int iCategoryIndex) const {
   if (!gvCasesByCategory.size() || iCategoryIndex > gvCasesByCategory.size() - 1)
-    ZdGenerateException("Index '%d' out of range.","GetCategoryCaseArray()");
+    ZdGenerateException("Index %d out of range [size=%u].","GetCategoryCaseArray()", gvCasesByCategory.size());
 
   return gvCasesByCategory[iCategoryIndex]->GetArray();
 }
@@ -717,7 +717,7 @@ count_t ** RealDataSet::GetCategoryCaseArray(unsigned int iCategoryIndex) const 
 count_t ** RealDataSet::GetCategoryCaseArray(unsigned int iCategoryIndex, bool bCreateable) {
   if (!gvCasesByCategory.size() || iCategoryIndex + 1 > gvCasesByCategory.size()) {
     if (!bCreateable)
-      ZdGenerateException("Index out of range.","GetCategoryCaseArray()");
+      ZdGenerateException("Index %u out of range [size=%u].","GetCategoryCaseArray()", iCategoryIndex, gvCasesByCategory.size());
     size_t tNumAllocate = iCategoryIndex + 1 - gvCasesByCategory.size();
     for (size_t t=0; t < tNumAllocate; ++t)
       gvCasesByCategory.push_back(new TwoDimensionArrayHandler<count_t>(giNumTimeIntervals, giNumTracts, 0));
