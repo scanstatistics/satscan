@@ -159,6 +159,7 @@ USEUNIT("..\calculation\ParametersValidate.cpp");
 USEUNIT("..\calculation\satscan_data\CentroidNeighbors.cpp");
 USEUNIT("..\calculation\randomization\NormalRandomizer.cpp");
 USEUNIT("..\calculation\randomization\RankRandomizer.cpp");
+USEFORM("stsFrmSuggestedCitation.cpp", frmSuggestedCitation);
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

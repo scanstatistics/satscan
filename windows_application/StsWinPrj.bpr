@@ -141,13 +141,13 @@
       ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj 
       ..\calculation\satscan_data\CentroidNeighbors.obj 
       ..\calculation\randomization\NormalRandomizer.obj 
-      ..\calculation\randomization\RankRandomizer.obj"/>
+      ..\calculation\randomization\RankRandomizer.obj stsFrmSuggestedCitation.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
       stsFrmAnalysisRun.dfm stsDlgDataImporter.dfm stsFrmDownloadProgress.dfm 
       stsFrmUpdateCheck.dfm stsFrmStartWindow.dfm stsFrmAdvancedParameters.dfm 
-      stsDlgExecuteOptions.dfm"/>
+      stsDlgExecuteOptions.dfm stsFrmSuggestedCitation.dfm"/>
     <LIBFILES value="..\xbase\xbase_2.0.0\xbase\xbase.lib"/>
     <LIBRARIES value="NMFast50.lib TSGC5201.lib vcldb50.lib vclbde50.lib vclx50.lib Qrpt50.lib 
       Vcl50.lib"/>

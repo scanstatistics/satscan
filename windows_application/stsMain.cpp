@@ -11,6 +11,8 @@
 #include "stsFrmDownloadProgress.h"
 #include "stsBaseAnalysisChildForm.h"
 #include "stsDlgExecuteOptions.h"
+#include "stsFrmSuggestedCitation.h"
+
 TfrmMainForm *frmMainForm;
 
 /** contructor */
@@ -167,6 +169,10 @@ void __fastcall TfrmMainForm::ExecuteOptionsActionExecute(TObject *Sender) {
 /** close form action event -- triggers main form close event */
 void __fastcall TfrmMainForm::ExitActionExecute(TObject *Sender) {
   Close();
+}
+
+void __fastcall TfrmMainForm::ExecuteSuggestedCitationAction(TObject *Sender) {
+  TfrmSuggestedCitation(this).ShowModal();
 }
 
 /** returns whether there are actively running analyses */

@@ -74,6 +74,9 @@ class TfrmMainForm : public TForm{
         TAction *AdobeUserGuideAction;
         TAction *ActionExecuteOptions;
         TMenuItem *mitExecuteOptions;
+        TMenuItem *SaTScanSuggestedCitation;
+        TAction *SuggestedCitationAction;
+        TMenuItem *N5;
         void __fastcall PrintResultsActionExecute(TObject *Sender);
         void __fastcall NewSessionActionExecute(TObject *Sender);
         void __fastcall OpenParameterFileActionExecute(TObject *Sender);
@@ -91,6 +94,7 @@ class TfrmMainForm : public TForm{
         void __fastcall AdvancedParametersActionExecute(TObject *Sender);
         void __fastcall AdobeUserGuideActionExecute(TObject *Sender);
         void __fastcall ExecuteOptionsActionExecute(TObject *Sender);
+        void __fastcall ExecuteSuggestedCitationAction(TObject *Sender);
   private:	// User declarations
     bool                        gbShowStartWindow;
     stsOutputFileRegister       gRegistry;

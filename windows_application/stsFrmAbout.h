@@ -10,16 +10,20 @@
 class TfrmAbout : public TForm
 {
 __published:	// IDE-managed Components
-        TPanel *Panel1;
+        TPanel *pnlRootPanel;
+        TPanel *pnlRootPanelTop;
         TLabel *lblVersion;
+        TPanel *pnlRootPanelRight;
+        TPanel *pnlRootPanelLeft;
+        TPanel *pnlRootPanelBottom;
+        TPanel *Panel1;
         TLabel *lblTitle;
-        TLabel *lblWebSite;
         TLabel *lblWebSiteLabel;
+        TLabel *lblWebSite;
         TLabel *lblEmail;
         TLabel *lblEmailAddress;
         TLabel *lblReleaseDate;
-        TMemo *Memo1;
-        TButton *Button1;
+        TLabel *Label1;
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall lblWebSiteClick(TObject *Sender);
         void __fastcall lblEmailAddressClick(TObject *Sender);
