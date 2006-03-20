@@ -34,8 +34,8 @@ class GInfo {
     void                giCleanup();
     void                giDisplayGridTractInfo(FILE* pDisplay);
     bool                giFindDuplicateCoords(FILE* pDisplay);
-    tract_t             giGetNumTracts();
-    tract_t             giGetTractNum(const char *gid);
+    tract_t             giGetNumTracts() const;
+    tract_t             giGetTractNum(const char *gid) const;
     void                giGetCoords(tract_t t, double** pCoords) const;
     int                 giGetNumDimensions() const;
     void                giInsertGnode(const char *gid, std::vector<double>& vCoordinates);

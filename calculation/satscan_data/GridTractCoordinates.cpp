@@ -87,7 +87,7 @@ int GInfo::giGetNumDimensions() const
 /**********************************************************************
  Returns the number of tracts observed
  **********************************************************************/
-tract_t GInfo::giGetNumTracts(void)
+tract_t GInfo::giGetNumTracts(void) const
 {
    return(NumGridTracts);
 } /* giGetNumTracts() */
@@ -97,7 +97,7 @@ tract_t GInfo::giGetNumTracts(void)
  or -1 if not found.
  Uses binary search.
  **********************************************************************/
-tract_t GInfo::giGetTractNum(const char *gid)
+tract_t GInfo::giGetTractNum(const char *gid) const
 {
    tract_t a = 0;                               /* start of array to search */
    tract_t b = NumGridTracts - 1;                 /* end of array to search */
