@@ -378,6 +378,13 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
   return gbOutputSimLogLikeliRatiosAscii || gbOutputSimLogLikeliRatiosDBase;
 }
 
+bool CParameters::GetPermitsCentricExecution() const {
+ return  !(GetIsPurelyTemporalAnalysis() || GetAnalysisType() == SPATIALVARTEMPTREND ||
+          (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
+          (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||
+           GetTerminateSimulationsEarly());
+}
+
 /** returns whether analysis type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster() const {
   return geAnalysisType == PURELYSPATIAL || geAnalysisType == SPACETIME || GetIsProspectiveAnalysis();

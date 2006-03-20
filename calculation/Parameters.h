@@ -257,6 +257,7 @@ class CParameters {
     bool                                GetOutputSimLoglikeliRatiosDBase() const {return gbOutputSimLogLikeliRatiosDBase;}
     bool                                GetOutputSimLoglikeliRatiosFiles() const;
     bool                                GetOutputSimulationData() const {return gbOutputSimulationData;}
+    bool                                GetPermitsCentricExecution() const;
     bool                                GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const;
     bool                                GetPermitsPurelySpatialCluster() const;
     bool                                GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const;
