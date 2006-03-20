@@ -36,6 +36,7 @@ class AnalysisRunner {
     void                                CreateReport();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
+    std::pair<double, double>           GetMemoryApproxiation() const;
     void                                Init();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                PerformCentric_Parallel();

@@ -169,89 +169,55 @@ void AnalysisRunner::CreateReport() {
     x.AddCallpath("CreateReport()","AnalysisRunner");
     throw;
   }
-  
+
   macroRunTimeStopSerial();
 }
 
 /** Executes analysis - conditionally running successive or centric processes. */
 void AnalysisRunner::Execute() {
-  double        dSuccessiveMemoryDemands(0), dCentricMemoryDemands(0),
-                dNumThreads = gParameters.GetNumParallelProcessesToExecute(), dPercentage;
+  ExecutionType eExecutionType(gParameters.GetExecutionType());
 
-  //read data
-  macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
-  gpDataHub->ReadDataFromFiles();
-  //calculate expected cases
-  gpDataHub->CalculateExpectedCases();
-  //validate that data set contains cases
-  for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-     if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
-       GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
-  macroRunTimeStopSerial();
-
-  switch (gParameters.GetExecutionType()) {
-    case SUCCESSIVELY : ExecuteSuccessively(); break;
-    case CENTRICALLY  : ExecuteCentrically(); break;
-    case AUTOMATIC    :
-    default           :
-      switch (gParameters.GetMaxGeographicClusterSizeType()) {
-        case PERCENTOFPOPULATION         :
-        case PERCENTOFMAXCIRCLEFILE      : dPercentage = gParameters.GetMaximumGeographicClusterSize() / 100.0; break;
-        case MAXDISTANCE                 : //Purely as a guess, we'll assume that the distance the user specified
-                                           //equates to 10% of the population. There might be a better way to due this!
-                                           dPercentage = 0.1; break;
-        default                          :
-          ZdGenerateException("Unknown maximum spatial cluster size type '%d'.\n", "Execute()", gParameters.GetMaxGeographicClusterSizeType());
-      };
-
-      if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
-        dSuccessiveMemoryDemands = (double)sizeof(unsigned short**) * (double)(gParameters.GetNumTotalEllipses()+1) +
-                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(unsigned short*) * (double)gpDataHub->m_nGridTracts +
-                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
+  try {
+    //read data
+    macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
+    gpDataHub->ReadDataFromFiles();
+    //calculate expected cases
+    gpDataHub->CalculateExpectedCases();
+    //validate that data set contains cases
+    for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
+       if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
+         GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
+    macroRunTimeStopSerial();
+    //calculation approxiate amount of memory required to run analysis
+    std::pair<double, double> prMemory = GetMemoryApproxiation();
+    if (eExecutionType == AUTOMATIC) {
+      //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
+      if (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution())
+        eExecutionType = SUCCESSIVELY;
       else
-        dSuccessiveMemoryDemands = (double)sizeof(tract_t**) * (double)(gParameters.GetNumTotalEllipses()+1) +
-                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)sizeof(tract_t*) * (double)gpDataHub->m_nGridTracts +
-                                   (double)(gParameters.GetNumTotalEllipses()+1) * (double)gpDataHub->m_nGridTracts * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
-
-
-      //memory needs for storing simulated data sets
-      dCentricMemoryDemands = (double)gParameters.GetNumReplicationsRequested() *
-                              gpDataHub->GetDataSetHandler().GetSimulationDataSetAllocationRequirements();
-     if (gpDataHub->GetDataSetHandler().GetNumDataSets() == 1 &&
-         !(gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == ORDINAL)) {
-        //memory needs for storing measurelist objects
-        dCentricMemoryDemands += dNumThreads * (double)gParameters.GetNumReplicationsRequested() * (double)sizeof(measure_t*);
-        dCentricMemoryDemands += dNumThreads *(double)gParameters.GetNumReplicationsRequested() *
-                                 (double)sizeof(measure_t) * (double)gpDataHub->GetDataSetHandler().GetDataSet().GetTotalCases() *
-                                 (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2.0 : 1.0);
-     }
-     else
-       //memory needs for storing vector of calculated ratios
-       dCentricMemoryDemands += dNumThreads * (double)gParameters.GetNumReplicationsRequested() * (double)sizeof(double);
-     //memory needs for storing neighbor information about one centroid
-     if (gpDataHub->GetNumTracts() < std::numeric_limits<unsigned short>::max())
-       dCentricMemoryDemands += dNumThreads * (double)sizeof(unsigned short) * (double)gpDataHub->GetNumTracts() * dPercentage;
-     else
-       dCentricMemoryDemands += dNumThreads * (double)sizeof(tract_t) * (double)gpDataHub->GetNumTracts() * dPercentage;
-
-     //$$ Consider multiple threads comparison. 
-
-     //Everything else considered equal, which algorithm has lesser memory needs?
-     if ((gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
-         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)) ||
-          (gParameters.GetSpatialWindowType() == ELLIPTIC && gParameters.GetNonCompactnessPenaltyType() > NOPENALTY) ||
-          gParameters.GetTerminateSimulationsEarly() ||
-          dSuccessiveMemoryDemands < GetAvailablePhysicalMemory() || dSuccessiveMemoryDemands < dCentricMemoryDemands)
-       // execute analysis successively from real data set to each simulated data set if any of following:
-       //   - analysis type requires this execution (i.e. not implemented with centric analysis)
-       //   - parameters settings indicate ellipses with non-compactness penalty
-       //   - parameters settings indicate early termination of simulations
-       //   - at this moment, there is enough RAM to accommodate memory demands (centric analysis typically takes longer to execute)
-       //   - memory demands are less than that of centric method
-       ExecuteSuccessively();
-     else
-       ExecuteCentrically();
-  };
+        eExecutionType = CENTRICALLY;
+    }
+    //start execution of analysis
+    try {
+      switch (eExecutionType) {
+        case CENTRICALLY  : //gPrintDirection.Printf("Centric execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.second);
+                            ExecuteCentrically(); break;
+        case SUCCESSIVELY :
+        default           : //gPrintDirection.Printf("Successive execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.first);
+                            ExecuteSuccessively(); break;
+      };
+    }
+    catch (ZdMemoryException &x) {
+      GenerateResolvableException("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
+                                  "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                                  "Note that memory needs are on the order of %.0lf MB.\n", "Execute()",
+                                  (eExecutionType == SUCCESSIVELY ? prMemory.first : prMemory.second));
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("Execute()","AnalysisRunner");
+    throw;
+  }
 }
 
 /** starts analysis execution - evaluating real data then replications */
@@ -403,7 +369,7 @@ void AnalysisRunner::FinalizeReport() {
   }
 }
 
-/** Returns available random access memory. */
+/** Returns available random access memory om mega-bytes. */
 double AnalysisRunner::GetAvailablePhysicalMemory() const {
   double /*dTotalPhysicalMemory(0),*/ dAvailablePhysicalMemory(0);
 
@@ -419,7 +385,62 @@ double AnalysisRunner::GetAvailablePhysicalMemory() const {
   dAvailablePhysicalMemory *= sysconf(_SC_PAGESIZE);
 #endif
 
-  return dAvailablePhysicalMemory;
+  return std::ceil(dAvailablePhysicalMemory/1000000);
+}
+
+/** Approxiates the amount of memory (in MB) that will be required to run this ananlysis,
+    both Standard Memory Allocation and Special Memory Allocation. Note that these formulas
+    are largely identical to that of user guide. */
+std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
+  std::pair<double, double>  prMemoryAppoxiation;
+
+   //the number of location IDs in the coordinates file
+  double L = gpDataHub->GetNumTracts();
+  //the number of coordinates in the grid file (G=L if no grid file is specified)
+  double G = gpDataHub->GetGInfo()->giGetNumTracts();
+  //maximum geographical cluster size, as a proportion of the population ( 0 < mg = ½ , mg=1 for a purely temporal analysis)
+  double mg = (gParameters.GetIsPurelyTemporalAnalysis() ? 0
+               : gParameters.GetMaxGeographicClusterSizeType() == MAXDISTANCE ? 0.1 /*purely as guess*/ : gParameters.GetMaximumGeographicClusterSize() / 100.0);
+  //number of time intervals into which the temporal data is aggregated (TI=1 for a purely spatial analysis)               
+  double TI = gpDataHub->GetNumTimeIntervals();
+  //read data structures
+  double b=1;
+  switch (gParameters.GetProbabilityModelType()) {
+    case POISSON:
+    case SPACETIMEPERMUTATION:
+    case EXPONENTIAL:  b = sizeof(count_t) + sizeof(measure_t); break;
+    case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
+    case ORDINAL: b = sizeof(count_t); break;
+    default : ZdGenerateException("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
+  };
+  //the number of categories in the ordinal model (CAT=1 for other models)
+  double CAT = (gParameters.GetProbabilityModelType() == ORDINAL ? 0 : 1);
+  for (size_t i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
+     CAT += gpDataHub->GetDataSetHandler().GetDataSet(i).GetPopulationData().GetNumOrdinalCategories();
+  //for exponential model, EXP =1 one for all other models     
+  double EXP = (gParameters.GetProbabilityModelType() == EXPONENTIAL ? 3 : 1);
+  //the total number of cases (for the ordinal model or multiple data sets, C=0)
+  double C = (gParameters.GetProbabilityModelType() == ORDINAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).GetTotalCases());
+  //1 when scanning for high rates only or low rates only, R=2 when scanning for either high or low rates
+  double R = (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2 : 1);
+  //number of data sets
+  double D = gpDataHub->GetDataSetHandler().GetNumDataSets();
+  //number of processors available on the computer for SaTScan use
+  double P = gParameters.GetNumParallelProcessesToExecute();
+  //is the number of Monte Carlo simulations
+  double MC = gParameters.GetNumReplicationsRequested();
+  //sort array data type size
+  double SortedDataTypeSize(gpDataHub->GetNumTracts() < (int)std::numeric_limits<unsigned short>::max() ? sizeof(unsigned short) : sizeof(int));
+  //size of sorted array -- this formula deviates from the user guide slightly
+  double SortedNeighborsArray = (gParameters.GetIsPurelyTemporalAnalysis() ? 0 :
+                                 (double)sizeof(void**) * (gParameters.GetNumTotalEllipses()+1) +
+                                 (double)sizeof(void*) * (gParameters.GetNumTotalEllipses()+1) * gpDataHub->m_nGridTracts +
+                                 (double)(gParameters.GetNumTotalEllipses()+1) * gpDataHub->m_nGridTracts * SortedDataTypeSize * gpDataHub->GetNumTracts() * mg);
+  //Standard Memory Allocation
+  prMemoryAppoxiation.first = std::ceil((SortedNeighborsArray + (b + 4.0 * EXP * P) * L * TI * CAT * D + sizeof(measure_t) * C * R * P)/1000000);
+  //Special Memory Allocation
+  prMemoryAppoxiation.second = std::ceil((4 * L * TI * CAT * EXP * D * MC + sizeof(measure_t) * MC * C * R * P)/1000000);
+  return prMemoryAppoxiation;
 }
 
 /** returns new CAnalysis object */
