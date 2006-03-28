@@ -46,8 +46,6 @@ class CentroidNeighborCalculator {
     const measure_t                           * gpLocationsPopulationReported;
     std::vector<measure_t>                      gvCalculatedPopulations;
 
-    void                        Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
-
   public:
     CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CentroidNeighborCalculator();
@@ -55,6 +53,7 @@ class CentroidNeighborCalculator {
     void                        CalculateNeighbors();
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid);
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid, double dMaxRadius);
+    static  void                Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
 };
 //*****************************************************************************
 #endif
