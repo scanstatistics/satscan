@@ -7,6 +7,8 @@
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
 #include "AbstractAnalysis.h"
+#include <iostream>
+#include <fstream>
 
 /** constructor */
 CCluster::CCluster() {
@@ -660,6 +662,50 @@ ZdString& CCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& Data
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval]);
 }
 
+/** Prints name and coordinates of locations contained in cluster to ASCII file.
+    Note: This is a debug function and can be helpful when used with Excel to get
+    visual of cluster using scatter plotting. */
+void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
+  unsigned int                  k;
+  tract_t                       i, tTract;
+  std::string                   sLocationID;
+  std::ofstream                 outfilestream(sFilename.c_str(), ios::ate);
+
+  try {
+    if (!outfilestream)
+      ZdGenerateException("Error: Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
+
+    outfilestream.setf(std::ios_base::fixed, std::ios_base::floatfield);
+
+    std::vector<double> vCoords;
+    if (DataHub.GetParameters().UseSpecialGrid()) {
+      DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoords);
+      outfilestream << "Central_Grid_Point";
+      for (size_t t=0; t < vCoords.size(); ++t)
+       outfilestream << " " << vCoords.at(t);
+      outfilestream << std::endl;
+    }                                                                                 
+
+    for (i=1; i <= m_nTracts; ++i) {
+       tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
+       // Print location identifiers if location data has not been removed in sequential scan.
+       if (!DataHub.GetIsNullifiedLocation(tTract)) {
+         DataHub.GetTInfo()->tiGetTid(tTract, sLocationID);
+         DataHub.GetTInfo()->tiRetrieveCoords(tTract, vCoords);
+         outfilestream << sLocationID.c_str();
+         for (size_t t=0; t < vCoords.size(); ++t)
+           outfilestream << " " << vCoords.at(t);
+         outfilestream << std::endl;
+       }
+    }
+    outfilestream << std::endl;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("PrintClusterLocationsToFile()","CCluster");
+    throw;
+  }
+}
+
 /** Set class member 'm_CartesianRadius' from neighbor information obtained from
     CSaTScanData object. */
 void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
@@ -669,6 +715,12 @@ void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
   if (ClusterDefined()) {
     DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
     DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), vCoordsOfNeighborCluster);
+    if (m_iEllipseOffset) {
+     CentroidNeighborCalculator::Transform(vCoordsOfCluster[0], vCoordsOfCluster[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
+                                           DataHub.GetEllipseShape(m_iEllipseOffset), &vCoordsOfCluster[0], &vCoordsOfCluster[1]);
+     CentroidNeighborCalculator::Transform(vCoordsOfNeighborCluster[0], vCoordsOfNeighborCluster[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
+                                           DataHub.GetEllipseShape(m_iEllipseOffset), &vCoordsOfNeighborCluster[0], &vCoordsOfNeighborCluster[1]);
+    }
     m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
   }  
 }
@@ -704,6 +756,12 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
   if (ClusterDefined()) {
     DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
     DataHub.GetTInfo()->tiRetrieveCoords(Neighbors.GetNeighborTractIndex(m_nTracts - 1), vCoordsOfNeighborCluster);
+    if (m_iEllipseOffset) {
+     CentroidNeighborCalculator::Transform(vCoordsOfCluster[0], vCoordsOfCluster[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
+                                           DataHub.GetEllipseShape(m_iEllipseOffset), &vCoordsOfCluster[0], &vCoordsOfCluster[1]);
+     CentroidNeighborCalculator::Transform(vCoordsOfNeighborCluster[0], vCoordsOfNeighborCluster[1], DataHub.GetEllipseAngle(m_iEllipseOffset),
+                                           DataHub.GetEllipseShape(m_iEllipseOffset), &vCoordsOfNeighborCluster[0], &vCoordsOfNeighborCluster[1]);
+    }
     m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
     m_MostCentralLocation = Neighbors.GetNeighborTractIndex(0);
   }

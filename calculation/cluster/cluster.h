@@ -103,6 +103,7 @@ class CCluster {
     virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
+    virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
