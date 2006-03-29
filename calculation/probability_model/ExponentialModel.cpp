@@ -27,8 +27,8 @@ double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster
     switch (Cluster.GetClusterType()) {
      case PURELYTEMPORALCLUSTER            :
         for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
-           dPopulation += ppCases[Cluster.m_nFirstInterval][t] - ppCases[Cluster.m_nLastInterval][t];
-           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - ppCensoredCases[Cluster.m_nLastInterval][t];
+           dPopulation += ppCases[Cluster.m_nFirstInterval][t] - (Cluster.m_nLastInterval == DataHub.GetNumTimeIntervals() ? 0 : ppCases[Cluster.m_nLastInterval][t]);
+           dPopulation += ppCensoredCases[Cluster.m_nFirstInterval][t] - (Cluster.m_nLastInterval == DataHub.GetNumTimeIntervals() ? 0 : ppCensoredCases[Cluster.m_nLastInterval][t]);
         }
         break;
      case SPACETIMECLUSTER                 :
