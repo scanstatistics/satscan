@@ -37,6 +37,7 @@ class CPurelyTemporalCluster : public CCluster {
     tract_t                             GetMostCentralLocationIndex() const;
     virtual count_t                     GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual void                        Initialize(tract_t nCenter=0);
+    virtual void                        PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {/*nop*/}
     virtual void                        SetCartesianRadius(const CSaTScanData& DataHub) {/*nop*/}
     virtual void                        SetMostCentralLocationIndex(const CSaTScanData& DataHub) {/*nop*/}
     virtual void                        SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {/*nop*/}
