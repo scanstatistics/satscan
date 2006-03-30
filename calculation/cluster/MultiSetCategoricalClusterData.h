@@ -12,55 +12,49 @@ class AbstractLikelihoodCalculator;
 class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public AbstractCategoricalClusterData {
   protected:
     ZdPointerVector<CategoricalSpatialData>             gvSetClusterData;
-    ZdPointerVector<CategoricalSpatialData>::iterator   gitr;
 
   public:
     MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate);
-    virtual ~MultiSetCategoricalSpatialData();
-
-    virtual void                                        Assign(const AbstractSpatialClusterData& rhs);
-    virtual MultiSetCategoricalSpatialData            * Clone() const;
+    virtual ~MultiSetCategoricalSpatialData() {}
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void        Assign(const AbstractSpatialClusterData& rhs);
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual MultiSetCategoricalSpatialData            * Clone() const;
+    virtual void        CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
+    void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                          AbstractLikelihoodCalculator& Calculator,
+                                                          std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                      unsigned int tSetIndex=0) const;
-    virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
-
-    void GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                           AbstractLikelihoodCalculator& Calculator,
-                                           std::vector<unsigned int>& vDataSetIndexes) const;
 
 };
 
 /** Abstract class representing accumulated data of a temporal clustering in multiple
     data sets for case data which is partitioned by category. */
 class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterData, public AbstractCategoricalClusterData {
-  protected:
-    ZdPointerVector<CategoricalTemporalData>::iterator   gitr;
-
   public:
-    AbstractMultiSetCategoricalTemporalData();
-    virtual ~AbstractMultiSetCategoricalTemporalData();
+    AbstractMultiSetCategoricalTemporalData() {}
+    virtual ~AbstractMultiSetCategoricalTemporalData() {}
 
-   ZdPointerVector<CategoricalTemporalData>   gvSetClusterData; /* Note 'Public' member for speed reasons.*/
+    ZdPointerVector<CategoricalTemporalData>   gvSetClusterData; /* Note 'Public' member for speed reasons.*/
 
+    virtual void        CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
+    void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                          AbstractLikelihoodCalculator& Calculator,
+                                                          std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                      unsigned int tSetIndex=0) const;
-    virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
-
-    void GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
-                                           AbstractLikelihoodCalculator& Calculator,
-                                           std::vector<unsigned int>& vDataSetIndexes) const;
-    
 };
 
 /** Class representing accumulated data of a temporal clustering in multiple data
@@ -68,12 +62,11 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
 class MultiSetCategoricalTemporalData : public AbstractMultiSetCategoricalTemporalData {
   public:
     MultiSetCategoricalTemporalData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway & DataGateway);
-    virtual ~MultiSetCategoricalTemporalData();
-
-    virtual void                              Assign(const AbstractTemporalClusterData& rhs);
-    virtual MultiSetCategoricalTemporalData * Clone() const;
+    virtual ~MultiSetCategoricalTemporalData() {}
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void        Assign(const AbstractTemporalClusterData& rhs);
+    virtual MultiSetCategoricalTemporalData * Clone() const;
     virtual void        Reassociate(const DataSetInterface& Interface);
     virtual void        Reassociate(const AbstractDataSetGateway& DataGateway);
 };
@@ -81,15 +74,18 @@ class MultiSetCategoricalTemporalData : public AbstractMultiSetCategoricalTempor
 /** Class representing accumulated data of a prospective spatial clustering in
     multiple data sets for case data which is partitioned by category. */
 class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategoricalTemporalData {
+  protected:
+     EvaluationAssistDataStatus          geEvaluationAssistDataStatus;
+  
   public:
     MultiSetCategoricalProspectiveSpatialData(const CategoricalClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway);
-    virtual ~MultiSetCategoricalProspectiveSpatialData();
-
-    virtual void                                        Assign(const AbstractTemporalClusterData& rhs);
-    virtual MultiSetCategoricalProspectiveSpatialData * Clone() const;
+    virtual ~MultiSetCategoricalProspectiveSpatialData() {}
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void        Assign(const AbstractTemporalClusterData& rhs);
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual MultiSetCategoricalProspectiveSpatialData * Clone() const;
+    virtual void        DeallocateEvaluationAssistClassMembers();
     virtual void        Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void        Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
@@ -97,14 +93,17 @@ class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategor
 /** Class representing accumulated data of a space-time clustering in multiple
     data sets for case data which is partitioned by category. */
 class MultiSetCategoricalSpaceTimeData : public AbstractMultiSetCategoricalTemporalData {
+  protected:
+     EvaluationAssistDataStatus          geEvaluationAssistDataStatus;
+
   public:
     MultiSetCategoricalSpaceTimeData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
-    virtual ~MultiSetCategoricalSpaceTimeData();
-
-    virtual void                               Assign(const AbstractTemporalClusterData& rhs);
-    virtual MultiSetCategoricalSpaceTimeData * Clone() const;
+    virtual ~MultiSetCategoricalSpaceTimeData() {}
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void        Assign(const AbstractTemporalClusterData& rhs);
+    virtual MultiSetCategoricalSpaceTimeData * Clone() const;
+    virtual void        DeallocateEvaluationAssistClassMembers();
     virtual void        Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void        Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };

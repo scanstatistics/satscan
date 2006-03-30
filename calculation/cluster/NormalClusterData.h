@@ -8,18 +8,18 @@
 class NormalSpatialData : public SpatialData {
   public:
     NormalSpatialData(const AbstractDataSetGateway& DataGateway, int iRate);
-    virtual ~NormalSpatialData();
+    virtual ~NormalSpatialData() {}
 
     //public data memebers
     measure_t                   gtSqMeasure;      /** expected number of cases - squared measure */
 
-    virtual void                Assign(const AbstractSpatialClusterData& rhs);
+    virtual void             AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
+    virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void             Assign(const AbstractSpatialClusterData& rhs);
+    virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual NormalSpatialData * Clone() const;
-
-    virtual void                AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
-    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
-    virtual double              CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
-    virtual void                InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
+    virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
 };
 
 /** Class representing accumulated data of temporal clustering for normal probability model.
@@ -33,17 +33,17 @@ class NormalTemporalData : public TemporalData {
 
   public:
     NormalTemporalData(const AbstractDataSetGateway& DataGateway);
-    virtual ~NormalTemporalData();
-
-    virtual void                 Assign(const AbstractTemporalClusterData& rhs);
-    virtual NormalTemporalData * Clone() const;
+    virtual ~NormalTemporalData() {}
 
     measure_t                    gtSqMeasure;
     measure_t                  * gpSqMeasure;
 
-    virtual void                 InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
-    virtual void                 Reassociate(const DataSetInterface& Interface);
-    virtual void                 Reassociate(const AbstractDataSetGateway& DataGateway);
+    virtual void             Assign(const AbstractTemporalClusterData& rhs);
+    virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual NormalTemporalData * Clone() const;
+    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
+    virtual void             Reassociate(const DataSetInterface& Interface);
+    virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);
 };
 
 /** class representing accumulated data of prospective spatial clustering  for normal probability model
@@ -56,6 +56,7 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
      void                                  Setup(const CSaTScanData& Data, const DataSetInterface& Interface);
 
   protected:
+     EvaluationAssistDataStatus            geEvaluationAssistDataStatus;
      unsigned int                          giAllocationSize;    /** size of allocated arrays */
      unsigned int                          giNumTimeIntervals;  /** number of time intervals in study period */
      unsigned int                          giProspectiveStart;  /** index of prospective start date in DataInterface case array */
@@ -67,24 +68,24 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
     NormalProspectiveSpatialData(const NormalProspectiveSpatialData& rhs);
     virtual ~NormalProspectiveSpatialData();
 
-    virtual void                           Assign(const AbstractTemporalClusterData& rhs);
+    virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void             Assign(const AbstractTemporalClusterData& rhs);
+    virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual NormalProspectiveSpatialData * Clone() const;
-    NormalProspectiveSpatialData         & operator=(const NormalProspectiveSpatialData& rhs);
-
-    virtual void                           AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
-    virtual double                         CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
-    virtual void                           InitializeData();
-    virtual void                           Reassociate(const DataSetInterface& Interface) {/*nop*/}
-    virtual void                           Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+    virtual void             DeallocateEvaluationAssistClassMembers();
+    virtual void             InitializeData();
+    NormalProspectiveSpatialData & operator=(const NormalProspectiveSpatialData& rhs);
+    virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
 
 /** Class representing accumulated data of space-time clustering for normal probability model. */
 class NormalSpaceTimeData : public NormalTemporalData {
   private:
-     void                         Init() {gpCases=0;gpMeasure=0;gpSqMeasure=0;}
      void                         Setup(const DataSetInterface & Interface);
 
   protected:
+     EvaluationAssistDataStatus   geEvaluationAssistDataStatus;
      unsigned int                 giAllocationSize;  /** size of allocated arrays */
 
   public:
@@ -93,14 +94,14 @@ class NormalSpaceTimeData : public NormalTemporalData {
     NormalSpaceTimeData(const NormalSpaceTimeData& rhs);
     virtual ~NormalSpaceTimeData();
 
-    virtual void                  Assign(const AbstractTemporalClusterData& rhs);
+    virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual NormalSpaceTimeData * Clone() const;
-    NormalSpaceTimeData         & operator=(const NormalSpaceTimeData& rhs);
-
-    virtual void                  AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
-    virtual void                  InitializeData();
-    virtual void                  Reassociate(const DataSetInterface& Interface) {/*nop*/}
-    virtual void                  Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+    virtual void             DeallocateEvaluationAssistClassMembers();
+    virtual void             InitializeData();
+    NormalSpaceTimeData    & operator=(const NormalSpaceTimeData& rhs);
+    virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
+    virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
 //******************************************************************************
 #endif
