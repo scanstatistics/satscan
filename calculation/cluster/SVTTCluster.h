@@ -75,6 +75,8 @@ class CSVTTCluster : public CCluster  {
     ~CSVTTCluster();
 
     CSVTTCluster              & operator=(const CSVTTCluster& rhs);
+    virtual void                CopyEssentialClassMembers(const CCluster& rhs) {*this = (CSVTTCluster&)rhs;}
+
 
     void                        AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway & DataGateway);
     void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface, size_t tSetIndex);    
