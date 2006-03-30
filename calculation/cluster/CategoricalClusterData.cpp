@@ -25,26 +25,11 @@ CategoricalSpatialData::CategoricalSpatialData(const AbstractDataSetGateway& Dat
 /** destructor */
 CategoricalSpatialData::~CategoricalSpatialData() {}
 
-/** Returns newly cloned CategoricalSpatialData object. Caller is responsible for
-    deletion of object. */
-CategoricalSpatialData * CategoricalSpatialData::Clone() const {
-  return new CategoricalSpatialData(*this);
-}
-
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractSpatialClusterData object
     can be casted to 'CategoricalSpatialData' object. */
 void CategoricalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
-  //cast to SpatialData type
-  const CategoricalSpatialData& _rhs = (const CategoricalSpatialData&)rhs;
-  //copy data members
-  gvCasesPerCategory = _rhs.gvCasesPerCategory;
-}
-
-/** overloaded assignment operator */
-CategoricalSpatialData & CategoricalSpatialData::operator=(const CategoricalSpatialData& rhs) {
-  gvCasesPerCategory = rhs.gvCasesPerCategory;
-  return *this;
+  *this = (const CategoricalSpatialData&)rhs;
 }
 
 /** adds neighbor data to accumulation  - caller is responsible for ensuring that
@@ -60,6 +45,18 @@ void CategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const Abstr
     calculated by probability model. */
 double CategoricalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   return Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory);
+}
+
+/** Returns newly cloned CategoricalSpatialData object. Caller is responsible for
+    deletion of object. */
+CategoricalSpatialData * CategoricalSpatialData::Clone() const {
+  return new CategoricalSpatialData(*this);
+}
+
+/** Copies class data members that reflect the number of cases per ordinal category,
+    which is the data we are interested in for possiblely reporting. */
+void CategoricalSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  gvCasesPerCategory = ((const CategoricalSpatialData&)rhs).gvCasesPerCategory;
 }
 
 /** No implemented - throws ZdException. */
@@ -93,7 +90,6 @@ measure_t CategoricalSpatialData::GetMeasure(unsigned int) const {
 CategoricalTemporalData::CategoricalTemporalData(const DataSetInterface& Interface)
                         :AbstractTemporalClusterData(), AbstractCategoricalClusterData(),
                          gppCategoryCases(Interface.GetPTCategoryCaseArray()) {
-
   gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   InitializeData();
 }
@@ -102,7 +98,6 @@ CategoricalTemporalData::CategoricalTemporalData(const DataSetInterface& Interfa
 CategoricalTemporalData::CategoricalTemporalData(const AbstractDataSetGateway& DataGateway)
                         :AbstractTemporalClusterData(),
                          gppCategoryCases(DataGateway.GetDataSetInterface().GetPTCategoryCaseArray()) {
-
   gvCasesPerCategory.resize(DataGateway.GetDataSetInterface().GetNumOrdinalCategories(), 0);
   InitializeData();
 }
@@ -110,31 +105,24 @@ CategoricalTemporalData::CategoricalTemporalData(const AbstractDataSetGateway& D
 /** destructor */
 CategoricalTemporalData::~CategoricalTemporalData() {}
 
-/** Returns newly cloned CategoricalTemporalData object. Caller responsible for
-    deletion of object. */
-CategoricalTemporalData * CategoricalTemporalData::Clone() const {
-  return new CategoricalTemporalData(*this);
+/** Not implemented - throws ZdException. */
+void CategoricalTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
+  ZdGenerateException("AddNeighborData(tract_t,const AbstractDataSetGateway&, size_t) not implemeneted.","CategoricalTemporalData");
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
     can be casted to 'CategoricalTemporalData' object. */
 void CategoricalTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
-  const CategoricalTemporalData& _rhs = (const CategoricalTemporalData&)rhs;
-  gppCategoryCases = _rhs.gppCategoryCases;
-  gvCasesPerCategory = _rhs.gvCasesPerCategory;
+  *this = (const CategoricalTemporalData&)rhs;
+}
+void CategoricalTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  gvCasesPerCategory = ((const CategoricalTemporalData&)rhs).gvCasesPerCategory;
 }
 
-/** overloaded assignment operator */
-CategoricalTemporalData & CategoricalTemporalData::operator=(const CategoricalTemporalData& rhs) {
-  gppCategoryCases = rhs.gppCategoryCases;
-  gvCasesPerCategory = rhs.gvCasesPerCategory;
-  return *this;
-}
-
-/** Not implemented - throws ZdException. */
-void CategoricalTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighborData(tract_t,const AbstractDataSetGateway&, size_t) not implemeneted.","CategoricalTemporalData");
+/** Returns newly cloned CategoricalTemporalData object. Caller responsible for deletion of object. */
+CategoricalTemporalData * CategoricalTemporalData::Clone() const {
+  return new CategoricalTemporalData(*this);
 }
 
 /** Not implemented - throws ZdException. */
@@ -181,9 +169,8 @@ void CategoricalTemporalData::Reassociate(const AbstractDataSetGateway& DataGate
 
 /** class constructor */
 CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface)
-                                  :CategoricalTemporalData(Interface) {
+                                  :CategoricalTemporalData(Interface), geEvaluationAssistDataStatus(Allocated) {
   try {
-    Init();
     Setup(Data, Interface);
   }
   catch (ZdException &x) {
@@ -194,9 +181,8 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
 
 /** class constructor */
 CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway)
-                                  :CategoricalTemporalData(DataGateway) {
+                                  :CategoricalTemporalData(DataGateway), geEvaluationAssistDataStatus(Allocated) {
   try {
-    Init();
     Setup(Data, DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
@@ -209,55 +195,18 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
 CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CategoricalProspectiveSpatialData& rhs)
                                   :CategoricalTemporalData(rhs) {
   try {
-    Init();
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(rhs.gpCategoryCasesHandler->Get1stDimension(), rhs.gpCategoryCasesHandler->Get2ndDimension(), 0);
-    gppCategoryCases = gpCategoryCasesHandler->GetArray();
     *this = rhs;
   }
   catch (ZdException &x) {
-    delete gpCategoryCasesHandler;
     x.AddCallpath("constructor(const CategoricalProspectiveSpatialData&)","CategoricalProspectiveSpatialData");
     throw;
   }
 }
 
-/** class destructor */
-CategoricalProspectiveSpatialData::~CategoricalProspectiveSpatialData() {
-  try {
-    delete gpCategoryCasesHandler;
-  }
-  catch (...){}
-}
-
-/** Returns newly cloned CategoricalProspectiveSpatialData object. Caller
-    responsible for deletion of object. */
-CategoricalProspectiveSpatialData * CategoricalProspectiveSpatialData::Clone() const {
-   return new CategoricalProspectiveSpatialData(*this);
-}
-
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractTemporalClusterData object
-    can be casted to 'CategoricalProspectiveSpatialData' object. */
-void CategoricalProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
-  const CategoricalProspectiveSpatialData& _rhs = (const CategoricalProspectiveSpatialData&)rhs;
-  *gpCategoryCasesHandler = *(_rhs.gpCategoryCasesHandler);
-  giNumTimeIntervals = _rhs.giNumTimeIntervals;
-  giProspectiveStart = _rhs.giProspectiveStart;
-  gvCasesPerCategory = _rhs.gvCasesPerCategory;
-}
-
-/** overloaded assignement operator */
-CategoricalProspectiveSpatialData & CategoricalProspectiveSpatialData::operator=(const CategoricalProspectiveSpatialData& rhs) {
-  *gpCategoryCasesHandler = *(rhs.gpCategoryCasesHandler);
-  giNumTimeIntervals = rhs.giNumTimeIntervals;
-  giProspectiveStart = rhs.giProspectiveStart;
-  gvCasesPerCategory = rhs.gvCasesPerCategory;
-  return *this;
-}
-
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void CategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
+  assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int           i, j;
   count_t             ** ppCases = 0;
 
@@ -272,14 +221,22 @@ void CategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, 
   }
 }
 
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractTemporalClusterData object
+    can be casted to 'CategoricalProspectiveSpatialData' object. */
+void CategoricalProspectiveSpatialData::Assign(const AbstractTemporalClusterData& rhs) {
+  *this = (const CategoricalProspectiveSpatialData&)rhs;
+}
+
 /** Calculates loglikelihood ratio given current accumulated cluster data if
     it is determined that data fits scanning area of interest (high, low, both).
     Returns zero if all windows rates not of interest else returns greatest
     loglikelihood ratio as calculated by probability model. */
 double CategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+  assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int  iWindowEnd;
   double        dMaxLoglikelihoodRatio=0;
-  unsigned int  iMaxWindow = gpCategoryCasesHandler->Get2ndDimension() - 1;
+  unsigned int  iMaxWindow = gCategoryCasesHandler->Get2ndDimension() - 1;
 
   for (size_t t=0; t < gvCasesPerCategory.size(); ++t)
     gvCasesPerCategory[t] = gppCategoryCases[t][0];
@@ -293,17 +250,49 @@ double CategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLi
   return dMaxLoglikelihoodRatio;
 }
 
+/** Returns newly cloned CategoricalProspectiveSpatialData object. Caller
+    responsible for deletion of object. */
+CategoricalProspectiveSpatialData * CategoricalProspectiveSpatialData::Clone() const {
+   return new CategoricalProspectiveSpatialData(*this);
+}
+
+/** Deallocates data members that assist with evaluation of temporal data.
+    Once this function is called various class member functions become invalid
+    and an assertion will fail if called. */
+void CategoricalProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
+  gCategoryCasesHandler.reset(0); gppCategoryCases=0;
+  geEvaluationAssistDataStatus = Deallocated;
+}
+
+/** overloaded assignement operator */
+CategoricalProspectiveSpatialData & CategoricalProspectiveSpatialData::operator=(const CategoricalProspectiveSpatialData& rhs) {
+  //data member 'gpCategoryCasesHandler' is an evaluation assisting data member that might be deallocated
+  if (rhs.geEvaluationAssistDataStatus == Allocated) {
+    if (!gCategoryCasesHandler.get())
+      gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(rhs.gCategoryCasesHandler->Get1stDimension(), rhs.gCategoryCasesHandler->Get2ndDimension(), 0));
+    *gCategoryCasesHandler = *(rhs.gCategoryCasesHandler);
+    gppCategoryCases = gCategoryCasesHandler->GetArray();
+  }
+  else {
+    gCategoryCasesHandler.reset(0); gppCategoryCases=0;
+  }
+  geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
+  giNumTimeIntervals = rhs.giNumTimeIntervals;
+  giProspectiveStart = rhs.giProspectiveStart;
+  gvCasesPerCategory = rhs.gvCasesPerCategory;
+  return *this;
+}
+
 /** internal setup function */
 void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterface& Interface) {
   try {
     giNumTimeIntervals = Data.m_nTimeIntervals;
     giProspectiveStart = Data.GetProspectiveStartIndex();
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), 1 + giNumTimeIntervals - giProspectiveStart, 0);
-    gppCategoryCases = gpCategoryCasesHandler->GetArray();
+    gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), 1 + giNumTimeIntervals - giProspectiveStart, 0));
+    gppCategoryCases = gCategoryCasesHandler->GetArray();
     gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   }
   catch (ZdException &x) {
-    delete gpCategoryCasesHandler;
     x.AddCallpath("Setup(const CSaTScanData&, const DataSetInterface&)","CategoricalProspectiveSpatialData");
     throw;
   }
@@ -313,9 +302,8 @@ void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const Da
 
 /** class constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Interface)
-                         :CategoricalTemporalData(Interface) {
+                         :CategoricalTemporalData(Interface), geEvaluationAssistDataStatus(Allocated) {
   try {
-    Init();
     Setup(Interface);
   }
   catch (ZdException &x) {
@@ -326,9 +314,8 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Inter
 
 /** class constructor */
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbstractDataSetGateway& DataGateway)
-                         :CategoricalTemporalData(DataGateway) {
+                         :CategoricalTemporalData(DataGateway), geEvaluationAssistDataStatus(Allocated) {
   try {
-    Init();
     Setup(DataGateway.GetDataSetInterface());
   }
   catch (ZdException &x) {
@@ -341,24 +328,33 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbstractDataSetGateway&
 CategoricalSpaceTimeData::CategoricalSpaceTimeData(const CategoricalSpaceTimeData& rhs)
                          :CategoricalTemporalData(rhs) {
   try {
-    Init();
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(rhs.gpCategoryCasesHandler->Get1stDimension(), rhs.gpCategoryCasesHandler->Get2ndDimension(), 0);
-    gppCategoryCases = gpCategoryCasesHandler->GetArray();
     *this = rhs;
   }
   catch (ZdException &x) {
-    delete gpCategoryCasesHandler;
     x.AddCallpath("constructor(const CategoricalSpaceTimeData&)","CategoricalSpaceTimeData");
     throw;
   }
 }
 
-/** class destructor */
-CategoricalSpaceTimeData::~CategoricalSpaceTimeData() {
-  try {
-    delete gpCategoryCasesHandler;
+/** Adds neighbor data to accumulation  - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  count_t            ** ppCases=0;
+  unsigned int          i, iMaxWindow = gCategoryCasesHandler->Get2ndDimension() - 1;
+
+  for (size_t t=0; t < gvCasesPerCategory.size(); ++t) {
+    ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCategoryCaseArrays()[t];
+    for (i=0; i < iMaxWindow; ++i)
+       gppCategoryCases[t][i] += ppCases[i][tNeighborIndex];
   }
-  catch (...){}
+}
+
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractTemporalClusterData object
+    can be casted to 'CategoricalSpaceTimeData' object. */
+void CategoricalSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
+  *this = (const CategoricalSpaceTimeData&)rhs;
 }
 
 /** Returns newly cloned CategoricalSpaceTimeData object. Caller responsible for
@@ -367,33 +363,27 @@ CategoricalSpaceTimeData * CategoricalSpaceTimeData::Clone() const {
    return new CategoricalSpaceTimeData(*this);
 }
 
-/** Assigns cluster data of passed object to 'this' object. Caller of function
-    is responsible for ensuring that passed AbstractTemporalClusterData object
-    can be casted to 'CategoricalSpaceTimeData' object. */
-void CategoricalSpaceTimeData::Assign(const AbstractTemporalClusterData& rhs) {
-  const CategoricalSpaceTimeData& _rhs = (const CategoricalSpaceTimeData&)rhs;
-  *gpCategoryCasesHandler = *(_rhs.gpCategoryCasesHandler);
-  gvCasesPerCategory = _rhs.gvCasesPerCategory;
+/** Deallocates data members that assist with evaluation of temporal data.
+    Once this function is called various class member functions become invalid
+    and on assertion will fail if called. */
+void CategoricalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
+  gCategoryCasesHandler.reset(0); gppCategoryCases = 0;
 }
 
 /** overloaded assignement operator */
 CategoricalSpaceTimeData & CategoricalSpaceTimeData::operator=(const CategoricalSpaceTimeData& rhs) {
-  *gpCategoryCasesHandler = *(rhs.gpCategoryCasesHandler);
+  if (rhs.geEvaluationAssistDataStatus == Allocated) {
+    if (!gCategoryCasesHandler.get())
+      gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(rhs.gCategoryCasesHandler->Get1stDimension(), rhs.gCategoryCasesHandler->Get2ndDimension(), 0));
+    *gCategoryCasesHandler = *(rhs.gCategoryCasesHandler);
+    gppCategoryCases = gCategoryCasesHandler->GetArray();
+  }
+  else {
+    gCategoryCasesHandler.reset(0); gppCategoryCases=0;
+  }
   gvCasesPerCategory = rhs.gvCasesPerCategory;
+  geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
   return *this;
-}
-
-/** Adds neighbor data to accumulation  - caller is responsible for ensuring that
-    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
-void CategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
-  count_t            ** ppCases=0;
-  unsigned int          i, iMaxWindow = gpCategoryCasesHandler->Get2ndDimension() - 1;
-
-  for (size_t t=0; t < gvCasesPerCategory.size(); ++t) {
-    ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCategoryCaseArrays()[t];
-    for (i=0; i < iMaxWindow; ++i)
-       gppCategoryCases[t][i] += ppCases[i][tNeighborIndex];
-  }        
 }
 
 /** internal setup function */
@@ -402,11 +392,10 @@ void CategoricalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     //Note that second dimension is number of time intervals plus one - this permits
     //us to evaluate last time intervals data with same code as other time intervals
     //in CTimeIntervals object.
-    gpCategoryCasesHandler = new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0);
-    gppCategoryCases = gpCategoryCasesHandler->GetArray();
+    gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0));
+    gppCategoryCases = gCategoryCasesHandler->GetArray();
   }
   catch (ZdException &x) {
-    delete gpCategoryCasesHandler;
     x.AddCallpath("Setup(const DataSetInterface&)","CategoricalSpaceTimeData");
     throw;
   }
