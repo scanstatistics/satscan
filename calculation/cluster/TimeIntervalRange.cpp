@@ -62,7 +62,7 @@ void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCl
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
             Data.gtCases = tCases;
             Data.gtMeasure = tMeasure;
-            TopCluster.AssignAsType(Running);
+            TopCluster.CopyEssentialClassMembers(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
             TopCluster.m_nLastInterval = iWindowEnd;
           }
@@ -205,7 +205,7 @@ void MultiSetTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster
         }
         Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
         if (Running.m_nRatio > TopCluster.m_nRatio) {
-          TopCluster.AssignAsType(Running);
+          TopCluster.CopyEssentialClassMembers(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
           TopCluster.m_nLastInterval = iWindowEnd;
         }
@@ -285,7 +285,7 @@ void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster &
         if (fRateOfInterest(Data.gtCases, Data.gtMeasure, tTotalCases, tTotalMeasure)) {
           Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtSqMeasure, tTotalCases, tTotalMeasure);
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
-            TopCluster.AssignAsType(Running);
+            TopCluster.CopyEssentialClassMembers(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
             TopCluster.m_nLastInterval = iWindowEnd;
           }
@@ -363,7 +363,7 @@ void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CClust
           Data.gvCasesPerCategory[t] = Data.gppCategoryCases[t][iWindowStart] - Data.gppCategoryCases[t][iWindowEnd];
         Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioOrdinal(Data.gvCasesPerCategory);
         if (Running.m_nRatio  > TopCluster.m_nRatio) {
-          TopCluster.AssignAsType(Running);
+          TopCluster.CopyEssentialClassMembers(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
           TopCluster.m_nLastInterval = iWindowEnd;
         }
@@ -442,7 +442,7 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running
         }
         Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
         if (Running.m_nRatio > TopCluster.m_nRatio) {
-          TopCluster.AssignAsType(Running);
+          TopCluster.CopyEssentialClassMembers(Running);
           TopCluster.m_nFirstInterval = iWindowStart;
           TopCluster.m_nLastInterval = iWindowEnd;
         }
