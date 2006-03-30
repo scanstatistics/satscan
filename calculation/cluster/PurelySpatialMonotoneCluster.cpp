@@ -334,6 +334,52 @@ void CPSMonotoneCluster::Initialize(tract_t nCenter) {
   std::fill(gvLastNeighborList.begin(), gvLastNeighborList.end(), 0);
 }
 
+/** Prints name and coordinates of locations contained in cluster to ASCII file.
+    Note: This is a debug function and can be helpful when used with Excel to get
+    visual of cluster using scatter plotting. */
+void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
+  unsigned int                  k;
+  tract_t                       i, tTract;
+  std::string                   sLocationID;
+  std::ofstream                 outfilestream(sFilename.c_str(), ios::ate);
+
+  try {
+    if (!outfilestream)
+      ZdGenerateException("Error: Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
+
+    outfilestream.setf(std::ios_base::fixed, std::ios_base::floatfield);
+
+    std::vector<double> vCoords;
+    if (DataHub.GetParameters().UseSpecialGrid()) {
+      DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoords);
+      outfilestream << "Central_Grid_Point";
+      for (size_t t=0; t < vCoords.size(); ++t)
+       outfilestream << " " << vCoords.at(t);
+      outfilestream << std::endl;
+    }                                                                                 
+
+    for (int s=0; s < m_nSteps; ++s) {
+      for (i=gvFirstNeighborList.at(i); i <= gvLastNeighborList.at(i); ++i) {
+         tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
+         // Print location identifiers if location data has not been removed in sequential scan.
+         if (!DataHub.GetIsNullifiedLocation(tTract)) {
+           DataHub.GetTInfo()->tiGetTid(tTract, sLocationID);
+           DataHub.GetTInfo()->tiRetrieveCoords(tTract, vCoords);
+           outfilestream << sLocationID.c_str();
+           for (size_t t=0; t < vCoords.size(); ++t)
+             outfilestream << " " << vCoords.at(t);
+           outfilestream << std::endl;
+         }
+      }
+    }
+    outfilestream << std::endl;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("PrintClusterLocationsToFile()","CPSMonotoneCluster");
+    throw;
+  }
+}
+
 /** no documentation */
 void CPSMonotoneCluster::RemoveRemainder() {
   m_nSteps--;

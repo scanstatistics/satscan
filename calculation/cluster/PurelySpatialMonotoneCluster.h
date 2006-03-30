@@ -41,9 +41,9 @@ class CPSMonotoneCluster : public CCluster {
     void                        AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n);
     void                        AddRemainder(count_t nTotalCases, measure_t nTotalMeasure);
     void                        AllocateForMaxCircles(tract_t nCircles);
-    inline virtual void         AssignAsType(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}
     void                        CheckCircle(tract_t n);
     virtual bool                ClusterDefined() const {return (m_nSteps > 0);}
+    virtual void                CopyEssentialClassMembers(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}
     virtual void                DefineTopCluster(const CSaTScanData& Data, AbstractLikelihoodCalculator & Calculator, count_t** pCases);
     virtual void                DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
@@ -65,6 +65,7 @@ class CPSMonotoneCluster : public CCluster {
     double                      GetRatio() const;
     double                      GetLogLikelihood() const;
     virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
                                       unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const;
 };
