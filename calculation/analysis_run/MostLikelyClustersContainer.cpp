@@ -19,13 +19,16 @@ void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
   if (Cluster.ClusterDefined()) {
     gvTopClusterList.push_back(0);
     gvTopClusterList.back() = Cluster.Clone();
+    gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
 
 /** Adds cluster object to list of top clusters, taking ownership. */
 void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
-  if (pCluster.get() && pCluster->ClusterDefined())
+  if (pCluster.get() && pCluster->ClusterDefined()) {
     gvTopClusterList.push_back(pCluster.release());
+    gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
+  }
 }
 
 //Does the point at 'theCentroid' lie within the spherical region described by
@@ -123,14 +126,23 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
     //radii (centric analyses).
     std::vector<double> vClusterOneCoords, vClusterTwoCoords;
     DataHub.GetGInfo()->giRetrieveCoords(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
+    double ClusterOneRadius = ClusterOne.GetCartesianRadius();
+    double ClusterTwoRadius = ClusterTwo.GetCartesianRadius();
     DataHub.GetGInfo()->giRetrieveCoords(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
     double dDistanceBetween = stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords));
     //we can say for certain that they don't have tracts in common if their circles don't overlap
-    if (dDistanceBetween > ClusterOne.GetCartesianRadius() + ClusterTwo.GetCartesianRadius())
+    if (dDistanceBetween > ClusterOneRadius * DataHub.GetEllipseShape(iOneOffset) + ClusterTwoRadius * DataHub.GetEllipseShape(iTwoOffset))
       return false;
     //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
     //or vice versa, centroid of first cluster is within radius of second cluster
-    if (dDistanceBetween <= ClusterOne.GetCartesianRadius() || dDistanceBetween <= ClusterTwo.GetCartesianRadius()) {
+    if (DataHub.GetParameters().UseSpecialGrid()) {
+      if (ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius || ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius) {
+        //if neighbors for secondard centroid where re-calculated, we can delete this data now
+        DataHub.FreeNeighborInfo(tTwoCentroid);
+        return true;
+      }
+    }
+    else if (dDistanceBetween <= ClusterOneRadius || dDistanceBetween <= ClusterTwoRadius) {
       //if neighbors for secondard centroid where re-calculated, we can delete this data now
       DataHub.FreeNeighborInfo(tTwoCentroid);
       return true;
