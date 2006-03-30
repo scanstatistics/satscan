@@ -33,8 +33,8 @@ class CCluster {
     virtual ~CCluster();
 
     //assignment operations
-    inline virtual void           AssignAsType(const CCluster& rhs) {*this = rhs;}
     virtual CCluster            * Clone() const = 0;
+    virtual void                  CopyEssentialClassMembers(const CCluster& rhs) = 0;
     CCluster                    & operator=(const CCluster& rhs);
     //pure virtual functions
     virtual AbstractClusterData       * GetClusterData() = 0;
@@ -47,6 +47,7 @@ class CCluster {
 
     virtual bool                  ClusterDefined() const {return m_nTracts;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
+    virtual void                  DeallocateEvaluationAssistClassMembers();
     virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
     virtual void                  DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex,
                                                                const CSaTScanData& DataHub,
@@ -103,6 +104,7 @@ class CCluster {
     virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
+    virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
