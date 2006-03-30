@@ -18,7 +18,6 @@ class CPurelySpatialCluster : public CCluster {
     CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
     virtual ~CPurelySpatialCluster();
 
-    inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialCluster&)rhs;}
     CPurelySpatialCluster                    & operator=(const CPurelySpatialCluster& rhs);
     virtual CPurelySpatialCluster            * Clone() const;
     virtual inline AbstractClusterData       * GetClusterData() {return gpClusterData;}
@@ -28,6 +27,7 @@ class CPurelySpatialCluster : public CCluster {
                                                                                    const CentroidNeighbors& CentroidDef,
                                                                                    CPurelySpatialCluster& TopCluster,
                                                                                    AbstractLikelihoodCalculator& Calculator);
+    virtual void                        CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual ClusterType                 GetClusterType() const {return PURELYSPATIALCLUSTER;}
     virtual ZdString                  & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;

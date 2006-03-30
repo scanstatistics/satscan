@@ -20,7 +20,6 @@ class CSpaceTimeCluster : public CCluster {
     CSpaceTimeCluster(const CSpaceTimeCluster& rhs);
     virtual ~CSpaceTimeCluster();
 
-    inline virtual void                   AssignAsType(const CCluster& rhs) {*this = (CSpaceTimeCluster&)rhs;}
     virtual CSpaceTimeCluster           * Clone() const;
     CSpaceTimeCluster                   & operator =(const CSpaceTimeCluster& cluster);
 
@@ -33,6 +32,7 @@ class CSpaceTimeCluster : public CCluster {
                                                                                      const CentroidNeighbors& CentroidDef,
                                                                                      CSpaceTimeCluster & TopCluster,
                                                                                      CTimeIntervals& TimeIntervals);
+    virtual void                          CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                          Initialize(tract_t nCenter=0);
 };
 //*****************************************************************************

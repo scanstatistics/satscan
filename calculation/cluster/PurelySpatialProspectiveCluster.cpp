@@ -61,6 +61,20 @@ CPurelySpatialProspectiveCluster& CPurelySpatialProspectiveCluster::operator=(co
   return *this;
 }
 
+void CPurelySpatialProspectiveCluster::CopyEssentialClassMembers(const CCluster& rhs) {
+  m_Center                      = ((CPurelySpatialProspectiveCluster&)rhs).m_Center;
+  m_MostCentralLocation         = ((CPurelySpatialProspectiveCluster&)rhs).m_MostCentralLocation;
+  m_nTracts                     = ((CPurelySpatialProspectiveCluster&)rhs).m_nTracts;
+  m_CartesianRadius             = ((CPurelySpatialProspectiveCluster&)rhs).m_CartesianRadius;
+  m_nRatio                      = ((CPurelySpatialProspectiveCluster&)rhs).m_nRatio;
+  m_nRank                       = ((CPurelySpatialProspectiveCluster&)rhs).m_nRank;
+  m_NonCompactnessPenalty       = ((CPurelySpatialProspectiveCluster&)rhs).m_NonCompactnessPenalty;
+  m_nFirstInterval              = ((CPurelySpatialProspectiveCluster&)rhs).m_nFirstInterval;
+  m_nLastInterval               = ((CPurelySpatialProspectiveCluster&)rhs).m_nLastInterval;
+  m_iEllipseOffset              = ((CPurelySpatialProspectiveCluster&)rhs).m_iEllipseOffset;
+  gpClusterData->CopyEssentialClassMembers(*rhs.GetClusterData());
+}
+
 /** returns newly cloned CPurelySpatialCluster */
 CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() const {
   return new CPurelySpatialProspectiveCluster(*this);
@@ -107,7 +121,7 @@ void CPurelySpatialProspectiveCluster::CalculateTopClusterAboutCentroidDefinitio
     //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster.AssignAsType(*this);
+      TopCluster.CopyEssentialClassMembers(*this);
   }
 }
 

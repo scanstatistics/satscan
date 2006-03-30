@@ -57,8 +57,22 @@ CPurelySpatialCluster& CPurelySpatialCluster::operator=(const CPurelySpatialClus
   m_nFirstInterval        = rhs.m_nFirstInterval;
   m_nLastInterval         = rhs.m_nLastInterval;
   m_iEllipseOffset        = rhs.m_iEllipseOffset;
-  gpClusterData->Assign(*(rhs.gpClusterData));  
+  gpClusterData->Assign(*(rhs.gpClusterData));
   return *this;
+}
+
+void CPurelySpatialCluster::CopyEssentialClassMembers(const CCluster& rhs) {
+  m_Center                = ((CPurelySpatialCluster&)rhs).m_Center;
+  m_MostCentralLocation   = ((CPurelySpatialCluster&)rhs).m_MostCentralLocation;
+  m_nTracts               = ((CPurelySpatialCluster&)rhs).m_nTracts;
+  m_CartesianRadius       = ((CPurelySpatialCluster&)rhs).m_CartesianRadius;
+  m_nRatio                = ((CPurelySpatialCluster&)rhs).m_nRatio;
+  m_nRank                 = ((CPurelySpatialCluster&)rhs).m_nRank;
+  m_NonCompactnessPenalty = ((CPurelySpatialCluster&)rhs).m_NonCompactnessPenalty;
+  m_nFirstInterval        = ((CPurelySpatialCluster&)rhs).m_nFirstInterval;
+  m_nLastInterval         = ((CPurelySpatialCluster&)rhs).m_nLastInterval;
+  m_iEllipseOffset        = ((CPurelySpatialCluster&)rhs).m_iEllipseOffset;
+  gpClusterData->CopyEssentialClassMembers(*(rhs.GetClusterData()));
 }
 
 /** Adds neighbor location data from DataGateway to cluster data accumulation and
@@ -79,7 +93,7 @@ void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const Abs
     //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
     if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster = *this;
+      TopCluster.CopyEssentialClassMembers(*this);
   }    
 }
 

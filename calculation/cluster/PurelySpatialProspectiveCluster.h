@@ -24,10 +24,14 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     CPurelySpatialProspectiveCluster(const CPurelySpatialProspectiveCluster& rhs);
     virtual ~CPurelySpatialProspectiveCluster();
 
-    inline virtual void                        AssignAsType(const CCluster& rhs) {*this = (CPurelySpatialProspectiveCluster&)rhs;}
     virtual CPurelySpatialProspectiveCluster * Clone() const;
     CPurelySpatialProspectiveCluster         & operator=(const CPurelySpatialProspectiveCluster& cluster);
 
+    void                                       CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
+                                                                                          const CentroidNeighbors& CentroidDef,
+                                                                                          CPurelySpatialProspectiveCluster& TopCluster,
+                                                                                          AbstractLikelihoodCalculator& Calculator);
+    virtual void                               CopyEssentialClassMembers(const CCluster& rhs);
     virtual AbstractClusterData              * GetClusterData() {return gpClusterData;}
     virtual const AbstractClusterData        * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                        GetClusterType() const {return PURELYSPATIALPROSPECTIVECLUSTER;}
@@ -35,10 +39,6 @@ class CPurelySpatialProspectiveCluster : public CCluster {
     virtual measure_t                          GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                            GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual ZdString                         & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
-    void                                       CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
-                                                                                          const CentroidNeighbors& CentroidDef,
-                                                                                          CPurelySpatialProspectiveCluster& TopCluster,
-                                                                                          AbstractLikelihoodCalculator& Calculator);
     virtual void                               Initialize(tract_t nCenter);
 };
 //*****************************************************************************

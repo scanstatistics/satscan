@@ -42,11 +42,11 @@ CSpaceTimeCluster::~CSpaceTimeCluster() {
 }
 
 /** overloaded assignment operator */
-CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
+CSpaceTimeCluster& CSpaceTimeCluster::operator=(const CSpaceTimeCluster& rhs) {
   m_Center                      = rhs.m_Center;
   m_MostCentralLocation         = rhs.m_MostCentralLocation;
   m_nTracts                     = rhs.m_nTracts;
-  m_CartesianRadius             = rhs.m_CartesianRadius;  
+  m_CartesianRadius             = rhs.m_CartesianRadius;
   m_nRatio                      = rhs.m_nRatio;
   m_nRank                       = rhs.m_nRank;
   m_NonCompactnessPenalty       = rhs.m_NonCompactnessPenalty;
@@ -60,6 +60,20 @@ CSpaceTimeCluster& CSpaceTimeCluster::operator =(const CSpaceTimeCluster& rhs) {
 /** returns newly cloned CSpaceTimeCluster */
 CSpaceTimeCluster * CSpaceTimeCluster::Clone() const {
   return new CSpaceTimeCluster(*this);
+}
+
+void CSpaceTimeCluster::CopyEssentialClassMembers(const CCluster& rhs) {
+  m_Center                      = ((const CSpaceTimeCluster&)rhs).m_Center;
+  m_MostCentralLocation         = ((const CSpaceTimeCluster&)rhs).m_MostCentralLocation;
+  m_nTracts                     = ((const CSpaceTimeCluster&)rhs).m_nTracts;
+  m_CartesianRadius             = ((const CSpaceTimeCluster&)rhs).m_CartesianRadius;
+  m_nRatio                      = ((const CSpaceTimeCluster&)rhs).m_nRatio;
+  m_nRank                       = ((const CSpaceTimeCluster&)rhs).m_nRank;
+  m_NonCompactnessPenalty       = ((const CSpaceTimeCluster&)rhs).m_NonCompactnessPenalty;
+  m_nFirstInterval              = ((const CSpaceTimeCluster&)rhs).m_nFirstInterval;
+  m_nLastInterval               = ((const CSpaceTimeCluster&)rhs).m_nLastInterval;
+  m_iEllipseOffset              = ((const CSpaceTimeCluster&)rhs).m_iEllipseOffset;
+  gpClusterData->CopyEssentialClassMembers(*(rhs.GetClusterData()));
 }
 
 /** Returns the measure for tract as defined by cluster. */
