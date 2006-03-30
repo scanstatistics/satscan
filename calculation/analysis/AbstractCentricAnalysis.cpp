@@ -43,6 +43,7 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
        }
     }
     gRetainedClusters.push_back(GetTopCalculatedCluster().Clone());
+    gRetainedClusters.back()->DeallocateEvaluationAssistClassMembers();
   }
   catch (ZdException &x) {
     x.AddCallpath("ExecuteAboutCentroid()","AbstractCentricAnalysis");
