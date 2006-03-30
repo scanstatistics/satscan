@@ -56,6 +56,17 @@ CPurelyTemporalCluster& CPurelyTemporalCluster::operator=(const CPurelyTemporalC
   return *this;
 }
 
+void CPurelyTemporalCluster::CopyEssentialClassMembers(const CCluster& rhs) {
+  m_Center              = ((CPurelyTemporalCluster&)rhs).m_Center;
+  m_MostCentralLocation = ((CPurelyTemporalCluster&)rhs).m_MostCentralLocation;
+  m_nTracts             = ((CPurelyTemporalCluster&)rhs).m_nTracts; m_nTracts=1;
+  m_nRatio              = ((CPurelyTemporalCluster&)rhs).m_nRatio;
+  m_nRank               = ((CPurelyTemporalCluster&)rhs).m_nRank;
+  m_nFirstInterval      = ((CPurelyTemporalCluster&)rhs).m_nFirstInterval;
+  m_nLastInterval       = ((CPurelyTemporalCluster&)rhs).m_nLastInterval;
+  gpClusterData->CopyEssentialClassMembers(*(rhs.GetClusterData()));
+}
+
 /** returns newly cloned CPurelyTemporalCluster */
 CPurelyTemporalCluster * CPurelyTemporalCluster::Clone() const {
   return new CPurelyTemporalCluster(*this);
