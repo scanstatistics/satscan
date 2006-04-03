@@ -5,6 +5,7 @@
 #include "PoissonDataSetHandler.h"
 #include "SaTScanData.h"
 #include "DateStringParser.h"
+#include "DataSource.h"
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
@@ -305,7 +306,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
   bool                                                          bValid=true, bEmpty=true;
   tract_t                                                       TractIdentifierIndex;
   float                                                         fPopulation;
-  FILE                                                        * fp=0; // Ptr to population file
+  const short                                                   uPopulationDateIndex=1, uPopulationIndex=2, uCovariateIndex=3;
   std::pair<Julian, DatePrecisionType>                          prPopulationDate;
   std::vector<std::pair<Julian, DatePrecisionType> >            vprPopulationDates;
   std::vector<std::pair<Julian, DatePrecisionType> >::iterator  itr;
@@ -313,28 +314,20 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
     gPrint.SetImpliedInputFileType(BasePrint::POPFILE, (GetNumDataSets() == 1 ? 0 : tSetIndex + 1));
-    StringParser Parser(gPrint);
 
-    if ((fp = fopen(gParameters.GetPopulationFileName(tSetIndex + 1).c_str(), "r")) == NULL) {
-      gPrint.Printf("Error: Could not open the population file:\n'%s'.\n",
-                    BasePrint::P_READERROR, gParameters.GetPopulationFileName(tSetIndex + 1).c_str());
-      return false;
-    }
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(tSetIndex + 1), gPrint));
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
-        //skip lines that do not contain data
-        if (!Parser.HasWords())
-          continue;
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;
         //scan values and validate - population file records must contain tract id, date and population.
-        if (!Parser.GetWord(1)) {
+        if (!Source->GetValueAt(uPopulationDateIndex)) {
             gPrint.Printf("Error: Record %ld, of the %s, is missing the date.\n",
-                          BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                          BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
         }
-        if (!ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate)) {
+        if (!ConvertPopulationDateToJulian(Source->GetValueAt(uPopulationDateIndex), Source->GetCurrentRecordIndex(), prPopulationDate)) {
             bValid = false;
             continue;
         }
@@ -355,49 +348,45 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
                                                         CharToJulian(gParameters.GetStudyPeriodStartDate().c_str()),
                                                         CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()));
       vprPopulationDates.clear(); //dump memory
-      Parser.Reset(); //reset parser for second pass
-      //reset for second read
-      fseek(fp, 0L, SEEK_SET);
+      Source->GotoFirstRecord();
       //We can ignore error checking for population date and population since we already did this above.
-      while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
-          if (!Parser.HasWords()) // Skip Blank Lines
-            continue;
-          ConvertPopulationDateToJulian(Parser.GetWord(1), Parser.GetReadCount(), prPopulationDate);
-          if (!Parser.GetWord(2)) {
+      while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
+          ConvertPopulationDateToJulian(Source->GetValueAt(uPopulationDateIndex), Source->GetCurrentRecordIndex(), prPopulationDate);
+          if (!Source->GetValueAt(uPopulationIndex)) {
             gPrint.Printf("Error: Record %d, of the %s, is missing the population number.\n",
-                          BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                          BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
           }
-          if (sscanf(Parser.GetWord(2), "%f", &fPopulation) != 1) {
+          if (sscanf(Source->GetValueAt(uPopulationIndex), "%f", &fPopulation) != 1) {
             gPrint.Printf("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
-                          BasePrint::P_READERROR, Parser.GetWord(2), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                          BasePrint::P_READERROR, Source->GetValueAt(uPopulationIndex), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             bValid = false;
             continue;
           }
           //validate that population is not negative or exceeding type precision
           if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
-            if (strstr(Parser.GetWord(2), "-"))
+            if (strstr(Source->GetValueAt(uPopulationIndex), "-"))
               gPrint.Printf("Error: Negative population in record %ld of %s.\n",
-                            BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                            BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             else
               gPrint.Printf("Error: The population '%s', in record %ld of the %s, exceeds the maximum allowed value of %i.\n",
-                            BasePrint::P_READERROR, Parser.GetWord(2), Parser.GetReadCount(),
+                            BasePrint::P_READERROR, Source->GetValueAt(uPopulationIndex), Source->GetCurrentRecordIndex(),
                             gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<float>::max());
             bValid = false;
             continue;
           }
           //Scan for covariates to create population categories or find index.
           //First category created sets precedence as to how many covariates remaining records must have.
-          if ((iCategoryIndex = DataSet.GetPopulationData().CreateCovariateCategory(Parser, 3, gPrint)) == -1) {
+          if ((iCategoryIndex = DataSet.GetPopulationData().CreateCovariateCategory(*Source, uCovariateIndex, gPrint)) == -1) {
             bValid = false;
             continue;
           }
           //Validate that tract identifer is one of those defined in the coordinates file.
-          if ((TractIdentifierIndex = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+          if ((TractIdentifierIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source->GetValueAt(guLocationIndex))) == -1) {
             gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
                           "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
-                          gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount(),  Parser.GetWord(0));
+                          gPrint.GetImpliedFileTypeString().c_str(), Source->GetCurrentRecordIndex(), Source->GetValueAt(guLocationIndex));
             bValid = false;
             continue;
           }
@@ -405,8 +394,6 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
           DataSet.GetPopulationData().AddCovariateCategoryPopulation(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
       }
     }
-    //close file pointer
-    fclose(fp); fp=0;
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
@@ -420,8 +407,6 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
       return false;
   }
   catch (ZdException &x) {
-    //close file pointer
-    if (fp) fclose(fp);
     x.AddCallpath("ReadPopulationFile()","PoissonDataSetHandler");
     throw;
   }

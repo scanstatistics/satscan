@@ -10,9 +10,8 @@ class ExponentialDataSetHandler : public DataSetHandler {
     static const count_t                gtMinimumNotCensoredCases;
 
     virtual void                        AllocateCaseStructures(size_t tSetIndex) {/* no action */}
-    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate,
-                                                          measure_t& tContinuousVariable, count_t& tCensorAttribute);
-    virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription);
+    virtual bool                        ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute);
+    virtual bool                        ReadCounts(size_t tSetIndex, DataSource& Source, const char* szDescription);
     virtual void                        SetRandomizers();
 
   public:

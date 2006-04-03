@@ -4,7 +4,8 @@
 //******************************************************************************
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "SaTScanData.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "DataSource.h"  
 
 /** constructor */
 SpaceTimePermutationDataSetHandler::SpaceTimePermutationDataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
@@ -155,13 +156,11 @@ double SpaceTimePermutationDataSetHandler::GetSimulationDataSetAllocationRequire
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char* szDescription) {
+bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const char* szDescription) {
   int                                   i, iCategoryIndex;
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
-  StringParser                          Parser(gPrint);
-  std::string                           sBuffer;
   count_t                               Count, ** ppCounts, ** ppCategoryCounts;
 
   try {
@@ -169,10 +168,9 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp,
     ppCounts = DataSet.GetCaseArray();
 
     //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
-         if (Parser.HasWords()) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            bEmpty = false;
-           if (ParseCountLine(DataSet.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {
+           if (ParseCountLine(DataSet.GetPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex)) {
               //Ensure that category case array is allocated for this category. In the future, we might want
               //to look into suppress categories with no cases.
               ppCategoryCounts = DataSet.GetCategoryCaseArray(iCategoryIndex, true);
@@ -194,7 +192,6 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp,
            }
            else
              bValid = false;
-         }
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance

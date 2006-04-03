@@ -5,7 +5,8 @@
 #include "DataSetHandler.h"
 #include "SaTScanData.h"
 #include "DateStringParser.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "DataSource.h" 
 
 const short DataSetHandler::guLocationIndex             = 0;
 const short DataSetHandler::guCountIndex                = 1;
@@ -43,7 +44,7 @@ void DataSetHandler::AllocateCaseStructures(size_t iSetIndex) {
     errors/warnings are accumulated when reading input files, indication of
     successful conversion to Julian date is returned and any messages sent
     to print direction. */
-bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & JulianDate) {
+bool DataSetHandler::ConvertCountDateToJulian(DataSource& Source, Julian & JulianDate) {
   DateStringParser                      DateParser;
   DateStringParser::ParserStatus        eStatus;
   DatePrecisionType                     ePrecision;
@@ -69,13 +70,13 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
     ePrecision =  gParameters.GetPrecisionOfTimesType();
 
   //Parameter settings indicate that there should be a date in each case record.
-  if (!Parser.GetWord(guCountDateIndex)) {
+  if (!Source.GetValueAt(guCountDateIndex)) {
     gPrint.Printf("Error: Record %ld in %s does not contain a date.\n",
-                  BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                  BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
     return false;
   }
   //Attempt to convert string into Julian equivalence.
-  eStatus = DateParser.ParseCountDateString(Parser.GetWord(guCountDateIndex), ePrecision,
+  eStatus = DateParser.ParseCountDateString(Source.GetValueAt(guCountDateIndex), ePrecision,
                                             gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
   switch (eStatus) {
     case DateStringParser::VALID_DATE       : break;
@@ -83,14 +84,14 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
       gPrint.Printf("Error: Due to the study period being greater than 100 years, unable\n"
                     "       to determine century for two digit year in %s, record %ld.\n"
                     "       Please use four digit years.\n", BasePrint::P_READERROR,
-                    gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+                    gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
       return false;
     case DateStringParser::LESSER_PRECISION : {
        ZdString sBuffer;
        //Dates in the case/control files must be at least as precise as ePrecision units.
        gPrint.Printf("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
                      "       as specified by %s units.\n", BasePrint::P_READERROR,
-                     Parser.GetWord(guCountDateIndex), Parser.GetReadCount(),
+                     Source.GetValueAt(guCountDateIndex), Source.GetCurrentRecordIndex(),
                      gPrint.GetImpliedFileTypeString().c_str(),
                      GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
                      (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
@@ -98,14 +99,14 @@ bool DataSetHandler::ConvertCountDateToJulian(StringParser & Parser, Julian & Ju
     case DateStringParser::INVALID_DATE     :
     default                                 :
       gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n", BasePrint::P_READERROR,
-                    Parser.GetWord(guCountDateIndex), gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount());
+                    Source.GetValueAt(guCountDateIndex), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
       return false;
   };
   //validate that date is between study period start and end dates
   if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
     gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n"
                   "       within the study period beginning %s and ending %s.\n",
-                  BasePrint::P_READERROR, Parser.GetWord(2), Parser.GetReadCount(),
+                  BasePrint::P_READERROR, Source.GetValueAt(guCountDateIndex), Source.GetCurrentRecordIndex(),
                   gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(),
                   gParameters.GetStudyPeriodEndDate().c_str());
     return false;
@@ -156,50 +157,47 @@ SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(Simulation
 /** Attempts to parses passed string into tract identifier, count,
     and based upon settings, date and covariate information.
     Returns whether parse completed without errors. */
-bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser & Parser,
-                                       tract_t& tid, count_t& nCount,
-                                       Julian& nDate, int& iCategoryIndex) {
-                                       
+bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
   short         iCategoryOffSet;
 
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(guLocationIndex))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
                     "       Location ID '%s' was not specified in the coordinates file.\n",
                     BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
-                    Parser.GetReadCount(), Parser.GetWord(guLocationIndex));
+                    Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
       return false;
     }
     //read and validate count
-    if (Parser.GetWord(guCountIndex) != 0) {
-      if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
+    if (Source.GetValueAt(guCountIndex) != 0) {
+      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount)) {
        gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
                      "       Case count must be an integer.\n", BasePrint::P_READERROR,
-                     Parser.GetWord(guCountIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                     Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
     }
     else {
       gPrint.Printf("Error: Record %ld in %s does not contain case count.\n",
-                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Parser.GetWord(guCountIndex), "-"))
+      if (strstr(Source.GetValueAt(guCountIndex), "-"))
         gPrint.Printf("Error: Record %ld, of the %s, contains a negative case count.\n",
-                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       else
         gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Parser.GetWord(1), std::numeric_limits<count_t>::max(),
-                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (!ConvertCountDateToJulian(Parser, nDate))
+    if (!ConvertCountDateToJulian(Source, nDate))
       return false;
     iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
-    if (! ParseCovariates(thePopulation, iCategoryIndex, iCategoryOffSet, Parser))
+    if (! ParseCovariates(thePopulation, iCategoryIndex, iCategoryOffSet, Source))
         return false;
   }
   catch (ZdException &x) {
@@ -210,7 +208,7 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, StringParser
 }
 
 /** Parses count file data line to determine category index given covariates contained in line.*/
-bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, short iCovariatesOffset, StringParser & Parser) {
+bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source) {
   int                          iNumCovariatesScanned=0;
   std::vector<std::string>     vCategoryCovariates;
   const char                 * pCovariate;
@@ -218,7 +216,7 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
   try {
 
     if (gParameters.GetProbabilityModelType() == POISSON) {
-      while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iCovariatesOffset)) != 0) {
+      while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iCovariatesOffset)) != 0) {
            vCategoryCovariates.push_back(pCovariate);
            iNumCovariatesScanned++;
       }
@@ -227,7 +225,7 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
         //be covariates in other files, namely the case file.
         gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but covariates are not permitted\n"
                       "       in the %s when a population file is not specified.\n", BasePrint::P_READERROR,
-                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
                       iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
                       gPrint.GetImpliedFileTypeString().c_str());
         return false;
@@ -235,7 +233,7 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
       if (iNumCovariatesScanned != thePopulation.GetNumCovariatesPerCategory()) {
         gPrint.Printf("Error: Record %ld of %s contains %d covariate%s but the population file\n"
                       "       defined the number of covariates as %d.\n", BasePrint::P_READERROR,
-                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str(),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
                       iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
                       thePopulation.GetNumCovariatesPerCategory());
         return false;
@@ -244,7 +242,7 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
       if ((iCategoryIndex = thePopulation.GetCovariateCategoryIndex(vCategoryCovariates)) == -1) {
         gPrint.Printf("Error: Record %ld of %s refers to a population category that\n"
                       "       does not match an existing category as read from the population file.",
-                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return false;
       }
     }
@@ -255,7 +253,7 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
     }
     else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
         //First category created sets precedence as to how many covariates remaining records must have.
-        if ((iCategoryIndex = thePopulation.CreateCovariateCategory(Parser, iCovariatesOffset, gPrint)) == -1)
+        if ((iCategoryIndex = thePopulation.CreateCovariateCategory(Source, iCovariatesOffset, gPrint)) == -1)
           return false;
     }
     else
@@ -280,38 +278,27 @@ void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationD
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool DataSetHandler::ReadCaseFile(size_t iSetIndex) {
-  bool          bValid=true;
-  FILE        * fp=0;
-
   try {
-    if ((fp = fopen(gParameters.GetCaseFileName(iSetIndex + 1).c_str(), "r")) == NULL) {
-      gPrint.Printf("Error: Could not open the case file:\n'%s'.\n",
-                    BasePrint::P_ERROR, gParameters.GetCaseFileName(iSetIndex + 1).c_str());
-      return false;
-    }                                                                  
     gPrint.SetImpliedInputFileType(BasePrint::CASEFILE, (GetNumDataSets() == 1 ? 0 : iSetIndex + 1));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(iSetIndex + 1), gPrint));
     AllocateCaseStructures(iSetIndex);
-    bValid = ReadCounts(iSetIndex, fp, "case");
-    fclose(fp); fp=0;
+    return ReadCounts(iSetIndex, *Source, "case");
   }
   catch (ZdException & x) {
-    if (fp) fclose(fp);
     x.AddCallpath("ReadCaseFile()","DataSetHandler");
     throw;
   }
-  return bValid;
 }
 
 /** Read the count(either case or control) data file.
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescription) {
+bool DataSetHandler::ReadCounts(size_t iSetIndex, DataSource& Source, const char* szDescription) {
   int                                   i, iCategoryIndex;
   bool                                  bCaseFile, bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
-  StringParser                          Parser(gPrint);
   std::string                           sBuffer;
   count_t                               Count, ** pCounts;
 
@@ -322,10 +309,9 @@ bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescri
     pCounts = (bCaseFile ? DataSet.GetCaseArray() : DataSet.GetControlArray());
 
     //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
-         if (Parser.HasWords()) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            bEmpty = false;
-           if (ParseCountLine(DataSet.GetPopulationData(), Parser, TractIndex, Count, Date, iCategoryIndex)) {
+           if (ParseCountLine(DataSet.GetPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex)) {
              //cumulatively add count to time by location structure
              pCounts[0][TractIndex] += Count;
              if (pCounts[0][TractIndex] < 0)
@@ -333,7 +319,7 @@ bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescri
                                            (bCaseFile ? "cases" : "controls"), iSetIndex, std::numeric_limits<count_t>::max());
              for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                pCounts[i][TractIndex] += Count;
-             //record count as a case or control  
+             //record count as a case or control
              if (bCaseFile)
                DataSet.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
              else
@@ -341,7 +327,6 @@ bool DataSetHandler::ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescri
            }
            else
              bValid = false;
-         }
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance

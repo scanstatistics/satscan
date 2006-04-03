@@ -4,7 +4,8 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "ExponentialDataSetHandler.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "DataSource.h" 
 
 const count_t ExponentialDataSetHandler::gtMinimumNotCensoredCases         = 1;
 
@@ -179,76 +180,74 @@ double ExponentialDataSetHandler::GetSimulationDataSetAllocationRequirements() c
   return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
-/** Parses current file record contained in StringParser object in expected
+/** Parses current file record contained in DataSource object in expected
     parts: location, case count, date, survival time and censor attribute. Returns true if no
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
-bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t& tid,
-                                                  count_t& nCount, Julian& nDate,
-                                                  measure_t& tContinuousVariable, count_t& tCensorAttribute) {
+bool ExponentialDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute) {
   short   iContiVariableIndex, iCensoredAttributeIndex;
 
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(0))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
       gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
                     "       Location ID '%s' was not specified in the coordinates file.\n",
-                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Parser.GetReadCount(), Parser.GetWord(0));
+                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
       return false;
     }
     //read and validate count
-    if (Parser.GetWord(1) != 0) {
-      if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
+    if (Source.GetValueAt(guCountIndex) != 0) {
+      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount)) {
        gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
-                     "       Case count must be an integer.\n", BasePrint::P_READERROR, Parser.GetWord(1),
-                     Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                     "       Case count must be an integer.\n", BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
+                     Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
     }
     else {
       gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
-                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Parser.GetWord(1), "-"))
+      if (strstr(Source.GetValueAt(guCountIndex), "-"))
         gPrint.Printf("Error: Case count in record %ld, of the %s, is negative.\n",
-                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       else
         gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Parser.GetWord(1), std::numeric_limits<count_t>::max(),
-                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (!ConvertCountDateToJulian(Parser, nDate))
+    if (!ConvertCountDateToJulian(Source, nDate))
       return false;
 
     // read continuous variable
     iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
-    if (!Parser.GetWord(iContiVariableIndex)) {
+    if (!Source.GetValueAt(iContiVariableIndex)) {
       gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
-                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
+    if (sscanf(Source.GetValueAt(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
        gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of the %s, is not a number.\n",
-                                BasePrint::P_READERROR, Parser.GetWord(iContiVariableIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                                BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
     if (tContinuousVariable <= 0) {
        gPrint.Printf("Error: The continuous variable '%g' in record %ld of the %s, is not greater than zero.\n",
-                     BasePrint::P_READERROR, tContinuousVariable, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                     BasePrint::P_READERROR, tContinuousVariable, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
 
     //read and validate censore attribute
     iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
-    if (Parser.GetWord(iCensoredAttributeIndex) != 0) {
-      if (!sscanf(Parser.GetWord(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
+    if (Source.GetValueAt(iCensoredAttributeIndex) != 0) {
+      if (!sscanf(Source.GetValueAt(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
        gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n"
                      "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
-                     Parser.GetWord(iCensoredAttributeIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                     Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
       //treat values greater than one as indication that patient was censored
@@ -269,7 +268,7 @@ bool ExponentialDataSetHandler::ParseCaseFileLine(StringParser & Parser, tract_t
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*) {
+bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const char*) {
   bool                            bReadSuccessful=true, bEmpty=true;
   Julian                          Date;
   tract_t                         tTractIndex;
@@ -279,17 +278,15 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
 
   try {
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
-    StringParser Parser(gPrint);
 
     // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
     pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers[tSetIndex]);
     if (!pRandomizer)
       ZdGenerateException("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
-         if (Parser.HasWords()) {
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Parser, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute)) {
+           if (ParseCaseFileLine(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute)) {
              pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuousVariable, tCensorAttribute);
              tTotalPopuation += tPatients;
              //check that addition did not exceed data type limitations
@@ -309,7 +306,6 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const ch
            }
            else
              bReadSuccessful = false;
-         }
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance

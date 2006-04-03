@@ -6,7 +6,8 @@
 #include "UtilityFunctions.h"
 #include "SaTScanData.h"
 #include "AsciiPrintFormat.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "DataSource.h"  
 
 /** Constructor */
 CovariateCategory::CovariateCategory(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {
@@ -438,7 +439,7 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
 }
 
 /** Attmepts to create new population category through parsing record contained
-    by StringParser with covariates indicated to start at 'iScanOffset'. If
+    by DataSource with covariates indicated to start at 'iScanOffset'. If
     previously specified to aggregate population categories, nothing is done
     and category index returned is zero.
     If no population categories exist at function call, the number of expected
@@ -447,7 +448,7 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
     covariates or an error message will be printed to PrintDirection and returned
     category in returned will be negative one. Upon successful creation of
     population category, index is returned. */
-int PopulationData::CreateCovariateCategory(StringParser& Parser, short iScanOffset, BasePrint& PrintDirection) {
+int PopulationData::CreateCovariateCategory(DataSource& Source, short iScanOffset, BasePrint& PrintDirection) {
   unsigned int                                  iCategoryIndex;
   short                                         iNumCovariatesScanned=0;
   std::vector<int>                              vPopulationCategory;
@@ -459,7 +460,7 @@ int PopulationData::CreateCovariateCategory(StringParser& Parser, short iScanOff
     iCategoryIndex = 0;
 
   //create a temporary vector of covariate name indexes
-  while ((pCovariate = Parser.GetWord(iNumCovariatesScanned + iScanOffset)) != 0) {
+  while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iScanOffset)) != 0) {
        iNumCovariatesScanned++;
        itr = std::find(gvCovariateNames.begin(), gvCovariateNames.end(), pCovariate);
        if (itr == gvCovariateNames.end()) {
@@ -483,7 +484,7 @@ int PopulationData::CreateCovariateCategory(StringParser& Parser, short iScanOff
   }
   else if (iNumCovariatesScanned != giNumberCovariatesPerCategory){
     PrintDirection.Printf("Error: Record %d of %s contains %i covariate%s but expecting %i covariate%s.\n",
-                          BasePrint::P_READERROR, Parser.GetReadCount(), PrintDirection.GetImpliedFileTypeString().c_str(),
+                          BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), PrintDirection.GetImpliedFileTypeString().c_str(),
                           iNumCovariatesScanned,(iNumCovariatesScanned == 1 ? "" : "s"),
                           giNumberCovariatesPerCategory, (giNumberCovariatesPerCategory == 1 ? "" : "s"));
     iCategoryIndex = -1;

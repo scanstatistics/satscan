@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "BernoulliDataSetHandler.h"
+#include "DataSource.h"
 
 /** allocates cases structures for dataset*/
 void BernoulliDataSetHandler::AllocateControlStructures(size_t tSetIndex) {
@@ -176,26 +177,16 @@ double BernoulliDataSetHandler::GetSimulationDataSetAllocationRequirements() con
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
 bool BernoulliDataSetHandler::ReadControlFile(size_t tSetIndex) {
-  bool          bValid=true;
-  FILE        * fp=0;
-
   try {
-    if ((fp = fopen(gParameters.GetControlFileName(tSetIndex + 1).c_str(), "r")) == NULL) {
-      gPrint.Printf("Error: Could not open the control file:\n'%s'.\n",
-                    BasePrint::P_ERROR, gParameters.GetControlFileName(tSetIndex + 1).c_str());
-      return false;
-    }
     gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumDataSets() == 1 ? 0 : tSetIndex + 1));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(tSetIndex + 1), gPrint));
     AllocateControlStructures(tSetIndex);
-    bValid = ReadCounts(tSetIndex, fp, "control");
-    fclose(fp); fp=0;
+    return ReadCounts(tSetIndex, *Source, "control");
   }
   catch (ZdException & x) {
-    if (fp) fclose(fp);
     x.AddCallpath("ReadControlFile()","BernoulliDataSetHandler");
     throw;
   }
-  return bValid;
 }
 
 /** */

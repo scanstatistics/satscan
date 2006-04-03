@@ -7,6 +7,7 @@
 #include "JulianDates.h"
 
 class PopulationData; /** forward class declaration */
+class DataSource;     /** forward class definition */
 
 /** Stores data for covariate category for a single location. */
 class CovariateCategory {
@@ -94,7 +95,7 @@ class PopulationData {
     void                                CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const;
     void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;
     bool                                CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const;
-    int                                 CreateCovariateCategory(StringParser& Parser, short iScanOffset, BasePrint& PrintDirection);
+    int                                 CreateCovariateCategory(DataSource& Source, short iScanOffset, BasePrint& PrintDirection);
     void                                Display(BasePrint& PrintDirection) const;
     double                              GetAlphaAdjustedPopulation(double& dPopulation, tract_t t, int iCategoryIndex,
                                                                    int iStartPopulationDateIndex, int iEndPopulationDateIndex,

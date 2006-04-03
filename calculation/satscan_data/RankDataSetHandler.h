@@ -8,9 +8,8 @@
 class RankDataSetHandler : public DataSetHandler {
   protected:
     virtual void                         AllocateCaseStructures(size_t iSetIndex) {/* no action */}
-    virtual bool                         ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount,
-                                                           Julian& nDate, measure_t& tContinuousVariable);
-    virtual bool                         ReadCounts(size_t iSetIndex, FILE* fp, const char* szDescription);
+    virtual bool                         ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
+    virtual bool                         ReadCounts(size_t iSetIndex, DataSource& Source, const char* szDescription);
     virtual void                         SetRandomizers();
 
   public:

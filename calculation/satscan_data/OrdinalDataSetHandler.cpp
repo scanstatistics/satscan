@@ -4,7 +4,8 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "OrdinalDataSetHandler.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "DataSource.h"
 
 const size_t OrdinalDataSetHandler::gtMinimumCategories        = 3;
 const count_t OrdinalDataSetHandler::gtMinimumCases            = 4;
@@ -166,60 +167,60 @@ double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const
   return dRequirements + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
 }
 
-/** Parses current file record contained in StringParser object in expected
+/** Parses current file record contained in DataSource object in expected
     parts: location, case count, date and ordinal category. Returns true if no
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
-bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
+bool OrdinalDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   short   iCategoryIndex;
 
   try {
     //read and validate that tract identifier exists in coordinates file
     //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Parser.GetWord(guLocationIndex))) == -1) {
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
       gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
                     "       Location ID '%s' was not specified in the coordinates file.\n",
                     BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
-                    Parser.GetReadCount(), Parser.GetWord(guLocationIndex));
+                    Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
       return false;
     }
     //read case count
-    if (Parser.GetWord(guCountIndex) != 0) {
-      if (!sscanf(Parser.GetWord(1), "%ld", &nCount)) {
+    if (Source.GetValueAt(guCountIndex) != 0) {
+      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount)) {
        gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
                     "       Case count must be an integer.\n", BasePrint::P_READERROR,
-                    Parser.GetWord(guCountIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                    Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
       }
     }
     else {
       gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
-                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Parser.GetWord(1), "-"))
+      if (strstr(Source.GetValueAt(guCountIndex), "-"))
         gPrint.Printf("Error: Case count in record %ld, of the %s, is not greater than zero.\n",
-                      BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       else
         gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Parser.GetWord(guCountIndex), std::numeric_limits<count_t>::max(),
-                      Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
     // read date
-    if (!ConvertCountDateToJulian(Parser, nDate))
+    if (!ConvertCountDateToJulian(Source, nDate))
       return false;
     // read ordinal category
     iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
-    if (!Parser.GetWord(iCategoryIndex)) {
+    if (!Source.GetValueAt(iCategoryIndex)) {
       gPrint.Printf("Error: Record %d, of the %s, is missing ordinal data field.\n",
-                    BasePrint::P_READERROR, Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return false;
     }
-    if (sscanf(Parser.GetWord(iCategoryIndex), "%lf", &tContinuousVariable) != 1) {
+    if (sscanf(Source.GetValueAt(iCategoryIndex), "%lf", &tContinuousVariable) != 1) {
        gPrint.Printf("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
-                     BasePrint::P_READERROR, Parser.GetWord(iCategoryIndex), Parser.GetReadCount(), gPrint.GetImpliedFileTypeString().c_str());
+                     BasePrint::P_READERROR, Source.GetValueAt(iCategoryIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return false;
     }
   }
@@ -234,7 +235,7 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(StringParser& Parser, tract_t& tid
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*) {
+bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const char*) {
   bool                  bReadSuccessful=true, bEmpty=true;
   Julian                Date;
   tract_t               tLocationIndex;
@@ -245,15 +246,12 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
   try {
     //get reference to RealDataSet object at index
     RealDataSet& DataSet = *gvDataSets[tSetIndex];
-    //instanciate file record parser
-    StringParser Parser(gPrint);
 
     //read, parse, validate and update data structures for each record in data file
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Parser.ReadString(fp)) {
-         if (Parser.HasWords()) { // ignore records which contain no data
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            bEmpty = false;
            //parse record into parts: location index, # of cases, date, ordinal catgory
-           if (ParseCaseFileLine(Parser, tLocationIndex, tCount, Date, tOrdinalVariable)) {
+           if (ParseCaseFileLine(Source, tLocationIndex, tCount, Date, tOrdinalVariable)) {
              //note each category read from file. since we are ignoring records with zero cases,
              //we might need this information for error reporting
              if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), tOrdinalVariable))
@@ -276,7 +274,6 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, FILE * fp, const char*)
            }
            else //denote that read process encountered an error, but keep reading records
              bReadSuccessful = false;
-         }
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance

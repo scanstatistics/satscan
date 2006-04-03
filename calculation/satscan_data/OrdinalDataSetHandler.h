@@ -5,15 +5,16 @@
 #include "DataSetHandler.h"
 #include "OrdinalDataRandomizer.h"
 
+class DataSource;     /** forward class definition */
+
 class OrdinalDataSetHandler : public DataSetHandler {
   protected:
     static const size_t                 gtMinimumCategories;
     static const count_t                gtMinimumCases;
 
     virtual void                        AllocateCaseStructures(size_t tSetIndex) {/*no action*/}
-    virtual bool                        ParseCaseFileLine(StringParser& Parser, tract_t& tid,
-                                                          count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
-    virtual bool                        ReadCounts(size_t tSetIndex, FILE * fp, const char*);
+    virtual bool                        ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
+    virtual bool                        ReadCounts(size_t tSetIndex, DataSource& Source, const char*);
     virtual void                        SetRandomizers();
 
   public:

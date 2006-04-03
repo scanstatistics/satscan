@@ -7,6 +7,7 @@
 #include "Randomizer.h"
 
 class CSaTScanData; /** forward class definition */
+class DataSource;   /** forward class definition */
 
 typedef ZdPointerVector<SimDataSet>  SimulationDataContainer_t;
 typedef ZdPointerVector<RealDataSet> RealDataContainer_t;
@@ -29,13 +30,11 @@ class DataSetHandler {
     RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
 
     virtual void                        AllocateCaseStructures(size_t iSetIndex);
-    bool                                ConvertCountDateToJulian(StringParser& Parser, Julian& JulianDate);
-    bool                                ParseCountLine(PopulationData& thePopulation, StringParser& Parser,
-                                                       tract_t& tid, count_t& nCount,
-                                                       Julian& nDate, int& iCategoryIndex);
-    bool                                ParseCovariates(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, StringParser& Parser);
+    bool                                ConvertCountDateToJulian(DataSource& Source, Julian& JulianDate);
+    bool                                ParseCountLine(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
+    bool                                ParseCovariates(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
     virtual bool                        ReadCaseFile(size_t iSetIndex);
-    virtual bool                        ReadCounts(size_t iSetIndex, FILE * fp, const char* szDescription);
+    virtual bool                        ReadCounts(size_t iSetIndex, DataSource& Source, const char* szDescription);
 
     //pure virtual protected functions
     virtual void                        SetRandomizers() = 0;

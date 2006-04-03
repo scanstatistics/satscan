@@ -16,6 +16,8 @@
 #include "DataSetHandler.h"
 #include "AdjustmentHandler.h"
 
+class DataSource;   /** forward class definition */
+
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
@@ -72,14 +74,12 @@ class CSaTScanData {
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
     bool                                        ReadAdjustmentsByRelativeRisksFile();
-    bool                                        ReadCartesianCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                         short & iScanCount, short iWordOffSet);
-    bool                                        ReadCoordinatesFileAsCartesian(FILE * fp);
-    bool                                        ReadCoordinatesFileAsLatitudeLongitude(FILE * fp);
-    bool                                        ReadGridFileAsCartiesian(FILE * fp);
-    bool                                        ReadGridFileAsLatitudeLongitude(FILE * fp);
-    bool                                        ReadLatitudeLongitudeCoordinates(StringParser & Parser, std::vector<double> & vCoordinates,
-                                                                                 short iWordOffSet, const char * sSourceFile);
+    bool                                        ReadCartesianCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short & iScanCount, short iWordOffSet);
+    bool                                        ReadCoordinatesFileAsCartesian(DataSource& Source);
+    bool                                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source);
+    bool                                        ReadGridFileAsCartiesian(DataSource& Source);
+    bool                                        ReadGridFileAsLatitudeLongitude(DataSource& Source);
+    bool                                        ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile);
     virtual void                                SetAdditionalCaseArrays(RealDataSet & thisSet);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
@@ -106,7 +106,7 @@ class CSaTScanData {
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
-    bool                                        ConvertAdjustmentDateToJulian(StringParser& Parser, Julian& JulianDate, bool bStartDate);
+    bool                                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp);
