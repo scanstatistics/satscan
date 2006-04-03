@@ -139,6 +139,7 @@ USEUNIT("..\calculation\ParametersValidate.cpp");
 USEUNIT("..\calculation\satscan_data\CentroidNeighbors.cpp");
 USEUNIT("..\calculation\randomization\NormalRandomizer.cpp");
 USEUNIT("..\calculation\randomization\RankRandomizer.cpp");
+USEUNIT("..\calculation\satscan_data\DataSource.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

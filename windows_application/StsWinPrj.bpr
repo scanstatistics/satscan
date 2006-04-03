@@ -141,7 +141,8 @@
       ..\calculation\ParametersPrint.obj ..\calculation\ParametersValidate.obj 
       ..\calculation\satscan_data\CentroidNeighbors.obj 
       ..\calculation\randomization\NormalRandomizer.obj 
-      ..\calculation\randomization\RankRandomizer.obj stsFrmSuggestedCitation.obj"/>
+      ..\calculation\randomization\RankRandomizer.obj 
+      stsFrmSuggestedCitation.obj ..\calculation\satscan_data\DataSource.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
