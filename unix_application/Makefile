@@ -147,6 +147,7 @@ SRC         := Main.cpp \
 	             $(SATDATA)/SpaceTimePermutationDataSetHandler.cpp \
 	             $(SATDATA)/ExponentialDataSetHandler.cpp \
 	             $(SATDATA)/OrdinalDataSetHandler.cpp \
+	             $(SATDATA)/DataSource.cpp \
 	             $(UTILITY)/DBFFile.cpp \
 	             $(UTILITY)/JulianDates.cpp \
 	             $(UTILITY)/RandomDistribution.cpp \
