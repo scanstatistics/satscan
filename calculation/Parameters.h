@@ -24,7 +24,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
                                     EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE,
-                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE};
+                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -60,6 +60,8 @@ enum ExecutionType                 {AUTOMATIC=0, SUCCESSIVELY, CENTRICALLY};
 enum SpatialWindowType             {CIRCULAR=0, ELLIPTIC};
 /** non-compactness penalty type */
 enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, STRONGPENALTY};
+/** study period data checking type */
+enum StudyPeriodDataCheckingType   {STRICTBOUNDS=0, RELAXEDBOUNDS};
 
 class DataSetHandler; /** forward class declaration */
 
@@ -85,6 +87,7 @@ class CParameters {
     bool                                gbAdjustForEarlierAnalyses;             /** indicates whether to adjust for earlier analyses,
                                                                                     pertinent for prospective analyses */
     SpatialAdjustmentType               geSpatialAdjustmentType;                /** type of spatial adjustment*/
+    StudyPeriodDataCheckingType         geStudyPeriodDataCheckingType;          /** study period data checking type */
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -285,6 +288,7 @@ class CParameters {
     const std::string                 & GetSpecialGridFileName() const {return gsSpecialGridFileName;}
     const std::string                 & GetStartRangeEndDate() const {return gsStartRangeEndDate;}
     const std::string                 & GetStartRangeStartDate() const {return gsStartRangeStartDate;}
+    StudyPeriodDataCheckingType         GetStudyPeriodDataCheckingType() const {return geStudyPeriodDataCheckingType;}
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
     bool                                GetSuppressingWarnings() const {return gbSuppressWarnings;}
@@ -361,6 +365,7 @@ class CParameters {
     void                                SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath=false, bool bSetUsingFlag=false);
     void                                SetStartRangeEndDate(const char * sStartRangeEndDate);
     void                                SetStartRangeStartDate(const char * sStartRangeStartDate);
+    void                                SetStudyPeriodDataCheckingType(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType);
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
     void                                SetSuppressingWarnings(bool b) {gbSuppressWarnings=b;}

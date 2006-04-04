@@ -97,7 +97,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case SUPPRESS_WARNINGS         : return "Suppress Warnings (line 74)";
       case MAX_REPORTED_SPATIAL_TYPE : return "Max Spatial Cluster Size Type - Reported Clusters (line 75)";
       case OUTPUT_MLC_CASE_ASCII     : return "Output Cluster Case Information - ASCII? (line 76)";
-      case OUTPUT_MLC_CASE_DBASE     : return "Output Cluster Case Information - ASCII? (line 77)";
+      case OUTPUT_MLC_CASE_DBASE     : return "Output Cluster Case Information - dBase? (line 77)";
+      case STUDYPERIOD_DATACHECK     : return "Study Period Data Checking type (line 78)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }

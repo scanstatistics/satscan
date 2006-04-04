@@ -8,6 +8,7 @@ const char * IniParameterSpecification::NotUsed                 = "NotUsed";
 
 const char * IniParameterSpecification::Input                   = "[Input]";
 const char * IniParameterSpecification::MultipleDataSets        = "[Multiple Data Sets]";
+const char * IniParameterSpecification::DataChecking            = "[Data Checking]";
 const char * IniParameterSpecification::Analysis                = "[Analysis]";
 const char * IniParameterSpecification::SpatialWindow           = "[Spatial Window]";
 const char * IniParameterSpecification::TemporalWindow          = "[Temporal Window]";
@@ -297,6 +298,7 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   gvParameterInfo[SEQUENTIAL - 1] = std::make_pair(Inference, (const char*)"SequentialScan");
   gvParameterInfo[SEQNUM - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxIterations");
   gvParameterInfo[SEQPVAL - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxPValue");
+  gvParameterInfo.push_back(std::make_pair(DataChecking, (const char*)"StudyPeriodCheckType"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

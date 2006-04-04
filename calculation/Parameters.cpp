@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 77;
+const int CParameters::giNumParameters 	              = 78;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -117,6 +117,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geMaxReportedGeographicClusterSizeType != rhs.geMaxReportedGeographicClusterSizeType) return false;
   if (gbOutputClusterCaseAscii               != rhs.gbOutputClusterCaseAscii) return false;
   if (gbOutputClusterCaseDBase               != rhs.gbOutputClusterCaseDBase) return false;
+  if (geStudyPeriodDataCheckingType          != rhs.geStudyPeriodDataCheckingType) return false;
   return true;
 }
 
@@ -256,6 +257,7 @@ void CParameters::Copy(const CParameters &rhs) {
     geMaxReportedGeographicClusterSizeType = rhs.geMaxReportedGeographicClusterSizeType;    
     gbOutputClusterCaseAscii               = rhs.gbOutputClusterCaseAscii;
     gbOutputClusterCaseDBase               = rhs.gbOutputClusterCaseDBase;
+    geStudyPeriodDataCheckingType          = rhs.geStudyPeriodDataCheckingType;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -713,6 +715,7 @@ void CParameters::SetAsDefaulted() {
   geMaxReportedGeographicClusterSizeType   = PERCENTOFPOPULATION;
   gbOutputClusterCaseAscii                 = false;
   gbOutputClusterCaseDBase                 = false;
+  geStudyPeriodDataCheckingType            = STRICTBOUNDS;
 }
 
 /** Sets dimensions of input data. */
@@ -1202,6 +1205,21 @@ void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMultipleDataSetPurposeType()","CParameters");
+    throw;
+  }
+}
+
+/** Sets study period data checking type. Throws exception if out of range. */
+void CParameters::SetStudyPeriodDataCheckingType(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
+  ZdString      sLabel;
+
+  try {
+    if (eStudyPeriodDataCheckingType < STRICTBOUNDS || eStudyPeriodDataCheckingType > RELAXEDBOUNDS)
+      ZdException::Generate("Enumeration %d out of range [%d,%d].","SetStudyPeriodDataCheckingType()", eStudyPeriodDataCheckingType, STRICTBOUNDS, RELAXEDBOUNDS);
+    geStudyPeriodDataCheckingType = eStudyPeriodDataCheckingType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetStudyPeriodDataCheckingType()","CParameters");
     throw;
   }
 }

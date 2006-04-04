@@ -19,6 +19,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
 
     void                                WriteAnalysisSettings(ZdIniFile& WriteFile);
     void                                WriteClustersReportedSettings(ZdIniFile& WriteFile);
+    void                                WriteDataCheckingSettings(ZdIniFile& WriteFile);
     void                                WriteEllipticScanSettings(ZdIniFile& WriteFile);
     void                                WriteInferenceSettings(ZdIniFile& WriteFile);
     void                                WriteIniParameter(ZdIniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);

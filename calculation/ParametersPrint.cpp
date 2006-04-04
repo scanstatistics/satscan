@@ -24,6 +24,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintOutputParameters(fp);
     //print 'Multiple Data Sets' tab settings
     PrintMultipleDataSetParameters(fp);
+    //print 'Data Checking' tab settings
+    PrintDataCheckingParameters(fp);
     //print 'Spatial Window' tab settings
     PrintSpatialWindowParameters(fp);
     //print 'Temporal Window' tab settings
@@ -318,6 +320,17 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   catch (ZdException &x) {
     x.AddCallpath("PrintClustersReportedParameters()","ParametersPrint");
     throw;
+  }
+}
+
+/** Prints 'Data Checking' parameters to file stream. */
+void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
+  fprintf(fp, "\nData Checking\n-------------\n");
+  fprintf(fp, "   Study Period Check : ");
+  switch (gParameters.GetStudyPeriodDataCheckingType()) {
+    case STRICTBOUNDS     : fprintf(fp, "Check to ensure that cases and controls are within the Study Period.\n"); break;
+    case RELAXEDBOUNDS    : fprintf(fp, "Ignore cases and controls that are outside the Study Period.\n"); break;
+    default : ZdException::Generate("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
   }
 }
 

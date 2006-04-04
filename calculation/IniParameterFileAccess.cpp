@@ -153,6 +153,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteOutputSettings(WriteFile);
     //write settings as provided in advanced features of graphical interface
     WriteMultipleDataSetsSettings(WriteFile);
+    WriteDataCheckingSettings(WriteFile);
     WriteSpatialWindowSettings(WriteFile);
     WriteTemporalWindowSettings(WriteFile);
     WriteSpaceAndTimeAdjustmentSettings(WriteFile);
@@ -174,7 +175,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
   }
 }
 
-/** Reads parameter settings grouped under 'Analysis'. */
+/** Writes parameter settings grouped under 'Analysis'. */
 void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -192,7 +193,7 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under 'Clusters Reported'. */
+/** Writes parameter settings grouped under 'Clusters Reported'. */
 void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -208,7 +209,20 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
   }
 }
 
-/** Reads parameter settings grouped under '[Elliptic Scan]'. */
+/** Writes parameter settings grouped under 'Data Checking'. */
+void IniParameterFileAccess::WriteDataCheckingSettings(ZdIniFile& WriteFile) {
+  ZdString      s;
+
+  try {
+    WriteIniParameter(WriteFile, STUDYPERIOD_DATACHECK, GetParameterString(STUDYPERIOD_DATACHECK, s), GetParameterComment(STUDYPERIOD_DATACHECK));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("WriteDataCheckingSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
+/** Writes parameter settings grouped under '[Elliptic Scan]'. */
 void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -224,7 +238,7 @@ void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under 'Inference'. */
+/** Writes parameter settings grouped under 'Inference'. */
 void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -274,7 +288,7 @@ void IniParameterFileAccess::WriteIniParameterAsKey(ZdIniFile& WriteFile, const 
   }
 }
 
-/** Reads parameter settings grouped under '[Isotonic Scan]'. */
+/** Writes parameter settings grouped under '[Isotonic Scan]'. */
 void IniParameterFileAccess::WriteIsotonicScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -287,7 +301,7 @@ void IniParameterFileAccess::WriteIsotonicScanSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under 'Input'. */
+/** Writes parameter settings grouped under 'Input'. */
 void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -309,7 +323,7 @@ void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under 'Multiple Data Sets'. */
+/** Writes parameter settings grouped under 'Multiple Data Sets'. */
 void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile) {
   ZdString      s, sComment;
   const char  * sSectionName, * sBaseKey;
@@ -346,7 +360,7 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile)
   }
 }
 
-/** Reads parameter settings grouped under 'Output'. */
+/** Writes parameter settings grouped under 'Output'. */
 void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -369,7 +383,7 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under '[Power Simulations]'. */
+/** Writes parameter settings grouped under '[Power Simulations]'. */
 void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -388,7 +402,7 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
   }
 }
 
-/** Reads parameter settings grouped under '[Run Options]'. */
+/** Writes parameter settings grouped under '[Run Options]'. */
 void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -410,7 +424,7 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under 'Spatial Window'. */
+/** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -427,7 +441,7 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& Writ
   }
 }
 
-/** Reads parameter settings grouped under 'Spatial Window'. */
+/** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -443,7 +457,7 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under '[System]'. */
+/** Writes parameter settings grouped under '[System]'. */
 void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
@@ -456,7 +470,7 @@ void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
   }
 }
 
-/** Reads parameter settings grouped under 'Spatial Window'. */
+/** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteTemporalWindowSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
