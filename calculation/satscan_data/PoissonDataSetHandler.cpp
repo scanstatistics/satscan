@@ -81,7 +81,7 @@ bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateStri
 /** Instead reading population data from a population, assigns the same arbitrary population
     date and population for each location specified in coordinates file. This routine is
     intended to be used by purely temporal analyses when the population file is omitted. */
-bool PoissonDataSetHandler::CreatePopulationData(size_t tSetIndex) {
+bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
   float                                                 fPopulation = 1000; /** arbitrarily selected population */
   std::vector<std::pair<Julian, DatePrecisionType> >    vprPopulationDates;
   const TractHandler&                                   theTracts = *(gDataHub.GetTInfo());
@@ -89,7 +89,6 @@ bool PoissonDataSetHandler::CreatePopulationData(size_t tSetIndex) {
   int                                                   iCategoryIndex;
 
   try {
-    RealDataSet& DataSet = *gvDataSets[tSetIndex];
     // Make the dataset aggregate categories - this will way the reading of case data can proceed without problems.
     // Normally the population data dictates all possible population catgories and the case file data must follow suit.
     DataSet.SetAggregateCovariateCategories(true);
@@ -119,7 +118,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
-      const RealDataSet& DataSet = *gvDataSets[t];
+      const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
       Interface.SetTotalCasesCount(DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
@@ -176,8 +175,8 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
-      const RealDataSet& R_DataSet = *gvDataSets[t];
-      const SimDataSet& S_DataSet = *Container[t];
+      const RealDataSet& R_DataSet = *gvDataSets.at(t);
+      const SimDataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
       Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
@@ -223,43 +222,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
   return DataGatway;
 }
 
-/** Returns memory needed to allocate data set objects. */
-double PoissonDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
-  double        dRequirements(0);
-
-  switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-       //case array
-       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-       //case array
-       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       if (gParameters.GetIncludePurelyTemporalClusters())
-         //purely temporal case array
-         dRequirements += (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
-       break;
-    case PROSPECTIVEPURELYTEMPORAL :
-    case PURELYTEMPORAL :
-       //purely temporal analyses not of interest
-       break;
-    case SPATIALVARTEMPTREND :
-       //svtt analysis not of interest at this time
-       break;
-     default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
-  };
-  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
-}
-
-/** Refined process for reading input data from files into respective data
-    set. For the Poisson probability model, inputs file of interest are the
-    case and population. Prior to reading input data randomization objects are
-    allocated. Echos progress and warnings/errors during read to BasePrint
-    object. It is not recommended to call this function more than once. */
+/** Attempts to read population and case data files into class RealDataSet objects. */
 bool PoissonDataSetHandler::ReadData() {
   try {
     SetRandomizers();
@@ -267,17 +230,17 @@ bool PoissonDataSetHandler::ReadData() {
        if (gParameters.UsePopulationFile()) { //read population data file
          if (GetNumDataSets() == 1) gPrint.Printf("Reading the population file\n", BasePrint::P_STDOUT);
          else gPrint.Printf("Reading the population file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-         if (!ReadPopulationFile(t)) return false;
+         if (!ReadPopulationFile(GetDataSet(t))) return false;
        }
        else { //create population data without input data
          if (GetNumDataSets() == 1) gPrint.Printf("Creating the population\n", BasePrint::P_STDOUT);
          else gPrint.Printf("Creating the population for data set %u\n", BasePrint::P_STDOUT, t + 1);
-         if (!CreatePopulationData(t)) return false;
+         if (!CreatePopulationData(GetDataSet(t))) return false;
        }
        //read case data file
        if (GetNumDataSets() == 1) gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(t)) return false;
+       if (!ReadCaseFile(GetDataSet(t))) return false;
        //validate population data against case data (if population was read from file)  
        if (gParameters.UsePopulationFile()) GetDataSet(t).CheckPopulationDataCases(gDataHub);
     }
@@ -301,7 +264,7 @@ bool PoissonDataSetHandler::ReadData() {
     Location identifiers of population file are matched to location identifiers
     specifed in coordinates file; so this function should not be called before
     the coordinates file has been read.                                         */
-bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
+bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
   int                                                           iCategoryIndex;
   bool                                                          bValid=true, bEmpty=true;
   tract_t                                                       TractIdentifierIndex;
@@ -312,11 +275,8 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
   std::vector<std::pair<Julian, DatePrecisionType> >::iterator  itr;
 
   try {
-    RealDataSet& DataSet = *gvDataSets[tSetIndex];
-    gPrint.SetImpliedInputFileType(BasePrint::POPFILE, (GetNumDataSets() == 1 ? 0 : tSetIndex + 1));
-
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(tSetIndex + 1), gPrint));
-
+    gPrint.SetImpliedInputFileType(BasePrint::POPFILE);
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.GetSetIndex()), gPrint));
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;
@@ -413,8 +373,10 @@ bool PoissonDataSetHandler::ReadPopulationFile(size_t tSetIndex) {
   return bValid;
 }
 
-/** Allocates randomizers for each dataset. Type of randomizer instantiated
-    is determined by parameter settings. */
+/** Allocates randomizers for each dataset. There are currently 6 randomization types
+    for the Poisson model: time stratified, spatially stratified, null hypothesis,
+                           purely temporal optimized null hypothesis, alternate hypothesis
+                           and file source. */
 void PoissonDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.DeleteAllElements();
@@ -422,26 +384,26 @@ void PoissonDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION)
-            gvDataSetRandomizers[0] = new PoissonTimeStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new PoissonTimeStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION)
-            gvDataSetRandomizers[0] = new PoissonSpatialStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new PoissonSpatialStratifiedRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers[0] = new PoissonPurelyTemporalNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new PoissonPurelyTemporalNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           else
-            gvDataSetRandomizers[0] = new PoissonNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new PoissonNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       case HA_RANDOMIZATION :
-          gvDataSetRandomizers[0] = new AlternateHypothesisRandomizer(gDataHub, gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new AlternateHypothesisRandomizer(gDataHub, gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       default :
           ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
-       gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
+       gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","PoissonDataSetHandler");

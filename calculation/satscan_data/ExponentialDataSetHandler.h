@@ -9,9 +9,9 @@ class ExponentialDataSetHandler : public DataSetHandler {
   protected:
     static const count_t                gtMinimumNotCensoredCases;
 
-    virtual void                        AllocateCaseStructures(size_t tSetIndex) {/* no action */}
-    virtual bool                        ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute);
-    virtual bool                        ReadCounts(size_t tSetIndex, DataSource& Source, const char* szDescription);
+    virtual void                        AllocateCaseStructures(RealDataSet& DataSet) {/* no action */}
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
+    virtual DataSetHandler::RecordStatusType RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute);
     virtual void                        SetRandomizers();
 
   public:
@@ -19,9 +19,8 @@ class ExponentialDataSetHandler : public DataSetHandler {
     virtual ~ExponentialDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
-    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const;
+    virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };

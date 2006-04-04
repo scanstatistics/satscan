@@ -11,7 +11,7 @@ const size_t OrdinalDataSetHandler::gtMinimumCategories        = 3;
 const count_t OrdinalDataSetHandler::gtMinimumCases            = 4;
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
-    as needed by data set handler (probability model). */
+    as needed by data set handler (probability model) and analysis type. */
 SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
 
@@ -41,7 +41,7 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
   return Container;
 }
 
-/** returns new data gateway for real data - caller resonsible for deletion object */
+/** returns data gateway for real data */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
   DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
@@ -49,7 +49,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
-      const RealDataSet& DataSet = *gvDataSets[t];
+      const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases
       Interface.SetTotalCasesCount(DataSet.GetTotalCases());
       Interface.SetNumOrdinalCategories(DataSet.GetPopulationData().GetNumOrdinalCategories());
@@ -83,7 +83,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
   return DataGatway;
 }
 
-/** returns new data gateway for simulation data - caller resonsible for deletion object */
+/** returns data gateway for simulation data */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
 
@@ -91,8 +91,8 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
-      const RealDataSet& R_DataSet = *gvDataSets[t];
-      const SimDataSet& S_DataSet = *Container[t];
+      const RealDataSet& R_DataSet = *gvDataSets.at(t);
+      const SimDataSet& S_DataSet = *Container.at(t);
       //set total cases
       Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
       Interface.SetNumOrdinalCategories(R_DataSet.GetPopulationData().GetNumOrdinalCategories());
@@ -126,52 +126,11 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
   return DataGatway;
 }
 
-/** Returns memory needed to allocate data set objects. */
-double OrdinalDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
-  double        dRequirements(0);
-
-  switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-       for (size_t t=0; t < GetNumDataSets(); ++t)
-          for (unsigned int i=0; i < GetDataSet(t).GetPopulationData().GetNumOrdinalCategories(); ++i) {
-            //case array for ordinal category
-            dRequirements += (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                             (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       }
-       break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-       for (size_t t=0; t < GetNumDataSets(); ++t) {
-          const RealDataSet& Set = GetDataSet(t);
-          for (unsigned int i=0; i < Set.GetPopulationData().GetNumOrdinalCategories(); ++i)
-             //case array for ordinal category
-             dRequirements += (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                              (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-          if (gParameters.GetIncludePurelyTemporalClusters()) {
-             //purely temporal case array
-             dRequirements += (double)sizeof(count_t*) * (double)Set.GetPopulationData().GetNumOrdinalCategories() +
-                              (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
-          }
-       }
-       break;
-    case PROSPECTIVEPURELYTEMPORAL :
-    case PURELYTEMPORAL :
-       //purely temporal analyses not of interest
-       break;
-    case SPATIALVARTEMPTREND :
-       //svtt analysis not of interest at this time
-       break;
-     default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
-  };
-  return dRequirements + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
-}
-
 /** Parses current file record contained in DataSource object in expected
     parts: location, case count, date and ordinal category. Returns true if no
     errors in data were found, else returns false and prints error messages to
     BasePrint object. */
-bool OrdinalDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
+DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   short   iCategoryIndex;
 
   try {
@@ -182,7 +141,7 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, 
                     "       Location ID '%s' was not specified in the coordinates file.\n",
                     BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
                     Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
-      return false;
+      return DataSetHandler::Rejected;
     }
     //read case count
     if (Source.GetValueAt(guCountIndex) != 0) {
@@ -190,13 +149,13 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, 
        gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
                     "       Case count must be an integer.\n", BasePrint::P_READERROR,
                     Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
+       return DataSetHandler::Rejected;
       }
     }
     else {
       gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Source.GetValueAt(guCountIndex), "-"))
@@ -206,52 +165,50 @@ bool OrdinalDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, 
         gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
                       BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
-    // read date
-    if (!ConvertCountDateToJulian(Source, nDate))
-      return false;
+    if (nCount == 0) return DataSetHandler::Ignored;    
+    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
+    if (eDateStatus != DataSetHandler::Accepted) return eDateStatus;
     // read ordinal category
     iCategoryIndex = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (!Source.GetValueAt(iCategoryIndex)) {
       gPrint.Printf("Error: Record %d, of the %s, is missing ordinal data field.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
     if (sscanf(Source.GetValueAt(iCategoryIndex), "%lf", &tContinuousVariable) != 1) {
        gPrint.Printf("Error: The ordinal data '%s' in record %ld, of the %s, is not a number.\n",
                      BasePrint::P_READERROR, Source.GetValueAt(iCategoryIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
+       return DataSetHandler::Rejected;
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("ParseCaseFileLine()","OrdinalDataSetHandler");
+    x.AddCallpath("RetrieveCaseRecordData()","OrdinalDataSetHandler");
     throw;
   }
-  return true;
+  return DataSetHandler::Accepted;
 }
 
-/** Read the case data file.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered           */
-bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const char*) {
-  bool                  bReadSuccessful=true, bEmpty=true;
-  Julian                Date;
-  tract_t               tLocationIndex;
-  count_t               tCount, tTotalCases=0, ** ppCategoryCounts;
-  measure_t             tOrdinalVariable;
-  std::vector<double>   vReadCategories;
+/** Reads the count data source, storing data in RealDataSet object. As a
+    means to help user clean-up their data, continues to read records as errors
+    are encountered. Returns boolean indication of read success. */
+bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char*) {
+  bool                                  bReadSuccessful=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               tLocationIndex;
+  count_t                               tCount, tTotalCases=0, ** ppCategoryCounts;
+  measure_t                             tOrdinalVariable;
+  std::vector<double>                   vReadCategories;
+  DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
-    //get reference to RealDataSet object at index
-    RealDataSet& DataSet = *gvDataSets[tSetIndex];
-
     //read, parse, validate and update data structures for each record in data file
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           bEmpty = false;
            //parse record into parts: location index, # of cases, date, ordinal catgory
-           if (ParseCaseFileLine(Source, tLocationIndex, tCount, Date, tOrdinalVariable)) {
+           eRecordStatus = RetrieveCaseRecordData(Source, tLocationIndex, tCount, Date, tOrdinalVariable);
+           if (eRecordStatus == Accepted) {
+             bEmpty = false;
              //note each category read from file. since we are ignoring records with zero cases,
              //we might need this information for error reporting
              if (vReadCategories.end() == std::find(vReadCategories.begin(), vReadCategories.end(), tOrdinalVariable))
@@ -272,7 +229,9 @@ bool OrdinalDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, con
                   ppCategoryCounts[i][tLocationIndex] += tCount;
              }
            }
-           else //denote that read process encountered an error, but keep reading records
+           else if (eRecordStatus == DataSetHandler::Ignored)
+             continue;
+           else   
              bReadSuccessful = false;
     }
     //if invalid at this point then read encountered problems with data format,
@@ -330,7 +289,7 @@ bool OrdinalDataSetHandler::ReadData() {
          gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
          gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(t))
+       if (!ReadCaseFile(GetDataSet(t)))
          return false;
     }
   }

@@ -7,8 +7,8 @@
 
 class SpaceTimePermutationDataSetHandler : public DataSetHandler {
   protected:
-    virtual void                        AllocateCaseStructures(size_t tSetIndex);
-    virtual bool                        ReadCounts(size_t iSetIndex, DataSource& Source, const char* szDescription);
+    virtual void                        AllocateCaseStructures(RealDataSet& DataSet);
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
     virtual void                        SetRandomizers();
 
   public:
@@ -18,7 +18,6 @@ class SpaceTimePermutationDataSetHandler : public DataSetHandler {
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
     virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const;
     virtual bool                        ReadData();
 };
 //******************************************************************************

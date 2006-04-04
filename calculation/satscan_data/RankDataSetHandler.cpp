@@ -42,7 +42,7 @@ AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGatew
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
-      const RealDataSet& DataSet = *gvDataSets[t];
+      const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
       Interface.SetTotalCasesCount(DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
@@ -81,38 +81,6 @@ AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGatew
   return DataGatway;
 }
 
-/** Returns memory needed to allocate data set objects. */
-double RankDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
-  double        dRequirements(0);
-
-  switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-       //measure array
-       dRequirements = (double)sizeof(measure_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(measure_t) * (double)gDataHub.GetNumTracts();
-       break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-       //measure array
-       dRequirements = (double)sizeof(measure_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(measure_t) * (double)gDataHub.GetNumTracts();
-       if (gParameters.GetIncludePurelyTemporalClusters())
-         //purely temporal measure array
-         dRequirements += (double)sizeof(measure_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
-       break;
-    case PROSPECTIVEPURELYTEMPORAL :
-    case PURELYTEMPORAL :
-       //purely temporal analyses not of interest
-       break;
-    case SPATIALVARTEMPTREND :
-       //svtt analysis not of interest at this time
-       break;
-     default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
-  };
-  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
-}
-
 /** returns new data gateway for simulation data */
 AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
   DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
@@ -121,8 +89,8 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to real and simulation datasets
-      const RealDataSet& R_DataSet = *gvDataSets[t];
-      const SimDataSet& S_DataSet = *Container[t];
+      const RealDataSet& R_DataSet = *gvDataSets.at(t);
+      const SimDataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
       Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
@@ -161,7 +129,7 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
   return DataGatway;
 }
 
-bool RankDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
+DataSetHandler::RecordStatusType RankDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   const short   uContinuousVariableIndex=3;
   
   try {
@@ -171,7 +139,7 @@ bool RankDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, cou
       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
                     "       Location ID '%s' was not specified in the coordinates file.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), Source.GetValueAt(guLocationIndex));
-      return false;
+      return DataSetHandler::Rejected;
     }
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
@@ -179,13 +147,13 @@ bool RankDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, cou
        gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
                      "       Case count must be an integer.\n", BasePrint::P_READERROR,
                      Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
+       return DataSetHandler::Rejected;
       }
     }
     else {
       gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Source.GetValueAt(guCountIndex), "-"))
@@ -195,57 +163,58 @@ bool RankDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, cou
         gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
                       BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
-    if (!ConvertCountDateToJulian(Source, nDate))
-      return false;
+    if (nCount == 0) return DataSetHandler::Ignored;
+    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
+    if (eDateStatus != DataSetHandler::Accepted)
+      return eDateStatus;
 
     // read continuous variable
     if (!Source.GetValueAt(uContinuousVariableIndex)) {
       gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
     if (sscanf(Source.GetValueAt(uContinuousVariableIndex), "%lf", &tContinuousVariable) != 1) {
        gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
                      BasePrint::P_READERROR, Source.GetValueAt(uContinuousVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
+       return DataSetHandler::Rejected;
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("ParseCaseFileLine()","RankDataSetHandler");
+    x.AddCallpath("RetrieveCaseRecordData()","RankDataSetHandler");
     throw;
   }
-  return true;
+  return DataSetHandler::Accepted;
 }
 
-/** Read the case data file.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered           */
-bool RankDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const char*) {
-  bool                          bValid=true, bEmpty=true;
-  Julian                        Date;
-  tract_t                       TractIndex;
-  int                           i;
-  count_t                       Count, tTotalCases=0;
-  measure_t                     tContinuousVariable, tTotalMeasure=0;
-  AbstractRankRandomizer      * pRandomizer;
+/** Read the count data source, storing data in respective DataSet object. As a
+    means to help user clean-up there data, continues to read records as errors
+    are encountered. Returns boolean indication of read success. */
+bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char*) {
+  bool                                  bValid=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               TractIndex;
+  count_t                               Count, tTotalCases=0;
+  measure_t                             tContinuousVariable, tTotalMeasure=0;
+  AbstractRankRandomizer              * pRandomizer;
+  DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
-    RealDataSet& DataSet = *gvDataSets[tSetIndex];
-
-    if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers[tSetIndex])) == 0)
+    if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers.at(DataSet.GetSetIndex() - 1))) == 0)
       ZdGenerateException("Data set randomizer not AbstractRankRandomizer type.", "ReadCounts()");
-    //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            bEmpty = false;
-           if (ParseCaseFileLine(Source, TractIndex, Count, Date, tContinuousVariable)) {
+           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
+           if (eRecordStatus == DataSetHandler::Accepted) {
              pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
              tTotalCases += Count;
              tTotalMeasure += tContinuousVariable;
            }
-           else
+           else if (eRecordStatus == DataSetHandler::Ignored)
+             continue;
+           else   
              bValid = false;
     }
     //if invalid at this point then read encountered problems with data format,
@@ -271,6 +240,7 @@ bool RankDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const 
   return bValid;
 }
 
+/** Attempts to read case data file into class RealDataSet objects. */
 bool RankDataSetHandler::ReadData() {
   try {
     SetRandomizers();
@@ -279,7 +249,7 @@ bool RankDataSetHandler::ReadData() {
          gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
          gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(t))
+       if (!ReadCaseFile(GetDataSet(t)))
          return false;
     }
   }
@@ -304,6 +274,8 @@ void RankDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer
   }
 }
 
+/** Allocates randomizers for each dataset. There are currently 2 randomization types
+    for the Rank model: null hypothesis and purely temporal optimized null hypothesis. */
 void RankDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.DeleteAllElements();
@@ -311,9 +283,9 @@ void RankDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers[0] = new RankPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new RankPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
           else
-            gvDataSetRandomizers[0] = new RankRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new RankRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :
@@ -321,7 +293,7 @@ void RankDataSetHandler::SetRandomizers() {
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
-       gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
+       gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","RankDataSetHandler");

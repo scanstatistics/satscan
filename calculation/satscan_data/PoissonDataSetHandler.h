@@ -23,20 +23,18 @@ class ComparePopulationDates {
        set structures for real data and simulation data */
 class PoissonDataSetHandler : public DataSetHandler {
   protected:
-    bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber,
-                                                                      std::pair<Julian, DatePrecisionType>& PopulationDate);
-    bool                                CreatePopulationData(size_t tSetIndex);
-    bool                                ReadPopulationFile(size_t tSetIndex);
+    bool                                ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber, std::pair<Julian, DatePrecisionType>& PopulationDate);
+    bool                                CreatePopulationData(RealDataSet& DataSet);
+    bool                                ReadPopulationFile(RealDataSet& DataSet);
     virtual void                        SetRandomizers();
 
   public:
     PoissonDataSetHandler(CSaTScanData& DataHub, BasePrint& Print) : DataSetHandler(DataHub, Print) {}
     virtual ~PoissonDataSetHandler() {}
 
-    virtual SimulationDataContainer_t&  AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
-    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const;
+    virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
+    virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
 };
 //******************************************************************************

@@ -10,7 +10,7 @@
 const count_t ExponentialDataSetHandler::gtMinimumNotCensoredCases         = 1;
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
-    as needed by data set handler (probability model). */
+    as needed by data set handler (probability model) and analysis type. */
 SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
 
@@ -52,7 +52,7 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to dataset
-      const RealDataSet& DataSet = *gvDataSets[t];
+      const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
       Interface.SetTotalCasesCount(DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
@@ -99,8 +99,8 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(Abs
     DataGatway.Clear();
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
-      const RealDataSet& R_DataSet = *gvDataSets[t];
-      const SimDataSet& S_DataSet = *Container[t];
+      const RealDataSet& R_DataSet = *gvDataSets.at(t);
+      const SimDataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
       Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
@@ -139,154 +139,28 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(Abs
   return DataGatway;
 }
 
-/** Returns memory needed to allocate data set objects. */
-double ExponentialDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
-  double        dRequirements(0);
-
-  switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-       //case array
-       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       //measure array
-       dRequirements += (double)sizeof(measure_t*) * (double)(gDataHub.GetNumTimeIntervals()+1) +
-                        (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(measure_t) * (double)gDataHub.GetNumTracts();
-       break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-       //case array
-       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       //measure array
-       dRequirements += (double)sizeof(measure_t*) * (double)(gDataHub.GetNumTimeIntervals()+1) +
-                        (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(measure_t) * (double)gDataHub.GetNumTracts();
-       if (gParameters.GetIncludePurelyTemporalClusters()) {
-         //purely temporal case array
-         dRequirements += (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
-         //purely temporal measure array
-         dRequirements += (double)sizeof(measure_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
-       }
-       break;
-    case PROSPECTIVEPURELYTEMPORAL :
-    case PURELYTEMPORAL :
-       //purely temporal analyses not of interest
-       break;
-    case SPATIALVARTEMPTREND :
-       //svtt analysis not of interest at this time
-       break;
-     default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
-  };
-  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
-}
-
-/** Parses current file record contained in DataSource object in expected
-    parts: location, case count, date, survival time and censor attribute. Returns true if no
-    errors in data were found, else returns false and prints error messages to
-    BasePrint object. */
-bool ExponentialDataSetHandler::ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute) {
-  short   iContiVariableIndex, iCensoredAttributeIndex;
+/** Reads the count data source, storing data in RealDataSet object. As a
+    means to help user clean-up their data, continues to read records as errors
+    are encountered. Returns boolean indication of read success. */
+bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char*) {
+  bool                                  bReadSuccessful=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               tTractIndex;
+  count_t                               tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
+  measure_t                             tContinuousVariable, tTotalMeasure=0;
+  AbstractExponentialRandomizer       * pRandomizer;
+  DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
-    //read and validate that tract identifier exists in coordinates file
-    //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
-      gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
-                    "       Location ID '%s' was not specified in the coordinates file.\n",
-                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
-      return false;
-    }
-    //read and validate count
-    if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount)) {
-       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
-                     "       Case count must be an integer.\n", BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
-                     Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
-      }
-    }
-    else {
-      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
-    }
-    if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Source.GetValueAt(guCountIndex), "-"))
-        gPrint.Printf("Error: Case count in record %ld, of the %s, is negative.\n",
-                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      else
-        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
-    }
-    if (!ConvertCountDateToJulian(Source, nDate))
-      return false;
-
-    // read continuous variable
-    iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
-    if (!Source.GetValueAt(iContiVariableIndex)) {
-      gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
-                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
-    }
-    if (sscanf(Source.GetValueAt(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
-       gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of the %s, is not a number.\n",
-                                BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
-    }
-    if (tContinuousVariable <= 0) {
-       gPrint.Printf("Error: The continuous variable '%g' in record %ld of the %s, is not greater than zero.\n",
-                     BasePrint::P_READERROR, tContinuousVariable, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
-    }
-
-    //read and validate censore attribute
-    iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
-    if (Source.GetValueAt(iCensoredAttributeIndex) != 0) {
-      if (!sscanf(Source.GetValueAt(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
-       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n"
-                     "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
-                     Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
-      }
-      //treat values greater than one as indication that patient was censored
-      tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
-    }
-    else
-      //censored attribute optional - default to not censored
-      tCensorAttribute = 0;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ParseCaseFileLine()","ExponentialDataSetHandler");
-    throw;
-  }
-  return true;
-}
-
-/** Read the case data file.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered           */
-bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source, const char*) {
-  bool                            bReadSuccessful=true, bEmpty=true;
-  Julian                          Date;
-  tract_t                         tTractIndex;
-  count_t                         tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
-  measure_t                       tContinuousVariable, tTotalMeasure=0;
-  AbstractExponentialRandomizer * pRandomizer;
-
-  try {
-    RealDataSet& DataSet = *gvDataSets[tSetIndex];
-
     // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
-    pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers[tSetIndex]);
+    pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers.at(DataSet.GetSetIndex() - 1));
     if (!pRandomizer)
       ZdGenerateException("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           bEmpty = false;
-           if (ParseCaseFileLine(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute)) {
+           eRecordStatus = RetrieveCaseRecordData(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute);
+           if (eRecordStatus == DataSetHandler::Accepted) {
+             bEmpty = false;
              pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuousVariable, tCensorAttribute);
              tTotalPopuation += tPatients;
              //check that addition did not exceed data type limitations
@@ -304,6 +178,8 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source,
                                            "ReadCounts()", std::numeric_limits<measure_t>::max());
              tTotalMeasure += tContinuousVariable * tPatients;
            }
+           else if (eRecordStatus == DataSetHandler::Ignored)
+             continue;
            else
              bReadSuccessful = false;
     }
@@ -334,7 +210,7 @@ bool ExponentialDataSetHandler::ReadCounts(size_t tSetIndex, DataSource& Source,
   return bReadSuccessful;
 }
 
-/** Allocated data randomizer for each data set and reads case input data for each data set. */
+/** Attempts to read case data file into class RealDataSet objects. */
 bool ExponentialDataSetHandler::ReadData() {
   try {
     SetRandomizers();
@@ -342,8 +218,8 @@ bool ExponentialDataSetHandler::ReadData() {
        if (GetNumDataSets() == 1)
          gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
-         gPrint.Printf("Reading the cae file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(t))
+         gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
+       if (!ReadCaseFile(GetDataSet(t)))
          return false;
     }
   }
@@ -352,6 +228,92 @@ bool ExponentialDataSetHandler::ReadData() {
     throw;
   }
   return true;
+}
+
+/** Parses current file record contained in DataSource object in expected
+    parts: location, # patients, date, survival time and censor attribute. Returns
+    DataSetHandler::Accepted if no errors in data were found, else prints error
+    messages to BasePrint object and returns RecordStatusType. */
+DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute) {
+  short   iContiVariableIndex, iCensoredAttributeIndex;
+
+  try {
+    //read and validate that tract identifier exists in coordinates file
+    //caller function already checked that there is at least one record
+    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
+      gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
+                    "       Location ID '%s' was not specified in the coordinates file.\n",
+                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
+      return DataSetHandler::Rejected;
+    }
+    //read and validate count
+    if (Source.GetValueAt(guCountIndex) != 0) {
+      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &tPatients)) {
+       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
+                     "       Case count must be an integer.\n", BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
+                     Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+       return DataSetHandler::Rejected;
+      }
+    }
+    else {
+      gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+      return DataSetHandler::Rejected;
+    }
+    if (tPatients < 0) {//validate that count is not negative or exceeds type precision
+      if (strstr(Source.GetValueAt(guCountIndex), "-"))
+        gPrint.Printf("Error: Case count in record %ld, of the %s, is negative.\n",
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+      else
+        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
+                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+      return DataSetHandler::Rejected;
+    }
+    if (tPatients == 0) return DataSetHandler::Ignored;    
+    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
+    if (eDateStatus != DataSetHandler::Accepted)
+      return eDateStatus;
+
+    // read continuous variable
+    iContiVariableIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)2 : (short)3;
+    if (!Source.GetValueAt(iContiVariableIndex)) {
+      gPrint.Printf("Error: Record %d, of the %s, is missing the survival time.\n",
+                    BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+      return DataSetHandler::Rejected;
+    }
+    if (sscanf(Source.GetValueAt(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
+       gPrint.Printf("Error: The survival time value '%s' in record %ld, of the %s, is not a number.\n",
+                                BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+       return DataSetHandler::Rejected;
+    }
+    if (tContinuousVariable <= 0) {
+       gPrint.Printf("Error: The survival time '%g' in record %ld of the %s, is not greater than zero.\n",
+                     BasePrint::P_READERROR, tContinuousVariable, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+       return DataSetHandler::Rejected;
+    }
+
+    //read and validate censore attribute
+    iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
+    if (Source.GetValueAt(iCensoredAttributeIndex) != 0) {
+      if (!sscanf(Source.GetValueAt(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
+       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n"
+                     "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
+                     Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+       return DataSetHandler::Rejected;
+      }
+      //treat values greater than one as indication that patient was censored
+      tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
+    }
+    else
+      //censored attribute optional - default to not censored
+      tCensorAttribute = 0;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("RetrieveCaseRecordData()","ExponentialDataSetHandler");
+    throw;
+  }
+  return DataSetHandler::Accepted;
 }
 
 /** sets purely temporal structures used in simulations */
@@ -370,7 +332,8 @@ void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataCo
  }
 }
 
-/** Allocates randomizer object for each data set. */
+/** Allocates randomizers for each dataset. There are currently 2 randomization types
+    for the Exponential model: null hypothesis and  purely temporal optimized null hypothesis. */
 void ExponentialDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.DeleteAllElements();
@@ -378,9 +341,9 @@ void ExponentialDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers[0] = new ExponentialPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new ExponentialPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
           else
-            gvDataSetRandomizers[0] = new ExponentialRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new ExponentialRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :
@@ -388,8 +351,7 @@ void ExponentialDataSetHandler::SetRandomizers() {
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
-       gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
-
+       gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","ExponentialDataSetHandler");

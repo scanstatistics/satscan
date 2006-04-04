@@ -7,9 +7,9 @@
 
 class NormalDataSetHandler : public DataSetHandler {
   protected:
-    virtual void                        AllocateCaseStructures(size_t tSetIndex) {/* no action */}
-    virtual bool                        ParseCaseFileLine(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
-    virtual bool                        ReadCounts(size_t tSetIndex, DataSource& Source, const char* szDescription);
+    virtual void                        AllocateCaseStructures(RealDataSet& DataSet) {/* no action */}
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
+    virtual DataSetHandler::RecordStatusType RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual void                        SetRandomizers();
 
   public:
@@ -17,9 +17,8 @@ class NormalDataSetHandler : public DataSetHandler {
     virtual ~NormalDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
-    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const;
+    virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet & DataSet);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
