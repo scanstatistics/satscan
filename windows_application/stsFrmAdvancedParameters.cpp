@@ -949,6 +949,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
 
    bReturn &= (lstInputDataSets->Items->Count == 0);
    bReturn &= (rdoMultivariate->Checked);
+   bReturn &= (rdgStudyPeriodCheck->ItemIndex == 0);
 
    return bReturn;
 }
@@ -1051,6 +1052,11 @@ double TfrmAdvancedParameters::GetMaxTemporalClusterSizeFromControl() const {
     default              : dReturn = edtMaxTemporalClusterSize->Text.ToDouble();
   }
   return dReturn;
+}
+//---------------------------------------------------------------------------
+/** Returns study period data checking type as specified by control. */
+StudyPeriodDataCheckingType TfrmAdvancedParameters::GetStudyPeriodDataCheckingFromControl() const {
+  return (StudyPeriodDataCheckingType)rdgStudyPeriodCheck->ItemIndex;
 }
 //---------------------------------------------------------------------------
 /** class initialization */
@@ -1180,6 +1186,10 @@ void __fastcall TfrmAdvancedParameters::rdgSpatialAdjustmentsClick(TObject *Send
   EnableSettingsForAnalysisModelCombination();
 }
 //---------------------------------------------------------------------------
+void __fastcall TfrmAdvancedParameters::rdgStudyPeriodCheckClick(TObject *Sender) {
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
 /** event triggered when 'Adjustment for time trend' type control clicked */
 void __fastcall TfrmAdvancedParameters::rdgTemporalTrendAdjClick(TObject *Sender) {
   switch (GetAdjustmentTimeTrendControlType()) {
@@ -1268,6 +1278,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetMultipleDataSetPurposeType(rdoAdjustmentByDataSets->Checked ? ADJUSTMENT: MULTIVARIATE);
     ref.SetSpatialWindowType(rdoCircular->Checked ? CIRCULAR : ELLIPTIC);
     ref.SetNonCompactnessPenalty((NonCompactnessPenaltyType)cmbNonCompactnessPenalty->ItemIndex); //this needs further investigation
+    ref.SetStudyPeriodDataCheckingType(GetStudyPeriodDataCheckingFromControl());
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -1345,6 +1356,9 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    EnableRemoveButton();
    EnableInputFileEdits(false);
    rdoMultivariate->Checked = true;
+
+   //data checking
+   rdgStudyPeriodCheck->ItemIndex = STRICTBOUNDS;
 }
 //---------------------------------------------------------------------------
 /** Sets default values for Output related tab and respective controls
@@ -1483,6 +1497,15 @@ void TfrmAdvancedParameters::SetSpatialDistanceCaption() {
   }
 }
 //---------------------------------------------------------------------------
+/** Sets study period data checking control's index */
+void TfrmAdvancedParameters::SetStudyPeriodDataCheckingControl(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
+  switch (eStudyPeriodDataCheckingType) {
+    case RELAXEDBOUNDS  : rdgStudyPeriodCheck->ItemIndex = 1; break;
+    case STRICTBOUNDS   :
+    default             : rdgStudyPeriodCheck->ItemIndex = 0;
+  }
+}
+//---------------------------------------------------------------------------
 /** Sets time trend adjustment control's index */
 void TfrmAdvancedParameters::SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
   switch (eTimeTrendAdjustmentType) {
@@ -1562,6 +1585,9 @@ void TfrmAdvancedParameters::Setup() {
       lstInputDataSets->ItemIndex = -1;
       rdoMultivariate->Checked = ref.GetMultipleDataSetPurposeType() == MULTIVARIATE;
       rdoAdjustmentByDataSets->Checked = ref.GetMultipleDataSetPurposeType() == ADJUSTMENT;
+
+      // Data Checking Tab
+      SetStudyPeriodDataCheckingControl(ref.GetStudyPeriodDataCheckingType());
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1582,7 +1608,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
      case INPUT_TABS:       // show Input page
         Caption = "Advanced Input Features";
         PageControl->Pages[0]->TabVisible=true;
-        for (i=1; i < PageControl->PageCount; i++)
+        PageControl->Pages[1]->TabVisible=true;
+        for (i=2; i < PageControl->PageCount; i++)
            PageControl->Pages[i]->TabVisible=false;
         // give control to list box if it contains items but none are selected
         if (lstInputDataSets->Items->Count && lstInputDataSets->ItemIndex == -1) {
@@ -1595,7 +1622,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
      case ANALYSIS_TABS:    // show Analysis pages
         Caption = "Advanced Analysis Features";
         PageControl->Pages[0]->TabVisible=false;
-        for (i=1; i < PageControl->PageCount-1; i++)
+        PageControl->Pages[1]->TabVisible=false;
+        for (i=2; i < PageControl->PageCount-1; i++)
            PageControl->Pages[i]->TabVisible=true;
         PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
         break;

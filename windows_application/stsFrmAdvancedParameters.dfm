@@ -354,6 +354,24 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
+    object tsDataChecking: TTabSheet
+      Caption = 'Data Checking'
+      ImageIndex = 6
+      object rdgStudyPeriodCheck: TRadioGroup
+        Left = 8
+        Top = 8
+        Width = 425
+        Height = 82
+        Caption = 'Study Period Check'
+        Items.Strings = (
+          
+            'Check to ensure that cases and controls are within the Study Per' +
+            'iod.'
+          'Ignore cases and controls that are outside the Study Period.')
+        TabOrder = 0
+        OnClick = rdgStudyPeriodCheckClick
+      end
+    end
     object tbSpatial: TTabSheet
       Caption = 'Spatial Window'
       ImageIndex = 3
@@ -599,7 +617,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 154
           Top = 46
           Width = 31
-          Height = 18
+          Height = 21
           MaxLength = 4
           TabOrder = 2
           Text = '1900'
@@ -610,7 +628,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 194
           Top = 46
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 3
@@ -622,7 +640,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 223
           Top = 46
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 4
@@ -634,7 +652,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 280
           Top = 46
           Width = 31
-          Height = 18
+          Height = 21
           MaxLength = 4
           TabOrder = 6
           Text = '1900'
@@ -645,7 +663,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 320
           Top = 46
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 7
@@ -657,7 +675,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 349
           Top = 46
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 8
@@ -686,7 +704,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 154
           Top = 78
           Width = 31
-          Height = 18
+          Height = 21
           MaxLength = 4
           TabOrder = 10
           Text = '1900'
@@ -697,7 +715,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 194
           Top = 78
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 11
@@ -709,7 +727,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 223
           Top = 78
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 12
@@ -729,7 +747,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 280
           Top = 78
           Width = 31
-          Height = 18
+          Height = 21
           MaxLength = 4
           TabOrder = 14
           Text = '1900'
@@ -740,7 +758,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 320
           Top = 78
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 15
@@ -752,7 +770,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 349
           Top = 78
           Width = 20
-          Height = 18
+          Height = 21
           Enabled = False
           MaxLength = 2
           TabOrder = 16
@@ -786,7 +804,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 39
           Top = 22
           Width = 34
-          Height = 18
+          Height = 21
           MaxLength = 5
           TabOrder = 1
           Text = '50'
@@ -817,7 +835,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 39
           Top = 50
           Width = 34
-          Height = 18
+          Height = 21
           MaxLength = 6
           TabOrder = 3
           Text = '1'
@@ -1231,7 +1249,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 48
           Top = 40
           Width = 34
-          Height = 18
+          Height = 21
           AutoSelect = False
           MaxLength = 5
           TabOrder = 1
@@ -1270,7 +1288,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 116
           Top = 91
           Width = 58
-          Height = 18
+          Height = 21
           TabOrder = 5
           Text = '1'
           OnExit = edtMaxReportedSpatialRadiusExit
@@ -1280,7 +1298,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 48
           Top = 66
           Width = 34
-          Height = 18
+          Height = 21
           MaxLength = 5
           TabOrder = 3
           Text = '50'

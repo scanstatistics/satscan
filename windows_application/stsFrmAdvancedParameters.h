@@ -137,6 +137,8 @@ __published:	// IDE-managed Components
    TLabel *lblSeqentialCutoff;
    TStaticText *stMaximumIterationsCriteria;
    TStaticText *stStopPValue;
+   TTabSheet *tsDataChecking;
+   TRadioGroup *rdgStudyPeriodCheck;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -190,6 +192,7 @@ __published:	// IDE-managed Components
    void __fastcall edtMaxReportedSpatialRadiusExit(TObject *Sender);
    void __fastcall chkPerformSequentialScanClick(TObject *Sender);
    void __fastcall edtSequentialScanCutoffExit(TObject *Sender);
+   void __fastcall rdgStudyPeriodCheckClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -254,6 +257,7 @@ public:
    TemporalSizeType         GetMaxTemporalClusterSizeControlType() const;
    double                   GetMaxTemporalClusterSizeFromControl() const;
    unsigned int             GetNumAdditionalDataSets() const {return lstInputDataSets->Items->Count;}
+   StudyPeriodDataCheckingType GetStudyPeriodDataCheckingFromControl() const;
    void                     SaveParameterSettings();
    void                     SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
    void                     SetMaxReportedSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
@@ -263,6 +267,7 @@ public:
    void                     SetMaxTemporalClusterSizeControl(double dMaxSize);
    void                     SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
    void                     SetSpatialDistanceCaption();
+   void                     SetStudyPeriodDataCheckingControl(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType);
    void                     SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
    void                     ShowDialog(TWinControl * pFocusControl=0, int iCategory=-1);
    void                     Validate();
