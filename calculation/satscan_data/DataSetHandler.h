@@ -18,6 +18,8 @@ class DataSetHandler {
     void                                Setup();
   
   protected:
+    enum RecordStatusType               {Rejected=0, Ignored, Accepted};
+
     static const short                  guLocationIndex;           /** input record index for location */
     static const short                  guCountIndex;              /** input record index for count in case/control files */
     static const short                  guCountDateIndex;          /** input record index for date in case/control files */
@@ -28,13 +30,14 @@ class DataSetHandler {
     CSaTScanData                      & gDataHub;                  /** reference to data hub */
     RealDataContainer_t                 gvDataSets;                /** collection of data sets */
     RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
+    bool                                gbCountDateWarned;         /** indicates whether user has already been warned that records are being ignored */     
 
-    virtual void                        AllocateCaseStructures(size_t iSetIndex);
-    bool                                ConvertCountDateToJulian(DataSource& Source, Julian& JulianDate);
-    bool                                ParseCountLine(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
-    bool                                ParseCovariates(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
-    virtual bool                        ReadCaseFile(size_t iSetIndex);
-    virtual bool                        ReadCounts(size_t iSetIndex, DataSource& Source, const char* szDescription);
+    virtual void                        AllocateCaseStructures(RealDataSet& DataSet);
+    virtual bool                        ReadCaseFile(RealDataSet& DataSet);
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
+    RecordStatusType                    RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
+    bool                                RetrieveCovariatesIndex(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
+    RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate);
 
     //pure virtual protected functions
     virtual void                        SetRandomizers() = 0;
@@ -45,15 +48,14 @@ class DataSetHandler {
 
     //pure virtual public functions
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const = 0;
-    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const = 0;
-    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const = 0;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const = 0;
+    virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const = 0;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const = 0;
     virtual bool                        ReadData() = 0;
 
-    AbstractDataSetGateway             * GetNewDataGatewayObject() const;
+    AbstractDataSetGateway            * GetNewDataGatewayObject() const;
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
-    const RealDataSet                 & GetDataSet(size_t iSetIndex=0) const {return *gvDataSets[iSetIndex];}
-    RealDataSet                       & GetDataSet(size_t iSetIndex=0) {return *gvDataSets[iSetIndex];}
+    const RealDataSet                 & GetDataSet(size_t iSetIndex=0) const {return *gvDataSets.at(iSetIndex);}
+    RealDataSet                       & GetDataSet(size_t iSetIndex=0) {return *gvDataSets.at(iSetIndex);}
     virtual const AbstractRandomizer  * GetRandomizer(size_t iSetIndex) const;
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;

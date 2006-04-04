@@ -16,7 +16,7 @@ const short DataSetHandler::guCountCategoryIndex        = 3;
 
 /** constructor */
 DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-               :gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print) {
+               :gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print), gbCountDateWarned(false) {
   try {
     Setup();
   }
@@ -29,10 +29,10 @@ DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
 /** destructor */
 DataSetHandler::~DataSetHandler() {}
 
-/** allocates cases structures for data set at index */
-void DataSetHandler::AllocateCaseStructures(size_t iSetIndex) {
+/** Allocates cases structures of RealDataSet object that will store case source data. */
+void DataSetHandler::AllocateCaseStructures(RealDataSet& DataSet) {
   try {
-    gvDataSets[iSetIndex]->AllocateCasesArray();
+    DataSet.AllocateCasesArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateCaseStructures()","DataSetHandler");
@@ -40,21 +40,142 @@ void DataSetHandler::AllocateCaseStructures(size_t iSetIndex) {
   }
 }
 
-/** Converts passed string specifiying a count date to a julian date. Since
-    errors/warnings are accumulated when reading input files, indication of
-    successful conversion to Julian date is returned and any messages sent
-    to print direction. */
-bool DataSetHandler::ConvertCountDateToJulian(DataSource& Source, Julian & JulianDate) {
+/** Returns new data gateway. Caller is responsible for deleting object.
+    If number of data sets is more than one, a MultipleDataSetGateway
+    object is returned, else a DataSetGateway object is returned. */
+AbstractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
+  if (gvDataSets.size() > 1)
+    return new MultipleDataSetGateway();
+  else
+    return new DataSetGateway();
+}
+
+/** Returns const pointer to randomizer object associated with data set at iSetIndex. */
+const AbstractRandomizer * DataSetHandler::GetRandomizer(size_t iSetIndex) const {
+   return gvDataSetRandomizers.at(iSetIndex);
+}
+
+/** Returns a collection of cloned randomizers maintained by data set handler.
+    All previous elements of list are deleted. */
+RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
+  try {
+    Container = gvDataSetRandomizers;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("GetRandomizerContainer()","DataSetHandler");
+    throw;
+  }
+  return Container;
+}
+
+/** Fills passed container with SimDataSet objects. Calls AllocateSimulationData on this container. */
+SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
+  Container.clear();
+  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
+    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+  return AllocateSimulationData(Container);
+}
+
+/** Randomizes data of passed collection of SimDataSet objects in concert with
+    internal RealDataSet objects through passed collection of randomizer objects. */
+void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
+  for (size_t t=0; t < gvDataSets.size(); ++t)
+     Container.at(t)->RandomizeData(*gvDataSets.at(t), *SimDataContainer.at(t), iSimulationNumber);
+}
+
+/** Attempts to read case file data into RealDataSet object. Returns boolean indication of read success. */
+bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
+  try {
+    gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.GetSetIndex()), gPrint));
+    AllocateCaseStructures(DataSet);
+    return ReadCounts(DataSet, *Source, "case");
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadCaseFile()","DataSetHandler");
+    throw;
+  }
+}
+
+/** Reads the count data source, storing data in RealDataSet object. As a
+    means to help user clean-up their data, continues to read records as errors
+    are encountered. Returns boolean indication of read success. */
+bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription) {
+  int                                   i, iCategoryIndex;
+  bool                                  bCaseFile, bValid=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               TractIndex;
+  std::string                           sBuffer;
+  count_t                               Count, ** pCounts;
+  DataSetHandler::RecordStatusType      eRecordStatus;
+
+  try {
+    bCaseFile = !strcmp(szDescription, "case");
+    pCounts = (bCaseFile ? DataSet.GetCaseArray() : DataSet.GetControlArray());
+    //Read data, parse and if no errors, increment count for tract at date.
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+           eRecordStatus = RetrieveCaseRecordData(DataSet.GetPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
+           if (eRecordStatus == DataSetHandler::Accepted) {
+             bEmpty = false;
+             //cumulatively add count to time by location structure
+             pCounts[0][TractIndex] += Count;
+             if (pCounts[0][TractIndex] < 0)
+               GenerateResolvableException("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
+                                           (bCaseFile ? "cases" : "controls"), DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
+               pCounts[i][TractIndex] += Count;
+             //record count as a case or control
+             if (bCaseFile)
+               DataSet.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
+             else
+               DataSet.GetPopulationData().AddCovariateCategoryControlCount(iCategoryIndex, Count);
+           }
+           else if (eRecordStatus == DataSetHandler::Ignored)
+             continue;
+           else
+             bValid = false;
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gPrint.Printf("Error: The %s file does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+      bValid = false;
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadCounts()","DataSetHandler");
+    throw;
+  }
+  return bValid;
+}
+
+
+/** reports whether any dataset has cases with a zero population. */
+void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
+  if (!gParameters.GetSuppressingWarnings())
+    for (size_t t=0; t < gvDataSets.size(); ++t)
+      gvDataSets.at(t)->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+}
+
+/** Retrieves count date from current record of data source as a julian date. If an error
+    in data format is detected, appropriate error message is sent to BasePrint object
+    and DataSetHandler::Rejected is returned. If user requested that dates outside study
+    period be ignored, prints warning message to BasePrint object when situation encountered
+    and returns DataSetHandler::Ignored. */
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& Source, Julian & JulianDate) {
   DateStringParser                      DateParser;
   DateStringParser::ParserStatus        eStatus;
   DatePrecisionType                     ePrecision;
 
   //If parameters indicate that case data does not contain dates, don't try to
   //read a date, or validate that there isn't one (could be covariate), and set
-  //Julian reference to study period start date.  
+  //Julian reference to study period start date.
   if (gParameters.GetPrecisionOfTimesType() == NONE) {
     JulianDate = gDataHub.GetStudyPeriodStartDate();
-    return true;
+    return DataSetHandler::Accepted;
   }
 
   //If parameter file was created with version 4 of SaTScan, use time interval
@@ -73,7 +194,7 @@ bool DataSetHandler::ConvertCountDateToJulian(DataSource& Source, Julian & Julia
   if (!Source.GetValueAt(guCountDateIndex)) {
     gPrint.Printf("Error: Record %ld in %s does not contain a date.\n",
                   BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-    return false;
+    return DataSetHandler::Rejected;
   }
   //Attempt to convert string into Julian equivalence.
   eStatus = DateParser.ParseCountDateString(Source.GetValueAt(guCountDateIndex), ePrecision,
@@ -85,7 +206,7 @@ bool DataSetHandler::ConvertCountDateToJulian(DataSource& Source, Julian & Julia
                     "       to determine century for two digit year in %s, record %ld.\n"
                     "       Please use four digit years.\n", BasePrint::P_READERROR,
                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
-      return false;
+      return DataSetHandler::Rejected;
     case DateStringParser::LESSER_PRECISION : {
        ZdString sBuffer;
        //Dates in the case/control files must be at least as precise as ePrecision units.
@@ -95,80 +216,47 @@ bool DataSetHandler::ConvertCountDateToJulian(DataSource& Source, Julian & Julia
                      gPrint.GetImpliedFileTypeString().c_str(),
                      GetDatePrecisionAsString(ePrecision, sBuffer, false, false),
                      (gParameters.GetCreationVersionMajor() == 4 ? "time interval" : "time precision"));
-      return false; }
+      return DataSetHandler::Rejected; }
     case DateStringParser::INVALID_DATE     :
     default                                 :
       gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n", BasePrint::P_READERROR,
                     Source.GetValueAt(guCountDateIndex), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
-      return false;
+      return DataSetHandler::Rejected;
   };
   //validate that date is between study period start and end dates
   if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
-    gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n"
-                  "       within the study period beginning %s and ending %s.\n",
-                  BasePrint::P_READERROR, Source.GetValueAt(guCountDateIndex), Source.GetCurrentRecordIndex(),
-                  gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(),
-                  gParameters.GetStudyPeriodEndDate().c_str());
-    return false;
+    if (gParameters.GetStudyPeriodDataCheckingType() == STRICTBOUNDS) {
+      gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n"
+                    "       within the study period beginning %s and ending %s.\n",
+                    BasePrint::P_READERROR, Source.GetValueAt(guCountDateIndex), Source.GetCurrentRecordIndex(),
+                    gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(),
+                    gParameters.GetStudyPeriodEndDate().c_str());
+      return DataSetHandler::Rejected;
+    }
+    if (!gbCountDateWarned) {
+      gPrint.Printf("Warning: Some records in %s are outside the specified Study Period.\n"
+                    "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
+      gbCountDateWarned = true;
+    }
+    return DataSetHandler::Ignored;
   }
-  return true;
+  return DataSetHandler::Accepted;
 }
 
-/** Returns new data gateway. Caller is responsible for deleting object.
-    If number of data sets is more than one, a MultipleDataSetGateway
-    object is returned. Else a  DataSetGateway object is returned. */
-AbstractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
-  if (gvDataSets.size() > 1)
-    return new MultipleDataSetGateway();
-  else
-    return new DataSetGateway();
-}
-
-/** Returns const pointer to randomizer object associated with data set at iSetIndex. */
-const AbstractRandomizer * DataSetHandler::GetRandomizer(size_t iSetIndex) const {
-   if (iSetIndex >= gvDataSetRandomizers.size())
-     ZdGenerateException("Index %u is out of range [size=%u].","GetRandomizer()", iSetIndex, gvDataSetRandomizers.size());
-
-   return gvDataSetRandomizers[iSetIndex];
-}
-
-/** Returns a collection of cloned randomizers maintained by data set handler.
-    All previous elements of list are deleted. */
-RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContainer_t& Container) const {
-  try {
-    Container = gvDataSetRandomizers;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","DataSetHandler");
-    throw;
-  }
-  return Container;
-}
-
-/** Fills passed container with simulation data objects, with appropriate members
-    of data object allocated. */
-SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
-  Container.clear();
-  for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
-  return AllocateSimulationData(Container);
-}
-
-/** Attempts to parses passed string into tract identifier, count,
-    and based upon settings, date and covariate information.
-    Returns whether parse completed without errors. */
-bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
+/** Attmepts to retrieve case data from current record of data source. If an error
+    in data format is detected, appropriate error message is sent to BasePrint object
+    and DataSetHandler::Rejected is returned. */
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(PopulationData & thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
   short         iCategoryOffSet;
 
   try {
     //read and validate that tract identifier exists in coordinates file
-    //caller function already checked that there is at least one record
     if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
                     "       Location ID '%s' was not specified in the coordinates file.\n",
                     BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
                     Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
-      return false;
+      return DataSetHandler::Rejected;
     }
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
@@ -176,13 +264,13 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, DataSource& 
        gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
                      "       Case count must be an integer.\n", BasePrint::P_READERROR,
                      Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return false;
+       return DataSetHandler::Rejected;
       }
     }
     else {
       gPrint.Printf("Error: Record %ld in %s does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
     if (nCount < 0) {//validate that count is not negative or exceeds type precision
       if (strstr(Source.GetValueAt(guCountIndex), "-"))
@@ -192,23 +280,26 @@ bool DataSetHandler::ParseCountLine(PopulationData & thePopulation, DataSource& 
         gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
                       BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return false;
+      return DataSetHandler::Rejected;
     }
-    if (!ConvertCountDateToJulian(Source, nDate))
-      return false;
+    if (nCount == 0) return DataSetHandler::Ignored;
+    DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
+    if (eDateStatus != DataSetHandler::Accepted) return eDateStatus;
     iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
-    if (! ParseCovariates(thePopulation, iCategoryIndex, iCategoryOffSet, Source))
-        return false;
+    if (!RetrieveCovariatesIndex(thePopulation, iCategoryIndex, iCategoryOffSet, Source)) return DataSetHandler::Rejected;
   }
   catch (ZdException &x) {
-    x.AddCallpath("ParseCountLine()","DataSetHandler");
+    x.AddCallpath("RetrieveCaseRecordData()","DataSetHandler");
     throw;
   }
-  return true;
+  return DataSetHandler::Accepted;
 }
 
-/** Parses count file data line to determine category index given covariates contained in line.*/
-bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source) {
+/** Attempts to read covariate categories from data source at specified field offset. For the Poisson
+    model, ensures that category already exists - as defined in population file. For Bernoulli model,
+    covariates are not used and are ignored - returning index of zero. For the space-time model,
+    creates covariates as defined in each record. */
+bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source) {
   int                          iNumCovariatesScanned=0;
   std::vector<std::string>     vCategoryCovariates;
   const char                 * pCovariate;
@@ -257,101 +348,16 @@ bool DataSetHandler::ParseCovariates(PopulationData & thePopulation, int& iCateg
           return false;
     }
     else
-      ZdGenerateException("Unknown probability model type '%d'.","ParseCovariates()", gParameters.GetProbabilityModelType());
+      ZdGenerateException("Unknown probability model type '%d'.","RetrieveCovariatesIndex()", gParameters.GetProbabilityModelType());
   }
   catch (ZdException &x) {
-    x.AddCallpath("ParseCovariates()","DataSetHandler");
+    x.AddCallpath("RetrieveCovariatesIndex()","DataSetHandler");
     throw;
   }
   return true;
 }
 
-/** Randomizes data of passed collection of simulation sets in concert with
-    real data through passed collection of passed randomizers. */
-void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
-  for (size_t t=0; t < gvDataSets.size(); ++t)
-     Container[t]->RandomizeData(*gvDataSets[t], *SimDataContainer[t], iSimulationNumber);
-}
-
-/** Read the case data file.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered           */
-bool DataSetHandler::ReadCaseFile(size_t iSetIndex) {
-  try {
-    gPrint.SetImpliedInputFileType(BasePrint::CASEFILE, (GetNumDataSets() == 1 ? 0 : iSetIndex + 1));
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(iSetIndex + 1), gPrint));
-    AllocateCaseStructures(iSetIndex);
-    return ReadCounts(iSetIndex, *Source, "case");
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCaseFile()","DataSetHandler");
-    throw;
-  }
-}
-
-/** Read the count(either case or control) data file.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered           */
-bool DataSetHandler::ReadCounts(size_t iSetIndex, DataSource& Source, const char* szDescription) {
-  int                                   i, iCategoryIndex;
-  bool                                  bCaseFile, bValid=true, bEmpty=true;
-  Julian                                Date;
-  tract_t                               TractIndex;
-  std::string                           sBuffer;
-  count_t                               Count, ** pCounts;
-
-  try {
-    RealDataSet& DataSet = *gvDataSets[iSetIndex];
-
-    bCaseFile = !strcmp(szDescription, "case");
-    pCounts = (bCaseFile ? DataSet.GetCaseArray() : DataSet.GetControlArray());
-
-    //Read data, parse and if no errors, increment count for tract at date.
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           bEmpty = false;
-           if (ParseCountLine(DataSet.GetPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex)) {
-             //cumulatively add count to time by location structure
-             pCounts[0][TractIndex] += Count;
-             if (pCounts[0][TractIndex] < 0)
-               GenerateResolvableException("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                           (bCaseFile ? "cases" : "controls"), iSetIndex, std::numeric_limits<count_t>::max());
-             for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-               pCounts[i][TractIndex] += Count;
-             //record count as a case or control
-             if (bCaseFile)
-               DataSet.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
-             else
-               DataSet.GetPopulationData().AddCovariateCategoryControlCount(iCategoryIndex, Count);
-           }
-           else
-             bValid = false;
-    }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bValid)
-      gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The %s file does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
-      bValid = false;
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCounts()","DataSetHandler");
-    throw;
-  }
-  return bValid;
-}
-
-/** reports whether any dataset has cases with a zero population. */
-void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
-  if (!gParameters.GetSuppressingWarnings())
-    for (size_t t=0; t < gvDataSets.size(); ++t)
-      gvDataSets[t]->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
-}
-
+/** Sets purely temporal measure array of RealDataSet object. */
 void DataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
   try {
     DataSet.SetPTMeasureArray();
@@ -362,11 +368,11 @@ void DataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
   }
 }
 
-/** sets temporal simulation case array from data in simulation case array */
+/** Sets purely temporal case array of each SimDataSet object. */
 void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
   try {
     for (size_t t=0; t < SimDataContainer.size(); ++t)
-       SimDataContainer[t]->SetPTCasesArray();
+       SimDataContainer.at(t)->SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalSimulationData()","DataSetHandler");
@@ -374,7 +380,7 @@ void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& 
   }
 }
 
-/** internal initialization */
+/** internal initialization - allocates RealDataSet object for each data set. */
 void DataSetHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
