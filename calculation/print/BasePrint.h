@@ -13,7 +13,7 @@ class BasePrint {
     enum PrintType {P_STDOUT=0, P_WARNING, P_ERROR, P_READERROR, P_NOTICE};
 
   protected:
-    static const int                    MAX_READ_ERRORS;
+    int                                 giMaximumReadErrors;
     char                              * gsMessage;
     eInputFileType                      geInputFileType;
     std::string                         gsInputFileString;
@@ -36,7 +36,8 @@ class BasePrint {
     virtual bool                        GetIsCanceled() const = 0;
     bool                                GetMaximumReadErrorsPrinted() const;
     virtual void                        Printf(const char * sMessage, PrintType ePrintType, ...);
-    void                                SetImpliedInputFileType(eInputFileType eType, unsigned int iDataSet=0);
+    void                                SetImpliedInputFileType(eInputFileType eType);
+    void                                SetMaximumReadErrors(int iMaximumReadErrors) {giMaximumReadErrors=iMaximumReadErrors;}
     void                                SetSuppressWarnings(bool b) {gbSuppressWarnings=b;}
 };
 

@@ -4,10 +4,8 @@
 //******************************************************************************
 #include "BasePrint.h"
 
-const int BasePrint::MAX_READ_ERRORS = 75;
-
 /** constructor */
-BasePrint::BasePrint(bool bSuppressWarnings) : gbSuppressWarnings(bSuppressWarnings) {
+BasePrint::BasePrint(bool bSuppressWarnings) : gbSuppressWarnings(bSuppressWarnings), giMaximumReadErrors(75) {
    SetImpliedInputFileType(CASEFILE);
    gsMessage = new char[1];
    gsMessage[0] = 0;
@@ -26,7 +24,7 @@ BasePrint::~BasePrint() {
 bool BasePrint::GetMaximumReadErrorsPrinted() const {
   std::map<eInputFileType, int>::const_iterator iter = gInputFileWarningsMap.find(geInputFileType);
 
-  return (iter == gInputFileWarningsMap.end() ? false : iter->second == MAX_READ_ERRORS);
+  return (iter == gInputFileWarningsMap.end() ? false : iter->second == giMaximumReadErrors);
 }
 
 /** Directs message to appropriate output based  upon PrintType. */
@@ -85,7 +83,7 @@ void BasePrint::PrintReadError(const char * sMessage) {
    else {
      iter->second++;
      // print the excessive warning message on the MAX_READ_ERRORS time - else print nothing past -- AJV
-     if (iter->second == MAX_READ_ERRORS) {
+     if (iter->second == giMaximumReadErrors) {
        bPrintAsNormal = false;
        std::string message;
        message = "Error: Excessive number of errors reading ";
@@ -93,7 +91,7 @@ void BasePrint::PrintReadError(const char * sMessage) {
        message += " data.\n";
        PrintError(message.c_str());
      }
-     else if(iter->second > MAX_READ_ERRORS)
+     else if(iter->second > giMaximumReadErrors)
        bPrintAsNormal = false;
    }
 
@@ -101,7 +99,7 @@ void BasePrint::PrintReadError(const char * sMessage) {
      PrintError(sMessage);
 }
 
-void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int) {
+void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
   geInputFileType = eType;
   switch (eType) {
     case CASEFILE         : gsInputFileString = "case file"; break;
@@ -113,14 +111,5 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType, unsigned int) {
     case ADJ_BY_RR_FILE   : gsInputFileString = "adjustments file"; break;
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
   }
-
-//  if (iDataSet) {
-//    ZdString s;
-//    s.printf("%s (input set %u)", gsInputFileString.c_str(), iDataSet);
-//    gsInputFileString = s.GetCString();
-//    gsInputFileString += "(input set ";
-//    gsInputFileString += itoa(iDataSet;
-//    gsInputFileString += ")";
-//  }
 }
 
