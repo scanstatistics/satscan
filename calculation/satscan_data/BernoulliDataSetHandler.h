@@ -7,8 +7,8 @@
 
 class BernoulliDataSetHandler : public DataSetHandler {
   protected:
-    void                                AllocateControlStructures(size_t tSetIndex);
-    bool                                ReadControlFile(size_t tSetIndex);
+    void                                AllocateControlStructures(RealDataSet& DataSet);
+    bool                                ReadControlFile(RealDataSet& DataSet);
     virtual void                        SetRandomizers();
 
   public:
@@ -16,9 +16,8 @@ class BernoulliDataSetHandler : public DataSetHandler {
     virtual ~BernoulliDataSetHandler() {}
 
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
-    virtual AbstractDataSetGateway     & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
-    virtual AbstractDataSetGateway     & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
-    virtual double                      GetSimulationDataSetAllocationRequirements() const;
+    virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
     virtual bool                        ReadData();
 };
 //******************************************************************************

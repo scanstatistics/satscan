@@ -7,9 +7,9 @@
 #include "DataSource.h"
 
 /** allocates cases structures for dataset*/
-void BernoulliDataSetHandler::AllocateControlStructures(size_t tSetIndex) {
+void BernoulliDataSetHandler::AllocateControlStructures(RealDataSet& DataSet) {
   try {
-    gvDataSets[tSetIndex]->AllocateControlsArray();
+    DataSet.AllocateControlsArray();
   }
   catch(ZdException &x) {
     x.AddCallpath("AllocateControlStructures()","BernoulliDataSetHandler");
@@ -140,48 +140,13 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(Abstr
   return DataGatway;
 }
 
-/** Returns memory needed to allocate data set objects. */
-double BernoulliDataSetHandler::GetSimulationDataSetAllocationRequirements() const {
-  double        dRequirements(0);
-
-  switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL :
-       //case array
-       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       break;
-    case SPACETIME :
-    case PROSPECTIVESPACETIME :
-       //case array
-       dRequirements = (double)sizeof(count_t*) * (double)gDataHub.GetNumTimeIntervals() +
-                       (double)gDataHub.GetNumTimeIntervals() * (double)sizeof(count_t) * (double)gDataHub.GetNumTracts();
-       if (gParameters.GetIncludePurelyTemporalClusters())
-         //purely temporal case array
-         dRequirements += (double)sizeof(count_t) * (double)(gDataHub.GetNumTimeIntervals()+1);
-       break;
-    case PROSPECTIVEPURELYTEMPORAL :
-    case PURELYTEMPORAL :
-       //purely temporal analyses not of interest
-       break;
-    case SPATIALVARTEMPTREND :
-       //svtt analysis not of interest at this time
-       break;
-     default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataSetAllocationRequirements()",gParameters.GetAnalysisType());
-  };
-  return dRequirements * (double)GetNumDataSets() + (double)sizeof(SimDataSet) * (double)GetNumDataSets();
-}
-
-/** Read the control data file.
-    If invalid data is found in the file, an error message is printed,
-    that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered           */
-bool BernoulliDataSetHandler::ReadControlFile(size_t tSetIndex) {
+/** Attempts to read control file data into RealDataSet object. Returns boolean indication of read success. */
+bool BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
   try {
-    gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE, (GetNumDataSets() == 1 ? 0 : tSetIndex + 1));
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(tSetIndex + 1), gPrint));
-    AllocateControlStructures(tSetIndex);
-    return ReadCounts(tSetIndex, *Source, "control");
+    gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE);
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.GetSetIndex()), gPrint));
+    AllocateControlStructures(DataSet);
+    return ReadCounts(DataSet, *Source, "control");
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadControlFile()","BernoulliDataSetHandler");
@@ -189,7 +154,7 @@ bool BernoulliDataSetHandler::ReadControlFile(size_t tSetIndex) {
   }
 }
 
-/** */
+/** Attempts to read case and control data files into class RealDataSet objects. */
 bool BernoulliDataSetHandler::ReadData() {
   try {
     SetRandomizers();
@@ -199,13 +164,13 @@ bool BernoulliDataSetHandler::ReadData() {
          gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
          gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(t))
+       if (!ReadCaseFile(GetDataSet(t)))
          return false;
        if (GetNumDataSets() == 1)
          gPrint.Printf("Reading the control file\n", BasePrint::P_STDOUT);
        else
          gPrint.Printf("Reading the control file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadControlFile(t))
+       if (!ReadControlFile(GetDataSet(t)))
          return false;
     }
   }
@@ -216,7 +181,9 @@ bool BernoulliDataSetHandler::ReadData() {
   return true;
 }
 
-/** allocates randomizers for each dataset */
+/** Allocates randomizers for each dataset. There are currently 3 randomization types
+    for the Bernoulli model: null hypothesis, purely temporal optimized null hypothesis and
+    file source. */
 void BernoulliDataSetHandler::SetRandomizers() {
   try {
     gvDataSetRandomizers.DeleteAllElements();
@@ -224,12 +191,12 @@ void BernoulliDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers[0] = new BernoulliPurelyTemporalNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new BernoulliPurelyTemporalNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           else
-            gvDataSetRandomizers[0] = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
+            gvDataSetRandomizers.at(0) = new BernoulliNullHypothesisRandomizer(gParameters.GetRandomizationSeed());
           break;
       case FILESOURCE :
-          gvDataSetRandomizers[0] = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
+          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       case HA_RANDOMIZATION :
       default :
@@ -237,7 +204,7 @@ void BernoulliDataSetHandler::SetRandomizers() {
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
-       gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
+       gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetRandomizers()","BernoulliDataSetHandler");
