@@ -175,7 +175,7 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSo
       gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.Printf("Error: The %s file does not contain data.\n", BasePrint::P_ERROR, szDescription);
+      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, szDescription);
       bReadSuccess = false;
     }
     //if no errors in data read, create randomization data in respective randomizer object
