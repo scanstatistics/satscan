@@ -39,11 +39,11 @@ void CSVTTData::CalculateMeasure(RealDataSet& DataSet) {
 void CSVTTData::DisplayCases(FILE* pFile) {
   unsigned int i;
 
-  for (i=0; i < gpDataSets->GetNumDataSets(); ++i) {
+  for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
      fprintf(pFile, "Data Set %u:\n", i);
-     DisplayCounts(pFile, gpDataSets->GetDataSet(i).GetCaseArray(), "Cases Array",
-                   gpDataSets->GetDataSet(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
-                   gpDataSets->GetDataSet(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
+     DisplayCounts(pFile, gDataSets->GetDataSet(i).GetCaseArray(), "Cases Array",
+                   gDataSets->GetDataSet(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
+                   gDataSets->GetDataSet(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
   }                 
 }
 
@@ -84,10 +84,10 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 
   fprintf(pFile, "Measures                        Measures - Not Accumulated\n\n");
 
-  for (k=0; k < gpDataSets->GetNumDataSets(); ++k) {
+  for (k=0; k < gDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Set %u:\n", k);
-     ppMeasure = gpDataSets->GetDataSet(k).GetMeasureArray();
-     ppMeasureNC = gpDataSets->GetDataSet(k).GetNCMeasureArray();
+     ppMeasure = gDataSets->GetDataSet(k).GetMeasureArray();
+     ppMeasureNC = gDataSets->GetDataSet(k).GetNCMeasureArray();
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
         for (j=0; j < (unsigned int)m_nTracts; ++j) {
            fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
@@ -96,10 +96,10 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
   }
 
   fprintf(pFile, "\nMeasures Accumulated by Time Interval\n\n");
-  for (k=0; k < gpDataSets->GetNumDataSets(); ++k) {
+  for (k=0; k < gDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Set %u:\n", k);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gpDataSets->GetDataSet(k).GetPTMeasureArray()[i]);
+       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gDataSets->GetDataSet(k).GetPTMeasureArray()[i]);
      fprintf(pFile, "\n");
   }
 }
@@ -119,11 +119,11 @@ void CSVTTData::DisplayRelativeRisksForEachTract() const {
 void CSVTTData::DisplaySimCases(FILE* pFile) {
 //  unsigned int i;                                             
 //
-//  for (i=0; i < gpDataSets->GetNumDataSets(); ++i) {
+//  for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
 //     fprintf(pFile, "Data Set %u:\n", i);
-//     DisplayCounts(pFile, gpDataSets->GetDataSet(i).GetSimCaseArray(), "Simulated Cases Array",
-//                   gpDataSets->GetDataSet(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
-//                   gpDataSets->GetDataSet(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
+//     DisplayCounts(pFile, gDataSets->GetDataSet(i).GetSimCaseArray(), "Simulated Cases Array",
+//                   gDataSets->GetDataSet(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
+//                   gDataSets->GetDataSet(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
 //  }
 }
 
@@ -139,8 +139,8 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
        //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
        //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
        //      has not been decided yet.
-       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gpDataSets->GetDataSet(t).GetCasesPerTimeIntervalArray(),
-                                                           gpDataSets->GetDataSet(t).GetMeasurePerTimeIntervalArray(),
+       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gDataSets->GetDataSet(t).GetCasesPerTimeIntervalArray(),
+                                                           gDataSets->GetDataSet(t).GetMeasurePerTimeIntervalArray(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
        //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from

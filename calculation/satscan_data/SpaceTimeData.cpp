@@ -33,7 +33,7 @@ void CSpaceTimeData::CalculateMeasure(RealDataSet& DataSet) {
   try {
     CSaTScanData::CalculateMeasure(DataSet);
     if (gParameters.GetIncludePurelyTemporalClusters() && gParameters.GetProbabilityModelType() != ORDINAL)
-      gpDataSets->SetPurelyTemporalMeasureData(DataSet);
+      gDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CSpaceTimeData");
@@ -48,7 +48,7 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     if (gParameters.GetIncludePurelyTemporalClusters())
-      gpDataSets->SetPurelyTemporalSimulationData(SimDataContainer);
+      gDataSets->SetPurelyTemporalSimulationData(SimDataContainer);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSpaceTimeData");

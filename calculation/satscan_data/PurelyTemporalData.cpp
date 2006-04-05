@@ -38,7 +38,7 @@ void CPurelyTemporalData::CalculateMeasure(RealDataSet& DataSet) {
     CSaTScanData::CalculateMeasure(DataSet);
     //Set temporal structures
     if (gParameters.GetProbabilityModelType() != ORDINAL)
-      gpDataSets->SetPurelyTemporalMeasureData(DataSet);
+      gDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CPurelyTemporalData");
@@ -53,10 +53,10 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) {
   unsigned int   i, j;
 
   fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
-  for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
+  for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTCases [%u] = %i\n", i, gpDataSets->GetDataSet(j).GetPTCasesArray()[i]);
+        fprintf(pFile, "PTCases [%u] = %i\n", i, gDataSets->GetDataSet(j).GetPTCasesArray()[i]);
      fprintf(pFile, "\n\n");
   }
 }
@@ -68,10 +68,10 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
   unsigned int   i, j;
 
   fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
-  for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
+  for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gpDataSets->GetDataSet(j).GetPTMeasureArray()[i]);
+        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gDataSets->GetDataSet(j).GetPTMeasureArray()[i]);
      fprintf(pFile, "\n\n");
   }
 }
@@ -81,10 +81,10 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
 //  unsigned int   i, j;
 //
 //  fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
-// for (j=0; j <  gpDataSets->GetNumDataSets(); ++j) {
+// for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
 //     fprintf(pFile, "Data Set %u:\n", j);
 //     for (i=0; i < m_nTimeIntervals; ++i)
-//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gpDataSets->GetDataSet(j).GetPTSimCasesArray()[i]);
+//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gDataSets->GetDataSet(j).GetPTSimCasesArray()[i]);
 //     fprintf(pFile, "\n\n");
 //  }
 }
@@ -100,7 +100,7 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
                                         SimulationDataContainer_t& SimDataContainer,
                                         unsigned int iSimulationNumber) const {
   try {
-    gpDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    gDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CPurelyTemporalData");
