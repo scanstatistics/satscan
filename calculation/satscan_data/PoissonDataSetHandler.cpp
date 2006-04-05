@@ -309,8 +309,17 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
                                                         CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()));
       vprPopulationDates.clear(); //dump memory
       Source->GotoFirstRecord();
+      bEmpty = true;
       //We can ignore error checking for population date and population since we already did this above.
       while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
+          //Validate that tract identifer is one of those defined in the coordinates file.
+          DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIdentifierIndex);
+          if (eStatus == DataSetHandler::Ignored)
+            continue;
+          if (eStatus == DataSetHandler::Rejected) {
+            bValid = false;
+            continue;
+          }
           ConvertPopulationDateToJulian(Source->GetValueAt(uPopulationDateIndex), Source->GetCurrentRecordIndex(), prPopulationDate);
           if (!Source->GetValueAt(uPopulationIndex)) {
             gPrint.Printf("Error: Record %d, of the %s, is missing the population number.\n",
@@ -342,16 +351,9 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
             bValid = false;
             continue;
           }
-          //Validate that tract identifer is one of those defined in the coordinates file.
-          if ((TractIdentifierIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source->GetValueAt(guLocationIndex))) == -1) {
-            gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
-                          "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
-                          gPrint.GetImpliedFileTypeString().c_str(), Source->GetCurrentRecordIndex(), Source->GetValueAt(guLocationIndex));
-            bValid = false;
-            continue;
-          }
           //Add population count for this tract/category/year
           DataSet.GetPopulationData().AddCovariateCategoryPopulation(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
+          bEmpty = false;
       }
     }
     //if invalid at this point then read encountered problems with data format,
