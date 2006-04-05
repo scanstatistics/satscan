@@ -19,7 +19,6 @@ class DataSetHandler {
   
   protected:
     enum RecordStatusType               {Rejected=0, Ignored, Accepted};
-
     static const short                  guLocationIndex;           /** input record index for location */
     static const short                  guCountIndex;              /** input record index for count in case/control files */
     static const short                  guCountDateIndex;          /** input record index for date in case/control files */
@@ -30,7 +29,8 @@ class DataSetHandler {
     CSaTScanData                      & gDataHub;                  /** reference to data hub */
     RealDataContainer_t                 gvDataSets;                /** collection of data sets */
     RandomizerContainer_t               gvDataSetRandomizers;      /** collection of randomizers, one for each data set */
-    bool                                gbCountDateWarned;         /** indicates whether user has already been warned that records are being ignored */     
+    std::deque<void*>                   gmSourceDateWarned;        /** indicates whether user has already been warned that records are being ignored */
+    std::deque<void*>                   gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
 
     virtual void                        AllocateCaseStructures(RealDataSet& DataSet);
     virtual bool                        ReadCaseFile(RealDataSet& DataSet);
@@ -38,6 +38,7 @@ class DataSetHandler {
     RecordStatusType                    RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                RetrieveCovariatesIndex(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
     RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate);
+    RecordStatusType                    RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex);
 
     //pure virtual protected functions
     virtual void                        SetRandomizers() = 0;
@@ -64,5 +65,6 @@ class DataSetHandler {
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet& thisRealSet);
     virtual void                        SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer);
 };
+//******************************************************************************
 #endif
 

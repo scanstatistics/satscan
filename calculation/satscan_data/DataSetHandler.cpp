@@ -16,7 +16,7 @@ const short DataSetHandler::guCountCategoryIndex        = 3;
 
 /** constructor */
 DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
-               :gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print), gbCountDateWarned(false) {
+               :gDataHub(DataHub), gParameters(DataHub.GetParameters()), gPrint(Print) {
   try {
     Setup();
   }
@@ -141,7 +141,7 @@ bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const 
       gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.Printf("Error: The %s file does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
   }
@@ -233,10 +233,10 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
                     gParameters.GetStudyPeriodEndDate().c_str());
       return DataSetHandler::Rejected;
     }
-    if (!gbCountDateWarned) {
+    if (std::find(gmSourceDateWarned.begin(), gmSourceDateWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceDateWarned.end()) {
       gPrint.Printf("Warning: Some records in %s are outside the specified Study Period.\n"
                     "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
-      gbCountDateWarned = true;
+      gmSourceDateWarned.push_back(reinterpret_cast<void*>(&Source));
     }
     return DataSetHandler::Ignored;
   }
@@ -246,18 +246,13 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
 /** Attmepts to retrieve case data from current record of data source. If an error
     in data format is detected, appropriate error message is sent to BasePrint object
     and DataSetHandler::Rejected is returned. */
-DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(PopulationData & thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex) {
   short         iCategoryOffSet;
 
   try {
     //read and validate that tract identifier exists in coordinates file
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
-      gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
-                    "       Location ID '%s' was not specified in the coordinates file.\n",
-                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
-                    Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
-      return DataSetHandler::Rejected;
-    }
+    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
+    if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
       if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount)) {
@@ -355,6 +350,31 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
     throw;
   }
   return true;
+}
+
+/** Retrieves location id index from data source. If location id not found:
+    - if coordinates data checking is strict, reports error to BasePrint object
+      and returns SaTScanDataReader::Rejected
+    - if coordinates data checking is relaxed, reports warning to BasePrint object
+      and returns SaTScanDataReader::Ignored; reports only first occurance
+    - else returns SaTScanDataReader::Accepted */
+DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
+   //Validate that tract identifer is one of those defined in the coordinates file.
+   if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
+     if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
+                     "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
+                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
+       return DataSetHandler::Rejected;
+     }
+     if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
+       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the coordinates file.\n"
+                     "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
+       gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
+     }
+     return DataSetHandler::Ignored;
+  }
+  return DataSetHandler::Accepted;
 }
 
 /** Sets purely temporal measure array of RealDataSet object. */
