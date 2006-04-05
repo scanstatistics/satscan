@@ -239,13 +239,8 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
 
   try {
     //read and validate that tract identifier exists in coordinates file
-    //caller function already checked that there is at least one record
-    if ((tid = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
-      gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
-                    "       Location ID '%s' was not specified in the coordinates file.\n",
-                    BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
-      return DataSetHandler::Rejected;
-    }
+    DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
+    if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
       if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &tPatients)) {

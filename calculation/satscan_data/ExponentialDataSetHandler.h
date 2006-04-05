@@ -11,7 +11,7 @@ class ExponentialDataSetHandler : public DataSetHandler {
 
     virtual void                        AllocateCaseStructures(RealDataSet& DataSet) {/* no action */}
     virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
-    virtual DataSetHandler::RecordStatusType RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute);
+    virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute);
     virtual void                        SetRandomizers();
 
   public:
