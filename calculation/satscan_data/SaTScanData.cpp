@@ -4,14 +4,8 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "TimeIntervalRange.h"
-#include "RankDataSetHandler.h"
-#include "ExponentialDataSetHandler.h"
-#include "NormalDataSetHandler.h"
-#include "PoissonDataSetHandler.h"
-#include "BernoulliDataSetHandler.h"
-#include "SpaceTimePermutationDataSetHandler.h"
-#include "OrdinalDataSetHandler.h"
 #include "SSException.h"
+#include "SaTScanDataRead.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -31,7 +25,6 @@ CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirect
 /** class destructor */
 CSaTScanData::~CSaTScanData() {
   try {
-    delete gpDataSets; gpDataSets=0;
     delete m_pModel;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     delete gpReportedNeighborCountHandler; gpReportedNeighborCountHandler=0;
@@ -279,11 +272,11 @@ void CSaTScanData::CalculateExpectedCases() {
 
   gPrint.Printf("Calculating the expected number of cases\n", BasePrint::P_STDOUT);
   //calculates expected cases for each dataset
-  for (t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-     CalculateMeasure(gpDataSets->GetDataSet(t));
-     gtTotalMeasure += gpDataSets->GetDataSet(t).GetTotalMeasure();
-     gtTotalCases += gpDataSets->GetDataSet(t).GetTotalCases();
-     gtTotalPopulation += gpDataSets->GetDataSet(t).GetTotalPopulation();
+  for (t=0; t < gDataSets->GetNumDataSets(); ++t) {
+     CalculateMeasure(gDataSets->GetDataSet(t));
+     gtTotalMeasure += gDataSets->GetDataSet(t).GetTotalMeasure();
+     gtTotalCases += gDataSets->GetDataSet(t).GetTotalCases();
+     gtTotalPopulation += gDataSets->GetDataSet(t).GetTotalPopulation();
   }
   FreeRelativeRisksAdjustments();
 }
@@ -409,8 +402,8 @@ void CSaTScanData::FindNeighbors() {
 
 double CSaTScanData::GetAnnualRateAtStart(size_t tSetIndex) const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double dTotalCasesAtStart = gpDataSets->GetDataSet(tSetIndex).GetTotalCasesAtStart();
-  double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
+  double dTotalCasesAtStart = gDataSets->GetDataSet(tSetIndex).GetTotalCasesAtStart();
+  double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
   double nAnnualRate = (m_nAnnualRatePop*dTotalCasesAtStart) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
@@ -449,8 +442,8 @@ bool CSaTScanData::GetIsNullifiedLocation(tract_t tLocationIndex) const {
     iDataSet'th dataset. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    double dTotalCases = gpDataSets->GetDataSet(tSetIndex).GetTotalCases();
-    double dTotalPopulation = gpDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
+    double dTotalCases = gDataSets->GetDataSet(tSetIndex).GetTotalCases();
+    double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
     return dTotalCases / dTotalPopulation;
   }
   else
@@ -489,7 +482,6 @@ int CSaTScanData::GetTimeIntervalOfEndDate(Julian EndDate) const {
 /** internal class initializaton */
 void CSaTScanData::Init() {
   m_pModel = 0;
-  gpDataSets = 0;
   geActiveNeighborReferenceType=NOT_SET;
   gppActiveNeighborArray=0;
   gpNeighborCountHandler=0;
@@ -516,34 +508,12 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                  SimulationDataContainer_t& SimDataContainer,
                                  unsigned int iSimulationNumber) const {
   try {
-    gpDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    gDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
   catch (ZdException &x) {
     x.AddCallpath("RandomizeData()","CSaTScanData");
     throw;
   }
-}
-
-/** reads data from input files for a Bernoulli probability model */
-bool CSaTScanData::ReadBernoulliData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-
-    gpDataSets = new BernoulliDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadBernoulliData()","CSaTScanData");
-    throw;
-  }
-  return true;
 }
 
 /** First calls internal methods to prepare internal structure:
@@ -554,161 +524,13 @@ bool CSaTScanData::ReadBernoulliData() {
     - read input data from files base upon probability model
     Throws ResolvableException if read fails. */
 void CSaTScanData::ReadDataFromFiles() {
-  bool  bReadSuccess;
-
   try {
-    // First calculate time interval indexes, these values will be utilized by data read process.
-    CalculateTimeIntervalIndexes();
-    switch (gParameters.GetProbabilityModelType()) {
-      case POISSON              : bReadSuccess = ReadPoissonData(); break;
-      case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
-      case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
-      case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
-      case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
-      case NORMAL               : bReadSuccess = ReadNormalData(); break;
-      case RANK                 : bReadSuccess = ReadRankData(); break;
-      default :
-        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
-    };
-    if (!bReadSuccess)
-      GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
-    //now that all data has been read, the tract handler can combine references locations with duplicate coordinates
-    gTractHandler.tiConcaticateDuplicateTractIdentifiers();
+    SaTScanDataReader(*this).Read();
   }
   catch (ZdException & x) {
-    x.AddCallpath("ReadDataFromFiles()", "CSaTScanData");
+    x.AddCallpath("ReadDataFromFiles()","CSaTScanData");
     throw;
   }
-}
-
-/** reads data from input files for a Exponential probability model */
-bool CSaTScanData::ReadExponentialData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-    gpDataSets = new ExponentialDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-      return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadExponentialData()","CSaTScanData");
-    throw;
-  }
-  return true;
-}
-
-/** reads data from input files for a normal probability model */
-bool CSaTScanData::ReadNormalData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-    gpDataSets = new NormalDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadNormalData()","CSaTScanData");
-    throw;
-  }
-  return true;
-}
-
-/** reads data from input files for a Ordinal probability model */
-bool CSaTScanData::ReadOrdinalData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-    gpDataSets = new OrdinalDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadOrdinalData()","CSaTScanData");
-    throw;
-  }
-  return true;
-}
-
-
-/** reads data from input files for a Poisson probability model */
-bool CSaTScanData::ReadPoissonData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-
-    gpDataSets = new PoissonDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadPoissonData()","CSaTScanData");
-    throw;
-  }
-  return true;
-}
-
-/** reads data from input files for a Rank probability model */
-bool CSaTScanData::ReadRankData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-    gpDataSets = new RankDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-        return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadRankData()","CSaTScanData");
-    throw;
-  }
-  return true;
-}
-
-/** reads data from input files for a space-time permutation probability model */
-bool CSaTScanData::ReadSpaceTimePermutationData() {
-  try {
-    if (!ReadCoordinatesFile())
-      return false;
-    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
-       return false;
-    gpDataSets = new SpaceTimePermutationDataSetHandler(*this, gPrint);
-    if (!gpDataSets->ReadData())
-      return false;
-    if (gParameters.UseSpecialGrid() && !ReadGridFile())
-      return false;
-  }
-  catch (ZdException &x) {
-    delete gpDataSets; gpDataSets=0;
-    x.AddCallpath("ReadSpaceTimePermutationData()","CSaTScanData");
-    throw;
-  }
-  return true;
 }
 
 /** Removes all cases/controls from data sets, geographically and temporally, for
@@ -726,8 +548,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        if (GetIsNullifiedLocation(tTractIndex)) continue;
        if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
          gtTotalCases = gtTotalMeasure = 0;
-         for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-           RealDataSet& DataSet = gpDataSets->GetDataSet(t);
+         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+           RealDataSet& DataSet = gDataSets->GetDataSet(t);
            ppCases = DataSet.GetCaseArray();
            ppMeasure = DataSet.GetMeasureArray();
            //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
@@ -753,8 +575,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        }
        else if (gParameters.GetProbabilityModelType() == ORDINAL) {
          gtTotalCases = 0;
-         for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
-           RealDataSet& DataSet = gpDataSets->GetDataSet(t);
+         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+           RealDataSet& DataSet = gDataSets->GetDataSet(t);
            PopulationData& thisPopulation = DataSet.GetPopulationData();
            // Remove observed cases for location from data set ordinal categories
            for (size_t c=0; c < DataSet.GetCasesByCategory().size(); ++c) {
@@ -792,24 +614,24 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     if (gParameters.GetProbabilityModelType() == POISSON) {
       //recalibrate the measure array to equal expected cases
       gtTotalMeasure = 0;
-      for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
          tAdjustedTotalMeasure=0;
-         tCalibration  = (measure_t)(gpDataSets->GetDataSet(t).GetTotalCases())/(gpDataSets->GetDataSet(t).GetTotalMeasure());
+         tCalibration  = (measure_t)(gDataSets->GetDataSet(t).GetTotalCases())/(gDataSets->GetDataSet(t).GetTotalMeasure());
          for (int i=0; i < m_nTimeIntervals; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] *= tCalibration;
          for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
-         gpDataSets->GetDataSet(t).SetTotalMeasure(tAdjustedTotalMeasure);
+         gDataSets->GetDataSet(t).SetTotalMeasure(tAdjustedTotalMeasure);
          gtTotalMeasure += tAdjustedTotalMeasure;
       }     
     }
     //no recalculate purely temporal arrays as needed
     if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
-      for (size_t t=0; t < gpDataSets->GetNumDataSets(); ++t) {
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
         if (gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == POISSON) {
-          gpDataSets->GetDataSet(t).SetPTCasesArray();
-          gpDataSets->GetDataSet(t).SetPTMeasureArray();
+          gDataSets->GetDataSet(t).SetPTCasesArray();
+          gDataSets->GetDataSet(t).SetPTMeasureArray();
         }
         if (gParameters.GetProbabilityModelType() == ORDINAL)
-          gpDataSets->GetDataSet(t).SetPTCategoryCasesArray();
+          gDataSets->GetDataSet(t).SetPTCategoryCasesArray();
       }
     }
   }
@@ -954,11 +776,11 @@ void CSaTScanData::SetPurelyTemporalCases() {
 
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL)
-      for (t=0; t < gpDataSets->GetNumDataSets(); ++t)
-        gpDataSets->GetDataSet(t).SetPTCategoryCasesArray();
+      for (t=0; t < gDataSets->GetNumDataSets(); ++t)
+        gDataSets->GetDataSet(t).SetPTCategoryCasesArray();
     else
-      for (t=0; t < gpDataSets->GetNumDataSets(); ++t)
-        gpDataSets->GetDataSet(t).SetPTCasesArray();
+      for (t=0; t < gDataSets->GetNumDataSets(); ++t)
+        gDataSets->GetDataSet(t).SetPTCasesArray();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");

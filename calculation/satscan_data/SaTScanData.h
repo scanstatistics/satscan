@@ -16,11 +16,11 @@
 #include "DataSetHandler.h"
 #include "AdjustmentHandler.h"
 
-class DataSource;   /** forward class definition */
-
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
+  friend class SaTScanDataReader;
+  
   public:
     enum           ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
 
@@ -33,7 +33,7 @@ class CSaTScanData {
     BasePrint                                 & gPrint;
     const CParameters                         & gParameters;
     CModel                                    * m_pModel;
-    DataSetHandler                            * gpDataSets;
+    std::auto_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
     GInfo                                       gCentroidsHandler;
     TractHandler                                gTractHandler;
@@ -73,13 +73,6 @@ class CSaTScanData {
     measure_t                                   DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract);
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
-    bool                                        ReadAdjustmentsByRelativeRisksFile();
-    bool                                        ReadCartesianCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short & iScanCount, short iWordOffSet);
-    bool                                        ReadCoordinatesFileAsCartesian(DataSource& Source);
-    bool                                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source);
-    bool                                        ReadGridFileAsCartiesian(DataSource& Source);
-    bool                                        ReadGridFileAsLatitudeLongitude(DataSource& Source);
-    bool                                        ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile);
     virtual void                                SetAdditionalCaseArrays(RealDataSet & thisSet);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
@@ -106,15 +99,14 @@ class CSaTScanData {
     virtual void                                AdjustNeighborCounts(); // For sequential analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
-    bool                                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp);
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors();
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
-    DataSetHandler                            & GetDataSetHandler() {return *gpDataSets;}
-    const DataSetHandler                      & GetDataSetHandler() const {return *gpDataSets;}
+    DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
+    const DataSetHandler                      & GetDataSetHandler() const {return *gDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;
     double                                      GetEllipseShape(int iEllipseIndex) const;
     int                                         GetFlexibleWindowEndRangeEndIndex() const {return m_nFlexibleWindowEndRangeEndIndex;}
@@ -129,10 +121,8 @@ class CSaTScanData {
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius=-1) const;
     inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
-    inline size_t                               GetNumDataSets() const {return gpDataSets->GetNumDataSets();}
-
+    inline size_t                               GetNumDataSets() const {return gDataSets->GetNumDataSets();}
     size_t                                      GetNumNullifiedLocations() const {return gvNullifiedLocations.size();}
-
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
     const CParameters                         & GetParameters() const {return gParameters;}
@@ -148,25 +138,15 @@ class CSaTScanData {
     inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
-    bool                                        ReadBernoulliData();
-    bool                                        ReadCoordinatesFile();
     virtual void                                ReadDataFromFiles();
-    bool                                        ReadExponentialData();
-    bool                                        ReadGridFile();
-    bool                                        ReadMaxCirclePopulationFile();
-    bool                                        ReadNormalData();
-    bool                                        ReadOrdinalData();
-    bool                                        ReadPoissonData();
-    bool                                        ReadRankData();
-    bool                                        ReadSpaceTimePermutationData();
     void                                        RemoveClusterSignificance(const CCluster& ClusterObj);
     void                                        SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType);
     virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
 
-    inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gpDataSets->GetDataSet(iSetIndex).GetTotalMeasure();}
+    inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
-    inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gpDataSets->GetDataSet(iSetIndex).GetTotalCases();}
+    inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalCases();}
     double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
