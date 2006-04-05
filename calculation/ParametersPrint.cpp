@@ -326,11 +326,19 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
 /** Prints 'Data Checking' parameters to file stream. */
 void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
   fprintf(fp, "\nData Checking\n-------------\n");
-  fprintf(fp, "   Study Period Check : ");
+  fprintf(fp, "  Study Period Check             : ");
   switch (gParameters.GetStudyPeriodDataCheckingType()) {
     case STRICTBOUNDS     : fprintf(fp, "Check to ensure that cases and controls are within the Study Period.\n"); break;
     case RELAXEDBOUNDS    : fprintf(fp, "Ignore cases and controls that are outside the Study Period.\n"); break;
     default : ZdException::Generate("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
+  }
+  fprintf(fp, "  Geographical Coordinates Check : ");
+  switch (gParameters.GetCoordinatesDataCheckingType()) {
+    case STRICTCOORDINATES  : fprintf(fp, "Check to ensure that all locations in the case, control\n"
+                                          "                                   and population files are present in the coordinates file.\n"); break;
+    case RELAXEDCOORDINATES : fprintf(fp, "Ignore data in the case, control and population files that \n"
+                                          "                                   do not correspond to a location ID listed in the coordinates file.\n"); break;
+    default : ZdException::Generate("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
   }
 }
 

@@ -24,7 +24,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
                                     EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE,
-                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK};
+                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK, COORDINATES_DATACHECK};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -62,6 +62,8 @@ enum SpatialWindowType             {CIRCULAR=0, ELLIPTIC};
 enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, STRONGPENALTY};
 /** study period data checking type */
 enum StudyPeriodDataCheckingType   {STRICTBOUNDS=0, RELAXEDBOUNDS};
+/** geographical coordinates data checking type */
+enum CoordinatesDataCheckingType   {STRICTCOORDINATES=0, RELAXEDCOORDINATES};
 
 class DataSetHandler; /** forward class declaration */
 
@@ -88,6 +90,7 @@ class CParameters {
                                                                                     pertinent for prospective analyses */
     SpatialAdjustmentType               geSpatialAdjustmentType;                /** type of spatial adjustment*/
     StudyPeriodDataCheckingType         geStudyPeriodDataCheckingType;          /** study period data checking type */
+    CoordinatesDataCheckingType         geCoordinatesDataCheckingType;          /** geographical coordinates data checking type */
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
@@ -202,6 +205,7 @@ class CParameters {
     const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetControlFileNames() const {return gvControlFilenames;}
+    CoordinatesDataCheckingType         GetCoordinatesDataCheckingType() const {return geCoordinatesDataCheckingType;}
     const std::string                 & GetCoordinatesFileName() const {return gsCoordinatesFileName;}
     CoordinatesType                     GetCoordinatesType() const {return geCoordinatesType;}
     const CreationVersion            &  GetCreationVersion() const {return gCreationVersion;}
@@ -310,6 +314,7 @@ class CParameters {
     void                                SetExecutionType(ExecutionType eExecutionType);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
+    void                                SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCoordinatesDataCheckingType);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);

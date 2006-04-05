@@ -299,6 +299,7 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   gvParameterInfo[SEQNUM - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxIterations");
   gvParameterInfo[SEQPVAL - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxPValue");
   gvParameterInfo.push_back(std::make_pair(DataChecking, (const char*)"StudyPeriodCheckType"));
+  gvParameterInfo.push_back(std::make_pair(DataChecking, (const char*)"GeographicalCoordinatesCheckType"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

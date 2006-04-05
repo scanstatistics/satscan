@@ -215,6 +215,7 @@ void IniParameterFileAccess::WriteDataCheckingSettings(ZdIniFile& WriteFile) {
 
   try {
     WriteIniParameter(WriteFile, STUDYPERIOD_DATACHECK, GetParameterString(STUDYPERIOD_DATACHECK, s), GetParameterComment(STUDYPERIOD_DATACHECK));
+    WriteIniParameter(WriteFile, COORDINATES_DATACHECK, GetParameterString(COORDINATES_DATACHECK, s), GetParameterComment(COORDINATES_DATACHECK));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteDataCheckingSettings()","IniParameterFileAccess");

@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 78;
+const int CParameters::giNumParameters 	              = 79;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -118,6 +118,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbOutputClusterCaseAscii               != rhs.gbOutputClusterCaseAscii) return false;
   if (gbOutputClusterCaseDBase               != rhs.gbOutputClusterCaseDBase) return false;
   if (geStudyPeriodDataCheckingType          != rhs.geStudyPeriodDataCheckingType) return false;
+  if (geCoordinatesDataCheckingType          != rhs.geCoordinatesDataCheckingType) return false;
   return true;
 }
 
@@ -258,6 +259,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gbOutputClusterCaseAscii               = rhs.gbOutputClusterCaseAscii;
     gbOutputClusterCaseDBase               = rhs.gbOutputClusterCaseDBase;
     geStudyPeriodDataCheckingType          = rhs.geStudyPeriodDataCheckingType;
+    geCoordinatesDataCheckingType          = rhs.geCoordinatesDataCheckingType;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -569,6 +571,22 @@ void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrec
   }
 }
 
+/** Sets geographical coordinates data checking type. Throws exception if out of range. */
+void CParameters::SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCoordinatesDataCheckingType) {
+  ZdString      sLabel;
+
+  try {
+    if (eCoordinatesDataCheckingType < STRICTCOORDINATES || eCoordinatesDataCheckingType > RELAXEDCOORDINATES)
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCoordinatesDataCheckingType()",
+                            eCoordinatesDataCheckingType, STRICTCOORDINATES, RELAXEDCOORDINATES);
+    geCoordinatesDataCheckingType = eCoordinatesDataCheckingType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetCoordinatesDataCheckingType()","CParameters");
+    throw;
+  }
+}
+
 /** Sets coordinates data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -716,6 +734,7 @@ void CParameters::SetAsDefaulted() {
   gbOutputClusterCaseAscii                 = false;
   gbOutputClusterCaseDBase                 = false;
   geStudyPeriodDataCheckingType            = STRICTBOUNDS;
+  geCoordinatesDataCheckingType            = STRICTCOORDINATES;
 }
 
 /** Sets dimensions of input data. */

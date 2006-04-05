@@ -134,6 +134,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_MLC_CASE_ASCII    : return " output cluster case information in ASCII format? (y/n)";
       case OUTPUT_MLC_CASE_DBASE    : return " output cluster case information in dBase format? (y/n)";
       case STUDYPERIOD_DATACHECK    : return " study period data check (Strict Bounds=0, Relaxed Bounds=1)";
+      case COORDINATES_DATACHECK    : return " geographical coordinates data check (Strict Coordinates=0, Relaxed Coordinates=1)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -238,6 +239,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case OUTPUT_MLC_CASE_ASCII    : return AsString(s, gParameters.GetOutputClusterCaseAscii());
       case OUTPUT_MLC_CASE_DBASE    : return AsString(s, gParameters.GetOutputClusterCaseDBase());
       case STUDYPERIOD_DATACHECK    : return AsString(s, gParameters.GetStudyPeriodDataCheckingType());
+      case COORDINATES_DATACHECK    : return AsString(s, gParameters.GetCoordinatesDataCheckingType());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -336,6 +338,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case OUTPUT_MLC_CASE_ASCII    : sDefaultValue = (gParameters.GetOutputClusterCaseAscii() ? "y" : "n"); break;
       case OUTPUT_MLC_CASE_DBASE    : sDefaultValue = (gParameters.GetOutputClusterCaseDBase() ? "y" : "n"); break;
       case STUDYPERIOD_DATACHECK    : sDefaultValue = gParameters.GetStudyPeriodDataCheckingType(); break;
+      case COORDINATES_DATACHECK    : sDefaultValue = gParameters.GetCoordinatesDataCheckingType(); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -690,6 +693,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case OUTPUT_MLC_CASE_DBASE     : gParameters.SetOutputClusterCaseDBase(ReadBoolean(sParameter, eParameterType)); break;
       case STUDYPERIOD_DATACHECK     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STRICTBOUNDS, RELAXEDBOUNDS);
                                        gParameters.SetStudyPeriodDataCheckingType((StudyPeriodDataCheckingType)iValue); break;
+      case COORDINATES_DATACHECK     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STRICTCOORDINATES, RELAXEDCOORDINATES);
+                                       gParameters.SetCoordinatesDataCheckingType((CoordinatesDataCheckingType)iValue); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }
