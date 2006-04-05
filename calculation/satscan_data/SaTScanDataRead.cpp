@@ -1,25 +1,40 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
+#include "SaTScanDataRead.h"
 #include "SaTScanData.h"
-#include "AdjustmentHandler.h"
 #include "DateStringParser.h"
 #include "SSException.h"
 #include "DataSource.h"
+#include "BernoulliDataSetHandler.h"
+#include "RankDataSetHandler.h"
+#include "ExponentialDataSetHandler.h"
+#include "NormalDataSetHandler.h"
+#include "PoissonDataSetHandler.h"
+#include "SpaceTimePermutationDataSetHandler.h"
+#include "OrdinalDataSetHandler.h"
+
+const short SaTScanDataReader::guLocationIndex = 0;
+
+/** class constructor */
+SaTScanDataReader::SaTScanDataReader(CSaTScanData& DataHub)
+                  :gDataHub(DataHub), gParameters(gDataHub.GetParameters()), gPrint(gDataHub.gPrint),
+                   gCentroidsHandler(gDataHub.gCentroidsHandler), gTractHandler(gDataHub.gTractHandler) {}
+
 
 /** Converts passed string specifiying a adjustment file date to a julian date.
     Precision is determined by date formats( YYYY/MM/DD, YYYY/MM, YYYY, YY/MM/DD,
     YY/MM, YY ) which is the complete set of valid formats that SaTScan currently
     supports. Since we accumulate errors/warnings when reading input files,
     indication of a bad date is returned and any messages sent to print direction. */
-bool CSaTScanData::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & JulianDate, bool bStartDate) {
+bool SaTScanDataReader::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & JulianDate, bool bStartDate) {
   short                                 iDateIndex;
   DateStringParser                      DateParser;
   DateStringParser::ParserStatus        eStatus;
 
   if (gParameters.GetPrecisionOfTimesType() == NONE)
-    JulianDate = (bStartDate ? m_nStartDate: m_nEndDate);
+    JulianDate = (bStartDate ? gDataHub.m_nStartDate: gDataHub.m_nEndDate);
   else {
     iDateIndex = (bStartDate ? 2: 3);
     //read and validate date
@@ -28,7 +43,7 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & Ju
                     gPrint.GetImpliedFileTypeString().c_str(), (bStartDate ? "start": "end"));
       return false;
     }
-    eStatus = DateParser.ParseAdjustmentDateString(Source.GetValueAt(iDateIndex), m_nStartDate, m_nEndDate, JulianDate, bStartDate);
+    eStatus = DateParser.ParseAdjustmentDateString(Source.GetValueAt(iDateIndex), gDataHub.m_nStartDate, gDataHub.m_nEndDate, JulianDate, bStartDate);
     switch (eStatus) {
       case DateStringParser::VALID_DATE       : break;
       case DateStringParser::AMBIGUOUS_YEAR   :
@@ -46,7 +61,7 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & Ju
         return false;
     };
     //validate that date is between study period start and end dates
-    if (!(m_nStartDate <= JulianDate && JulianDate <= m_nEndDate)) {
+    if (!(gDataHub.m_nStartDate <= JulianDate && JulianDate <= gDataHub.m_nEndDate)) {
       gPrint.Printf("Error: Date '%s' in record %ld of %s is not\n"
                     "       within study period beginning %s and ending %s.\n",
                     BasePrint::P_READERROR, Source.GetValueAt(iDateIndex),
@@ -58,12 +73,48 @@ bool CSaTScanData::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & Ju
   return true;
 }
 
+/** First calls internal methods to prepare internal structure:
+    - calculate time interval start times
+    - calculate a clusters maximum temporal window length in terms of time intervals
+    - calculate indexes of flexible scanning window, if requested
+    - calculate start interval index of start date of prospective analyses
+    - read input data from files base upon probability model
+    Throws ResolvableException if read fails. */
+void SaTScanDataReader::Read() {
+  bool  bReadSuccess;
+
+  try {
+    // First calculate time interval indexes, these values will be utilized by data read process.
+    gDataHub.CalculateTimeIntervalIndexes();
+    switch (gParameters.GetProbabilityModelType()) {
+      case POISSON              : bReadSuccess = ReadPoissonData(); break;
+      case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
+      case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
+      case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
+      case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
+      case NORMAL               : bReadSuccess = ReadNormalData(); break;
+      case RANK                 : bReadSuccess = ReadRankData(); break;
+      default :
+        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
+    };
+    if (!bReadSuccess)
+      GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
+    //now that all data has been read, the tract handler can combine references locations with duplicate coordinates
+    gTractHandler.tiConcaticateDuplicateTractIdentifiers();
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ReadDataFromFiles()","SaTScanDataReader");
+    throw;
+  }
+}
+
+
 /** Read the relative risks file
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
-bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
-  bool          bValid=true, bRestrictedLocations(!gParameters.UseCoordinatesFile()), bEmpty=true;
+bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
+  bool          bValid=true, bRestrictedLocations(!gDataHub.GetParameters().UseCoordinatesFile()), bEmpty=true;
   tract_t       TractIndex, iMaxTract;
   double        dRelativeRisk;
   Julian        StartDate, EndDate;
@@ -75,7 +126,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
 
     gPrint.Printf("Reading the adjustments file\n", BasePrint::P_STDOUT);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetAdjustmentsByRelativeRisksFilename(), gPrint));
-    gRelativeRiskAdjustments.Empty();
+    gDataHub.gRelativeRiskAdjustments.Empty();
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;
         //read tract identifier
@@ -89,13 +140,15 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
                                       "       you may want to define known relative risks that apply to all locations.",
                                       "ReadAdjustmentsByRelativeRisksFile()");
         }
-        else if ((TractIndex = gTractHandler.tiGetTractIndex(Source->GetValueAt(uLocationIndex))) == -1) {
-          gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
-                        "       '%s' not specified in the coordinates file.\n",
-                        BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(),
-                        Source->GetCurrentRecordIndex(), Source->GetValueAt(uLocationIndex));
-          bValid = false;
-          continue;
+        else {
+          //Validate that tract identifer is one of those defined in the coordinates file.
+          SaTScanDataReader::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIndex);
+          if (eStatus == SaTScanDataReader::Ignored)
+            continue;
+          if (eStatus == SaTScanDataReader::Rejected) {
+            bValid = false;
+            continue;
+          }
         }
         //read population
         if (!Source->GetValueAt(uAdjustmentIndex)) {
@@ -131,8 +184,8 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
           continue;
         }
         if (iNumWords == 2) {
-          StartDate = m_nStartDate;
-          EndDate = m_nEndDate;
+          StartDate = gDataHub.m_nStartDate;
+          EndDate = gDataHub.m_nEndDate;
         }
         else {
           if (!ConvertAdjustmentDateToJulian(*Source, StartDate, true)) {
@@ -153,10 +206,10 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
           continue;
         }
         //perform adjustment
-        iMaxTract = (TractIndex == -1 ? m_nTracts : TractIndex + 1);
+        iMaxTract = (TractIndex == -1 ? gDataHub.m_nTracts : TractIndex + 1);
         TractIndex = (TractIndex == -1 ? 0 : TractIndex);
         for (; TractIndex < iMaxTract; ++TractIndex)
-           gRelativeRiskAdjustments.AddAdjustmentData(TractIndex, dRelativeRisk, StartDate, EndDate);
+           gDataHub.gRelativeRiskAdjustments.AddAdjustmentData(TractIndex, dRelativeRisk, StartDate, EndDate);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -169,10 +222,31 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadAdjustmentsByRelativeRisksFile()", "CSaTScanData");
+    x.AddCallpath("ReadAdjustmentsByRelativeRisksFile()","SaTScanDataReader");
     throw;
   }
   return bValid;
+}
+
+/** reads data from input files for a Bernoulli probability model */
+bool SaTScanDataReader::ReadBernoulliData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+
+    gDataHub.gDataSets.reset(new BernoulliDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadBernoulliData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
 }
 
 /** Reads cartesian coordinates into vector.
@@ -182,7 +256,7 @@ bool CSaTScanData::ReadAdjustmentsByRelativeRisksFile() {
     function will use this information to confirm that coordinates scanned is
     not less than defined dimensions. The reason we don't check scanned dimensions
     here is that a generic error message could not be implemented. */
-bool CSaTScanData::ReadCartesianCoordinates(DataSource& Source, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet) {
+bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet) {
   const char  * pCoordinate;
   int           i;
 
@@ -208,12 +282,12 @@ bool CSaTScanData::ReadCartesianCoordinates(DataSource& Source, std::vector<doub
 }
 
 /** Read the geographic data file. Calls particular function for coordinate type. */
-bool CSaTScanData::ReadCoordinatesFile() {
+bool SaTScanDataReader::ReadCoordinatesFile() {
   bool          bReturn;
 
   try {
     if (!gParameters.UseCoordinatesFile()) {
-      m_nTotalTractsAtStart = m_nTracts = gTractHandler.tiGetNumTracts();
+      gDataHub.m_nTotalTractsAtStart = gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
       return true;
     }
     gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
@@ -238,10 +312,10 @@ bool CSaTScanData::ReadCoordinatesFile() {
       case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(*Source); break;
       default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",gParameters.GetCoordinatesType());
     };
-    m_nTotalTractsAtStart = m_nTracts;
+    gDataHub.m_nTotalTractsAtStart = gDataHub.m_nTracts;
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFile()","CSaTScanData");
+    x.AddCallpath("ReadCoordinatesFile()","SaTScanDataReader");
     throw;
   }
   return bReturn;
@@ -251,7 +325,7 @@ bool CSaTScanData::ReadCoordinatesFile() {
     If invalid data is found in the file, an error message is printed,
     that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered           */
-bool CSaTScanData::ReadCoordinatesFileAsCartesian(DataSource& Source) {
+bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
   short                 iScanCount=0;
   const short           uLocationIndex=0;
   bool                  bValid=true, bEmpty=true;
@@ -322,12 +396,12 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(DataSource& Source) {
       bValid = false;
     }
     //record number of locations read
-    m_nTracts = gTractHandler.tiGetNumTracts();
+    gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
     //record number of centroids read
-    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
+    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFileAsCartesian()", "CSaTScanData");
+    x.AddCallpath("ReadCoordinatesFileAsCartesian()", "SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -337,7 +411,7 @@ bool CSaTScanData::ReadCoordinatesFileAsCartesian(DataSource& Source) {
     If invalid data is found in the file, an error message
     is printed, that record is ignored, and reading continues.
     Return value: true = success, false = errors encountered   */
-bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source) {
+bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source) {
   bool                  bValid=true, bEmpty=true;
   ZdString              TractIdentifier;
   std::vector<double>   vCoordinates;
@@ -383,19 +457,39 @@ bool CSaTScanData::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source) {
       bValid = false;
     }
     //record number of locations read
-    m_nTracts = gTractHandler.tiGetNumTracts();
+    gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
     //record number of centroids read
-    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
+    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "CSaTScanData");
+    x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "SaTScanDataReader");
     throw;
   }
   return bValid;
 }
 
+/** reads data from input files for a Exponential probability model */
+bool SaTScanDataReader::ReadExponentialData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gDataHub.gDataSets.reset(new ExponentialDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+      return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadExponentialData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
+}
+
 /** Read the special grid file.  Calls particular read given coordinate type. */
-bool CSaTScanData::ReadGridFile() {
+bool SaTScanDataReader::ReadGridFile() {
   bool          bReturn;
 
   try {
@@ -409,7 +503,7 @@ bool CSaTScanData::ReadGridFile() {
     };
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadGridFile()", "CSaTScanData");
+    x.AddCallpath("ReadGridFile()", "SaTScanDataReader");
     throw;
   }
   return bReturn;
@@ -419,7 +513,7 @@ bool CSaTScanData::ReadGridFile() {
    If invalid data is found in the file, an error message is printed,
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered          */
-bool CSaTScanData::ReadGridFileAsCartiesian(DataSource& Source) {
+bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
   bool                          bValid=true, bEmpty=true;
   short                         iScanCount;
   std::vector<double>           vCoordinates;
@@ -458,10 +552,10 @@ bool CSaTScanData::ReadGridFileAsCartiesian(DataSource& Source) {
       bValid = false;
     }
     //record number of centroids read
-    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
+    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadGridFileAsCartiesian()","CSaTScanData");
+    x.AddCallpath("ReadGridFileAsCartiesian()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -471,7 +565,7 @@ bool CSaTScanData::ReadGridFileAsCartiesian(DataSource& Source) {
    If invalid data is found in the file, an error message is printed,
    that record is ignored, and reading continues.
    Return value: true = success, false = errors encountered           */
-bool CSaTScanData::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
+bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
   bool    	                bValid=true, bEmpty=true;
   std::vector<double>           vCoordinates;
   ZdString                      sId;
@@ -499,7 +593,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
       bValid = false;
     }
     //record number of centroids
-    m_nGridTracts = gCentroidsHandler.giGetNumTracts();
+    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
   }
   catch (ZdFileOpenFailedException &x) {
     gPrint.Printf("Error: The grid file '%s' could not be opened.\n",
@@ -507,7 +601,7 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
     return false;
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadGridFileAsLatitudeLongitude()","CSaTScanData");
+    x.AddCallpath("ReadGridFileAsLatitudeLongitude()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -518,8 +612,8 @@ bool CSaTScanData::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
     Returns indication of whether words in passed string could be converted to
     coordinates. Checks that coordinates are in range and converts to cartesian
     coordinates. */
-bool CSaTScanData::ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates,
-                                                    short iWordOffSet, const char * sSourceFile) {
+bool SaTScanDataReader::ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates,
+                                                         short iWordOffSet, const char * sSourceFile) {
   const char  * pCoordinate;
   double        dLatitude, dLongitude;
 
@@ -576,7 +670,7 @@ bool CSaTScanData::ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vec
 
 /** Read the special population that will be used to construct circles
     about grid points(centroids).                                      */
-bool CSaTScanData::ReadMaxCirclePopulationFile() {
+bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
   bool          bValid=true, bEmpty=true;
   tract_t       TractIdentifierIndex;
   float         fPopulation;
@@ -588,16 +682,16 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     gPrint.Printf("Reading the max circle size file\n", BasePrint::P_STDOUT);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetMaxCirclePopulationFileName(), gPrint));
     //initialize circle-measure array
-    gvMaxCirclePopulation.resize(m_nTracts, 0);
+    gDataHub.gvMaxCirclePopulation.resize(gDataHub.m_nTracts, 0);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;
-        //read tract identifier
-        if ((TractIdentifierIndex = gTractHandler.tiGetTractIndex(Source->GetValueAt(uLocationIndex))) == -1) {
-          gPrint.Printf("Error: Unknown location ID in the %s, record %ld.\n"
-                        "       '%s' not specified in the coordinates file.\n",
-                        BasePrint::P_READERROR, gPrint.GetImpliedFileTypeString().c_str(), Source->GetCurrentRecordIndex(), Source->GetValueAt(uLocationIndex));
+        //Validate that tract identifer is one of those defined in the coordinates file.
+        SaTScanDataReader::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIdentifierIndex);
+        if (eStatus == SaTScanDataReader::Ignored)
+          continue;
+        if (eStatus == SaTScanDataReader::Rejected) {
           bValid = false;
           continue;
         }
@@ -626,11 +720,11 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
            bValid = false;
            continue;
         }
-        gvMaxCirclePopulation[TractIdentifierIndex] += fPopulation;
-        m_nTotalMaxCirclePopulation += fPopulation;
+        gDataHub.gvMaxCirclePopulation[TractIdentifierIndex] += fPopulation;
+        gDataHub.m_nTotalMaxCirclePopulation += fPopulation;
     }
     // total population can not be zero
-    if (m_nTotalMaxCirclePopulation == 0) {
+    if (gDataHub.m_nTotalMaxCirclePopulation == 0) {
       bValid = false;
       gPrint.Printf("Error: The total population for %s is zero.\n",
                     BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
@@ -646,9 +740,138 @@ bool CSaTScanData::ReadMaxCirclePopulationFile() {
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("ReadMaxCirclePopulationFile()", "CSaTScanData");
+    x.AddCallpath("ReadMaxCirclePopulationFile()","SaTScanDataReader");
     throw;
   }
   return bValid;
+}
+
+/** reads data from input files for a normal probability model */
+bool SaTScanDataReader::ReadNormalData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gDataHub.gDataSets.reset(new NormalDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadNormalData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a Ordinal probability model */
+bool SaTScanDataReader::ReadOrdinalData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gDataHub.gDataSets.reset(new OrdinalDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadOrdinalData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
+}
+
+
+/** reads data from input files for a Poisson probability model */
+bool SaTScanDataReader::ReadPoissonData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+
+    gDataHub.gDataSets.reset(new PoissonDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadPoissonData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a Rank probability model */
+bool SaTScanDataReader::ReadRankData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    gDataHub.gDataSets.reset(new RankDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+        return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadRankData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
+}
+
+/** reads data from input files for a space-time permutation probability model */
+bool SaTScanDataReader::ReadSpaceTimePermutationData() {
+  try {
+    if (!ReadCoordinatesFile())
+      return false;
+    if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
+       return false;
+    gDataHub.gDataSets.reset(new SpaceTimePermutationDataSetHandler(gDataHub, gPrint));
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    if (gParameters.UseSpecialGrid() && !ReadGridFile())
+      return false;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadSpaceTimePermutationData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
+}
+
+/** Retrieves location id index from data source. If location id not found:
+    - if coordinates data checking is strict, reports error to BasePrint object
+      and returns SaTScanDataReader::Rejected
+    - if coordinates data checking is relaxed, reports warning to BasePrint object
+      and returns SaTScanDataReader::Ignored; reports only first occurance
+    - else returns SaTScanDataReader::Accepted */
+SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
+   //Validate that tract identifer is one of those defined in the coordinates file.
+   if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
+     if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
+                     "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
+                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
+       return SaTScanDataReader::Rejected;
+     }
+     if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
+       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the coordinates file.\n"
+                     "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
+       gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
+     }
+     return SaTScanDataReader::Ignored;
+  }
+  return SaTScanDataReader::Accepted;
 }
 
