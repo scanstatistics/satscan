@@ -139,6 +139,11 @@ __published:	// IDE-managed Components
    TStaticText *stStopPValue;
    TTabSheet *tsDataChecking;
    TRadioGroup *rdgStudyPeriodCheck;
+   TGroupBox *grpGeographicalCoordinatesCheck;
+   TRadioButton *rdoStrictCoordinates;
+   TRadioButton *rdoRelaxedCoordinates;
+   TStaticText *stStrictCoodinates;
+   TStaticText *stRelaxedCoodinates;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -193,6 +198,10 @@ __published:	// IDE-managed Components
    void __fastcall chkPerformSequentialScanClick(TObject *Sender);
    void __fastcall edtSequentialScanCutoffExit(TObject *Sender);
    void __fastcall rdgStudyPeriodCheckClick(TObject *Sender);
+   void __fastcall stStrictCoodinatesClick(TObject *Sender);
+   void __fastcall stRelaxedCoodinatesClick(TObject *Sender);
+   void __fastcall rdoStrictCoordinatesClick(TObject *Sender);
+   void __fastcall rdoRelaxedCoordinatesClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -247,6 +256,7 @@ public:
 
    void                     EnableSettingsForAnalysisModelCombination();
    void                     EnableDatesByTimePrecisionUnits();
+   CoordinatesDataCheckingType GetCoordinatesDataCheckingTypeFromControl() const;
    bool                     GetDefaultsSetForAnalysisOptions();
    bool                     GetDefaultsSetForInputOptions();
    bool                     GetDefaultsSetForOutputOptions();
@@ -260,6 +270,7 @@ public:
    StudyPeriodDataCheckingType GetStudyPeriodDataCheckingFromControl() const;
    void                     SaveParameterSettings();
    void                     SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsForRelativeRisksFileName);
+   void                     SetCoordinatesDataCheckingControl(CoordinatesDataCheckingType eCoordinatesDataCheckingType);
    void                     SetMaxReportedSpatialClusterSizeTypeControl(SpatialSizeType eSpatialSizeType);
    void                     SetMaxReportedSpatialClusterSizeControl(double dMaxSize);
    void                     SetMaxSpatialClusterSizeControl(double dMaxSize);

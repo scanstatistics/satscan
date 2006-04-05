@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 202
-  Top = 320
+  Left = 476
+  Top = 244
   ActiveControl = PageControl
   BorderIcons = []
   BorderStyle = bsDialog
@@ -370,6 +370,56 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           'Ignore cases and controls that are outside the Study Period.')
         TabOrder = 0
         OnClick = rdgStudyPeriodCheckClick
+      end
+      object grpGeographicalCoordinatesCheck: TGroupBox
+        Left = 8
+        Top = 98
+        Width = 425
+        Height = 105
+        Caption = 'Geographical Coordinates Check'
+        TabOrder = 1
+        object rdoStrictCoordinates: TRadioButton
+          Left = 9
+          Top = 24
+          Width = 406
+          Height = 17
+          Caption = 
+            'Check to ensure that all locations in the case, control and popu' +
+            'lation files'
+          Checked = True
+          TabOrder = 0
+          TabStop = True
+          OnClick = rdoStrictCoordinatesClick
+        end
+        object rdoRelaxedCoordinates: TRadioButton
+          Left = 9
+          Top = 64
+          Width = 406
+          Height = 17
+          Caption = 
+            ' Ignore data in the case, control and population files that do n' +
+            'ot correspond'
+          TabOrder = 1
+          OnClick = rdoRelaxedCoordinatesClick
+        end
+        object stStrictCoodinates: TStaticText
+          Left = 30
+          Top = 40
+          Width = 163
+          Height = 17
+          Caption = 'are present in the coordinates file.'
+          TabOrder = 2
+          OnClick = stStrictCoodinatesClick
+        end
+        object stRelaxedCoodinates: TStaticText
+          Left = 30
+          Top = 80
+          Width = 209
+          Height = 17
+          Caption = 'to a location ID listed in the coordinates file.'
+          TabOrder = 3
+          OnClick = stRelaxedCoodinatesClick
+        end
       end
     end
     object tbSpatial: TTabSheet

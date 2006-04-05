@@ -884,6 +884,20 @@ TimeTrendAdjustmentType TfrmAdvancedParameters::GetAdjustmentTimeTrendControlTyp
   return eReturn;
 }
 //---------------------------------------------------------------------------
+/** returns geographical coordinates data type for control */
+CoordinatesDataCheckingType TfrmAdvancedParameters::GetCoordinatesDataCheckingTypeFromControl() const {
+   CoordinatesDataCheckingType eReturn;
+
+   if (rdoStrictCoordinates->Checked)
+     eReturn = STRICTCOORDINATES;
+   else if (rdoRelaxedCoordinates->Checked)
+     eReturn = RELAXEDCOORDINATES;
+   else
+     ZdGenerateException("Unknown geographical coordinates.", "GetCoordinatesDataCheckingTypeFromControl()");
+
+  return eReturn;
+}
+//---------------------------------------------------------------------------
 //** Checks to determine if only default values are set in the dialog
 //** Returns true if only default values are set on enabled controls
 //** Returns false if user specified a value other than a default
@@ -950,6 +964,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bReturn &= (lstInputDataSets->Items->Count == 0);
    bReturn &= (rdoMultivariate->Checked);
    bReturn &= (rdgStudyPeriodCheck->ItemIndex == 0);
+   bReturn &= (rdoStrictCoordinates->Checked == true);
 
    return bReturn;
 }
@@ -1221,6 +1236,16 @@ void __fastcall TfrmAdvancedParameters::rdoMaxSpatialTypeClick(TObject *Sender) 
   DoControlExit();
 }
 //---------------------------------------------------------------------------
+/** event triggered when rdoRelaxedCoordinates control selected */
+void __fastcall TfrmAdvancedParameters::rdoRelaxedCoordinatesClick(TObject *Sender) {
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+/** event triggered when rdoStrictCoordinates control selected */
+void __fastcall TfrmAdvancedParameters::rdoStrictCoordinatesClick(TObject *Sender) {
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
 /** parameter settings to parameters class */
 void TfrmAdvancedParameters::SaveParameterSettings() {
   CParameters&  ref = const_cast<CParameters&>(gAnalysisSettings.gParameters);
@@ -1279,6 +1304,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetSpatialWindowType(rdoCircular->Checked ? CIRCULAR : ELLIPTIC);
     ref.SetNonCompactnessPenalty((NonCompactnessPenaltyType)cmbNonCompactnessPenalty->ItemIndex); //this needs further investigation
     ref.SetStudyPeriodDataCheckingType(GetStudyPeriodDataCheckingFromControl());
+    ref.SetCoordinatesDataCheckingType(GetCoordinatesDataCheckingTypeFromControl());
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -1289,6 +1315,14 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
 /** Sets adjustments filename in interface */
 void TfrmAdvancedParameters::SetAdjustmentsByRelativeRisksFile(const char * sAdjustmentsByRelativeRisksFileName) {
   edtAdjustmentsByRelativeRisksFile->Text = sAdjustmentsByRelativeRisksFileName;
+}
+//---------------------------------------------------------------------------
+void TfrmAdvancedParameters::SetCoordinatesDataCheckingControl(CoordinatesDataCheckingType eCoordinatesDataCheckingType) {
+   switch (eCoordinatesDataCheckingType) {
+     case STRICTCOORDINATES  : rdoStrictCoordinates->Checked = true; break;
+     case RELAXEDCOORDINATES : rdoRelaxedCoordinates->Checked = true; break;
+     default : ZdGenerateException("Unknown geographical coordinates type %d.", "SetCoordinatesDataCheckingControl()", eCoordinatesDataCheckingType);
+   };  
 }
 //---------------------------------------------------------------------------
 /** Sets default values for Analysis related tabs and their respective controls
@@ -1359,6 +1393,7 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
 
    //data checking
    rdgStudyPeriodCheck->ItemIndex = STRICTBOUNDS;
+   rdoStrictCoordinates->Checked = true;
 }
 //---------------------------------------------------------------------------
 /** Sets default values for Output related tab and respective controls
@@ -1588,6 +1623,7 @@ void TfrmAdvancedParameters::Setup() {
 
       // Data Checking Tab
       SetStudyPeriodDataCheckingControl(ref.GetStudyPeriodDataCheckingType());
+      SetCoordinatesDataCheckingControl(ref.GetCoordinatesDataCheckingType());
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1659,7 +1695,19 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
 
   ShowModal();
 }
-//------------------------------------------------------------------
+//---------------------------------------------------------------------------
+/** event triggered when user clicks static text associated with rdoRelaxedCoordinates control. */
+void __fastcall TfrmAdvancedParameters::stRelaxedCoodinatesClick(TObject *Sender) {
+  rdoRelaxedCoordinates->Checked = true;
+  rdoRelaxedCoordinates->SetFocus();
+}
+//---------------------------------------------------------------------------
+/** event triggered when user clicks static text associated with rdoStrictCoordinates control. */
+void __fastcall TfrmAdvancedParameters::stStrictCoodinatesClick(TObject *Sender) {
+  rdoStrictCoordinates->Checked = true;
+  rdoStrictCoordinates->SetFocus();
+}
+//---------------------------------------------------------------------------
 /** validates all the settings in this dialog */
 void TfrmAdvancedParameters::Validate() {
    ValidateInputFiles();
