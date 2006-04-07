@@ -320,7 +320,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       //either suppress printing this field because we didn't define it (not Poisson or Bernoulli) or
       //because the relative risk could not be calculated 
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
-          (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
+          (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub, iSetIndex)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
     }
     if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
