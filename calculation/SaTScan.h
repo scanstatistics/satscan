@@ -56,14 +56,14 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID      "12"  /** incremental version identifier - this value must
+#define VERSION_ID      "13"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "6"
 #define VERSION_MINOR   "1"
-#define VERSION_RELEASE "1"
+#define VERSION_RELEASE "2"
 #define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "March 28, 2006"
+#define VERSION_DATE    "April 7, 2006"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
