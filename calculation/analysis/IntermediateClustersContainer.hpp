@@ -18,7 +18,7 @@ template <class T>
 T & IntermediateClustersContainer<T>::GetTopCluster(int iShapeOffset) {
   int   iEllipse, iBoundry=0;
 
-  if (iShapeOffset && gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetNonCompactnessPenaltyType() != NOPENALTY)
+  if (iShapeOffset && gData.GetParameters().GetSpatialWindowType() == ELLIPTIC && gData.GetParameters().GetNonCompactnessPenaltyType() != NOPENALTY)
     for (iEllipse=0; iEllipse < gData.GetParameters().GetNumRequestedEllipses(); ++iEllipse) {
        //Get the number of angles this ellipse shape rotates through.
        iBoundry += gData.GetParameters().GetEllipseRotations()[iEllipse];
@@ -73,7 +73,7 @@ void IntermediateClustersContainer<T>::SetTopClusters(const T& Cluster) {
   try {
     gvClusters.clear();
     //if there are ellipses and a non-compactness penalty, then we need a top cluster for the circle and each ellipse shape
-    if (gData.GetParameters().GetNumRequestedEllipses() && gData.GetParameters().GetNonCompactnessPenaltyType() != NOPENALTY)
+    if (gData.GetParameters().GetSpatialWindowType() == ELLIPTIC && gData.GetParameters().GetNonCompactnessPenaltyType() != NOPENALTY)
       iNumTopClusters = gData.GetParameters().GetNumRequestedEllipses() + 1;
     else
     //else there is only one top cluster - regardless of whether there are ellipses
