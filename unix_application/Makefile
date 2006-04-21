@@ -84,6 +84,7 @@ SRC         := Main.cpp \
 	             $(CLUSTER)/CategoricalClusterDataFactory.cpp \
 	             $(CLUSTER)/MultiSetClusterData.cpp \
 	             $(CLUSTER)/MultiSetCategoricalClusterData.cpp \
+	             $(CLUSTER)/MultiSetNormalClusterData.cpp \
 	             $(OUTPUT)/ClusterLocationsWriter.cpp \
                $(OUTPUT)/stsASCIIFileWriter.cpp \
                $(OUTPUT)/ClusterInformationWriter.cpp \
