@@ -34,11 +34,6 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
       }
       if (!ValidateMonotoneRisk(PrintDirection))
         bValid = false;
-      if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.GetNumDataSets() > 1) {
-        bValid = false;
-        PrintDirection.Printf("Error: Multiple data sets are not permitted with the normal probablility model\n"
-                              "       in this version of SaTScan.\n", BasePrint::P_ERROR);
-      }
       if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
         bValid = false;
         PrintDirection.Printf("Error: Adjustment purpose for multiple data sets is not permitted\n"
@@ -795,7 +790,8 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
         PrintDirection.Printf("Error: The sequential scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_ERROR);
         return false;
       }
-      if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == ORDINAL)) {
+      if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
+            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL)) {
         //code only implemented for Poisson or Bernoulli models
         PrintDirection.Printf("Error: The sequential scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n", BasePrint::P_ERROR);
         return false;
