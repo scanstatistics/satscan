@@ -65,8 +65,6 @@ enum StudyPeriodDataCheckingType   {STRICTBOUNDS=0, RELAXEDBOUNDS};
 /** geographical coordinates data checking type */
 enum CoordinatesDataCheckingType   {STRICTCOORDINATES=0, RELAXEDCOORDINATES};
 
-class DataSetHandler; /** forward class declaration */
-
 class CParameters {
   public:
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
