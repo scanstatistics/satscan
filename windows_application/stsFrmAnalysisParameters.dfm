@@ -662,7 +662,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoBernoulliModel: TRadioButton
           Left = 13
-          Top = 75
+          Top = 65
           Width = 87
           Height = 17
           Caption = 'Bernoulli'
@@ -671,7 +671,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoSpaceTimePermutationModel: TRadioButton
           Left = 13
-          Top = 125
+          Top = 102
           Width = 140
           Height = 17
           Caption = 'Space-Time Permutation'
@@ -680,7 +680,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoOrdinalModel: TRadioButton
           Left = 13
-          Top = 175
+          Top = 141
           Width = 82
           Height = 17
           Caption = 'Ordinal'
@@ -689,11 +689,20 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoExponentialModel: TRadioButton
           Left = 13
-          Top = 225
+          Top = 179
           Width = 82
           Height = 17
           Caption = 'Exponential'
           TabOrder = 4
+          OnClick = rdoProbabilityModelClick
+        end
+        object rdoNormalModel: TRadioButton
+          Left = 13
+          Top = 217
+          Width = 82
+          Height = 17
+          Caption = 'Normal'
+          TabOrder = 5
           OnClick = rdoProbabilityModelClick
         end
       end

@@ -621,6 +621,7 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
       case POISSON   		:
       case BERNOULLI            :
       case ORDINAL              :
+      case NORMAL               :
       case EXPONENTIAL          : rdoRetrospectivePurelySpatial->Enabled = true;
                                   rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
                                   rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
@@ -860,6 +861,8 @@ ProbabilityModelType TfrmAnalysis::GetModelControlType() const {
     eReturn = ORDINAL;
   else if (rdoExponentialModel->Checked)
     eReturn = EXPONENTIAL;
+  else if (rdoNormalModel->Checked)
+    eReturn = NORMAL;
   else
     ZdGenerateException("Probability model type not selected.","GetModelControlType()");
 
@@ -956,11 +959,11 @@ void TfrmAnalysis::LaunchImporter(const char * sFileName, InputFileType eFileTyp
     if (pDialog->ShowModal() == mrOk) {
        switch (eFileType) {  // set parameters
           case Case :       SetCaseFile(pDialog->GetDestinationFilename(sNewFile));
-                            SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                            SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()?(GetPrecisionOfTimesControlType()==NONE?YEAR:GetPrecisionOfTimesControlType()):NONE);
                             SetModelControl(pDialog->GetModelControlType());
                             break;
           case Control :    SetControlFile(pDialog->GetDestinationFilename(sNewFile));
-                            SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()? DAY : NONE);
+                            SetPrecisionOfTimesControl(pDialog->GetDateFieldImported()?(GetPrecisionOfTimesControlType()==NONE?YEAR:GetPrecisionOfTimesControlType()):NONE);
                             SetModelControl(BERNOULLI);
                             break;
           case Population : SetPopulationFile(pDialog->GetDestinationFilename(sNewFile));
@@ -1035,6 +1038,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
       case POISSON   		:
       case BERNOULLI            :
       case ORDINAL              :
+      case NORMAL               :
       case EXPONENTIAL          : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   gpfrmAdvancedParameters->lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 90%, default = 50%)";
                                   break;
@@ -1354,6 +1358,7 @@ void TfrmAnalysis::SetModelControl(ProbabilityModelType eProbabilityModelType) {
     case SPACETIMEPERMUTATION : if (rdoSpaceTimePermutationModel->Enabled) {rdoSpaceTimePermutationModel->Checked = true; break;}
     case ORDINAL              : if (rdoOrdinalModel->Enabled) {rdoOrdinalModel->Checked = true; break;}
     case EXPONENTIAL          : if (rdoExponentialModel->Enabled) {rdoExponentialModel->Checked = true; break;}
+    case NORMAL               : if (rdoNormalModel->Enabled) {rdoNormalModel->Checked = true; break;}
     case POISSON              :
     default                   : rdoPoissonModel->Checked = true;
   }

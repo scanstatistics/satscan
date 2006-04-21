@@ -125,9 +125,10 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TStaticText *stUnitText;
    TRadioButton *rdoOrdinalModel;
    TRadioButton *rdoExponentialModel;
-        TLabel *lblClusterCaseInColumnFormat;
-        TCheckBox *chkClusterCaseInColumnFormatAscii;
-        TCheckBox *chkClusterCaseInColumnFormatDBase;
+   TLabel *lblClusterCaseInColumnFormat;
+   TCheckBox *chkClusterCaseInColumnFormatAscii;
+   TCheckBox *chkClusterCaseInColumnFormatDBase;
+   TRadioButton *rdoNormalModel;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);

@@ -436,7 +436,7 @@ ProbabilityModelType TBDlgDataImporter::GetModelControlType() const {
    case 2 : eReturn = SPACETIMEPERMUTATION; break;
    case 3 : eReturn = ORDINAL; break;
    case 4 : eReturn = EXPONENTIAL; break;
-   //case 5 : eReturn = NORMAL break;
+   case 5 : eReturn = NORMAL; break;
    //case 6 : eReturn =  RANK; break;
    default : ZdGenerateException("Unknown probability model type index: \"%d\"","SetUp()", geStartingModelType);
   };
@@ -1204,13 +1204,14 @@ void TBDlgDataImporter::Setup(const char * sSourceFilename) {
                                  cmbDisplayVariables->Items->Add("space-time permutation");
                                  cmbDisplayVariables->Items->Add("ordinal");
                                  cmbDisplayVariables->Items->Add("exponential");
+                                 cmbDisplayVariables->Items->Add("normal");
                                  switch (geStartingModelType) {
                                    case POISSON : cmbDisplayVariables->ItemIndex = 0; break;
                                    case BERNOULLI : cmbDisplayVariables->ItemIndex = 1; break;
                                    case SPACETIMEPERMUTATION : cmbDisplayVariables->ItemIndex = 2; break;
                                    case ORDINAL : cmbDisplayVariables->ItemIndex = 3; break;
                                    case EXPONENTIAL : cmbDisplayVariables->ItemIndex = 4; break;
-                                   //case NORMAL : cmbDisplayVariables->ItemIndex = 5; break;
+                                   case NORMAL : cmbDisplayVariables->ItemIndex = 5; break;
                                    //case RANK : cmbDisplayVariables->ItemIndex = 6; break;
                                    default : ZdGenerateException("Unknown probability model type index: \"%d\"","SetUp()", geStartingModelType);
                                  };
