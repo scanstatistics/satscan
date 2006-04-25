@@ -33,6 +33,7 @@ void DataSetInterface::Init() {
   gpppCategoryCaseArray=0;
   gppPTCategoryCaseArray=0;
   giNumOrdinalCategories=0;
+  gTotalMeasureSq=0;
 }
 
 /** initializes case array */

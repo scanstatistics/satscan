@@ -21,6 +21,7 @@ class DataSetInterface {
     count_t                     gTotalCases;            /** number of cases in dataset */
     count_t                     gTotalControls;         /** number of controls in dataset */
     measure_t                   gTotalMeasure;          /** number of expected cases in dataset */
+    measure_t                   gTotalMeasureSq;        /** number of squared expected cases in dataset */
     unsigned int                giNumOrdinalCategories; /** number of ordinal categories in dataset */
 
     void                        Init();
@@ -64,6 +65,7 @@ class DataSetInterface {
     inline count_t                       GetTotalCasesCount() const {return gTotalCases;}
     inline count_t                       GetTotalControlsCount() const {return gTotalControls;}
     inline measure_t                     GetTotalMeasureCount() const {return gTotalMeasure;}
+    inline measure_t                     GetTotalMeasureSqCount() const {return gTotalMeasureSq;}
     void                                 ResetCaseArray(count_t t);
     void                                 SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
     void                                 SetNumOrdinalCategories(unsigned int u) {giNumOrdinalCategories = u;}
@@ -80,6 +82,7 @@ class DataSetInterface {
     void                                 SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
     void                                 SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
     void                                 SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}
+    void                                 SetTotalMeasureSqCount(measure_t tMeasureSq) {gTotalMeasureSq = tMeasureSq;}
 };
 //******************************************************************************
 #endif

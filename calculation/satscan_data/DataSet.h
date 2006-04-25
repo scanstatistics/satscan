@@ -113,6 +113,7 @@ class RealDataSet : public DataSet {
   protected:
     PopulationData              gPopulation;                            /** population data */
     measure_t                   gtTotalMeasure;                         /** number of expected cases in data set */
+    measure_t                   gtTotalMeasureSq;                       /** number of squared expected cases in data set */
     count_t                     gtTotalCases;                           /** number of cases in data set */
     double                      gdTotalPop;                             /** population in data set */
     count_t                     gtTotalCasesAtStart;                    /** number of cases as defined at analysis start */
@@ -150,6 +151,7 @@ class RealDataSet : public DataSet {
     count_t                     GetTotalControls() const {return gtTotalControls;}
     count_t                     GetTotalControlsAtStart() const {return gtTotalControlsAtStart;}
     measure_t                   GetTotalMeasure() const {return gtTotalMeasure;}
+    measure_t                   GetTotalMeasureSq() const {return gtTotalMeasureSq;}
     measure_t                   GetTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      GetTotalPopulation() const {return gdTotalPop;}
     void                        SetAggregateCovariateCategories(bool b) {gPopulation.SetAggregateCovariateCategories(b);}
@@ -164,6 +166,7 @@ class RealDataSet : public DataSet {
     void                        SetTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
     void                        SetTotalControlsAtStart(count_t tTotalControls) {gtTotalControlsAtStart = tTotalControls;}
     void                        SetTotalMeasure(measure_t tTotalMeasure) {gtTotalMeasure = tTotalMeasure;}
+    void                        SetTotalMeasureSq(measure_t tTotalMeasureSq) {gtTotalMeasureSq = tTotalMeasureSq;}
     void                        SetTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}
     void                        SetTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
 };

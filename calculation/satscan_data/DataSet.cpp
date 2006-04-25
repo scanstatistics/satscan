@@ -804,6 +804,7 @@ void RealDataSet::Init() {
   gpPopulationMeasureHandler=0;
   gdCalculatedTimeTrendPercentage=0;
   gpCensoredCasesHandler=0;
+  gtTotalMeasureSq=0;
 }
 
 /** Allocates and sets array that stores the total number of cases for each time
