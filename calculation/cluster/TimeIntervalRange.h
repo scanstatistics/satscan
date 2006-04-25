@@ -71,6 +71,22 @@ class NormalTemporalDataEvaluator : public TemporalDataEvaluator {
 
 /** Class which defines methods of iterating through temporal windows,
     evaluating the strength of a clustering. Redefines method CompareClusters()
+    to incorporate multiple data sets in the calculation of a log likelihood
+    ratio for categorical data. The alogrithm for using the TMeasureList object
+    with multiple data sets is not defined so method CompareMeasures() throws
+    an exception. */
+class MultiSetNormalTemporalDataEvaluator : public TemporalDataEvaluator {
+  public:
+    MultiSetNormalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+    virtual ~MultiSetNormalTemporalDataEvaluator() {}
+
+    virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual void                           CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double                         ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
+};
+
+/** Class which defines methods of iterating through temporal windows,
+    evaluating the strength of a clustering. Redefines method CompareClusters()
     to calculate log likelihood ratio for categorical data. The alogrithm for
     using the TMeasureList object with multiple data sets is not defined so
     method CompareMeasures() throws an exception. */
