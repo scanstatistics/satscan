@@ -154,6 +154,23 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
   }
 }
 
+/** Returns estimated variance. */
+double GetVariance(count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure) {
+  double dEstimatedMeanOutside = tTotalMeasure/tTotalCases;
+  return (1.0/tTotalCases) * (tTotalSqMeasure - 2.0 * tTotalMeasure * dEstimatedMeanOutside + tTotalCases * std::pow(dEstimatedMeanOutside, 2));
+}
+
+/** Returns estimated variance. */
+double GetVariance(count_t tCases, measure_t tMeasure, measure_t tSqMeasure, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure) {
+   double dEstimatedMeanInside = (tCases ? tMeasure/tCases : 0);
+   count_t tCasesOutside = tTotalCases - tCases;
+   double dEstimatedMeanOutside = (tCasesOutside ? (tTotalMeasure - tMeasure)/tCasesOutside : 0);
+   return 1.0/tTotalCases *
+          (tSqMeasure - 2.0 * tMeasure * dEstimatedMeanInside + tCases * std::pow(dEstimatedMeanInside , 2) +
+           (tTotalSqMeasure - tSqMeasure) - 2.0 * (tTotalMeasure - tMeasure) * dEstimatedMeanOutside +
+           (tTotalCases - tCases) * std::pow(dEstimatedMeanOutside, 2));
+}
+
 /** constructor */
 StringParser::StringParser(BasePrint& Print) : gPrint(Print) {
   gwCurrentWordIndex = -1;

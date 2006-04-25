@@ -11,6 +11,9 @@ const char                    * GetDatePrecisionAsString(DatePrecisionType eType
 unsigned int                    GetNumSystemProcessors();
 void                            ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, int nRepsCompleted, BasePrint *pPrintDirection);
 boost::posix_time::ptime        GetCurrentTime_HighResolution();
+double                          GetVariance(count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure);
+double                          GetVariance(count_t tCases, measure_t tMeasure, measure_t tSqMeasure,
+                                            count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure);
 
 /** The data read routines of CSaTScanData used to use function:
     const char * GetWord(const char *s, int num, BasePrint *pPrintDirection)
