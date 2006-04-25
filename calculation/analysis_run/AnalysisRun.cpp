@@ -397,7 +397,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
    //the number of location IDs in the coordinates file
   double L = gpDataHub->GetNumTracts();
   //the number of coordinates in the grid file (G=L if no grid file is specified)
-  double G = gpDataHub->GetGInfo()->giGetNumTracts();
+  //double G = gpDataHub->GetGInfo()->giGetNumTracts();
   //maximum geographical cluster size, as a proportion of the population ( 0 < mg = ½ , mg=1 for a purely temporal analysis)
   double mg = (gParameters.GetIsPurelyTemporalAnalysis() ? 0
                : gParameters.GetMaxGeographicClusterSizeType() == MAXDISTANCE ? 0.1 /*purely as guess*/ : gParameters.GetMaximumGeographicClusterSize() / 100.0);
@@ -411,6 +411,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case EXPONENTIAL:  b = sizeof(count_t) + sizeof(measure_t); break;
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
     case ORDINAL: b = sizeof(count_t); break;
+    case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
     default : ZdGenerateException("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the number of categories in the ordinal model (CAT=1 for other models)
