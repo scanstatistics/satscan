@@ -5,6 +5,7 @@
 #include "SaTScanData.h"
 #include "NormalDataSetHandler.h"
 #include "DataSource.h"
+#include "SSException.h"
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     needed by data set handler (probability model) and analysis type during evaluation
@@ -55,6 +56,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
       //set total cases and measure
       Interface.SetTotalCasesCount(DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
+      Interface.SetTotalMeasureSqCount(DataSet.GetTotalMeasureSq());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -108,6 +110,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
       //set total cases and measure
       Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
       Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
+      Interface.SetTotalMeasureSqCount(R_DataSet.GetTotalMeasureSq());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -155,7 +158,8 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, 
   Julian                                Date;
   tract_t                               TractIndex;
   count_t                               Count, tTotalCases=0;
-  measure_t                             tContinuousVariable, tTotalMeasure=0;
+  measure_t                             tContinuousVariable;
+  double                           tTotalMeasure=0, tTotalSqMeasure=0;
   AbstractNormalRandomizer            * pRandomizer;
   DataSetHandler::RecordStatusType      eRecordStatus;
 
@@ -169,7 +173,23 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, 
              bEmpty = false;
              pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
              tTotalCases += Count;
-             tTotalMeasure += tContinuousVariable;
+             //check that addition did not exceed data type limitations
+             if (tTotalCases < 0)
+               GenerateResolvableException("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n",
+                                           "ReadCounts()", std::numeric_limits<count_t>::max());
+             for (count_t t=0; t < Count; ++t) {
+               //check numeric limits of data type will not be exceeded
+               if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+                 GenerateResolvableException("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
+                                             "ReadCounts()", std::numeric_limits<measure_t>::max());
+               tTotalMeasure += tContinuousVariable;
+               //check numeric limits of data type will not be exceeded
+               if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalSqMeasure)
+                 GenerateResolvableException("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
+                                             "ReadCounts()", std::numeric_limits<measure_t>::max());
+               tTotalSqMeasure += std::pow(tContinuousVariable, 2);
+
+             }
            }
            else if (eRecordStatus == DataSetHandler::Ignored)
              continue;
@@ -186,9 +206,10 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, 
       bValid = false;
     }
     else {
-      pRandomizer->AssignFromAttributes(DataSet);
       DataSet.SetTotalCases(tTotalCases);
       DataSet.SetTotalMeasure(tTotalMeasure);
+      DataSet.SetTotalMeasureSq(tTotalSqMeasure);
+      pRandomizer->AssignFromAttributes(DataSet);
     }
   }
   catch (ZdException & x) {
@@ -223,6 +244,8 @@ bool NormalDataSetHandler::ReadData() {
     are encountered. Returns boolean indication of read success. */
 DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
   const short   uContinuousVariableIndex=3;
+  short         uOffset;
+
   try {
     //read and validate that tract identifier exists in coordinates file
     DataSetHandler::RecordStatusType eStatus = RetrieveLocationIndex(Source, tid);
@@ -256,15 +279,16 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
     if (eDateStatus != DataSetHandler::Accepted)
       return eDateStatus;
 
+    uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex); 
     // read continuous variable
-    if (!Source.GetValueAt(uContinuousVariableIndex)) {
+    if (!Source.GetValueAt(uOffset)) {
       gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (sscanf(Source.GetValueAt(uContinuousVariableIndex), "%lf", &tContinuousVariable) != 1) {
+    if (sscanf(Source.GetValueAt(uOffset), "%lf", &tContinuousVariable) != 1) {
        gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
-                     BasePrint::P_READERROR, Source.GetValueAt(uContinuousVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                     BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return DataSetHandler::Rejected;
     }
   }
