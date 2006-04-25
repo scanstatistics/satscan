@@ -20,6 +20,13 @@ class AbstractLoglikelihoodRatioUnifier {
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure) = 0;
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
+                                    count_t tCases,
+                                    measure_t tMeasure,
+                                    measure_t tSqMeasure,
+                                    count_t tTotalCases,
+                                    measure_t tTotalMeasure,
+                                    measure_t tTotalSqMeasure) = 0;
+    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) = 0;
     virtual double      GetLoglikelihoodRatio() const = 0;
     virtual void        Reset() = 0;
@@ -48,13 +55,28 @@ class MultivariateUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
-                                    const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
-    void                GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
                                     count_t tCases,
                                     measure_t tMeasure,
+                                    measure_t tSqMeasure,
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure,
-                                    std::pair<double, double>& prHighLowRatios);
+                                    measure_t tTotalSqMeasure);
+    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
+                                    const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
+    void                GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
+                                        count_t tCases,
+                                        measure_t tMeasure,
+                                        count_t tTotalCases,
+                                        measure_t tTotalMeasure,
+                                        std::pair<double, double>& prHighLowRatios);
+    void                GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
+                                        count_t tCases,
+                                        measure_t tMeasure,
+                                        measure_t tSqMeasure,
+                                        count_t tTotalCases,
+                                        measure_t tTotalMeasure,
+                                        measure_t tTotalSqMeasure,
+                                        std::pair<double, double>& prHighLowRatios);
     void                GetHighLowRatioOrdinal(AbstractLikelihoodCalculator& Calculator,
                                                const std::vector<count_t>& vOrdinalCases,
                                                size_t tSetIndex,
@@ -83,6 +105,13 @@ class AdjustmentUnifier : public AbstractLoglikelihoodRatioUnifier {
                                     measure_t tMeasure,
                                     count_t tTotalCases,
                                     measure_t tTotalMeasure);
+    virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
+                                    count_t tCases,
+                                    measure_t tMeasure,
+                                    measure_t tSqMeasure,
+                                    count_t tTotalCases,
+                                    measure_t tTotalMeasure,
+                                    measure_t tTotalSqMeasure);
     virtual void        AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     const std::vector<count_t>& vOrdinalCases, size_t tSetIndex);
     virtual double      GetLoglikelihoodRatio() const;
