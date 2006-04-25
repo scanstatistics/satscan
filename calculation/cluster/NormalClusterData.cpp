@@ -7,8 +7,14 @@
 //************** class NormalSpatialData ***************************************
 
 /** class constructor */
+NormalSpatialData::NormalSpatialData(const DataSetInterface& Interface, int iRate)
+                  :SpatialData(Interface, iRate), gtSqMeasure(0),
+                   gtTotalMeasureSq(Interface.GetTotalMeasureSqCount()) {}
+
+/** class constructor */
 NormalSpatialData::NormalSpatialData(const AbstractDataSetGateway& DataGateway, int iRate)
-                  :SpatialData(DataGateway, iRate), gtSqMeasure(0) {}
+                  :SpatialData(DataGateway, iRate), gtSqMeasure(0),
+                   gtTotalMeasureSq(DataGateway.GetDataSetInterface().GetTotalMeasureSqCount()) {}
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
@@ -36,7 +42,7 @@ void NormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     calculated by probability model. */
 double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
+    return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure, gtTotalMeasureSq);
   return 0;
 }
 
@@ -55,12 +61,19 @@ void NormalSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs
 //************** class NormalTemporalData **************************************
 
 /** class constructor */
-NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqMeasure(0) {}
+NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqMeasure(0), gtTotalMeasureSq(0) {}
+
+/** class constructor */
+NormalTemporalData::NormalTemporalData(const DataSetInterface& Interface)
+                   :TemporalData(Interface), gtSqMeasure(0),
+                    gpSqMeasure(Interface.GetPTSqMeasureArray()),
+                    gtTotalMeasureSq(Interface.GetTotalMeasureSqCount()) {}
 
 /** class constructor */
 NormalTemporalData::NormalTemporalData(const AbstractDataSetGateway& DataGateway)
                    :TemporalData(DataGateway.GetDataSetInterface()), gtSqMeasure(0),
-                    gpSqMeasure(DataGateway.GetDataSetInterface().GetPTSqMeasureArray()) {}
+                    gpSqMeasure(DataGateway.GetDataSetInterface().GetPTSqMeasureArray()),
+                    gtTotalMeasureSq(DataGateway.GetDataSetInterface().GetTotalMeasureSqCount()) {}
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
@@ -79,7 +92,7 @@ NormalTemporalData * NormalTemporalData::Clone() const {
 void NormalTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
   gtCases = ((const NormalTemporalData&)rhs).gtCases;
   gtMeasure = ((const NormalTemporalData&)rhs).gtMeasure;
-  gtSqMeasure - ((const NormalTemporalData&)rhs).gtSqMeasure;
+  gtSqMeasure = ((const NormalTemporalData&)rhs).gtSqMeasure;
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers.
@@ -185,15 +198,15 @@ double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelih
   gtMeasure = gpMeasure[0];
   gtSqMeasure = gpSqMeasure[0];
   if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure);
+    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure, gtTotalMeasureSq);
 
-  for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
+  for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
     gtSqMeasure = gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
     if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
       dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio,
-                                        Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure));
+                                        Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure, gtTotalMeasureSq));
   }
   return dMaxLoglikelihoodRatio;
 }
@@ -235,6 +248,7 @@ NormalProspectiveSpatialData & NormalProspectiveSpatialData::operator=(const Nor
    gtMeasure = rhs.gtMeasure;
    gtTotalCases = rhs.gtTotalCases;
    gtTotalMeasure = rhs.gtTotalMeasure;
+   gtTotalMeasureSq = rhs.gtTotalMeasureSq;
    giAllocationSize = rhs.giAllocationSize;
    giNumTimeIntervals = rhs.giNumTimeIntervals;
    giProspectiveStart = rhs.giProspectiveStart;
@@ -263,6 +277,7 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSet
     giProspectiveStart = Data.GetProspectiveStartIndex();
     gtTotalCases = Interface.GetTotalCasesCount();
     gtTotalMeasure = Interface.GetTotalMeasureCount();
+    gtTotalMeasureSq = Interface.GetTotalMeasureSqCount();
 
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
@@ -342,7 +357,7 @@ void NormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const Abstract
   measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
   measure_t  ** ppSqMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetSqMeasureArray();
 
-  for (unsigned int i=0; i < giAllocationSize; ++i) {
+  for (unsigned int i=0; i < giAllocationSize - 1; ++i) {
      gpCases[i] += ppCases[i][tNeighborIndex];
      gpMeasure[i] += ppMeasure[i][tNeighborIndex];
      gpSqMeasure[i] += ppSqMeasure[i][tNeighborIndex];
@@ -393,6 +408,7 @@ NormalSpaceTimeData & NormalSpaceTimeData::operator=(const NormalSpaceTimeData& 
   gtMeasure = rhs.gtMeasure;
   gtTotalCases = rhs.gtTotalCases;
   gtTotalMeasure = rhs.gtTotalMeasure;
+  gtTotalMeasureSq = rhs.gtTotalMeasureSq;
   giAllocationSize = rhs.giAllocationSize;
   if (rhs.geEvaluationAssistDataStatus == Allocated) {
     if (!gpCases) gpCases = new count_t[rhs.giAllocationSize];
@@ -420,6 +436,7 @@ void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     giAllocationSize = Interface.GetNumTimeIntervals() + 1;
     gtTotalCases = Interface.GetTotalCasesCount();
     gtTotalMeasure = Interface.GetTotalMeasureCount();
+    gtTotalMeasureSq = Interface.GetTotalMeasureSqCount();
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];

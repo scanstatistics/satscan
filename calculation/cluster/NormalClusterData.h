@@ -4,14 +4,24 @@
 //******************************************************************************
 #include "ClusterData.h"
 
-/** Class representing accumulated data of spatial clustering of a normal probability model. */
-class NormalSpatialData : public SpatialData {
+/**Abstract base class for all normal cluster data. */
+class AbstractNormalClusterData {
   public:
+    AbstractNormalClusterData() {}
+    virtual ~AbstractNormalClusterData() {}
+
+    virtual measure_t        GetMeasureSq(unsigned int tSetIndex) const = 0;
+};
+/** Class representing accumulated data of spatial clustering of a normal probability model. */
+class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
+  public:
+    NormalSpatialData(const DataSetInterface& Interface, int iRate);
     NormalSpatialData(const AbstractDataSetGateway& DataGateway, int iRate);
     virtual ~NormalSpatialData() {}
 
     //public data memebers
-    measure_t                   gtSqMeasure;      /** expected number of cases - squared measure */
+    measure_t                gtSqMeasure;      /** expected number of cases - squared measure */
+    measure_t                gtTotalMeasureSq; /** total squared expected cases */
 
     virtual void             AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -19,6 +29,7 @@ class NormalSpatialData : public SpatialData {
     virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual NormalSpatialData * Clone() const;
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual measure_t        GetMeasureSq(unsigned int tSetIndex=0) const {return gtSqMeasure;}
     virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
 };
 
@@ -27,21 +38,24 @@ class NormalSpatialData : public SpatialData {
     purely temporal arrays supplied by DataInterface. The protected constructor
     is intended to permit instantiation through a derived class, where perhaps
     pointers will be allocated and data supplied by some other process. */
-class NormalTemporalData : public TemporalData {
+class NormalTemporalData : public TemporalData, public AbstractNormalClusterData {
   protected:
     NormalTemporalData();
 
   public:
+    NormalTemporalData(const DataSetInterface& DataGateway);
     NormalTemporalData(const AbstractDataSetGateway& DataGateway);
     virtual ~NormalTemporalData() {}
 
     measure_t                    gtSqMeasure;
     measure_t                  * gpSqMeasure;
+    measure_t                    gtTotalMeasureSq; /** total squared expected cases */
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual NormalTemporalData * Clone() const;
     virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
+    virtual measure_t        GetMeasureSq(unsigned int tSetIndex=0) const {return gtSqMeasure;}
     virtual void             Reassociate(const DataSetInterface& Interface);
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);
 };
