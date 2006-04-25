@@ -194,7 +194,29 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
-
+  if (gParameters.GetProbabilityModelType() == NORMAL) {
+    PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
+    sBuffer.printf("%.2f", gDataSets->GetDataSet(0).GetTotalMeasure()/gDataSets->GetDataSet(0).GetTotalCases());
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+       sWork.printf(", %.2f", gDataSets->GetDataSet(i).GetTotalMeasure()/gDataSets->GetDataSet(i).GetTotalCases());
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
+    sBuffer.printf("%.2f", GetVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq()));
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+       sWork.printf(", %.2f", GetVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq()));
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
+    sBuffer.printf("%.2f", std::sqrt(GetVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq())));
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+       sWork.printf(", %.2f", std::sqrt(GetVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq())));
+       sBuffer << sWork;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  }
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
     double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
     if (gDataSets->GetDataSet(0/*for now*/).GetTimeTrend().IsNegative())
