@@ -27,9 +27,6 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * OBS_FIELD_PART;
       static const char       * EXP_FIELD_PART;
       static const char       * OBS_DIV_EXP_FIELD;
-      static const char       * CATEGORY_FIELD_PART;
-      static const char       * SET_FIELD_PART;
-      static const char       * SET_CATEGORY_FIELD_PART;
       
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
