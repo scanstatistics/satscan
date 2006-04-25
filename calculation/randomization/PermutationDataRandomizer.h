@@ -14,7 +14,8 @@ class StationaryAttribute {
     StationaryAttribute(T Variable);
     virtual ~StationaryAttribute();
     virtual StationaryAttribute * Clone() const;
-
+    bool operator==(const StationaryAttribute& rhs) const{return (this->gStationaryVariable == rhs.gStationaryVariable);}
+    bool operator!=(const StationaryAttribute& rhs) const{return !(this->gStationaryVariable == rhs.gStationaryVariable);}
     inline const T    & GetStationaryVariable() const {return gStationaryVariable;}
 };
 
