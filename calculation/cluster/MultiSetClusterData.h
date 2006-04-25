@@ -39,9 +39,11 @@ class AbstractMultiSetTemporalData : public AbstractTemporalClusterData {
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
     virtual void             GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                                AbstractLikelihoodCalculator& Calculator,
                                                                std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
 };
 
 /** Class representing accumulated data of temporal clustering in multiple data sets. */
@@ -52,8 +54,6 @@ class MultiSetTemporalData : public AbstractMultiSetTemporalData {
 
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual MultiSetTemporalData * Clone() const;
-    virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
-    virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void             InitializeData();
     virtual void             Reassociate(const DataSetInterface& Interface);
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);
@@ -72,8 +72,6 @@ class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData {
     virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual MultiSetProspectiveSpatialData * Clone() const;
     virtual void             DeallocateEvaluationAssistClassMembers();
-    virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
-    virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void             InitializeData();
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
@@ -91,8 +89,6 @@ class MultiSetSpaceTimeData : public AbstractMultiSetTemporalData {
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual MultiSetSpaceTimeData * Clone() const;
     virtual void             DeallocateEvaluationAssistClassMembers();
-    virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
-    virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void             InitializeData();
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}

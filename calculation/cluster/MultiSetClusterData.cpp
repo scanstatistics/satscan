@@ -143,8 +143,14 @@ void AbstractMultiSetTemporalData::Assign(const AbstractTemporalClusterData& rhs
 /** Copies class data members that reflect the number of cases per ordinal category,
     which is the data we are interested in for possiblely reporting. */
 void AbstractMultiSetTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
-  for (size_t t=0; t < ((const MultiSetTemporalData&)rhs).gvSetClusterData.size(); ++t)
-    gvSetClusterData[t]->CopyEssentialClassMembers(*((const MultiSetTemporalData&)rhs).gvSetClusterData[t]);
+  for (size_t t=0; t < ((const AbstractMultiSetTemporalData&)rhs).gvSetClusterData.size(); ++t)
+    gvSetClusterData[t]->CopyEssentialClassMembers(*((const AbstractMultiSetTemporalData&)rhs).gvSetClusterData[t]);
+}
+
+/** Returns number of cases in accumulated respective data sets' cluster data.
+    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
+count_t AbstractMultiSetTemporalData::GetCaseCount(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->gtCases;
 }
 
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
@@ -156,13 +162,13 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
                                                             std::vector<unsigned int>& vDataSetIndexes) const {
   MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
 
-  vDataSetIndexes.clear();  
+  vDataSetIndexes.clear();
   if (pUnifier) {
     std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
     std::vector<std::pair<double, double> >::iterator   itr_pair;
     ZdPointerVector<TemporalData>::const_iterator       itr_data;
     double                                              dHighRatios=0, dLowRatios=0;
-    
+
     //for each data set, calculate llr values - possibly scanning for both high and low rates
     for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
        pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
@@ -199,6 +205,12 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
   }
 }
 
+/** Returns expected number of cases in accumulated respective data sets' cluster data.
+    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
+measure_t AbstractMultiSetTemporalData::GetMeasure(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->gtMeasure;
+}
+
 //********************** class MultiSetTemporalData ****************************
 
 /** class constructor */
@@ -218,18 +230,6 @@ void MultiSetTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway
     deletion of object. */
 MultiSetTemporalData * MultiSetTemporalData::Clone() const {
   return new MultiSetTemporalData(*this);
-}
-
-/** Returns number of cases in accumulated respective data sets' cluster data.
-    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-count_t MultiSetTemporalData::GetCaseCount(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtCases;
-}
-
-/** Returns expected number of cases in accumulated respective data sets' cluster data.
-    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-measure_t MultiSetTemporalData::GetMeasure(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtMeasure;
 }
 
 /** Initializes cluster data in each data set. */
@@ -313,18 +313,6 @@ void MultiSetProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
   geEvaluationAssistDataStatus = Deallocated;
 }
 
-/** Returns number of cases in accumulated respective data sets' cluster data.
-    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-count_t MultiSetProspectiveSpatialData::GetCaseCount(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtCases;
-}
-
-/** Returns expected number of cases in accumulated respective data sets' cluster data.
-    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-measure_t MultiSetProspectiveSpatialData::GetMeasure(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtMeasure;
-}
-
 /** Initializes cluster data in each data set. */
 void MultiSetProspectiveSpatialData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
@@ -365,18 +353,6 @@ void MultiSetSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
   for (;itr != gvSetClusterData.end(); ++i, ++itr)
      (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
-}
-
-/** Returns number of cases in accumulated respective data sets' cluster data.
-    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-count_t MultiSetSpaceTimeData::GetCaseCount(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtCases;
-}
-
-/** Returns expected number of cases in accumulated respective data sets' cluster data.
-    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-measure_t MultiSetSpaceTimeData::GetMeasure(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtMeasure;
 }
 
 /** Initializes cluster data in each data set. */
