@@ -6,6 +6,7 @@
 #include "TimeIntervalRange.h"
 #include "SSException.h"
 #include "SaTScanDataRead.h"
+#include "NormalRandomizer.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -275,6 +276,7 @@ void CSaTScanData::CalculateExpectedCases() {
   for (t=0; t < gDataSets->GetNumDataSets(); ++t) {
      CalculateMeasure(gDataSets->GetDataSet(t));
      gtTotalMeasure += gDataSets->GetDataSet(t).GetTotalMeasure();
+     gtTotalMeasureSq += gDataSets->GetDataSet(t).GetTotalMeasureSq();
      gtTotalCases += gDataSets->GetDataSet(t).GetTotalCases();
      gtTotalPopulation += gDataSets->GetDataSet(t).GetTotalPopulation();
   }
@@ -498,6 +500,7 @@ void CSaTScanData::Init() {
   m_nFlexibleWindowEndRangeStartIndex=0;
   m_nFlexibleWindowEndRangeEndIndex=0;
   m_nGridTracts = 0;
+  gtTotalMeasureSq = 0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -537,7 +540,7 @@ void CSaTScanData::ReadDataFromFiles() {
     location at tTractIndex in specified interval range. */
 void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
   count_t       tCasesInInterval, ** ppCases;
-  measure_t     tCalibration, tAdjustedTotalMeasure, tMeasureInInterval, ** ppMeasure;
+  measure_t     tCalibration, tAdjustedTotalMeasure, tMeasureInInterval, ** ppMeasure , ** ppSqMeasure, tSqMeasureInInterval;
   tract_t       tStopTract(0), tTractIndex(-1), iNeighborIndex=0;
 
   try {
@@ -547,7 +550,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        // Previous iterations of sequential scan could have had this location as part of the most likely cluster.
        if (GetIsNullifiedLocation(tTractIndex)) continue;
        if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
-         gtTotalCases = gtTotalMeasure = 0;
+         gtTotalCases = 0;
+         gtTotalMeasure = gtTotalMeasureSq = 0;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            RealDataSet& DataSet = gDataSets->GetDataSet(t);
            ppCases = DataSet.GetCaseArray();
@@ -598,6 +602,44 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
            gtTotalCases += DataSet.GetTotalCases();
          }
        }
+       else if (gParameters.GetProbabilityModelType() == NORMAL) {
+         AbstractNormalRandomizer *pRandomizer;
+         gtTotalCases = 0;
+         gtTotalMeasure = gtTotalMeasureSq = 0;
+         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+           RealDataSet& DataSet = gDataSets->GetDataSet(t);
+           ppCases = DataSet.GetCaseArray();
+           ppMeasure = DataSet.GetMeasureArray();
+           ppSqMeasure = DataSet.GetSqMeasureArray();
+           if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+             ZdGenerateException("Rarndomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+           //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
+           tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+           tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+           tSqMeasureInInterval = ppSqMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppSqMeasure[Cluster.m_nLastInterval][tTractIndex]);
+           //zero out cases/measure in clusters defined temporal window
+           for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i) {
+             ppCases[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
+             ppMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
+             ppSqMeasure[i][tTractIndex] = (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppSqMeasure[Cluster.m_nLastInterval][tTractIndex]);
+             pRandomizer->RemoveCase(i, tTractIndex);
+           }
+           //remove cases/measure from earlier intervals
+           for (int i=0; i < Cluster.m_nFirstInterval; ++i) {
+             ppCases[i][tTractIndex] -= tCasesInInterval;
+             ppMeasure[i][tTractIndex] -= tMeasureInInterval;
+             ppSqMeasure[i][tTractIndex] -= tSqMeasureInInterval;
+           }
+           //update totals for data set
+           DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
+           DataSet.SetTotalMeasure(DataSet.GetTotalMeasure() - tMeasureInInterval);
+           DataSet.SetTotalMeasureSq(DataSet.GetTotalMeasureSq() - tSqMeasureInInterval);
+           //update class variables that defines totals across all data sets
+           gtTotalCases += DataSet.GetTotalCases();
+           gtTotalMeasure += DataSet.GetTotalMeasure();
+           gtTotalMeasureSq += DataSet.GetTotalMeasureSq();
+         }
+       }
        else
          ZdGenerateException("RemoveClusterSignificance() not implemented for %s model.",
                                "RemoveClusterSignificance()", gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
@@ -618,20 +660,22 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          tAdjustedTotalMeasure=0;
          tCalibration  = (measure_t)(gDataSets->GetDataSet(t).GetTotalCases())/(gDataSets->GetDataSet(t).GetTotalMeasure());
          for (int i=0; i < m_nTimeIntervals; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] *= tCalibration;
-         for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
+         for (tract_t tt=0; tt < m_nTracts; ++tt) tAdjustedTotalMeasure += ppMeasure[0][tt];
          gDataSets->GetDataSet(t).SetTotalMeasure(tAdjustedTotalMeasure);
          gtTotalMeasure += tAdjustedTotalMeasure;
-      }     
+      }
     }
     //no recalculate purely temporal arrays as needed
     if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-        if (gParameters.GetProbabilityModelType() == BERNOULLI || gParameters.GetProbabilityModelType() == POISSON) {
-          gDataSets->GetDataSet(t).SetPTCasesArray();
-          gDataSets->GetDataSet(t).SetPTMeasureArray();
-        }
-        if (gParameters.GetProbabilityModelType() == ORDINAL)
-          gDataSets->GetDataSet(t).SetPTCategoryCasesArray();
+        switch (gParameters.GetProbabilityModelType()) {
+          case NORMAL    : gDataSets->GetDataSet(t).SetPTSqMeasureArray();
+          case BERNOULLI :
+          case POISSON   : gDataSets->GetDataSet(t).SetPTCasesArray();
+                           gDataSets->GetDataSet(t).SetPTMeasureArray(); break;
+          case ORDINAL   : gDataSets->GetDataSet(t).SetPTCategoryCasesArray(); break;
+          default : ZdGenerateException("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
+        }  
       }
     }
   }

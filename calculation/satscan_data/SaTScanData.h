@@ -53,6 +53,7 @@ class CSaTScanData {
     measure_t                                   m_nTotalTractsAtStart;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
+    measure_t                                   gtTotalMeasureSq;               /** total square measure for all data sets */
     count_t                                     gtTotalCases;                   /** total cases for all data sets */
     measure_t                                   gtTotalPopulation;              /** total population for all sets */
     RelativeRiskAdjustmentHandler               gRelativeRiskAdjustments;
@@ -145,6 +146,7 @@ class CSaTScanData {
 
     inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
+    inline measure_t                            GetTotalMeasureSq() const {return gtTotalMeasureSq;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
     inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalCases();}
     double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
