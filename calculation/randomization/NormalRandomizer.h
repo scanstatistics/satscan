@@ -15,6 +15,7 @@ class AbstractNormalRandomizer :  public AbstractPermutedDataRandomizer<NormalSt
 
     virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
+    virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
 };
 
 /** Randomizes data of dataset for a 'normal' probablility model.

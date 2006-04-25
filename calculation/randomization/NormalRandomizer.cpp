@@ -20,9 +20,9 @@ void AbstractNormalRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_
     collection of attributes. */
 void AbstractNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
-  PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
+  PermutedContainer_t::iterator         itr_permuted=gvOriginalPermutedAttribute.begin();
   int                                   i, tTract, iNumTracts=RealSet.GetNumTracts(), iNumTimeIntervals=RealSet.GetNumTimeIntervals();
-  measure_t                          ** ppMeasure, ** ppSqMeasure;
+  measure_t                          ** ppMeasure, ** ppSqMeasure, tTotalMeasure=0, tTotalMeasureSq=0;
   count_t                            ** ppCases;
 
   RealSet.AllocateCasesArray();
@@ -31,10 +31,11 @@ void AbstractNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
   ppMeasure = RealSet.GetMeasureArray();
   RealSet.AllocateSqMeasureArray();
   ppSqMeasure = RealSet.GetSqMeasureArray();
+  itr_permuted=gvOriginalPermutedAttribute.begin();
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
      ++ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
      ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable();
-     ppSqMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += pow(itr_permuted->GetPermutedVariable(), 2);
+     ppSqMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += std::pow(itr_permuted->GetPermutedVariable(), 2);
   }
   //now set as cumulative
   for (tTract=0; tTract < iNumTracts; ++tTract)
@@ -44,6 +45,19 @@ void AbstractNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
         ppSqMeasure[i][tTract] = ppSqMeasure[i+1][tTract] + ppSqMeasure[i][tTract];
      }
 }
+
+/** Removes all stationary and permuted attributes associated with cases in interval and location. */
+void AbstractNormalRandomizer::RemoveCase(int iTimeInterval, tract_t tTractIndex) {
+  NormalStationary_t                    tAttribute(std::make_pair(iTimeInterval, tTractIndex));
+  StationaryContainer_t::iterator       itr;
+
+  while ((itr=std::find(gvStationaryAttribute.begin(), gvStationaryAttribute.end(), tAttribute)) != gvStationaryAttribute.end()) {
+       size_t t = std::distance(gvStationaryAttribute.begin(), itr);
+       gvOriginalPermutedAttribute.erase(gvOriginalPermutedAttribute.begin() + t);
+       gvStationaryAttribute.erase(itr);
+  }
+}
+
 //******************************************************************************
 
 /** Assigns randomized data to dataset's simulation measure structures. */
@@ -56,8 +70,8 @@ void NormalRandomizer::AssignRandomizedData(const RealDataSet& RealSet, SimDataS
   //reset simulation measure arrays to zero
   SimSet.GetMeasureArrayHandler().Set(0);
   SimSet.GetSqMeasureArrayHandler().Set(0);
-  ppMeasure = RealSet.GetMeasureArray();
-  ppSqMeasure = RealSet.GetSqMeasureArray();
+  ppMeasure = SimSet.GetMeasureArray();
+  ppSqMeasure = SimSet.GetSqMeasureArray();
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
      ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable();
@@ -80,9 +94,9 @@ void NormalPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet& Rea
   int                                   i, iNumTimeIntervals=RealSet.GetNumTimeIntervals();
 
   //reset simulation measure arrays to zero
-  pMeasure = RealSet.GetPTMeasureArray();
+  pMeasure = SimSet.GetPTMeasureArray();
   memset(pMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
-  pSqMeasure = RealSet.GetPTSqMeasureArray();
+  pSqMeasure = SimSet.GetPTSqMeasureArray();
   memset(pSqMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
