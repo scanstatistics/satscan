@@ -28,8 +28,9 @@ double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t tCases
                                                                   measure_t tMeasure,
                                                                   measure_t tMeasure2,
                                                                   count_t tTotalCases,
-                                                                  measure_t tTotalMeasure) const {
-  ZdGenerateException("CalcLogLikelihoodRatioNormal(count_t,measure_t,measure_t,count_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
+                                                                  measure_t tTotalMeasure,
+                                                                  measure_t tTotalMeasureSq) const {
+  ZdGenerateException("CalcLogLikelihoodRatioNormal(count_t,measure_t,measure_t,count_t,measure_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
   return 0;
 }
 
