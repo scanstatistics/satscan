@@ -6,6 +6,7 @@
 #include "ClusterLocationsWriter.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "CategoricalClusterData.h"
+#include "NormalClusterData.h"
 #include "AbstractAnalysis.h"
 #include <iostream>
 #include <fstream>
@@ -82,6 +83,8 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
       DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
     else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
       DisplayClusterDataExponential(fp, DataHub, PrintFormat);
+    else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL)
+      DisplayClusterDataNormal(fp, DataHub, PrintFormat);
     else
       DisplayClusterDataStandard(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);
@@ -188,7 +191,63 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
      sBuffer.printf("%.2f", GetExpectedCount(DataHub, *itr_Index));
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      DisplayObservedDivExpected(fp, *itr_Index, DataHub, PrintFormat);
-     //NOTE: Not printing relative risk information for exeponential model at this time.
+     //NOTE: Not printing relative risk information for exponential model at this time.
+  }
+}
+
+/** Prints observed cases, expected cases and observed/expected, for Normal model,
+    to file stream is in format required by result output file. */
+void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  ZdString                                      sBuffer;
+  std::vector<unsigned int>                     vComprisedDataSetIndexes;
+  std::vector<unsigned int>::iterator           itr_Index;
+  std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
+  double                                        dEstimatedMeanInside, dEstimatedMeanOutside, dCommonVariance;
+  const AbstractNormalClusterData             * pClusterData=0;
+  count_t                                       tObserved;
+  measure_t                                     tExpected;
+
+  if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(GetClusterData())) == 0)
+    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n",
+                        "DisplayClusterDataNormal()");
+  const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+  for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
+     //print data set number if analyzing more than data set
+     if (Handler.GetNumDataSets() > 1) {
+       sBuffer.printf("Data Set #%ld", *itr_Index + 1);
+       PrintFormat.PrintSectionLabelAtDataColumn(fp, sBuffer.GetCString());
+     }
+     //print total cases
+     PrintFormat.PrintSectionLabel(fp, "Total cases", false, true);
+     sBuffer.printf("%ld", GetObservedCount(*itr_Index));
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     tObserved = GetObservedCount(*itr_Index);
+     tExpected = GetExpectedCount(DataHub, *itr_Index);
+     //print estimated mean inside label
+     PrintFormat.PrintSectionLabel(fp, "Mean inside", false, true);
+     //print estimated mean inside
+     dEstimatedMeanInside = (tObserved ? tExpected/tObserved : 0);
+     sBuffer.printf("%.2f", dEstimatedMeanInside);
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print estimated mean outside label
+     PrintFormat.PrintSectionLabel(fp, "Mean outside", false, true);
+     //print estimated mean inside
+     count_t tCasesOutside = Handler.GetDataSet(*itr_Index).GetTotalCases() - tObserved;
+     dEstimatedMeanOutside = (tCasesOutside ? (Handler.GetDataSet(*itr_Index).GetTotalMeasure() - tExpected)/tCasesOutside : 0);
+     sBuffer.printf("%.2f", dEstimatedMeanOutside);
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print common variance label
+     PrintFormat.PrintSectionLabel(fp, "Common variance", false, true);
+     dCommonVariance = GetVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureSq(*itr_Index),
+                                   Handler.GetDataSet(*itr_Index).GetTotalCases(), Handler.GetDataSet(*itr_Index).GetTotalMeasure(),
+                                   Handler.GetDataSet(*itr_Index).GetTotalMeasureSq());
+     sBuffer.printf("%.2f", dCommonVariance);
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //print common standard deviation
+     PrintFormat.PrintSectionLabel(fp, "Common standard dev.", false, true);
+     sBuffer.printf("%.2f", std::sqrt(dCommonVariance));
+     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
 }
 

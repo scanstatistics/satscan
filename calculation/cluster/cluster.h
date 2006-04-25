@@ -58,6 +58,8 @@ class CCluster {
                                                             tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub,
                                                                 const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub,
+                                                           const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub,
                                                             const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
