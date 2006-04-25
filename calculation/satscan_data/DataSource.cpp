@@ -6,24 +6,31 @@
 #include "SSException.h"
 
 /** Static method which returns newly allocated DataSource object. */
-DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print) {
+DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII) {
    long             lIndex=0;
-   bool             bFoundFile;
+   bool             bFoundFile=false;
    vecZdFileTypes * pFileTypeArray = ZdGetFileTypeArray();
    ZdFileType     * pFileType = 0;
    ZdFileName       theFile(sSourceFilename.c_str());
-   
-    while (!bFoundFile && (lIndex < (long)pFileTypeArray->size())) {
-         pFileType = (*pFileTypeArray)[lIndex];
-         if (!stricmp(theFile.GetExtension(), pFileType->GetFileTypeExtension()))
-            bFoundFile = true;
-         lIndex++;
-    }
 
-    // *** ZdFile data source still in development ***
-    //if (bFoundFile)
-    //  return new ZdFileDataSource(sSourceFilename, *pFileType);
-    //else
+   if (!bAssumeASCII) {
+     while (!bFoundFile && (lIndex < (long)pFileTypeArray->size())) {
+           pFileType = (*pFileTypeArray)[lIndex];
+           if (!stricmp(theFile.GetExtension(), pFileType->GetFileTypeExtension()))
+              bFoundFile = true;
+           lIndex++;
+     }
+   }  
+
+    if (bFoundFile && !stricmp(theFile.GetExtension(), ".dbf"))
+      //Though ZdFile hierarchy has other files types, most are not formats used outside IMS.
+      //There are 3 that could be used: dBase, comma separated, and scanf.
+      //The scanf version could possibly replace AsciiFileDataSource but is likely slower.
+      //The comma separated version would probably work but user would have to use default
+      //field delimiter (comma) and group delimiter (double quote).
+      //The dBase version is already used to create output files and is a common format. 
+      return new ZdFileDataSource(sSourceFilename, *pFileType);
+    else
       return new AsciiFileDataSource(sSourceFilename, Print);
 }
 

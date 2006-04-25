@@ -12,7 +12,7 @@ class DataSource {
      virtual ~DataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const = 0;
-     static DataSource                * GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print);
+     static DataSource                * GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII=true);
      virtual short                      GetNumValues() = 0;
      virtual const char               * GetValueAt(short iFieldIndex) = 0;
      virtual void                       GotoFirstRecord() = 0;
