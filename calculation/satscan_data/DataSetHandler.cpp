@@ -51,6 +51,11 @@ AbstractDataSetGateway * DataSetHandler::GetNewDataGatewayObject() const {
 }
 
 /** Returns const pointer to randomizer object associated with data set at iSetIndex. */
+AbstractRandomizer * DataSetHandler::GetRandomizer(size_t iSetIndex) {
+   return gvDataSetRandomizers.at(iSetIndex);
+}
+
+/** Returns const pointer to randomizer object associated with data set at iSetIndex. */
 const AbstractRandomizer * DataSetHandler::GetRandomizer(size_t iSetIndex) const {
    return gvDataSetRandomizers.at(iSetIndex);
 }

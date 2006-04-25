@@ -57,6 +57,7 @@ class DataSetHandler {
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
     const RealDataSet                 & GetDataSet(size_t iSetIndex=0) const {return *gvDataSets.at(iSetIndex);}
     RealDataSet                       & GetDataSet(size_t iSetIndex=0) {return *gvDataSets.at(iSetIndex);}
+    virtual AbstractRandomizer        * GetRandomizer(size_t iSetIndex);
     virtual const AbstractRandomizer  * GetRandomizer(size_t iSetIndex) const;
     virtual RandomizerContainer_t     & GetRandomizerContainer(RandomizerContainer_t& Container) const;
     virtual SimulationDataContainer_t & GetSimulationDataContainer(SimulationDataContainer_t& Container) const;
