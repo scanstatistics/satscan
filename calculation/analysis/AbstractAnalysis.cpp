@@ -73,13 +73,15 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
     settings - caller is responsible for deletion. */
 CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const {
-  if (gParameters.GetProbabilityModelType() == NORMAL)
-    return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+  if (gParameters.GetProbabilityModelType() == NORMAL) {
+    if (gParameters.GetNumDataSets() == 1)
+      return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+    return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+  }
   else if (gParameters.GetProbabilityModelType() == ORDINAL) {
     if (gParameters.GetNumDataSets() == 1)
       return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
-    else
-      return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+    return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
   }
   else if (gParameters.GetNumDataSets() > 1)
     return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
@@ -93,8 +95,11 @@ void AbstractAnalysis::Setup() {
   try {
     //create cluster data factory
     if (gParameters.GetProbabilityModelType() == NORMAL) {
-      gpClusterDataFactory = new NormalClusterDataFactory();
       geReplicationsProcessType = ClusterEvaluation;
+      if (gParameters.GetNumDataSets() == 1)
+        gpClusterDataFactory = new NormalClusterDataFactory();
+      else
+        gpClusterDataFactory = new MultiSetNormalClusterDataFactory();
     }
     else if (gParameters.GetProbabilityModelType() == ORDINAL) {
       geReplicationsProcessType = ClusterEvaluation;
