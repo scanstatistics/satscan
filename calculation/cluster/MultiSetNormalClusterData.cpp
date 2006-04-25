@@ -1,0 +1,367 @@
+//******************************************************************************
+#include "SaTScan.h"
+#pragma hdrstop
+//******************************************************************************
+#include "MultiSetNormalClusterData.h"
+#include "NormalClusterDataFactory.h"
+#include "LoglikelihoodRatioUnifier.h"
+
+//***************** class MultiSetNormalSpatialData ****************************
+
+/** class constructor */
+MultiSetNormalSpatialData::MultiSetNormalSpatialData(const NormalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate)
+                                  :AbstractSpatialClusterData(0), AbstractNormalClusterData() {
+  for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
+     gvSetClusterData.push_back(dynamic_cast<NormalSpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t), iRate)));
+}
+
+/** Adds neighbor data to accumulation  - caller is responsible for ensuring that
+    'tNeighborIndex' is a valid index. */
+void MultiSetNormalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
+  unsigned int                                        i=0;
+  ZdPointerVector<NormalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
+}
+
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'MultiSetCategoricalSpatialData' object. */
+void MultiSetNormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
+  *this = (const MultiSetNormalSpatialData&)rhs;
+}
+
+/** Calculates loglikelihood ratio given current accumulated cluster data in
+    each data set and adds together. */
+double MultiSetNormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+  ZdPointerVector<NormalSpatialData>::iterator  itr=gvSetClusterData.begin();
+  AbstractLoglikelihoodRatioUnifier           & Unifier = Calculator.GetUnifier();
+
+ Unifier.Reset();
+ for (;itr != gvSetClusterData.end(); ++itr)
+    Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtSqMeasure, (*itr)->gtTotalCases, (*itr)->gtTotalMeasure, (*itr)->gtTotalMeasureSq);
+  return Unifier.GetLoglikelihoodRatio();
+}
+
+/** Returns newly cloned MultiSetCategoricalSpatialData object. Caller is
+    responsible for deletion of object. */
+MultiSetNormalSpatialData * MultiSetNormalSpatialData::Clone() const {
+  return new MultiSetNormalSpatialData(*this);
+}
+
+/** Copies class data members that reflect the number of cases per ordinal category,
+    which is the data we are interested in for possiblely reporting. */
+void MultiSetNormalSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  for (size_t t=0; t < ((const MultiSetNormalSpatialData&)rhs).gvSetClusterData.size(); ++t)
+    gvSetClusterData[t]->CopyEssentialClassMembers(*((const MultiSetNormalSpatialData&)rhs).gvSetClusterData[t]);
+}
+
+/** Not implemented - throws ZdException. */
+count_t MultiSetNormalSpatialData::GetCaseCount(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->GetCaseCount();
+}
+
+/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
+    If specified purpose for multiple data sets is multivariate, recalculates high and low
+    LLR values to determine which data sets comprised target ratio; else all data sets
+    comprised target ratio. */
+void MultiSetNormalSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                  AbstractLikelihoodCalculator& Calculator,
+                                                                  std::vector<unsigned int>& vDataSetIndexes) const {
+
+  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+
+  vDataSetIndexes.clear();
+  if (pUnifier) {
+    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
+    ZdPointerVector<NormalSpatialData>::const_iterator  itr_data;    
+    double                                              dHighRatios=0, dLowRatios=0;
+
+    //for each data set, calculate llr values - possibly scanning for both high and low rates
+    for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
+       pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure, (*itr_data)->gtSqMeasure,
+                                 (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, (*itr_data)->gtTotalMeasureSq, *itr_pair);
+       dHighRatios += itr_pair->first;
+       dLowRatios += itr_pair->second;
+    }
+    //assess collected llr values to determine which data sets created target ratios
+    // - if scanning for high and low ratios, determine which corresponding rate produced
+    //   target ratio - high wins if they are equal
+    bool bHighRatios=false;
+    if (dHighRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = true;
+    else if (dLowRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = false;
+    else {//target ratio does not equal high or low ratios
+     //likely round-off error 
+      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = true;
+      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = false;
+      else
+        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetCategoricalSpatialData",
+                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
+    }
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
+       if ((bHighRatios ? itr_pair->first : itr_pair->second))
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+  }
+  else {
+    size_t t=0;
+    while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
+  }
+}
+
+/** Not implemented - throws ZdException. */
+measure_t MultiSetNormalSpatialData::GetMeasure(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->GetMeasure();
+}
+
+measure_t MultiSetNormalSpatialData::GetMeasureSq(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->GetMeasureSq();
+}
+
+/** Initializes cluster data in each data set. */
+void MultiSetNormalSpatialData::InitializeData() {
+  ZdPointerVector<NormalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
+}
+
+//******************* class AbstractMultiSetNormalTemporalData *****************
+
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractTemporalClusterData object
+    can be casted to 'MultiSetTemporalData' object. */
+void AbstractMultiSetNormalTemporalData::Assign(const AbstractTemporalClusterData& rhs) {
+  *this = (const AbstractMultiSetNormalTemporalData&)rhs;
+}
+
+/** Copies class data members that reflect the number of cases per ordinal category,
+    which is the data we are interested in for possiblely reporting. */
+void AbstractMultiSetNormalTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  for (size_t t=0; t < ((const AbstractMultiSetNormalTemporalData&)rhs).gvSetClusterData.size(); ++t)
+    gvSetClusterData[t]->CopyEssentialClassMembers(*((const AbstractMultiSetNormalTemporalData&)rhs).gvSetClusterData[t]);
+}
+
+/** Returns number of cases in accumulated respective data sets' cluster data.
+    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
+count_t AbstractMultiSetNormalTemporalData::GetCaseCount(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->gtCases;
+}
+
+/** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
+    If specified purpose for multiple data sets is multivariate, recalculates high and low
+    LLR values to determine which data sets comprised target ratio; else all data sets
+    comprised target ratio. */
+void AbstractMultiSetNormalTemporalData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                           AbstractLikelihoodCalculator& Calculator,
+                                                                           std::vector<unsigned int>& vDataSetIndexes) const {
+  MultivariateUnifier * pUnifier = dynamic_cast<MultivariateUnifier*>(&Calculator.GetUnifier());
+
+  vDataSetIndexes.clear();
+  if (pUnifier) {
+    std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
+    ZdPointerVector<NormalTemporalData>::const_iterator itr_data;
+    double                                              dHighRatios=0, dLowRatios=0;
+
+    //for each data set, calculate llr values - possibly scanning for both high and low rates
+    for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
+       pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure, (*itr_data)->gtSqMeasure,
+                                 (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, (*itr_data)->gtTotalMeasureSq, *itr_pair);
+       dHighRatios += itr_pair->first;
+       dLowRatios += itr_pair->second;
+    }
+    //assess collection of llr values to determine which data sets created target ratios
+    // - if scanning for high and low ratios, determine which corresponding rate produced
+    //   target ratio - high wins if they are equal
+    bool        bHighRatios=false;
+    if (dHighRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = true;
+    else if (dLowRatios == dTargetLoglikelihoodRatio)
+      bHighRatios = false;
+    else {//target ratio does not equal high or low ratios
+     //likely round-off error
+      if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = true;
+      else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
+        bHighRatios = false;
+      else
+        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetTemporalData",
+                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
+    }
+
+    for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
+       if ((bHighRatios ? itr_pair->first : itr_pair->second))
+         vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
+  }
+  else {
+    size_t t=0;
+    while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
+  }
+}
+
+/** Returns expected number of cases in accumulated respective data sets' cluster data.
+    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
+measure_t AbstractMultiSetNormalTemporalData::GetMeasure(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->gtMeasure;
+}
+
+/** Returns expected number of cases in accumulated respective data sets' cluster data.
+    Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
+measure_t AbstractMultiSetNormalTemporalData::GetMeasureSq(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->gtSqMeasure;
+}
+
+//********************** class MultiSetNormalTemporalData ****************************
+
+/** class constructor */
+MultiSetNormalTemporalData::MultiSetNormalTemporalData(const NormalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway)
+                           :AbstractMultiSetNormalTemporalData() {
+  //Allocate TemporalData object for each data set.
+  for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
+     gvSetClusterData.push_back(dynamic_cast<NormalTemporalData*>(DataFactory.GetNewTemporalClusterData(DataGateway.GetDataSetInterface(t))));
+}
+
+/** Not implemented - throws ZdException. */
+void MultiSetNormalTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
+  ZdGenerateException("AddNeighbor(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","MultiSetNormalTemporalData");
+}
+
+/** Returns newly cloned MultiSetTemporalData object. Caller responsible for
+    deletion of object. */
+MultiSetNormalTemporalData * MultiSetNormalTemporalData::Clone() const {
+  return new MultiSetNormalTemporalData(*this);
+}
+
+/** Initializes cluster data in each data set. */
+void MultiSetNormalTemporalData::InitializeData() {
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers. */
+void MultiSetNormalTemporalData::Reassociate(const DataSetInterface& Interface) {
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(Interface);
+}
+
+/** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
+void MultiSetNormalTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (; itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(DataGateway);
+}
+
+
+//*************** class MultiSetNormalProspectiveSpatialData *******************
+
+/** class constructor */
+MultiSetNormalProspectiveSpatialData::MultiSetNormalProspectiveSpatialData(const NormalClusterDataFactory& DataFactory, const CSaTScanData& Data, const AbstractDataSetGateway& DataGateway)
+                                     :AbstractMultiSetNormalTemporalData() {
+  //Allocate ProspectiveSpatialData object for each data set.
+  for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
+     gvSetClusterData.push_back(dynamic_cast<NormalTemporalData*>(DataFactory.GetNewProspectiveSpatialClusterData(Data, DataGateway.GetDataSetInterface(t))));
+}
+
+/** Adds neighbor data to accumulated cluster data  - caller is responsible for
+    ensuring that 'tNeighborIndex' is a valid index. */
+void MultiSetNormalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  unsigned int                            i=0;
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
+}
+
+/** Calculates loglikelihood ratio given current accumulated cluster data in
+    each data set and adds together.*/
+double MultiSetNormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  unsigned int                            iWindowEnd, iAllocationSize;
+  double                                  dMaxLoglikelihoodRatio=0;
+  AbstractLoglikelihoodRatioUnifier     & Unifier = Calculator.GetUnifier();
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+
+  Unifier.Reset();
+  iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
+  for (;itr != gvSetClusterData.end(); ++itr)
+     Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], (*itr)->gpSqMeasure[0], (*itr)->gtTotalCases, (*itr)->gtTotalMeasure, (*itr)->gtTotalMeasureSq);
+  dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
+
+  for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
+     Unifier.Reset();
+     for (itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr) {
+        (*itr)->gtCases = (*itr)->gpCases[0] - (*itr)->gpCases[iWindowEnd];
+        (*itr)->gtMeasure =  (*itr)->gpMeasure[0] - (*itr)->gpMeasure[iWindowEnd];
+        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtTotalCases, (*itr)->gtTotalMeasure);
+     }
+     dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
+  }
+
+  return dMaxLoglikelihoodRatio;
+}
+
+/** Returns newly cloned MultiSetProspectiveSpatialData object. Caller responsible
+    for deletion of object. */
+MultiSetNormalProspectiveSpatialData * MultiSetNormalProspectiveSpatialData::Clone() const {
+  return new MultiSetNormalProspectiveSpatialData(*this);
+}
+
+/** Deallocates data members that assist with evaluation of temporal data.
+    Once this function is called various class member functions become invalid
+    and an assertion will fail if called. */
+void MultiSetNormalProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
+  unsigned int                            i=0;
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->DeallocateEvaluationAssistClassMembers();
+  geEvaluationAssistDataStatus = Deallocated;
+}
+
+/** Initializes cluster data in each data set. */
+void MultiSetNormalProspectiveSpatialData::InitializeData() {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
+}
+
+//********************** class MultiSetNormalSpaceTimeData *********************
+
+/** class constructor */
+MultiSetNormalSpaceTimeData::MultiSetNormalSpaceTimeData(const NormalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway)
+                            :AbstractMultiSetNormalTemporalData(), geEvaluationAssistDataStatus(Allocated) {
+  for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
+     gvSetClusterData.push_back(dynamic_cast<NormalTemporalData*>(DataFactory.GetNewSpaceTimeClusterData(DataGateway.GetDataSetInterface(t))));
+}
+
+/** Add neighbor data to accumulation  - caller is responsible for
+    ensuring that 'tNeighborIndex' is a valid index. */
+void MultiSetNormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  unsigned int                            i=0;
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
+}
+
+/** Returns newly cloned MultiSetSpaceTimeData object. Caller responsible for deletion
+    of object. */
+MultiSetNormalSpaceTimeData * MultiSetNormalSpaceTimeData::Clone() const {
+  return new MultiSetNormalSpaceTimeData(*this);
+}
+
+/** Deallocates data members that assist with evaluation of temporal data.
+    Once this function is called various class member functions become invalid
+    and an assertion will fail if called. */
+void MultiSetNormalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
+  unsigned int                            i=0;
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++i, ++itr)
+     (*itr)->DeallocateEvaluationAssistClassMembers();
+  geEvaluationAssistDataStatus = Deallocated;
+}
+
+/** Initializes cluster data in each data set. */
+void MultiSetNormalSpaceTimeData::InitializeData() {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
+}
+
