@@ -539,7 +539,7 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
           continue;
         }
         //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        sId = Source.GetNumValues();
+        sId = Source.GetCurrentRecordIndex();
         gCentroidsHandler.giInsertGnode(sId.GetCString(), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
