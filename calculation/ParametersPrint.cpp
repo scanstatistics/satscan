@@ -115,16 +115,8 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
     fprintf(fp, "  Type of Analysis         : %s\n", gParameters.GetAnalysisTypeAsString());
     fprintf(fp, "  Probability Model        : %s\n",
             gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
-    if (eAnalysisType != SPATIALVARTEMPTREND) {
-      fprintf(fp, "  Scan for Areas with      : ");
-      switch (gParameters.GetAreaScanRateType()) {
-        case HIGH       : fprintf(fp, "High Rates\n"); break;
-        case LOW        : fprintf(fp, "Low Rates\n"); break;
-        case HIGHANDLOW : fprintf(fp, "High or Low Rates\n"); break;
-        default : ZdException::Generate("Unknown area scan rate type '%d'.\n",
-                                        "PrintAnalysisParameters()", gParameters.GetAreaScanRateType());
-      }
-    }
+    if (eAnalysisType != SPATIALVARTEMPTREND)
+      fprintf(fp, "  Scan for Areas with      : %s\n", CParameters::GetAreaScanRateTypeAsString(gParameters.GetAreaScanRateType(), gParameters.GetProbabilityModelType()));
     if (eAnalysisType != PURELYSPATIAL) {
      fprintf(fp, "\n  Time Aggregation Units   : ");
       switch (gParameters.GetTimeAggregationUnitsType()) {
@@ -157,22 +149,12 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       default : ZdException::Generate("Unknown analysis type '%d'.\n",
                                       "PrintAnalysisSummary()", gParameters.GetAnalysisType());
     }
-
     fprintf(fp, "scanning for ");
-
     if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
       fprintf(fp, "monotone ");
-
-    fprintf(fp, "clusters with ");
-
-    switch (gParameters.GetAreaScanRateType()) {
-      case HIGH       : fprintf(fp, "high rates\n"); break;
-      case LOW        : fprintf(fp, "low rates\n"); break;
-      case HIGHANDLOW : fprintf(fp, "high or low rates\n"); break;
-      default : ZdException::Generate("Unknown area scan rate type '%d'.\n",
-                                      "DisplayAnalysisSummary()", gParameters.GetAreaScanRateType());
-    }
-
+    ZdString s(CParameters::GetAreaScanRateTypeAsString(gParameters.GetAreaScanRateType(), gParameters.GetProbabilityModelType()));
+    s.ToLowercase();
+    fprintf(fp, "clusters with %s\n", s.GetCString());
     switch (gParameters.GetProbabilityModelType()) {
       case POISSON              : fprintf(fp, "using the Poisson model.\n"); break;
       case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
