@@ -793,7 +793,7 @@ object frmAnalysis: TfrmAnalysis
         object rdoHighRates: TRadioButton
           Left = 13
           Top = 25
-          Width = 113
+          Width = 148
           Height = 17
           Caption = 'High Rates'
           Checked = True
@@ -803,7 +803,7 @@ object frmAnalysis: TfrmAnalysis
         object rdoLowRates: TRadioButton
           Left = 13
           Top = 55
-          Width = 113
+          Width = 148
           Height = 17
           Caption = 'Low Rates'
           TabOrder = 1
@@ -811,7 +811,7 @@ object frmAnalysis: TfrmAnalysis
         object rdoHighLowRates: TRadioButton
           Left = 13
           Top = 85
-          Width = 113
+          Width = 148
           Height = 17
           Caption = 'High or Low Rates'
           TabOrder = 2

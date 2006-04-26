@@ -204,6 +204,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        SaveParameterSettings();
     void                        SetAnalysisControl(AnalysisType eAnalysisType);
     void                        SetAreaScanRateControl(AreaRateType eAreaRateType);
+    void                        SetAreaScanRateControlText(ProbabilityModelType eProbabilityModelType);
     void                        SetModelControl(ProbabilityModelType eProbabilityModelType);
     void                        Setup(const char * sParameterFileName);
     void                        SetupInterface();

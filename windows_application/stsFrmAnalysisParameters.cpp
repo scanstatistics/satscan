@@ -1047,6 +1047,7 @@ void TfrmAnalysis::OnProbabilityModelClick() {
                                   break;
       default : ZdGenerateException("Unknown probability model '%d'.", "OnProbablityModelClick()", GetModelControlType());
     }
+    SetAreaScanRateControlText(GetModelControlType());
     EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException &x) {
@@ -1306,7 +1307,28 @@ void TfrmAnalysis::SetAreaScanRateControl(AreaRateType eAreaRateType) {
     default         : rdoHighRates->Checked = true;
   }
 }
-
+//---------------------------------------------------------------------------
+/** Sets captions of TRadioButton controls of 'Scan for Areas with:' group based upon selected probablility model. */
+void TfrmAnalysis::SetAreaScanRateControlText(ProbabilityModelType eProbabilityModelType) {
+    switch (GetModelControlType()) {
+      case POISSON   		:
+      case BERNOULLI            :
+      case SPACETIMEPERMUTATION : rdoLowRates->Caption = "Low Rates";
+                                  rdoHighRates->Caption = "High Rates";
+                                  rdoHighLowRates->Caption = "High or Low Rates";
+                                  break;
+      case ORDINAL              :
+      case NORMAL               : rdoLowRates->Caption = "Low Values";
+                                  rdoHighRates->Caption = "High Values";
+                                  rdoHighLowRates->Caption = "High or Low Values";
+                                  break;
+      case EXPONENTIAL          : rdoLowRates->Caption = "Long Survival";
+                                  rdoHighRates->Caption = "Short Survival";
+                                  rdoHighLowRates->Caption = "Short or Long Survival";
+                                  break;
+      default : ZdGenerateException("Unknown probability model '%d'.", "SetAreaScanRateControlText()", GetModelControlType());
+    }
+}
 //---------------------------------------------------------------------------
 /** Sets case filename in interface */
 void TfrmAnalysis::SetCaseFile(const char * sCaseFileName) {
