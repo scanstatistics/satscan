@@ -198,7 +198,9 @@ class CParameters {
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     const char                        * GetAnalysisTypeAsString() const;
+    static const char                 * GetAreaScanRateTypeAsString(AreaRateType eAreaRateType, ProbabilityModelType eProbabilityModelType);
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
+    AreaRateType                        GetExecuteScanRateType() const;
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;

@@ -289,6 +289,47 @@ const char * CParameters::GetAnalysisTypeAsString() const {
   return sAnalysisType;
 }
 
+/** Returns area scan type as string based upon probability model type. */
+const char * CParameters::GetAreaScanRateTypeAsString(AreaRateType eAreaRateType, ProbabilityModelType eProbabilityModelType) {
+  try {
+    switch (eProbabilityModelType) {
+      case POISSON :
+      case BERNOULLI :
+      case SPACETIMEPERMUTATION :
+         switch (eAreaRateType) {
+            case HIGH       : return "High Rates";
+            case LOW        : return "Low Rates";
+            case HIGHANDLOW : return "High or Low Rates";
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", eAreaRateType);
+         }
+         break;
+      case ORDINAL :
+      case NORMAL :
+         switch (eAreaRateType) {
+            case HIGH       : return "High Values";
+            case LOW        : return "Low Values";
+            case HIGHANDLOW : return "High or Low Values";
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", eAreaRateType);
+         }
+         break;
+      case EXPONENTIAL :
+         switch (eAreaRateType) {
+            case HIGH       : return "Short Survival";
+            case LOW        : return "Long Survival";
+            case HIGHANDLOW : return "Short or Long Survival";
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", eAreaRateType);
+         }
+         break;
+      default : ZdGenerateException("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", eProbabilityModelType);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetAreaScanRateTypeAsString()","CParameters");
+    throw;
+  }
+  return "?";
+}
+
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
@@ -313,6 +354,17 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
     throw;
   }
   return gvControlFilenames[iSetIndex - 1];
+}
+
+/** Returns the scanning area type used during execution. For the normal model,
+    high and low are reversed. */
+AreaRateType CParameters::GetExecuteScanRateType() const {
+  if (geProbabilityModelType == NORMAL && geAreaScanRate == HIGH)
+    return LOW;
+  if (geProbabilityModelType == NORMAL && geAreaScanRate == LOW)
+    return HIGH;
+
+  return geAreaScanRate;
 }
 
 /** Returns whether analysis is a prospective analysis. */
