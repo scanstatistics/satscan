@@ -285,7 +285,7 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSet
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
     gpSqMeasure = new measure_t[giAllocationSize];
     memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
-    switch (Data.GetParameters().GetAreaScanRateType()) {
+    switch (Data.GetParameters().GetExecuteScanRateType()) {
       case LOW        : gfRateOfInterest = LowRate;       break;
       case HIGHANDLOW : gfRateOfInterest = HighOrLowRate; break;
       case HIGH       :

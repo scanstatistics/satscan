@@ -110,8 +110,8 @@ void PurelySpatialCentricAnalysis::MonteCarloAboutCentroidDefinition(const Centr
 void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
     //allocate objects used to evaluate real data
-    gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
-    gTopCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
+    gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetExecuteScanRateType()));
+    gTopCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetExecuteScanRateType()));
     
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {
@@ -123,7 +123,7 @@ void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataG
          //create a measure list object for each requested replication - we do this inorder
          //to prevent excess calls to loglikelihood calculation method; unfortunately this
          //also consumes more memory...
-         gClusterData.reset(new SpatialData(*(*itr), gParameters.GetAreaScanRateType()));
+         gClusterData.reset(new SpatialData(*(*itr), gParameters.GetExecuteScanRateType()));
          for (; itr != itr_end; ++itr)
            gvMeasureLists.push_back(GetNewMeasureListObject());
       }
@@ -132,7 +132,7 @@ void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataG
         //the greatest loglikelihood ratios among all centroids, but analyzing each centroids
         //replications separately, we need to maintain a vector of llr values.
         gCalculatedRatios.reset(new std::vector<double>(gParameters.GetNumReplicationsRequested(), 0));
-        gAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*itr), gParameters.GetAreaScanRateType()));
+        gAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*itr), gParameters.GetExecuteScanRateType()));
       }
     }  
   }

@@ -29,11 +29,11 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGate
     delete gpClusterComparator; gpClusterComparator=0;
     //create simulation objects based upon which process used to perform simulations
     if (geReplicationsProcessType == MeasureListEvaluation) {
-      gpClusterData = new SpatialData(DataGateway, gParameters.GetAreaScanRateType());
+      gpClusterData = new SpatialData(DataGateway, gParameters.GetExecuteScanRateType());
       gpMeasureList = GetNewMeasureListObject();
     }
     else { //simulations performed using same process as real data set
-      gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
+      gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType());
       gTopShapeClusters.SetTopClusters(*gpClusterComparator);
     }
   }
@@ -51,7 +51,7 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGate
 void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
   try {
     delete gpClusterComparator; gpClusterComparator=0;
-    gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetAreaScanRateType());
+    gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType());
     gTopShapeClusters.SetTopClusters(*gpClusterComparator);
   }
   catch (ZdException &x) {

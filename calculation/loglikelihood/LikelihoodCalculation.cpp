@@ -60,9 +60,9 @@ void AbstractLikelihoodCalculator::Setup() {
     if (gDataHub.GetParameters().GetNumDataSets() > 1) {
       switch (gDataHub.GetParameters().GetMultipleDataSetPurposeType()) {
         case MULTIVARIATE :
-          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetAreaScanRateType()); break;
+          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
         case ADJUSTMENT :
-          gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetAreaScanRateType()); break;
+          gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
         default :
           ZdGenerateException("Unknown purpose for multiple data sets '%d'.","GetUnifier",
                               gDataHub.GetParameters().GetMultipleDataSetPurposeType());

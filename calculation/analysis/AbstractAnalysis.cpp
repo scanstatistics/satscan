@@ -60,12 +60,12 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
 /** Returns newly allocated CMeasureList object - caller is responsible for deletion.
     - throws ZdException if type is not known */
 CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
-  switch (gParameters.GetAreaScanRateType()) {
+  switch (gParameters.GetExecuteScanRateType()) {
     case HIGH       : return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
     case LOW        : return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
     case HIGHANDLOW : return new CMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
     default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","GetNewMeasureListObject()",
-                                          gParameters.GetAreaScanRateType());
+                                          gParameters.GetExecuteScanRateType());
   }
   return 0;
 }

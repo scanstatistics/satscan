@@ -45,7 +45,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
     for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
        CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
        thisCluster.SetCenter(tCenter);
-//$       thisCluster.SetRate(gParameters.GetAreaScanRateType());
+//$       thisCluster.SetRate(gParameters.GetExecuteScanRateType());
        thisCluster.SetEllipseOffset(k, gDataHub);
       // CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
        iNumNeighbors = gDataHub.GetNeighborCountArray()[k][tCenter];
@@ -83,7 +83,7 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataSetInterface & Interfa
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
        CSVTTCluster thisCluster(Interface, gDataHub.GetNumTimeIntervals());
-//$       thisCluster.SetRate(gParameters.GetAreaScanRateType());
+//$       thisCluster.SetRate(gParameters.GetExecuteScanRateType());
        thisCluster.SetEllipseOffset(k, gDataHub);
        for (i=0; i < gDataHub.m_nGridTracts; ++i) {
           thisCluster.InitializeSVTT(i, Interface);

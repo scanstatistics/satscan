@@ -18,7 +18,7 @@
 TemporalDataEvaluator::TemporalDataEvaluator(const CSaTScanData& Data,
                                      AbstractLikelihoodCalculator & Calculator,
                                      IncludeClustersType  eIncludeClustersType)
-                  :CTimeIntervals(Data.GetNumTimeIntervals(), Data.GetTimeIntervalCut(), Data.GetParameters().GetAreaScanRateType()),
+                  :CTimeIntervals(Data.GetNumTimeIntervals(), Data.GetTimeIntervalCut(), Data.GetParameters().GetExecuteScanRateType()),
                    gData(Data), gLikelihoodCalculator(Calculator) {
   Init();                 
   Setup(Data, eIncludeClustersType);

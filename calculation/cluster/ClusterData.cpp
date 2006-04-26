@@ -348,7 +348,7 @@ void ProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterf
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-    switch (Data.GetParameters().GetAreaScanRateType()) {
+    switch (Data.GetParameters().GetExecuteScanRateType()) {
       case LOW        : gfRateOfInterest = LowRate;       break;
       case HIGHANDLOW : gfRateOfInterest = HighOrLowRate; break;
       case HIGH       :

@@ -43,10 +43,10 @@ int OrdinalCombinedCategory::GetCategoryIndex(size_t tCatgoryPositionIndex) cons
 /** constructor */
 OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& DataHub)
                             :AbstractLikelihoodCalculator(DataHub),
-                             gbScanLowRates(DataHub.GetParameters().GetAreaScanRateType() == LOW ||
-                                            DataHub.GetParameters().GetAreaScanRateType() == HIGHANDLOW),
-                             gbScanHighRates(DataHub.GetParameters().GetAreaScanRateType() == HIGH ||
-                                             DataHub.GetParameters().GetAreaScanRateType() == HIGHANDLOW) {
+                             gbScanLowRates(DataHub.GetParameters().GetExecuteScanRateType() == LOW ||
+                                            DataHub.GetParameters().GetExecuteScanRateType() == HIGHANDLOW),
+                             gbScanHighRates(DataHub.GetParameters().GetExecuteScanRateType() == HIGH ||
+                                             DataHub.GetParameters().GetExecuteScanRateType() == HIGHANDLOW) {
   double        LL0;
   size_t        tMaxNumCategories=0;
 

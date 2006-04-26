@@ -157,8 +157,8 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::MonteCarloProspectiveAboutCen
 void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
     //allocate objects used to evaluate real data
-    gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
-    gTopPSCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetAreaScanRateType()));
+    gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetExecuteScanRateType()));
+    gTopPSCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetExecuteScanRateType()));
 
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {
@@ -166,13 +166,13 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGa
         if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
           gPSPClusterData.reset(new ProspectiveSpatialData(gDataHub, *(*vSimDataGateways.begin())));
         else
-          gPSClusterData.reset(new SpatialData(*(*vSimDataGateways.begin()), gParameters.GetAreaScanRateType()));
+          gPSClusterData.reset(new SpatialData(*(*vSimDataGateways.begin()), gParameters.GetExecuteScanRateType()));
       }
       else {
         if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
           gPSAbstractClusterData.reset(gpClusterDataFactory->GetNewProspectiveSpatialClusterData(gDataHub, *(*vSimDataGateways.begin())));
         else
-          gPSAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*vSimDataGateways.begin()), gParameters.GetAreaScanRateType()));
+          gPSAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*vSimDataGateways.begin()), gParameters.GetExecuteScanRateType()));
       }
     }
   }
