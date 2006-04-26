@@ -1118,12 +1118,43 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
   //if zero clusters retained in real data, then no clusters of significance were retained.
   if (gTopClustersContainer.GetNumClustersRetained() == 0) {
     fprintf(fp, "\nNo clusters were found.\n");
-    if (gParameters.GetAreaScanRateType() == HIGH)
-      sBuffer = "All areas scanned had either only one case or equal or fewer cases than expected.";
-    else if (gParameters.GetAreaScanRateType() == LOW)
-      sBuffer = "All areas scanned had either only one case or equal or greater cases than expected.";
-    else
-      sBuffer = "All areas scanned had either only one case or cases equal to expected.";
+    switch (gParameters.GetProbabilityModelType()) {
+      case POISSON :
+      case BERNOULLI :
+      case SPACETIMEPERMUTATION :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : sBuffer = "All areas scanned had either only one case or an equal or fewer number of cases than expected."; break;
+            case LOW        : sBuffer = "All areas scanned had either only one case or an equal or greater number of cases than expected."; break;
+            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or an equal cases to expected."; break;
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      case ORDINAL :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : sBuffer = "All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut-off."; break;
+            case LOW        : sBuffer = "All areas scanned had either only one case or an equal or higher number of low value cases than expected for any cut-off."; break;
+            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      case NORMAL :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : sBuffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;
+            case LOW        : sBuffer = "All areas scanned had either only one case or an equal or higher mean than outside the area."; break;
+            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or an equal mean to outside the area."; break;
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      case EXPONENTIAL :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : sBuffer = "All areas scanned had either only one case or equal or longer survival than outside the area."; break;
+            case LOW        : sBuffer = "All areas scanned had either only one case or equal or shorter survival than outside the area."; break;
+            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or equal survival to outside the area."; break;
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      default : ZdGenerateException("Unknown probability model '%d'.", "PrintRetainedClustersStatus()", gParameters.GetProbabilityModelType());
+    }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
   else if (!bClusterReported) {
