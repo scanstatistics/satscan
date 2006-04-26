@@ -57,7 +57,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
   try {
     switch (eParameterType) {
       case ANALYSISTYPE             : return " analysis type (1=Purely Spatial, 2=Purely Temporal, 3=Retrospective Space-Time, 4=Prospective Space-Time, 5=N/A, 6=Prospective Purely Temporal)";
-      case SCANAREAS                : return " scan areas (1=High, 2=Low, 3=High or Low)";
+      case SCANAREAS                : return " scan areas (1=High Rates(Poison,Bernoulli,STP); High Values(Ordinal,Normal); Short Survival(Exponential), 2=Low Rates(Poison,Bernoulli,STP); Low Values(Ordinal,Normal); Long Survival(Exponential), 3=Both Areas)";
       case CASEFILE                 : return " case data filename";
       case POPFILE                  : return " population data filename";
       case COORDFILE                : return " coordinate data filename";
