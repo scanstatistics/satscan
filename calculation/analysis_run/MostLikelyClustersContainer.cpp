@@ -130,22 +130,32 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
     double ClusterTwoRadius = ClusterTwo.GetCartesianRadius();
     DataHub.GetGInfo()->giRetrieveCoords(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
     double dDistanceBetween = stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords));
+
+    //Note: Since there might be a fractional difference in the calculation of the radii and/or distance, require that the
+    //compared values differ by more than 0.000000001 -- otherwise we might trigger a false positive.
+    double dNumericalDeviation = 0.000000001;
     //we can say for certain that they don't have tracts in common if their circles don't overlap
-    if (dDistanceBetween > ClusterOneRadius * DataHub.GetEllipseShape(iOneOffset) + ClusterTwoRadius * DataHub.GetEllipseShape(iTwoOffset))
+    double dClusterOneMajorAxis = ClusterOneRadius * DataHub.GetEllipseShape(iOneOffset);
+    double dClusterTwoMajorAxis = ClusterTwoRadius * DataHub.GetEllipseShape(iTwoOffset);
+    if (std::fabs(dDistanceBetween - (dClusterOneMajorAxis + dClusterTwoMajorAxis)) > dNumericalDeviation && dDistanceBetween > dClusterOneMajorAxis + dClusterTwoMajorAxis)
       return false;
     //we can say that they do overlap if the centroid of second cluster is within radius of first cluster
     //or vice versa, centroid of first cluster is within radius of second cluster
     if (DataHub.GetParameters().UseSpecialGrid()) {
-      if (ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius || ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius) {
+      if ((std::fabs(ClusterOneRadius - (dDistanceBetween + ClusterTwoRadius)) > dNumericalDeviation && ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius) ||
+          (std::fabs(ClusterTwoRadius - (dDistanceBetween + ClusterOneRadius)) > dNumericalDeviation && ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius)) {
         //if neighbors for secondard centroid where re-calculated, we can delete this data now
         DataHub.FreeNeighborInfo(tTwoCentroid);
         return true;
       }
     }
-    else if (dDistanceBetween <= ClusterOneRadius || dDistanceBetween <= ClusterTwoRadius) {
-      //if neighbors for secondard centroid where re-calculated, we can delete this data now
-      DataHub.FreeNeighborInfo(tTwoCentroid);
-      return true;
+    else {
+      if ((std::fabs(dDistanceBetween - ClusterOneRadius) > dNumericalDeviation && dDistanceBetween <= ClusterOneRadius) ||
+          (std::fabs(dDistanceBetween - ClusterTwoRadius) > dNumericalDeviation && dDistanceBetween <= ClusterTwoRadius)) {
+          //if neighbors for secondard centroid where re-calculated, we can delete this data now
+          DataHub.FreeNeighborInfo(tTwoCentroid);
+          return true;
+      }
     }
   }
 

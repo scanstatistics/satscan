@@ -111,11 +111,16 @@ bool stsMCSimJobSource::CancelRequested() const
   return grPrintDirection.GetIsCanceled();
 }
 
-//How many jobs have registered a successful (no exceptions) result?
+//How many jobs have registered a successful result?
+//This is all jobs that:
+//1. completed without an exception and
+//2. were not discarded in the event of an auto-abort condition.
 unsigned int stsMCSimJobSource::GetSuccessfullyCompletedJobCount() const
 {
   unsigned int uiResult = guiUnregisteredJobLowerBound-1;
-  if (!AutoAbortConditionExists())
+  if (AutoAbortConditionExists())
+    uiResult = guaAutoAbortCheckPoints[guAutoAbortCheckIdx];
+  else
     uiResult += (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) - gvExceptions.size();
   return uiResult;
 }
