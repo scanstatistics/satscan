@@ -49,7 +49,7 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidD
         //update cluster data
         gAbstractClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
         //calculate loglikehood ratio and compare against current top cluster
-        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeLoglikelihoodRatioClusterData(*gAbstractClusterData));
+        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeMaximizingValue(*gAbstractClusterData));
      }
      //NOTE: This process assumes no-compactness correction for ellipses - otherwise we would
      //      use an IntermediateClustersContainer, as used in other top cluster method to
@@ -157,8 +157,8 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::MonteCarloProspectiveAboutCen
 void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
     //allocate objects used to evaluate real data
-    gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetExecuteScanRateType()));
-    gTopPSCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway, gParameters.GetExecuteScanRateType()));
+    gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway));
+    gTopPSCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway));
 
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {
@@ -166,13 +166,13 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGa
         if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
           gPSPClusterData.reset(new ProspectiveSpatialData(gDataHub, *(*vSimDataGateways.begin())));
         else
-          gPSClusterData.reset(new SpatialData(*(*vSimDataGateways.begin()), gParameters.GetExecuteScanRateType()));
+          gPSClusterData.reset(new SpatialData(*(*vSimDataGateways.begin())));
       }
       else {
         if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
           gPSAbstractClusterData.reset(gpClusterDataFactory->GetNewProspectiveSpatialClusterData(gDataHub, *(*vSimDataGateways.begin())));
         else
-          gPSAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*vSimDataGateways.begin()), gParameters.GetExecuteScanRateType()));
+          gPSAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(*(*vSimDataGateways.begin())));
       }
     }
   }
