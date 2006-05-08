@@ -15,6 +15,8 @@ class DataSetInterface;
 class CAnalysis : public AbstractAnalysis {
   protected:
     virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
+    virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
+    virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
 
   public:
     CAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
@@ -22,11 +24,8 @@ class CAnalysis : public AbstractAnalysis {
 
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) = 0;
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) = 0;
-    double                              ExecuteSimulation(const AbstractDataSetGateway& DataGateway);
     virtual void                        FindTopClusters(const AbstractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
-    virtual double                      FindTopRatio(const AbstractDataSetGateway & DataGateway);
-    virtual double                      MonteCarlo(const DataSetInterface & Interface) = 0;
-
+    double                              ExecuteSimulation(const AbstractDataSetGateway& DataGateway);
 };
 //*****************************************************************************
 #endif

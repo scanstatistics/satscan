@@ -14,13 +14,20 @@ CAnalysis::CAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub,
 CAnalysis::~CAnalysis() {}
 
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
-    TMeasureList class or FindTopRatio() for analyses which must perform
-    simulations by the same algorithm as the real data. */
+    TMeasureList class or perform simulations by the same algorithm as the real data. */
 double CAnalysis::ExecuteSimulation(const AbstractDataSetGateway& DataGateway) {
+
   if (geReplicationsProcessType == MeasureListEvaluation)
     return MonteCarlo(DataGateway.GetDataSetInterface(0));
-  else
-    return FindTopRatio(DataGateway);
+
+  if (gParameters.GetIsPurelyTemporalAnalysis())
+    return MonteCarlo(0, DataGateway);
+
+  double dMaxLogLikelihoodRatio=0;
+  //calculate greatest loglikelihood ratio about each centroid
+  for (int i=0; i < gDataHub.m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++i)
+    dMaxLogLikelihoodRatio = std::max(MonteCarlo(i, DataGateway), dMaxLogLikelihoodRatio);
+  return dMaxLogLikelihoodRatio;
 }
 
 /** Given data gate way, calculates and collects most likely clusters about
@@ -45,16 +52,5 @@ void CAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostL
     x.AddCallpath("FindTopClusters()","CAnalysis");
     throw;
   }
-}
-
-/** calculates greatest loglikelihood ratio about each centroid(grid point) */
-double CAnalysis::FindTopRatio(const AbstractDataSetGateway& DataGateway) {
-  int                   i;
-  double                dMaxLogLikelihoodRatio=0;
-
-  //calculate greatest loglikelihood ratio about each centroid
-  for (i=0; i < gDataHub.m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++i)
-    dMaxLogLikelihoodRatio = std::max(CalculateTopCluster(i, DataGateway).m_nRatio, dMaxLogLikelihoodRatio);
-  return dMaxLogLikelihoodRatio;
 }
 
