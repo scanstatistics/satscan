@@ -72,21 +72,21 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
 
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
     settings - caller is responsible for deletion. */
-CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const {
+CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType) const {
   if (gParameters.GetProbabilityModelType() == NORMAL) {
     if (gParameters.GetNumDataSets() == 1)
-      return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
-    return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+      return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+    return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
   }
   else if (gParameters.GetProbabilityModelType() == ORDINAL) {
     if (gParameters.GetNumDataSets() == 1)
-      return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
-    return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+      return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
+    return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
   }
   else if (gParameters.GetNumDataSets() > 1)
-    return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+    return new MultiSetTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
   else
-    return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eType);
+    return new TemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
 }
 
 /** internal setup function - allocates cluster data factory object and loglikelihood

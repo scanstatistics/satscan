@@ -29,7 +29,7 @@ class AbstractAnalysis {
     ReplicationsProcessType               geReplicationsProcessType;
 
     CMeasureList                        * GetNewMeasureListObject() const;
-    CTimeIntervals                      * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType) const;
+    CTimeIntervals                      * GetNewTemporalDataEvaluatorObject(IncludeClustersType eType, ExecutionType eExecutionType) const;
 
   public:
     AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
