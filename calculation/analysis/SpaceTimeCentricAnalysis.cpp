@@ -44,7 +44,7 @@ void SpaceTimeCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const Cent
         //update cluster data
         gAbstractClusterData->AddNeighborData(CentroidDef.GetNeighborTractIndex(t), *(*itrGateway));
         //calculate loglikehood ratio and compare against current top cluster
-        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeLoglikelihoodRatioClusterData(*gAbstractClusterData));
+        *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeMaximizingValue(*gAbstractClusterData));
      }
      //NOTE: This process assumes no-compactness correction for ellipses - otherwise we would
      //      use an IntermediateClustersContainer, as used in other top cluster method to
@@ -118,7 +118,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
         //perform simulation about purely temporal data
         for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
           PTClusterData->Reassociate(*(*itrGateway));
-          *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeLoglikelihoodRatioClusterData(*PTClusterData));
+          *itrLoglikelihoodRatios = std::max(*itrLoglikelihoodRatios, gTimeIntervals_S->ComputeMaximizingValue(*PTClusterData));
         }
       }
     }
@@ -173,7 +173,7 @@ void SpaceTimeCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGatew
       eIncludeClustersType = ALIVECLUSTERS;
     else
       eIncludeClustersType = gParameters.GetIncludeClustersType();
-    gTimeIntervals_R.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType));
+    gTimeIntervals_R.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType, CENTRICALLY));
 
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {
@@ -201,7 +201,7 @@ void SpaceTimeCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGatew
         eIncludeClustersType = ALLCLUSTERS;
       else
         eIncludeClustersType = gParameters.GetIncludeClustersType();
-      gTimeIntervals_S.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType));
+      gTimeIntervals_S.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType, CENTRICALLY));
     }  
   }
   catch (ZdException &x) {
