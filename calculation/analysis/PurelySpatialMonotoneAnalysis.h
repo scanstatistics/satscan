@@ -22,6 +22,7 @@ class CPSMonotoneAnalysis : public CPurelySpatialAnalysis {
     virtual ~CPSMonotoneAnalysis();
 
     virtual double           MonteCarlo(const DataSetInterface& Interface);
+    virtual double           MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 };
 //*****************************************************************************
 #endif

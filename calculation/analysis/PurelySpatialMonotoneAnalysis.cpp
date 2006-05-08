@@ -142,3 +142,10 @@ double CPSMonotoneAnalysis::MonteCarlo(const DataSetInterface& Interface) {
       }
    return (MaxCluster.GetRatio());
 }
+
+/** Returns calculates log likelihood ratio about centroid. Currently this function calls CalculateTopCluster()
+    but will likely be updated in the future. */
+double CPSMonotoneAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
+  return CalculateTopCluster(tCenter, DataGateway).m_nRatio;
+}
+
