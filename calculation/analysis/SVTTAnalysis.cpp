@@ -107,3 +107,9 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataSetInterface & Interfa
   return dMaximumLogLikelihoodRatio;
 }
 
+/** Returns calculates log likelihood ratio about centroid. Currently this function calls CalculateTopCluster()
+    but will likely be updated in the future when this analysis type is made public. */
+double CSpatialVarTempTrendAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
+  return CalculateTopCluster(tCenter, DataGateway).m_nRatio;
+}
+
