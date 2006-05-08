@@ -55,8 +55,7 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
 void AbstractCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractDataSetGateway&, const DataSetGatewayContainer_t&) {}
 
 /** Executes simulation. Calls MonteCarlo() for analyses that can utilize
-    CMeasureList class or FindTopRatio() for analyses which must perform
-    simulations by the same algorithm as the real data. */
+    CMeasureList class or perform simulations by the same algorithm as the real data. */
 void AbstractCentricAnalysis::ExecuteSimulationsAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) {
   if (geReplicationsProcessType == MeasureListEvaluation)
     MonteCarloAboutCentroidDefinition(CentroidDef, vDataGateways);
