@@ -881,13 +881,8 @@ void AnalysisRunner::PerformCentric_Serial() {
 *****************************************************
 */
 void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
-
-  char                      * sReplicationFormatString;
-  AbstractDataSetGateway    * pDataGateway=0;
-  CAnalysis                 * pAnalysis=0;
-  SimulationDataContainer_t   SimulationDataContainer;
-  RandomizerContainer_t       RandomizationContainer;
-  unsigned long               ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.GetNumReplicationsRequested());
+  char                * sReplicationFormatString;
+  unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.GetNumReplicationsRequested());
 
   try {
     giNumSimsExecuted = 0;
@@ -927,8 +922,6 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
     }
   }
   catch (ZdException &x) {
-    delete pDataGateway;
-    delete pAnalysis;
     x.AddCallpath("PerformSuccessiveSimulations_Parallel()","AnalysisRunner");
     throw;
   }
