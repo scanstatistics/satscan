@@ -6,7 +6,6 @@
 #include "JulianDates.h"
 #include "TimeIntervals.h"
 #include "DataSet.h"
-#include "MaxWindowLengthIndicator.h"
 
 class CSaTScanData;                /** forward class declaration */
 class CCluster;                    /** forward class declaration */
@@ -16,26 +15,18 @@ class AbstractTemporalClusterData; /** forward class declaration */
     evaluating the strength of a clustering.*/
 class TemporalDataEvaluator : public CTimeIntervals {
   private:
-    void                               Init() {gpMaxWindowLengthIndicator=0;}
-    void                               Setup(const CSaTScanData& Data, IncludeClustersType  eIncludeClustersType);
-
-  protected:
-    int				       giStartRange_Start;         /** start date index of start range */
-    int				       giStartRange_End;           /** end date index of start range */
-    int				       giEndRange_Start;           /** start date index of end range */
-    int				       giEndRange_End;             /** end date index of end range */
-    const CSaTScanData               & gData;                      /** data hub */
-    AbstractLikelihoodCalculator     & gLikelihoodCalculator;      /** log likelihood calculator */
-    AbstractMaxWindowLengthIndicator * gpMaxWindowLengthIndicator; /** indicates maximum temporal window length */
+    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,size_t) const;
+    MAXIMIZE_FUNCPTR            gpCalculationMethod;
+    double                      gdDefaultMaximizingValue;
 
   public:
-    TemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+    TemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+                          IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
     virtual ~TemporalDataEvaluator();
 
     virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
     virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual double              ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
-    virtual IncludeClustersType GetType() const {return CLUSTERSINRANGE;}
+    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -43,14 +34,14 @@ class TemporalDataEvaluator : public CTimeIntervals {
     to incorporate multiple data sets in the calculation of a log likelihood
     ratio. The alogrithm for using the TMeasureList object with multiple data
     sets is not defined so method CompareMeasures() throws an exception. */
-class MultiSetTemporalDataEvaluator : public TemporalDataEvaluator {
+class MultiSetTemporalDataEvaluator : public CTimeIntervals {
   public:
     MultiSetTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
     virtual ~MultiSetTemporalDataEvaluator() {}
 
-    virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                           CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double                         ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
+    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -59,14 +50,20 @@ class MultiSetTemporalDataEvaluator : public TemporalDataEvaluator {
     likelihood ratio for categorical data. The alogrithm for using the
     TMeasureList object with this second variable is not defined so method
     CompareMeasures() throws an exception. */
-class NormalTemporalDataEvaluator : public TemporalDataEvaluator {
+class NormalTemporalDataEvaluator : public CTimeIntervals {
+  private:
+    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
+    MAXIMIZE_FUNCPTR            gpCalculationMethod;
+    double                      gdDefaultMaximizingValue;
+
   public:
-    NormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+    NormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
+                                IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
     virtual ~NormalTemporalDataEvaluator() {}
 
-    virtual void                      CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                      CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double                    ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
+    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -75,14 +72,14 @@ class NormalTemporalDataEvaluator : public TemporalDataEvaluator {
     ratio for categorical data. The alogrithm for using the TMeasureList object
     with multiple data sets is not defined so method CompareMeasures() throws
     an exception. */
-class MultiSetNormalTemporalDataEvaluator : public TemporalDataEvaluator {
+class MultiSetNormalTemporalDataEvaluator : public CTimeIntervals {
   public:
     MultiSetNormalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
     virtual ~MultiSetNormalTemporalDataEvaluator() {}
 
-    virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                           CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double                         ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
+    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -90,14 +87,20 @@ class MultiSetNormalTemporalDataEvaluator : public TemporalDataEvaluator {
     to calculate log likelihood ratio for categorical data. The alogrithm for
     using the TMeasureList object with multiple data sets is not defined so
     method CompareMeasures() throws an exception. */
-class CategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
+class CategoricalTemporalDataEvaluator : public CTimeIntervals {
+  private:
+    typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (const std::vector<count_t>&,size_t) const;
+    MAXIMIZE_FUNCPTR            gpCalculationMethod;
+    double                      gdDefaultMaximizingValue;
+
   public:
-    CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
+    CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
+                                     IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
     virtual ~CategoricalTemporalDataEvaluator() {}
 
-    virtual void                      CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                      CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double                    ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
+    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -106,14 +109,14 @@ class CategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
     ratio for categorical data. The alogrithm for using the TMeasureList object
     with multiple data sets is not defined so method CompareMeasures() throws
     an exception. */
-class MultiSetCategoricalTemporalDataEvaluator : public TemporalDataEvaluator {
+class MultiSetCategoricalTemporalDataEvaluator : public CTimeIntervals {
   public:
     MultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
     virtual ~MultiSetCategoricalTemporalDataEvaluator() {}
 
-    virtual void                           CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                           CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double                         ComputeLoglikelihoodRatioClusterData(AbstractTemporalClusterData& ClusterData);
+    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
+    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 //******************************************************************************
 #endif
