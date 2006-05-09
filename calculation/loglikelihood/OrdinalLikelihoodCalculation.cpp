@@ -76,20 +76,6 @@ OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& Dat
 /** destructor */
 OrdinalLikelihoodCalculator::~OrdinalLikelihoodCalculator() {}
 
-/** calculates the log likelihood given the number of observed and expected cases
-    - not implemented - throws exception */
-double OrdinalLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
-  ZdGenerateException("CalcLogLikelihood() not implementated.","OrdinalLikelihoodCalculator");
-  return 0;
-}
-
-/** calculates the Poisson log likelihood ratio given the number of observed and expected cases
-    - not implemented - throws exception */
-double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) const {
-  ZdGenerateException("CalcLogLikelihoodRatio() not implementated.","OrdinalLikelihoodCalculator");
-  return 0;
-}
-
 /** Calculates loglikelihood ratio for ordinal data of data set 'tSetIndex', defined in vOrdinalCases.
     When scannnig for high and low rates, returns the maximum of low and high ratios. Returns zero if
     llr can not be calculated. */
@@ -156,6 +142,39 @@ void OrdinalLikelihoodCalculator::CalculateCombinedCategories(const std::vector<
           k = i;
      }
   }
+}
+
+/** Calculates the full loglikelihood ratio/test statistic given passed maximizing value and
+    data set index. For the Ordinal calculator, the maximizing value would be the loglikelihood in
+    a particular clustering. If maximizing value equals negative double max value, zero is returned
+    as this indicates that no significant maximizing value was calculated. */
+double OrdinalLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
+  if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;
+  return dMaximizingValue - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+}
+
+/** Calculates the maximizing value given observed cases, expected cases and data set index.
+    For the Ordinal calculator, the maximizing value is the loglikelihood. */
+double OrdinalLikelihoodCalculator::CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
+  double lowMaximizingValue=0, highMaximizingValue=0;
+  bool   bMaximizingValue=false;
+
+  if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                                         gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                                         &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
+    highMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
+    bMaximizingValue = true;
+  }
+  if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                                        gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                                        &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
+    lowMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
+    highMaximizingValue = (bMaximizingValue ? std::max(lowMaximizingValue, highMaximizingValue) : lowMaximizingValue);
+    bMaximizingValue = true;
+  }
+
+  // return calculated loglikelihood ratio
+  return (bMaximizingValue ? highMaximizingValue : -std::numeric_limits<double>::max());
 }
 
 /** Given previously calculated probabilites inside and outside of cluster, calculates loglikelihood. */
@@ -279,17 +298,5 @@ bool OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea(double dPk, dou
   return (!dQk && !dQi) || // both dPk/dQk and dPi/dQi equal infinity
          (!dQk && dQi)  || // dPk/dQk equals infinity and is greater
          (dQk && dQi && dPk/dQk >= dPi/dQi);
-}
-
-/** returns log likelihood for total - not implemented - throws exception. */
-double OrdinalLikelihoodCalculator::GetLogLikelihoodForTotal() const {
-  ZdGenerateException("GetLogLikelihoodForTotal() not implementated.","OrdinalLikelihoodCalculator");
-  return 0;
-}
-
-/** Returns log likelihood ratio given passed log likelihood - not implemented - throws exception.  */
-double OrdinalLikelihoodCalculator::GetLogLikelihoodRatio(double dLogLikelihood) const {
-  ZdGenerateException("GetLogLikelihoodRatio() not implementated.","OrdinalLikelihoodCalculator");
-  return 0;
 }
 

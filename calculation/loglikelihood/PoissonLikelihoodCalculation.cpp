@@ -1,14 +1,21 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "PoissonLikelihoodCalculation.h"
 #include "PurelySpatialMonotoneCluster.h"
 #include "SVTTCluster.h"
 
 /** constructor */
 PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& DataHub)
-                            :AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {}
+                            :AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {
+  //store data set loglikelihoods under null
+  for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
+    count_t   N = DataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases();
+    measure_t U = DataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasure();
+    gvDataSetLogLikelihoodUnderNull.push_back((N*log(N/U)));
+  }
+}
 
 /** destructor */
 PoissonLikelihoodCalculator::~PoissonLikelihoodCalculator() {}
@@ -16,8 +23,8 @@ PoissonLikelihoodCalculator::~PoissonLikelihoodCalculator() {}
 /** calculates the Poisson log likelihood given the number of observed and expected cases
     - the total cases and expected cases used are that of first data set */
 double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
-   count_t   N = gtTotalCasesInFirstDataSet;
-   measure_t U = gtTotalMeasureInFirstDataSet;
+  count_t   N = gvDataSetTotals[0].first;
+  measure_t U = gvDataSetTotals[0].second;
 
    if (n != N && n != 0)
      return n*log(n/u) + (N-n)*log((N-n)/(U-u));
@@ -27,8 +34,10 @@ double PoissonLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) co
      return n*log(n/u);
 }
 
-/** calculates the Poisson log likelihood ratio given the number of observed and expected cases */
-double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) const {
+/** calculates the Poisson log likelihood ratio given the number of observed, expected cases and data set index. */
+double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, size_t tSetIndex) const {
+  count_t   N = gvDataSetTotals[tSetIndex].first;
+  measure_t U = gvDataSetTotals[tSetIndex].second;
   double    dLogLikelihood;
 
   // calculate the loglikelihood
@@ -40,7 +49,7 @@ double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t 
      dLogLikelihood = n*log(n/u);
 
   // return the logliklihood ratio (loglikelihood - loglikelihood for total)
-  return dLogLikelihood - (N*log(N/U));
+  return dLogLikelihood - (gvDataSetLogLikelihoodUnderNull[tSetIndex]);
 }
 
 /** needs documentation */
@@ -182,20 +191,32 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSetIndex, CSVT
   return nLogLikelihood;
 }
 
-/** returns log likelihood for total
-    - the total cases and expected cases used are that of first data set */
-double PoissonLikelihoodCalculator::GetLogLikelihoodForTotal() const {
-  count_t   N = gtTotalCasesInFirstDataSet;
-  measure_t U = gtTotalMeasureInFirstDataSet;
+/** Calculates the full loglikelihood ratio/test statistic given passed maximizing value and
+    data set index. For the Poisson calculator, the maximizing value would be the loglikelihood in
+    a particular clustering. If maximizing value equals negative double max value, zero is returned
+    as this indicates that no significant maximizing value was calculated. */
+double PoissonLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
+  if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;
 
-  return N*log(N/U);
+  return dMaximizingValue - (gvDataSetLogLikelihoodUnderNull[tSetIndex]);
 }
 
-/** Returns log likelihood ratio given passed log likelihood.  */
-double PoissonLikelihoodCalculator::GetLogLikelihoodRatio(double dLogLikelihood) const {
-  count_t   N = gtTotalCasesInFirstDataSet;
-  measure_t U = gtTotalMeasureInFirstDataSet;
+/** Calculates the maximizing value given observed cases, expected cases and data set index.
+    For the Poisson calculator, the maximizing value is the loglikelihood. */
+double PoissonLikelihoodCalculator::CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex) const {
+  count_t   N = gvDataSetTotals[tDataSetIndex].first;
+  measure_t U = gvDataSetTotals[tDataSetIndex].second;
 
-  return dLogLikelihood - (N*log(N/U));
+  if (n != N && n != 0)
+    return n*log(n/u) + (N-n)*log((N-n)/(U-u));
+  else if (n == 0)
+    return (N-n) * log((N-n)/(U-u));
+  else
+    return n*log(n/u);
+}
+
+/** returns log likelihood for total data set at index */
+double PoissonLikelihoodCalculator::GetLogLikelihoodForTotal(size_t tSetIndex) const {
+  return gvDataSetLogLikelihoodUnderNull[tSetIndex];
 }
 

@@ -3,50 +3,57 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 #include "NormalLikelihoodCalculation.h"
+#include "SaTScanData.h"
 
 /** constructor */
-NormalLikelihoodCalculator::NormalLikelihoodCalculator(const CSaTScanData& Data)
-                           :AbstractLikelihoodCalculator(Data) {}
+NormalLikelihoodCalculator::NormalLikelihoodCalculator(const CSaTScanData& DataHub)
+                           :AbstractLikelihoodCalculator(DataHub) {
+  //pre-calculate each data sets loglikelihood under the null
+  for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t)
+     gvDataSetMeasureSqTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasureSq());
+}
 
 /** destructor */
 NormalLikelihoodCalculator::~NormalLikelihoodCalculator() {}
 
-/** calculates the log likelihood given the number of observed and expected cases  - not implemented - throws exception.*/
-double NormalLikelihoodCalculator::CalcLogLikelihood(count_t n, measure_t u) const {
-  ZdGenerateException("CalcLogLikelihood() not implementated.","NormalLikelihoodCalculator");
-  return 0;
+/** Calculates the full loglikelihood ratio/test statistic given passed maximizing value and
+    data set index. For the Normal calculator, the maximizing value would be the negative variance in
+    a particular clustering. If maximizing value equals negative double max value, zero is returned
+    as this indicates that no significant maximizing value was calculated. */
+double NormalLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
+  if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;
+  count_t   N = gvDataSetTotals[tSetIndex].first;
+  measure_t U = gvDataSetTotals[tSetIndex].second;
+  measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
+  return -1 * N * std::log(std::sqrt((-1 * dMaximizingValue))) + N * std::log(std::sqrt(U2/N - std::pow(U/N, 2)));
 }
 
-/** calculates the Poisson log likelihood ratio given the number of observed and expected cases  - not implemented - throws exception.*/
-double NormalLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t u, count_t N, measure_t U) const {
-  ZdGenerateException("CalcLogLikelihoodRatio() not implementated.","NormalLikelihoodCalculator");
-  return 0;
+/** Calculates the maximizing value given observed cases, expected cases, expected cases squared and data set index.
+    For the Normal calculator, the maximizing value is the negative variance. */
+double NormalLikelihoodCalculator::CalculateMaximizingValueNormal(count_t n, measure_t u, measure_t u2, size_t tSetIndex) const {
+  count_t   N = gvDataSetTotals[tSetIndex].first;
+  measure_t U = gvDataSetTotals[tSetIndex].second;
+  measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
+  if (!(N - n)) return -std::numeric_limits<double>::max(); //when the cluster contains all the cases in set
+  assert(n > 0);
+  double dEstimatedMeanInside = u/n;
+  double dEstimatedMeanOutside = (U - u)/(N - n);
+  double dEstimatedVariance = (1.0/N) * (u2 - 2.0 * u * dEstimatedMeanInside + n * std::pow(dEstimatedMeanInside, 2) +
+                              (U2 - u2) - 2.0 * (U - u) * dEstimatedMeanOutside + (N - n) * std::pow(dEstimatedMeanOutside, 2));
+  return -1 * dEstimatedVariance;
 }
 
-/** calculates the Poisson log likelihood ratio given the number of observed and expected cases, and second measure  - not implemented - throws exception. */
-double NormalLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalMeasureSq) const {
-  if (!(tTotalCases - tCases)) return 0; //when the cluster contains all the cases in set, ratio is zero
-  assert(tCases > 0);
-  double dEstimatedMeanInside = tMeasure/tCases;
-  double dEstimatedMeanOutside = (tTotalMeasure - tMeasure)/(tTotalCases - tCases);
-  double dEstimatedVariance = (1.0/tTotalCases)
-                              * (tMeasure2 - 2.0 * tMeasure * dEstimatedMeanInside + tCases * std::pow(dEstimatedMeanInside, 2) +
-                                 (tTotalMeasureSq - tMeasure2) - 2.0 * (tTotalMeasure - tMeasure) * dEstimatedMeanOutside +
-                                 (tTotalCases - tCases) * std::pow(dEstimatedMeanOutside, 2) );
-
-
-  return -1 * tTotalCases * std::log(std::sqrt(dEstimatedVariance)) + tTotalCases * std::log(std::sqrt(tTotalMeasureSq/tTotalCases - std::pow(tTotalMeasure/tTotalCases, 2)));
-}
-
-/** returns log likelihood for total - not implemented - throws exception. */
-double NormalLikelihoodCalculator::GetLogLikelihoodForTotal() const {
-  ZdGenerateException("GetLogLikelihoodForTotal() not implementated.","NormalLikelihoodCalculator");
-  return 0;
-}
-
-/** Returns log likelihood ratio given passed log likelihood - not implemented - throws exception.  */
-double NormalLikelihoodCalculator::GetLogLikelihoodRatio(double dLogLikelihood) const {
-  ZdGenerateException("GetLogLikelihoodRatio() not implementated.","NormalLikelihoodCalculator");
-  return 0;
+/** calculates the Normal log likelihood ratio given the number of observed, expected cases, and expected cases squared */
+double NormalLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t n, measure_t u, measure_t u2, size_t tSetIndex) const {
+  count_t   N = gvDataSetTotals[tSetIndex].first;
+  measure_t U = gvDataSetTotals[tSetIndex].second;
+  measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
+  if (!(N - n)) return 0; //when the cluster contains all the cases in set, ratio is zero
+  assert(n > 0);
+  double dEstimatedMeanInside = u/n;
+  double dEstimatedMeanOutside = (U - u)/(N - n);
+  double dEstimatedVariance = (1.0/N) * (u2 - 2.0 * u * dEstimatedMeanInside + n * std::pow(dEstimatedMeanInside, 2) +
+                              (U2 - u2) - 2.0 * (U - u) * dEstimatedMeanOutside + (N - n) * std::pow(dEstimatedMeanOutside, 2));
+  return -1 * N * std::log(std::sqrt(dEstimatedVariance)) + N * std::log(std::sqrt(U2/N - std::pow(U/N, 2)));
 }
 

@@ -40,15 +40,12 @@ class OrdinalLikelihoodCalculator : public AbstractLikelihoodCalculator {
     OrdinalLikelihoodCalculator(const CSaTScanData& DataHub);
     virtual ~OrdinalLikelihoodCalculator();
 
-    virtual double      CalcLogLikelihood(count_t n, measure_t u) const;
-    virtual double      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) const;
     virtual double      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double      CalcLogLikelihoodRatioOrdinalHighRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double      CalcLogLikelihoodRatioOrdinalLowRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
+    virtual double      CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex=0) const;
+    virtual double      CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual void        CalculateOrdinalCombinedCategories(const std::vector<count_t>& vOrdinalCases, std::vector<OrdinalCombinedCategory>& vOrdinalCategories, size_t tSetIndex=0) const;
-    virtual double      GetLogLikelihoodForTotal() const;
-    virtual double      GetLogLikelihoodRatio(double dLogLikelihood) const;
-
 };
 //******************************************************************************
 #endif
