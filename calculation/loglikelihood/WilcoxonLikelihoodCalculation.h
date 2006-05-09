@@ -11,11 +11,6 @@ class WilcoxonLikelihoodCalculator : public AbstractLikelihoodCalculator {
   public:
     WilcoxonLikelihoodCalculator(const CSaTScanData& Data);
     virtual ~WilcoxonLikelihoodCalculator();
-
-    virtual double      CalcLogLikelihood(count_t n, measure_t u) const;
-    virtual double      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, count_t tTotalCases, measure_t tTotalMeasure) const;
-    virtual double      GetLogLikelihoodForTotal() const;
-    virtual double      GetLogLikelihoodRatio(double dLogLikelihood) const;    
 };
 //*****************************************************************************
 #endif
