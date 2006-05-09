@@ -16,21 +16,21 @@ class CSpaceTimeAnalysis : public CAnalysis {
   typedef IntermediateClustersContainer<CSpaceTimeCluster> intermediate_clusters_t;
 
   protected:
-    intermediate_clusters_t    gTopShapeClusters; /** collection of clusters representing top cluster for each shape */
-    CSpaceTimeCluster        * gpClusterComparator; /** cluster object utilized to find top cluster */
-    SpaceTimeData            * gpClusterData;       /** cluster data object utilized in calculated simulation ratio */
-    CMeasureList             * gpMeasureList;       /** measure list object utilized in calculated simulation ratio */
-    CTimeIntervals           * gpTimeIntervals;     /** iterates through temporal windows of cluster data */
+    intermediate_clusters_t                     gTopShapeClusters;    /** collection of clusters representing top cluster for each shape */
+    std::auto_ptr<CSpaceTimeCluster>            gClusterComparator;   /** cluster object utilized to find top cluster */
+    std::auto_ptr<AbstractTemporalClusterData>  gAbstractClusterData;
+    std::auto_ptr<CMeasureList>                 gMeasureList;         /** measure list object utilized in calculated simulation ratio */
+    std::auto_ptr<CTimeIntervals>               gTimeIntervals;       /** iterates through temporal windows of cluster data */
 
     virtual void               AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
     virtual void               AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
     virtual const CCluster   & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
+    virtual double             MonteCarlo(const DataSetInterface& Interface);
+    virtual double             MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CSpaceTimeAnalysis();
-
-    virtual double             MonteCarlo(const DataSetInterface& Interface);
 };
-//***********************************************************************************
+//******************************************************************************
 #endif

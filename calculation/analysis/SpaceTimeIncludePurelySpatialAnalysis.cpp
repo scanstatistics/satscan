@@ -7,19 +7,10 @@
 
 /** Constructor */
 C_ST_PS_Analysis::C_ST_PS_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                 :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection), gPSTopShapeClusters(DataHub), gPSPTopShapeClusters(DataHub),
-                  gpPSClusterComparator(0), gpPSPClusterComparator(0), gpPSClusterData(0), gpPSPClusterData(0) {}
+                 :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection), gPSTopShapeClusters(DataHub), gPSPTopShapeClusters(DataHub) {}
 
 /** Destructor */
-C_ST_PS_Analysis::~C_ST_PS_Analysis() {
-  try {
-    delete gpPSClusterComparator;
-    delete gpPSPClusterComparator;
-    delete gpPSClusterData;
-    delete gpPSPClusterData;
-  }
-  catch(...){}
-}
+C_ST_PS_Analysis::~C_ST_PS_Analysis() {}
 
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
@@ -27,36 +18,13 @@ C_ST_PS_Analysis::~C_ST_PS_Analysis() {
 void C_ST_PS_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
   try {
     CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
-    //delete object used during real data
-    delete gpPSPClusterComparator; gpPSPClusterComparator=0;
-    delete gpPSClusterComparator; gpPSClusterComparator=0;
     //create simulation objects based upon which process used to perform simulations
-    if (geReplicationsProcessType == MeasureListEvaluation) {
-      if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
-        gpPSPClusterData = new ProspectiveSpatialData(gDataHub, DataGateway);
-      else
-        gpPSClusterData = new SpatialData(DataGateway, gParameters.GetExecuteScanRateType());
-    }
-    else {
-      if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME) {
-        //create cluster object used as comparator when iterating over centroids and time intervals
-        gpPSPClusterComparator = new CPurelySpatialProspectiveCluster(gpClusterDataFactory, DataGateway, gDataHub);
-        //initialize list of top circle/ellipse clusters
-        gPSPTopShapeClusters.SetTopClusters(*gpPSPClusterComparator);
-      }
-      else {
-        //create cluster object used as comparator when iterating over centroids and time intervals
-        gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, (int)gParameters.GetExecuteScanRateType());
-        //initialize list of top circle/ellipse clusters
-        gPSTopShapeClusters.SetTopClusters(*gpPSClusterComparator);
-      }
-    }
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+      gAbstractPSPClusterData.reset(gpClusterDataFactory->GetNewProspectiveSpatialClusterData(gDataHub, DataGateway));
+    else
+      gAbstractPSClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(DataGateway));
   }
   catch (ZdException &x) {
-    delete gpPSClusterData; gpPSClusterData=0;
-    delete gpPSPClusterData; gpPSPClusterData=0;
-    delete gpPSPClusterComparator; gpPSPClusterComparator=0;
-    delete gpPSClusterComparator; gpPSClusterComparator=0;
     x.AddCallpath("AllocateSimulationObjects()","C_ST_PS_Analysis");
     throw;
   }
@@ -69,11 +37,10 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway &
     //create top cluster objects for space-time portion
     CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);
     //create comparator cluster for purely spatial cluster
-    gpPSClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType());
-    gPSTopShapeClusters.SetTopClusters(*gpPSClusterComparator);
+    gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, DataGateway));
+    gPSTopShapeClusters.SetTopClusters(*gPSClusterComparator);
   }
   catch (ZdException &x) {
-    delete gpPSClusterComparator; gpPSClusterComparator=0;
     x.AddCallpath("AllocateTopClustersObjects()","C_ST_PS_Analysis");
     throw;
   }
@@ -86,26 +53,26 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abs
   int                   j;
 
   //re-initialize clusters
-  if (gpPSClusterComparator) gPSTopShapeClusters.Reset(tCenter);
-  if (gpPSPClusterComparator) gPSPTopShapeClusters.Reset(tCenter);
+  if (gPSClusterComparator.get()) gPSTopShapeClusters.Reset(tCenter);
+  if (gPSPClusterComparator.get()) gPSPTopShapeClusters.Reset(tCenter);
   gTopShapeClusters.Reset(tCenter);
 
   for (j=0 ;j <= gParameters.GetNumTotalEllipses(); ++j) {
      CentroidNeighbors CentroidDef(j, gDataHub);
      CentroidDef.Set(tCenter);
-     gpClusterComparator->Initialize(tCenter);
-     gpClusterComparator->SetEllipseOffset(j, gDataHub);
-     if (gpPSClusterComparator) {
-       gpPSClusterComparator->Initialize(tCenter);
-       gpPSClusterComparator->SetEllipseOffset(j, gDataHub);
-       gpPSClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gPSTopShapeClusters.GetTopCluster(j), *gpLikelihoodCalculator);
+     gClusterComparator->Initialize(tCenter);
+     gClusterComparator->SetEllipseOffset(j, gDataHub);
+     if (gPSClusterComparator.get()) {
+       gPSClusterComparator->Initialize(tCenter);
+       gPSClusterComparator->SetEllipseOffset(j, gDataHub);
+       gPSClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gPSTopShapeClusters.GetTopCluster(j), *gpLikelihoodCalculator);
      }
      else {
-       gpPSPClusterComparator->Initialize(tCenter);
-       gpPSPClusterComparator->SetEllipseOffset(j, gDataHub);
-       gpPSPClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gPSPTopShapeClusters.GetTopCluster(j), *gpLikelihoodCalculator);
+       gPSPClusterComparator->Initialize(tCenter);
+       gPSPClusterComparator->SetEllipseOffset(j, gDataHub);
+       gPSPClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gPSPTopShapeClusters.GetTopCluster(j), *gpLikelihoodCalculator);
      }
-     gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gTopShapeClusters.GetTopCluster(j), *gpTimeIntervals);
+     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gTopShapeClusters.GetTopCluster(j), *gTimeIntervals);
   }
   return GetTopCalculatedCluster();
 }
@@ -113,7 +80,7 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abs
 /** returns top cluster calculated during 'FindTopClsuters()' routine */
 const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
   try {
-    CCluster& PSCluster = gpPSClusterComparator ? (CCluster&)gPSTopShapeClusters.GetTopCluster() : (CCluster&)gPSPTopShapeClusters.GetTopCluster();
+    CCluster& PSCluster = gPSClusterComparator.get() ? (CCluster&)gPSTopShapeClusters.GetTopCluster() : (CCluster&)gPSPTopShapeClusters.GetTopCluster();
     CCluster& STCluster = (CCluster&)gTopShapeClusters.GetTopCluster();
     if (!PSCluster.ClusterDefined())
       return STCluster;
@@ -134,36 +101,130 @@ double C_ST_PS_Analysis::MonteCarlo(const DataSetInterface & Interface) {
     return MonteCarloProspective(Interface);
 
   tract_t               i, k;
+  SpatialData         * pSpatialData = dynamic_cast<SpatialData*>(gAbstractPSClusterData.get());
+  SpaceTimeData       * pSpaceTimeData = dynamic_cast<SpaceTimeData*>(gAbstractClusterData.get());
 
-  gpMeasureList->Reset();
+  gMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
-        gpPSClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
-        gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
+        pSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
+        pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
-     gpMeasureList->SetForNextIteration(k);
+     gMeasureList->SetForNextIteration(k);
   }
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
+  return gMeasureList->GetMaximumLogLikelihoodRatio();
+}
+
+/** Returns cluster centered at grid point nCenter, with the greatest log
+    likelihood ratio . Caller should not assume that returned reference is
+    persistent, but should either call Clone() method or overloaded assignment
+    operator. */
+double C_ST_PS_Analysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
+  if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
+    return MonteCarloProspective(tCenter, DataGateway);
+    
+  tract_t                       t, tNumNeighbors, * pIntegerArray;
+  unsigned short              * pUnsignedShortArray;
+  double                        dMaximizingValue;
+  std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+  std::vector<double>::iterator itr, itr_end;
+
+  for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
+     double& dShapeMaxValue = vMaximizingValues[j];
+     gAbstractPSClusterData->InitializeData();
+     gAbstractClusterData->InitializeData();
+     CentroidNeighbors CentroidDef(j, gDataHub);
+     CentroidDef.Set(tCenter);
+     tNumNeighbors = CentroidDef.GetNumNeighbors();                     
+     pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+     pIntegerArray = CentroidDef.GetRawIntegerArray();
+     for (t=0; t < tNumNeighbors; ++t) {
+        gAbstractPSClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+        dMaximizingValue = gAbstractPSClusterData->GetMaximizingValue(*gpLikelihoodCalculator);
+        if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+        gAbstractClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+        dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gAbstractClusterData);
+        if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+     }
+  }
+  //if maximizing value is not a ratio/test statistic, convert them now
+  if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+    for (itr=vMaximizingValues.begin(),itr_end=vMaximizingValues.end(); itr != itr_end; ++itr)
+      *itr = gpLikelihoodCalculator->CalculateFullStatistic(*itr);
+  //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
+  double dPenalty = gDataHub.GetParameters().GetNonCompactnessPenaltyPower();
+  dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(0), dPenalty);
+  for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
+     *itr *= CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(t), dPenalty);
+     dMaximizingValue = std::max(*itr, dMaximizingValue);
+  }
+  return dMaximizingValue;
 }
 
 /** Returns loglikelihood for Monte Carlo Prospective replication. */
 double C_ST_PS_Analysis::MonteCarloProspective(const DataSetInterface & Interface) {
-  tract_t               k, i;
+  tract_t                  k, i;
+  ProspectiveSpatialData * pPSSpatialData = dynamic_cast<ProspectiveSpatialData*>(gAbstractPSPClusterData.get());
+  SpaceTimeData          * pSpaceTimeData = dynamic_cast<SpaceTimeData*>(gAbstractClusterData.get());
 
-  gpMeasureList->Reset();
+  gMeasureList->Reset();
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
-        gpPSPClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
-        gpClusterData->AddNeighborDataAndCompare(CentroidDef, Interface, *gpTimeIntervals, *gpMeasureList);
+        pPSSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
+        pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
-     gpMeasureList->SetForNextIteration(k);
+     gMeasureList->SetForNextIteration(k);
   }
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
+  return gMeasureList->GetMaximumLogLikelihoodRatio();
+}
+
+/** Returns cluster centered at grid point nCenter, with the greatest log
+    likelihood ratio . Caller should not assume that returned reference is
+    persistent, but should either call Clone() method or overloaded assignment
+    operator. */
+double C_ST_PS_Analysis::MonteCarloProspective(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
+  tract_t                       t, tNumNeighbors, * pIntegerArray;
+  unsigned short              * pUnsignedShortArray;
+  double                        dMaximizingValue;
+  std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+  std::vector<double>::iterator itr, itr_end;
+  AbstractProspectiveSpatialClusterData * pPSPSpatialData = dynamic_cast<AbstractProspectiveSpatialClusterData*>(gAbstractPSPClusterData.get());
+
+  for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
+     double& dShapeMaxValue = vMaximizingValues[j];
+     gAbstractPSPClusterData->InitializeData();
+     gAbstractClusterData->InitializeData();
+     CentroidNeighbors CentroidDef(j, gDataHub);
+     CentroidDef.Set(tCenter);
+     tNumNeighbors = CentroidDef.GetNumNeighbors();
+     pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+     pIntegerArray = CentroidDef.GetRawIntegerArray();
+     for (t=0; t < tNumNeighbors; ++t) {
+        gAbstractPSPClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+        dMaximizingValue = pPSPSpatialData->GetMaximizingValue(*gpLikelihoodCalculator);
+        if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+        gAbstractClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+        dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gAbstractClusterData);
+        if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+     }
+  }
+  //if maximizing value is not a ratio/test statistic, convert them now
+  if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+    for (itr=vMaximizingValues.begin(),itr_end=vMaximizingValues.end(); itr != itr_end; ++itr)
+      *itr = gpLikelihoodCalculator->CalculateFullStatistic(*itr);
+  //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
+  double dPenalty = gDataHub.GetParameters().GetNonCompactnessPenaltyPower();
+  dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(0), dPenalty);
+  for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
+     *itr *= CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(t), dPenalty);
+     dMaximizingValue = std::max(*itr, dMaximizingValue);
+  }
+  return dMaximizingValue;
 }
 

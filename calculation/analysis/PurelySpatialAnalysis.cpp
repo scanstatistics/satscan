@@ -7,40 +7,21 @@
 
 /** Constructor */
 CPurelySpatialAnalysis::CPurelySpatialAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                       :CAnalysis(Parameters, DataHub, PrintDirection), gTopShapeClusters(DataHub),
-                        gpClusterComparator(0), gpClusterData(0), gpMeasureList(0) {}
+                       :CAnalysis(Parameters, DataHub, PrintDirection), gTopShapeClusters(DataHub) {}
 
 /** Desctructor */
-CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){
-  try {
-    delete gpClusterComparator;
-    delete gpClusterData;
-    delete gpMeasureList;
-  }
-  catch(...){}
-}
+CPurelySpatialAnalysis::~CPurelySpatialAnalysis(){}
 
 /** Allocates objects used during Monte Carlo simulations instead of repeated
     allocations for each simulation. This method must be called prior to MonteCarlo(). */
 void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway) {
   try {
-    delete gpMeasureList; gpMeasureList=0;
-    delete gpClusterData; gpClusterData=0;
-    delete gpClusterComparator; gpClusterComparator=0;
     //create simulation objects based upon which process used to perform simulations
-    if (geReplicationsProcessType == MeasureListEvaluation) {
-      gpClusterData = new SpatialData(DataGateway, gParameters.GetExecuteScanRateType());
-      gpMeasureList = GetNewMeasureListObject();
-    }
-    else { //simulations performed using same process as real data set
-      gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType());
-      gTopShapeClusters.SetTopClusters(*gpClusterComparator);
-    }
+    if (geReplicationsProcessType == MeasureListEvaluation)
+      gMeasureList.reset(GetNewMeasureListObject());
+    gAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(DataGateway));
   }
   catch (ZdException &x) {
-    delete gpClusterComparator; gpClusterComparator=0;
-    delete gpClusterData; gpClusterData=0;
-    delete gpMeasureList; gpMeasureList=0;
     x.AddCallpath("AllocateSimulationObjects()","CPurelySpatialAnalysis");
     throw;
   }
@@ -50,12 +31,10 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGate
     of repeated allocations. This method must be called prior to CalculateTopCluster(). */
 void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
   try {
-    delete gpClusterComparator; gpClusterComparator=0;
-    gpClusterComparator = new CPurelySpatialCluster(gpClusterDataFactory, DataGateway, gParameters.GetExecuteScanRateType());
-    gTopShapeClusters.SetTopClusters(*gpClusterComparator);
+    gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, DataGateway));
+    gTopShapeClusters.SetTopClusters(*gClusterComparator);
   }
   catch (ZdException &x) {
-    delete gpClusterComparator; gpClusterComparator=0;
     x.AddCallpath("AllocateTopClustersObjects()","CPurelySpatialAnalysis");
     throw;
   }
@@ -71,28 +50,65 @@ const CCluster& CPurelySpatialAnalysis::CalculateTopCluster(tract_t tCenter, con
   for (j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      CentroidNeighbors CentroidDef(j, gDataHub);
      CentroidDef.Set(tCenter);
-     gpClusterComparator->Initialize(tCenter);
-     gpClusterComparator->SetEllipseOffset(j, gDataHub);
-     gpClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef,
-                                                                     gTopShapeClusters.GetTopCluster(j),
-                                                                     *gpLikelihoodCalculator);
+     gClusterComparator->Initialize(tCenter);
+     gClusterComparator->SetEllipseOffset(j, gDataHub);
+     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef,
+                                                                    gTopShapeClusters.GetTopCluster(j),
+                                                                    *gpLikelihoodCalculator);
   }
   return gTopShapeClusters.GetTopCluster();
 }
 
-/** Returns loglikelihood ratio for Monte Carlo replication. */
-double CPurelySpatialAnalysis::MonteCarlo(const DataSetInterface& Interface) {
-  tract_t               k, i;
+/** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */
+double CPurelySpatialAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
+  tract_t                       t, tNumNeighbors, * pIntegerArray;
+  unsigned short              * pUnsignedShortArray;
+  double                        dMaximizingValue;
+  std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
+  std::vector<double>::iterator itr, itr_end;
 
-  gpMeasureList->Reset();
+  for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
+     double& dShapeMaxValue = vMaximizingValues[j];
+     gAbstractClusterData->InitializeData();
+     CentroidNeighbors CentroidDef(j, gDataHub);
+     CentroidDef.Set(tCenter);
+     tNumNeighbors = CentroidDef.GetNumNeighbors();
+     pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+     pIntegerArray = CentroidDef.GetRawIntegerArray();
+     for (t=0; t < tNumNeighbors; ++t) {
+        gAbstractClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+        dMaximizingValue = gAbstractClusterData->GetMaximizingValue(*gpLikelihoodCalculator);
+        if (dMaximizingValue > dShapeMaxValue) dShapeMaxValue = dMaximizingValue;
+     }
+  }
+  //if maximizing value is not a ratio/test statistic, convert them now
+  if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+    for (itr=vMaximizingValues.begin(),itr_end=vMaximizingValues.end(); itr != itr_end; ++itr)
+      *itr = gpLikelihoodCalculator->CalculateFullStatistic(*itr);
+  //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
+  double dPenalty = gDataHub.GetParameters().GetNonCompactnessPenaltyPower();
+  dMaximizingValue = vMaximizingValues.front() * CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(0), dPenalty);
+  for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
+     *itr *= CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(t), dPenalty);
+     dMaximizingValue = std::max(*itr, dMaximizingValue);
+  }
+  return dMaximizingValue;
+}
+
+/** Returns loglikelihood ratio for Monte Carlo replication utilizing measure list structure. */
+double CPurelySpatialAnalysis::MonteCarlo(const DataSetInterface& Interface) {
+  tract_t       k, i;
+  SpatialData * pSpatialData = dynamic_cast<SpatialData*>(gAbstractClusterData.get());
+
+  gMeasureList->Reset();
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
-        gpClusterData->AddMeasureList(CentroidDef, Interface, gpMeasureList);
+        pSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
      }
-     gpMeasureList->SetForNextIteration(k);
+     gMeasureList->SetForNextIteration(k);
   }
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
+  return gMeasureList->GetMaximumLogLikelihoodRatio();
 }
 

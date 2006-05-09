@@ -8,23 +8,22 @@
     which includes purely spatial and purely temporal clusters. */
 class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
   private:
-    CPurelyTemporalCluster      * gpTopPurelyTemporalCluster; /** cluster object utilized in calculating simulation llr */
-    CPurelyTemporalCluster      * gpPTClusterComparator;      /** cluster object utilized in calculating simulation llr */
-    AbstractTemporalClusterData * gpPTClusterData;
-
-    void                        Init();
+    std::auto_ptr<CPurelyTemporalCluster>      gTopPurelyTemporalCluster; /** cluster object utilized in calculating simulation llr */
+    std::auto_ptr<CPurelyTemporalCluster>      gPTClusterComparator;      /** cluster object utilized in calculating simulation llr */
+    std::auto_ptr<AbstractTemporalClusterData> gPTClusterData;
 
   protected:
     virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+    virtual double              MonteCarlo(const DataSetInterface& Interface);
+    virtual double              MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
     double                      MonteCarloProspective(const DataSetInterface& Interface);
+    double                      MonteCarloProspective(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PS_PT_Analysis();
 
     virtual void                FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
-    virtual double              FindTopRatio(const AbstractDataSetGateway& DataGateway);
-    virtual double              MonteCarlo(const DataSetInterface& Interface);
 };
 //*************************************************************************
 #endif

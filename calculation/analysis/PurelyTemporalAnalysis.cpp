@@ -7,21 +7,10 @@
 
 /** Constructor */
 CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                        :CAnalysis(Parameters, DataHub, PrintDirection) {
-  Init();
-}
+                        :CAnalysis(Parameters, DataHub, PrintDirection) {}
 
 /** Destructor */
-CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {
-  try {
-    delete gpTopCluster;
-    delete gpClusterData;
-    delete gpMeasureList;
-    delete gpTimeIntervals;
-    delete gpClusterComparator;
-  }
-  catch (...){}
-}
+CPurelyTemporalAnalysis::~CPurelyTemporalAnalysis() {}
 
 /** Allocates objects used during simulations, instead of repeated allocations
     for each simulation. Which objects that are allocated depends on whether
@@ -30,106 +19,66 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbstractDataSetGat
   IncludeClustersType           eIncludeClustersType;
 
   try {
-    //create new time intervals object - delete existing object used during real data process
-    delete gpTimeIntervals; gpTimeIntervals=0;
-    if (gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
-      //for prospective analyses, allocate time object with ALLCLUSTERS for simulations
-      eIncludeClustersType = ALLCLUSTERS;
-    else
-      eIncludeClustersType = gParameters.GetIncludeClustersType();
-    gpTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
-
-    //create simulation objects based upon which process used to perform simulations
-    if (geReplicationsProcessType == MeasureListEvaluation) {
-      //create new cluster data object
-      gpClusterData = new TemporalData(DataGateway);
-      //create new measure list object
-      gpMeasureList = GetNewMeasureListObject();
-    }
-    else { //simulations performed using same process as real data set
-      gpTopCluster = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
-      gpClusterComparator = new CPurelyTemporalCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
-    }
+    eIncludeClustersType = (gParameters.GetIsProspectiveAnalysis() ? ALLCLUSTERS : gParameters.GetIncludeClustersType());
+    gTimeIntervals.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType, SUCCESSIVELY));
+    if (geReplicationsProcessType == MeasureListEvaluation)
+      gMeasureList.reset(GetNewMeasureListObject());
+    gClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(DataGateway));
   }
   catch (ZdException &x) {
-    delete gpClusterData; gpClusterData=0;
-    delete gpMeasureList; gpMeasureList=0;
-    delete gpTimeIntervals; gpTimeIntervals=0;
-    delete gpClusterComparator; gpClusterComparator=0;
-    delete gpTopCluster;gpTopCluster=0;
     x.AddCallpath("AllocateSimulationObjects()","CPurelyTemporalAnalysis");
     throw;
   }
 }
 
-/** Allocates objects used during calculation of most likely clusters, instead
-    of repeated allocations for each simulation.
-    NOTE: No action taken in this function for this class. Objects are allocated
-          directly in CPurelyTemporalAnalysis::FindTopClusters(). */
-void CPurelyTemporalAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {}
-
-const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
+const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t, const AbstractDataSetGateway&) {
   ZdGenerateException("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
-  return *gpTopCluster;
+  return dynamic_cast<const CCluster&>(*this);
 }
 
 /** Calculate most likely, purely temporal, cluster and adds clone of top cluster
     to top cluster array. */
 void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
   IncludeClustersType           eIncludeClustersType;
-  CTimeIntervals              * pTimeIntervals=0;  
+  std::auto_ptr<CTimeIntervals> TimeIntervals;
 
   try {
     //determine the type of clusters to compare
-    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)
-      eIncludeClustersType = ALIVECLUSTERS;
-    else
-      eIncludeClustersType = gParameters.GetIncludeClustersType();
+    eIncludeClustersType = (gParameters.GetIsProspectiveAnalysis() ? ALIVECLUSTERS : gParameters.GetIncludeClustersType());
     //create cluster objects
     CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //get new time intervals objects
-    pTimeIntervals = GetNewTemporalDataEvaluatorObject(eIncludeClustersType);
+    TimeIntervals.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType, SUCCESSIVELY));
     //iterate through time intervals, finding top cluster
-    pTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
+    TimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     //if any interesting clusters found, add to top cluster array
     if (TopCluster.ClusterDefined())
       TopClustersContainer.Add(TopCluster);
-    delete pTimeIntervals; pTimeIntervals=0;
   }
   catch (ZdException &x) {
-    delete pTimeIntervals;
     x.AddCallpath("FindTopClusters()","CPurelyTemporalAnalysis");
     throw;
   }
 }
 
-/** calculates greatest loglikelihood ratio for a temporal cluster */
-double CPurelyTemporalAnalysis::FindTopRatio(const AbstractDataSetGateway&) {
-  //re-initialize comparator cluster and top cluster
-  gpClusterComparator->Initialize();
-  gpTopCluster->Initialize();
+/** Returns maximized value for Monte Carlo replication. Depending on the parameter settings,
+    value returned might either be the maximizing value or full loglikelihood ratio/test statistic. */
+double CPurelyTemporalAnalysis::MonteCarlo(tract_t, const AbstractDataSetGateway&) {
+  gClusterData->InitializeData();
   //iterate through time intervals, finding top cluster
-  gpTimeIntervals->CompareClusters(*gpClusterComparator, *gpTopCluster);
-  //return ratio of top cluster
-  return gpTopCluster->m_nRatio;
-}
-
-/** internal initialization */
-void CPurelyTemporalAnalysis::Init() {
-  gpTopCluster=0;
-  gpClusterData=0;
-  gpMeasureList=0;
-  gpTimeIntervals=0;
-  gpClusterComparator=0;
+  double dMaximumingValue = gTimeIntervals->ComputeMaximizingValue(*gClusterData);
+  if (gDataHub.GetDataSetHandler().GetNumDataSets() == 1)
+    dMaximumingValue = gpLikelihoodCalculator->CalculateFullStatistic(dMaximumingValue);
+  return std::max(0.0, dMaximumingValue);  
 }
 
 /** Returns log likelihood ratio for Monte Carlo replication. */
 double CPurelyTemporalAnalysis::MonteCarlo(const DataSetInterface&) {
-  gpMeasureList->Reset();
+  gMeasureList->Reset();
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
-  gpTimeIntervals->CompareMeasures(*gpClusterData, *gpMeasureList);
+  gTimeIntervals->CompareMeasures(*gClusterData, *gMeasureList);
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
-  return gpMeasureList->GetMaximumLogLikelihoodRatio();
+  return gMeasureList->GetMaximumLogLikelihoodRatio();
 }
 

@@ -14,13 +14,15 @@ class CPurelySpatialAnalysis : public CAnalysis {
   typedef IntermediateClustersContainer<CPurelySpatialCluster> intermediate_clusters_t;
 
   private:
-    intermediate_clusters_t     gTopShapeClusters;   /** collection of clusters representing top cluster for each shape */
-    CPurelySpatialCluster     * gpClusterComparator; /** cluster object utilized to find top cluster */
-    SpatialData               * gpClusterData;       /** cluster data object utilized in calculated simulation ratio */
-    CMeasureList              * gpMeasureList;       /** measure list object utilized in calculated simulation ratio */
+    intermediate_clusters_t                   gTopShapeClusters;     /** collection of clusters representing top cluster for each shape */
+    std::auto_ptr<CPurelySpatialCluster>      gClusterComparator;   /** cluster object utilized to find top cluster */
+    std::auto_ptr<AbstractSpatialClusterData> gAbstractClusterData; /** cluster data object utilized in calculated simulation ratio */
+    std::auto_ptr<CMeasureList>               gMeasureList;         /** measure list object utilized in calculated simulation ratio */
 
   protected:
     virtual const CCluster    & CalculateTopCluster(tract_t nCenter, const AbstractDataSetGateway& DataGateway);
+    virtual double              MonteCarlo(const DataSetInterface& Interface);
+    virtual double              MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     CPurelySpatialAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
@@ -28,7 +30,6 @@ class CPurelySpatialAnalysis : public CAnalysis {
 
     virtual void                AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
     virtual void                AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
-    virtual double              MonteCarlo(const DataSetInterface& Interface);
 };
 //******************************************************************************
 #endif

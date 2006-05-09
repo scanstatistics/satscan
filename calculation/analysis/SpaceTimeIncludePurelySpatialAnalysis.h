@@ -19,24 +19,27 @@ class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
   typedef IntermediateClustersContainer<CPurelySpatialProspectiveCluster> intermediate_psp_clusters_t;
     
   protected:
-    SpatialData                       * gpPSClusterData;
-    CPurelySpatialCluster             * gpPSClusterComparator;
-    intermediate_ps_clusters_t          gPSTopShapeClusters;
-    ProspectiveSpatialData            * gpPSPClusterData;
-    CPurelySpatialProspectiveCluster  * gpPSPClusterComparator;
-    intermediate_psp_clusters_t         gPSPTopShapeClusters;
+//    SpatialData                       * gpPSClusterData;
+    std::auto_ptr<CPurelySpatialCluster>            gPSClusterComparator;
+    intermediate_ps_clusters_t                      gPSTopShapeClusters;
+//    ProspectiveSpatialData            * gpPSPClusterData;
+    std::auto_ptr<CPurelySpatialProspectiveCluster> gPSPClusterComparator;
+    intermediate_psp_clusters_t                     gPSPTopShapeClusters;
+    std::auto_ptr<AbstractSpatialClusterData>       gAbstractPSClusterData; /** cluster data object utilized in calculated simulation ratio */
+    std::auto_ptr<AbstractTemporalClusterData>      gAbstractPSPClusterData;
 
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway);
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway);
     virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
     virtual const CCluster            & GetTopCalculatedCluster();
+    virtual double                      MonteCarlo(const DataSetInterface & Interface);
+    virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
     double                              MonteCarloProspective(const DataSetInterface & Interface);
+    double                              MonteCarloProspective(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     C_ST_PS_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PS_Analysis();
-
-    virtual double                      MonteCarlo(const DataSetInterface & Interface);
 };
 //***********************************************************************************
 #endif
