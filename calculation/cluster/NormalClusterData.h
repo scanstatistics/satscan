@@ -15,13 +15,12 @@ class AbstractNormalClusterData {
 /** Class representing accumulated data of spatial clustering of a normal probability model. */
 class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
   public:
-    NormalSpatialData(const DataSetInterface& Interface, int iRate);
-    NormalSpatialData(const AbstractDataSetGateway& DataGateway, int iRate);
+    NormalSpatialData(const DataSetInterface& Interface);
+    NormalSpatialData(const AbstractDataSetGateway& DataGateway);
     virtual ~NormalSpatialData() {}
 
     //public data memebers
     measure_t                gtSqMeasure;      /** expected number of cases - squared measure */
-    measure_t                gtTotalMeasureSq; /** total squared expected cases */
 
     virtual void             AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -29,6 +28,7 @@ class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
     virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual NormalSpatialData * Clone() const;
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t        GetMeasureSq(unsigned int tSetIndex=0) const {return gtSqMeasure;}
     virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
 };
@@ -49,7 +49,6 @@ class NormalTemporalData : public TemporalData, public AbstractNormalClusterData
 
     measure_t                    gtSqMeasure;
     measure_t                  * gpSqMeasure;
-    measure_t                    gtTotalMeasureSq; /** total squared expected cases */
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
@@ -64,7 +63,7 @@ class NormalTemporalData : public TemporalData, public AbstractNormalClusterData
     For spatial cluster data, in a prospective analysis, the supposed study
     period does not necessarily remain fixed but changes with the prospective
     end date. This class represents that 'spatial' data clustering. */
-class NormalProspectiveSpatialData : public NormalTemporalData {
+class NormalProspectiveSpatialData : public NormalTemporalData, public AbstractProspectiveSpatialClusterData {
   private:
      void                                  Init() {gpCases=0;gpMeasure=0;gpSqMeasure=0;}
      void                                  Setup(const CSaTScanData& Data, const DataSetInterface& Interface);
@@ -74,7 +73,6 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
      unsigned int                          giAllocationSize;    /** size of allocated arrays */
      unsigned int                          giNumTimeIntervals;  /** number of time intervals in study period */
      unsigned int                          giProspectiveStart;  /** index of prospective start date in DataInterface case array */
-     RATE_FUNCPTRTYPE                      gfRateOfInterest;    /** function pointer to 'rate of interest' function */
 
   public:
     NormalProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
@@ -87,6 +85,7 @@ class NormalProspectiveSpatialData : public NormalTemporalData {
     virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual NormalProspectiveSpatialData * Clone() const;
     virtual void             DeallocateEvaluationAssistClassMembers();
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual void             InitializeData();
     NormalProspectiveSpatialData & operator=(const NormalProspectiveSpatialData& rhs);
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}

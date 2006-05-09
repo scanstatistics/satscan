@@ -7,14 +7,12 @@
 //************** class NormalSpatialData ***************************************
 
 /** class constructor */
-NormalSpatialData::NormalSpatialData(const DataSetInterface& Interface, int iRate)
-                  :SpatialData(Interface, iRate), gtSqMeasure(0),
-                   gtTotalMeasureSq(Interface.GetTotalMeasureSqCount()) {}
+NormalSpatialData::NormalSpatialData(const DataSetInterface& Interface)
+                  :SpatialData(Interface), gtSqMeasure(0) {}
 
 /** class constructor */
-NormalSpatialData::NormalSpatialData(const AbstractDataSetGateway& DataGateway, int iRate)
-                  :SpatialData(DataGateway, iRate), gtSqMeasure(0),
-                   gtTotalMeasureSq(DataGateway.GetDataSetInterface().GetTotalMeasureSqCount()) {}
+NormalSpatialData::NormalSpatialData(const AbstractDataSetGateway& DataGateway)
+                  :SpatialData(DataGateway), gtSqMeasure(0) {}
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
@@ -41,8 +39,8 @@ void NormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure, gtTotalMeasureSq);
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure);
   return 0;
 }
 
@@ -58,22 +56,29 @@ void NormalSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs
   gtMeasure = ((const NormalSpatialData&)rhs).gtMeasure;
   gtSqMeasure = ((const NormalSpatialData&)rhs).gtSqMeasure;
 }
+
+/** Calculates and returns maximizing value given accumulated cluster data. If data
+    is not significant given scanning rate, negation of maximum double returned. */
+double NormalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    return Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtSqMeasure);
+  return -std::numeric_limits<double>::max();
+}
+
 //************** class NormalTemporalData **************************************
 
 /** class constructor */
-NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqMeasure(0), gtTotalMeasureSq(0) {}
+NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqMeasure(0) {}
 
 /** class constructor */
 NormalTemporalData::NormalTemporalData(const DataSetInterface& Interface)
                    :TemporalData(Interface), gtSqMeasure(0),
-                    gpSqMeasure(Interface.GetPTSqMeasureArray()),
-                    gtTotalMeasureSq(Interface.GetTotalMeasureSqCount()) {}
+                    gpSqMeasure(Interface.GetPTSqMeasureArray()) {}
 
 /** class constructor */
 NormalTemporalData::NormalTemporalData(const AbstractDataSetGateway& DataGateway)
                    :TemporalData(DataGateway.GetDataSetInterface()), gtSqMeasure(0),
-                    gpSqMeasure(DataGateway.GetDataSetInterface().GetPTSqMeasureArray()),
-                    gtTotalMeasureSq(DataGateway.GetDataSetInterface().GetTotalMeasureSqCount()) {}
+                    gpSqMeasure(DataGateway.GetDataSetInterface().GetPTSqMeasureArray()) {}
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
@@ -197,18 +202,40 @@ double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelih
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
   gtSqMeasure = gpSqMeasure[0];
-  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure, gtTotalMeasureSq);
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
     gtSqMeasure = gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
-    if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio,
-                                        Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure, gtTotalCases, gtTotalMeasure, gtTotalMeasureSq));
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure));
   }
   return dMaxLoglikelihoodRatio;
+}
+
+/** Calculates and returns maximizing value given accumulated cluster data. If data
+    is not significant given scanning rate, negation of maximum double returned. */
+double NormalProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  unsigned int  iWindowEnd;
+  double        dMaxValue(-std::numeric_limits<double>::max());
+
+  gtCases = gpCases[0];
+  gtMeasure = gpMeasure[0];
+  gtSqMeasure = gpSqMeasure[0];
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    dMaxValue = Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtSqMeasure, 0);
+
+  for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
+    gtCases = gpCases[0] - gpCases[iWindowEnd];
+    gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
+    gtSqMeasure = gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtSqMeasure, 0));
+  }
+  return dMaxValue;
 }
 
 /** Returns newly cloned NormalProspectiveSpatialData object. Caller responsible
@@ -246,9 +273,6 @@ void NormalProspectiveSpatialData::InitializeData() {
 NormalProspectiveSpatialData & NormalProspectiveSpatialData::operator=(const NormalProspectiveSpatialData& rhs) {
    gtCases = rhs.gtCases;
    gtMeasure = rhs.gtMeasure;
-   gtTotalCases = rhs.gtTotalCases;
-   gtTotalMeasure = rhs.gtTotalMeasure;
-   gtTotalMeasureSq = rhs.gtTotalMeasureSq;
    giAllocationSize = rhs.giAllocationSize;
    giNumTimeIntervals = rhs.giNumTimeIntervals;
    giProspectiveStart = rhs.giProspectiveStart;
@@ -275,22 +299,12 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSet
     giAllocationSize = 1 + Data.m_nTimeIntervals - Data.GetProspectiveStartIndex();
     giNumTimeIntervals = Data.m_nTimeIntervals;
     giProspectiveStart = Data.GetProspectiveStartIndex();
-    gtTotalCases = Interface.GetTotalCasesCount();
-    gtTotalMeasure = Interface.GetTotalMeasureCount();
-    gtTotalMeasureSq = Interface.GetTotalMeasureSqCount();
-
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
     gpSqMeasure = new measure_t[giAllocationSize];
     memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
-    switch (Data.GetParameters().GetExecuteScanRateType()) {
-      case LOW        : gfRateOfInterest = LowRate;       break;
-      case HIGHANDLOW : gfRateOfInterest = HighOrLowRate; break;
-      case HIGH       :
-      default         : gfRateOfInterest = HighRate;
-    };
   }
   catch (ZdException &x) {
     delete[] gpCases;
@@ -406,9 +420,6 @@ void NormalSpaceTimeData::InitializeData() {
 NormalSpaceTimeData & NormalSpaceTimeData::operator=(const NormalSpaceTimeData& rhs) {
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
-  gtTotalCases = rhs.gtTotalCases;
-  gtTotalMeasure = rhs.gtTotalMeasure;
-  gtTotalMeasureSq = rhs.gtTotalMeasureSq;
   giAllocationSize = rhs.giAllocationSize;
   if (rhs.geEvaluationAssistDataStatus == Allocated) {
     if (!gpCases) gpCases = new count_t[rhs.giAllocationSize];
@@ -434,9 +445,6 @@ void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     //us to evaluate last time intervals data with same code as other time intervals
     //in CTimeIntervals object.
     giAllocationSize = Interface.GetNumTimeIntervals() + 1;
-    gtTotalCases = Interface.GetTotalCasesCount();
-    gtTotalMeasure = Interface.GetTotalMeasureCount();
-    gtTotalMeasureSq = Interface.GetTotalMeasureSqCount();
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
