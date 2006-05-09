@@ -38,6 +38,7 @@ class CategoricalSpatialData : public AbstractSpatialClusterData, public Abstrac
     virtual void             GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                           std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                           unsigned int tSetIndex=0) const;
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void             InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);}
 };
@@ -77,7 +78,7 @@ class CategoricalTemporalData : public AbstractTemporalClusterData, public Abstr
     For spatial cluster data, in a prospective analysis, the supposed study
     period does not necessarily remain fixed but changes with the prospective
     end date. This class represents that 'spatial' data clustering. */
-class CategoricalProspectiveSpatialData : public CategoricalTemporalData {
+class CategoricalProspectiveSpatialData : public CategoricalTemporalData, public AbstractProspectiveSpatialClusterData {
   private:
     void                                Setup(const CSaTScanData& Data, const DataSetInterface& Interface);
 
@@ -100,6 +101,7 @@ class CategoricalProspectiveSpatialData : public CategoricalTemporalData {
     virtual CategoricalProspectiveSpatialData * Clone() const;
     virtual void             DeallocateEvaluationAssistClassMembers();
     virtual unsigned int     GetAllocationSize() const {return (gCategoryCasesHandler.get() ? gCategoryCasesHandler->Get2ndDimension() : 0);}
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual void             InitializeData() {assert(geEvaluationAssistDataStatus == Allocated);
                                                std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);
                                                gCategoryCasesHandler->Set(0);}

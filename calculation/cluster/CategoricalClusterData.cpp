@@ -8,7 +8,7 @@
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface)
-                       :AbstractSpatialClusterData(0), AbstractCategoricalClusterData() {
+                       :AbstractSpatialClusterData(), AbstractCategoricalClusterData() {
 
   gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   InitializeData();
@@ -16,7 +16,7 @@ CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const AbstractDataSetGateway& DataGateway)
-                       :AbstractSpatialClusterData(0), AbstractCategoricalClusterData() {
+                       :AbstractSpatialClusterData(), AbstractCategoricalClusterData() {
                         
   gvCasesPerCategory.resize(DataGateway.GetDataSetInterface().GetNumOrdinalCategories(), 0);
   InitializeData();
@@ -76,6 +76,11 @@ void CategoricalSpatialData::GetOrdinalCombinedCategories(const OrdinalLikelihoo
                                                           std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                           unsigned int) const {
   Calculator.CalculateOrdinalCombinedCategories(gvCasesPerCategory, vCategoryContainer);
+}
+
+/** Calculates and returns maximizing value given accumulated data, as calculated by passed AbstractLikelihoodCalculator. */
+double CategoricalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  return Calculator.CalculateMaximizingValueOrdinal(gvCasesPerCategory);
 }
 
 /** No implemented - throws ZdException. */
@@ -248,6 +253,25 @@ double CategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLi
      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioOrdinal(gvCasesPerCategory));
   }
   return dMaxLoglikelihoodRatio;
+}
+
+/** Calculates and returns maximizing value given accumulated data, as calculated by passed AbstractLikelihoodCalculator. */
+double CategoricalProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  unsigned int  iWindowEnd;
+  double        dMaxValue(-std::numeric_limits<double>::max());
+  unsigned int  iMaxWindow = gCategoryCasesHandler->Get2ndDimension() - 1;
+
+  for (size_t t=0; t < gvCasesPerCategory.size(); ++t)
+    gvCasesPerCategory[t] = gppCategoryCases[t][0];
+  dMaxValue = Calculator.CalculateMaximizingValueOrdinal(gvCasesPerCategory, 0);
+
+  for (iWindowEnd=1; iWindowEnd < iMaxWindow; ++iWindowEnd) {
+    for (size_t t=0; t < gvCasesPerCategory.size(); ++t)
+       gvCasesPerCategory[t] = gppCategoryCases[t][0] - gppCategoryCases[t][iWindowEnd];
+     dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueOrdinal(gvCasesPerCategory, 0));
+  }
+  return dMaxValue;
 }
 
 /** Returns newly cloned CategoricalProspectiveSpatialData object. Caller
