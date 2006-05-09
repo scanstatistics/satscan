@@ -833,16 +833,6 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
   }
 }
 
-/** Sets scanning area rate. */
-void CCluster::SetRate(int nRate) {
-  switch (nRate) {
-    case HIGH       : m_pfRateOfInterest = HighRate;      break;
-    case LOW        : m_pfRateOfInterest = LowRate;       break;
-    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
-    default         : ;
-  }
-}
-
 /** Writes location information to stsAreaSpecificData object for each tract
     contained in cluster. */
 void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,

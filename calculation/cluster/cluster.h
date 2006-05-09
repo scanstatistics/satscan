@@ -19,7 +19,6 @@ class CCluster {
   protected:
     tract_t                       m_Center;                // Center of cluster (index to grid)
     tract_t                       m_MostCentralLocation;   // Index of most central location
-    RATE_FUNCPTRTYPE              m_pfRateOfInterest;
     tract_t                       m_nTracts;               // Number of neighboring tracts in cluster
     double                        m_CartesianRadius;       // radius based upon locations in cluster in Cartesian system
     unsigned int                  m_nRank;                 // Rank based on results of simulations
@@ -113,7 +112,6 @@ class CCluster {
     virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
-    void                          SetRate(int nRate);
     virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
                                         unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
 };
