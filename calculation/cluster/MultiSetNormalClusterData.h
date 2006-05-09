@@ -14,7 +14,7 @@ class MultiSetNormalSpatialData : public AbstractSpatialClusterData, public Abst
     ZdPointerVector<NormalSpatialData>             gvSetClusterData;
 
   public:
-    MultiSetNormalSpatialData(const NormalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate);
+    MultiSetNormalSpatialData(const NormalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
     virtual ~MultiSetNormalSpatialData() {}
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -26,6 +26,7 @@ class MultiSetNormalSpatialData : public AbstractSpatialClusterData, public Abst
     void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                           AbstractLikelihoodCalculator& Calculator,
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual measure_t   GetMeasureSq(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
@@ -64,7 +65,7 @@ class MultiSetNormalTemporalData : public AbstractMultiSetNormalTemporalData {
 };
 
 /** Class representing accumulated data of prospective spatial clustering in multiple data sets. */
-class MultiSetNormalProspectiveSpatialData : public AbstractMultiSetNormalTemporalData {
+class MultiSetNormalProspectiveSpatialData : public AbstractMultiSetNormalTemporalData, public AbstractProspectiveSpatialClusterData {
   protected:
     EvaluationAssistDataStatus               geEvaluationAssistDataStatus;
 
@@ -76,6 +77,7 @@ class MultiSetNormalProspectiveSpatialData : public AbstractMultiSetNormalTempor
     virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual MultiSetNormalProspectiveSpatialData * Clone() const;
     virtual void             DeallocateEvaluationAssistClassMembers();
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual void             InitializeData();
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}

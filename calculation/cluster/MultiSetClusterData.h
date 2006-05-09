@@ -12,7 +12,7 @@ class MultiSetSpatialData : public AbstractSpatialClusterData {
     ZdPointerVector<SpatialData>           gvSetClusterData;
 
   public:
-    MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate);
+    MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
     virtual ~MultiSetSpatialData() {}
 
     virtual void             AddMeasureList(CMeasureList* pMeasureList, tract_t tNeighborIndex, const DataSetInterface& Interface);
@@ -25,6 +25,7 @@ class MultiSetSpatialData : public AbstractSpatialClusterData {
     virtual void             GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                                AbstractLikelihoodCalculator& Calculator,
                                                                std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
     virtual void             InitializeData();
 };
@@ -60,7 +61,7 @@ class MultiSetTemporalData : public AbstractMultiSetTemporalData {
 };
 
 /** Class representing accumulated data of prospective spatial clustering in multiple data sets. */
-class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData {
+class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData, public AbstractProspectiveSpatialClusterData {
   protected:
     EvaluationAssistDataStatus               geEvaluationAssistDataStatus;
 
@@ -72,6 +73,7 @@ class MultiSetProspectiveSpatialData : public AbstractMultiSetTemporalData {
     virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual MultiSetProspectiveSpatialData * Clone() const;
     virtual void             DeallocateEvaluationAssistClassMembers();
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual void             InitializeData();
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}

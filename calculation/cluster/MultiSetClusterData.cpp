@@ -9,11 +9,11 @@
 //******************* class MultiSetSpatialData ***********************
 
 /** class constructor */
-MultiSetSpatialData::MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate)
-                    :AbstractSpatialClusterData(iRate) {
+MultiSetSpatialData::MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway)
+                    :AbstractSpatialClusterData() {
   //Allocate SpatialData object for each data set.
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
-     gvSetClusterData.push_back(dynamic_cast<SpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t), iRate)));
+     gvSetClusterData.push_back(dynamic_cast<SpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t))));
 }
 
 /** Not implemented - throws ZdException. */
@@ -45,7 +45,7 @@ double MultiSetSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalcul
 
   Unifier.Reset();
   for (; itr != gvSetClusterData.end(); ++itr, ++i)
-     Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtTotalCases, (*itr)->gtTotalMeasure);
+     Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, i);
   return Unifier.GetLoglikelihoodRatio();
 }
 
@@ -79,16 +79,13 @@ void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglik
   vDataSetIndexes.clear();
   if (pUnifier) {
     std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
-    std::vector<std::pair<double, double> >::iterator   itr_pair;
-    ZdPointerVector<SpatialData>::const_iterator        itr_data;
     double                                              dHighRatios=0, dLowRatios=0;
 
     //for each data set, calculate llr values - possibly scanning for both high and low rates
-    for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
-       pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
-                                 (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, *itr_pair);
-       dHighRatios += itr_pair->first;
-       dLowRatios += itr_pair->second;
+    for (size_t t=0; t < gvSetClusterData.size(); ++t) {
+       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, t, vHighLowRatios[t]);
+       dHighRatios += vHighLowRatios[t].first;
+       dLowRatios += vHighLowRatios[t].second;
     }
     //assess collection of llr values to determine which data sets created target ratios
     // - if scanning for high and low ratios, determine which corresponding rate produced
@@ -99,16 +96,17 @@ void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglik
     else if (dLowRatios == dTargetLoglikelihoodRatio)
       bHighRatios = false;
     else {//target ratio does not equal high or low ratios
-     //likely round-off error 
+     //likely round-off error
       if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = true;
       else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = false;
-      else 
+      else
         ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetSpatialData",
                             dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
 
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
     for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
        if ((bHighRatios ? itr_pair->first : itr_pair->second))
          vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
@@ -117,6 +115,12 @@ void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglik
     size_t t=0;
     while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
   }
+}
+
+/** Implements interface that calculates maximizing value - for multiple data sets, maximizing
+    value is the full test statistic/ratio. */
+double MultiSetSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  return CalculateLoglikelihoodRatio(Calculator);
 }
 
 /** Returns expected number of cases in accumulated respective data sets' cluster data.
@@ -165,16 +169,13 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
   vDataSetIndexes.clear();
   if (pUnifier) {
     std::vector<std::pair<double, double> >             vHighLowRatios(gvSetClusterData.size());
-    std::vector<std::pair<double, double> >::iterator   itr_pair;
-    ZdPointerVector<TemporalData>::const_iterator       itr_data;
     double                                              dHighRatios=0, dLowRatios=0;
 
     //for each data set, calculate llr values - possibly scanning for both high and low rates
-    for (itr_data=gvSetClusterData.begin(), itr_pair=vHighLowRatios.begin(); itr_data != gvSetClusterData.end(); ++itr_data, ++itr_pair) {
-       pUnifier->GetHighLowRatio(Calculator, (*itr_data)->gtCases, (*itr_data)->gtMeasure,
-                                 (*itr_data)->gtTotalCases, (*itr_data)->gtTotalMeasure, *itr_pair);
-       dHighRatios += itr_pair->first;
-       dLowRatios += itr_pair->second;
+    for (size_t t=0; t < gvSetClusterData.size(); ++t) {
+       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, t, vHighLowRatios[t]);
+       dHighRatios += vHighLowRatios[t].first;
+       dLowRatios += vHighLowRatios[t].second;
     }
     //assess collection of llr values to determine which data sets created target ratios
     // - if scanning for high and low ratios, determine which corresponding rate produced
@@ -185,7 +186,7 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
     else if (dLowRatios == dTargetLoglikelihoodRatio)
       bHighRatios = false;
     else {//target ratio does not equal high or low ratios
-     //likely round-off error 
+     //likely round-off error
       if (std::fabs(dHighRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = true;
       else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
@@ -194,7 +195,8 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
         ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetTemporalData",
                             dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
-    
+
+    std::vector<std::pair<double, double> >::iterator   itr_pair;
     for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
        if ((bHighRatios ? itr_pair->first : itr_pair->second))
          vDataSetIndexes.push_back(std::distance(vHighLowRatios.begin(), itr_pair));
@@ -273,23 +275,23 @@ void MultiSetProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, con
     each data set and adds together.*/
 double MultiSetProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   assert(geEvaluationAssistDataStatus == Allocated);
-  unsigned int                            iWindowEnd, iAllocationSize;
+  unsigned int                            t, iWindowEnd, iAllocationSize;
   double                                  dMaxLoglikelihoodRatio=0;
   AbstractLoglikelihoodRatioUnifier     & Unifier = Calculator.GetUnifier();
   ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
 
   Unifier.Reset();
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
-  for (;itr != gvSetClusterData.end(); ++itr)
-     Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], (*itr)->gtTotalCases, (*itr)->gtTotalMeasure);
+  for (t=0;itr != gvSetClusterData.end(); ++itr, ++t)
+     Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], t);
   dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
   for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
      Unifier.Reset();
-     for (itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr) {
+     for (t=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++t) {
         (*itr)->gtCases = (*itr)->gpCases[0] - (*itr)->gpCases[iWindowEnd];
         (*itr)->gtMeasure =  (*itr)->gpMeasure[0] - (*itr)->gpMeasure[iWindowEnd];
-        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtTotalCases, (*itr)->gtTotalMeasure);
+        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, t);
      }
      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
   }
@@ -320,6 +322,11 @@ void MultiSetProspectiveSpatialData::InitializeData() {
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
+/** Implements interface that calculates maximizing value - for multiple data sets, maximizing
+    value is the full test statistic/ratio. */
+double MultiSetProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  return CalculateLoglikelihoodRatio(Calculator);
+}
 //********************** class MultiSetSpaceTimeData ***************************
 
 /** class constructor */

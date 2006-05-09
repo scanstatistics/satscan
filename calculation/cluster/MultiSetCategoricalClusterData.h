@@ -14,7 +14,7 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
     ZdPointerVector<CategoricalSpatialData>             gvSetClusterData;
 
   public:
-    MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate);
+    MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
     virtual ~MultiSetCategoricalSpatialData() {}
 
     virtual void        AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -27,6 +27,7 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
     void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                           AbstractLikelihoodCalculator& Calculator,
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
@@ -73,7 +74,7 @@ class MultiSetCategoricalTemporalData : public AbstractMultiSetCategoricalTempor
 
 /** Class representing accumulated data of a prospective spatial clustering in
     multiple data sets for case data which is partitioned by category. */
-class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategoricalTemporalData {
+class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategoricalTemporalData, public AbstractProspectiveSpatialClusterData {
   protected:
      EvaluationAssistDataStatus          geEvaluationAssistDataStatus;
   
@@ -86,6 +87,7 @@ class MultiSetCategoricalProspectiveSpatialData : public AbstractMultiSetCategor
     virtual double      CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
     virtual MultiSetCategoricalProspectiveSpatialData * Clone() const;
     virtual void        DeallocateEvaluationAssistClassMembers();
+    virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual void        Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void        Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };

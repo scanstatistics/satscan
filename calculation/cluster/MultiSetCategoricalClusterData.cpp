@@ -10,10 +10,10 @@
 //***************** class MultiSetCategoricalSpatialData ***********************
 
 /** class constructor */
-MultiSetCategoricalSpatialData::MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway, int iRate)
-                                  :AbstractSpatialClusterData(0), AbstractCategoricalClusterData() {
+MultiSetCategoricalSpatialData::MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway)
+                                  :AbstractSpatialClusterData(), AbstractCategoricalClusterData() {
   for (size_t t=0; t < DataGateway.GetNumInterfaces(); ++t)
-     gvSetClusterData.push_back(dynamic_cast<CategoricalSpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t), iRate)));
+     gvSetClusterData.push_back(dynamic_cast<CategoricalSpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t))));
 }
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
@@ -117,6 +117,12 @@ void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dT
     size_t t=0;
     while (t < gvSetClusterData.size()) {vDataSetIndexes.push_back(t); ++t;}
   }
+}
+
+/** Implements interface that calculates maximizing value - for multiple data set, maximizing
+    value is the full test statistic/ratio. */
+double MultiSetCategoricalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  return CalculateLoglikelihoodRatio(Calculator);
 }
 
 /** Not implemented - throws ZdException. */
@@ -326,6 +332,12 @@ double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(Ab
   }
 
   return dMaxLoglikelihoodRatio;
+}
+
+/** Implements interface that calculates maximizing value - for multiple data set, maximizing
+    value is the full test statistic/ratio. */
+double MultiSetCategoricalProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  return CalculateLoglikelihoodRatio(Calculator);
 }
 
 /** Deallocates data members that assist with evaluation of temporal data.
