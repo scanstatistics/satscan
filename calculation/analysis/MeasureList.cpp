@@ -19,7 +19,7 @@ CMeasureList::~CMeasureList() {}
 void CMeasureList::AddMaximumLogLikelihood(double dMaxLogLikelihood, int iIteration) {
   double dMaxLogLikelihoodRatio, dNonCompactnessPenalty;
 
-  dMaxLogLikelihoodRatio = std::max(0.0, gLikelihoodCalculator.GetLogLikelihoodRatio(dMaxLogLikelihood));
+  dMaxLogLikelihoodRatio = std::max(0.0, gLikelihoodCalculator.CalculateFullStatistic(dMaxLogLikelihood));
 
 
   dNonCompactnessPenalty = CalculateNonCompactnessPenalty(gSaTScanData.GetEllipseShape(iIteration), gSaTScanData.GetParameters().GetNonCompactnessPenaltyPower());
@@ -141,7 +141,7 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   for (;i < iHalfListSize; i++) {
      if (i - gpMinMeasures[i] * dRisk > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i] * dRisk;
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -150,7 +150,7 @@ void CMinMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
   //greater than or equal half.
   for (i=std::max(iHalfListSize, 2); i <= iListSize; i++) {
      if (gpMinMeasures[i] != 0 && i * dTotalMeasure > gpMinMeasures[i] * iListSize) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -178,7 +178,7 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   for (;i < iHalfListSize; i++) {
      if (i - gpMinMeasures[i] > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i];
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -187,7 +187,7 @@ void CMinMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   //greater than or equal half.
   for (i=std::max(iHalfListSize, 2); i <= iListSize; i++) {
      if (gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -275,7 +275,7 @@ void CMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) {
 
   for (i=0; i <= iListSize; i++) {
      if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -297,7 +297,7 @@ void CMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
 
   for (i=0; i <= iListSize; i++) {
      if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -399,13 +399,13 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
   for (i=0; i < iHalfListSize; ++i) {
      if (i > 1 && i - gpMinMeasures[i] * dRisk > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i] * dRisk;
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
 
      if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -414,13 +414,13 @@ void CMinMaxMeasureList::CalculateBernoulliMaximumLogLikelihood(int iIteration) 
   //greater than or equal half.
   for (i=iHalfListSize; i <= iListSize; ++i) {
      if (i > 1 && gpMinMeasures[i] != 0 && i * dTotalMeasure > gpMinMeasures[i] * iListSize) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
 
      if (gpMaxMeasures[i] != 0 && i * dTotalMeasure < gpMaxMeasures[i] * iListSize) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -448,12 +448,12 @@ void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   for (i=0; i < iHalfListSize; ++i) {
      if (i > 1 && i - gpMinMeasures[i] > dMaxExcess) {
        dMaxExcess = i - gpMinMeasures[i];
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
      if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
@@ -462,12 +462,12 @@ void CMinMaxMeasureList::CalculateMaximumLogLikelihood(int iIteration) {
   //greater than or equal half.
   for (i=iHalfListSize; i <= iListSize; ++i) {
      if (i > 1 && gpMinMeasures[i] != 0 && i > gpMinMeasures[i]) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMinMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMinMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
          dMaximumLogLikelihood = dLogLikelihood;
      }
      if (gpMaxMeasures[i] != 0 && i < gpMaxMeasures[i]) {
-       dLogLikelihood = gLikelihoodCalculator.CalcLogLikelihood(i, gpMaxMeasures[i]);
+       dLogLikelihood = gLikelihoodCalculator.CalculateMaximizingValue(i, gpMaxMeasures[i]);
        if (dLogLikelihood > dMaximumLogLikelihood)
            dMaximumLogLikelihood = dLogLikelihood;
      }
