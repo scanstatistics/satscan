@@ -40,6 +40,7 @@ DEFINES     := -D__BASIS_NO_VCL \
 CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
 
+#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lzd$(ZDVER)g -lpthread
 LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lxbaseg -lm -lzd$(ZDVER)g -Wl,-Bdynamic -lrt -lpthread
 
 SRC         := Main.cpp \
@@ -74,6 +75,7 @@ SRC         := Main.cpp \
 	             $(CLUSTER)/PurelySpatialProspectiveCluster.cpp \
                $(CLUSTER)/TimeTrend.cpp \
 	             $(CLUSTER)/TimeIntervalRange.cpp \
+	             $(CLUSTER)/TimeIntervals.cpp \
 	             $(CLUSTER)/AbstractClusterData.cpp \
 	             $(CLUSTER)/ClusterData.cpp \
 	             $(CLUSTER)/NormalClusterData.cpp \
