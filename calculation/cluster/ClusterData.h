@@ -8,15 +8,13 @@
 /** Class representing accumulated data of spatial clustering. */
 class SpatialData : public AbstractSpatialClusterData {
   public:
-    SpatialData(const DataSetInterface& Interface, int iRate);
-    SpatialData(const AbstractDataSetGateway& DataGateway, int iRate);
+    SpatialData(const DataSetInterface& Interface);
+    SpatialData(const AbstractDataSetGateway& DataGateway);
     virtual ~SpatialData() {}
 
     //public data members -- public for speed considerations
     count_t               gtCases;                   /** accumulated cases */
     measure_t             gtMeasure;                 /** accumulated expected cases */
-    count_t               gtTotalCases;              /** total cases */
-    measure_t             gtTotalMeasure;            /** total expected cases */
 
     inline void           AddMeasureList(const CentroidNeighbors& CentroidDef, const DataSetInterface& Interface, CMeasureList* pMeasureList);
     virtual void          AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -25,6 +23,7 @@ class SpatialData : public AbstractSpatialClusterData {
     virtual SpatialData * Clone() const;
     virtual void          CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual double        GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t     GetMeasure(unsigned int tSetIndex=0) const;
     SpatialData         & operator=(const SpatialData& rhs);
     virtual void          InitializeData() {gtCases=0;gtMeasure=0;}
@@ -65,8 +64,6 @@ class TemporalData : public AbstractTemporalClusterData {
     measure_t                   gtMeasure;
     count_t                   * gpCases;
     measure_t                 * gpMeasure;
-    count_t                     gtTotalCases;
-    measure_t                   gtTotalMeasure;
 
     virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
     virtual void                Assign(const AbstractTemporalClusterData& rhs);
@@ -85,7 +82,7 @@ class TemporalData : public AbstractTemporalClusterData {
     For spatial cluster data, in a prospective analysis, the supposed study
     period does not necessarily remain fixed but changes with the prospective
     end date. This class represents that 'spatial' data clustering. */
-class ProspectiveSpatialData : public TemporalData {
+class ProspectiveSpatialData : public TemporalData, public AbstractProspectiveSpatialClusterData {
   private:
      void                            Init() {gpCases=0;gpMeasure=0;}
      void                            Setup(const CSaTScanData & Data, const DataSetInterface& Interface);
@@ -95,7 +92,6 @@ class ProspectiveSpatialData : public TemporalData {
      unsigned int                    giAllocationSize;         /** size of allocated arrays */
      unsigned int                    giNumTimeIntervals;       /** number of time intervals in study period */
      unsigned int                    giProspectiveStart;       /** index of prospective start date in DataInterface case array */
-     RATE_FUNCPTRTYPE                gfRateOfInterest;         /** function pointer to 'rate of interest' function */
 
   public:
     ProspectiveSpatialData(const CSaTScanData& Data, const DataSetInterface& Interface);
@@ -110,6 +106,7 @@ class ProspectiveSpatialData : public TemporalData {
     virtual ProspectiveSpatialData * Clone() const;
     virtual void                     DeallocateEvaluationAssistClassMembers();
     virtual unsigned int             GetAllocationSize() const {return giAllocationSize;}
+    virtual double                   GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     inline virtual void              InitializeData();
     ProspectiveSpatialData         & operator=(const ProspectiveSpatialData& rhs);
     virtual void                     Reassociate(const DataSetInterface& Interface) {/*nop*/}

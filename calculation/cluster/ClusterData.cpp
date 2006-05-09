@@ -8,15 +8,12 @@
 //**************** class SpatialData *******************************************
 
 /** class constructor */
-SpatialData::SpatialData(const DataSetInterface& Interface, int iRate)
-            :AbstractSpatialClusterData(iRate), gtTotalCases(Interface.GetTotalCasesCount()), gtTotalMeasure(Interface.GetTotalMeasureCount()) {
+SpatialData::SpatialData(const DataSetInterface& Interface) : AbstractSpatialClusterData() {
   InitializeData();
 }
 
 /** class constructor */
-SpatialData::SpatialData(const AbstractDataSetGateway& DataGateway, int iRate)
-            :AbstractSpatialClusterData(iRate), gtTotalCases(DataGateway.GetDataSetInterface().GetTotalCasesCount()),
-             gtTotalMeasure(DataGateway.GetDataSetInterface().GetTotalMeasureCount()) {
+SpatialData::SpatialData(const AbstractDataSetGateway& DataGateway) : AbstractSpatialClusterData() {
   InitializeData();
 }
 
@@ -39,9 +36,17 @@ void SpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double SpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure);
   return 0;
+}
+
+/** Calculates and returns maximizing value given accumulated data. If accumulated data
+    is not significant, the negation of the maximum double is returned. */
+double SpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    return Calculator.CalculateMaximizingValue(gtCases, gtMeasure);
+  return -std::numeric_limits<double>::max();
 }
 
 /** Returns newly cloned SpatialData object. Caller resonsible for deletion of object. */
@@ -66,34 +71,28 @@ measure_t SpatialData::GetMeasure(unsigned int) const {
 
 /** Overloaded assignment operator. */
 SpatialData & SpatialData::operator=(const SpatialData& rhs) {
-  gtTotalCases = rhs.gtTotalCases;
-  gtTotalMeasure = rhs.gtTotalMeasure;
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
-  gfRateOfInterest = rhs.gfRateOfInterest;
   return *this;
 }
 
 //**************** class TemporalData ******************************************
 
 /** Protected class constructor - accessible by derived classes only. */
-TemporalData::TemporalData() : AbstractTemporalClusterData(), gpCases(0), gpMeasure(0), gtTotalCases(0), gtTotalMeasure(0) {
+TemporalData::TemporalData() : AbstractTemporalClusterData(), gpCases(0), gpMeasure(0) {
   InitializeData();
 }
 
 /** class constructor */
 TemporalData::TemporalData(const DataSetInterface& Interface) : AbstractTemporalClusterData(),
-              gpCases(Interface.GetPTCaseArray()), gpMeasure(Interface.GetPTMeasureArray()),
-              gtTotalCases(Interface.GetTotalCasesCount()), gtTotalMeasure(Interface.GetTotalMeasureCount()) {
+              gpCases(Interface.GetPTCaseArray()), gpMeasure(Interface.GetPTMeasureArray()) {
   InitializeData();
 }
 
 /** class constructor */
 TemporalData::TemporalData(const AbstractDataSetGateway& DataGateway): AbstractTemporalClusterData(),
               gpCases(DataGateway.GetDataSetInterface().GetPTCaseArray()),
-              gpMeasure(DataGateway.GetDataSetInterface().GetPTMeasureArray()),
-              gtTotalCases(DataGateway.GetDataSetInterface().GetTotalCasesCount()),
-              gtTotalMeasure(DataGateway.GetDataSetInterface().GetTotalMeasureCount()) {              
+              gpMeasure(DataGateway.GetDataSetInterface().GetPTMeasureArray()) {              
   InitializeData();
 }
 
@@ -139,8 +138,6 @@ measure_t TemporalData::GetMeasure(unsigned int) const {
 
 /** Overloaded assignment operator. */
 TemporalData & TemporalData::operator=(const TemporalData& rhs) {
-  gtTotalCases = rhs.gtTotalCases;
-  gtTotalMeasure = rhs.gtTotalMeasure;
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
   gpCases = rhs.gpCases;
@@ -281,15 +278,14 @@ double ProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCal
 
   gtCases = gpCases[0];
   gtMeasure =  gpMeasure[0];
-  if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure);
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
-    if (gfRateOfInterest(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure))
-      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio,
-                                        Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure, gtTotalCases, gtTotalMeasure));
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure));
   }
   return dMaxLoglikelihoodRatio;
 }
@@ -312,12 +308,31 @@ void ProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
   catch (...){}
 }
 
+/** Calculates and returns maximizing value given accumulated data. If accumulated data
+    is not significant, the negation of the maximum double is returned. */
+double ProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  unsigned int  iWindowEnd;
+  double        dMaxValue(-std::numeric_limits<double>::max());
+
+  gtCases = gpCases[0];
+  gtMeasure =  gpMeasure[0];
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    dMaxValue = Calculator.CalculateMaximizingValue(gtCases, gtMeasure, 0);
+
+  for (iWindowEnd=1; iWindowEnd < giAllocationSize; ++iWindowEnd) {
+    gtCases = gpCases[0] - gpCases[iWindowEnd];
+    gtMeasure =  gpMeasure[0] - gpMeasure[iWindowEnd];
+    if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValue(gtCases, gtMeasure, 0));
+  }
+  return dMaxValue;
+}
+
 /** Overloaded assignement operator. */
 ProspectiveSpatialData & ProspectiveSpatialData::operator=(const ProspectiveSpatialData& rhs) {
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
-  gtTotalCases = rhs.gtTotalCases;
-  gtTotalMeasure = rhs.gtTotalMeasure;
   giAllocationSize = rhs.giAllocationSize;
   giNumTimeIntervals = rhs.giNumTimeIntervals;
   giProspectiveStart = rhs.giProspectiveStart;
@@ -341,19 +356,10 @@ void ProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterf
     giAllocationSize = 1 + Data.m_nTimeIntervals - Data.GetProspectiveStartIndex();
     giNumTimeIntervals = Data.m_nTimeIntervals;
     giProspectiveStart = Data.GetProspectiveStartIndex();
-    gtTotalCases = Interface.GetTotalCasesCount();
-    gtTotalMeasure = Interface.GetTotalMeasureCount();
-
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-    switch (Data.GetParameters().GetExecuteScanRateType()) {
-      case LOW        : gfRateOfInterest = LowRate;       break;
-      case HIGHANDLOW : gfRateOfInterest = HighOrLowRate; break;
-      case HIGH       :
-      default         : gfRateOfInterest = HighRate;
-    };
   }
   catch (ZdException &x) {
     delete[] gpCases;
@@ -484,8 +490,6 @@ void SpaceTimeData::DeallocateEvaluationAssistClassMembers() {
 SpaceTimeData & SpaceTimeData::operator=(const SpaceTimeData& rhs) {
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
-  gtTotalCases = rhs.gtTotalCases;
-  gtTotalMeasure = rhs.gtTotalMeasure;
   giAllocationSize = rhs.giAllocationSize;
   if (rhs.geEvaluationAssistDataStatus == Allocated) {
     if(!gpCases) gpCases = new count_t[rhs.giAllocationSize];
@@ -508,8 +512,6 @@ void SpaceTimeData::Setup(const DataSetInterface& Interface) {
     //us to evaluate last time intervals data with same code as other time intervals
     //in CTimeIntervals object.
     giAllocationSize = Interface.GetNumTimeIntervals() + 1;
-    gtTotalCases = Interface.GetTotalCasesCount();
-    gtTotalMeasure = Interface.GetTotalMeasureCount();
     gpCases = new count_t[giAllocationSize];
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
