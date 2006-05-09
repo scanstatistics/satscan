@@ -14,8 +14,8 @@ class CategoricalClusterDataFactory : public AbstractClusterDataFactory {
    virtual ~CategoricalClusterDataFactory();
 
    //spatial cluster data
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const;
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface) const;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const;
 
    //prospective spatial cluster data
    virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface& Interface) const;
@@ -51,8 +51,8 @@ class MultiSetsCategoricalClusterDataFactory : public AbstractClusterDataFactory
    virtual ~MultiSetsCategoricalClusterDataFactory();
 
    //spatial cluster data
-   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const;
-   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const;
+   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const DataSetInterface& Interface) const;
+   virtual AbstractSpatialClusterData * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const;
 
    //prospective spatial cluster data
    virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface& Interface) const;

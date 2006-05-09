@@ -12,8 +12,8 @@ class AbstractClusterDataFactory {
    virtual ~AbstractClusterDataFactory() {}
 
    //spatial cluster data
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const = 0;
-   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const = 0;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface) const = 0;
+   virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const = 0;
 
    //prospective spatial cluster data
    virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface & Interface) const = 0;

@@ -14,7 +14,7 @@ class CPurelySpatialCluster : public CCluster {
     AbstractSpatialClusterData        * gpClusterData;
 
   public:
-    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway, int iRate);
+    CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway);
     CPurelySpatialCluster(const CPurelySpatialCluster& rhs);
     virtual ~CPurelySpatialCluster();
 

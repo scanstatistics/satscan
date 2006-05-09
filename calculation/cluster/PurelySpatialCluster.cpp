@@ -6,11 +6,10 @@
 
 /** constructor */
 CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
-                                             const AbstractDataSetGateway & DataGateway,
-                                             int iRate)
+                                             const AbstractDataSetGateway & DataGateway)
                       :CCluster() {
   try {
-    gpClusterData = pClusterFactory->GetNewSpatialClusterData(DataGateway, iRate);
+    gpClusterData = pClusterFactory->GetNewSpatialClusterData(DataGateway);
     //The last time interval for a purely spatial cluster equals the number of
     //calculated time intervals. This would be 1 for a purely spatial analysis but
     //for a space-time analysis, the index would be dependent on # of intervals requested.

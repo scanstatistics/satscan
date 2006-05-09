@@ -13,13 +13,13 @@ CategoricalClusterDataFactory::~CategoricalClusterDataFactory() {}
 
 /** Returns newly created CategoricalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction. */
-AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialClusterData(const DataSetInterface& Interface, int iRate) const {
+AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialClusterData(const DataSetInterface& Interface) const {
   return new CategoricalSpatialData(Interface);
 }
 
 /** Returns newly created CategoricalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction. */
-AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const {
+AbstractSpatialClusterData * CategoricalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new CategoricalSpatialData(DataGateway);
 }
 
@@ -76,15 +76,15 @@ MultiSetsCategoricalClusterDataFactory::MultiSetsCategoricalClusterDataFactory(c
 MultiSetsCategoricalClusterDataFactory::~MultiSetsCategoricalClusterDataFactory() {}
 
 /** Not implemented. Throws ZdException. */
-AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpatialClusterData(const DataSetInterface&, int) const {
-  ZdGenerateException("GetNewSpatialClusterData(const DataSetInterface&, int) not implemented.","MultiSetsCategoricalClusterDataFactory");
+AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpatialClusterData(const DataSetInterface&) const {
+  ZdGenerateException("GetNewSpatialClusterData(const DataSetInterface&) not implemented.","MultiSetsCategoricalClusterDataFactory");
   return 0;
 }
 
 /** Returns newly created MultiSetCategoricalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction.*/
-AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway, int iRate) const {
-  return new MultiSetCategoricalSpatialData(gClusterDataFactory, DataGateway, iRate);
+AbstractSpatialClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const {
+  return new MultiSetCategoricalSpatialData(gClusterDataFactory, DataGateway);
 }
 
 /** Not implemented. Throws ZdException. */
