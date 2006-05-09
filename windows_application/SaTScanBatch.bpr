@@ -136,7 +136,8 @@
       ..\calculation\randomization\NormalRandomizer.obj 
       ..\calculation\randomization\RankRandomizer.obj 
       ..\calculation\satscan_data\DataSource.obj 
-      ..\calculation\cluster\MultiSetNormalClusterData.obj"/>
+      ..\calculation\cluster\MultiSetNormalClusterData.obj 
+      ..\calculation\cluster\TimeIntervals.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

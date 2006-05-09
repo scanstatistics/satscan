@@ -141,6 +141,7 @@ USEUNIT("..\calculation\randomization\NormalRandomizer.cpp");
 USEUNIT("..\calculation\randomization\RankRandomizer.cpp");
 USEUNIT("..\calculation\satscan_data\DataSource.cpp");
 USEUNIT("..\calculation\cluster\MultiSetNormalClusterData.cpp");
+USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

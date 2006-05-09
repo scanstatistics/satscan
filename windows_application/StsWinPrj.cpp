@@ -162,6 +162,7 @@ USEUNIT("..\calculation\randomization\RankRandomizer.cpp");
 USEFORM("stsFrmSuggestedCitation.cpp", frmSuggestedCitation);
 USEUNIT("..\calculation\satscan_data\DataSource.cpp");
 USEUNIT("..\calculation\cluster\MultiSetNormalClusterData.cpp");
+USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
