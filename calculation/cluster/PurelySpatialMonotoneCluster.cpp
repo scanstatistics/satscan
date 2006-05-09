@@ -415,6 +415,16 @@ double CPSMonotoneCluster::SetLogLikelihood() {
   return m_nLogLikelihood;
 }
 
+/** Sets scanning area rate. */
+void CPSMonotoneCluster::SetRate(int nRate) {
+  switch (nRate) {
+    case HIGH       : m_pfRateOfInterest = HighRate;      break;
+    case LOW        : m_pfRateOfInterest = LowRate;       break;
+    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
+    default         : ;
+  }
+}
+
 /** Calculates log likelihood ratio given log likelihood for total and marks
     internal flag that ratio is set. */
 double CPSMonotoneCluster::SetRatio(double nLikelihoodForTotal) {

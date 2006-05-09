@@ -18,7 +18,8 @@ class CPSMonotoneCluster : public CCluster {
     bool                        m_bRatioSet;          // Has the loglikelihood ratio been set?
     count_t                     m_nCases;             // Number of cases in cluster
     measure_t                   m_nMeasure;           // Expected count for cluster
-    tract_t                     m_nSteps;             // Number of concentric steps in cluster    
+    tract_t                     m_nSteps;             // Number of concentric steps in cluster
+    RATE_FUNCPTRTYPE            m_pfRateOfInterest;
 
     void                        ConcatLastCircles();
     void                        RemoveRemainder();
@@ -66,6 +67,7 @@ class CPSMonotoneCluster : public CCluster {
     double                      GetLogLikelihood() const;
     virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
     virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
+    void                        SetRate(int nRate);
     virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
                                       unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const;
 };
