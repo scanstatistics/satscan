@@ -34,14 +34,7 @@ void AbstractClusterData::GetDataSetIndexesComprisedInRatio(double, AbstractLike
 //******************************************************************************
 
 /** class constructor */
-AbstractSpatialClusterData::AbstractSpatialClusterData(int iRate) : AbstractClusterData() {
-  switch (iRate) {
-    case LOW        : gfRateOfInterest = LowRate;       break;
-    case HIGHANDLOW : gfRateOfInterest = HighOrLowRate; break;
-    case HIGH       :
-    default         : gfRateOfInterest = HighRate;
-  };
-}
+AbstractSpatialClusterData::AbstractSpatialClusterData() : AbstractClusterData() {}
 
 /** class destructor */
 AbstractSpatialClusterData::~AbstractSpatialClusterData() {}

@@ -37,15 +37,23 @@ class AbstractClusterData {
 
 /** Abstract class representing accumulated data of spatial clustering. */
 class AbstractSpatialClusterData : public AbstractClusterData {
-  protected:
-    RATE_FUNCPTRTYPE            gfRateOfInterest;
-
   public:
-    AbstractSpatialClusterData(int iRate);
+    AbstractSpatialClusterData();
     virtual ~AbstractSpatialClusterData();
 
     virtual void                         Assign(const AbstractSpatialClusterData& rhs) = 0;
     virtual AbstractSpatialClusterData * Clone() const = 0;
+
+    virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) = 0;
+};
+
+/**Abstract base class for all categorical cluster data. */
+class AbstractProspectiveSpatialClusterData {
+  public:
+    AbstractProspectiveSpatialClusterData() {}
+    virtual ~AbstractProspectiveSpatialClusterData() {}
+
+    virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) = 0;
 };
 
 /** Abstract class representing accumulated data of temporal clustering. */
