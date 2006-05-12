@@ -829,10 +829,11 @@ void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
    grpWindowShape->Enabled = bEnable;
    rdoCircular->Enabled = bEnable;
    rdoElliptic->Enabled = bEnable && (CoordinatesType)gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN;
-   stNonCompactnessPenalty->Enabled = rdoElliptic->Enabled;
-   cmbNonCompactnessPenalty->Enabled = rdoElliptic->Enabled;
+   stNonCompactnessPenalty->Enabled = rdoElliptic->Enabled && rdoElliptic->Checked;
+   cmbNonCompactnessPenalty->Enabled = rdoElliptic->Enabled && rdoElliptic->Checked;
    cmbNonCompactnessPenalty->Color = cmbNonCompactnessPenalty->Enabled ? clWindow : clInactiveBorder;
    if (!rdoElliptic->Enabled && rdoElliptic->Checked && rdoCircular->Enabled) rdoCircular->Checked = true;
+   SetSpatialDistanceCaption();
 }
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */
@@ -1150,9 +1151,7 @@ void __fastcall TfrmAdvancedParameters::OnNonCompactnessPenaltyChange(TObject *S
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmAdvancedParameters::OnWindowShapeClick(TObject *Sender) {
-  stNonCompactnessPenalty->Enabled = rdoElliptic->Checked;
-  cmbNonCompactnessPenalty->Enabled = rdoElliptic->Checked;
-  SetSpatialDistanceCaption();
+  EnableWindowShapeGroup(grpWindowShape->Enabled);
   DoControlExit();
 }
 //---------------------------------------------------------------------------
