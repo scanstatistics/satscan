@@ -13,6 +13,8 @@ const char * SaTScanToolkit::gsParameterNameProperty = "[ParameterHistory].Param
 const size_t SaTScanToolkit::giMaximumParameterHistoryItems = 10;
 /** last directory browsed */
 const char * SaTScanToolkit::gsLastDirectoryProperty = "[LastDirectory].Path";
+/** last import destination directory browsed */
+const char * SaTScanToolkit::gsLastImportDestinationDirectoryProperty = "[LastDirectory].ImportDestination";
 
 /** ini section property name for logging run history */
 //const char * SaTScanToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
@@ -119,6 +121,10 @@ const char * SaTScanToolkit::GetLastDirectory() /*const*/ {
   return GetSession().GetProperty(gsLastDirectoryProperty)->GetValue();
 }
 
+const char * SaTScanToolkit::GetLastImportDirectory() /*const*/ {
+  return GetSession().GetProperty(gsLastImportDestinationDirectoryProperty)->GetValue();
+}
+
 /** Returns run history filename. */
 const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
   return GetSession().GetProperty(gsHistoryFileNameProperty)->GetValue();
@@ -183,6 +189,45 @@ bool SaTScanToolkit::InsureLastDirectoryPath() {
   }
   catch (ZdException& x) {
     x.AddCallpath("InsureLastDirectoryPath()", "SaTScanToolkit");
+    throw;
+  }
+  return bUpdatedSection;
+}
+
+/** Insures last imported directory path section in ZdIniSession. */
+bool SaTScanToolkit::InsureLastImportDestinationDirectoryPath() {
+  ZdFileName            FileName;
+  ZdString              sDefaultPath;
+  long                  lPosition;
+  BSessionProperty    * pProperty;
+  bool                  bUpdatedSection=false;
+
+  try {
+    sDefaultPath = getenv("TMP") ? getenv("TMP") : "";
+    lPosition = GetSession().FindProperty(gsLastImportDestinationDirectoryProperty);
+    if (lPosition == -1) {
+      GetSession().AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
+      bUpdatedSection = true;
+    }
+    else {
+      //property exists but does it have a value?
+      pProperty = GetSession().GetProperty(lPosition);
+      if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
+        GetSession().AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
+        bUpdatedSection = true;
+      }
+      else {
+        FileName.SetFullPath(pProperty->GetValue());
+        //validate path
+        if (access(FileName.GetLocation(), 00) < 0) {
+          pProperty->SetValue(sDefaultPath.GetCString());        
+          bUpdatedSection = true;
+        }
+      }
+    }
+  }
+  catch (ZdException& x) {
+    x.AddCallpath("InsureLastImportDestinationDirectoryPath()", "SaTScanToolkit");
     throw;
   }
   return bUpdatedSection;
@@ -282,6 +327,8 @@ void SaTScanToolkit::InsureSessionStructure() {
 #ifndef __BATCH_COMPILE
     if (InsureLastDirectoryPath())
       bNeedsWrite = true;
+    if (InsureLastImportDestinationDirectoryPath())
+      bNeedsWrite = true;
 #endif
     //if (InsureSessionProperty(gsLoggingProperty, "true"))
     //  bNeedsWrite = true;
@@ -336,6 +383,11 @@ void SaTScanToolkit::ReadParametersHistory() {
 
 void SaTScanToolkit::SetLastDirectory(const char * sLastDirectory) {
   GetSession().AddProperty(gsLastDirectoryProperty, sLastDirectory);
+  GetSession().Write(gsSystemFileName.GetCString());
+}
+
+void SaTScanToolkit::SetLastImportDirectory(const char * sLastDirectory) {
+  GetSession().AddProperty(gsLastImportDestinationDirectoryProperty, sLastDirectory);
   GetSession().Write(gsSystemFileName.GetCString());
 }
 

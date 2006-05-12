@@ -17,6 +17,7 @@ class SaTScanToolkit : public BToolkit {
     static const char         * gsParameterNameProperty;
     static const size_t         giMaximumParameterHistoryItems;
     static const char         * gsLastDirectoryProperty;
+    static const char         * gsLastImportDestinationDirectoryProperty;
 
     // default defines
     static const char         * gsDefaultRunHistoryFileName;
@@ -33,6 +34,7 @@ class SaTScanToolkit : public BToolkit {
     RunTimeComponentManager     gRunTimeComponentManager;
 
     bool                        InsureLastDirectoryPath();
+    bool                        InsureLastImportDestinationDirectoryPath();
     bool                        InsureRunHistoryFileName();
     bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
     void                        InsureSessionStructure();
@@ -49,6 +51,7 @@ class SaTScanToolkit : public BToolkit {
    const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
    const char                 * GetLastDirectory() /*const*/;
+   const char                 * GetLastImportDirectory() /*const*/;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
    const char                 * GetRunHistoryFileName() /*const*/;
    RunTimeComponentManager    & GetRunTimeComponentManager() { return gRunTimeComponentManager;}
@@ -59,6 +62,7 @@ class SaTScanToolkit : public BToolkit {
    const ZdString             & GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename;}
    const char                 * GetVersion() const {return gsVersion.GetCString();}
    const char                 * GetWebSite() const;
+   void                         SetLastImportDirectory(const char * sLastDirectory);
    void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
    void                         SetUpdateArchiveFilename(const char * sArchiveFile) {gsUpdateArchiveFilename = sArchiveFile;} 
 };
