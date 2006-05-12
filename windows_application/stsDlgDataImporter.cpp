@@ -802,6 +802,7 @@ void TBDlgDataImporter::OnExecuteImport() {
   try {
     DisableButtonsForImport(true);
     ModalResult = ImportFile();
+    GetToolkit().SetLastImportDirectory(edtOutputDirectory->Text.c_str());
     DisableButtonsForImport(false);
   }
   catch (ZdException &x) {
@@ -885,8 +886,14 @@ void TBDlgDataImporter::OnViewMappingPanel() {
 /** Preparation for viewing output settings panel. */
 void TBDlgDataImporter::OnViewOutputSettingsPanel() {
   CheckForRequiredVariables();
-  if (edtOutputDirectory->Text.IsEmpty())
-     edtOutputDirectory->Text = (getenv("TMP") ? getenv("TMP") : GetCurrentDir().c_str());
+  if (edtOutputDirectory->Text.IsEmpty()) {
+     if (GetToolkit().GetLastImportDirectory())
+       edtOutputDirectory->Text = GetToolkit().GetLastImportDirectory();
+     else if (getenv("TMP"))
+       edtOutputDirectory->Text = getenv("TMP");
+     else
+       edtOutputDirectory->Text = GetCurrentDir();
+  }
 }
 
 /** Opens source file as character delimited source file. */
