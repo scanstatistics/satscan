@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 476
-  Top = 244
+  Left = 733
+  Top = 91
   ActiveControl = PageControl
   BorderIcons = []
   BorderStyle = bsDialog
@@ -429,26 +429,26 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 425
-        Height = 131
+        Height = 142
         Caption = 'Maximum Spatial Cluster Size'
         TabOrder = 0
         object lblPercentOfPopulation: TLabel
-          Left = 78
+          Left = 47
           Top = 23
           Width = 263
           Height = 13
           Caption = 'percent of the population at risk (<= 50%, default = 50%)'
         end
         object lblMaxRadius: TLabel
-          Left = 174
-          Top = 105
+          Left = 200
+          Top = 114
           Width = 73
           Height = 13
           Caption = 'kilometer radius'
         end
         object lblPercentageOfPopFile: TLabel
-          Left = 78
-          Top = 49
+          Left = 85
+          Top = 56
           Width = 316
           Height = 13
           Caption = 
@@ -456,82 +456,60 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             '= 50%)'
           WordWrap = True
         end
+        object lblDistancePrefix: TLabel
+          Left = 41
+          Top = 114
+          Width = 85
+          Height = 13
+          Caption = 'is an ellipse with a'
+        end
         object edtMaxSpatialClusterSize: TEdit
-          Left = 39
+          Left = 8
           Top = 22
           Width = 34
           Height = 21
           AutoSelect = False
           MaxLength = 5
-          TabOrder = 1
+          TabOrder = 0
           Text = '50'
           OnExit = edtMaxSpatialClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
-        object rdoSpatialPercentage: TRadioButton
-          Left = 7
-          Top = 23
-          Width = 28
-          Height = 17
-          Caption = 'is '
-          Checked = True
-          TabOrder = 0
-          TabStop = True
-          OnClick = rdoMaxSpatialTypeClick
-        end
-        object rdoSpatialDistance: TRadioButton
-          Left = 7
-          Top = 104
-          Width = 115
-          Height = 17
-          Caption = 'is a cirlce with a'
-          TabOrder = 7
-          OnClick = rdoMaxSpatialTypeClick
-        end
-        object rdoSpatialPopulationFile: TRadioButton
-          Left = 7
-          Top = 49
-          Width = 28
-          Height = 17
-          Caption = 'is'
-          TabOrder = 2
-          OnClick = rdoMaxSpatialTypeClick
-        end
         object edtMaxSpatialRadius: TEdit
-          Left = 110
-          Top = 103
+          Left = 132
+          Top = 110
           Width = 58
           Height = 21
-          TabOrder = 8
+          TabOrder = 7
           Text = '1'
           OnExit = edtMaxSpatialRadiusExit
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxSpatialPercentFile: TEdit
-          Left = 39
-          Top = 48
+          Left = 46
+          Top = 55
           Width = 34
           Height = 21
           MaxLength = 5
-          TabOrder = 3
+          TabOrder = 1
           Text = '50'
           OnExit = edtMaxSpatialPercentFileExit
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxCirclePopulationFilename: TEdit
-          Left = 26
-          Top = 76
+          Left = 45
+          Top = 83
           Width = 280
           Height = 21
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 4
+          TabOrder = 3
           OnChange = edtMaxCirclePopulationFilenameChange
           OnExit = OnControlExit
         end
         object btnBrowseMaxCirclePopFile: TButton
-          Left = 312
-          Top = 75
+          Left = 331
+          Top = 82
           Width = 23
           Height = 22
           Hint = 'Browse for max circle size file ...'
@@ -544,18 +522,18 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 5
+          TabOrder = 4
           OnClick = btnBrowseMaxCirclePopFileClick
         end
         object btnImportMaxCirclePopFile: TBitBtn
-          Left = 340
-          Top = 75
+          Left = 359
+          Top = 82
           Width = 23
           Height = 22
           Hint = 'Import max circle size file ...'
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 6
+          TabOrder = 5
           OnClick = btnImportMaxCirclePopFileClick
           Glyph.Data = {
             DE010000424DDE01000000000000760000002800000024000000120000000100
@@ -576,10 +554,26 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             0000}
           NumGlyphs = 2
         end
+        object chkSpatialPopulationFile: TCheckBox
+          Left = 19
+          Top = 58
+          Width = 17
+          Height = 17
+          TabOrder = 2
+          OnClick = rdoMaxSpatialTypeClick
+        end
+        object chkSpatialDistance: TCheckBox
+          Left = 19
+          Top = 113
+          Width = 18
+          Height = 17
+          TabOrder = 6
+          OnClick = rdoMaxSpatialTypeClick
+        end
       end
       object chkInclPureTempClust: TCheckBox
         Left = 8
-        Top = 149
+        Top = 158
         Width = 305
         Height = 17
         Caption = 'Include Purely Temporal Clusters (Spatial Size = 100%)'
@@ -589,7 +583,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
       object grpWindowShape: TGroupBox
         Left = 8
-        Top = 173
+        Top = 182
         Width = 425
         Height = 75
         Caption = 'Spatial Window Shape'
@@ -1272,21 +1266,21 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Caption = 'Maximum Reported Spatial Cluster Size'
         TabOrder = 1
         object lblReportedPercentOfPopulation: TLabel
-          Left = 87
+          Left = 64
           Top = 42
           Width = 263
           Height = 13
           Caption = 'percent of the population at risk (<= 50%, default = 50%)'
         end
         object lblMaxReportedRadius: TLabel
-          Left = 180
+          Left = 211
           Top = 94
           Width = 73
           Height = 13
           Caption = 'kilometer radius'
         end
         object lblReportedPercentageOfPopFile: TLabel
-          Left = 87
+          Left = 93
           Top = 67
           Width = 316
           Height = 13
@@ -1295,62 +1289,42 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             '= 50%)'
           WordWrap = True
         end
+        object lblReportedMaxDistance: TLabel
+          Left = 53
+          Top = 94
+          Width = 85
+          Height = 13
+          Caption = 'is an ellipse with a'
+        end
         object edtMaxReportedSpatialClusterSize: TEdit
-          Left = 48
+          Left = 25
           Top = 40
           Width = 34
           Height = 21
           AutoSelect = False
           MaxLength = 5
-          TabOrder = 1
+          TabOrder = 0
           Text = '50'
           OnExit = edtMaxReportedSpatialClusterSizeExit
           OnKeyPress = PositiveFloatKeyPress
         end
-        object rdoReportedSpatialPercentage: TRadioButton
-          Left = 27
-          Top = 42
-          Width = 15
-          Height = 17
-          Checked = True
-          TabOrder = 0
-          TabStop = True
-          OnClick = rdoMaxSpatialTypeClick
-        end
-        object rdoReportedSpatialDistance: TRadioButton
-          Left = 27
-          Top = 93
-          Width = 117
-          Height = 17
-          Caption = 'a circle with a'
-          TabOrder = 4
-          OnClick = rdoMaxSpatialTypeClick
-        end
-        object rdoReportedSpatialPopulationFile: TRadioButton
-          Left = 27
-          Top = 68
-          Width = 18
-          Height = 17
-          TabOrder = 2
-          OnClick = rdoMaxSpatialTypeClick
-        end
         object edtMaxReportedSpatialRadius: TEdit
-          Left = 116
+          Left = 144
           Top = 91
           Width = 58
           Height = 21
-          TabOrder = 5
+          TabOrder = 2
           Text = '1'
           OnExit = edtMaxReportedSpatialRadiusExit
           OnKeyPress = PositiveFloatKeyPress
         end
         object edtMaxReportedSpatialPercentFile: TEdit
-          Left = 48
+          Left = 54
           Top = 66
           Width = 34
           Height = 21
           MaxLength = 5
-          TabOrder = 3
+          TabOrder = 1
           Text = '50'
           OnExit = edtMaxReportedSpatialPercentFileExit
           OnKeyPress = PositiveFloatKeyPress
@@ -1361,7 +1335,24 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 181
           Height = 17
           Caption = 'Report only clusters smaller than:'
-          TabOrder = 6
+          TabOrder = 3
+          OnClick = chkRestrictReportedClustersClick
+        end
+        object chkReportedSpatialDistance: TCheckBox
+          Left = 33
+          Top = 93
+          Width = 15
+          Height = 17
+          TabOrder = 4
+          OnClick = chkRestrictReportedClustersClick
+        end
+        object chkReportedSpatialPopulationFile: TCheckBox
+          Left = 33
+          Top = 68
+          Width = 15
+          Height = 17
+          Caption = 'chkReportedSpatialPopulationFile'
+          TabOrder = 5
           OnClick = chkRestrictReportedClustersClick
         end
       end
