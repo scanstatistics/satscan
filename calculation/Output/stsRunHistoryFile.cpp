@@ -220,16 +220,15 @@ void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParam
       if(params.GetAnalysisType() == PURELYTEMPORAL)
          sTempValue = "n/a";
       else {
-         sTempValue.printf("%.2lf", params.GetMaximumGeographicClusterSize());
-         sTempValue << " ";
-         if(params.GetMaxGeoClusterSizeTypeIsPopulationBased())
-            sTempValue << "%";
-         else {
-            if(params.GetCoordinatesType() == CARTESIAN)
-               sTempValue << "Cartesian Units";
-            else
-               sTempValue << "Kilometers";
+         if (params.GetAnalysisType() == PROSPECTIVESPACETIME && params.GetAdjustForEarlierAnalyses()) {
+           if (params.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false))
+             sTempValue.printf("%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
+           else
+             sTempValue.printf("%.2lf %s", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false),
+                               (params.GetCoordinatesType() == CARTESIAN ? "Cartesian Units" : "Kilometers"));
          }
+         else
+           sTempValue.printf("%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
       }
    }
    catch (ZdException &x) {
@@ -363,10 +362,10 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
    double                       dTopClusterRatio=0;
    
    try {
-#ifdef __BORLANDC__
+#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
-#endif      
+#endif
 
       const CParameters & params(AnalysisRun.GetDataHub().GetParameters());
 
@@ -486,7 +485,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
 
-#ifdef __BORLANDC__
+#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
       pSection->Release();
 #endif      
    }
@@ -591,7 +590,7 @@ void stsRunHistoryFile::SetRunNumber() {
    std::auto_ptr<DBFFile>       pFile;
 
    try {
-#ifdef __BORLANDC__
+#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
 #endif
@@ -624,9 +623,9 @@ void stsRunHistoryFile::SetRunNumber() {
       pFile->EndTransaction(pTransaction); pTransaction = 0;
       pFile->Close();
 
-#ifdef __BORLANDC__
+#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
       pSection->Release();
-#endif      
+#endif
    }
    catch (ZdException &x) {
       if(pTransaction)
