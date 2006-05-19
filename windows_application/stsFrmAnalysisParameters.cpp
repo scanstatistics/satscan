@@ -1234,26 +1234,8 @@ void TfrmAnalysis::SaveParameterSettings() {
     gParameters.SetStudyPeriodEndDate(sString.GetCString());
     if (edtMontCarloReps->Text.IsEmpty()) edtMontCarloReps->Text = 999;
     gParameters.SetNumberMonteCarloReplications(static_cast<unsigned long>(edtMontCarloReps->Text.ToDouble()));
-    // (previously in Scanning Window Tab)
-    gParameters.SetMaximumGeographicClusterSize(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeFromControl());
-    gParameters.SetMaximumSpatialClusterSizeType(gpfrmAdvancedParameters->GetMaxSpatialClusterSizeControlType());
-    gParameters.SetMaxCirclePopulationFileName(gpfrmAdvancedParameters->edtMaxCirclePopulationFilename->Text.c_str(), false);
-    gParameters.SetMaximumTemporalClusterSize(gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl());
-    gParameters.SetMaximumTemporalClusterSizeType(gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType());
-    gParameters.SetIncludePurelyTemporalClusters(gpfrmAdvancedParameters->chkInclPureTempClust->Enabled && gpfrmAdvancedParameters->chkInclPureTempClust->Checked);
-    gParameters.SetIncludePurelySpatialClusters((gpfrmAdvancedParameters->chkIncludePureSpacClust->Enabled) && (gpfrmAdvancedParameters->chkIncludePureSpacClust->Checked));
-    //Time Parameter Tab
     gParameters.SetTimeAggregationUnitsType(GetTimeAggregationControlType());
     gParameters.SetTimeAggregationLength(atoi(edtTimeAggregationLength->Text.c_str()));
-    gParameters.SetAdjustForEarlierAnalyses(gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Enabled &&
-                                            gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked);
-    if (gpfrmAdvancedParameters->gbxProspectiveSurveillance->Enabled && !gpfrmAdvancedParameters->chkAdjustForEarlierAnalyses->Checked)
-      sString.printf("%i/%i/%i", atoi(edtStudyPeriodEndDateYear->Text.c_str()),
-                     atoi(edtStudyPeriodEndDateMonth->Text.c_str()), atoi(edtStudyPeriodEndDateDay->Text.c_str()));
-    else
-      sString.printf("%i/%i/%i", atoi(gpfrmAdvancedParameters->edtProspectiveStartDateYear->Text.c_str()),
-                     atoi(gpfrmAdvancedParameters->edtProspectiveStartDateMonth->Text.c_str()), atoi(gpfrmAdvancedParameters->edtProspectiveStartDateDay->Text.c_str()));
-    gParameters.SetProspectiveStartDate(sString.GetCString());
     //Output File Tab
     gParameters.SetOutputFileName(edtResultFile->Text.c_str());
     gParameters.SetOutputClusterLevelAscii(chkClustersInColumnFormatAscii->Checked);
