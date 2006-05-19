@@ -14,11 +14,28 @@ class CSaTScanData; /** forward class declaration */
     passed array. */
 class CentroidNeighborCalculator {
   private:
-    typedef tract_t             (CentroidNeighborCalculator:: *CALCULATE_NEIGHBORS_METHOD) (measure_t) const;
-    typedef tract_t             (CentroidNeighborCalculator:: *CALCULATE_REPORTED_NEIGHBORS_METHOD) (measure_t, count_t) const;
+    typedef tract_t (CentroidNeighborCalculator:: *CALCULATE_NEIGHBORS_METHOD) (measure_t) const;
+    typedef tract_t (CentroidNeighborCalculator:: *CALCULATE_NEIGHBORS_LIMIT_METHOD) (measure_t, count_t) const;
+    typedef std::pair<CALCULATE_NEIGHBORS_METHOD, measure_t> PrimaryCalcPair_t;
+    typedef std::pair<CALCULATE_NEIGHBORS_LIMIT_METHOD, measure_t> SecondaryCalcPair_t;
 
-    CALCULATE_NEIGHBORS_METHOD           gpNeighborCalculationMethod;
-    CALCULATE_REPORTED_NEIGHBORS_METHOD  gpReportedNeighborCalculationMethod;
+    PrimaryCalcPair_t           gPrimaryNeighbors;
+    SecondaryCalcPair_t         gSecondaryNeighbors;
+    SecondaryCalcPair_t         gTertiaryNeighbors;
+    SecondaryCalcPair_t         gPrimaryReportedNeighbors;
+    SecondaryCalcPair_t         gSecondaryReportedNeighbors;
+    SecondaryCalcPair_t         gTertiaryReportedNeighbors;
+    const measure_t           * gpPopulation;
+    const measure_t           * gpMaxCircleFilePopulation;
+    const CSaTScanData        & gDataHub;
+    const GInfo               & gCentroidInfo;
+    const TractHandler        & gLocationInfo;
+    BasePrint                 & gPrintDirection;
+    tract_t                     gtCurrentEllipseCoordinates;
+    std::vector<measure_t>      gvCalculatedPopulations;
+    std::vector<LocationDistance> gvCentroidToLocationDistances;
+    std::vector<std::pair<double, double> > gvLocationEllipticCoordinates;
+
 
     void                        CalculateEllipticCoordinates(tract_t tEllipseOffset);
     void                        CalculateMaximumSpatialClusterSize();
@@ -26,25 +43,15 @@ class CentroidNeighborCalculator {
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
     void                        CalculateNeighborsByCircles();
     void                        CalculateNeighborsByEllipses();
+    void                        CalculateNeighborsForCurrentState(std::pair<int, int>& prNeigborsCount) const;
     tract_t                     CalculateNumberOfNeighboringLocationsByDistance(measure_t tMaximumSize) const;
     tract_t                     CalculateNumberOfNeighboringLocationsByDistance(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
-    tract_t                     CalculateNumberOfNeighboringLocationsByPopulation(measure_t tMaximumSize) const;
-    tract_t                     CalculateNumberOfNeighboringLocationsByPopulation(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
+    tract_t                     CalculateNumberOfNeighboringLocationsByMaxCirclePopulation(measure_t tMaximumSize) const;
+    tract_t                     CalculateNumberOfNeighboringLocationsByMaxCirclePopulation(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
+    tract_t                     CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize) const;
+    tract_t                     CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
     void                        CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
-
-  protected:
-    const CSaTScanData                        & gDataHub;
-    const GInfo                               & gCentroidInfo;
-    const TractHandler                        & gLocationInfo;
-    BasePrint                                 & gPrintDirection;
-    measure_t                                   gtMaximumSize;
-    measure_t                                   gtMaximumReportedSize;
-    std::vector<LocationDistance>               gvCentroidToLocationDistances;
-    std::vector<std::pair<double, double> >     gvLocationEllipticCoordinates;
-    tract_t                                     gtCurrentEllipseCoordinates;
-    const measure_t                           * gpLocationsPopulation;
-    const measure_t                           * gpLocationsPopulationReported;
-    std::vector<measure_t>                      gvCalculatedPopulations;
+    void                        SetupPopulationArrays();
 
   public:
     CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection);
