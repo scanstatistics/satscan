@@ -399,8 +399,15 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
   //the number of coordinates in the grid file (G=L if no grid file is specified)
   //double G = gpDataHub->GetGInfo()->giGetNumTracts();
   //maximum geographical cluster size, as a proportion of the population ( 0 < mg = ½ , mg=1 for a purely temporal analysis)
-  double mg = (gParameters.GetIsPurelyTemporalAnalysis() ? 0
-               : gParameters.GetMaxGeographicClusterSizeType() == MAXDISTANCE ? 0.1 /*purely as guess*/ : gParameters.GetMaximumGeographicClusterSize() / 100.0);
+  double mg=0;
+  if (gParameters.GetIsPurelyTemporalAnalysis()) mg = 0.0;
+  else if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) {
+    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false))
+      mg = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
+    else
+      mg = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
+  }
+  else mg = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false)/100.0;
   //number of time intervals into which the temporal data is aggregated (TI=1 for a purely spatial analysis)               
   double TI = gpDataHub->GetNumTimeIntervals();
   //read data structures
