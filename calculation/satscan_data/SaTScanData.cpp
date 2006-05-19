@@ -129,14 +129,15 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
   return true;
 }
 
-/** Sequential analyses will call this function to clear neighbor information and
-    re-calculate neighbors. Note that only when the maximum spatial cluster size
-    is specified as a percentage of the population that this operation need be
-    performed between iterations of a sequential scan. */
+/** Sequential analyses will call this function to clear neighbor information and re-calculate neighbors. */
 void CSaTScanData::AdjustNeighborCounts() {
   try {
-    //Re-calculate neighboring locations about each centroid.
-    if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased()) {
+    bool bDistanceOnlyMax = gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses() &&
+                            !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) &&
+                            !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
+    //We do not need to recalculate the number of neighbors when the max spatial size restriction is by distance only.
+    if (!bDistanceOnlyMax) {
+      //Re-calculate neighboring locations about each centroid.
       CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
       gvCentroidNeighborStore.DeleteAllElements();
     }
