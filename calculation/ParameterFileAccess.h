@@ -42,6 +42,8 @@ class AbtractParameterFileAccess {
     std::vector<int>            gvParametersMissingDefaulted;           /** collection of missing ParameterTypes on read from file */
     bool                        gbReadStatusError;                      /** marker of errors encountered while reading parameters from file */
     bool                        gbWriteBooleanAsDigit;
+    double                      gdMaxSpatialClusterSize;
+    double                      gdMaxReportedSpatialClusterSize;
 
     ZdString                  & AsString(ZdString& ref, int i) const {ref = i; return ref;}
     ZdString                  & AsString(ZdString& ref, unsigned int i) const {ref.Clear(); ref << i; return ref;}

@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 79;
+const int CParameters::giNumParameters 	              = 89;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -51,7 +51,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdPower_Y                              != rhs.gdPower_Y) return false;
   if (gsStudyPeriodStartDate                 != rhs.gsStudyPeriodStartDate) return false;
   if (gsStudyPeriodEndDate                   != rhs.gsStudyPeriodEndDate) return false;
-  if (gdMaxGeographicClusterSize             != rhs.gdMaxGeographicClusterSize) return false;
   if (gdMaxTemporalClusterSize               != rhs.gdMaxTemporalClusterSize) return false;
   if (geIncludeClustersType                  != rhs.geIncludeClustersType) return false;
   if (geTimeAggregationUnitsType             != rhs.geTimeAggregationUnitsType) return false;
@@ -82,7 +81,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbOutputClusterLevelAscii              != rhs.gbOutputClusterLevelAscii) return false;
   if (geCriteriaSecondClustersType           != rhs.geCriteriaSecondClustersType) return false;
   if (geMaxTemporalClusterSizeType           != rhs.geMaxTemporalClusterSizeType) return false;
-  if (geMaxGeographicClusterSizeType         != rhs.geMaxGeographicClusterSizeType) return false;
   if (gbOutputClusterLevelDBase              != rhs.gbOutputClusterLevelDBase) return false;
   if (gbOutputAreaSpecificDBase              != rhs.gbOutputAreaSpecificDBase) return false;
   if (gbOutputRelativeRisksDBase             != rhs.gbOutputRelativeRisksDBase) return false;
@@ -94,10 +92,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsEndRangeEndDate                      != rhs.gsEndRangeEndDate) return false;
   if (gsStartRangeStartDate                  != rhs.gsStartRangeStartDate) return false;
   if (gsStartRangeEndDate                    != rhs.gsStartRangeEndDate) return false;
-  if (gdTimeTrendConverge		                 != rhs.gdTimeTrendConverge) return false;
+  if (gdTimeTrendConverge		     != rhs.gdTimeTrendConverge) return false;
   if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
   if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
-  if (gdMaxReportedGeographicClusterSize     != rhs.gdMaxReportedGeographicClusterSize) return false;
   if (geSimulationType                       != rhs.geSimulationType) return false;
   if (gsSimulationDataSourceFileName         != rhs.gsSimulationDataSourceFileName) return false;
   if (gsAdjustmentsByRelativeRisksFileName   != rhs.gsAdjustmentsByRelativeRisksFileName) return false;
@@ -114,11 +111,21 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   //if (geExecutionType                        != rhs.geExecutionType) return false;
   if (giNumRequestedParallelProcesses        != rhs.giNumRequestedParallelProcesses) return false;
   if (gbSuppressWarnings                     != rhs.gbSuppressWarnings) return false;
-  if (geMaxReportedGeographicClusterSizeType != rhs.geMaxReportedGeographicClusterSizeType) return false;
   if (gbOutputClusterCaseAscii               != rhs.gbOutputClusterCaseAscii) return false;
   if (gbOutputClusterCaseDBase               != rhs.gbOutputClusterCaseDBase) return false;
   if (geStudyPeriodDataCheckingType          != rhs.geStudyPeriodDataCheckingType) return false;
   if (geCoordinatesDataCheckingType          != rhs.geCoordinatesDataCheckingType) return false;
+  if (gdMaxSpatialSizeInPopulationAtRisk     != rhs.gdMaxSpatialSizeInPopulationAtRisk) return false;
+  if  (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile != rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile) return false;
+  if (gdMaxSpatialSizeInMaxCirclePopulationFile != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile) return false;
+  if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter) return false;
+  if (gdMaxSpatialSizeInMaxDistanceFromCenter != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter) return false;
+  if (gdMaxSpatialSizeInPopulationAtRisk_Reported != rhs.gdMaxSpatialSizeInPopulationAtRisk_Reported) return false;
+  if (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported != rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported) return false;
+  if (gdMaxSpatialSizeInMaxCirclePopulationFile_Reported != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported) return false;
+  if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported) return false;
+  if (gdMaxSpatialSizeInMaxDistanceFromCenter_Reported != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported) return false;
+
   return true;
 }
 
@@ -192,7 +199,6 @@ void CParameters::Copy(const CParameters &rhs) {
     gdPower_Y                              = rhs.gdPower_Y;
     gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
     gsStudyPeriodEndDate                   = rhs.gsStudyPeriodEndDate;
-    gdMaxGeographicClusterSize             = rhs.gdMaxGeographicClusterSize;
     gdMaxTemporalClusterSize               = rhs.gdMaxTemporalClusterSize;
     geIncludeClustersType                  = rhs.geIncludeClustersType;
     geTimeAggregationUnitsType             = rhs.geTimeAggregationUnitsType;
@@ -223,7 +229,6 @@ void CParameters::Copy(const CParameters &rhs) {
     gbOutputClusterLevelAscii              = rhs.gbOutputClusterLevelAscii;
     geCriteriaSecondClustersType           = rhs.geCriteriaSecondClustersType;
     geMaxTemporalClusterSizeType           = rhs.geMaxTemporalClusterSizeType;
-    geMaxGeographicClusterSizeType         = rhs.geMaxGeographicClusterSizeType;
     gbOutputClusterLevelDBase              = rhs.gbOutputClusterLevelDBase;
     gbOutputAreaSpecificDBase              = rhs.gbOutputAreaSpecificDBase;
     gbOutputRelativeRisksDBase             = rhs.gbOutputRelativeRisksDBase;
@@ -235,10 +240,9 @@ void CParameters::Copy(const CParameters &rhs) {
     gsEndRangeEndDate                      = rhs.gsEndRangeEndDate;
     gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
     gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
-    gdTimeTrendConverge			               = rhs.gdTimeTrendConverge;
+    gdTimeTrendConverge			   = rhs.gdTimeTrendConverge;
     gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
     gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
-    gdMaxReportedGeographicClusterSize     = rhs.gdMaxReportedGeographicClusterSize;
     geSimulationType                       = rhs.geSimulationType;
     gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
     gsAdjustmentsByRelativeRisksFileName   = rhs.gsAdjustmentsByRelativeRisksFileName;
@@ -255,11 +259,20 @@ void CParameters::Copy(const CParameters &rhs) {
     geExecutionType                        = rhs.geExecutionType;
     giNumRequestedParallelProcesses        = rhs.giNumRequestedParallelProcesses;
     gbSuppressWarnings                     = rhs.gbSuppressWarnings;
-    geMaxReportedGeographicClusterSizeType = rhs.geMaxReportedGeographicClusterSizeType;    
     gbOutputClusterCaseAscii               = rhs.gbOutputClusterCaseAscii;
     gbOutputClusterCaseDBase               = rhs.gbOutputClusterCaseDBase;
     geStudyPeriodDataCheckingType          = rhs.geStudyPeriodDataCheckingType;
     geCoordinatesDataCheckingType          = rhs.geCoordinatesDataCheckingType;
+    gdMaxSpatialSizeInPopulationAtRisk     = rhs.gdMaxSpatialSizeInPopulationAtRisk;
+    gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
+    gdMaxSpatialSizeInMaxCirclePopulationFile = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile;
+    gbRestrictMaxSpatialSizeThroughDistanceFromCenter = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
+    gdMaxSpatialSizeInMaxDistanceFromCenter = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter;
+    gdMaxSpatialSizeInPopulationAtRisk_Reported = rhs.gdMaxSpatialSizeInPopulationAtRisk_Reported;
+    gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported;
+    gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported;
+    gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported;
+    gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -388,6 +401,17 @@ bool CParameters::GetLogLikelihoodRatioIsTestStatistic() const {
           (geSpatialWindowType == ELLIPTIC && geNonCompactnessPenaltyType != NOPENALTY));
 }
 
+/** Returns maximum spatial cluster size given type and whether value is for real or simulations. */
+double CParameters::GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const {
+  switch (eSpatialSizeType) {
+    case PERCENTOFPOPULATION    : return bReported ? gdMaxSpatialSizeInPopulationAtRisk_Reported : gdMaxSpatialSizeInPopulationAtRisk;
+    case MAXDISTANCE            : return bReported ? gdMaxSpatialSizeInMaxDistanceFromCenter_Reported : gdMaxSpatialSizeInMaxDistanceFromCenter;
+    case PERCENTOFMAXCIRCLEFILE : return bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported : gdMaxSpatialSizeInMaxCirclePopulationFile;
+    default : ZdException::Generate("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
+  };
+  return 0;
+}
+
 /** Returns number of parallel processes to run. */
 unsigned int CParameters::GetNumParallelProcessesToExecute() const {
 #ifdef RPRTCMPT_RUNTIMES
@@ -513,10 +537,39 @@ const char * CParameters::GetRelativeToParameterName(const ZdFileName& fParamete
   return sValue;
 }
 
+/** Returns indication of whether maximum spatial cluster size is restricted by given type and for real or simulations. */
+bool CParameters::GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const {
+  switch (eSpatialSizeType) {
+    case PERCENTOFPOPULATION    : return true;
+    case MAXDISTANCE            : return bReported ? gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported : gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
+    case PERCENTOFMAXCIRCLEFILE : return bReported ? gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
+    default : ZdException::Generate("Unknown type '%d'.\n", "GetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
+  };
+  return false;
+}
+
+/** Sets maximum spatial cluster size given type and whether value is for real or simulations. */
+void CParameters::SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, double d, bool bReported) {
+  switch (eSpatialSizeType) {
+    case PERCENTOFPOPULATION    : bReported ? gdMaxSpatialSizeInPopulationAtRisk_Reported = d : gdMaxSpatialSizeInPopulationAtRisk = d; break;
+    case MAXDISTANCE            : bReported ? gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = d : gdMaxSpatialSizeInMaxDistanceFromCenter = d; break;
+    case PERCENTOFMAXCIRCLEFILE : bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = d : gdMaxSpatialSizeInMaxCirclePopulationFile = d; break;
+    default : ZdException::Generate("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
+  };
+}
+
+/** Sets whether maximum spatial cluster size is restricted by given type and whether retriction is for real or simulations. */
+void CParameters::SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported) {
+  switch (eSpatialSizeType) {
+    case PERCENTOFPOPULATION    : break;
+    case MAXDISTANCE            : bReported ? gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = b : gbRestrictMaxSpatialSizeThroughDistanceFromCenter = b; break;
+    case PERCENTOFMAXCIRCLEFILE : bReported ? gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = b : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = b; break;
+    default : ZdException::Generate("Unknown type '%d'.\n", "SetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
+  };
+}
+
 /** Sets start range start date. Throws exception. */
 void CParameters::SetStartRangeStartDate(const char * sStartRangeStartDate) {
-  ZdString      sLabel;
-
   try {
     if (!sStartRangeStartDate)
       ZdException::Generate("Null pointer.","SetStartRangeStartDate()");
@@ -531,8 +584,6 @@ void CParameters::SetStartRangeStartDate(const char * sStartRangeStartDate) {
 
 /** Sets start range start date. Throws exception. */
 void CParameters::SetStartRangeEndDate(const char * sStartRangeEndDate) {
-  ZdString      sLabel;
-
   try {
     if (!sStartRangeEndDate)
       ZdException::Generate("Null pointer.","SetStartRangeEndDate()");
@@ -547,8 +598,6 @@ void CParameters::SetStartRangeEndDate(const char * sStartRangeEndDate) {
 
 /** Sets analysis type. Throws exception if out of range. */
 void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
-  ZdString      sLabel;
-
   try {
     if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PROSPECTIVEPURELYTEMPORAL)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
@@ -562,8 +611,6 @@ void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
 
 /** Sets area rate for areas scanned type. Throws exception if out of range. */
 void CParameters::SetAreaRateType(AreaRateType eAreaRateType) {
-  ZdString      sLabel;
-
   try {
     if (eAreaRateType < HIGH || eAreaRateType > HIGHANDLOW)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAreaRateType()", eAreaRateType, HIGH, HIGHANDLOW);
@@ -625,8 +672,6 @@ void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrec
 
 /** Sets geographical coordinates data checking type. Throws exception if out of range. */
 void CParameters::SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCoordinatesDataCheckingType) {
-  ZdString      sLabel;
-
   try {
     if (eCoordinatesDataCheckingType < STRICTCOORDINATES || eCoordinatesDataCheckingType > RELAXEDCOORDINATES)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCoordinatesDataCheckingType()",
@@ -659,8 +704,6 @@ void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
-  ZdString      sLabel;
-
   try {
     if (eCoordinatesType < CARTESIAN || eCoordinatesType > LATLON)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCoordinatesType()", eCoordinatesType, CARTESIAN, LATLON);
@@ -674,8 +717,6 @@ void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
 
 /** Sets criteria for reporting secondary clusters. Throws exception if out of range. */
 void CParameters::SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType) {
-  ZdString      sLabel;
-
   try {
     if (eCriteriaSecondaryClustersType < NOGEOOVERLAP || eCriteriaSecondaryClustersType > NORESTRICTIONS)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCriteriaForReportingSecondaryClusters()",
@@ -701,8 +742,6 @@ void CParameters::SetAsDefaulted() {
   giDimensionsOfData                       = 0;
   gbUseSpecialGridFile                     = false;
   gsSpecialGridFileName                    = "";
-  gdMaxGeographicClusterSize               = 50.0;
-  geMaxGeographicClusterSizeType           = PERCENTOFPOPULATION;
   gsStudyPeriodStartDate                   = "2000/1/1";
   gsStudyPeriodEndDate                     = "2000/12/31";
   geIncludeClustersType                    = ALLCLUSTERS;
@@ -763,7 +802,6 @@ void CParameters::SetAsDefaulted() {
   gdTimeTrendConverge			   = 0.0000001;
   gbEarlyTerminationSimulations            = false;
   gbRestrictReportedClusters               = false;
-  gdMaxReportedGeographicClusterSize       = gdMaxGeographicClusterSize;
   geSimulationType                         = STANDARD;
   gsSimulationDataSourceFileName           = "";
   gsAdjustmentsByRelativeRisksFileName     = "";
@@ -782,11 +820,20 @@ void CParameters::SetAsDefaulted() {
   geExecutionType                          = AUTOMATIC;
   giNumRequestedParallelProcesses          = 0;
   gbSuppressWarnings                       = false;
-  geMaxReportedGeographicClusterSizeType   = PERCENTOFPOPULATION;
   gbOutputClusterCaseAscii                 = false;
   gbOutputClusterCaseDBase                 = false;
   geStudyPeriodDataCheckingType            = STRICTBOUNDS;
   geCoordinatesDataCheckingType            = STRICTCOORDINATES;
+  gdMaxSpatialSizeInPopulationAtRisk       = 50.0;
+  gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = false;
+  gdMaxSpatialSizeInMaxCirclePopulationFile = 50.0;
+  gbRestrictMaxSpatialSizeThroughDistanceFromCenter = false;
+  gdMaxSpatialSizeInMaxDistanceFromCenter = 1.0;
+  gdMaxSpatialSizeInPopulationAtRisk_Reported = 50.0;
+  gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = false;
+  gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = 50.0;
+  gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = false;
+  gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = 1.0;
 }
 
 /** Sets dimensions of input data. */
@@ -804,8 +851,6 @@ void CParameters::SetDimensionsOfData(int iDimensions) {
 
 /** Sets start range start date. Throws exception. */
 void CParameters::SetEndRangeEndDate(const char * sEndRangeEndDate) {
-  ZdString      sLabel;
-
   try {
     if (!sEndRangeEndDate)
       ZdException::Generate("Null pointer.","SetEndRangeEndDate()");
@@ -819,8 +864,6 @@ void CParameters::SetEndRangeEndDate(const char * sEndRangeEndDate) {
 
 /** Sets end range start date. Throws exception. */
 void CParameters::SetEndRangeStartDate(const char * sEndRangeStartDate) {
-  ZdString      sLabel;
-
   try {
     if (!sEndRangeStartDate)
       ZdException::Generate("Null pointer.","SetEndRangeStartDate()");
@@ -858,52 +901,6 @@ void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersTyp
   }
 }
 
-/** Sets maximum geographic cluster size. */
-void CParameters::SetMaximumGeographicClusterSize(double dMaxGeographicClusterSize) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
-  gdMaxGeographicClusterSize = dMaxGeographicClusterSize;
-}
-
-/** Sets maximum reported geographic cluster size. */
-void CParameters::SetMaximumReportedGeographicalClusterSize(double dMaxReportedGeographicClusterSize) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
-  gdMaxReportedGeographicClusterSize = dMaxReportedGeographicClusterSize;
-}
-
-/** Sets maximum spatial cluster size type for reported clusters. Throws exception if out of range. */
-void CParameters::SetMaximumReportedSpatialClusterSizeType(SpatialSizeType eSpatialSizeType) {
-  ZdString      sLabel;
-
-  try {
-    if (PERCENTOFPOPULATION > eSpatialSizeType || PERCENTOFMAXCIRCLEFILE < eSpatialSizeType)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMaximumReportedSpatialClusterSizeType()",
-                            eSpatialSizeType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
-    geMaxReportedGeographicClusterSizeType = eSpatialSizeType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMaximumReportedSpatialClusterSizeType()","CParameters");
-    throw;
-  }
-}
-
-/** Sets maximum spatial cluster size type. Throws exception if out of range. */
-void CParameters::SetMaximumSpatialClusterSizeType(SpatialSizeType eSpatialSizeType) {
-  ZdString      sLabel;
-
-  try {
-    if (PERCENTOFPOPULATION > eSpatialSizeType || PERCENTOFMAXCIRCLEFILE < eSpatialSizeType)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMaximumSpatialClusterSizeType()",
-                            eSpatialSizeType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
-    geMaxGeographicClusterSizeType = eSpatialSizeType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMaximumSpatialClusterSizeType()","CParameters");
-    throw;
-  }
-}
-
 /** Sets maximum temporal cluster size. */
 void CParameters::SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize) {
   //Validity of setting is checked in ValidateParameters() since this setting
@@ -913,8 +910,6 @@ void CParameters::SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize) 
 
 /** Sets maximum temporal cluster size type. Throws exception if out of range. */
 void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType) {
-  ZdString      sLabel;
-
   try {
     if (PERCENTAGETYPE > eTemporalSizeType || TIMETYPE < eTemporalSizeType)
       ZdException::Generate("Enumeration %d out of range [%d,%d].","SetMaximumTemporalClusterSizeType()",
@@ -1047,8 +1042,6 @@ void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, 
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) {
-  ZdString      sLabel;
-
   try {
     if (eDatePrecisionType < NONE || eDatePrecisionType > DAY)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, DAY);
@@ -1062,8 +1055,6 @@ void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) 
 
 /** Sets probability model type. Throws exception if out of range. */
 void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModelType) {
-  ZdString      sLabel;
-
   try {
     if (eProbabilityModelType < POISSON || eProbabilityModelType > RANK)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
@@ -1078,17 +1069,10 @@ void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModel
 
 /** Sets prospective start date. Throws exception if out of range. */
 void CParameters::SetProspectiveStartDate(const char * sProspectiveStartDate) {
-  ZdString      sLabel;
-
   try {
     if (!sProspectiveStartDate)
       ZdException::Generate("Null pointer.","SetProspectiveStartDate()");
 
-//    if (strspn(sProspectiveStartDate,"0123456789/") < strlen(sProspectiveStartDate))
-//     ZdException::Generate("Error: For parameter %s, setting '%s' does not appear to be a date.\n",
-//                                          "SetProspectiveStartDate()",
-//                                          GetParameterLineLabel(START_PROSP_SURV, sLabel, geReadType == INI),
-//                                          sProspectiveStartDate);
     gsProspectiveStartDate = sProspectiveStartDate;
   }
   catch (ZdException &x) {
@@ -1105,8 +1089,6 @@ void CParameters::SetRandomizationSeed(long lSeed) {
 
 /** Sets risk type. Throws exception if out of range. */
 void CParameters::SetRiskType(RiskType eRiskType) {
-  ZdString      sLabel;
-
   try {
     if (eRiskType < STANDARDRISK || eRiskType > MONOTONERISK)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetRiskType()", eRiskType, STANDARDRISK, MONOTONERISK);
@@ -1120,8 +1102,6 @@ void CParameters::SetRiskType(RiskType eRiskType) {
 
 /** sets simulation procedure type */
 void CParameters::SetSimulationType(SimulationType eSimulationType) {
-  ZdString      sLabel;
-
   try {
     if (eSimulationType < STANDARD || eSimulationType > FILESOURCE)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSimulationType()", eSimulationType, STANDARD, FILESOURCE);
@@ -1171,8 +1151,6 @@ void CParameters::SetSimulationDataSourceFileName(const char * sSourceFileName, 
 
 /** Set spatial adjustment type. Throws exception if out of range. */
 void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType) {
-  ZdString      sLabel;
-
   try {
     if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
@@ -1186,8 +1164,6 @@ void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustm
 
 /** Set spatial window shape type. Throws exception if out of range. */
 void  CParameters::SetSpatialWindowType(SpatialWindowType eSpatialWindowType) {
-  ZdString      sLabel;
-
   try {
     if (eSpatialWindowType < CIRCULAR || eSpatialWindowType > ELLIPTIC)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSpatialWindowType()", eSpatialWindowType, CIRCULAR, ELLIPTIC);
@@ -1267,8 +1243,6 @@ void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulati
 
 /** Set multiple dataset purpose type. Throws exception if out of range. */
 void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType) {
-  ZdString      sLabel;
-
   try {
     if (eType < MULTIVARIATE || eType > ADJUSTMENT)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMultipleDataSetPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
@@ -1282,8 +1256,6 @@ void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType
 
 /** Sets study period data checking type. Throws exception if out of range. */
 void CParameters::SetStudyPeriodDataCheckingType(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
-  ZdString      sLabel;
-
   try {
     if (eStudyPeriodDataCheckingType < STRICTBOUNDS || eStudyPeriodDataCheckingType > RELAXEDBOUNDS)
       ZdException::Generate("Enumeration %d out of range [%d,%d].","SetStudyPeriodDataCheckingType()", eStudyPeriodDataCheckingType, STRICTBOUNDS, RELAXEDBOUNDS);
@@ -1332,8 +1304,6 @@ void CParameters::SetTimeAggregationLength(long lTimeAggregationLength) {
 
 /** Sets precision of time interval units type. Throws exception if out of range. */
 void CParameters::SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits) {
-  ZdString      sLabel;
-
   try {
     if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > DAY)
       ZdException::Generate("Enumeration %d out of range [%d,%d].","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, DAY);
@@ -1354,8 +1324,6 @@ void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
 
 /** Sets time rend adjustment type. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
-  ZdString      sLabel;
-
   try {
     if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > STRATIFIED_RANDOMIZATION)
       ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
@@ -1380,16 +1348,14 @@ void CParameters::SetVersion(const CreationVersion& vVersion) {
   gCreationVersion = vVersion;
 }
 
+/** Returns indication of whether current parameter settings indicate that the max circle file should be read. */
 bool CParameters::UseMaxCirclePopulationFile() const {
   bool  bRequiredForProspective, bAskForByUser;
 
-  bAskForByUser = GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE ||
-                  GetMaxReportedGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE;
-  bAskForByUser &= GetAnalysisType() != PURELYTEMPORAL && GetAnalysisType() != PROSPECTIVEPURELYTEMPORAL;
-  bRequiredForProspective = GetAnalysisType() == PROSPECTIVESPACETIME;
-  bRequiredForProspective &= GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE;
-  bRequiredForProspective &= GetAdjustForEarlierAnalyses();
-
-  return bAskForByUser || bRequiredForProspective;
+  bAskForByUser = (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile || gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported) &&
+                  !GetIsPurelyTemporalAnalysis();
+//  bRequiredForProspective = GetAnalysisType() == PROSPECTIVESPACETIME && GetAdjustForEarlierAnalyses() &&
+//                            (!gbRestrictMaxSpatialSizeThroughDistanceFromCenter || !gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported);
+  return bAskForByUser;// || bRequiredForProspective;
 }
 

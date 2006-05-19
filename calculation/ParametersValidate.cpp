@@ -359,9 +359,8 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
 
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
-    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME &&
-        gParameters.GetAdjustForEarlierAnalyses() &&
-        gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFPOPULATION) {
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses() &&
+        !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
       bValid = false;
       PrintDirection.Printf("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
                             "       cluster size must be defined as a percentage of the population as defined in a max\n"
@@ -369,14 +368,14 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                             "       Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
                             "       max circle size file is not required.\n", BasePrint::P_ERROR);
     }
-    if (gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE ||
-        (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaxReportedGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE)) {
-      if (gParameters.GetMaxCirclePopulationFileName().empty() && gParameters.GetMaxGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE) {
+    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
+        (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))) {
+      if (gParameters.GetMaxCirclePopulationFileName().empty() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
         bValid = false;
         PrintDirection.Printf("Error: The settings indicate to the use a max circle size file, but a file name was not specified.\n", BasePrint::P_ERROR);
       }
       else if (gParameters.GetMaxCirclePopulationFileName().empty() &&
-               gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaxReportedGeographicClusterSizeType() == PERCENTOFMAXCIRCLEFILE) {
+               gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
         bValid = false;
         PrintDirection.Printf("Error: Maximum circle size file name was not specified.\n"
                               "       A maximum circle file is required when restricting the maximum\n"
@@ -892,40 +891,66 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
     (i.e. purely spatial, retrospective space-time and prospective space-time).
     Prints errors to print direction and returns whether values are vaild. */
 bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) const {
-  bool  bValid=true;
+  bool          bValid=true;
+  double        dValue;
 
   try {
     //validate spatial options
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPACETIME ||
-        gParameters.GetAnalysisType() == PROSPECTIVESPACETIME || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-      if (gParameters.GetMaximumGeographicClusterSize() <= 0) {
+    if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+      //validate maximum as pecentage of population at risk
+      dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
+      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 50.0) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum spatial cluster size of '%2g%%' is invalid. The value must be greater than zero.\n",
-                              BasePrint::P_ERROR, gParameters.GetMaximumGeographicClusterSize());
+        PrintDirection.Printf("Error: The maximum spatial cluster size, defined as percentage of population at risk, is invalid.\n"
+                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
       }
-      if (gParameters.GetMaxGeoClusterSizeTypeIsPopulationBased()  && gParameters.GetMaximumGeographicClusterSize() > 50.0) {
+      //validate maximum as pecentage of population defined in max circle file
+      dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
+      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && dValue <= 0.0 || dValue > 50.0) {
         bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting of '%2g%%' for the maximum spatial cluster size.\n"
-                              "       When defined as a percentage of the population at risk, the maximum spatial cluster size is 50%%.\n",
-                              BasePrint::P_ERROR, gParameters.GetMaximumGeographicClusterSize());
+        PrintDirection.Printf("Error: The maximum spatial cluster size, defined as percentage of population in max circle file, is invalid.\n"
+                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
       }
-      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetMaximumReportedGeoClusterSize() <= 0) {
+      //validate maximum as pecentage of population defined in max circle file
+      dValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
+      if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false) && dValue <= 0.0) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum spatial cluster size of '%2g%%' for reported clusters is invalid. It must be greater than zero.\n",
-                              BasePrint::P_ERROR, gParameters.GetMaximumGeographicClusterSize());
+        PrintDirection.Printf("Error: The maximum spatial cluster size of %2g units is invalid.\n"
+                              "       The specified value is %2g. Must be greater than zero.\n", BasePrint::P_ERROR, dValue);
+      }
+      //validate maximum as pecentage of population at risk -- reported
+      dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true);
+      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 50.0) {
+        bValid = false;
+        PrintDirection.Printf("Error: The maximum reported spatial cluster size, defined as percentage of population at risk, is invalid.\n"
+                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
+      }
+      //validate maximum as pecentage of population defined in max circle file -- reported
+      dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
+      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) && dValue <= 0.0 || dValue > 50.0) {
+        bValid = false;
+        PrintDirection.Printf("Error: The maximum reported spatial cluster size, defined as percentage of population in max circle file, is invalid.\n"
+                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
+      }
+      //validate maximum as pecentage of population defined in max circle file  -- reported
+      dValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
+      if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true) && dValue <= 0.0) {
+        bValid = false;
+        PrintDirection.Printf("Error: The maximum reported spatial cluster size of %2g units is invalid.\n"
+                              "       The specified value is %2g. Must be greater than zero.\n", BasePrint::P_ERROR, dValue);
       }
     }
-    else {
-      //Purely temporal clusters should default maximum geographical clusters size to 50 of population.
-      //This actually has no bearing on analysis results. These variables are used primarly for
-      //finding neighbors which purely temporal analyses don't utilize. The finding neighbors
-      //routine should really be skipped for this analysis type.
-      const_cast<CParameters&>(gParameters).SetMaximumGeographicClusterSize(50.0); //KR980707 0 GG980716;
-      const_cast<CParameters&>(gParameters).SetMaximumSpatialClusterSizeType(PERCENTOFPOPULATION);
-      const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
-      const_cast<CParameters&>(gParameters).SetMaximumReportedGeographicalClusterSize(50.0);
-      const_cast<CParameters&>(gParameters).SetMaximumReportedSpatialClusterSizeType(PERCENTOFPOPULATION);
-    }
+//    else {
+//      //Purely temporal clusters should default maximum geographical clusters size to 50 of population.
+//      //This actually has no bearing on analysis results. These variables are used primarly for
+//      //finding neighbors which purely temporal analyses don't utilize. The finding neighbors
+//      //routine should really be skipped for this analysis type.
+//      const_cast<CParameters&>(gParameters).SetMaximumGeographicClusterSize(50.0); //KR980707 0 GG980716;
+//      const_cast<CParameters&>(gParameters).SetMaximumSpatialClusterSizeType(PERCENTOFPOPULATION);
+//      const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
+//      const_cast<CParameters&>(gParameters).SetMaximumReportedGeographicalClusterSize(50.0);
+//      const_cast<CParameters&>(gParameters).SetMaximumReportedSpatialClusterSizeType(PERCENTOFPOPULATION);
+//    }
 
     if (gParameters.GetIncludePurelySpatialClusters()) {
       if (!gParameters.GetPermitsPurelySpatialCluster(gParameters.GetProbabilityModelType())) {

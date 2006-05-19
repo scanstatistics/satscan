@@ -47,7 +47,8 @@ void ParameterAccessCoordinator::Write(const char * sFilename, BasePrint& PrintD
 
 /** constructor */
 AbtractParameterFileAccess::AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit)
-                           :gParameters(Parameters), gPrintDirection(PrintDirection), gbWriteBooleanAsDigit(bWriteBooleanAsDigit) {}
+                           :gParameters(Parameters), gPrintDirection(PrintDirection), gbWriteBooleanAsDigit(bWriteBooleanAsDigit),
+                            gdMaxSpatialClusterSize(50.0), gdMaxReportedSpatialClusterSize(50.0) {}
 
 /** destructor */
 AbtractParameterFileAccess::~AbtractParameterFileAccess() {}
@@ -135,6 +136,16 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case OUTPUT_MLC_CASE_DBASE    : return " output cluster case information in dBase format? (y/n)";
       case STUDYPERIOD_DATACHECK    : return " study period data check (Strict Bounds=0, Relaxed Bounds=1)";
       case COORDINATES_DATACHECK    : return " geographical coordinates data check (Strict Coordinates=0, Relaxed Coordinates=1)";
+      case MAXGEOPOPATRISK          : return " maximum spatial size in population at risk (<=50%)";
+      case MAXGEOPOPFILE            : return " maximum spatial size in max circle population file (<=50%)";
+      case MAXGEODISTANCE           : return " maximum spatial size in distance from center (positive integer)";
+      case USE_MAXGEOPOPFILE        : return " restrict maximum spatial size - max circle file? (y/n)";
+      case USE_MAXGEODISTANCE       : return " restrict maximum spatial size - distance? (y/n)";
+      case MAXGEOPOPATRISK_REPORTED : return " maximum reported spatial size in population at risk (<=50%)";
+      case MAXGEOPOPFILE_REPORTED   : return " maximum reported spatial size in max circle population file (<=50%)";
+      case MAXGEODISTANCE_REPORTED  : return " maximum reported spatial size in distance from center {positive integer)";
+      case USE_MAXGEOPOPFILE_REPORTED: return " restrict maximum reported spatial size - max circle file? (y/n)";
+      case USE_MAXGEODISTANCE_REPORTED: return " restrict maximum reported spatial size - distance? (y/n)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -161,7 +172,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case DIMENSION                : s = "0"; return s;
       case SPECIALGRID              : return AsString(s, gParameters.UseSpecialGrid());
       case GRIDFILE                 : s = gParameters.GetSpecialGridFileName().c_str(); return s;
-      case GEOSIZE                  : return AsString(s, gParameters.GetMaximumGeographicClusterSize());
+      case GEOSIZE                  : s = "0"; return s;
       case STARTDATE                : s = gParameters.GetStudyPeriodStartDate().c_str(); return s;
       case ENDDATE                  : s = gParameters.GetStudyPeriodEndDate().c_str(); return s;
       case CLUSTERS                 : return AsString(s, gParameters.GetIncludeClustersType());
@@ -203,7 +214,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case OUTPUT_MLC_ASCII         : return AsString(s, gParameters.GetOutputClusterLevelAscii());
       case CRITERIA_SECOND_CLUSTERS : return AsString(s, gParameters.GetCriteriaSecondClustersType());
       case MAX_TEMPORAL_TYPE        : return AsString(s, gParameters.GetMaximumTemporalClusterSizeType());
-      case MAX_SPATIAL_TYPE         : return AsString(s, gParameters.GetMaxGeographicClusterSizeType());
+      case MAX_SPATIAL_TYPE         : s = "0"; return s;
       case RUN_HISTORY_FILENAME     : s = "0"; return s;
       case OUTPUT_MLC_DBASE         : return AsString(s, gParameters.GetOutputClusterLevelDBase());
       case OUTPUT_AREAS_DBASE       : return AsString(s, gParameters.GetOutputAreaSpecificDBase());
@@ -217,7 +228,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case TIMETRENDCONVRG	    : return AsString(s, gParameters.GetTimeTrendConvergence());
       case MAXCIRCLEPOPFILE         : s = gParameters.GetMaxCirclePopulationFileName().c_str(); return s;
       case EARLY_SIM_TERMINATION    : return AsString(s, gParameters.GetTerminateSimulationsEarly());
-      case REPORTED_GEOSIZE         : return AsString(s, gParameters.GetMaximumReportedGeoClusterSize());
+      case REPORTED_GEOSIZE         : s = "0"; return s;
       case USE_REPORTED_GEOSIZE     : return AsString(s, gParameters.GetRestrictingMaximumReportedGeoClusterSize());
       case SIMULATION_TYPE          : return AsString(s, gParameters.GetSimulationType());
       case SIMULATION_SOURCEFILE    : s = gParameters.GetSimulationDataSourceFilename().c_str(); return s;
@@ -235,11 +246,21 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case NUM_PROCESSES            : return AsString(s, gParameters.GetNumRequestedParallelProcesses());
       case LOG_HISTORY              : return AsString(s, gParameters.GetIsLoggingHistory());
       case SUPPRESS_WARNINGS        : return AsString(s, gParameters.GetSuppressingWarnings());
-      case MAX_REPORTED_SPATIAL_TYPE: return AsString(s, gParameters.GetMaxReportedGeographicClusterSizeType());
+      case MAX_REPORTED_SPATIAL_TYPE: s = "0"; return s;
       case OUTPUT_MLC_CASE_ASCII    : return AsString(s, gParameters.GetOutputClusterCaseAscii());
       case OUTPUT_MLC_CASE_DBASE    : return AsString(s, gParameters.GetOutputClusterCaseDBase());
       case STUDYPERIOD_DATACHECK    : return AsString(s, gParameters.GetStudyPeriodDataCheckingType());
       case COORDINATES_DATACHECK    : return AsString(s, gParameters.GetCoordinatesDataCheckingType());
+      case MAXGEOPOPATRISK          : return AsString(s, gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
+      case MAXGEOPOPFILE            : return AsString(s, gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
+      case MAXGEODISTANCE           : return AsString(s, gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false));
+      case USE_MAXGEOPOPFILE        : return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
+      case USE_MAXGEODISTANCE       : return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false));
+      case MAXGEOPOPATRISK_REPORTED : return AsString(s, gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
+      case MAXGEOPOPFILE_REPORTED   : return AsString(s, gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
+      case MAXGEODISTANCE_REPORTED  : return AsString(s, gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true));
+      case USE_MAXGEOPOPFILE_REPORTED: return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
+      case USE_MAXGEODISTANCE_REPORTED: return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true));
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -267,7 +288,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case DIMENSION                : /*  */ break;
       case SPECIALGRID              : sDefaultValue = (gParameters.UseSpecialGrid() ? "y" : "n"); break;
       case GRIDFILE                 : sDefaultValue = "<blank>"; break;
-      case GEOSIZE                  : sDefaultValue.printf("%g", gParameters.GetMaximumGeographicClusterSize()); break;
+      case GEOSIZE                  : /* no longer used */ break;
       case STARTDATE                : sDefaultValue = gParameters.GetStudyPeriodStartDate().c_str(); break;
       case ENDDATE                  : sDefaultValue = gParameters.GetStudyPeriodEndDate().c_str(); break;
       case CLUSTERS                 : sDefaultValue = gParameters.GetIncludeClustersType(); break;
@@ -301,7 +322,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case OUTPUT_MLC_ASCII         : sDefaultValue = (gParameters.GetOutputClusterLevelAscii() ? "y" : "n"); break;
       case CRITERIA_SECOND_CLUSTERS : sDefaultValue = gParameters.GetCriteriaSecondClustersType(); break;
       case MAX_TEMPORAL_TYPE        : sDefaultValue = gParameters.GetMaximumTemporalClusterSizeType(); break;
-      case MAX_SPATIAL_TYPE         : sDefaultValue = gParameters.GetMaxGeographicClusterSizeType(); break;
+      case MAX_SPATIAL_TYPE         : /* no longer used */ break;
       case RUN_HISTORY_FILENAME     : /* no longer read in from parameter file */ break;
       case OUTPUT_MLC_DBASE         : sDefaultValue = (gParameters.GetOutputClusterLevelDBase() ? "y" : "n"); break;
       case OUTPUT_AREAS_DBASE       : sDefaultValue = (gParameters.GetOutputAreaSpecificDBase() ? "y" : "n"); break;
@@ -315,7 +336,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case TIMETRENDCONVRG	    : sDefaultValue = gParameters.GetTimeTrendConvergence(); break;
       case MAXCIRCLEPOPFILE         : sDefaultValue = "<blank>"; break;
       case EARLY_SIM_TERMINATION    : sDefaultValue = (gParameters.GetTerminateSimulationsEarly() ? "y" : "n"); break;
-      case REPORTED_GEOSIZE         : sDefaultValue = gParameters.GetMaximumReportedGeoClusterSize(); break;
+      case REPORTED_GEOSIZE         : /* no longer used */ break;
       case USE_REPORTED_GEOSIZE     : sDefaultValue = (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? "y" : "n"); break;
       case SIMULATION_TYPE          : sDefaultValue = gParameters.GetSimulationType(); break;
       case SIMULATION_SOURCEFILE    : sDefaultValue = "<blank>"; break;
@@ -334,11 +355,21 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case NUM_PROCESSES            : sDefaultValue << gParameters.GetNumRequestedParallelProcesses(); break;
       case LOG_HISTORY              : sDefaultValue = (gParameters.GetIsLoggingHistory() ? "y" : "n"); break;
       case SUPPRESS_WARNINGS        : sDefaultValue = (gParameters.GetSuppressingWarnings() ? "y" : "n"); break;
-      case MAX_REPORTED_SPATIAL_TYPE: sDefaultValue = gParameters.GetMaxReportedGeographicClusterSizeType(); break;
+      case MAX_REPORTED_SPATIAL_TYPE: /* no longer used */ break;
       case OUTPUT_MLC_CASE_ASCII    : sDefaultValue = (gParameters.GetOutputClusterCaseAscii() ? "y" : "n"); break;
       case OUTPUT_MLC_CASE_DBASE    : sDefaultValue = (gParameters.GetOutputClusterCaseDBase() ? "y" : "n"); break;
       case STUDYPERIOD_DATACHECK    : sDefaultValue = gParameters.GetStudyPeriodDataCheckingType(); break;
       case COORDINATES_DATACHECK    : sDefaultValue = gParameters.GetCoordinatesDataCheckingType(); break;
+      case MAXGEOPOPATRISK          : sDefaultValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
+      case MAXGEOPOPFILE            : sDefaultValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
+      case MAXGEODISTANCE           : sDefaultValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
+      case USE_MAXGEOPOPFILE        : sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ? "y" : "n"); break;
+      case USE_MAXGEODISTANCE       : sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false) ? "y" : "n"); break;
+      case MAXGEOPOPATRISK_REPORTED : sDefaultValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true);
+      case MAXGEOPOPFILE_REPORTED   : sDefaultValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
+      case MAXGEODISTANCE_REPORTED  : sDefaultValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
+      case USE_MAXGEOPOPFILE_REPORTED: sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, true) ? "y" : "n"); break;
+      case USE_MAXGEODISTANCE_REPORTED: sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true) ? "y" : "n"); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -591,7 +622,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        break;
       case SPECIALGRID               : gParameters.SetUseSpecialGrid(ReadBoolean(sParameter, eParameterType)); break;
       case GRIDFILE                  : gParameters.SetSpecialGridFileName(sParameter.GetCString(), true); break;
-      case GEOSIZE                   : gParameters.SetMaximumGeographicClusterSize(ReadDouble(sParameter, eParameterType)); break;
+      case GEOSIZE                   : gdMaxSpatialClusterSize = ReadDouble(sParameter, eParameterType); break;
       case STARTDATE                 : ReadDate(sParameter, eParameterType); break;
       case ENDDATE                   : ReadDate(sParameter, eParameterType); break;
       case CLUSTERS                  : gParameters.SetIncludeClustersType((IncludeClustersType)ReadInt(sParameter, eParameterType)); break;
@@ -624,7 +655,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case OUTPUT_RR_ASCII           : gParameters.SetOutputRelativeRisksAscii(ReadBoolean(sParameter, eParameterType)); break;
       case WINDOW_SHAPE              : iValue = ReadInt(sParameter, eParameterType);
                                        //This parameter used to be 'number of ellipses' before v6.1, so set window shape to elliptic
-                                       //if it is not zero and version warrents.
+                                       //if it is not zero and version warrants.
                                        if ((gParameters.GetCreationVersion().iMajor < 6 ||
                                            (gParameters.GetCreationVersion().iMajor == 6 && gParameters.GetCreationVersion().iMinor == 0)) && iValue > 1)
                                          iValue = 1;
@@ -639,8 +670,13 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)iValue); break;
       case MAX_TEMPORAL_TYPE         : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTAGETYPE, TIMETYPE);
                                        gParameters.SetMaximumTemporalClusterSizeType((TemporalSizeType)ReadInt(sParameter, eParameterType)); break;
-      case MAX_SPATIAL_TYPE          : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
-                                       gParameters.SetMaximumSpatialClusterSizeType((SpatialSizeType)iValue); break;
+      case MAX_SPATIAL_TYPE          : // The maximum spatial cluster size used to a choice between multiple options:
+                                       //   enum SpatialSizeType {PERCENTOFPOPULATION=0, MAXDISTANCE, PERCENTOFMAXCIRCLEFILE};
+                                       // but was updated in version 7.0 to permit selection of all simultaneously. To permit reading of
+                                       // older parameter files, we need to mimic previous behavior.
+                                       iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
+                                       gParameters.SetRestrictMaxSpatialSizeForType((SpatialSizeType)iValue, true, false);
+                                       gParameters.SetMaxSpatialSizeForType((SpatialSizeType)iValue, gdMaxSpatialClusterSize, false); break;
       case RUN_HISTORY_FILENAME      : //Run History no longer scanned from parameters file. Set through setters/getters and copy() only.
                                        break;
       case OUTPUT_MLC_DBASE          : gParameters.SetOutputClusterLevelDBase(ReadBoolean(sParameter, eParameterType)); break;
@@ -665,7 +701,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case TIMETRENDCONVRG           : /*gParameters.SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType));*/ break;
       case MAXCIRCLEPOPFILE          : gParameters.SetMaxCirclePopulationFileName(sParameter.GetCString(), true); break;
       case EARLY_SIM_TERMINATION     : gParameters.SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
-      case REPORTED_GEOSIZE          : gParameters.SetMaximumReportedGeographicalClusterSize(ReadDouble(sParameter, eParameterType)); break;
+      case REPORTED_GEOSIZE          : gdMaxReportedSpatialClusterSize = ReadDouble(sParameter, eParameterType); break;
       case USE_REPORTED_GEOSIZE      : gParameters.SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STANDARD, FILESOURCE);
                                        gParameters.SetSimulationType((SimulationType)iValue); break;
@@ -687,14 +723,29 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case NUM_PROCESSES             : gParameters.SetNumParallelProcessesToExecute(ReadUnsignedInt(sParameter, eParameterType)); break;
       case LOG_HISTORY               : gParameters.SetIsLoggingHistory(ReadBoolean(sParameter, eParameterType)); break;
       case SUPPRESS_WARNINGS         : gParameters.SetSuppressingWarnings(ReadBoolean(sParameter, eParameterType)); break;
-      case MAX_REPORTED_SPATIAL_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
-                                       gParameters.SetMaximumReportedSpatialClusterSizeType((SpatialSizeType)iValue); break;
+      case MAX_REPORTED_SPATIAL_TYPE : // The maximum spatial cluster size used to a choice between multiple options:
+                                       //   enum SpatialSizeType {PERCENTOFPOPULATION=0, MAXDISTANCE, PERCENTOFMAXCIRCLEFILE};
+                                       // but was updated in version 7.0 to permit selection of all simultaneously. To permit reading of
+                                       // older parameter files, we need to mimic previous behavior.
+                                       iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PERCENTOFPOPULATION, PERCENTOFMAXCIRCLEFILE);
+                                       gParameters.SetRestrictMaxSpatialSizeForType((SpatialSizeType)iValue, true, true);
+                                       gParameters.SetMaxSpatialSizeForType((SpatialSizeType)iValue, gdMaxReportedSpatialClusterSize, true); break;
       case OUTPUT_MLC_CASE_ASCII     : gParameters.SetOutputClusterCaseAscii(ReadBoolean(sParameter, eParameterType)); break;
       case OUTPUT_MLC_CASE_DBASE     : gParameters.SetOutputClusterCaseDBase(ReadBoolean(sParameter, eParameterType)); break;
       case STUDYPERIOD_DATACHECK     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STRICTBOUNDS, RELAXEDBOUNDS);
                                        gParameters.SetStudyPeriodDataCheckingType((StudyPeriodDataCheckingType)iValue); break;
       case COORDINATES_DATACHECK     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STRICTCOORDINATES, RELAXEDCOORDINATES);
                                        gParameters.SetCoordinatesDataCheckingType((CoordinatesDataCheckingType)iValue); break;
+      case MAXGEOPOPATRISK           : gParameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, ReadDouble(sParameter, eParameterType), false); break;
+      case MAXGEOPOPFILE             : gParameters.SetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, ReadDouble(sParameter, eParameterType), false); break;
+      case MAXGEODISTANCE            : gParameters.SetMaxSpatialSizeForType(MAXDISTANCE, ReadDouble(sParameter, eParameterType), false); break;
+      case USE_MAXGEOPOPFILE         : gParameters.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, ReadBoolean(sParameter, eParameterType), false); break;
+      case USE_MAXGEODISTANCE        : gParameters.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, ReadBoolean(sParameter, eParameterType), false); break;
+      case MAXGEOPOPATRISK_REPORTED  : gParameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, ReadDouble(sParameter, eParameterType), true); break;
+      case MAXGEOPOPFILE_REPORTED    : gParameters.SetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, ReadDouble(sParameter, eParameterType), true); break;
+      case MAXGEODISTANCE_REPORTED   : gParameters.SetMaxSpatialSizeForType(MAXDISTANCE, ReadDouble(sParameter, eParameterType), true); break;
+      case USE_MAXGEOPOPFILE_REPORTED: gParameters.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, ReadBoolean(sParameter, eParameterType), true); break;
+      case USE_MAXGEODISTANCE_REPORTED: gParameters.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, ReadBoolean(sParameter, eParameterType), true); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

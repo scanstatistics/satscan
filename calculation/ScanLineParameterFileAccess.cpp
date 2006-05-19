@@ -100,6 +100,16 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case OUTPUT_MLC_CASE_DBASE     : return "Output Cluster Case Information - dBase? (line 77)";
       case STUDYPERIOD_DATACHECK     : return "Study Period Data Checking type (line 78)";
       case COORDINATES_DATACHECK     : return "Geographical Coordinates Data Checking type (line 79)";
+      case MAXGEOPOPATRISK           : return "Maximum spatial size in population at risk (line 80)";
+      case MAXGEOPOPFILE             : return "Maximum spatial size in max circle population file (line 81)";
+      case MAXGEODISTANCE            : return "Maximum spatial size in distance from center (line 82)";
+      case USE_MAXGEOPOPFILE         : return "Restrict maximum spatial size - max circle file (line 83)";
+      case USE_MAXGEODISTANCE        : return "Restrict maximum spatial size - distance (line 84)";
+      case MAXGEOPOPATRISK_REPORTED  : return "Maximum reported spatial size in population at risk (line 85)";
+      case MAXGEOPOPFILE_REPORTED    : return "Maximum reported spatial size in max circle population file (line 86)";
+      case MAXGEODISTANCE_REPORTED   : return "Maximum reported spatial size in distance from center (line 87)";
+      case USE_MAXGEOPOPFILE_REPORTED: return "Restrict maximum reported spatial size - max circle file (line 88)";
+      case USE_MAXGEODISTANCE_REPORTED : return "Restrict maximum reported spatial size - distance (line 89)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }

@@ -24,7 +24,13 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     SIMULATION_DATA_OUTFILE, ADJ_FOR_EALIER_ANALYSES, USE_ADJ_BY_RR_FILE, SPATIAL_ADJ_TYPE,
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
                                     EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE,
-                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK, COORDINATES_DATACHECK};
+                                    OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK, COORDINATES_DATACHECK,
+                                    
+                                    MAXGEOPOPATRISK, MAXGEOPOPFILE, MAXGEODISTANCE,
+                                    USE_MAXGEOPOPFILE, USE_MAXGEODISTANCE,
+                                    MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
+                                    USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED
+                                    };
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -92,12 +98,19 @@ class CParameters {
         /* Power Calcution variables */
     bool                                gbPowerCalculation;                     /** indicator of whether to perform power calculations */
     double                              gdPower_X, gdPower_Y;                   /** power calculation variables */
-        /* Maximum spatial cluster variables */
-    double                              gdMaxGeographicClusterSize;             /** maximum value for spatial cluster */
-    SpatialSizeType                     geMaxGeographicClusterSizeType;         /** maximum spatial cluster value type */
+       /* Maximum spatial cluster variables */
+    double                              gdMaxSpatialSizeInPopulationAtRisk;
+    bool                                gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
+    double                              gdMaxSpatialSizeInMaxCirclePopulationFile;
+    bool                                gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
+    double                              gdMaxSpatialSizeInMaxDistanceFromCenter;
+       /* Reported Maximum spatial cluster variables */
     bool                                gbRestrictReportedClusters;             /** indicates whether reported clusters are limited to specified maximum size */
-    double                              gdMaxReportedGeographicClusterSize;     /** maximum spatial cluster size reported */
-    SpatialSizeType                     geMaxReportedGeographicClusterSizeType; /** maximum spatial cluster value type for reported clusters */
+    double                              gdMaxSpatialSizeInPopulationAtRisk_Reported;
+    bool                                gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported;
+    double                              gdMaxSpatialSizeInMaxCirclePopulationFile_Reported;
+    bool                                gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported;
+    double                              gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
     /* Maximum temporal cluster variables */
     double                              gdMaxTemporalClusterSize;               /** maximum value for temporal cluster */
     TemporalSizeType                    geMaxTemporalClusterSizeType;           /** maximum temporal cluster value type */
@@ -228,14 +241,9 @@ class CParameters {
     bool                                GetIsSpaceTimeAnalysis() const;
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
-    double                              GetMaximumGeographicClusterSize() const {return gdMaxGeographicClusterSize;}
-    SpatialSizeType                     GetMaxGeographicClusterSizeType() const {return geMaxGeographicClusterSizeType;}
-    bool                                GetMaxGeoClusterSizeTypeIsPopulationBased() const {return geMaxGeographicClusterSizeType == PERCENTOFPOPULATION ||
-                                                                                                  geMaxGeographicClusterSizeType == PERCENTOFMAXCIRCLEFILE;}
+    double                              GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     double                              GetMaximumTemporalClusterSize() const {return gdMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
-    double                              GetMaximumReportedGeoClusterSize() const {return gdMaxReportedGeographicClusterSize;}
-    SpatialSizeType                     GetMaxReportedGeographicClusterSizeType() const {return geMaxReportedGeographicClusterSizeType;}
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
     double                              GetNonCompactnessPenaltyPower() const {return (geNonCompactnessPenaltyType == NOPENALTY ? 0.0 : (geNonCompactnessPenaltyType == MEDIUMPENALTY ? .5 : 1.0));}
     NonCompactnessPenaltyType           GetNonCompactnessPenaltyType() const {return geNonCompactnessPenaltyType;}
@@ -280,10 +288,11 @@ class CParameters {
     long                                GetRandomizationSeed() const {return glRandomizationSeed;}
     bool                                GetReportCriticalValues() const {return gbReportCriticalValues;}
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
+    bool                                GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetSequentialCutOffPValue() const {return gbSequentialCutOffPValue;}
-    const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}  
+    const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}
     const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
     SimulationType                      GetSimulationType() const {return geSimulationType;}
     const std::string                 & GetSourceFileName() const {return gsParametersSourceFileName;}
@@ -323,12 +332,9 @@ class CParameters {
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
     void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false);
-    void                                SetMaximumGeographicClusterSize(double dMaxGeographicClusterSize);
-    void                                SetMaximumReportedGeographicalClusterSize(double dMaxReportedGeographicClusterSize);
-    void                                SetMaximumReportedSpatialClusterSizeType(SpatialSizeType eSpatialSizeType);
-    void                                SetMaximumSpatialClusterSizeType(SpatialSizeType eSpatialSizeType);
     void                                SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
+    void                                SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, double d, bool bReported);
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
     void                                SetNonCompactnessPenalty(NonCompactnessPenaltyType e);
     void                                SetNumDataSets(size_t iNumDataSets);
@@ -356,6 +362,7 @@ class CParameters {
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
     void                                SetRandomizationSeed(long lSeed);
     void                                SetReportCriticalValues(bool b) {gbReportCriticalValues = b;}
+    void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}

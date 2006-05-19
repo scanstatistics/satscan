@@ -199,9 +199,12 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
 
   try {
     WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
-    WriteIniParameter(WriteFile, REPORTED_GEOSIZE, GetParameterString(REPORTED_GEOSIZE, s), GetParameterComment(REPORTED_GEOSIZE));
     WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s), GetParameterComment(USE_REPORTED_GEOSIZE));
-    WriteIniParameter(WriteFile, MAX_REPORTED_SPATIAL_TYPE, GetParameterString(MAX_REPORTED_SPATIAL_TYPE, s), GetParameterComment(MAX_REPORTED_SPATIAL_TYPE));
+    WriteIniParameter(WriteFile, MAXGEOPOPATRISK_REPORTED, GetParameterString(MAXGEOPOPATRISK_REPORTED, s), GetParameterComment(MAXGEOPOPATRISK_REPORTED));
+    WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s), GetParameterComment(MAXGEOPOPFILE_REPORTED));
+    WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s), GetParameterComment(MAXGEODISTANCE_REPORTED));
+    WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE_REPORTED, GetParameterString(USE_MAXGEOPOPFILE_REPORTED, s), GetParameterComment(USE_MAXGEOPOPFILE_REPORTED));
+    WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteClustersReportedSettings()","IniParameterFileAccess");
@@ -228,10 +231,8 @@ void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s), GetParameterComment(WINDOW_SHAPE));
     WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s), GetParameterComment(ESHAPES));
     WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s), GetParameterComment(ENUMBERS));
-    WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s), GetParameterComment(NON_COMPACTNESS_PENALTY));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteEllipticScanSettings()","IniParameterFileAccess");
@@ -447,10 +448,15 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, GEOSIZE, GetParameterString(GEOSIZE, s), GetParameterComment(GEOSIZE));
+    WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s), GetParameterComment(MAXGEOPOPATRISK));
+    WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s), GetParameterComment(MAXGEOPOPFILE));
+    WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s), GetParameterComment(MAXGEODISTANCE));
+    WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s), GetParameterComment(USE_MAXGEOPOPFILE));
+    WriteIniParameter(WriteFile, USE_MAXGEODISTANCE, GetParameterString(USE_MAXGEODISTANCE, s), GetParameterComment(USE_MAXGEODISTANCE));
     WriteIniParameter(WriteFile, PURETEMPORAL, GetParameterString(PURETEMPORAL, s), GetParameterComment(PURETEMPORAL));
-    WriteIniParameter(WriteFile, MAX_SPATIAL_TYPE, GetParameterString(MAX_SPATIAL_TYPE, s), GetParameterComment(MAX_SPATIAL_TYPE));
     WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s), GetParameterComment(MAXCIRCLEPOPFILE));
+    WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s), GetParameterComment(WINDOW_SHAPE));
+    WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s), GetParameterComment(NON_COMPACTNESS_PENALTY));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpatialWindowSettings()","IniParameterFileAccess");
