@@ -48,6 +48,11 @@ class AbstractDataFileWriter {
     static const char         * CATEGORY_FIELD;
     static const char         * OBSERVED_DIV_EXPECTED_FIELD;
     static const char         * RELATIVE_RISK_FIELD;
+    static const char         * MEAN_INSIDE_FIELD;
+    static const char         * MEAN_OUTSIDE_FIELD;
+    static const char         * VARIANCE_FIELD;
+    static const char         * DEVIATION_FIELD;
+    static const char         * MEAN_VALUE_FIELD;
 
     void                        CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, char cType,
                                             short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex=false);

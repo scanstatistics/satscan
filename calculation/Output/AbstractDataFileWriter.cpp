@@ -145,6 +145,11 @@ const char * AbstractDataFileWriter::DATASET_FIELD                      = "DATAS
 const char * AbstractDataFileWriter::CATEGORY_FIELD                     = "CATEGORY";
 const char * AbstractDataFileWriter::OBSERVED_DIV_EXPECTED_FIELD        = "ODE";
 const char * AbstractDataFileWriter::RELATIVE_RISK_FIELD                = "REL_RISK";
+const char * AbstractDataFileWriter::MEAN_INSIDE_FIELD                  = "MEAN_IN";
+const char * AbstractDataFileWriter::MEAN_OUTSIDE_FIELD                 = "MEAN_OUT";
+const char * AbstractDataFileWriter::VARIANCE_FIELD                     = "VARIANCE";
+const char * AbstractDataFileWriter::DEVIATION_FIELD                    = "DEVIATION";
+const char * AbstractDataFileWriter::MEAN_VALUE_FIELD                   = "MEAN";
 
 /** constructor */
 AbstractDataFileWriter::AbstractDataFileWriter(const CParameters& Parameters)
