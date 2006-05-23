@@ -44,10 +44,16 @@ void LocationRiskEstimateWriter::DefineFields() {
       CreateField(vFieldDefinitions, DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == ORDINAL)
       CreateField(vFieldDefinitions, CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-    CreateField(vFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-    CreateField(vFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-    CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-    CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
+      CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, DEVIATION_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    }
+    if (gParameters.GetProbabilityModelType() != NORMAL) {
+      CreateField(vFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    }
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       CreateField(vFieldDefinitions, TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
   }
@@ -141,28 +147,43 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
   tract_t               t;
   ZdString              sBuffer;
   count_t             * pCases;
-  measure_t           * pMeasure;
+  measure_t           * pMeasure, * pSqMeasure(0);
   double                dExpected, dDenominator, dNumerator;
-  RecordBuffer          Record(vFieldDefinitions);  
+  RecordBuffer          Record(vFieldDefinitions);
+  const DataSetHandler& Handler = DataHub.GetDataSetHandler();
 
   try {
-    for (i=0; i < gParameters.GetNumDataSets(); ++i) {
-       pCases = DataHub.GetDataSetHandler().GetDataSet(i).GetCaseArray()[0];
-       pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).GetMeasureArray()[0];
+    for (i=0; i < Handler.GetNumDataSets(); ++i) {
+       pCases = Handler.GetDataSet(i).GetCaseArray()[0];
+       pMeasure = Handler.GetDataSet(i).GetMeasureArray()[0];
+       if (gParameters.GetProbabilityModelType() == NORMAL)
+         pSqMeasure = Handler.GetDataSet(i).GetSqMeasureArray()[0];
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
-          Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
-          dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
-          Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
-          if (dExpected) {
-            Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
-            dDenominator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - dExpected;
-            dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - pCases[t];
-            if (dDenominator && dNumerator/dDenominator)
-              Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
+          if (gParameters.GetProbabilityModelType() == NORMAL) {
+            if (pCases[t]) {
+              Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
+              double dDeviation = (pCases[t] == 1 ? 0.0 : std::sqrt(GetVariance(pCases[t], pMeasure[t], pSqMeasure[t],
+                                                                    Handler.GetDataSet(i).GetTotalCases(),
+                                                                    Handler.GetDataSet(i).GetTotalMeasure(),
+                                                                    Handler.GetDataSet(i).GetTotalMeasureSq())));
+              Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = dDeviation;
+            }  
+          }
+          if (gParameters.GetProbabilityModelType() != NORMAL) {
+            Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
+            dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
+            Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
+            if (dExpected) {
+              Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
+              dDenominator = Handler.GetDataSet(i).GetTotalCases() - dExpected;
+              dNumerator = Handler.GetDataSet(i).GetTotalCases() - pCases[t];
+              if (dDenominator && dNumerator/dDenominator)
+                Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
+            }
           }
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
