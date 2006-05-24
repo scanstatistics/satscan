@@ -35,7 +35,7 @@ class CSaTScanData {
     CModel                                    * m_pModel;
     std::auto_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
-    GInfo                                       gCentroidsHandler;
+    std::auto_ptr<GInfo>                        gCentroidsHandler;
     TractHandler                                gTractHandler;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
@@ -114,7 +114,7 @@ class CSaTScanData {
     int                                         GetFlexibleWindowEndRangeStartIndex() const {return m_nFlexibleWindowEndRangeStartIndex;}
     int                                         GetFlexibleWindowStartRangeEndIndex() const {return m_nFlexibleWindowStartRangeEndIndex;}
     int                                         GetFlexibleWindowStartRangeStartIndex() const {return m_nFlexibleWindowStartRangeStartIndex;}
-    inline const GInfo                        * GetGInfo() const { return &gCentroidsHandler;}
+    inline const GInfo                        * GetGInfo() const { return gCentroidsHandler.get();}
     bool                                        GetIsNullifiedLocation(tract_t tLocationIndex) const;
     const std::vector<measure_t>              & GetMaxCirclePopulationArray() const {return gvMaxCirclePopulation;}
     measure_t                                   GetMaxCirclePopulationSize() const {return m_nTotalMaxCirclePopulation;}

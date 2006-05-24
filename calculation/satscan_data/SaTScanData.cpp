@@ -913,6 +913,11 @@ void CSaTScanData::Setup() {
   //set tract handler object to aggregate locations when analysis type is purely temporal
   if (!gParameters.UseCoordinatesFile())
     gTractHandler.tiSetAggregatingTracts();
+
+  if (gParameters.UseSpecialGrid())
+    gCentroidsHandler.reset(new CentroidHandler());
+  else
+    gCentroidsHandler.reset(new CentroidHandlerPassThrow(gTractHandler));
 }
 
 /** Throws exception if case(s) were observed for an interval/location
