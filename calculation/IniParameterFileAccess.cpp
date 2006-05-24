@@ -332,7 +332,7 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile)
 
   try {
     WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()),
-                      " multiple data sets purpose type (multivariate=0, adjustment=1)");
+                      " multiple data sets purpose type (0=Multivariate, 1=Adjustment)");
 
     if (GetSpecifications().GetMultipleParameterIniInfo(CASEFILE, &sSectionName, &sBaseKey)) {
       for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
