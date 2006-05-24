@@ -122,7 +122,6 @@ class CParameters {
     TimeTrendAdjustmentType             geTimeTrendAdjustType;                  /** Adjust for time trend: no, discrete, % */
         /* Input precision variables */
     DatePrecisionType                   gePrecisionOfTimesType;                 /** precision of case/control data: none = no, years=months=days = yes */
-    int                                 giDimensionsOfData;                     /** dimensions in geographic data */
     CoordinatesType                     geCoordinatesType;                      /** coordinates type for coordinates/special grid */
         /* Ellipse variables */
     long                                glTotalNumEllipses;                     /** total number of ellipses (ellipses by number rotations) */
@@ -224,7 +223,6 @@ class CParameters {
     const CreationVersion            &  GetCreationVersion() const {return gCreationVersion;}
     CriteriaSecondaryClustersType       GetCriteriaSecondClustersType() const {return geCriteriaSecondClustersType;}
     unsigned int                        GetCreationVersionMajor() const {return gCreationVersion.iMajor;}
-    int                                 GetDimensionsOfData() const {return giDimensionsOfData;}
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
@@ -317,7 +315,6 @@ class CParameters {
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetAsDefaulted();
-    void                                SetDimensionsOfData(int iDimensions);
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
     void                                SetExecutionType(ExecutionType eExecutionType);

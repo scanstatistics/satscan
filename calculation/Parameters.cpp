@@ -67,7 +67,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbUseSpecialGridFile                   != rhs.gbUseSpecialGridFile) return false;
   if (gsMaxCirclePopulationFileName          != rhs.gsMaxCirclePopulationFileName) return false;
   if (gePrecisionOfTimesType                 != rhs.gePrecisionOfTimesType) return false;
-  if (giDimensionsOfData                     != rhs.giDimensionsOfData) return false;
   if (geCoordinatesType                      != rhs.geCoordinatesType) return false;
   if (gsOutputFileName                       != rhs.gsOutputFileName) return false;
   if (gbOutputSimLogLikeliRatiosAscii        != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
@@ -215,7 +214,6 @@ void CParameters::Copy(const CParameters &rhs) {
     gbUseSpecialGridFile                   = rhs.gbUseSpecialGridFile;
     gsMaxCirclePopulationFileName          = rhs.gsMaxCirclePopulationFileName;
     gePrecisionOfTimesType                 = rhs.gePrecisionOfTimesType;
-    giDimensionsOfData                     = rhs.giDimensionsOfData;
     geCoordinatesType                      = rhs.geCoordinatesType;
     gsOutputFileName                       = rhs.gsOutputFileName;
     gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
@@ -739,7 +737,6 @@ void CParameters::SetAsDefaulted() {
   gsOutputFileName                         = "";
   gsMaxCirclePopulationFileName            = "";
   gePrecisionOfTimesType                   = YEAR;
-  giDimensionsOfData                       = 0;
   gbUseSpecialGridFile                     = false;
   gsSpecialGridFileName                    = "";
   gsStudyPeriodStartDate                   = "2000/1/1";
@@ -834,19 +831,6 @@ void CParameters::SetAsDefaulted() {
   gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = 50.0;
   gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = false;
   gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = 1.0;
-}
-
-/** Sets dimensions of input data. */
-void CParameters::SetDimensionsOfData(int iDimensions) {
-  try {
-    if (iDimensions < 0)
-      ZdException::Generate("Dimensions can not be less than 0.\n", "SetDimensionsOfData()");
-    giDimensionsOfData = iDimensions;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetDimensionsOfData()","CParameters");
-    throw;
-  }
 }
 
 /** Sets start range start date. Throws exception. */
