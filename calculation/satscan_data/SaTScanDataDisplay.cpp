@@ -203,16 +203,16 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    sBuffer.printf("%.2f", GetVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq()));
+    sBuffer.printf("%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq()));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.2f", GetVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq()));
+       sWork.printf(", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq()));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    sBuffer.printf("%.2f", std::sqrt(GetVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq())));
+    sBuffer.printf("%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq())));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.2f", std::sqrt(GetVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq())));
+       sWork.printf(", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq())));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
