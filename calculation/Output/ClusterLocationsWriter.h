@@ -21,8 +21,6 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_REL_RISK_FIELD;
       static const char       * CLU_MEAN_IN_FIELD;
       static const char       * CLU_MEAN_OUT_FIELD;
-      static const char       * CLU_VARIANCE_FIELD;
-      static const char       * CLU_DEVIATION_FIELD;
       bool                      gbExcludePValueField;
 
       void                      DefineFields();

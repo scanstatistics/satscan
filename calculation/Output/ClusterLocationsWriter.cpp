@@ -17,8 +17,6 @@ const char * LocationInformationWriter::CLU_OBS_DIV_EXP_FIELD     = "CLU_ODE";
 const char * LocationInformationWriter::CLU_REL_RISK_FIELD        = "CLU_RISK";
 const char * LocationInformationWriter::CLU_MEAN_IN_FIELD         = "CLU_MEAN_I";
 const char * LocationInformationWriter::CLU_MEAN_OUT_FIELD        = "CLU_MEAN_O";
-const char * LocationInformationWriter::CLU_VARIANCE_FIELD        = "CLU_VARNCE";
-const char * LocationInformationWriter::CLU_DEVIATION_FIELD       = "CLU_STD_DEV";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField, bool bAppend)
