@@ -76,8 +76,8 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
     CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
     //only Cartesian coordinates can have more than two dimensions
-    if (gParameters.GetCoordinatesType() == CARTESIAN && gParameters.GetDimensionsOfData() > 2)
-      for (i=3; i <= (unsigned int)gParameters.GetDimensionsOfData(); ++i) {
+    if (gParameters.GetCoordinatesType() == CARTESIAN && gDataHub.GetTInfo()->tiGetDimensions() > 2)
+      for (i=3; i <= (unsigned int)gDataHub.GetTInfo()->tiGetDimensions(); ++i) {
          sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
          CreateField(vFieldDefinitions, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
       }
@@ -292,7 +292,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
        switch (gParameters.GetCoordinatesType()) {
          case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  vCoordinates[0];
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  vCoordinates[1];
-                          for (int i=2; i < gParameters.GetDimensionsOfData(); ++i) {
+                          for (size_t i=2; i < vCoordinates.size(); ++i) {
                              sBuffer << ZdString::reset << COORD_Z_FIELD << (i - 1);
                              Record.GetFieldValue(sBuffer).AsDouble() = vCoordinates[i];
                           }

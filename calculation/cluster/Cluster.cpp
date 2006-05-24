@@ -398,7 +398,6 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   std::vector<double>   vCoordinates;
-  int                   i;
   ZdString              sBuffer, sWork;
 
   try {
@@ -407,23 +406,23 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
     //print coordinates differently when ellipses are requested
     if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
       PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
-      for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
+      for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
          sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          sBuffer << sWork;
       }
       //to keep radius value consistant with previous versions, down cast double to float
       float radius = static_cast<float>(m_CartesianRadius);
-      sWork.printf("%g) / %-5.2f", vCoordinates[Data.GetParameters().GetDimensionsOfData() - 1], radius);
+      sWork.printf("%g) / %-5.2f", vCoordinates.back(), radius);
       sBuffer << sWork;
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     }
     else {//print ellipse settings
       PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
-      for (i=0; i < Data.GetParameters().GetDimensionsOfData() - 1; ++i) {
+      for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
          sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          sBuffer << sWork;
       }
-      sWork.printf("%g)", vCoordinates[Data.GetParameters().GetDimensionsOfData() - 1]);
+      sWork.printf("%g)", vCoordinates.back());
       sBuffer << sWork;
       PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
       //print ellipse particulars
