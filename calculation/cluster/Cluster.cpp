@@ -202,7 +202,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
-  double                                        dEstimatedMeanInside, dEstimatedMeanOutside, dCommonVariance;
+  double                                        dEstimatedMeanInside, dEstimatedMeanOutside, dUnbiasedVariance;
   const AbstractNormalClusterData             * pClusterData=0;
   count_t                                       tObserved;
   measure_t                                     tExpected;
@@ -239,14 +239,12 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print common variance label
      PrintFormat.PrintSectionLabel(fp, "Common variance", false, true);
-     dCommonVariance = GetVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureSq(*itr_Index),
-                                   Handler.GetDataSet(*itr_Index).GetTotalCases(), Handler.GetDataSet(*itr_Index).GetTotalMeasure(),
-                                   Handler.GetDataSet(*itr_Index).GetTotalMeasureSq());
-     sBuffer.printf("%.2f", dCommonVariance);
+     dUnbiasedVariance = GetUnbiasedVariance(tObserved, tExpected, pClusterData->GetMeasureSq(*itr_Index));
+     sBuffer.printf("%.2f", dUnbiasedVariance);
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print common standard deviation
      PrintFormat.PrintSectionLabel(fp, "Common standard dev.", false, true);
-     sBuffer.printf("%.2f", std::sqrt(dCommonVariance));
+     sBuffer.printf("%.2f", std::sqrt(dUnbiasedVariance));
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
 }
