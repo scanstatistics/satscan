@@ -166,11 +166,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
           if (gParameters.GetProbabilityModelType() == NORMAL) {
             if (pCases[t]) {
               Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
-              double dDeviation = (pCases[t] == 1 ? 0.0 : std::sqrt(GetVariance(pCases[t], pMeasure[t], pSqMeasure[t],
-                                                                    Handler.GetDataSet(i).GetTotalCases(),
-                                                                    Handler.GetDataSet(i).GetTotalMeasure(),
-                                                                    Handler.GetDataSet(i).GetTotalMeasureSq())));
-              Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = dDeviation;
+              double dUnbiasedVariance = std::fabs((pCases[t] == 1 ? 0.0 : (pSqMeasure[t] - std::pow(pMeasure[t], 2)/pCases[t])/(pCases[t] - 1)));
+              Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = (dUnbiasedVariance < 0.00000001 ? 0.0 : std::sqrt(dUnbiasedVariance));
             }  
           }
           if (gParameters.GetProbabilityModelType() != NORMAL) {

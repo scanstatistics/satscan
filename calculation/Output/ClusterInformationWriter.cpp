@@ -213,7 +213,7 @@ void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCl
 void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
   ZdString          sBuffer;
   RecordBuffer      Record(vFieldDefinitions);
-  double            dObserved, dExpected, dCasesOutside, dVariance, dRelativeRisk;
+  double            dObserved, dExpected, dCasesOutside, dUnbiasedVariance, dRelativeRisk;
   const DataSetHandler & Handler = gDataHub.GetDataSetHandler();
 
   try {
@@ -242,19 +242,17 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       if (gParameters.GetProbabilityModelType() == NORMAL) {
         dObserved = theCluster.GetObservedCount();
         dExpected = theCluster.GetExpectedCount(gDataHub);
-        Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = (dObserved ? dExpected/dObserved : 0);
+        Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = dExpected/dObserved;
         dCasesOutside = Handler.GetDataSet().GetTotalCases() - dObserved;
-        Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (dCasesOutside ? (Handler.GetDataSet().GetTotalMeasure() - dExpected)/dCasesOutside : 0);
+        if (dCasesOutside) Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (Handler.GetDataSet().GetTotalMeasure() - dExpected)/dCasesOutside;
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           ZdGenerateException("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
-        dVariance = GetVariance(dObserved, dExpected, pClusterData->GetMeasureSq(0),
-                                Handler.GetDataSet().GetTotalCases(), Handler.GetDataSet().GetTotalMeasure(),
-                                Handler.GetDataSet().GetTotalMeasureSq());
-        Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dVariance;
-        Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dVariance);
+        dUnbiasedVariance = std::fabs((dObserved == 1 ? 0.0 : (pClusterData->GetMeasureSq(0) - std::pow(dExpected, 2)/dObserved)/(dObserved - 1)));
+        Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
+        Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = (dUnbiasedVariance < 0.00000001 ? 0.0 : std::sqrt(dUnbiasedVariance));
       }
-      else {
+      if (gParameters.GetProbabilityModelType() != NORMAL) {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
       }
@@ -328,7 +326,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 
 /** Writes obvserved, expected and  observed/expected to file(s).*/
 void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iClusterNumber) const {
-  double                                        dObserved, dExpected, dCasesOutside, dVariance, dRelativeRisk;
+  double                                        dObserved, dExpected, dCasesOutside, dUnbiasedVariance, dRelativeRisk;
   RecordBuffer                                  Record(vDataFieldDefinitions);
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
@@ -357,13 +355,11 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           ZdGenerateException("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
-        dVariance = GetVariance(dObserved, dExpected, pClusterData->GetMeasureSq(iSetIndex),
-                                Handler.GetDataSet(iSetIndex).GetTotalCases(), Handler.GetDataSet(iSetIndex).GetTotalMeasure(),
-                                Handler.GetDataSet(iSetIndex).GetTotalMeasureSq());
-        Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dVariance;
-        Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dVariance);
+        dUnbiasedVariance = std::fabs((dObserved == 1 ? 0.0 : (pClusterData->GetMeasureSq(iSetIndex) - std::pow(dExpected, 2)/dObserved)/(dObserved - 1)));
+        Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
+        Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = (dUnbiasedVariance < 0.00000001 ? 0.0 : std::sqrt(dUnbiasedVariance));
       }
-      else {
+      if (gParameters.GetProbabilityModelType() != NORMAL) {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
       }  
