@@ -64,11 +64,6 @@ bool TractDescriptor::CompareCoordinates(const TractDescriptor & Descriptor, con
   return !memcmp(GetCoordinates(), Descriptor.GetCoordinates(), theTractHandler.tiGetDimensions() * sizeof(double));
 }
 
-bool TractDescriptor::CompareCoordinates(const TractHandler & theTractHandler, std::vector<double>& vCoordinates) const {
-  return ((size_t)theTractHandler.tiGetDimensions() != vCoordinates.size() ||
-          !memcmp(GetCoordinates(), &vCoordinates[0], theTractHandler.tiGetDimensions() * sizeof(double)));
-}
-
 /** Returns whether coordinate are equal. */
 bool TractDescriptor::CompareCoordinates(const double * pCoordinates, int iDimensions) const {
   return !memcmp(GetCoordinates(), pCoordinates, iDimensions * sizeof(double));
@@ -189,17 +184,10 @@ void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordi
 }
 
 /** Constructor*/
-TractHandler::TractHandler() : gbAggregatingTracts(false), nDimensions(0), gpSearchTractDescriptor(0) {
-  Setup();
-}
+TractHandler::TractHandler() : nDimensions(0), gbAggregatingTracts(false) {}
 
 /** Destructor */
-TractHandler::~TractHandler() {
-  try {
-    delete gpSearchTractDescriptor;
-  }
-  catch(...){}
-}
+TractHandler::~TractHandler() {}
 
 /** Prints error when duplicate coordinates are found.
     Returns whether duplicates coordinate where found. */
@@ -337,9 +325,10 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) const {
       tPosReturn =  std::distance(gvTractDescriptors.begin(), itr);
     }
     else {//search for tract identifier in vector
-      gpSearchTractDescriptor->SetTractIdentifier(tid);
-      itr = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
-      if (itr != gvTractDescriptors.end() && !strcmp((*itr)->GetTractIdentifier(),tid))      
+      double Coordinates[1] ={0};
+      std::auto_ptr<TractDescriptor> Search(new TractDescriptor(tid, Coordinates, 1));
+      itr = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), Search.get(), CompareTractDescriptorIdentifier());
+      if (itr != gvTractDescriptors.end() && !strcmp((*itr)->GetTractIdentifier(),tid))
         tPosReturn = std::distance(gvTractDescriptors.begin(), itr);
       else
         tPosReturn = -1;
@@ -356,44 +345,36 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) const {
     Sorted insert appears to be done solely for TractHandler::tiGetTractIndex(char *tid).
 
     Return value: false = duplicate tract ID,  true = successful insertion */
-bool TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinates) {
-  std::map<std::string,TractDescriptor*>::iterator     itrmap;
-  ZdPointerVector<TractDescriptor>::iterator           itrCoordinatesPosition, itrInsertPosition;
-  TractDescriptor                                    * pTractDescriptor=0;
+void TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinates) {
+  ZdPointerVector<TractDescriptor>::iterator itr, itrPosition;
 
   try {
     if (gbAggregatingTracts)
       //when aggregating locations, insertion process always succeeds
-      return true;
+      return;
 
-    //first search for an existing location with 'tid' identifier
-    gpSearchTractDescriptor->SetTractIdentifier(tid);
-    itrInsertPosition = std::lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), gpSearchTractDescriptor, CompareTractDescriptorIdentifier());
-    if (itrInsertPosition != gvTractDescriptors.end() && !strcmp((*itrInsertPosition)->GetTractIdentifier(),tid))
-      //ignore the record if coordinates are identical, else return indication that this record is attempting to re-define coordinates for indentifier
-      return ((*itrInsertPosition)->CompareCoordinates(*this, vCoordinates) ? true : false);
-    //now check that location with 'tid' identifier in not in duplicates
-    itrmap = gmDuplicateTracts.find(std::string(tid));
-    if (itrmap != gmDuplicateTracts.end())
-      //ignore the record if coordinates are identical, else return indication that this record is attempting to re-define coordinates for identifier
-      return (itrmap->second->CompareCoordinates(*this, vCoordinates) ? true : false);
-    //now check that coordinates are not already defined to another location
-    for (itrCoordinatesPosition=gvTractDescriptors.begin(); itrCoordinatesPosition != gvTractDescriptors.end(); ++itrCoordinatesPosition)
-       if ((*itrCoordinatesPosition)->CompareCoordinates(&vCoordinates[0], nDimensions)) {
-         //mark as duplicate and associate with existing TractDescriptor with those coordinates
-         gmDuplicateTracts[tid] = (*itrCoordinatesPosition);
-         return true;
-       }
-    //insert location identifier as new coordinate
-    pTractDescriptor = new TractDescriptor(tid, &vCoordinates[0], nDimensions);
-    gvTractDescriptors.insert(itrInsertPosition, pTractDescriptor);
+    //search for location with these coordinates
+    std::auto_ptr<TractDescriptor> Tract(new TractDescriptor(tid, &vCoordinates[0], nDimensions));
+    //find insertion point based upon first coordinate
+    itr = itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), Tract.get(), CompareTractFirstCoordinate());
+    while (itr != gvTractDescriptors.end() && (*itr)->GetCoordinates()[0] == vCoordinates[0]) {
+        //there exists a location with same X/latitude coordinate -- are there any identical points?
+        if ((*itr)->CompareCoordinates(&vCoordinates[0], nDimensions)) {
+           //is the identifier the same -- then this location record is a duplicate -- ignore it
+           if (!strcmp((*itr)->GetTractIdentifier(),tid))
+             return;
+           //different identifiers, so this location references a coordinate already associated with another identifier
+           gmDuplicateTracts[tid] = (*itr);
+           return;
+        }
+        ++itr;
+    }
+    gvTractDescriptors.insert(itrPosition, Tract.release());
   }
   catch (ZdException & x) {
     x.AddCallpath("tiInsertTnode()", "TractHandler");
-    delete pTractDescriptor;
     throw;
   }
-  return true;
 }
 
 /** Prints formatted message to file which details the locations of the coordinates
@@ -441,6 +422,27 @@ void TractHandler::tiReportDuplicateTracts(FILE * fDisplay) const {
   }
 }
 
+/** Orders internal collection of TractDescriptor objects by indentifier labels. Since the insertion
+    process did not prevent insertion of duplicate location identifiers, we'll do that now.
+
+    The internal collection of locations needs to be sorted by their identifiers to maintain
+    consistancy of output.                                                                             */
+void TractHandler::SortTractsByIndentifiers() {
+  if (gvTractDescriptors.size() < 2) return;
+  //order locations by tract identifier
+  std::sort(gvTractDescriptors.begin(), gvTractDescriptors.end(), CompareTractDescriptorIdentifier());
+  //search TractDescriptor objects for duplicate location identifiers
+  ZdPointerVector<TractDescriptor>::iterator itr=gvTractDescriptors.begin(), itr_end=gvTractDescriptors.end() - 1;
+  for (; itr != itr_end; ++itr) {
+    //compare current identifier with next identifier
+    if (!strcmp((*itr)->GetTractIdentifier(),(*(itr+1))->GetTractIdentifier()))
+      GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", (*itr)->GetTractIdentifier());
+    //search for this indentifier in duplicates -- if many duplicates, this could slow things down
+    if (gmDuplicateTracts.find(std::string((*itr)->GetTractIdentifier())) != gmDuplicateTracts.end())
+      GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", (*itr)->GetTractIdentifier());
+  }
+}
+
 /** Set this handler object to aggregating locations into one. */
 void TractHandler::tiSetAggregatingTracts() {
   gvTractDescriptors.DeleteAllElements();
@@ -451,16 +453,3 @@ void TractHandler::tiSetAggregatingTracts() {
   gvTractDescriptors.push_back(new TractDescriptor("dummy_location", Coordinates, 1));
 }
 
-/** Internal setup function. */
-void TractHandler::Setup() {
-  double Coordinates[1] ={0};
-
-  try {
-    gpSearchTractDescriptor = new TractDescriptor(" ", Coordinates, 1);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("Setup()", "TractHandler");
-    delete gpSearchTractDescriptor; gpSearchTractDescriptor=0;
-    throw;
-  }
-}

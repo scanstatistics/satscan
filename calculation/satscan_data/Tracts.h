@@ -35,21 +35,21 @@ class TractDescriptor {
     void                                Combine(const TractDescriptor * pCategoryDescriptor, const TractHandler & theTractHandler);
     bool                                CompareCoordinates(const double * pCoordinates, int iDimensions) const;
     bool                                CompareCoordinates(const TractDescriptor & Descriptor, const TractHandler & theTractHandler) const;
-    bool                                CompareCoordinates(const TractHandler & theTractHandler, std::vector<double>& vCoordinates) const;
-    const double                      *	GetCoordinates() const {return gpCoordinates;}
     double                            	GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const;
     int                                 GetNumTractIdentifiers() const;
     const char                        * GetTractIdentifier() const {return gsTractIdentifiers;}
     const char 			      * GetTractIdentifier(int iTractIdentifierIndex, std::string & sIndentifier);
     void                                GetTractIdentifiers(std::vector<std::string>& vIdentifiers) const;
     void                                RetrieveCoordinates(TractHandler const & theTractHandler, std::vector<double> & vRepository) const;
-    void                                SetCoordinates(const double* pCoordinates, int iDimensions);
     void				SetTractIdentifier(const char * sTractIdentifier);
 
     TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions);
 
   public:
     ~TractDescriptor();
+
+    const double                      *	GetCoordinates() const {return gpCoordinates;}
+    void                                SetCoordinates(const double* pCoordinates, int iDimensions);
 };
 
 /** Function object used to compare CompareTractDescriptor objects by identifier. */
@@ -63,17 +63,23 @@ class CompareTractDescriptorIdentifier {
                    }
 };
 
-class CSaTScanData;
+/** Function object used to compare CompareTractDescriptor objects by identifier. */
+class CompareTractFirstCoordinate {
+  public:
+    CompareTractFirstCoordinate() {}
+
+    bool operator() (TractDescriptor * lhs, TractDescriptor * rhs)
+                   {
+                   return (lhs->GetCoordinates()[0] < rhs->GetCoordinates()[0]);
+                   }
+};
 
 class TractHandler {
   private:
     ZdPointerVector<TractDescriptor>             gvTractDescriptors;
     int                                          nDimensions;
-    TractDescriptor                            * gpSearchTractDescriptor;
     std::map<std::string,TractDescriptor*>       gmDuplicateTracts;
     bool                                         gbAggregatingTracts;
-
-    void                                Setup();
 
   public:
     TractHandler();
@@ -88,11 +94,12 @@ class TractHandler {
     double                              tiGetTractCoordinate(tract_t t, int iDimension) const;
     void                                tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const;
     tract_t                             tiGetTractIndex(const char *tid) const;
-    bool                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
+    void                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
     void                                tiSetAggregatingTracts();
     void                                tiSetDimensions(int iDimensions) {nDimensions = iDimensions;}
+    void                                SortTractsByIndentifiers();
 };
 //*****************************************************************************
 #endif
