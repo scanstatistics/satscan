@@ -25,107 +25,88 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (gParameters.GetCreationVersion().iMajor < 6)
       const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
 
-    if (gParameters.GetValidatingParameters()) {
-      //prevent access to Spatial Variation and Temporal Trends analysis -- still in development
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-        bValid = false;
-        PrintDirection.Printf("Error: Please note that spatial variation in temporal trends analysis is not implemented\n"
-                             "       in this version of SaTScan.\n", BasePrint::P_ERROR);
-      }
-      if (!ValidateMonotoneRisk(PrintDirection))
-        bValid = false;
-      if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
-        bValid = false;
-        PrintDirection.Printf("Error: Adjustment purpose for multiple data sets is not permitted\n"
-                              "       with ordinal probability model in this version of SaTScan.\n", BasePrint::P_ERROR);
-      }
-      if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetTerminateSimulationsEarly()) {
-        bValid = false;
-        PrintDirection.Printf("Error: The early termination of simulations option can not be applied\n"
-                              "       with the centric analysis execution.\n", BasePrint::P_ERROR);
-      }
-      if (gParameters.GetExecutionType() == CENTRICALLY &&
-          (gParameters.GetIsPurelyTemporalAnalysis() ||
-           gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
-           (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
-        bValid = false;
-        PrintDirection.Printf("Error: The centric analysis execution is not available for:\n"
-                              "       purely temporal analyses\n"
-                              "       purely spatial analyses with isotonic scan\n"
-                              "       spatial variation of temporal trends analysis\n", BasePrint::P_ERROR);
-      }
-
-      //validate dates
-      if (! ValidateDateParameters(PrintDirection))
-        bValid = false;
-      else {
-        //Validate temporal options only if date parameters are valid. Some
-        //temporal parameters can not be correctly validated if dates are not valid.
-        if (! ValidateTemporalParameters(PrintDirection))
-           bValid = false;
-      }
-
-      //validate spatial options
-      if (! ValidateSpatialParameters(PrintDirection))
-        bValid = false;
-
-      //validate number of replications requested
-      if (!(gParameters.GetNumReplicationsRequested() == 0 ||
-            gParameters.GetNumReplicationsRequested() == 9 ||
-            gParameters.GetNumReplicationsRequested() == 19 ||
-            fmod(gParameters.GetNumReplicationsRequested() + 1, 1000) == 0.0)) {
-        bValid = false;
-        PrintDirection.Printf("Error: Invalid number of replications '%u'. The value must be 0, 9, 999, or n999.\n",
-                              BasePrint::P_ERROR, gParameters.GetNumReplicationsRequested());
-      }
-
-      //validate input/oupt files
-      if (! ValidateFileParameters(PrintDirection))
-        bValid = false;
-
-      //validate model parameters
-      if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-        if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
-          bValid = false;
-          PrintDirection.Printf("Error: For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
-                                BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
-        }
-        if (gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputRelativeRisksDBase()) {
-          bValid = false;
-          PrintDirection.Printf("Error: The relative risks output files can not be produced for the %s model.\n",
-                                BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
-        }
-      }
-      //validate range parameters
-      if (! ValidateRangeParameters(PrintDirection))
-        bValid = false;
-
-      //validate sequential scan parameters
-      if (! ValidateSequentialScanParameters(PrintDirection))
-        bValid = false;
-
-      //validate power calculation parameters
-      if (! ValidatePowerCalculationParameters(PrintDirection))
-        bValid = false;
-
-      //validate ellipse parameters
-      if (! ValidateEllipseParameters(PrintDirection))
-        bValid = false;
-
-      //validate simulation options
-      if (! ValidateSimulationDataParameters(PrintDirection))
-        bValid = false;
-
-      if (! ValidateRandomizationSeed(PrintDirection))
-        bValid = false;
+    //prevent access to Spatial Variation and Temporal Trends analysis -- still in development
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+      bValid = false;
+      PrintDirection.Printf("Error: Please note that spatial variation in temporal trends analysis is not implemented\n"
+                           "       in this version of SaTScan.\n", BasePrint::P_ERROR);
     }
+    if (!ValidateMonotoneRisk(PrintDirection))
+      bValid = false;
+    if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
+      bValid = false;
+      PrintDirection.Printf("Error: Adjustment purpose for multiple data sets is not permitted\n"
+                            "       with ordinal probability model in this version of SaTScan.\n", BasePrint::P_ERROR);
+    }
+    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetTerminateSimulationsEarly()) {
+      bValid = false;
+      PrintDirection.Printf("Error: The early termination of simulations option can not be applied\n"
+                            "       with the centric analysis execution.\n", BasePrint::P_ERROR);
+    }
+    if (gParameters.GetExecutionType() == CENTRICALLY &&
+        (gParameters.GetIsPurelyTemporalAnalysis() ||
+         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
+         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
+      bValid = false;
+      PrintDirection.Printf("Error: The centric analysis execution is not available for:\n"
+                            "       purely temporal analyses\n"
+                            "       purely spatial analyses with isotonic scan\n"
+                            "       spatial variation of temporal trends analysis\n", BasePrint::P_ERROR);
+    }
+
+    //validate dates
+    if (! ValidateDateParameters(PrintDirection))
+      bValid = false;
     else {
-      PrintDirection.Printf("Notice: Parameters will not be validated, in accordance with the setting of the validation\n"
-                            "        parameter in the parameters file.\n"
-                            "        This may have adverse effects on analysis results and/or program operation.\n\n",
-                            BasePrint::P_NOTICE);
+      //Validate temporal options only if date parameters are valid. Some
+      //temporal parameters can not be correctly validated if dates are not valid.
+      if (! ValidateTemporalParameters(PrintDirection))
+         bValid = false;
     }
 
+    //validate spatial options
+    if (! ValidateSpatialParameters(PrintDirection))
+      bValid = false;
+
+    //validate input/oupt files
+    if (! ValidateFileParameters(PrintDirection))
+      bValid = false;
+
+    //validate model parameters
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
+      if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
+        bValid = false;
+        PrintDirection.Printf("Error: For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
+                              BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+      }
+      if (gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputRelativeRisksDBase()) {
+        bValid = false;
+        PrintDirection.Printf("Error: The relative risks output files can not be produced for the %s model.\n",
+                              BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+      }
+    }
+    //validate range parameters
+    if (! ValidateRangeParameters(PrintDirection))
+      bValid = false;
+
+    //validate sequential scan parameters
+    if (! ValidateSequentialScanParameters(PrintDirection))
+      bValid = false;
+
+    //validate power calculation parameters
+    if (! ValidatePowerCalculationParameters(PrintDirection))
+      bValid = false;
+
+    //validate ellipse parameters
+    if (! ValidateEllipseParameters(PrintDirection))
+      bValid = false;
+
+    //validate simulation options
+    if (! ValidateSimulationDataParameters(PrintDirection))
+      bValid = false;
+
+    if (! ValidateRandomizationSeed(PrintDirection))
+      bValid = false;
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateParameters()","ParametersValidate");
@@ -426,11 +407,11 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         return false;
       }
       //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
-      if (gParameters.GetMaximumTemporalClusterSize() > (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)) {
+      if (gParameters.GetMaximumTemporalClusterSize() > 100.0/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/) {
         PrintDirection.Printf("Error: For the %s model, the maximum temporal cluster size as a percent\n"
                               "       of the study period is %d percent.\n", BasePrint::P_ERROR,
                               gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()),
-                              (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90));
+                              100/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/);
         return false;
       }
       //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
@@ -899,17 +880,17 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
     if (!gParameters.GetIsPurelyTemporalAnalysis()) {
       //validate maximum as pecentage of population at risk
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
-      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 50.0) {
+      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
         PrintDirection.Printf("Error: The maximum spatial cluster size, defined as percentage of population at risk, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
+                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
-      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && dValue <= 0.0 || dValue > 50.0) {
+      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
         PrintDirection.Printf("Error: The maximum spatial cluster size, defined as percentage of population in max circle file, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
+                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file
       dValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
@@ -920,17 +901,17 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       }
       //validate maximum as pecentage of population at risk -- reported
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true);
-      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 50.0) {
+      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
         PrintDirection.Printf("Error: The maximum reported spatial cluster size, defined as percentage of population at risk, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
+                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file -- reported
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
-      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) && dValue <= 0.0 || dValue > 50.0) {
+      if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
         PrintDirection.Printf("Error: The maximum reported spatial cluster size, defined as percentage of population in max circle file, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= 50.\n", BasePrint::P_ERROR, dValue);
+                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file  -- reported
       dValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
@@ -940,17 +921,6 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                               "       The specified value is %2g. Must be greater than zero.\n", BasePrint::P_ERROR, dValue);
       }
     }
-//    else {
-//      //Purely temporal clusters should default maximum geographical clusters size to 50 of population.
-//      //This actually has no bearing on analysis results. These variables are used primarly for
-//      //finding neighbors which purely temporal analyses don't utilize. The finding neighbors
-//      //routine should really be skipped for this analysis type.
-//      const_cast<CParameters&>(gParameters).SetMaximumGeographicClusterSize(50.0); //KR980707 0 GG980716;
-//      const_cast<CParameters&>(gParameters).SetMaximumSpatialClusterSizeType(PERCENTOFPOPULATION);
-//      const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
-//      const_cast<CParameters&>(gParameters).SetMaximumReportedGeographicalClusterSize(50.0);
-//      const_cast<CParameters&>(gParameters).SetMaximumReportedSpatialClusterSizeType(PERCENTOFPOPULATION);
-//    }
 
     if (gParameters.GetIncludePurelySpatialClusters()) {
       if (!gParameters.GetPermitsPurelySpatialCluster(gParameters.GetProbabilityModelType())) {
