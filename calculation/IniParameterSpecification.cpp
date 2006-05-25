@@ -305,7 +305,6 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   gvParameterInfo[MAX_SPATIAL_TYPE - 1] = std::make_pair(NotUsed, NotUsed);
   gvParameterInfo[REPORTED_GEOSIZE - 1] = std::make_pair(NotUsed, NotUsed);
   gvParameterInfo[MAX_REPORTED_SPATIAL_TYPE - 1] = std::make_pair(NotUsed, NotUsed);
-
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxSpatialSizeInPopulationAtRisk"));
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxSpatialSizeInMaxCirclePopulationFile"));
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MaxSpatialSizeInDistanceFromCenter"));
@@ -316,7 +315,8 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"MaxSpatialSizeInDistanceFromCenter_Reported"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"UseMaxCirclePopulationFileOption_Reported"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"UseDistanceFromCenterOption_Reported"));
-  
+  //validate parameters no longer used
+  gvParameterInfo[VALIDATE - 1] = std::make_pair(NotUsed, NotUsed);
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

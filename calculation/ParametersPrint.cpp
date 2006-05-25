@@ -588,7 +588,6 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
     }
     fprintf(fp, "  Logging Analysis    : %s\n", (gParameters.GetIsLoggingHistory() ? "Yes" : "No"));
     fprintf(fp, "  Suppress Warnings   : %s\n", (gParameters.GetSuppressingWarnings() ? "Yes" : "No"));
-    if (!gParameters.GetValidatingParameters()) fprintf(fp, "  Validate Parameters : No\n");
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");

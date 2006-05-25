@@ -74,7 +74,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbSequentialRuns                       != rhs.gbSequentialRuns) return false;
   if (giNumSequentialRuns                    != rhs.giNumSequentialRuns) return false;
   if (gbSequentialCutOffPValue               != rhs.gbSequentialCutOffPValue) return false;
-  if (gbValidatePriorToCalc                  != rhs.gbValidatePriorToCalc) return false;
   if (gsProspectiveStartDate                 != rhs.gsProspectiveStartDate) return false;
   if (gbOutputAreaSpecificAscii              != rhs.gbOutputAreaSpecificAscii) return false;
   if (gbOutputClusterLevelAscii              != rhs.gbOutputClusterLevelAscii) return false;
@@ -221,7 +220,6 @@ void CParameters::Copy(const CParameters &rhs) {
     gbSequentialRuns                       = rhs.gbSequentialRuns;
     giNumSequentialRuns                    = rhs.giNumSequentialRuns;
     gbSequentialCutOffPValue               = rhs.gbSequentialCutOffPValue;
-    gbValidatePriorToCalc                  = rhs.gbValidatePriorToCalc;
     gsProspectiveStartDate                 = rhs.gsProspectiveStartDate;
     gbOutputAreaSpecificAscii              = rhs.gbOutputAreaSpecificAscii;
     gbOutputClusterLevelAscii              = rhs.gbOutputClusterLevelAscii;
@@ -768,7 +766,6 @@ void CParameters::SetAsDefaulted() {
   gbSequentialRuns                         = false;
   giNumSequentialRuns                      = 0;
   gbSequentialCutOffPValue                 = 0.05;
-  gbValidatePriorToCalc                    = true;
   gbOutputRelativeRisksAscii               = false;
   geSpatialWindowType                      = CIRCULAR;
   gvEllipseShapes.clear();

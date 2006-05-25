@@ -172,15 +172,6 @@ class CParameters {
     std::string                         gsEndRangeEndDate;
     std::string                         gsStartRangeStartDate;
     std::string                         gsStartRangeEndDate;
-        /* Parameter validation variables */
-    bool                                gbValidatePriorToCalc;                  /** prevents validation prior to execution
-                                                                                    The intent of this parameter is to allow an advanced
-                                                                                    user to set values to something that would normally
-                                                                                    be considered invalid. e.g. setting maximum spatial
-                                                                                    cluster size to 60 instead of 50. Settings this parameter
-                                                                                    to false has an implied disclaimer, you may get strange
-                                                                                    occurances programmatically and statically. */
-
     struct CreationVersion              gCreationVersion;
     long                                glRandomizationSeed;                    /** randomization seed */
     bool                                gbReportCriticalValues;                 /** indicates whether to report critical llr values */
@@ -309,7 +300,6 @@ class CParameters {
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
-    bool                                GetValidatingParameters() const {return gbValidatePriorToCalc;}
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
     void                                SetAnalysisType(AnalysisType eAnalysisType);
@@ -386,7 +376,6 @@ class CParameters {
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
-    void                                SetValidatePriorToCalculation(bool b) {gbValidatePriorToCalc = b;}
     void                                SetVersion(const CreationVersion& vVersion);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;

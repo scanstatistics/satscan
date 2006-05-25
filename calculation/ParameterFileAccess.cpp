@@ -196,7 +196,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case SEQUENTIAL               : return AsString(s, gParameters.GetIsSequentialScanning());
       case SEQNUM                   : return AsString(s, gParameters.GetNumSequentialScansRequested());
       case SEQPVAL                  : return AsString(s, gParameters.GetSequentialCutOffPValue());
-      case VALIDATE                 : return AsString(s, gParameters.GetValidatingParameters());
+      case VALIDATE                 : s = "0"; return s;
       case OUTPUT_RR_ASCII          : return AsString(s, gParameters.GetOutputRelativeRisksAscii());
       case WINDOW_SHAPE             : return AsString(s, gParameters.GetSpatialWindowType());
       case ESHAPES                  : s << ZdString::reset;
@@ -312,7 +312,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case SEQUENTIAL               : sDefaultValue = (gParameters.GetIsSequentialScanning() ? "y" : "n"); break;
       case SEQNUM                   : sDefaultValue << gParameters.GetNumSequentialScansRequested(); break;
       case SEQPVAL                  : sDefaultValue = gParameters.GetSequentialCutOffPValue(); break;
-      case VALIDATE                 : sDefaultValue = (gParameters.GetValidatingParameters() ? "y" : "n"); break;
+      case VALIDATE                 : /* no longer used */ break;
       case OUTPUT_RR_ASCII          : sDefaultValue = (gParameters.GetOutputRelativeRisksAscii() ? "y" : "n"); break;
       case WINDOW_SHAPE             : sDefaultValue = gParameters.GetSpatialWindowType(); break;
       case ESHAPES                  : sDefaultValue = "<blank>"; break;
@@ -582,6 +582,10 @@ int AbtractParameterFileAccess::ReadUnsignedInt(const ZdString& sValue, Paramete
      InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid integer.\n",
                                          "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.GetCString());
    }
+   else if (iReadResult < 0) {
+     InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a positive integer.\n",
+                                         "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.GetCString());
+   }
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadUnsignedInt()","AbtractParameterFileAccess");
@@ -651,7 +655,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case SEQUENTIAL                : gParameters.SetSequentialScanning(ReadBoolean(sParameter, eParameterType)); break;
       case SEQNUM                    : gParameters.SetNumSequentialScans(ReadUnsignedInt(sParameter, eParameterType)); break;
       case SEQPVAL                   : gParameters.SetSequentialCutOffPValue(ReadDouble(sParameter, eParameterType)); break;
-      case VALIDATE                  : gParameters.SetValidatePriorToCalculation(ReadBoolean(sParameter, eParameterType)); break;
+      case VALIDATE                  : /* no longer used */ break;
       case OUTPUT_RR_ASCII           : gParameters.SetOutputRelativeRisksAscii(ReadBoolean(sParameter, eParameterType)); break;
       case WINDOW_SHAPE              : iValue = ReadInt(sParameter, eParameterType);
                                        //This parameter used to be 'number of ellipses' before v6.1, so set window shape to elliptic

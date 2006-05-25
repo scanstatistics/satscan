@@ -409,7 +409,6 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   ZdString      s;
 
   try {
-    WriteIniParameter(WriteFile, VALIDATE, GetParameterString(VALIDATE, s), GetParameterComment(VALIDATE));
     // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
     // which we'll determine by whether it is different than default seed
     if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)                  
