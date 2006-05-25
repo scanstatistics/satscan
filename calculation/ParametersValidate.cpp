@@ -370,15 +370,17 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                               BasePrint::P_ERROR, gParameters.GetMaxCirclePopulationFileName().c_str());
       }
     }
+    FILE * fp=0;
     //validate output file
     if (gParameters.GetOutputFileName().empty()) {
       bValid = false;
       PrintDirection.Printf("Error: No results file specified.\n", BasePrint::P_ERROR);
     }
-    else if (access(ZdFileName(gParameters.GetOutputFileName().c_str()).GetLocation(), 00)) {
+    else if ((fp = fopen(gParameters.GetOutputFileName().c_str(), "w")) == NULL) {
       bValid = false;
-      PrintDirection.Printf("Error: Results file '%s' have an invalid path.\n", BasePrint::P_ERROR, gParameters.GetOutputFileName().c_str());
+      PrintDirection.Printf("Error: Results file '%s' have an invalid path or file name.\n", BasePrint::P_ERROR, gParameters.GetOutputFileName().c_str());
     }
+    fclose(fp);
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateFileParameters()","ParametersValidate");

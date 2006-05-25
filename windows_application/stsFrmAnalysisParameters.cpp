@@ -382,22 +382,23 @@ void TfrmAnalysis::CheckDate(const char * sDateTitle, TEdit& Year, TEdit& Month,
 //---------------------------------------------------------------------------
 /** Verifies all parameters on the 'Output Files' tab. Returns whether tab is valid.*/
 void TfrmAnalysis::CheckOutputParams() {
-  ZdFileName    OutPutFileName;
-
+  FILE * fp=0;
+  
   try {
     if (edtResultFile->Text.Length() == 0)
       ZdException::GenerateNotification("Please specify a results file.", "CheckOutputParams()");
 
-    OutPutFileName.SetFullPath(edtResultFile->Text.c_str());
-    if (! DirectoryExists(OutPutFileName.GetLocation()))
-      ZdException::GenerateNotification("Invalid file path specified for results file.\nPlease review settings.",
+    if ((fp = fopen(edtResultFile->Text.c_str(), "w")) == NULL)
+      ZdException::GenerateNotification("Invalid file path or file name specified for results file.\nPlease review settings.",
                                         "CheckOutputParams()");
+    fclose(fp); fp=0;
 
-    if (! FileCanBeCreated(edtResultFile->Text.c_str()))
-      ZdException::GenerateNotification("Result file could not be opened. Access denied.\nPlease review settings.",
+    if (!FileCanBeCreated(edtResultFile->Text.c_str()))
+      ZdException::GenerateNotification("Result file could not be created. Access denied.\nPlease review settings.",
                                         "CheckOutputParams()");
   }
   catch (ZdException & x) {
+    fclose(fp); fp=0;
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
     PageControl1->ActivePage = tbOutputFiles;
     edtResultFile->SetFocus();
