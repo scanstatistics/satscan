@@ -407,6 +407,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     else
       mg = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
   }
+  else if (gParameters.UseLocationNeighborsFile()) mg = 0.25; // pure guess
   else mg = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false)/100.0;
   //number of time intervals into which the temporal data is aggregated (TI=1 for a purely spatial analysis)               
   double TI = gpDataHub->GetNumTimeIntervals();
