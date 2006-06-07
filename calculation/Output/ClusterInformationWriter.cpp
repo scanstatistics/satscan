@@ -73,22 +73,24 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     //define fields of data file that describes cluster properties
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
     CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
-    CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
-    CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
-    //only Cartesian coordinates can have more than two dimensions
-    if (gParameters.GetCoordinatesType() == CARTESIAN && gDataHub.GetTInfo()->tiGetDimensions() > 2)
-      for (i=3; i <= (unsigned int)gDataHub.GetTInfo()->tiGetDimensions(); ++i) {
-         sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
-         CreateField(vFieldDefinitions, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
+    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+      CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
+      CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
+      //only Cartesian coordinates can have more than two dimensions
+      if (gParameters.GetCoordinatesType() == CARTESIAN && gDataHub.GetTInfo()->tiGetDimensions() > 2)
+        for (i=3; i <= (unsigned int)gDataHub.GetTInfo()->tiGetDimensions(); ++i) {
+           sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
+           CreateField(vFieldDefinitions, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
+        }
+      if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
+        CreateField(vFieldDefinitions, E_MINOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+        CreateField(vFieldDefinitions, E_MAJOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+        CreateField(vFieldDefinitions, E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+        CreateField(vFieldDefinitions, E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
       }
-    if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
-      CreateField(vFieldDefinitions, E_MINOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(vFieldDefinitions, E_MAJOR_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(vFieldDefinitions, E_ANGLE_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(vFieldDefinitions, E_SHAPE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      else
+        CreateField(vFieldDefinitions, RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     }
-    else
-      CreateField(vFieldDefinitions, RADIUS_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
     CreateField(vFieldDefinitions, START_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
     CreateField(vFieldDefinitions, END_DATE_FLD, ZD_ALPHA_FLD, 16, 0, uwOffset);
     CreateField(vFieldDefinitions, NUM_LOCATIONS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
@@ -219,13 +221,15 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
   try {
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
     Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetAreaID(sBuffer, theCluster);
-    WriteCoordinates(Record, theCluster);
+    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+      WriteCoordinates(Record, theCluster);
+      if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
+        WriteEllipseAngle(Record, theCluster);
+        WriteEllipseShape(Record, theCluster);
+      }
+    }
     Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() =
         theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumTractsInCluster();
-    if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
-      WriteEllipseAngle(Record, theCluster);
-      WriteEllipseShape(Record, theCluster);
-    }
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
