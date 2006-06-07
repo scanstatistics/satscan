@@ -25,11 +25,11 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     MULTI_DATASET_PURPOSE_TYPE, CREATION_VERSION, RANDOMIZATION_SEED, REPORT_CRITICAL_VALUES,
                                     EXECUTION_TYPE, NUM_PROCESSES, LOG_HISTORY, SUPPRESS_WARNINGS, MAX_REPORTED_SPATIAL_TYPE,
                                     OUTPUT_MLC_CASE_ASCII, OUTPUT_MLC_CASE_DBASE, STUDYPERIOD_DATACHECK, COORDINATES_DATACHECK,
-                                    
                                     MAXGEOPOPATRISK, MAXGEOPOPFILE, MAXGEODISTANCE,
                                     USE_MAXGEOPOPFILE, USE_MAXGEODISTANCE,
                                     MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
-                                    USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED
+                                    USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
+                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE
                                     };
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
@@ -164,6 +164,8 @@ class CParameters {
     bool                                gbUseAdjustmentsForRRFile;              /** indicates whether to use adjustments for known relative risks file */
     std::string                         gsAdjustmentsByRelativeRisksFileName;   /** adjustments by known relative risks filename */
     std::string                         gsSimulationDataOutputFilename;         /** simulation data output filename */
+    std::string                         gsLocationNeighborsFilename;                /** sorted array neighbor file */
+    bool                                gbUseLocationNeighborsFile;                 /** use sorted array neighbor file? */
         /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodStartDate;                 /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -228,6 +230,7 @@ class CParameters {
     bool                                GetIsPurelyTemporalAnalysis() const;
     bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
     bool                                GetIsSpaceTimeAnalysis() const;
+    const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
     double                              GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
@@ -318,6 +321,7 @@ class CParameters {
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
+    void                                SetLocationNeighborsFileName(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath=false);
     void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false);
     void                                SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
@@ -375,11 +379,13 @@ class CParameters {
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
+    void                                UseLocationNeighborsFile(bool b) {gbUseLocationNeighborsFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetVersion(const CreationVersion& vVersion);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
     bool                                UseCoordinatesFile() const {return !(!gsCoordinatesFileName.size() && GetIsPurelyTemporalAnalysis());}
+    bool                                UseLocationNeighborsFile() const {return gbUseLocationNeighborsFile;}
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     void                                SetPopulationFile(bool b) {gbUsePopulationFile = b;}  /******/
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}

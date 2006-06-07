@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 89;
+const int CParameters::giNumParameters 	              = 91;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -123,6 +123,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdMaxSpatialSizeInMaxCirclePopulationFile_Reported != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported) return false;
   if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported) return false;
   if (gdMaxSpatialSizeInMaxDistanceFromCenter_Reported != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported) return false;
+  if (gsLocationNeighborsFilename != rhs.gsLocationNeighborsFilename) return false;
+  if (gbUseLocationNeighborsFile != rhs.gbUseLocationNeighborsFile) return false;
 
   return true;
 }
@@ -269,6 +271,8 @@ void CParameters::Copy(const CParameters &rhs) {
     gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported;
     gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported;
     gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
+    gsLocationNeighborsFilename                = rhs.gsLocationNeighborsFilename;
+    gbUseLocationNeighborsFile                 = rhs.gbUseLocationNeighborsFile;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -458,7 +462,7 @@ bool CParameters::GetPermitsCentricExecution() const {
  return  !(GetIsPurelyTemporalAnalysis() || GetAnalysisType() == SPATIALVARTEMPTREND ||
           (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
           (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||
-           GetTerminateSimulationsEarly());
+           GetTerminateSimulationsEarly() || UseLocationNeighborsFile());
 }
 
 /** returns whether analysis type permits inclusion of purely spatial cluster */
@@ -828,6 +832,8 @@ void CParameters::SetAsDefaulted() {
   gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = 50.0;
   gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = false;
   gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = 1.0;
+  gsLocationNeighborsFilename = "";
+  gbUseLocationNeighborsFile = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1231,6 +1237,24 @@ void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMultipleDataSetPurposeType()","CParameters");
+    throw;
+  }
+}
+
+/** Sets neighbor array data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file does not exist. */
+void CParameters::SetLocationNeighborsFileName(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sLocationNeighborsFileName)
+      ZdGenerateException("Null pointer.", "SetLocationNeighborsFileName()");
+
+    gsLocationNeighborsFilename = sLocationNeighborsFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(gsLocationNeighborsFilename);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetLocationNeighborsFileName()", "CParameters");
     throw;
   }
 }

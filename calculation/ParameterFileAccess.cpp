@@ -146,6 +146,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MAXGEODISTANCE_REPORTED  : return " maximum reported spatial size in distance from center {positive integer)";
       case USE_MAXGEOPOPFILE_REPORTED: return " restrict maximum reported spatial size - max circle file? (y/n)";
       case USE_MAXGEODISTANCE_REPORTED: return " restrict maximum reported spatial size - distance? (y/n)";
+      case LOCATION_NEIGHBORS_FILE  : return " location neighbors specification file";
+      case USE_LOCATION_NEIGHBORS_FILE : return " use location neighbors specification file (y/n)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -261,6 +263,8 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case MAXGEODISTANCE_REPORTED  : return AsString(s, gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true));
       case USE_MAXGEOPOPFILE_REPORTED: return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
       case USE_MAXGEODISTANCE_REPORTED: return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true));
+      case LOCATION_NEIGHBORS_FILE  : s = gParameters.GetLocationNeighborsFileName().c_str(); return s;
+      case USE_LOCATION_NEIGHBORS_FILE : return AsString(s, gParameters.UseLocationNeighborsFile());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -370,6 +374,8 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case MAXGEODISTANCE_REPORTED  : sDefaultValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
       case USE_MAXGEOPOPFILE_REPORTED: sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, true) ? "y" : "n"); break;
       case USE_MAXGEODISTANCE_REPORTED: sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true) ? "y" : "n"); break;
+      case LOCATION_NEIGHBORS_FILE  : sDefaultValue = "<blank>"; break;
+      case USE_LOCATION_NEIGHBORS_FILE : sDefaultValue = (gParameters.UseLocationNeighborsFile() ? "y" : "n"); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -750,6 +756,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case MAXGEODISTANCE_REPORTED   : gParameters.SetMaxSpatialSizeForType(MAXDISTANCE, ReadDouble(sParameter, eParameterType), true); break;
       case USE_MAXGEOPOPFILE_REPORTED: gParameters.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, ReadBoolean(sParameter, eParameterType), true); break;
       case USE_MAXGEODISTANCE_REPORTED: gParameters.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, ReadBoolean(sParameter, eParameterType), true); break;
+      case LOCATION_NEIGHBORS_FILE   : gParameters.SetLocationNeighborsFileName(sParameter.GetCString(), true); break;
+      case USE_LOCATION_NEIGHBORS_FILE : gParameters.UseLocationNeighborsFile(ReadBoolean(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

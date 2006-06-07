@@ -418,6 +418,8 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s), GetParameterComment(NUM_PROCESSES));
     WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s), GetParameterComment(LOG_HISTORY));
     WriteIniParameter(WriteFile, SUPPRESS_WARNINGS, GetParameterString(SUPPRESS_WARNINGS, s), GetParameterComment(SUPPRESS_WARNINGS));
+    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s), GetParameterComment(LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");

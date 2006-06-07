@@ -110,6 +110,8 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case MAXGEODISTANCE_REPORTED   : return "Maximum reported spatial size in distance from center (line 87)";
       case USE_MAXGEOPOPFILE_REPORTED: return "Restrict maximum reported spatial size - max circle file (line 88)";
       case USE_MAXGEODISTANCE_REPORTED : return "Restrict maximum reported spatial size - distance (line 89)";
+      case LOCATION_NEIGHBORS_FILE   : return "Location neighbors filename (line 90)";
+      case USE_LOCATION_NEIGHBORS_FILE  : return "Use location neighbors file (line 91)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
@@ -145,9 +147,11 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
            ++iLinesRead;
            //Pre-process parameters that have descriptions, strip decription off.
            if (!((ParameterType)iLinesRead == CASEFILE || (ParameterType)iLinesRead == POPFILE ||
-                 (ParameterType)iLinesRead == COORDFILE || (ParameterType)iLinesRead == OUTPUTFILE ||
-                 (ParameterType)iLinesRead == GRIDFILE || (ParameterType)iLinesRead == CONTROLFILE ||
-                 (ParameterType)iLinesRead == MAXCIRCLEPOPFILE)) {
+                (ParameterType)iLinesRead == COORDFILE || (ParameterType)iLinesRead == OUTPUTFILE ||
+                (ParameterType)iLinesRead == GRIDFILE || (ParameterType)iLinesRead == CONTROLFILE ||
+                (ParameterType)iLinesRead == MAXCIRCLEPOPFILE || (ParameterType)iLinesRead == SIMULATION_SOURCEFILE ||
+                (ParameterType)iLinesRead == SIMULATION_DATA_OUTFILE || (ParameterType)iLinesRead == ADJ_BY_RR_FILE ||
+                (ParameterType)iLinesRead == LOCATION_NEIGHBORS_FILE)) {
               if ((iPos = sLineBuffer.Find("//")) > -1)
                 sLineBuffer.Truncate(iPos);
            }
@@ -215,7 +219,8 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
              (ParameterType)eParameterType == COORDFILE || (ParameterType)eParameterType == OUTPUTFILE ||
              (ParameterType)eParameterType == GRIDFILE || (ParameterType)eParameterType == CONTROLFILE ||
              (ParameterType)eParameterType == MAXCIRCLEPOPFILE || (ParameterType)eParameterType == SIMULATION_SOURCEFILE ||
-             (ParameterType)eParameterType == SIMULATION_DATA_OUTFILE || (ParameterType)eParameterType == ADJ_BY_RR_FILE )) {
+             (ParameterType)eParameterType == SIMULATION_DATA_OUTFILE || (ParameterType)eParameterType == ADJ_BY_RR_FILE ||
+             (ParameterType)eParameterType == LOCATION_NEIGHBORS_FILE)) {
           iLen = s.GetLength();
           while (++iLen < 30) parameters << ' ';
           //older versions of SaTScan limited each line to 150 characters - so print just enough of comment

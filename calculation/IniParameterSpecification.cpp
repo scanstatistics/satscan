@@ -317,6 +317,9 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"UseDistanceFromCenterOption_Reported"));
   //validate parameters no longer used
   gvParameterInfo[VALIDATE - 1] = std::make_pair(NotUsed, NotUsed);
+
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"LocationNeighborsFilename"));
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"UseLocationNeighborsFile"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
