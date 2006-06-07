@@ -34,6 +34,7 @@ class SaTScanDataReader {
     bool                        ReadCoordinatesFile();
     bool                        ReadCoordinatesFileAsCartesian(DataSource& Source);
     bool                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source);
+    bool                        ReadCoordinatesFileAsLocationIdFile(DataSource& Source);
     bool                        ReadExponentialData();
     bool                        ReadGridFile();
     bool                        ReadGridFileAsCartiesian(DataSource& Source);
@@ -45,6 +46,7 @@ class SaTScanDataReader {
     bool                        ReadPoissonData();
     bool                        ReadRankData();
     bool                        ReadSpaceTimePermutationData();
+    bool                        ReadUserSpecifiedNeighbors();
     RecordStatusType            RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex);
 
   public:
