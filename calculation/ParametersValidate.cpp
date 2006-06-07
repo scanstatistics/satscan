@@ -171,7 +171,7 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
   size_t        t;
 
   try {
-    if (gParameters.GetSpatialWindowType() != ELLIPTIC) return true;
+    if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.GetSpatialWindowType() != ELLIPTIC) return true;
     
     if (gParameters.GetNumRequestedEllipses() < 1 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
       bValid = false;
@@ -218,6 +218,17 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
   return bValid;
 }
 
+/** Returns indication of whether file exists and is readable/writable. */
+bool ParametersValidate::ValidateFileAccess(const std::string& filename, bool bWriteEnable) const {
+  FILE        * fp=0;
+  bool          bReturn=true;
+
+  bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
+  fclose(fp);
+
+  return bReturn;  
+}
+
 /** Validates input/output file parameters. */
 bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const {
   bool          bValid=true;
@@ -230,10 +241,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       PrintDirection.Printf("Error: No case file was specified.\n", BasePrint::P_ERROR);
     }
     for (t=0; t < gParameters.GetCaseFileNames().size(); ++t) {
-       if (access(gParameters.GetCaseFileNames()[t].c_str(), 00)) {
+       if (!ValidateFileAccess(gParameters.GetCaseFileNames()[t])) {
          bValid = false;
-         PrintDirection.Printf("Error: The case file '%s' does not exist.\n"
-                               "       Please ensure the path is correct.\n",
+         PrintDirection.Printf("Error: The case file '%s' could not be opened for reading.\n"
+                               "       Please confirm that the path and/or file name are valid and that you\n"
+                               "       have permissions to read to this directory and file.",
                                BasePrint::P_ERROR, gParameters.GetCaseFileNames()[t].c_str());
        }
     }
@@ -255,10 +267,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
          else if (!iNumDataSetsWithoutPopFile) {
            const_cast<CParameters&>(gParameters).SetPopulationFile(true);
            for (t=0; t < gParameters.GetPopulationFileNames().size(); ++t) {
-              if (access(gParameters.GetPopulationFileNames()[t].c_str(), 00)) {
+              if (!ValidateFileAccess(gParameters.GetPopulationFileNames()[t])) {
                 bValid = false;
-                PrintDirection.Printf("Error: The population file '%s' does not exist.\n"
-                                      "       Please ensure the path is correct.\n",
+                PrintDirection.Printf("Error: The population file '%s' could not be opened for reading.\n"
+                                      "       Please confirm that the path and/or file name are valid and that you\n"
+                                      "       have permissions to read to this directory and file.",
                                       BasePrint::P_ERROR, gParameters.GetPopulationFileNames()[t].c_str());
               }
            }
@@ -272,10 +285,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                                 "       is purely temporal. In which case the population file is optional.\n", BasePrint::P_ERROR);
         }
         for (t=0; t < gParameters.GetPopulationFileNames().size(); ++t) {
-          if (access(gParameters.GetPopulationFileNames()[t].c_str(), 00)) {
+          if (!ValidateFileAccess(gParameters.GetPopulationFileNames()[t])) {
             bValid = false;
-            PrintDirection.Printf("Error: The population file '%s' does not exist.\n"
-                                  "       Please ensure the path is correct.\n",
+            PrintDirection.Printf("Error: The population file '%s' could not be opened for reading.\n"
+                                  "       Please confirm that the path and/or file name are valid and that you\n"
+                                  "       have permissions to read to this directory and file.",
                                   BasePrint::P_ERROR, gParameters.GetPopulationFileNames()[t].c_str());
           }
         }
@@ -288,10 +302,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         PrintDirection.Printf("Error: For the Bernoulli model, a Control file must be specified.\n", BasePrint::P_ERROR);
       }
       for (t=0; t < gParameters.GetControlFileNames().size(); ++t) {
-        if (access(gParameters.GetControlFileNames()[t].c_str(), 00)) {
+        if (!ValidateFileAccess(gParameters.GetControlFileNames()[t])) {
           bValid = false;
-          PrintDirection.Printf("Error: The control file '%s' does not exist.\n"
-                                "       Please ensure the path is correct.\n",
+          PrintDirection.Printf("Error: The control file '%s' could not be opened for reading.\n"
+                                "       Please confirm that the path and/or file name are valid and that you\n"
+                                "       have permissions to read to this directory and file.",
                                 BasePrint::P_ERROR, gParameters.GetControlFileNames()[t].c_str());
         }
       }
@@ -303,23 +318,25 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         PrintDirection.Printf("Error: No coordinates file specified.\n", BasePrint::P_ERROR);
       }
     }  
-    else if (access(gParameters.GetCoordinatesFileName().c_str(), 00)) {
+    else if (!ValidateFileAccess(gParameters.GetCoordinatesFileName())) {
       bValid = false;
-      PrintDirection.Printf("Error: The coordinates file '%s' does not exist.\n"
-                             "       Please ensure the path is correct.\n",
-                             BasePrint::P_ERROR, gParameters.GetCoordinatesFileName().c_str());
+      PrintDirection.Printf("Error: The coordinates file '%s' could not be opened for reading.\n"
+                            "       Please confirm that the path and/or file name are valid and that you\n"
+                            "       have permissions to read to this directory and file.",
+                            BasePrint::P_ERROR, gParameters.GetCoordinatesFileName().c_str());
     }
     //validate special grid file
-    if (gParameters.GetIsPurelyTemporalAnalysis())
+    if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
     else if (gParameters.UseSpecialGrid() && gParameters.GetSpecialGridFileName().empty()) {
       bValid = false;
       PrintDirection.Printf("Error: The settings indicate to the use a grid file, but a grid file name is not specified.\n", BasePrint::P_ERROR);
     }
-    else if (gParameters.UseSpecialGrid() && access(gParameters.GetSpecialGridFileName().c_str(), 00)) {
+    else if (gParameters.UseSpecialGrid() && !ValidateFileAccess(gParameters.GetSpecialGridFileName())) {
       bValid = false;
-      PrintDirection.Printf("Error: The grid file '%s' does not exist.\n"
-                            "       Please ensure the path is correct.\n",
+      PrintDirection.Printf("Error: The grid file '%s' could not be opened for reading.\n"
+                            "       Please confirm that the path and/or file name are valid and that you\n"
+                            "       have permissions to read to this directory and file.",
                             BasePrint::P_ERROR, gParameters.GetSpecialGridFileName().c_str());
     }
     //validate adjustment for known relative risks file
@@ -328,10 +345,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         bValid = false;
         PrintDirection.Printf("Error: The settings indicate to the use the adjustments file, but a file name not specified.\n", BasePrint::P_ERROR);
       }
-      else if (gParameters.UseAdjustmentForRelativeRisksFile() && access(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(), 00)) {
+      else if (gParameters.UseAdjustmentForRelativeRisksFile() && !ValidateFileAccess(gParameters.GetAdjustmentsByRelativeRisksFilename())) {
         bValid = false;
-        PrintDirection.Printf("Error: The adjustments file '%s' does not exist.\n"
-                              "       Please ensure the path is correct.\n",
+        PrintDirection.Printf("Error: The adjustments file '%s' could not be opened for reading.\n"
+                              "       Please confirm that the path and/or file name are valid and that you\n"
+                              "       have permissions to read to this directory and file.",
                               BasePrint::P_ERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
       }
     }
@@ -349,6 +367,14 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                             "       Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
                             "       max circle size file is not required.\n", BasePrint::P_ERROR);
     }
+
+    //validate max circle population file
+    if (gParameters.UseLocationNeighborsFile()) {
+      //when using location neighbors file, parameters related to maximum spatial cluster size become irrelevant
+      const_cast<CParameters&>(gParameters).SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false, false);
+      const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
+      const_cast<CParameters&>(gParameters).SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false, true);
+    }
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
         (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))) {
       if (gParameters.GetMaxCirclePopulationFileName().empty() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
@@ -363,24 +389,37 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                               "       reported spatial cluster size by a population defined in that\n"
                               "       maximum circle file.\n", BasePrint::P_ERROR);
       }
-      else if (access(gParameters.GetMaxCirclePopulationFileName().c_str(), 00)) {
+      else if (!ValidateFileAccess(gParameters.GetMaxCirclePopulationFileName())) {
         bValid = false;
-        PrintDirection.Printf("Error: The max circle size file '%s' does not exist.\n"
-                              "       Please ensure the path is correct.\n",
+        PrintDirection.Printf("Error: The max circle size file '%s' could not be opened for reading.\n"
+                              "       Please confirm that the path and/or file name are valid and that you\n"
+                              "       have permissions to read to this directory and file.",
                               BasePrint::P_ERROR, gParameters.GetMaxCirclePopulationFileName().c_str());
       }
     }
-    FILE * fp=0;
+    //validate neighbor array file
+    if (gParameters.UseLocationNeighborsFile() && gParameters.GetLocationNeighborsFileName().empty()) {
+      bValid = false;
+      PrintDirection.Printf("Error: No locations neighbors file specified.\n", BasePrint::P_ERROR);
+    }
+    else if (gParameters.UseLocationNeighborsFile() && !ValidateFileAccess(gParameters.GetLocationNeighborsFileName())) {
+        bValid = false;
+        PrintDirection.Printf("Error: The location neighbors file '%s' could not be opened for reading.\n"
+                              "       Please confirm that the path and/or file name are valid and that you\n"
+                              "       have permissions to read to this directory and file.",
+                              BasePrint::P_ERROR, gParameters.GetLocationNeighborsFileName().c_str());
+    }
     //validate output file
     if (gParameters.GetOutputFileName().empty()) {
       bValid = false;
       PrintDirection.Printf("Error: No results file specified.\n", BasePrint::P_ERROR);
     }
-    else if ((fp = fopen(gParameters.GetOutputFileName().c_str(), "w")) == NULL) {
+    else if (!ValidateFileAccess(gParameters.GetOutputFileName(), true)) {
       bValid = false;
-      PrintDirection.Printf("Error: Results file '%s' have an invalid path or file name.\n", BasePrint::P_ERROR, gParameters.GetOutputFileName().c_str());
+      PrintDirection.Printf("Error: Results file '%s' could not be opened for writing.\n"
+                            "       Please confirm that the path and/or file name are valid and that you\n"
+                            "       have permissions to write to this directory and file.", BasePrint::P_ERROR, gParameters.GetOutputFileName().c_str());
     }
-    fclose(fp);
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateFileParameters()","ParametersValidate");
@@ -395,7 +434,7 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
-    //Maximum temporal cluster size is parameters not used for these analyses.
+    //Maximum temporal cluster size parameters not used for these analyses.
     if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       return true;
 
@@ -879,7 +918,7 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
 
   try {
     //validate spatial options
-    if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
       //validate maximum as pecentage of population at risk
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
       if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
@@ -1206,6 +1245,9 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         PrintDirection.Printf("Error: A purely temporal cluster can only be included for time based analyses.\n", BasePrint::P_ERROR);
       }
     }
+
+    //the locations neighbor file is irrelevant when analysis type is purely temporal
+    if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).UseLocationNeighborsFile(false);
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateTemporalParameters()","ParametersValidate");
