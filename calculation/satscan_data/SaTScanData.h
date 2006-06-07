@@ -36,7 +36,7 @@ class CSaTScanData {
     std::auto_ptr<DataSetHandler>               gDataSets;
     ActiveNeighborReferenceType                 geActiveNeighborReferenceType;
     std::auto_ptr<GInfo>                        gCentroidsHandler;
-    TractHandler                                gTractHandler;
+    std::auto_ptr<TractHandler>                 gTractHandler;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
@@ -91,6 +91,7 @@ class CSaTScanData {
     void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
                                                                              int iEllipseIndex, tract_t iCentroidIndex,
                                                                              tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
+    void                                        AllocateSortedArrayNeighbors(const std::vector<tract_t>& vLocations);
     inline void                                 FreeNeighborInfo(tract_t iCentroidIndex) const;
 
     tract_t                                     m_nGridTracts;
@@ -136,7 +137,7 @@ class CSaTScanData {
     int                                         GetTimeIntervalOfEndDate(Julian EndDate) const;
     int                                         GetTimeIntervalCut() const {return m_nIntervalCut;}
     const std::vector<Julian>                 & GetTimeIntervalStartTimes() const {return gvTimeIntervalStartTimes;}
-    inline const TractHandler                 * GetTInfo() const {return &gTractHandler;}
+    inline const TractHandler                 * GetTInfo() const {return gTractHandler.get();}
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual void                                ReadDataFromFiles();

@@ -120,7 +120,7 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
                                    "       are cases in that interval.\n"
                                    "       If the expected is zero, the number of cases must also be zero.\n",
                                    "AdjustMeasure()",
-                                   (Tract == -1 ? "All" : gTractHandler.tiGetTid(Tract, sId)),
+                                   (Tract == -1 ? "All" : gTractHandler->tiGetTid(Tract, sId)),
                                    JulianToString(sStart, StartDate).GetCString(),
                                    JulianToString(sEnd, EndDate).GetCString());
        return false;
@@ -136,7 +136,7 @@ void CSaTScanData::AdjustNeighborCounts() {
                             !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) &&
                             !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
     //We do not need to recalculate the number of neighbors when the max spatial size restriction is by distance only.
-    if (!bDistanceOnlyMax) {
+    if (!bDistanceOnlyMax && !gParameters.UseLocationNeighborsFile()) {
       //Re-calculate neighboring locations about each centroid.
       CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
       gvCentroidNeighborStore.DeleteAllElements();
@@ -201,14 +201,14 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
                                                 tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
   try {
     if (gpSortedUShortHandler) {
-      delete gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex];
+      delete[] gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex];
       gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex]=0;
       gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex] = new unsigned short[iNumMaximumNeighbors];
       for (tract_t j=iNumMaximumNeighbors-1; j >= 0; j--) /* copy tract numbers */
          gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex][j] = static_cast<unsigned short>(vOrderLocations[j].GetTractNumber());
     }
     else if (gpSortedIntHandler) {
-      delete gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex];
+      delete[] gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex];
       gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex]=0;
       gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex] = new tract_t[iNumMaximumNeighbors];
       for (tract_t j=iNumMaximumNeighbors-1; j >= 0; j--) /* copy tract numbers */
@@ -223,6 +223,41 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
     gpNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumMaximumNeighbors;
     if (gpReportedNeighborCountHandler)
       gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumReportedNeighbors;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
+    throw;
+  }
+}
+
+/** Allocates third dimension of sorted at 'array[0][*(vLocations.begin())]'
+    to length of vLocations vector; assigning locations indexes as detailed by
+    vLocations variable. Sets multi-dimension arrays which detail the size of array. */
+void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<tract_t>& vLocations) {
+  tract_t iCentroidIndex = *(vLocations.begin());
+  
+  try {
+    if (gpSortedUShortHandler) {
+      delete[] gpSortedUShortHandler->GetArray()[0][iCentroidIndex];
+      gpSortedUShortHandler->GetArray()[0][iCentroidIndex]=0;
+      gpSortedUShortHandler->GetArray()[0][iCentroidIndex] = new unsigned short[vLocations.size()];
+      for (tract_t j=(int)vLocations.size()-1; j >= 0; j--) /* copy tract numbers */
+         gpSortedUShortHandler->GetArray()[0][iCentroidIndex][j] = static_cast<unsigned short>(vLocations[j]);
+    }
+    else if (gpSortedIntHandler) {
+      delete[] gpSortedIntHandler->GetArray()[0][iCentroidIndex];
+      gpSortedIntHandler->GetArray()[0][iCentroidIndex]=0;
+      gpSortedIntHandler->GetArray()[0][iCentroidIndex] = new tract_t[vLocations.size()];
+      for (tract_t j=(int)vLocations.size()-1; j >= 0; j--) /* copy tract numbers */
+         gpSortedIntHandler->GetArray()[0][iCentroidIndex][j] = vLocations[j];
+    }
+    else
+      ZdGenerateException("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
+
+    //update neighbor array(s) for number of calculated neighbors
+    if (!gpNeighborCountHandler)
+      ZdGenerateException("Neighbor array not allocated.","AllocateSortedArrayNeighbors()");
+    gpNeighborCountHandler->GetArray()[0][iCentroidIndex] = vLocations.size();
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
@@ -395,7 +430,8 @@ measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** pp
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 void CSaTScanData::FindNeighbors() {
   try {
-    CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
+    if (!gParameters.UseLocationNeighborsFile())
+      CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
   }
   catch (ZdException &x) {
     x.AddCallpath("FindNeighbors()","CSaTScanData");
@@ -910,14 +946,11 @@ void CSaTScanData::Setup() {
        }
     }
   }
-  //set tract handler object to aggregate locations when analysis type is purely temporal
-  if (!gParameters.UseCoordinatesFile())
-    gTractHandler.tiSetAggregatingTracts();
-
+  gTractHandler.reset(new TractHandler(!gParameters.UseCoordinatesFile()));
   if (gParameters.UseSpecialGrid())
     gCentroidsHandler.reset(new CentroidHandler());
   else
-    gCentroidsHandler.reset(new CentroidHandlerPassThrow(gTractHandler));
+    gCentroidsHandler.reset(new CentroidHandlerPassThrow(*gTractHandler.get()));
 }
 
 /** Throws exception if case(s) were observed for an interval/location
@@ -939,7 +972,7 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
                                         "       the expected number of cases is zero but there were cases observed.\n"
                                         "       Please review the correctness of population and case files.",
                                         "ValidateObservedToExpectedCases()",
-                                        gTractHandler.tiGetTid(t, sId),
+                                        gTractHandler->tiGetTid(t, sId),
                                         JulianToString(sStart, gvTimeIntervalStartTimes[i]).GetCString(),
                                         JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).GetCString());
   }
