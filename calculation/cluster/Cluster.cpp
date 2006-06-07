@@ -74,10 +74,12 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
     fprintf(fp, "%u.", iReportedCluster);
     DisplayCensusTracts(fp, DataHub, PrintFormat);
-    if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
-      DisplayCoordinates(fp, DataHub, PrintFormat);
-    else
-      DisplayLatLongCoords(fp, DataHub, PrintFormat);
+    if (!DataHub.GetParameters().UseLocationNeighborsFile()) {
+      if (DataHub.GetParameters().GetCoordinatesType() == CARTESIAN)
+        DisplayCoordinates(fp, DataHub, PrintFormat);
+      else
+        DisplayLatLongCoords(fp, DataHub, PrintFormat);
+    }    
     DisplayTimeFrame(fp, DataHub, PrintFormat);
     if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL)
       DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
@@ -775,7 +777,7 @@ void CCluster::SetCartesianRadius(const CSaTScanData& DataHub) {
   std::vector<double> vCoordsOfCluster;
   std::vector<double> vCoordsOfNeighborCluster;
 
-  if (ClusterDefined()) {
+  if (ClusterDefined() && !DataHub.GetParameters().UseLocationNeighborsFile()) {
     DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoordsOfCluster);
     DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), vCoordsOfNeighborCluster);
     if (m_iEllipseOffset) {
@@ -802,7 +804,8 @@ void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
 /** Set class member 'm_MostCentralLocation' from neighbor information obtained
     from CSaTScanData object. */
 void CCluster::SetMostCentralLocationIndex(const CSaTScanData& DataHub) {
-  m_MostCentralLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), 1);
+  if (ClusterDefined())
+    m_MostCentralLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), 1);
 }
 
 /** Sets non compactness penalty for shape. */
