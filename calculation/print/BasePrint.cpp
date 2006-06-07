@@ -102,13 +102,14 @@ void BasePrint::PrintReadError(const char * sMessage) {
 void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
   geInputFileType = eType;
   switch (eType) {
-    case CASEFILE         : gsInputFileString = "case file"; break;
-    case CONTROLFILE      : gsInputFileString = "control file"; break;
-    case POPFILE          : gsInputFileString = "population file"; break;
-    case COORDFILE        : gsInputFileString = "coordinates file"; break;
-    case GRIDFILE         : gsInputFileString = "grid file"; break;
-    case MAXCIRCLEPOPFILE : gsInputFileString = "max circle size file"; break;
-    case ADJ_BY_RR_FILE   : gsInputFileString = "adjustments file"; break;
+    case CASEFILE                : gsInputFileString = "case file"; break;
+    case CONTROLFILE             : gsInputFileString = "control file"; break;
+    case POPFILE                 : gsInputFileString = "population file"; break;
+    case COORDFILE               : gsInputFileString = "coordinates file"; break;
+    case GRIDFILE                : gsInputFileString = "grid file"; break;
+    case MAXCIRCLEPOPFILE        : gsInputFileString = "max circle size file"; break;
+    case ADJ_BY_RR_FILE          : gsInputFileString = "adjustments file"; break;
+    case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
   }
 }

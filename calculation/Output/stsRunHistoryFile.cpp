@@ -217,7 +217,7 @@ void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits,
 // post: sets sTempValue to the number and units of max geo extent
 void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params) {
    try {
-      if(params.GetAnalysisType() == PURELYTEMPORAL)
+      if(params.GetAnalysisType() == PURELYTEMPORAL || params.UseLocationNeighborsFile())
          sTempValue = "n/a";
       else {
          if (params.GetAnalysisType() == PROSPECTIVESPACETIME && params.GetAdjustForEarlierAnalyses()) {
@@ -413,7 +413,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, RATES_FIELD));
 
       // coordinate type field
-      if (params.UseCoordinatesFile() || params.UseSpecialGrid())
+      if (!params.UseLocationNeighborsFile() && (params.UseCoordinatesFile() || params.UseSpecialGrid()))
         sTempValue = ((params.GetCoordinatesType() == CARTESIAN) ? "Cartesian" : "LatLong");
       else
         sTempValue = "n/a";
