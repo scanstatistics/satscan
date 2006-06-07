@@ -260,8 +260,6 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
    try {
      //return if analysis is purely temporal -- there will be at most one cluster
      if (Parameters.GetIsPurelyTemporalAnalysis()) return;
-     if (DataHub.GetTInfo()->tiGetDimensions() < 2)
-       ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
      //return from function if no clusters retained
      if (!gvTopClusterList.size()) return;
      //determine maximum number of clusters to retain
@@ -273,6 +271,13 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
        uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
      //sort by descending m_ratio
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
+
+     //when using locations neighbors file, there are not coordinates -- so no geographical overlapp checking can be done
+     if (Parameters.UseLocationNeighborsFile()) return;
+
+     if (DataHub.GetTInfo()->tiGetDimensions() < 2)
+       ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
+
      if (eClusterInclusionCriterion != NORESTRICTIONS)
        gPrintDirection.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
      //remove geographically overlapping clusters
