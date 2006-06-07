@@ -28,7 +28,6 @@ class TractDescriptor {
     double                            * gpCoordinates;             /* coordinates                   */
 
     //Restricted to TractDescriptor - only this class should call these methods.
-    void                                Init() {gsTractIdentifiers=0; gpCoordinates=0;}
     void                                Setup(const char * sTractIdentifier, const double* pCoordinates, int iDimensions);
 
     void                                AddTractIdentifier(const char * sTractIdentifier);
@@ -44,6 +43,7 @@ class TractDescriptor {
     void				SetTractIdentifier(const char * sTractIdentifier);
 
     TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions);
+    TractDescriptor(const char * sTractIdentifier);
 
   public:
     ~TractDescriptor();
@@ -82,10 +82,9 @@ class TractHandler {
     bool                                         gbAggregatingTracts;
 
   public:
-    TractHandler();
+    TractHandler(bool bAggregatingTracts);
     ~TractHandler();
 
-    tract_t                             tiCombineDuplicatesByCoordinates();
     void                                tiConcaticateDuplicateTractIdentifiers();
     int                                 tiGetDimensions() const {return nDimensions;}
     static double                       tiGetDistanceSq(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint);
@@ -95,10 +94,10 @@ class TractHandler {
     void                                tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const;
     tract_t                             tiGetTractIndex(const char *tid) const;
     void                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
+    void                                tiInsertTnode(const char *tid);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
-    void                                tiSetAggregatingTracts();
-    void                                tiSetDimensions(int iDimensions) {nDimensions = iDimensions;}
+    void                                tiSetCoordinateDimensions(int iDimensions);
     void                                SortTractsByIndentifiers();
 };
 //*****************************************************************************

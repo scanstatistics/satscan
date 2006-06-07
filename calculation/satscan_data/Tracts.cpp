@@ -8,10 +8,22 @@
 #include "SSException.h"
 
 /** Constructor */
-TractDescriptor::TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions) {
+TractDescriptor::TractDescriptor(const char * sTractIdentifier, const double* pCoordinates, int iDimensions)
+                :gsTractIdentifiers(0), gpCoordinates(0) {
   try {
-    Init();
     Setup(sTractIdentifier, pCoordinates, iDimensions);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("TractDescriptor()","TractDescriptor");
+    throw;
+  }
+}
+
+/** constructor -- no coordinates */
+TractDescriptor::TractDescriptor(const char * sTractIdentifier)
+                :gsTractIdentifiers(0), gpCoordinates(0) {
+  try {
+    SetTractIdentifier(sTractIdentifier);
   }
   catch (ZdException &x) {
     x.AddCallpath("TractDescriptor()","TractDescriptor");
@@ -79,8 +91,7 @@ void TractDescriptor::RetrieveCoordinates(TractHandler const & theTractHandler, 
 double TractDescriptor::GetCoordinatesAtDimension(int iDimension, const TractHandler & theTractHandler) const {
   try {
     if (0 > iDimension || iDimension > theTractHandler.tiGetDimensions() - 1)
-      ZdGenerateException("Index %d out of range [size=%d].", "GetCoordinatesAtDimension()", ZdException::Normal,
-                          iDimension, theTractHandler.tiGetDimensions());
+      ZdGenerateException("Index out of range [size=%d].", "GetCoordinatesAtDimension()", theTractHandler.tiGetDimensions());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetCoordinatesAtDimension()", "TractDescriptor");
@@ -184,38 +195,12 @@ void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordi
 }
 
 /** Constructor*/
-TractHandler::TractHandler() : nDimensions(0), gbAggregatingTracts(false) {}
+TractHandler::TractHandler(bool bAggregatingTracts) : nDimensions(0), gbAggregatingTracts(bAggregatingTracts) {
+  if (gbAggregatingTracts) gvTractDescriptors.push_back(new TractDescriptor("dummy_location"));
+}
 
 /** Destructor */
 TractHandler::~TractHandler() {}
-
-/** Prints error when duplicate coordinates are found.
-    Returns whether duplicates coordinate where found. */
-tract_t TractHandler::tiCombineDuplicatesByCoordinates() {
-  ZdPointerVector<TractDescriptor>::iterator         itrMajor, itrMinor;
-
-  try {
-    itrMajor = gvTractDescriptors.begin();
-    while (itrMajor != gvTractDescriptors.end()) {
-         itrMinor = itrMajor;
-         itrMinor++;
-         while (itrMinor != gvTractDescriptors.end()) {
-              if ((*itrMajor)->CompareCoordinates(*(*itrMinor), *this)) {
-                (*itrMajor)->Combine((*itrMinor), *this);
-                itrMinor = gvTractDescriptors.erase(itrMinor);
-              }
-              else
-                itrMinor++;
-         }
-         itrMajor++;
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("tiCombineDuplicatesByCoordinates()", "TractHandler");
-    throw;
-  }
-  return (tract_t)gvTractDescriptors.size();
-}
 
 /** Combines tract identifiers for tracts that mapped to same coordinates.
     Note that this function should be called once after data files are read. */
@@ -294,6 +279,7 @@ double TractHandler::tiGetTractCoordinate(tract_t t, int iDimension) const {
   return dReturn;
 }
 
+/** Retrieves all location identifiers associated with location at index 't'. */
 void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const {
   try {
     if (0 > t || t > (tract_t)gvTractDescriptors.size() - 1)
@@ -307,7 +293,7 @@ void TractHandler::tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vI
   }
 }
 
-/** Searches tract-id "tid".  Returns the index, or -1 if not found. */
+/** Searches for tract identifier and returns it's internal index, or -1 if not found. */
 tract_t TractHandler::tiGetTractIndex(const char *tid) const {
   ZdPointerVector<TractDescriptor>::const_iterator           itr;
   std::map<std::string,TractDescriptor*>::const_iterator     itrmap;
@@ -341,10 +327,29 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) const {
   return tPosReturn;
 }
 
-/** Insert a tract into the vector sorting by tract identifier.
-    Sorted insert appears to be done solely for TractHandler::tiGetTractIndex(char *tid).
+/** Insert a tract into the vector sorting by tract identifier. Ignores location ids
+    which already exist. */
+void TractHandler::tiInsertTnode(const char *tid) {
+  ZdPointerVector<TractDescriptor>::iterator itrPosition;
 
-    Return value: false = duplicate tract ID,  true = successful insertion */
+  try {
+    if (gbAggregatingTracts) //when aggregating locations, insertion process always succeeds
+      return;
+
+    std::auto_ptr<TractDescriptor> Tract(new TractDescriptor(tid));
+    itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), Tract.get(), CompareTractDescriptorIdentifier());
+    if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
+      return;
+    gvTractDescriptors.insert(itrPosition, Tract.release());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("tiInsertTnode()", "TractHandler");
+    throw;
+  }
+}
+
+/** Insert a tract into the vector sorting by coordinates. Ignores exact duplicates and
+    groups different location ids with the same coordinates. */
 void TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordinates) {
   ZdPointerVector<TractDescriptor>::iterator itr, itrPosition;
 
@@ -443,13 +448,14 @@ void TractHandler::SortTractsByIndentifiers() {
   }
 }
 
-/** Set this handler object to aggregating locations into one. */
-void TractHandler::tiSetAggregatingTracts() {
-  gvTractDescriptors.DeleteAllElements();
-  gmDuplicateTracts.clear();
-  gbAggregatingTracts = true;
+/** Sets dimensions of location coordinates. If aggregating locations, function just returns; otherwise
+    if any locations are already defined - throws an exception. */
+void TractHandler::tiSetCoordinateDimensions(int iDimensions) {
+  if (gbAggregatingTracts) return; //ignore this when aggregating locations
 
-  double Coordinates[1] ={0};
-  gvTractDescriptors.push_back(new TractDescriptor("dummy_location", Coordinates, 1));
+  if (gvTractDescriptors.size())
+    ZdGenerateException("Changing the coordinate dimensions is not permited once locations have been defined.","tiSetCoordinateDimensions()");
+
+  nDimensions = iDimensions;
 }
 
