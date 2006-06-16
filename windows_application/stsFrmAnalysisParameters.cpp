@@ -382,23 +382,15 @@ void TfrmAnalysis::CheckDate(const char * sDateTitle, TEdit& Year, TEdit& Month,
 //---------------------------------------------------------------------------
 /** Verifies all parameters on the 'Output Files' tab. Returns whether tab is valid.*/
 void TfrmAnalysis::CheckOutputParams() {
-  FILE * fp=0;
-  
   try {
     if (edtResultFile->Text.Length() == 0)
       ZdException::GenerateNotification("Please specify a results file.", "CheckOutputParams()");
-
-    if ((fp = fopen(edtResultFile->Text.c_str(), "w")) == NULL)
-      ZdException::GenerateNotification("Invalid file path or file name specified for results file.\nPlease review settings.",
-                                        "CheckOutputParams()");
-    fclose(fp); fp=0;
-
-    if (!FileCanBeCreated(edtResultFile->Text.c_str()))
-      ZdException::GenerateNotification("Result file could not be created. Access denied.\nPlease review settings.",
-                                        "CheckOutputParams()");
+    if (!ValidateFileAccess(edtResultFile->Text.c_str(), true))
+      ZdException::GenerateNotification("Results file could not be opened for writing.\n"
+                                        "Please confirm that the path and/or file name\n"
+                                        "are valid and that you have permissions to write\nto this directory and file.", "CheckOutputParams()");
   }
   catch (ZdException & x) {
-    fclose(fp); fp=0;
     x.AddCallpath("CheckOutputParams", "TfrmAnalysis");
     PageControl1->ActivePage = tbOutputFiles;
     edtResultFile->SetFocus();
@@ -1563,7 +1555,6 @@ void TfrmAnalysis::ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& 
       DayControl.Text = iDaysInMonth;
   }
 }
-
 //---------------------------------------------------------------------------
 /** Validates 'Input Files' tab */
 void TfrmAnalysis::ValidateInputFiles() {
@@ -1576,10 +1567,12 @@ void TfrmAnalysis::ValidateInputFiles() {
       edtCaseFileName->SetFocus();
       ZdException::GenerateNotification("Please specify a case file.","ValidateInputFiles()");
     }
-    if (!File_Exists(edtCaseFileName->Text.c_str())) {
+    if (!ValidateFileAccess(edtCaseFileName->Text.c_str())) {
       PageControl1->ActivePage = tbInputFiles;
       edtCaseFileName->SetFocus();
-      ZdException::GenerateNotification("Case file could not be opened.","ValidateInputFiles()");
+      ZdException::GenerateNotification("The case file could not be opened for reading.\n"
+                                        "Please confirm that the path and/or file name\n"
+                                        "are valid and that you have permissions to read\nfrom this directory and file.", "ValidateInputFiles()");
     }
     //validate the control file - Bernoulli model only
     if (GetModelControlType() == BERNOULLI) {
@@ -1588,10 +1581,12 @@ void TfrmAnalysis::ValidateInputFiles() {
         edtControlFileName->SetFocus();
         ZdException::GenerateNotification("For the Bernoulli model, please specify a control file.","ValidateInputFiles()");
       }
-      if (!File_Exists(edtControlFileName->Text.c_str())) {
+      if (!ValidateFileAccess(edtControlFileName->Text.c_str())) {
         PageControl1->ActivePage = tbInputFiles;
         edtControlFileName->SetFocus();
-        ZdException::GenerateNotification("Control file could not be opened.","ValidateInputFiles()");
+        ZdException::GenerateNotification("The control file could not be opened for reading.\n"
+                                          "Please confirm that the path and/or file name are\n"
+                                          "valid and that you have permissions to read from\nthis directory and file.", "ValidateInputFiles()");
       }
     }
     //validate the population file -  Poisson model only
@@ -1606,10 +1601,12 @@ void TfrmAnalysis::ValidateInputFiles() {
                                             "not change over time, the population file is optional.","ValidateInputFiles()");
         }                                    
       }
-      else if (!File_Exists(edtPopFileName->Text.c_str())) {
+      else if (!ValidateFileAccess(edtPopFileName->Text.c_str())) {
         PageControl1->ActivePage = tbInputFiles;
         edtPopFileName->SetFocus();
-        ZdException::GenerateNotification("Population file could not be opened.","ValidateInputFiles()");
+        ZdException::GenerateNotification("The population file could not be opened for reading.\n"
+                                          "Please confirm that the path and/or file name are\n"
+                                          "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
       }
     }
     //validate coordinates file
@@ -1621,16 +1618,20 @@ void TfrmAnalysis::ValidateInputFiles() {
         ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
       }
     }  
-    else if (!File_Exists(edtCoordinateFileName->Text.c_str())) {
+    else if (!ValidateFileAccess(edtCoordinateFileName->Text.c_str())) {
       PageControl1->ActivePage = tbInputFiles;
       edtCoordinateFileName->SetFocus();
-      ZdException::GenerateNotification("Coordinates file could not be opened.","ValidateInputFiles()");
+      ZdException::GenerateNotification("The coordinates file could not be opened for reading.\n"
+                                        "Please confirm that the path and/or file name are\n"
+                                        "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
     }
     //validate special grid file -- optional
-    if (!edtGridFileName->Text.IsEmpty() &&  !File_Exists(edtGridFileName->Text.c_str())) {
+    if (!edtGridFileName->Text.IsEmpty() &&  !ValidateFileAccess(edtGridFileName->Text.c_str())) {
       PageControl1->ActivePage = tbInputFiles;
       edtGridFileName->SetFocus();
-      ZdException::GenerateNotification("Grid file could not be opened.","ValidateInputFiles()");
+      ZdException::GenerateNotification("The grid file could not be opened for reading.\n"
+                                        "Please confirm that the path and/or file name\n"
+                                        "are valid and that you have permissions to read\nfrom this directory and file.", "ValidateInputFiles()");
     }
   }
   catch (ZdException & x) {
