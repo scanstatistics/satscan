@@ -154,6 +154,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     //write settings as provided in advanced features of graphical interface
     WriteMultipleDataSetsSettings(WriteFile);
     WriteDataCheckingSettings(WriteFile);
+    WriteNeighborsFileSettings(WriteFile);
     WriteSpatialWindowSettings(WriteFile);
     WriteTemporalWindowSettings(WriteFile);
     WriteSpaceAndTimeAdjustmentSettings(WriteFile);
@@ -362,6 +363,20 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile)
   }
 }
 
+/** Writes parameter settings grouped under 'Neighbors File'. */
+void IniParameterFileAccess::WriteNeighborsFileSettings(ZdIniFile& WriteFile) {
+  ZdString      s;
+
+  try {
+    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s), GetParameterComment(LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
 /** Writes parameter settings grouped under 'Output'. */
 void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
   ZdString      s;
@@ -411,15 +426,13 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
   try {
     // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
     // which we'll determine by whether it is different than default seed
-    if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)                  
+    if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)
       WriteIniParameter(WriteFile, RANDOMIZATION_SEED, GetParameterString(RANDOMIZATION_SEED, s), GetParameterComment(RANDOMIZATION_SEED));
     //WriteIniParameter(WriteFile, TIMETRENDCONVRG, GetParameterString(TIMETRENDCONVRG, s), GetParameterComment(TIMETRENDCONVRG));  //---  until SVTT is available, don't write
     WriteIniParameter(WriteFile, EXECUTION_TYPE, GetParameterString(EXECUTION_TYPE, s), GetParameterComment(EXECUTION_TYPE));
     WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s), GetParameterComment(NUM_PROCESSES));
     WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s), GetParameterComment(LOG_HISTORY));
     WriteIniParameter(WriteFile, SUPPRESS_WARNINGS, GetParameterString(SUPPRESS_WARNINGS, s), GetParameterComment(SUPPRESS_WARNINGS));
-    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s), GetParameterComment(LOCATION_NEIGHBORS_FILE));
-    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");

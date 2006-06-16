@@ -26,6 +26,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintMultipleDataSetParameters(fp);
     //print 'Data Checking' tab settings
     PrintDataCheckingParameters(fp);
+    //print 'Neighbors File' tab settings
+    PrintNeighborsFileParameters(fp);
     //print 'Spatial Window' tab settings
     PrintSpatialWindowParameters(fp);
     //print 'Temporal Window' tab settings
@@ -467,6 +469,21 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
   }
 }
 
+/** Prints 'Run Options' parameters to file stream. */
+void ParametersPrint::PrintNeighborsFileParameters(FILE* fp) const {
+  try {
+    if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+
+    fprintf(fp, "\nNeighbors File\n--------------\n");
+    fprintf(fp, "  Use Location Neighbors File: %s\n", (gParameters.UseLocationNeighborsFile() ? "Yes" : "No"));
+    fprintf(fp, "  Location Neighbors File    : %s\n", gParameters.GetLocationNeighborsFileName().c_str());
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
+    throw;
+  }
+}
+
 /** Prints 'Output' tab parameters to file stream. */
 void ParametersPrint::PrintOutputParameters(FILE* fp) const {
   ZdFileName            AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
@@ -588,10 +605,6 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
     }
     fprintf(fp, "  Logging Analysis    : %s\n", (gParameters.GetIsLoggingHistory() ? "Yes" : "No"));
     fprintf(fp, "  Suppress Warnings   : %s\n", (gParameters.GetSuppressingWarnings() ? "Yes" : "No"));
-    if (gParameters.UseLocationNeighborsFile()) {
-      fprintf(fp, "  Use Location Neighbors File: Yes\n");
-      fprintf(fp, "  Location Neighbors File    : %s\n", gParameters.GetLocationNeighborsFileName().c_str());
-    }
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");

@@ -27,6 +27,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteIsotonicScanSettings(ZdIniFile& WriteFile);
     void                                WriteInputSettings(ZdIniFile& WriteFile);
     void                                WriteMultipleDataSetsSettings(ZdIniFile& WriteFile);
+    void                                WriteNeighborsFileSettings(ZdIniFile& WriteFile);
     void                                WriteOutputSettings(ZdIniFile& WriteFile);
     void                                WritePowerSimulationsSettings(ZdIniFile& WriteFile);
     void                                WriteRunOptionSettings(ZdIniFile& WriteFile);

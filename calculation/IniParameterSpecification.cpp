@@ -9,6 +9,7 @@ const char * IniParameterSpecification::NotUsed                 = "NotUsed";
 const char * IniParameterSpecification::Input                   = "[Input]";
 const char * IniParameterSpecification::MultipleDataSets        = "[Multiple Data Sets]";
 const char * IniParameterSpecification::DataChecking            = "[Data Checking]";
+const char * IniParameterSpecification::NeighborsFile           = "[Neighbors File]";
 const char * IniParameterSpecification::Analysis                = "[Analysis]";
 const char * IniParameterSpecification::SpatialWindow           = "[Spatial Window]";
 const char * IniParameterSpecification::TemporalWindow          = "[Temporal Window]";
@@ -318,8 +319,8 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   //validate parameters no longer used
   gvParameterInfo[VALIDATE - 1] = std::make_pair(NotUsed, NotUsed);
 
-  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"LocationNeighborsFilename"));
-  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"UseLocationNeighborsFile"));
+  gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"LocationNeighborsFilename"));
+  gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseLocationNeighborsFile"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
