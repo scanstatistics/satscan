@@ -5,9 +5,9 @@
     <VERSION value="BCB.05.03"/>
     <PROJECT value="StsWinPrj.exe"/>
     <OBJFILES value="StsWinPrj.obj stsMain.obj stsFrmAnalysisParameters.obj stsFrmAbout.obj 
-      stsFrmAnalysisRun.obj stsUtilityFunctions.obj stsCalculationThread.obj 
-      stsPrintWindow.obj stsDataImporter.obj stsDlgDataImporter.obj 
-      stsOutputFileRegistry.obj stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
+      stsFrmAnalysisRun.obj stsCalculationThread.obj stsPrintWindow.obj 
+      stsDataImporter.obj stsDlgDataImporter.obj stsOutputFileRegistry.obj 
+      stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
       stsBaseAnalysisChildForm.obj stsFrmStartWindow.obj 
       stsFrmAdvancedParameters.obj ..\calculation\Parameters.obj 
       ..\calculation\Toolkit.obj ..\calculation\SaTScanBasis.obj 

@@ -9,7 +9,6 @@ USEFORM("stsMain.cpp", frmMainForm);
 USEFORM("stsFrmAnalysisParameters.cpp", frmAnalysis);
 USEFORM("stsFrmAbout.cpp", frmAbout);
 USEFORM("stsFrmAnalysisRun.cpp", frmAnalysisRun);
-USEUNIT("stsUtilityFunctions.cpp");
 USEUNIT("stsCalculationThread.cpp");
 USEUNIT("stsPrintWindow.cpp");
 USEUNIT("stsDataImporter.cpp");
