@@ -381,8 +381,8 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
 
     if (sDefaultValue.GetLength()) {
       gvParametersMissingDefaulted.push_back(static_cast<int>(eParameterType)); //and default retained.
-      PrintDirection.Printf("Notice: The parameter '%s' is missing from the parameter file,\n"
-                            "        defaulted value '%s' assigned.\n", BasePrint::P_NOTICE,
+      PrintDirection.Printf("Notice:\nThe parameter '%s' is missing from the parameter file, "
+                            "defaulted value '%s' assigned.\n", BasePrint::P_NOTICE,
                             GetParameterLabel(eParameterType), sDefaultValue.GetCString());
     }
   }
@@ -398,12 +398,12 @@ bool AbtractParameterFileAccess::ReadBoolean(const ZdString& sValue, ParameterTy
 
   try {
     if (sValue.GetIsEmpty()) {
-      InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadBoolean()", GetParameterLabel(eParameterType));
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadBoolean()", GetParameterLabel(eParameterType));
     }
     else if (!(!stricmp(sValue.GetCString(),"y")   || !stricmp(sValue.GetCString(),"n") ||
                !strcmp(sValue.GetCString(),"1")    || !strcmp(sValue.GetCString(),"0")   ||
                !stricmp(sValue.GetCString(),"yes")  || !stricmp(sValue.GetCString(),"no"))) {
-      InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
                                           "ReadBoolean()", GetParameterLabel(eParameterType), sValue.GetCString());
     }
     else
@@ -455,7 +455,7 @@ void AbtractParameterFileAccess::ReadDateRange(const ZdString& sValue, Parameter
       ZdStringTokenizer     Tokenizer(sValue, ",");
       iNumTokens = Tokenizer.GetNumTokens();
       if (iNumTokens != 2)
-        InvalidParameterException::Generate("Error: For parameter '%s', %d values specified but should have 2.\n",
+        InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', %d values specified but should have 2.\n",
                                             "ReadDateRange()", GetParameterLabel(eParameterType), iNumTokens);
       Range.first = Tokenizer.GetNextToken().GetCString();
       Range.second = Tokenizer.GetNextToken().GetCString();
@@ -473,11 +473,11 @@ double AbtractParameterFileAccess::ReadDouble(const ZdString & sValue, Parameter
 
   try {
     if (sValue.GetIsEmpty()) {
-      InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadDouble()",
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadDouble()",
                                           GetParameterLabel(eParameterType));
     }
     if (sscanf(sValue.GetCString(), "%lf", &dReadResult) != 1) {
-      InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid real number.\n", "ReadDouble()",
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid real number.\n", "ReadDouble()",
                                           GetParameterLabel(eParameterType), sValue.GetCString());
     }
   }
@@ -503,7 +503,7 @@ void AbtractParameterFileAccess::ReadEllipseRotations(const ZdString& sParameter
          if (sscanf(Tokenizer.GetToken(i).GetCString(), "%i", &iReadRotations))
            gParameters.AddEllipsoidRotations(iReadRotations, (i == 0));
          else
-           InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not an integer.\n", "ReadEllipseRotations()",
+           InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an integer.\n", "ReadEllipseRotations()",
                                                GetParameterLabel(ENUMBERS), Tokenizer.GetToken(i).GetCString());
       }
     }
@@ -529,7 +529,7 @@ void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) c
          if (sscanf(Tokenizer.GetToken(i).GetCString(), "%lf", &dReadShape))
            gParameters.AddEllipsoidShape(dReadShape, (i == 0));
          else
-           InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not an decimal number.\n",
+           InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an decimal number.\n",
                                                "ReadEllipseShapes()", GetParameterLabel(ESHAPES), Tokenizer.GetToken(i).GetCString());
       }
     }
@@ -544,7 +544,7 @@ void AbtractParameterFileAccess::ReadEllipseShapes(const ZdString& sParameter) c
 int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const {
   try {
     if (iValue < iLow || iValue > iHigh)
-      InvalidParameterException::Generate("Error: For parameter '%s', setting '%d' is out of range [%d,%d].\n", "SetCoordinatesType()",
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%d' is out of range [%d,%d].\n", "SetCoordinatesType()",
                                           GetParameterLabel(eParameterType), iValue, iLow, iHigh);
   }
   catch (ZdException &x) {
@@ -560,11 +560,11 @@ int AbtractParameterFileAccess::ReadInt(const ZdString& sValue, ParameterType eP
 
   try {
     if (sValue.GetIsEmpty()) {
-      InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n",
                                           "ReadInt()", GetParameterLabel(eParameterType));
     }
     else if (sscanf(sValue.GetCString(), "%i", &iReadResult) != 1) {
-      InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid integer.\n",
+      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid integer.\n",
                                          "ReadInt()", GetParameterLabel(eParameterType), sValue.GetCString());
     }
   }
@@ -581,15 +581,15 @@ int AbtractParameterFileAccess::ReadUnsignedInt(const ZdString& sValue, Paramete
 
   try {
    if (sValue.GetIsEmpty()) {
-     InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n",
+     InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n",
                                          "ReadUnsignedInt()", GetParameterLabel(eParameterType));
    }
    else if (sscanf(sValue.GetCString(), "%u", &iReadResult) != 1) {
-     InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a valid integer.\n",
+     InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid integer.\n",
                                          "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.GetCString());
    }
    else if (iReadResult < 0) {
-     InvalidParameterException::Generate("Error: For parameter '%s', setting '%s' is not a positive integer.\n",
+     InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a positive integer.\n",
                                          "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.GetCString());
    }
   }
@@ -605,9 +605,9 @@ void AbtractParameterFileAccess::ReadVersion(const ZdString& sValue) const {
   CParameters::CreationVersion       vVersion;
 
    if (sValue.GetIsEmpty())
-     InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
+     InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
    else if (sscanf(sValue.GetCString(), "%u.%u.%u", &vVersion.iMajor, &vVersion.iMinor, &vVersion.iRelease) < 3)
-    InvalidParameterException::Generate("Error: Parameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
+    InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
   gParameters.SetVersion(vVersion);
 }
 
@@ -763,7 +763,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
   }
   catch (InvalidParameterException &x) {
     gbReadStatusError = true;
-    PrintDirection.Printf(x.GetErrorMessage(), BasePrint::P_ERROR);
+    PrintDirection.Printf(x.GetErrorMessage(), BasePrint::P_PARAMERROR);
   }
   catch (ZdException &x) {
     x.AddCallpath("SetParameter()","AbtractParameterFileAccess");
