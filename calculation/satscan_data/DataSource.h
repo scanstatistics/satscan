@@ -4,6 +4,8 @@
 //******************************************************************************
 #include <string>
 #include "UtilityFunctions.h"
+#include <iostream>
+#include <fstream>
 
 /** Input data source abstraction. */
 class DataSource {
@@ -22,16 +24,39 @@ class DataSource {
 /** ASCII file data source. */
 class AsciiFileDataSource : public DataSource {
    private:
-     FILE                             * gpSourceFile;
+     class StringParser {
+       private:
+         std::string                 gsWord;
+         short                       gwCurrentWordIndex;
+         BasePrint                 & gPrint;
+         const std::string         * gpParseLine;
+
+         void                        ThrowAsciiException();
+
+       public:
+         StringParser(BasePrint& Print) : gPrint(Print), gwCurrentWordIndex(-1) {}
+
+         bool                        HasWords() {return GetWord(0) != 0;}
+         short                       GetNumberWords();
+         const char                * GetWord(short wWordIndex);
+         bool                        SetString(const std::string& sParseLine);
+     };
+
      std::auto_ptr<StringParser>        gStringParser;
+     long                               glReadCount;
+     std::ifstream                      gSourceFile;
+     BasePrint                        & gPrint;
+     std::string                        gsReadBuffer;
+
+    void                                ThrowUnicodeException();
 
    public:
      AsciiFileDataSource(const std::string& sSourceFilename, BasePrint& Print);
-     virtual ~AsciiFileDataSource();
+     virtual ~AsciiFileDataSource() {}
 
-     virtual long                       GetCurrentRecordIndex() const;
-     virtual short                      GetNumValues();
-     virtual const char               * GetValueAt(short iFieldIndex);
+     virtual long                       GetCurrentRecordIndex() const {return glReadCount;}
+     virtual short                      GetNumValues() {return gStringParser->GetNumberWords();}
+     virtual const char               * GetValueAt(short iFieldIndex) {return gStringParser->GetWord(iFieldIndex);}
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
