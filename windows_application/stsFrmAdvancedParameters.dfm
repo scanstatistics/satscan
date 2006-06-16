@@ -1,6 +1,6 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 733
-  Top = 91
+  Left = 402
+  Top = 254
   ActiveControl = PageControl
   BorderIcons = []
   BorderStyle = bsDialog
@@ -419,6 +419,64 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 'to a location ID listed in the coordinates file.'
           TabOrder = 3
           OnClick = stRelaxedCoodinatesClick
+        end
+      end
+    end
+    object tabNeighborsFile: TTabSheet
+      Caption = 'Neighbors File'
+      ImageIndex = 7
+      object grpNeighborsFile: TGroupBox
+        Left = 8
+        Top = 8
+        Width = 421
+        Height = 93
+        Caption = 'Centroid Grouping'
+        TabOrder = 0
+        object lblNeighborsFile: TLabel
+          Left = 30
+          Top = 45
+          Width = 70
+          Height = 13
+          Anchors = []
+          Caption = 'Neighbors File:'
+        end
+        object edtNeighborsFile: TEdit
+          Left = 30
+          Top = 60
+          Width = 320
+          Height = 21
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+          OnChange = edtNeighborsFileChange
+          OnExit = OnControlExit
+        end
+        object btnBrowseForNeighborsFile: TButton
+          Left = 356
+          Top = 60
+          Width = 23
+          Height = 22
+          Hint = 'Browse for neighbors file ...'
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 2
+          OnClick = btnBrowseForNeighborsFileClick
+        end
+        object chkSpecifiyNeighborsFile: TCheckBox
+          Left = 12
+          Top = 21
+          Width = 389
+          Height = 17
+          Caption = 'Specifiy geographical neighbors through user defined file'
+          TabOrder = 0
+          OnClick = chkSpecifiyNeighborsFileClick
         end
       end
     end

@@ -144,6 +144,12 @@ __published:	// IDE-managed Components
    TCheckBox *chkReportedSpatialDistance;
    TCheckBox *chkReportedSpatialPopulationFile;
    TLabel *lblReportedMaxDistance;
+   TTabSheet *tabNeighborsFile;
+   TGroupBox *grpNeighborsFile;
+   TLabel *lblNeighborsFile;
+   TEdit *edtNeighborsFile;
+   TButton *btnBrowseForNeighborsFile;
+   TCheckBox *chkSpecifiyNeighborsFile;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -202,6 +208,9 @@ __published:	// IDE-managed Components
    void __fastcall stRelaxedCoodinatesClick(TObject *Sender);
    void __fastcall rdoStrictCoordinatesClick(TObject *Sender);
    void __fastcall rdoRelaxedCoordinatesClick(TObject *Sender);
+   void __fastcall chkSpecifiyNeighborsFileClick(TObject *Sender);
+   void __fastcall edtNeighborsFileChange(TObject *Sender);
+   void __fastcall btnBrowseForNeighborsFileClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -220,6 +229,7 @@ __published:	// IDE-managed Components
    void                     EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
    void                     EnableDataSetList(bool bEnable);
    void                     EnableDataSetPurposeControls(bool bEnable);
+   void                     EnableNeighborsFileGroup(bool bEnable);
    void                     EnableNewButton();
    void                     EnableRemoveButton();
    void                     EnableInputFileEdits(bool bEnable);
@@ -244,6 +254,7 @@ __published:	// IDE-managed Components
    void                     ValidateAdjustmentSettings();
    void                     ValidateInputFiles();
    void                     ValidateOutputSettings();
+   void                     ValidateNeighborsFileSettings();
    void                     ValidateProspDateRange();
    void                     ValidateReportedSpatialClusterSize();
    void                     ValidateScanningWindowRanges();

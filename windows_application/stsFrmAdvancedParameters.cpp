@@ -73,6 +73,24 @@ void __fastcall TfrmAdvancedParameters::btnCaseBrowseClick(TObject *Sender) {
   }
 }
 //---------------------------------------------------------------------------
+/** Event triggered when user selects button to import neighbors file. A file selection
+    dialog is display and if user selects a file, the file import dialog is launched. */
+void __fastcall TfrmAdvancedParameters::btnBrowseForNeighborsFileClick(TObject *Sender) {
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->DefaultExt = "*.rr";
+    OpenDialog->Filter = "Neighbors files (*.nei)|*.nei|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Neighbors File";
+    if (OpenDialog->Execute())
+      edtNeighborsFile->Text = OpenDialog->FileName;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("btnBrowseForNeighborsFileClick()","TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
 /** button click event for case file import    */
 void __fastcall TfrmAdvancedParameters::btnCaseImportClick(TObject *Sender) {
   InputFileType eType = Case;
@@ -329,6 +347,13 @@ void __fastcall TfrmAdvancedParameters::chkRestrictTemporalRangeClick(TObject *S
   DoControlExit();
 }
 //---------------------------------------------------------------------------
+/** Event triggered when user selects check box which enables/disables corresponding
+    feature controls. Causes re-evaluation of interface control enabling. */
+void __fastcall TfrmAdvancedParameters::chkSpecifiyNeighborsFileClick(TObject *Sender) {
+   EnableSettingsForAnalysisModelCombination();
+   DoControlExit();
+}
+//---------------------------------------------------------------------------
 /** event triggered when user exits a control*/
 void TfrmAdvancedParameters::DoControlExit() {
    // update enable/disable of Set Defaults button
@@ -436,6 +461,13 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeExit(TObject *S
 void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) {
   if (edtMaxTemporalClusterSizeUnits->Text.IsEmpty() || edtMaxTemporalClusterSizeUnits->Text.ToDouble() == 0)
     edtMaxTemporalClusterSizeUnits->Text = 1;
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+/** Event triggered when user changes the text of the neighbors filename control.
+    Control hint is updated and DoControlExit(). */
+void __fastcall TfrmAdvancedParameters::edtNeighborsFileChange(TObject *Sender) {
+  edtNeighborsFile->Hint = edtNeighborsFile->Text;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -606,6 +638,16 @@ void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
    btnPopBrowse->Enabled = bEnable;
    btnPopImport->Enabled = bEnable;
 }
+
+/** Enables neighbors file group. */
+void TfrmAdvancedParameters::EnableNeighborsFileGroup(bool bEnable) {
+   grpNeighborsFile->Enabled = bEnable;
+   chkSpecifiyNeighborsFile->Enabled = bEnable;
+   edtNeighborsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
+   lblNeighborsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
+   edtNeighborsFile->Color = edtNeighborsFile->Enabled ? clWindow : clInactiveBorder;
+   btnBrowseForNeighborsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
+}
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableNewButton() {
@@ -663,6 +705,8 @@ void TfrmAdvancedParameters::EnableRemoveButton() {
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
 void TfrmAdvancedParameters::EnableReportedSpatialOptionsGroup(bool bEnable) {
+   bEnable &= !chkSpecifiyNeighborsFile->Checked;
+
    rdgReportedSpatialOptions->Enabled = bEnable;
    chkRestrictReportedClusters->Enabled = bEnable;
 
@@ -712,6 +756,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableTemporalOptionsGroup(false, false, false);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
+        EnableNeighborsFileGroup(true);
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -721,6 +766,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableTemporalOptionsGroup(true, false, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(false);
+        EnableNeighborsFileGroup(false);
         break;
       case SPACETIME                 :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -732,6 +778,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
+        EnableNeighborsFileGroup(true);
         break;
       case PROSPECTIVESPACETIME      :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -743,6 +790,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(true);
+        EnableNeighborsFileGroup(true);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -752,6 +800,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableTemporalOptionsGroup(true, false, false);
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(false);
+        EnableNeighborsFileGroup(false);
         break;
       default :
         ZdGenerateException("Unknown analysis type '%d'.",
@@ -768,6 +817,8 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
 void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal) {
+   bEnable &= !chkSpecifiyNeighborsFile->Checked;
+
    rdgSpatialOptions->Enabled = bEnable;
 
    bool bEnablePopPercentage = !(gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME &&
@@ -827,6 +878,8 @@ void TfrmAdvancedParameters::EnableTemporalOptionsGroup(bool bEnable, bool bEnab
 //---------------------------------------------------------------------------
 /** enables or disables the window shape options group control */
 void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
+   bEnable &= !chkSpecifiyNeighborsFile->Checked;
+   
    grpWindowShape->Enabled = bEnable;
    rdoCircular->Enabled = bEnable;
    rdoElliptic->Enabled = bEnable && (CoordinatesType)gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN;
@@ -968,6 +1021,8 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bReturn &= (rdoMultivariate->Checked);
    bReturn &= (rdgStudyPeriodCheck->ItemIndex == 0);
    bReturn &= (rdoStrictCoordinates->Checked == true);
+   bReturn &= (chkSpecifiyNeighborsFile->Checked == false);
+   bReturn &= (edtNeighborsFile->Text == "");
 
    return bReturn;
 }
@@ -1220,6 +1275,8 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   ZdString      sString;
 
   try {
+    ref.UseLocationNeighborsFile(chkSpecifiyNeighborsFile->Checked);
+    ref.SetLocationNeighborsFileName(edtNeighborsFile->Text.c_str());
     ref.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, GetMaxSpatialClusterSizeFromControl(PERCENTOFPOPULATION), false);
     ref.SetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, GetMaxSpatialClusterSizeFromControl(PERCENTOFMAXCIRCLEFILE), false);
     ref.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, chkSpatialPopulationFile->Checked, false);
@@ -1385,6 +1442,9 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
    //data checking
    rdgStudyPeriodCheck->ItemIndex = STRICTBOUNDS;
    rdoStrictCoordinates->Checked = true;
+
+   chkSpecifiyNeighborsFile->Checked = false;
+   edtNeighborsFile->Text = "";
 }
 //---------------------------------------------------------------------------
 /** Sets default values for Output related tab and respective controls
@@ -1603,6 +1663,10 @@ void TfrmAdvancedParameters::Setup() {
       // Data Checking Tab
       SetStudyPeriodDataCheckingControl(ref.GetStudyPeriodDataCheckingType());
       SetCoordinatesDataCheckingControl(ref.GetCoordinatesDataCheckingType());
+
+      // Neighbors Tab
+      chkSpecifiyNeighborsFile->Checked = ref.UseLocationNeighborsFile();
+      edtNeighborsFile->Text = ref.GetLocationNeighborsFileName().c_str(); 
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1624,7 +1688,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         Caption = "Advanced Input Features";
         PageControl->Pages[0]->TabVisible=true;
         PageControl->Pages[1]->TabVisible=true;
-        for (i=2; i < PageControl->PageCount; i++)
+        PageControl->Pages[2]->TabVisible=true;
+        for (i=3; i < PageControl->PageCount; i++)
            PageControl->Pages[i]->TabVisible=false;
         // give control to list box if it contains items but none are selected
         if (lstInputDataSets->Items->Count && lstInputDataSets->ItemIndex == -1) {
@@ -1638,7 +1703,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         Caption = "Advanced Analysis Features";
         PageControl->Pages[0]->TabVisible=false;
         PageControl->Pages[1]->TabVisible=false;
-        for (i=2; i < PageControl->PageCount-1; i++)
+        PageControl->Pages[2]->TabVisible=false;
+        for (i=3; i < PageControl->PageCount-1; i++)
            PageControl->Pages[i]->TabVisible=true;
         PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
         break;
@@ -1690,6 +1756,7 @@ void __fastcall TfrmAdvancedParameters::stStrictCoodinatesClick(TObject *Sender)
 /** validates all the settings in this dialog */
 void TfrmAdvancedParameters::Validate() {
    ValidateInputFiles();
+   ValidateNeighborsFileSettings();
    ValidateSpatialClusterSize();
    ValidateAdjustmentSettings();
    ValidateTemporalWindowSettings();
@@ -1727,9 +1794,11 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
       if (edtAdjustmentsByRelativeRisksFile->Text.IsEmpty())
         GenerateAFException("Please specify an adjustments file.",
                             "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile, ANALYSIS_TABS);
-      if (!File_Exists(edtAdjustmentsByRelativeRisksFile->Text.c_str()))
-        GenerateAFException("Adjustments file could not be opened.",
-                            "ValidateAdjustmentSettings()", *edtAdjustmentsByRelativeRisksFile, ANALYSIS_TABS);
+      if (!ValidateFileAccess(edtAdjustmentsByRelativeRisksFile->Text.c_str()))
+        GenerateAFException("The adjustments file could not be opened for reading.\n"
+                            "Please confirm that the path and/or file name are valid\n"
+                            "and that you have permissions to read from this directory\nand file.",
+                            "ValidateNeighborsFileSettings()",*edtAdjustmentsByRelativeRisksFile, ANALYSIS_TABS);
     }
   }
   catch (ZdException &x) {
@@ -1752,14 +1821,18 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
        //validate the case file for this dataset
        if (gvCaseFiles.at(i).IsEmpty())
           GenerateAFException("Please specify a case file for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
-       if (!File_Exists(gvCaseFiles.at(i).c_str()))
-         GenerateAFException("Case file could not be opened for this additional data set.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
+       if (!ValidateFileAccess(gvCaseFiles.at(i).c_str()))
+         GenerateAFException("The case file for this additional data set could not be opened for reading.\n"
+                             "Please confirm that the path and/or file name are valid and that you have\n"
+                             "permissions to read from this directory and file.", "ValidateInputFiles()",*edtCaseFileName, INPUT_TABS);
        //validate the control file for this dataset - Bernoulli model only
        if (gAnalysisSettings.GetModelControlType() == BERNOULLI) {
          if (gvControlFiles.at(i).IsEmpty())
            GenerateAFException("For the Bernoulli model, please specify a control file for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
-         if (!File_Exists(gvControlFiles.at(i).c_str()))
-           GenerateAFException("Control file could not be opened for this additional data set.","ValidateInputFiles()", *edtControlFileName, INPUT_TABS);
+         if (!ValidateFileAccess(gvControlFiles.at(i).c_str()))
+           GenerateAFException("The control file for this additional data set could not be opened for reading.\n"
+                               "Please confirm that the path and/or file name are valid and that you have\n"
+                               "permissions to read from this directory and file.", "ValidateInputFiles()",*edtControlFileName, INPUT_TABS);
        }
        //validate the population file for this dataset-  Poisson model only
        if (gAnalysisSettings.GetModelControlType() == POISSON) {
@@ -1770,17 +1843,21 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
                 (!gvPopFiles.at(i).IsEmpty() && !bFirstDataSetHasPopulationFile))
              GenerateAFException("For the Poisson model with purely temporal analyses, the population file is optional but all data\n"
                                  "sets must either specify a population file or omit it.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
-           else if (!gvPopFiles.at(i).IsEmpty() && !File_Exists(gvPopFiles.at(i).c_str()))
-             GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+           else if (!gvPopFiles.at(i).IsEmpty() && !ValidateFileAccess(gvPopFiles.at(i).c_str()))
+             GenerateAFException("The population file for this additional data set could not be opened for reading.\n"
+                                 "Please confirm that the path and/or file name are valid and that you have\n"
+                                 "permissions to read from this directory and file.", "ValidateInputFiles()",*edtPopFileName, INPUT_TABS);
          }
          else if (gvPopFiles.at(i).IsEmpty())
             GenerateAFException("For the Poisson model, please specify a population file for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
-         else if (!File_Exists(gvPopFiles.at(i).c_str()))
-             GenerateAFException("Population file could not be opened for this additional data set.","ValidateInputFiles()", *edtPopFileName, INPUT_TABS);
+         else if (!ValidateFileAccess(gvPopFiles.at(i).c_str()))
+             GenerateAFException("The population file for this additional data set could not be opened for reading.\n"
+                                 "Please confirm that the path and/or file name are valid and that you have\n"
+                                 "permissions to read from this directory and file.", "ValidateInputFiles()",*edtPopFileName, INPUT_TABS);
        }
     }  //for loop
 
-    //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal 
+    //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal
     if (gAnalysisSettings.GetModelControlType() == ORDINAL && rdoAdjustmentByDataSets->Enabled && rdoAdjustmentByDataSets->Checked)
       GenerateAFException("For the ordinal probability model with input data defined in multiple data sets,\n"
                           "the adjustment option has not been implemented.","ValidateInputFiles()", *rdoAdjustmentByDataSets, INPUT_TABS);
@@ -1790,6 +1867,27 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
     throw;
   }
 }
+
+/** Validate user settings of the Neighbors File tab. */
+void TfrmAdvancedParameters::ValidateNeighborsFileSettings() {
+  try {
+    if (grpNeighborsFile->Enabled && chkSpecifiyNeighborsFile->Enabled && chkSpecifiyNeighborsFile->Checked) {
+      //validate the case file for this dataset
+      if (edtNeighborsFile->Text.IsEmpty())
+        GenerateAFException("Please specify a neighbors file.", "ValidateNeighborsFileSettings()",*edtNeighborsFile, INPUT_TABS);
+      if (!ValidateFileAccess(edtNeighborsFile->Text.c_str()))
+        GenerateAFException("The neighbors file could not be opened for reading.\n"
+                            "Please confirm that the path and/or file name are\n"
+                            "valid and that you have permissions to read from\nthis directory and file.",
+                            "ValidateNeighborsFileSettings()",*edtNeighborsFile, INPUT_TABS);
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("ValidateNeighborsFileSettings()", "TfrmAdvancedParameters");
+    throw;
+  }
+}
+
 //---------------------------------------------------------------------------
 /** Specific prospective space-time date check
     Must be between the start and end dates of the analysis */
@@ -1906,14 +2004,21 @@ void TfrmAdvancedParameters::ValidateScanningWindowRanges() {
 }
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::ValidateSpatialClusterSize() {
-  bool  bHasMaxCircleFile = !edtMaxCirclePopulationFilename->Text.IsEmpty() || File_Exists(edtMaxCirclePopulationFilename->Text.c_str());
-
   try {
-    if (rdgSpatialOptions->Enabled && chkSpatialPopulationFile->Checked && !bHasMaxCircleFile)
-      GenerateAFException("Maximum circle size file could not be opened.","ValidateSpatialClusterSize()", *edtMaxCirclePopulationFilename, ANALYSIS_TABS);
+    if (rdgSpatialOptions->Enabled && chkSpatialPopulationFile->Checked && edtMaxCirclePopulationFilename->Text.IsEmpty())
+      GenerateAFException("Please specify a maximum circle size file.","ValidateSpatialClusterSize()", *edtMaxCirclePopulationFilename, ANALYSIS_TABS);
 
-    if (rdgReportedSpatialOptions->Enabled && chkRestrictReportedClusters->Checked && chkReportedSpatialPopulationFile->Checked && !bHasMaxCircleFile)
-      GenerateAFException("Maximum circle size file could not be opened.\n"
+    if (rdgSpatialOptions->Enabled && chkSpatialPopulationFile->Checked && !ValidateFileAccess(edtMaxCirclePopulationFilename->Text.c_str()))
+      GenerateAFException("The maximum circle file could not be opened for reading.\n"
+                          "Please confirm that the path and/or file name are valid\n"
+                          "and that you have permissions to read from this directory\nand file.",
+                           "ValidateSpatialClusterSize()",*edtMaxCirclePopulationFilename, ANALYSIS_TABS);
+
+    if (rdgReportedSpatialOptions->Enabled && chkRestrictReportedClusters->Checked &&
+        chkReportedSpatialPopulationFile->Checked&& !ValidateFileAccess(edtMaxCirclePopulationFilename->Text.c_str()))
+      GenerateAFException("The maximum circle file could not be opened for reading.\n"
+                          "Please confirm that the path and/or file name are valid\n"
+                          "and that you have permissions to read from this directory\nand file.\n"
                           "A maximum circle file is required when restricting the maximum\n"
                           "reported spatial cluster size by a population defined through a\n"
                           "maximum circle file.","ValidateSpatialClusterSize()", *edtMaxCirclePopulationFilename, ANALYSIS_TABS);
