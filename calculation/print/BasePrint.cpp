@@ -38,6 +38,7 @@ void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
                           PrintWarning(sMessage);
                         break;
      case P_READERROR : PrintReadError(sMessage); break;
+     case P_PARAMERROR:                   
      case P_ERROR     :
      default          : PrintError(sMessage);
    };
