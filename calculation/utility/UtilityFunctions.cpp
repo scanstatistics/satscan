@@ -164,3 +164,14 @@ double GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure
   return (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
 }
 
+/** Returns indication of whether file exists and is readable/writable. */
+bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
+  FILE        * fp=0;
+  bool          bReturn=true;
+
+  bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
+  fclose(fp);
+
+  return bReturn;
+}
+
