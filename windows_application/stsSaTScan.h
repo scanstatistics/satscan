@@ -13,7 +13,6 @@
 #include "stsFrmAnalysisRun.h"
 #include "stsPrintWindow.h"
 #include "stsOutputFileRegistry.h"
-#include "stsUtilityFunctions.h"
 #include "stsDataImporter.h"
 #include "stsDlgDataImporter.h"
 #include "stsFrmAnalysisParameters.h"
