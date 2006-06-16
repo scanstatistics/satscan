@@ -28,30 +28,33 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     //prevent access to Spatial Variation and Temporal Trends analysis -- still in development
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       bValid = false;
-      PrintDirection.Printf("Error: Please note that spatial variation in temporal trends analysis is not implemented\n"
-                           "       in this version of SaTScan.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Please note that spatial variation in temporal trends analysis is not implemented"
+                            " in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
     }
     if (!ValidateMonotoneRisk(PrintDirection))
       bValid = false;
     if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
       bValid = false;
-      PrintDirection.Printf("Error: Adjustment purpose for multiple data sets is not permitted\n"
-                            "       with ordinal probability model in this version of SaTScan.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Adjustment purpose for multiple data sets is not permitted with ordinal "
+                            "probability model in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
     }
     if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetTerminateSimulationsEarly()) {
       bValid = false;
-      PrintDirection.Printf("Error: The early termination of simulations option can not be applied\n"
-                            "       with the centric analysis execution.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The early termination of simulations option can not be applied "
+                            "with the centric analysis execution.\n", BasePrint::P_PARAMERROR);
     }
     if (gParameters.GetExecutionType() == CENTRICALLY &&
         (gParameters.GetIsPurelyTemporalAnalysis() ||
          gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
          (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
       bValid = false;
-      PrintDirection.Printf("Error: The centric analysis execution is not available for:\n"
-                            "       purely temporal analyses\n"
-                            "       purely spatial analyses with isotonic scan\n"
-                            "       spatial variation of temporal trends analysis\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The centric analysis execution is not available for:\n"
+                            " purely temporal analyses\n purely spatial analyses with isotonic scan\n"
+                            " spatial variation of temporal trends analysis\n", BasePrint::P_PARAMERROR);
     }
 
     //validate dates
@@ -76,13 +79,15 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
         bValid = false;
-        PrintDirection.Printf("Error: For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
-                              BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
       if (gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputRelativeRisksDBase()) {
         bValid = false;
-        PrintDirection.Printf("Error: The relative risks output files can not be produced for the %s model.\n",
-                              BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The relative risks output files can not be produced for the %s model.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
     }
     //validate range parameters
@@ -144,15 +149,16 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
       StudyPeriodEndDate = CharToJulian(gParameters.GetStudyPeriodEndDate().c_str());
       if (StudyPeriodStartDate > StudyPeriodEndDate) {
         bValid = false;
-        PrintDirection.Printf("Error: The study period start date occurs after the end date.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The study period start date occurs after the end date.\n", BasePrint::P_PARAMERROR);
       }
       if (bValid && gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && bProspectiveDateValid) {
         //validate prospective start date
         ProspectiveStartDate = CharToJulian(gParameters.GetProspectiveStartDate().c_str());
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
           bValid = false;
-          PrintDirection.Printf("Error: The start date of prospective surveillance does not occur within\n"
-                                "       the study period.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                "The start date of prospective surveillance does not occur within the study period.\n", BasePrint::P_PARAMERROR);
         }
       }
     }
@@ -175,40 +181,42 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
     
     if (gParameters.GetNumRequestedEllipses() < 1 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
       bValid = false;
-      PrintDirection.Printf("Error: The number of requested ellipses '%d' is not within allowable range of 1 - %d.\n",
-                            BasePrint::P_ERROR, gParameters.GetNumRequestedEllipses(), CParameters::MAXIMUM_ELLIPSOIDS);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The number of requested ellipses '%d' is not within allowable range of 1 - %d.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetNumRequestedEllipses(), CParameters::MAXIMUM_ELLIPSOIDS);
     }
     //analyses with ellipses can not be performed with coordinates defiend in latitude/longitude system (currently)
     if (gParameters.GetCoordinatesType() == LATLON) {
       bValid = false;
-      PrintDirection.Printf("Error: Invalid parameter setting for ellipses.\n"
-                            "       SaTScan does not support lat/long coordinates when ellipses are used.\n"
-                            "       Please use the Cartesian coordinate system.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "SaTScan does not support lat/long coordinates when ellipses are used. "
+                            "Please use the Cartesian coordinate system if possible.\n", BasePrint::P_PARAMERROR);
     }
     if (gParameters.GetEllipseShapes().size() != gParameters.GetEllipseRotations().size()) {
       bValid = false;
-      PrintDirection.Printf("Error: Invalid parameters; settings indicate %i elliptic shapes\n"
-                            "       but %i variables for respective angles of rotation.\n",
-                            BasePrint::P_ERROR, gParameters.GetEllipseShapes().size(), gParameters.GetEllipseRotations().size());
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Settings indicate %i elliptic shapes but %i variables for respective angles of rotation.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetEllipseShapes().size(), gParameters.GetEllipseRotations().size());
     }
     for (t=0; t < gParameters.GetEllipseShapes().size(); ++t)
        if (gParameters.GetEllipseShapes()[t] < 1) {
          bValid = false;
-         PrintDirection.Printf("Error: Invalid parameter setting, ellipse shape '%g' is invalid.\n"
-                               "       The shape can not be less than one.\n",
-                               BasePrint::P_ERROR, gParameters.GetEllipseShapes()[t]);
+         PrintDirection.Printf("Invalid Parameter Setting:\n"
+                               "Ellipse shape '%g' is invalid. The shape can not be less than one.\n",
+                               BasePrint::P_PARAMERROR, gParameters.GetEllipseShapes()[t]);
        }
     for (t=0; t < gParameters.GetEllipseRotations().size(); t++)
        if (gParameters.GetEllipseRotations()[t] < 1) {
          bValid = false;
-         PrintDirection.Printf("Error: Invalid parameter setting. The number of angles, '%d', is invalid.\n"
-                               "       The number can not be less than one.\n",
-                               BasePrint::P_ERROR, gParameters.GetEllipseRotations()[t]);
+         PrintDirection.Printf("Invalid Parameter Setting:\n"
+                               "The number of angles, '%d', is invalid. The number can not be less than one.\n",
+                               BasePrint::P_PARAMERROR, gParameters.GetEllipseRotations()[t]);
        }
     if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetNonCompactnessPenaltyType() > NOPENALTY) {
       bValid = false;
-      PrintDirection.Printf("Error: The non-compactness penalty for elliptic scans can not be applied\n"
-                            "       with the centric analysis execution.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The non-compactness penalty for elliptic scans can not be applied "
+                            "with the centric analysis execution.\n", BasePrint::P_PARAMERROR);
     }
   }
   catch (ZdException &x) {
@@ -216,17 +224,6 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
     throw;
   }
   return bValid;
-}
-
-/** Returns indication of whether file exists and is readable/writable. */
-bool ParametersValidate::ValidateFileAccess(const std::string& filename, bool bWriteEnable) const {
-  FILE        * fp=0;
-  bool          bReturn=true;
-
-  bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
-  fclose(fp);
-
-  return bReturn;  
 }
 
 /** Validates input/output file parameters. */
@@ -238,15 +235,16 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     //validate case file
     if (!gParameters.GetCaseFileNames().size()) {
       bValid = false;
-      PrintDirection.Printf("Error: No case file was specified.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\nNo case file was specified.\n", BasePrint::P_PARAMERROR);
     }
     for (t=0; t < gParameters.GetCaseFileNames().size(); ++t) {
        if (!ValidateFileAccess(gParameters.GetCaseFileNames()[t])) {
          bValid = false;
-         PrintDirection.Printf("Error: The case file '%s' could not be opened for reading.\n"
-                               "       Please confirm that the path and/or file name are valid and that you\n"
-                               "       have permissions to read to this directory and file.",
-                               BasePrint::P_ERROR, gParameters.GetCaseFileNames()[t].c_str());
+         PrintDirection.Printf("Invalid Parameter Setting:\n"
+                               "The case file '%s' could not be opened for reading. "
+                               "Please confirm that the path and/or file name are valid and that you "
+                               "have permissions to read from this directory and file.\n",
+                               BasePrint::P_PARAMERROR, gParameters.GetCaseFileNames()[t].c_str());
        }
     }
     //validate population file for a poisson model.
@@ -260,19 +258,21 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
               ++iNumDataSetsWithoutPopFile;
          if (iNumDataSetsWithoutPopFile && iNumDataSetsWithoutPopFile != gParameters.GetPopulationFileNames().size()) {
             bValid = false;
-            PrintDirection.Printf("Error: For the Poisson model with purely temporal analyses, the population file\n"
-                                  "       is optional but all data sets must either specify a population file or omit it.\n",
-                                  BasePrint::P_ERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                  "For the Poisson model with purely temporal analyses, the population file "
+                                  "is optional but all data sets must either specify a population file or omit it.\n",
+                                  BasePrint::P_PARAMERROR);
          }
          else if (!iNumDataSetsWithoutPopFile) {
            const_cast<CParameters&>(gParameters).SetPopulationFile(true);
            for (t=0; t < gParameters.GetPopulationFileNames().size(); ++t) {
               if (!ValidateFileAccess(gParameters.GetPopulationFileNames()[t])) {
                 bValid = false;
-                PrintDirection.Printf("Error: The population file '%s' could not be opened for reading.\n"
-                                      "       Please confirm that the path and/or file name are valid and that you\n"
-                                      "       have permissions to read to this directory and file.",
-                                      BasePrint::P_ERROR, gParameters.GetPopulationFileNames()[t].c_str());
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                      "The population file '%s' could not be opened for reading. "
+                                      "Please confirm that the path and/or file name are valid and that you "
+                                      "have permissions to read from this directory and file.\n",
+                                      BasePrint::P_PARAMERROR, gParameters.GetPopulationFileNames()[t].c_str());
               }
            }
          }
@@ -281,16 +281,18 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         const_cast<CParameters&>(gParameters).SetPopulationFile(true);
         if (!gParameters.GetPopulationFileNames().size()) {
           bValid = false;
-          PrintDirection.Printf("Error: For the Poisson model, a population file must be specified unless analysis\n"
-                                "       is purely temporal. In which case the population file is optional.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                "For the Poisson model, a population file must be specified unless analysis "
+                                "is purely temporal. In which case the population file is optional.\n", BasePrint::P_PARAMERROR);
         }
         for (t=0; t < gParameters.GetPopulationFileNames().size(); ++t) {
           if (!ValidateFileAccess(gParameters.GetPopulationFileNames()[t])) {
             bValid = false;
-            PrintDirection.Printf("Error: The population file '%s' could not be opened for reading.\n"
-                                  "       Please confirm that the path and/or file name are valid and that you\n"
-                                  "       have permissions to read to this directory and file.",
-                                  BasePrint::P_ERROR, gParameters.GetPopulationFileNames()[t].c_str());
+            PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                  "The population file '%s' could not be opened for reading. "
+                                  "Please confirm that the path and/or file name are valid and that you "
+                                  "have permissions to read from this directory and file.\n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetPopulationFileNames()[t].c_str());
           }
         }
       }
@@ -299,15 +301,16 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     if (gParameters.GetProbabilityModelType() == BERNOULLI) {
       if (!gParameters.GetControlFileNames().size()) {
         bValid = false;
-        PrintDirection.Printf("Error: For the Bernoulli model, a Control file must be specified.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nFor the Bernoulli model, a Control file must be specified.\n", BasePrint::P_PARAMERROR);
       }
       for (t=0; t < gParameters.GetControlFileNames().size(); ++t) {
         if (!ValidateFileAccess(gParameters.GetControlFileNames()[t])) {
           bValid = false;
-          PrintDirection.Printf("Error: The control file '%s' could not be opened for reading.\n"
-                                "       Please confirm that the path and/or file name are valid and that you\n"
-                                "       have permissions to read to this directory and file.",
-                                BasePrint::P_ERROR, gParameters.GetControlFileNames()[t].c_str());
+          PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                "The control file '%s' could not be opened for reading. "
+                                "Please confirm that the path and/or file name are valid and that you "
+                                "have permissions to read from this directory and file.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetControlFileNames()[t].c_str());
         }
       }
     }
@@ -315,42 +318,45 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     if (gParameters.GetCoordinatesFileName().empty()) {
       if (!gParameters.GetIsPurelyTemporalAnalysis()) {
         bValid = false;
-        PrintDirection.Printf("Error: No coordinates file specified.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nNo coordinates file specified.\n", BasePrint::P_PARAMERROR);
       }
     }  
     else if (!ValidateFileAccess(gParameters.GetCoordinatesFileName())) {
       bValid = false;
-      PrintDirection.Printf("Error: The coordinates file '%s' could not be opened for reading.\n"
-                            "       Please confirm that the path and/or file name are valid and that you\n"
-                            "       have permissions to read to this directory and file.",
-                            BasePrint::P_ERROR, gParameters.GetCoordinatesFileName().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The coordinates file '%s' could not be opened for reading. "
+                            "Please confirm that the path and/or file name are valid and that you "
+                            "have permissions to read from this directory and file.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetCoordinatesFileName().c_str());
     }
     //validate special grid file
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
     else if (gParameters.UseSpecialGrid() && gParameters.GetSpecialGridFileName().empty()) {
       bValid = false;
-      PrintDirection.Printf("Error: The settings indicate to the use a grid file, but a grid file name is not specified.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe settings indicate to the use a grid file, but a grid file name is not specified.\n", BasePrint::P_PARAMERROR);
     }
     else if (gParameters.UseSpecialGrid() && !ValidateFileAccess(gParameters.GetSpecialGridFileName())) {
       bValid = false;
-      PrintDirection.Printf("Error: The grid file '%s' could not be opened for reading.\n"
-                            "       Please confirm that the path and/or file name are valid and that you\n"
-                            "       have permissions to read to this directory and file.",
-                            BasePrint::P_ERROR, gParameters.GetSpecialGridFileName().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The grid file '%s' could not be opened for reading. "
+                            "Please confirm that the path and/or file name are valid and that you "
+                            "have permissions to read from this directory and file.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetSpecialGridFileName().c_str());
     }
     //validate adjustment for known relative risks file
     if (gParameters.GetProbabilityModelType() == POISSON) {
       if (gParameters.UseAdjustmentForRelativeRisksFile() && gParameters.GetAdjustmentsByRelativeRisksFilename().empty()) {
         bValid = false;
-        PrintDirection.Printf("Error: The settings indicate to the use the adjustments file, but a file name not specified.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe settings indicate to the use the adjustments file, but a file name not specified.\n", BasePrint::P_PARAMERROR);
       }
       else if (gParameters.UseAdjustmentForRelativeRisksFile() && !ValidateFileAccess(gParameters.GetAdjustmentsByRelativeRisksFilename())) {
         bValid = false;
-        PrintDirection.Printf("Error: The adjustments file '%s' could not be opened for reading.\n"
-                              "       Please confirm that the path and/or file name are valid and that you\n"
-                              "       have permissions to read to this directory and file.",
-                              BasePrint::P_ERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The adjustments file '%s' could not be opened for reading. "
+                              "Please confirm that the path and/or file name are valid and that you "
+                              "have permissions to read from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
       }
     }
     else
@@ -361,11 +367,11 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses() &&
         !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
       bValid = false;
-      PrintDirection.Printf("Error: For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
-                            "       cluster size must be defined as a percentage of the population as defined in a max\n"
-                            "       circle size file.\n"
-                            "       Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
-                            "       max circle size file is not required.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial "
+                            "cluster size must be defined as a percentage of the population as defined in a max "
+                            "circle size file. Alternatively you may choose to specify the maximum as a fixed radius, "
+                            "in which case a max circle size file is not required.\n", BasePrint::P_PARAMERROR);
     }
 
     //validate max circle population file
@@ -379,46 +385,50 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
         (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))) {
       if (gParameters.GetMaxCirclePopulationFileName().empty() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
         bValid = false;
-        PrintDirection.Printf("Error: The settings indicate to the use a max circle size file, but a file name was not specified.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe settings indicate to the use a max circle size file, but a file name was not specified.\n", BasePrint::P_PARAMERROR);
       }
       else if (gParameters.GetMaxCirclePopulationFileName().empty() &&
                gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
         bValid = false;
-        PrintDirection.Printf("Error: Maximum circle size file name was not specified.\n"
-                              "       A maximum circle file is required when restricting the maximum\n"
-                              "       reported spatial cluster size by a population defined in that\n"
-                              "       maximum circle file.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "Maximum circle size file name was not specified. A maximum circle file is required "
+                              "when restricting the maximum reported spatial cluster size by a population defined "
+                              "in that maximum circle file.\n", BasePrint::P_PARAMERROR);
       }
       else if (!ValidateFileAccess(gParameters.GetMaxCirclePopulationFileName())) {
         bValid = false;
-        PrintDirection.Printf("Error: The max circle size file '%s' could not be opened for reading.\n"
-                              "       Please confirm that the path and/or file name are valid and that you\n"
-                              "       have permissions to read to this directory and file.",
-                              BasePrint::P_ERROR, gParameters.GetMaxCirclePopulationFileName().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The max circle size file '%s' could not be opened for reading. "
+                              "Please confirm that the path and/or file name are valid and that you "
+                              "have permissions to read from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetMaxCirclePopulationFileName().c_str());
       }
     }
     //validate neighbor array file
     if (gParameters.UseLocationNeighborsFile() && gParameters.GetLocationNeighborsFileName().empty()) {
       bValid = false;
-      PrintDirection.Printf("Error: No locations neighbors file specified.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\nNo locations neighbors file specified.\n", BasePrint::P_PARAMERROR);
     }
     else if (gParameters.UseLocationNeighborsFile() && !ValidateFileAccess(gParameters.GetLocationNeighborsFileName())) {
         bValid = false;
-        PrintDirection.Printf("Error: The location neighbors file '%s' could not be opened for reading.\n"
-                              "       Please confirm that the path and/or file name are valid and that you\n"
-                              "       have permissions to read to this directory and file.",
-                              BasePrint::P_ERROR, gParameters.GetLocationNeighborsFileName().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The location neighbors file '%s' could not be opened for reading. "
+                              "Please confirm that the path and/or file name are valid and that you "
+                              "have permissions to read from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetLocationNeighborsFileName().c_str());
     }
     //validate output file
     if (gParameters.GetOutputFileName().empty()) {
       bValid = false;
-      PrintDirection.Printf("Error: No results file specified.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\nNo results file specified.\n", BasePrint::P_PARAMERROR);
     }
     else if (!ValidateFileAccess(gParameters.GetOutputFileName(), true)) {
       bValid = false;
-      PrintDirection.Printf("Error: Results file '%s' could not be opened for writing.\n"
-                            "       Please confirm that the path and/or file name are valid and that you\n"
-                            "       have permissions to write to this directory and file.", BasePrint::P_ERROR, gParameters.GetOutputFileName().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Results file '%s' could not be opened for writing. "
+                            "Please confirm that the path and/or file name are valid and that you "
+                            "have permissions to write to this directory and file.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetOutputFileName().c_str());
     }
   }
   catch (ZdException &x) {
@@ -441,16 +451,18 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
     if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
       //validate for maximum specified as percentage of study period
       if (gParameters.GetMaximumTemporalClusterSize() <= 0) {
-        PrintDirection.Printf("Error: The maximum temporal cluster size of '%g' is invalid.\n"
-                              "       Specifying the maximum as a percentage of the study period\n"
-                              "       requires the value to be a decimal number that is greater than zero.\n",
-                              BasePrint::P_ERROR, gParameters.GetMaximumTemporalClusterSize());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The maximum temporal cluster size of '%g' is invalid. "
+                              "Specifying the maximum as a percentage of the study period "
+                              "requires the value to be a decimal number that is greater than zero.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetMaximumTemporalClusterSize());
         return false;
       }
       //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
       if (gParameters.GetMaximumTemporalClusterSize() > 100.0/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/) {
-        PrintDirection.Printf("Error: For the %s model, the maximum temporal cluster size as a percent\n"
-                              "       of the study period is %d percent.\n", BasePrint::P_ERROR,
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "For the %s model, the maximum temporal cluster size as a percent "
+                              "of the study period is %d percent.\n", BasePrint::P_PARAMERROR,
                               gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()),
                               100/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/);
         return false;
@@ -462,9 +474,9 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
       if (dMaxTemporalLengthInUnits < 1) {
         GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-        PrintDirection.Printf("Error: A maximum temporal cluster size as %g percent of a %d %s study period\n"
-                              "       results in a maximum temporal cluster size that is less than one time\n"
-                              "       aggregation %s.\n", BasePrint::P_ERROR,
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "A maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
+                              "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR,
                               gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
                               sPrecisionString.GetCString(), sPrecisionString.GetCString());
         return false;
@@ -473,10 +485,11 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
     else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
       //validate for maximum specified as time aggregation unit 
       if (gParameters.GetMaximumTemporalClusterSize() < 1) {
-        PrintDirection.Printf("Error: The maximum temporal cluster size of '%2g' is invalid.\n"
-                              "       Specifying the maximum in time aggregation units requires\n"
-                              "       the value to be a whole number that is greater than zero.\n",
-                              BasePrint::P_ERROR, gParameters.GetMaximumTemporalClusterSize());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The maximum temporal cluster size of '%2g' is invalid. "
+                              "Specifying the maximum in time aggregation units requires "
+                              "the value to be a whole number that is greater than zero.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetMaximumTemporalClusterSize());
         return false;
       }
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
@@ -485,10 +498,10 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
-        PrintDirection.Printf("Error: A maximum temporal cluster size of %d %s%s exceeds\n"
-                              "       %d percent of a %d %s study period.\n"
-                              "       Note that current settings limit the maximum to %d %s%s.\n",
-                              BasePrint::P_ERROR, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()),
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "A maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
+                              "Note that current settings limit the maximum to %d %s%s.\n",
+                              BasePrint::P_PARAMERROR, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()),
                               sPrecisionString.GetCString(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
                               (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90),
                               static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
@@ -515,15 +528,15 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
     if (gParameters.GetRiskType() == MONOTONERISK) {
       if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
         bReturn = false;
-        PrintDirection.Printf("Error: The isotonic scan is implemented only for the purely spatial analysis.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is implemented only for the purely spatial analysis.\n", BasePrint::P_PARAMERROR);
       }
       if (gParameters.GetNumDataSets() > 1) {
         bReturn = false;
-        PrintDirection.Printf("Error: Multiple data sets are not permitted with isotonic scan in this version of SaTScan.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nMultiple data sets are not permitted with isotonic scan in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
         bReturn = false;
-        PrintDirection.Printf("Error: The isotonic scan is implemented for only the Poisson and Bernoulli models.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is implemented for only the Poisson and Bernoulli models.\n", BasePrint::P_PARAMERROR);
       }
     }
   }
@@ -542,20 +555,20 @@ bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDire
   try {
     if (gParameters.GetIsPowerCalculated()) {
       if (gParameters.GetNumReplicationsRequested() == 0) {
-        PrintDirection.Printf("Error: The power calculation feature requires that Monte Carlo simulations be performed.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe power calculation feature requires that Monte Carlo simulations be performed.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (0.0 > gParameters.GetPowerCalculationX() || gParameters.GetPowerCalculationX() > std::numeric_limits<double>::max()) {
         bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting for the power calculation value X.\n"
-                              "       Please use a value between 0 and %12.4f\n",
-                              BasePrint::P_ERROR, std::numeric_limits<double>::max());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The power calculation value X. Please use a value between 0 and %12.4f\n",
+                              BasePrint::P_PARAMERROR, std::numeric_limits<double>::max());
       }
       if (0.0 > gParameters.GetPowerCalculationY() || gParameters.GetPowerCalculationY() > std::numeric_limits<double>::max()) {
         bValid = false;
-        PrintDirection.Printf("Error: Invalid parameter setting for the power calculation value Y.\n"
-                              "       Please use a value between 0 and %12.4f\n",
-                              BasePrint::P_ERROR, std::numeric_limits<double>::max());
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The power calculation value Y. Please use a value between 0 and %12.4f\n",
+                              BasePrint::P_PARAMERROR, std::numeric_limits<double>::max());
       }
     }
   }
@@ -579,14 +592,15 @@ bool ParametersValidate::ValidateProspectiveDate(BasePrint& PrintDirection) cons
     //validate study period end date based upon precision of times parameter setting
     //parse date in parts
     if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetProspectiveStartDate().c_str()) != 3) {
-      PrintDirection.Printf("Error: The specified prospective surveillance start date, '%s', is not valid.\n"
-                            "       Please specify as YYYY/MM/DD.\n", BasePrint::P_ERROR, gParameters.GetProspectiveStartDate().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The specified prospective surveillance start date, '%s', is not valid. "
+                            "Please specify as YYYY/MM/DD.\n", BasePrint::P_PARAMERROR, gParameters.GetProspectiveStartDate().c_str());
       return false;
     }
     //validate date
     if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-      PrintDirection.Printf("Error: The specified prospective surveillance start date, %s, is not a valid date.\n",
-                            BasePrint::P_ERROR, gParameters.GetProspectiveStartDate().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe specified prospective surveillance start date, %s, is not a valid date.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetProspectiveStartDate().c_str());
       bReturnValue = false;
     }
   }
@@ -605,8 +619,8 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
   if (gParameters.GetNumReplicationsRequested()) {
     //validate hidden parameter which specifies randomization seed
     if (!(0 < gParameters.GetRandomizationSeed() && gParameters.GetRandomizationSeed() < RandomNumberGenerator::glM)) {
-      PrintDirection.Printf("Error: Randomization seed out of range [1 - %ld].\n",
-                            BasePrint::P_ERROR, RandomNumberGenerator::glM - 1);
+      PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed out of range [1 - %ld].\n",
+                            BasePrint::P_PARAMERROR, RandomNumberGenerator::glM - 1);
       return false;
     }
 
@@ -623,8 +637,8 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       if (gParameters.GetRandomizationSeed() == RandomNumberGenerator::glDefaultSeed) {
         dMaxReplications = (double)RandomNumberGenerator::glM - (double)gParameters.GetRandomizationSeed() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
         dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
-        PrintDirection.Printf("Error: Requested number of replications causes randomization seed to exceed defined limit.\n"
-                              "       Maximum number of replications is %.0lf.\n", BasePrint::P_ERROR, dMaxReplications);
+        PrintDirection.Printf("Invalid Parameter Setting:\nRequested number of replications causes randomization seed to exceed defined limit. "
+                              "Maximum number of replications is %.0lf.\n", BasePrint::P_PARAMERROR, dMaxReplications);
         return false;
       }
       //case #2 - user specified alternate randomization seed
@@ -637,29 +651,29 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
       //check whether specified combination of seed and requested number of replications fights each other 
       if (dMaxReplications < 9 && (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM)) {
-        PrintDirection.Printf("Error: Randomization seed will exceed defined limit.\n"
-                              "       The specified initial seed, in conjunction with the number of replications,\n"
-                              "       contend for numerical range in defined limits. Please modify the specified\n"
-                              "       initial seed and/or lessen the number of replications and try again.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
+                              "The specified initial seed, in conjunction with the number of replications, "
+                              "contend for numerical range in defined limits. Please modify the specified "
+                              "initial seed and/or lessen the number of replications and try again.\n", BasePrint::P_PARAMERROR);
       }
       //check that randomization seed is not so large that we can't run any replications
       else if (dMaxReplications < 9) {
-        PrintDirection.Printf("Error: Randomization seed will exceed defined limit.\n"
-                              "       The intial seed specified prevents any replications from being performed.\n"
-                              "       With %ld replications, the initial seed can be [0 - %.0lf].\n",
-                              BasePrint::P_ERROR, gParameters.GetNumReplicationsRequested(), dMaxSeed);
+        PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
+                              "The intial seed specified prevents any replications from being performed. "
+                              "With %ld replications, the initial seed can be [0 - %.0lf].\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetNumReplicationsRequested(), dMaxSeed);
       }
       //check that number of replications isn't too large
       else if (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM) {
-        PrintDirection.Printf("Error: Requested number of replications causes randomization seed to exceed defined limit.\n"
-                              "       With initial seed of %i, maximum number of replications is %.0lf.\n",
-                              BasePrint::P_ERROR, gParameters.GetRandomizationSeed(), dMaxReplications);
+        PrintDirection.Printf("Invalid Parameter Setting:\nRequested number of replications causes randomization seed to exceed defined limit. "
+                              "With initial seed of %i, maximum number of replications is %.0lf.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetRandomizationSeed(), dMaxReplications);
       }
       else {
-        PrintDirection.Printf("Error: Randomization seed will exceed defined limit.\n"
-                              "       Either limit the number of replications to %.0lf or\n"
-                              "       define the initial seed to a value less than %.0lf.\n",
-                              BasePrint::P_ERROR, dMaxReplications, dMaxSeed);
+        PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
+                              "Either limit the number of replications to %.0lf or "
+                              "define the initial seed to a value less than %.0lf.\n",
+                              BasePrint::P_PARAMERROR, dMaxReplications, dMaxSeed);
       }
       return false;
     }
@@ -681,50 +695,50 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
     if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == SPACETIME)) {
       //validate start range start date
       if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetStartRangeStartDate().c_str()) != 3) {
-        PrintDirection.Printf("Error: The start date of start range in flexible temporal window definition,\n"
-                              "       '%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_ERROR, gParameters.GetStartRangeStartDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of start range in flexible temporal window definition, "
+                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetStartRangeStartDate().c_str());
         bValid = false;
       }
       if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Error: The start date of start range in flexible temporal window definition,\n"
-                              "       %s, is not a valid date.\n", BasePrint::P_ERROR, gParameters.GetStartRangeStartDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of start range in flexible temporal window definition, "
+                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetStartRangeStartDate().c_str());
         bValid = false;
       }
       //validate start range end date
       if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetStartRangeEndDate().c_str()) != 3) {
-        PrintDirection.Printf("Error: The end date of start range in flexible temporal window definition,\n"
-                              "       '%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_ERROR, gParameters.GetStartRangeEndDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of start range in flexible temporal window definition, "
+                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetStartRangeEndDate().c_str());
         bValid = false;
       }
       if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Error: The end date of start range in flexible temporal window definition,\n"
-                              "       %s, is not a valid date.\n", BasePrint::P_ERROR, gParameters.GetStartRangeEndDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of start range in flexible temporal window definition, "
+                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetStartRangeEndDate().c_str());
         bValid = false;
       }
       //validate end range start date
       if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetEndRangeStartDate().c_str()) != 3) {
-        PrintDirection.Printf("Error: The start date of end range in flexible temporal window definition,\n"
-                              "       '%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_ERROR, gParameters.GetEndRangeStartDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of end range in flexible temporal window definition, "
+                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
         bValid = false;
       }
       if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Error: The start date of end range in flexible temporal window definition,\n"
-                              "       %s, is not a valid date.\n", BasePrint::P_ERROR, gParameters.GetEndRangeStartDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of end range in flexible temporal window definition, "
+                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
         bValid = false;
       }
       //validate end range end date
       if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetEndRangeStartDate().c_str()) != 3) {
-        PrintDirection.Printf("Error: The end date of end range in flexible temporal window definition,\n"
-                              "       '%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_ERROR, gParameters.GetEndRangeStartDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of end range in flexible temporal window definition, "
+                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
         bValid = false;
       }
       if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Error: The end date of end range in flexible temporal window definition,\n"
-                              "       %s, is not a valid date.\n", BasePrint::P_ERROR, gParameters.GetEndRangeStartDate().c_str());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of end range in flexible temporal window definition, "
+                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
         bValid = false;
       }
       //now valid that range dates are within study period start and end dates
@@ -736,23 +750,20 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
         EndRangeEndDate = CharToJulian(gParameters.GetEndRangeEndDate().c_str());
         if (EndRangeStartDate > EndRangeEndDate) {
           bValid = false;
-          PrintDirection.Printf("Error: Invalid scanning window end range.\n"
-                                "       Range date '%s' occurs after date '%s'.\n",
-                                BasePrint::P_ERROR, gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
+          PrintDirection.Printf("Invalid Parameter Setting:\nInvalid scanning window end range. Range date '%s' occurs after date '%s'.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
         }
         else {
           if (EndRangeStartDate < StudyPeriodStartDate || EndRangeStartDate > StudyPeriodEndDate) {
             bValid = false;
-            PrintDirection.Printf("Error: The scanning window end range date '%s',\n"
-                                  "       is not within the study period (%s - %s).\n",
-                                  BasePrint::P_ERROR, gParameters.GetEndRangeStartDate().c_str(),
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe scanning window end range date '%s' is not within the study period (%s - %s).\n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str(),
                                   gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
           }
           if (EndRangeEndDate < StudyPeriodStartDate || EndRangeEndDate > StudyPeriodEndDate) {
             bValid = false;
-            PrintDirection.Printf("Error: The scanning window end range date '%s',\n"
-                                  "       is not within the study period (%s - %s) \n",
-                                  BasePrint::P_ERROR, gParameters.GetEndRangeEndDate().c_str(),
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe scanning window end range date '%s' is not within the study period (%s - %s) \n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetEndRangeEndDate().c_str(),
                                   gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
           }
         }
@@ -761,30 +772,27 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
         StartRangeEndDate = CharToJulian(gParameters.GetStartRangeEndDate().c_str());
         if (StartRangeStartDate > StartRangeEndDate) {
           bValid = false;
-          PrintDirection.Printf("Error: Invalid scanning window start range.\n"
-                                "       The range date '%s' occurs after date '%s'.\n",
-                                BasePrint::P_ERROR, gParameters.GetStartRangeStartDate().c_str(),
+          PrintDirection.Printf("Invalid Parameter Setting:\nInvalid scanning window start range. The range date '%s' occurs after date '%s'.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetStartRangeStartDate().c_str(),
                                 gParameters.GetStartRangeEndDate().c_str());
         }
         else {
           if (StartRangeStartDate < StudyPeriodStartDate || StartRangeStartDate > StudyPeriodEndDate) {
             bValid = false;
-            PrintDirection.Printf("Error: The scanning window start range date '%s',\n"
-                                  "       is not within the study period (%s - %s).\n",
-                                  BasePrint::P_ERROR, gParameters.GetStartRangeStartDate().c_str(),
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe scanning window start range date '%s' is not within the study period (%s - %s).\n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetStartRangeStartDate().c_str(),
                                   gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
           }
           if (StartRangeEndDate < StudyPeriodStartDate || StartRangeEndDate > StudyPeriodEndDate) {
             bValid = false;
-            PrintDirection.Printf("Error: The scanning window start range date '%s',\n"
-                                  "       is not within the study period (%s - %s) \n",
-                                  BasePrint::P_ERROR, gParameters.GetStartRangeEndDate().c_str(),
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe scanning window start range date '%s' is not within the study period (%s - %s) \n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetStartRangeEndDate().c_str(),
                                   gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
           }
         }
         if (StartRangeStartDate >= EndRangeEndDate) {
           bValid = false;
-          PrintDirection.Printf("Error: The scanning window start range does not occur before the end range.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe scanning window start range does not occur before the end range.\n", BasePrint::P_PARAMERROR);
         }
       }
     }
@@ -804,28 +812,28 @@ bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirec
   try {
     if (gParameters.GetIsSequentialScanning()) {
       if (gParameters.GetSimulationType() == FILESOURCE) {
-        PrintDirection.Printf("Error: The sequential scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (gParameters.GetOutputSimulationData()) {
-        PrintDirection.Printf("Error: The sequential scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL)) {
         //code only implemented for Poisson or Bernoulli models
-        PrintDirection.Printf("Error: The sequential scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (gParameters.GetNumSequentialScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_SEQUENTIAL_ANALYSES)) {
         bValid = false;
-        PrintDirection.Printf("Error: %d exceeds the maximum number of sequential analyses allowed (%d).\n",
-                              BasePrint::P_ERROR, gParameters.GetNumSequentialScansRequested(), CParameters::MAXIMUM_SEQUENTIAL_ANALYSES);
+        PrintDirection.Printf("Invalid Parameter Setting:\n%d exceeds the maximum number of sequential analyses allowed (%d).\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetNumSequentialScansRequested(), CParameters::MAXIMUM_SEQUENTIAL_ANALYSES);
       }
       if (gParameters.GetSequentialCutOffPValue() < 0 || gParameters.GetSequentialCutOffPValue() > 1) {
         bValid = false;
-        PrintDirection.Printf("Error: The sequential scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
-                              BasePrint::P_ERROR, gParameters.GetSequentialCutOffPValue());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetSequentialCutOffPValue());
       }
     }
   }
@@ -845,7 +853,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
       const_cast<CParameters&>(gParameters).SetOutputSimulationData(false);
     if (gParameters.GetOutputSimulationData() && gParameters.GetSimulationDataOutputFilename().empty()) {
       bValid = false;
-      PrintDirection.Printf("Error: Simulation data output file not specified.\n", BasePrint::P_ERROR);
+      PrintDirection.Printf("Invalid Parameter Setting:\nSimulation data output file not specified.\n", BasePrint::P_PARAMERROR);
     }
 
     switch (gParameters.GetSimulationType()) {
@@ -854,49 +862,46 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
         if (gParameters.GetProbabilityModelType() == POISSON) {
           if (gParameters.GetAdjustmentsByRelativeRisksFilename().empty()) {
             bValid = false;
-            PrintDirection.Printf("Error: No adjustments file specified.\n", BasePrint::P_ERROR);
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo adjustments file specified.\n", BasePrint::P_PARAMERROR);
           }
           else if (access(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(), 00)) {
             bValid = false;
-            PrintDirection.Printf("Error: The adjustments file '%s' does not exist.\n"
-                                  "       Please ensure the path is correct.\n",
-                                  BasePrint::P_ERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe adjustments file '%s' does not exist. Please ensure the path is correct.\n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
           }
         }
         else {
           bValid = false;
-          PrintDirection.Printf("Error: The alternative hypothesis method of creating simulated data\n"
-                                "       is only implemented for the Poisson model.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe alternative hypothesis method of creating simulated data"
+                                "is only implemented for the Poisson model.\n", BasePrint::P_PARAMERROR);
         }
         break;
       case FILESOURCE       :
         if (gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == NORMAL ||
             gParameters.GetProbabilityModelType() == RANK) {
           bValid = false;
-          PrintDirection.Printf("Error: The feature to read simulated data from a file is not implemented for\n"
-                                "       the %s probability model.\n", BasePrint::P_ERROR,
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe feature to read simulated data from a file is not implemented for "
+                                "the %s probability model.\n", BasePrint::P_PARAMERROR,
                                 gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
         }
         if (gParameters.GetNumDataSets() > 1){
           bValid = false;
-          PrintDirection.Printf("Error: The feature to read simulated data from a file is not implemented for analyses\n"
-                                "       that read data from multiple data sets.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe feature to read simulated data from a file is not implemented for analyses "
+                                "that read data from multiple data sets.\n", BasePrint::P_PARAMERROR);
         }
         if (gParameters.GetSimulationDataSourceFilename().empty()) {
           bValid = false;
-          PrintDirection.Printf("Error: The simulated data input file was not specified.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe simulated data input file was not specified.\n", BasePrint::P_PARAMERROR);
         }
         else if (access(gParameters.GetSimulationDataSourceFilename().c_str(), 00)) {
           bValid = false;
-          PrintDirection.Printf("Error: The simulated data input file '%s' does not exist.\n"
-                                "       Please ensure the path is correct.\n",
-                                BasePrint::P_ERROR, gParameters.GetSimulationDataSourceFilename().c_str());
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe simulated data input file '%s' does not exist. Please ensure the path is correct.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetSimulationDataSourceFilename().c_str());
         }
         if (gParameters.GetOutputSimulationData() && gParameters.GetSimulationDataSourceFilename() == gParameters.GetSimulationDataOutputFilename()) {
           bValid = false;
-          PrintDirection.Printf("Error: The file '%s' is specified as both\n"
-                                "       the input and the output file for simulated data.\n",
-                                BasePrint::P_ERROR, gParameters.GetSimulationDataSourceFilename().c_str());
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe file '%s' is specified as both the input and the output file for simulated data.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetSimulationDataSourceFilename().c_str());
         }
         break;
       default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", gParameters.GetSimulationType());
@@ -923,72 +928,72 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
       if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum spatial cluster size, defined as percentage of population at risk, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum spatial cluster size, defined as percentage of population at risk, is invalid. "
+                              "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false);
       if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum spatial cluster size, defined as percentage of population in max circle file, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum spatial cluster size, defined as percentage of population in max circle file, is invalid. "
+                              "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file
       dValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
       if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false) && dValue <= 0.0) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum spatial cluster size of %2g units is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero.\n", BasePrint::P_ERROR, dValue);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum spatial cluster size of %2g units is invalid. "
+                              "The specified value is %2g. Must be greater than zero.\n", BasePrint::P_PARAMERROR, dValue);
       }
       //validate maximum as pecentage of population at risk -- reported
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true);
       if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum reported spatial cluster size, defined as percentage of population at risk, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum reported spatial cluster size, defined as percentage of population at risk, is invalid. "
+                              "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file -- reported
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
       if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum reported spatial cluster size, defined as percentage of population in max circle file, is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_ERROR, dValue, 100/*50*/);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum reported spatial cluster size, defined as percentage of population in max circle file, is invalid. "
+                              "The specified value is %2g. Must be greater than zero and <= %d.\n", BasePrint::P_PARAMERROR, dValue, 100/*50*/);
       }
       //validate maximum as pecentage of population defined in max circle file  -- reported
       dValue = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
       if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true) && dValue <= 0.0) {
         bValid = false;
-        PrintDirection.Printf("Error: The maximum reported spatial cluster size of %2g units is invalid.\n"
-                              "       The specified value is %2g. Must be greater than zero.\n", BasePrint::P_ERROR, dValue);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum reported spatial cluster size of %2g units is invalid. "
+                              "The specified value is %2g. Must be greater than zero.\n", BasePrint::P_PARAMERROR, dValue);
       }
     }
 
     if (gParameters.GetIncludePurelySpatialClusters()) {
       if (!gParameters.GetPermitsPurelySpatialCluster(gParameters.GetProbabilityModelType())) {
           bValid = false;
-          PrintDirection.Printf("Error: A purely spatial cluster cannot be included for a %s model.\n",
-                                BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+          PrintDirection.Printf("Invalid Parameter Setting:\nA purely spatial cluster cannot be included for a %s model.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
       else if (!gParameters.GetPermitsPurelySpatialCluster()) {
         bValid = false;
-        PrintDirection.Printf("Error: A purely spatial cluster can only be included for spatial based analyses.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nA purely spatial cluster can only be included for spatial based analyses.\n", BasePrint::P_PARAMERROR);
       }
     }
     if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
         bValid = false;
-        PrintDirection.Printf("Error: Spatial adjustment by stratified randomization is valid for\n"
-                              "       either retrospective or prospective space-time analyses only.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nSpatial adjustment by stratified randomization is valid for "
+                              "either retrospective or prospective space-time analyses only.\n", BasePrint::P_PARAMERROR);
       }
       if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION) {
         bValid = false;
-        PrintDirection.Printf("Error: Spatial adjustment by stratified randomization can not be performed\n"
-                              "       in conjunction with the temporal adjustment by stratified randomization.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nSpatial adjustment by stratified randomization can not be performed "
+                              "in conjunction with the temporal adjustment by stratified randomization.\n", BasePrint::P_PARAMERROR);
       }
       if (gParameters.GetIncludePurelySpatialClusters()) {
         bValid = false;
-        PrintDirection.Printf("Error: Spatial adjustment by stratified randomization does not permit\n"
-                              "       the inclusion of a purely spatial cluster.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nSpatial adjustment by stratified randomization does not permit "
+                              "the inclusion of a purely spatial cluster.\n", BasePrint::P_PARAMERROR);
       }
     }
   }
@@ -1014,15 +1019,14 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
   try {
     //parse date in parts
     if (CharToMDY(&nMonth, &nDay, &nYear, gParameters.GetStudyPeriodEndDate().c_str()) != 3) {
-      PrintDirection.Printf("Error: The study period end date, '%s', is not valid.\n"
-                            "       Please specify as YYYY/MM/DD.\n",
-                            BasePrint::P_ERROR, gParameters.GetStudyPeriodEndDate().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period end date '%s' is not valid. Please specify as YYYY/MM/DD.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodEndDate().c_str());
       return false;
     }
     //validate date
     if (!IsDateValid(nMonth, nDay, nYear)) {
-      PrintDirection.Printf("Error: The study period end date, '%s', is not a valid date.\n",
-                            BasePrint::P_ERROR, gParameters.GetStudyPeriodEndDate().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period end date '%s' is not a valid date.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodEndDate().c_str());
       return false;
     }
 
@@ -1035,20 +1039,18 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 12 || nDay != 31) {
-          PrintDirection.Printf("Error: The study period end date, '%s', is not valid.\n"
-                                "       With the setting for %s as years, the date\n"
-                                "       must be the last day of respective year.\n",
-                                BasePrint::P_ERROR, gParameters.GetStudyPeriodEndDate().c_str(),
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe study period end date '%s' is not valid. "
+                                "With the setting for %s as years, the date  must be the last day of respective year.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodEndDate().c_str(),
                                 (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
         break;
       case MONTH :
         if (nDay != DaysThisMonth(nYear, nMonth)) {
-          PrintDirection.Printf("Error: The study period end date, '%s', is not valid.\n"
-                                "       With the setting for %s as months, the date\n"
-                                "       must be the last day of respective month.\n",
-                                BasePrint::P_ERROR, gParameters.GetStudyPeriodEndDate().c_str(),
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe study period end date '%s' is not valid. "
+                                "With the setting for %s as months, the date must be the last day of respective month.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodEndDate().c_str(),
                                 (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
@@ -1078,15 +1080,14 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
   try {
     //parse date in parts
     if (CharToMDY(&nMonth, &nDay, &nYear, gParameters.GetStudyPeriodStartDate().c_str()) != 3) {
-      PrintDirection.Printf("Error: The study period start date, '%s', is not valid.\n"
-                            "       Please specify as YYYY/MM/DD.\n",
-                            BasePrint::P_ERROR, gParameters.GetStudyPeriodStartDate().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. Please specify as YYYY/MM/DD.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str());
       return false;
     }
     //validate date
     if (!IsDateValid(nMonth, nDay, nYear)) {
-      PrintDirection.Printf("Error: The study period start date, '%s', is not valid date.\n",
-                            BasePrint::P_ERROR, gParameters.GetStudyPeriodStartDate().c_str());
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid date.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str());
       return false;
     }
     //validate against precision of times
@@ -1098,20 +1099,18 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 1 || nDay != 1) {
-          PrintDirection.Printf("Error: The study period start date, '%s', is not valid.\n"
-                                "       With the setting for %s as years, the date\n"
-                                "       must be the first day of respective year.\n",
-                                BasePrint::P_ERROR, gParameters.GetStudyPeriodStartDate().c_str(),
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. "
+                                "With the setting for %s as years, the date must be the first day of respective year.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str(),
                                 (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
         break;
       case MONTH :
         if (nDay != 1) {
-          PrintDirection.Printf("Error: The study period start date, '%s', is not valid.\n"
-                                "       With the setting for %s as months, the date\n"
-                                "       must be the first day of respective month.\n",
-                                BasePrint::P_ERROR, gParameters.GetStudyPeriodStartDate().c_str(),
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. "
+                                "With the setting for %s as months, the date must be the first day of respective month.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str(),
                                 (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
           return false;
         }
@@ -1166,8 +1165,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         //The SVTT analysis has hooks for temporal adjustments, but that code needs
         //much closer examination before it can be used, even experimentally.
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-          PrintDirection.Printf("Notice: For the Bernoulli model, adjusting for temporal trends is not permitted.\n"
-                                "        Temporal trends adjustment settings will be ignored.", BasePrint::P_NOTICE);
+          PrintDirection.Printf("Notice:\nFor the Bernoulli model, adjusting for temporal trends is not permitted. "
+                                "Temporal trends adjustment settings will be ignored.\n", BasePrint::P_NOTICE);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
@@ -1177,8 +1176,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case NORMAL               :
       case RANK                 :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-          PrintDirection.Printf("Notice: For the %s model, adjusting for temporal trends is not permitted.\n"
-                                "        Temporal trends adjustment settings will be ignored.",
+          PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
+                                "Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
@@ -1186,9 +1185,9 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         break;
       case SPACETIMEPERMUTATION :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
-          PrintDirection.Printf("Notice: For the space-time permutation model, adjusting for temporal trends\n"
-                                "        is not permitted nor needed, as this model automatically adjusts for\n"
-                                "        any temporal variation. Temporal trends adjustment settings will be ignored.\n",
+          PrintDirection.Printf("Notice:\nFor the space-time permutation model, adjusting for temporal trends "
+                                "is not permitted nor needed, as this model automatically adjusts for "
+                                "any temporal variation. Temporal trends adjustment settings will be ignored.\n",
                                 BasePrint::P_NOTICE);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
@@ -1198,24 +1197,24 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
             && gParameters.GetPopulationFileName().empty()) {
            bValid = false; 
-          PrintDirection.Printf("Error: Temporal adjustments can not be performed for a purely temporal analysis\n"
-                                "       using the Poisson model, when no population file has been specfied.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nTemporal adjustments can not be performed for a purely temporal analysis "
+                                "using the Poisson model, when no population file has been specfied.\n", BasePrint::P_PARAMERROR);
     }
 
         if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC && (gParameters.GetAnalysisType() == PURELYTEMPORAL ||gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
           bValid = false;
-          PrintDirection.Printf("Error: Invalid parameter setting for time trend adjustment.\n"
-                                "       You may not use non-parametric time in a purely temporal analysis.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nInvalid parameter setting for time trend adjustment. "
+                                "You may not use non-parametric time in a purely temporal analysis.\n", BasePrint::P_PARAMERROR);
         }
         if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
           bValid = false;
-          PrintDirection.Printf("Error: Temporal adjustment by stratified randomization is not valid\n"
-                                 "       for purely temporal analyses.\n", BasePrint::P_ERROR);
+          PrintDirection.Printf("Invalid Parameter Setting:\nTemporal adjustment by stratified randomization is not valid "
+                                 "for purely temporal analyses.\n", BasePrint::P_PARAMERROR);
         }
         if (gParameters.GetTimeTrendAdjustmentType() == LOGLINEAR_PERC && -100.0 >= gParameters.GetTimeTrendAdjustmentPercentage()) {
           bValid = false;
-          PrintDirection.Printf("Error: The time adjustment percentage is '%2g', but must greater than -100.\n",
-                                BasePrint::P_ERROR, gParameters.GetTimeTrendAdjustmentPercentage());
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe time adjustment percentage is '%2g', but must greater than -100.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetTimeTrendAdjustmentPercentage());
         }
         if (gParameters.GetTimeTrendAdjustmentType() == NOTADJUSTED) {
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
@@ -1225,8 +1224,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
           if (gParameters.GetTimeTrendConvergence() < 0.0) {
             bValid = false;
-            PrintDirection.Printf("Error: Time trend convergence value of '%2g' is less than zero.\n",
-                                  BasePrint::P_ERROR, gParameters.GetTimeTrendConvergence());
+            PrintDirection.Printf("Invalid Parameter Setting:\nTime trend convergence value of '%2g' is less than zero.\n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetTimeTrendConvergence());
           }
         }
         break;
@@ -1237,12 +1236,12 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     if (gParameters.GetIncludePurelyTemporalClusters()) {
       if (!gParameters.GetPermitsPurelyTemporalCluster(gParameters.GetProbabilityModelType())) {
           bValid = false;
-          PrintDirection.Printf("Error: Scanning for purely temporal clusters can not be included when the %s model is used.\n",
-                                BasePrint::P_ERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+          PrintDirection.Printf("Invalid Parameter Setting:\nScanning for purely temporal clusters can not be included when the %s model is used.\n",
+                                BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
       else if (!gParameters.GetPermitsPurelyTemporalCluster()) {
         bValid = false;
-        PrintDirection.Printf("Error: A purely temporal cluster can only be included for time based analyses.\n", BasePrint::P_ERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nA purely temporal cluster can only be included for time based analyses.\n", BasePrint::P_PARAMERROR);
       }
     }
 
@@ -1267,12 +1266,12 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
   //get date precision string for error reporting
   GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
   if (gParameters.GetTimeAggregationUnitsType() == NONE) { //validate time aggregation units
-    PrintDirection.Printf("Error: Time aggregation units can not be 'none' for a temporal analysis.\n", BasePrint::P_ERROR);
+    PrintDirection.Printf("Invalid Parameter Setting:\nTime aggregation units can not be 'none' for a temporal analysis.\n", BasePrint::P_PARAMERROR);
     return false;
   }
   if (gParameters.GetTimeAggregationLength() <= 0) {
-    PrintDirection.Printf("Error: The time aggregation length of '%d' is invalid. Length must be greater than zero.\n",
-                          BasePrint::P_ERROR, gParameters.GetTimeAggregationLength());
+    PrintDirection.Printf("Invalid Parameter Setting:\nThe time aggregation length of '%d' is invalid. Length must be greater than zero.\n",
+                          BasePrint::P_PARAMERROR, gParameters.GetTimeAggregationLength());
     return false;
   }
   //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
@@ -1280,16 +1279,16 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
                                                                   CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()),
                                                                   gParameters.GetTimeAggregationUnitsType(), 1));
   if (dStudyPeriodLengthInUnits < static_cast<double>(gParameters.GetTimeAggregationLength()))  {
-    PrintDirection.Printf("Error: A time aggregation of %d %s%s is greater than the %d %s study period.\n",
-                          BasePrint::P_ERROR, gParameters.GetTimeAggregationLength(), sPrecisionString.GetCString(),
+    PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation of %d %s%s is greater than the %d %s study period.\n",
+                          BasePrint::P_PARAMERROR, gParameters.GetTimeAggregationLength(), sPrecisionString.GetCString(),
                           (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
                           static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
     return false;
   }
   if (ceil(dStudyPeriodLengthInUnits/static_cast<double>(gParameters.GetTimeAggregationLength())) <= 1) {
-    PrintDirection.Printf("Error: A time aggregation of %d %s%s with a %d %s study period results in only\n"
-                          "       one time period to analyze. Temporal and space-time analyses can not be performed\n"
-                          "       on less than two time periods.\n", BasePrint::P_ERROR,
+    PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation of %d %s%s with a %d %s study period results in only "
+                          "one time period to analyze. Temporal and space-time analyses can not be performed "
+                          "on less than two time periods.\n", BasePrint::P_PARAMERROR,
                           gParameters.GetTimeAggregationLength(), sPrecisionString.GetCString(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
                           static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
     return false;
@@ -1306,16 +1305,16 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
   //validate the time aggregation agrees with maximum temporal cluster size
   if (static_cast<int>(floor(dMaxTemporalLengthInUnits /static_cast<double>(gParameters.GetTimeAggregationLength()))) == 0) {
     if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE)
-      PrintDirection.Printf("Error: The time aggregation of %d %s%s is greater than the maximum temporal\n"
-                            "       cluster size of %g %s%s.\n",
-                            BasePrint::P_ERROR, gParameters.GetTimeAggregationLength(),
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe time aggregation of %d %s%s is greater than the maximum temporal "
+                            "cluster size of %g %s%s.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetTimeAggregationLength(),
                             sPrecisionString.GetCString(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
                             gParameters.GetMaximumTemporalClusterSize(), sPrecisionString.GetCString(),
                             (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"));
     else if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
-      PrintDirection.Printf("Error: With the maximum temporal cluster size as %g percent of a %d %s study period,\n"
-                            "       the time aggregation as %d %s%s is greater than the resulting maximum\n"
-                            "       temporal cluster size of %g %s%s.\n", BasePrint::P_ERROR,
+      PrintDirection.Printf("Invalid Parameter Setting:\nWith the maximum temporal cluster size as %g percent of a %d %s study period, "
+                            "the time aggregation as %d %s%s is greater than the resulting maximum "
+                            "temporal cluster size of %g %s%s.\n", BasePrint::P_PARAMERROR,
                             gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
                             sPrecisionString.GetCString(), gParameters.GetTimeAggregationLength(),
                             sPrecisionString.GetCString(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),

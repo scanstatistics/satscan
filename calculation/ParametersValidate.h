@@ -13,7 +13,6 @@ class ParametersValidate {
 
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
-    bool                ValidateFileAccess(const std::string& filename, bool bWriteEnable=false) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
     bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
