@@ -246,7 +246,7 @@ class CParameters {
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return (int)gvEllipseShapes.size();}
     unsigned int                        GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
-    long                                GetNumTotalEllipses() const {return (geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
+    long                                GetNumTotalEllipses() const {return (gbUseLocationNeighborsFile || geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
     bool                                GetOutputAreaSpecificFiles() const;
