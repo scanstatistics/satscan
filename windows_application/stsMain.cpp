@@ -230,7 +230,7 @@ void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
 
   try {
     if (gbShowStartWindow) {
-      if (_argc > 1 && File_Exists(_argv[1])) {
+      if (_argc > 1 && ValidateFileAccess(_argv[1])) {
         try {
           new TfrmAnalysis(this, ActionList, _argv[1]);
           gbShowStartWindow = false;
@@ -244,7 +244,7 @@ void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
         switch (frmStartWindow->GetOpenType()) {
           case TfrmStartWindow::NEW    : new TfrmAnalysis(this, ActionList); break;
           case TfrmStartWindow::SAVED  : OpenAFile(); break;
-          case TfrmStartWindow::LAST   : if (!File_Exists(const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str())))
+          case TfrmStartWindow::LAST   : if (!ValidateFileAccess(GetToolkit().GetParameterHistory()[0].c_str()))
                                            ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
                                                                              GetToolkit().GetParameterHistory()[0].c_str());
                                          new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
@@ -353,7 +353,7 @@ void __fastcall TfrmMainForm::ReopenActionExecute(TObject *Sender) {
     pItem = dynamic_cast<TMenuItem *>(Sender);
     if (pItem) {
       sFileName = GetToolkit().GetParameterHistory()[pItem->Tag];
-      if (!File_Exists(const_cast<char*>(sFileName.c_str())))
+      if (!ValidateFileAccess(sFileName))
         ZdException::GenerateNotification("Cannot open file '%s'.","ReopenActionExecute()", sFileName.c_str());
       new TfrmAnalysis(this, ActionList, const_cast<char*>(sFileName.c_str()));
     }  
