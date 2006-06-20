@@ -15,8 +15,8 @@ class DataSource {
 
      virtual long                       GetCurrentRecordIndex() const = 0;
      static DataSource                * GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII=true);
-     virtual short                      GetNumValues() = 0;
-     virtual const char               * GetValueAt(short iFieldIndex) = 0;
+     virtual long                       GetNumValues() = 0;
+     virtual const char               * GetValueAt(long iFieldIndex) = 0;
      virtual void                       GotoFirstRecord() = 0;
      virtual bool                       ReadRecord() = 0;
 };
@@ -27,18 +27,19 @@ class AsciiFileDataSource : public DataSource {
      class StringParser {
        private:
          std::string                 gsWord;
-         short                       gwCurrentWordIndex;
+         long                        gwCurrentWordIndex;
          BasePrint                 & gPrint;
          const std::string         * gpParseLine;
+         const char                * gcp;
 
          void                        ThrowAsciiException();
 
        public:
-         StringParser(BasePrint& Print) : gPrint(Print), gwCurrentWordIndex(-1) {}
+         StringParser(BasePrint& Print) : gPrint(Print), gwCurrentWordIndex(-1), gcp(0) {}
 
          bool                        HasWords() {return GetWord(0) != 0;}
-         short                       GetNumberWords();
-         const char                * GetWord(short wWordIndex);
+         long                        GetNumberWords();
+         const char                * GetWord(long wWordIndex);
          bool                        SetString(const std::string& sParseLine);
      };
 
@@ -55,8 +56,8 @@ class AsciiFileDataSource : public DataSource {
      virtual ~AsciiFileDataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const {return glReadCount;}
-     virtual short                      GetNumValues() {return gStringParser->GetNumberWords();}
-     virtual const char               * GetValueAt(short iFieldIndex) {return gStringParser->GetWord(iFieldIndex);}
+     virtual long                       GetNumValues() {return gStringParser->GetNumberWords();}
+     virtual const char               * GetValueAt(long iFieldIndex) {return gStringParser->GetWord(iFieldIndex);}
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
@@ -66,7 +67,7 @@ class ZdFileDataSource : public DataSource {
    private:
      std::auto_ptr<ZdFile>              gSourceFile;
      mutable char                       gTempBuffer[ZD_BUFFER_LEN];
-     short                              gwCurrentFieldIndex;
+     long                               gwCurrentFieldIndex;
      bool                               gbFirstRead;
 
    public:
@@ -74,8 +75,8 @@ class ZdFileDataSource : public DataSource {
      virtual ~ZdFileDataSource();
 
      virtual long                       GetCurrentRecordIndex() const;
-     virtual short                      GetNumValues();
-     virtual const char               * GetValueAt(short iFieldIndex);
+     virtual long                       GetNumValues();
+     virtual const char               * GetValueAt(long iFieldIndex);
      virtual void                       GotoFirstRecord();
      virtual bool                       ReadRecord();
 };
