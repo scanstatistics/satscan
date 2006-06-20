@@ -315,20 +315,20 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       }
     }
     //validate coordinates file
-    if (gParameters.GetCoordinatesFileName().empty()) {
-      if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+    if (!(gParameters.UseLocationNeighborsFile() || gParameters.GetIsPurelyTemporalAnalysis())) {
+      if (gParameters.GetCoordinatesFileName().empty()) {
+         bValid = false;
+         PrintDirection.Printf("Invalid Parameter Setting:\nNo coordinates file specified.\n", BasePrint::P_PARAMERROR);
+      }
+      else if (!ValidateFileAccess(gParameters.GetCoordinatesFileName())) {
         bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nNo coordinates file specified.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The coordinates file '%s' could not be opened for reading. "
+                              "Please confirm that the path and/or file name are valid and that you "
+                              "have permissions to read from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetCoordinatesFileName().c_str());
       }
     }  
-    else if (!ValidateFileAccess(gParameters.GetCoordinatesFileName())) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The coordinates file '%s' could not be opened for reading. "
-                            "Please confirm that the path and/or file name are valid and that you "
-                            "have permissions to read from this directory and file.\n",
-                            BasePrint::P_PARAMERROR, gParameters.GetCoordinatesFileName().c_str());
-    }
     //validate special grid file
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);

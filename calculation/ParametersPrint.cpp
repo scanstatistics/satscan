@@ -315,9 +315,11 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
   fprintf(fp, "  Geographical Coordinates Check : ");
   switch (gParameters.GetCoordinatesDataCheckingType()) {
     case STRICTCOORDINATES  : fprintf(fp, "Check to ensure that all locations in the case, control\n"
-                                          "                                   and population files are present in the coordinates file.\n"); break;
+                                          "                                   and population files are present in the %s file.\n",
+                                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
     case RELAXEDCOORDINATES : fprintf(fp, "Ignore data in the case, control and population files that \n"
-                                          "                                   do not correspond to a location ID listed in the coordinates file.\n"); break;
+                                          "                                   do not correspond to a location ID listed in the %s file.\n",
+                                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
     default : ZdException::Generate("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
   }
 }
@@ -380,7 +382,7 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
     }
     if (gParameters.UseCoordinatesFile())
       fprintf(fp, "  Coordinates File  %s : %s\n", sBlankDataSetLabel, gParameters.GetCoordinatesFileName().c_str());
-    if (gParameters.UseSpecialGrid() && !gParameters.UseLocationNeighborsFile())
+    if (gParameters.UseSpecialGrid())
       fprintf(fp, "  Grid File         %s : %s\n", sBlankDataSetLabel, gParameters.GetSpecialGridFileName().c_str());
     if (gParameters.GetSimulationType() == FILESOURCE)
       fprintf(fp, "  Simulated Data Import File  : %s\n", gParameters.GetSimulationDataSourceFilename().c_str());
@@ -400,7 +402,7 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
     }
     fprintf(fp, "  Start Date         : %s\n", gParameters.GetStudyPeriodStartDate().c_str());
     fprintf(fp, "  End Date           : %s\n", gParameters.GetStudyPeriodEndDate().c_str());
-    if ((gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid()) && !gParameters.UseLocationNeighborsFile()) {
+    if ((gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid())) {
       fprintf(fp, "  Coordinates        : ");
       switch (gParameters.GetCoordinatesType()) {
         case CARTESIAN : fprintf(fp, "Cartesian\n"); break;
