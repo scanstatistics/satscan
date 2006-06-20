@@ -367,14 +367,15 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSourc
    //Validate that tract identifer is one of those defined in the coordinates file.
    if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
      if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
-       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
-                     "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
-                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
+       gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
+                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
+                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
        return DataSetHandler::Rejected;
      }
      if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
-       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the coordinates file.\n"
-                     "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
+       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
+                     "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
+                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
        gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
      }
      return DataSetHandler::Ignored;
