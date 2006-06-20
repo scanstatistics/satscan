@@ -91,7 +91,7 @@ class CSaTScanData {
     void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
                                                                              int iEllipseIndex, tract_t iCentroidIndex,
                                                                              tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
-    void                                        AllocateSortedArrayNeighbors(const std::vector<tract_t>& vLocations);
+    void                                        AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const std::vector<tract_t>& vLocations);
     inline void                                 FreeNeighborInfo(tract_t iCentroidIndex) const;
 
     tract_t                                     m_nGridTracts;

@@ -233,8 +233,7 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
 /** Allocates third dimension of sorted at 'array[0][*(vLocations.begin())]'
     to length of vLocations vector; assigning locations indexes as detailed by
     vLocations variable. Sets multi-dimension arrays which detail the size of array. */
-void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<tract_t>& vLocations) {
-  tract_t iCentroidIndex = *(vLocations.begin());
+void CSaTScanData::AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const std::vector<tract_t>& vLocations) {
   
   try {
     if (gpSortedUShortHandler) {
@@ -946,7 +945,7 @@ void CSaTScanData::Setup() {
        }
     }
   }
-  gTractHandler.reset(new TractHandler(!gParameters.UseCoordinatesFile()));
+  gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis()));
   if (gParameters.UseSpecialGrid())
     gCentroidsHandler.reset(new CentroidHandler());
   else
