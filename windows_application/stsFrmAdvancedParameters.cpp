@@ -551,6 +551,14 @@ void TfrmAdvancedParameters::EnableAdjustmentsGroup(bool bEnable) {
   btnImportAdjustmentsFile->Enabled = bEnable && chkAdjustForKnownRelativeRisks->Checked;
 }
 //---------------------------------------------------------------------------
+void TfrmAdvancedParameters::EnableCoordinatesCheckGroup(bool bEnable) {
+  grpGeographicalCoordinatesCheck->Enabled = bEnable;
+  rdoStrictCoordinates->Enabled = bEnable;
+  stStrictCoodinates->Enabled = bEnable;
+  rdoRelaxedCoordinates->Enabled = bEnable;
+  stRelaxedCoodinates->Enabled = bEnable;
+}
+//---------------------------------------------------------------------------
 /** Enables/disables TListBox that list defined data sets */
 void TfrmAdvancedParameters::EnableDataSetList(bool bEnable) {
   lstInputDataSets->Enabled = bEnable;
@@ -757,6 +765,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
         EnableNeighborsFileGroup(true);
+        EnableCoordinatesCheckGroup(true);
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -767,6 +776,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(false);
         EnableNeighborsFileGroup(false);
+        EnableCoordinatesCheckGroup(false);
         break;
       case SPACETIME                 :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -779,6 +789,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
         EnableNeighborsFileGroup(true);
+        EnableCoordinatesCheckGroup(true);
         break;
       case PROSPECTIVESPACETIME      :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -791,6 +802,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(true);
         EnableNeighborsFileGroup(true);
+        EnableCoordinatesCheckGroup(true);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -801,6 +813,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(false);
         EnableNeighborsFileGroup(false);
+        EnableCoordinatesCheckGroup(false);
         break;
       default :
         ZdGenerateException("Unknown analysis type '%d'.",

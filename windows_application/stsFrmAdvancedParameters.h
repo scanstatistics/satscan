@@ -227,6 +227,7 @@ __published:	// IDE-managed Components
    void                     EnableAdjustmentsGroup(bool bEnable);
    void                     EnableAdjustmentForSpatialOptionsGroup(bool bEnable, bool bEnableStratified);
    void                     EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
+   void                     EnableCoordinatesCheckGroup(bool bEnable);
    void                     EnableDataSetList(bool bEnable);
    void                     EnableDataSetPurposeControls(bool bEnable);
    void                     EnableNeighborsFileGroup(bool bEnable);

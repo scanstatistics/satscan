@@ -435,7 +435,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblNeighborsFile: TLabel
           Left = 30
           Top = 45
-          Width = 163
+          Width = 124
           Height = 13
           Anchors = []
           Caption = 'Non-Eucledian Neighbors:'
