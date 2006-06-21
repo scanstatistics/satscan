@@ -656,7 +656,7 @@ void TfrmAdvancedParameters::EnableNewButton() {
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
 void TfrmAdvancedParameters::EnableOutputOptions(bool bEnable) {
-   rdgCriteriaSecClusters->Enabled = bEnable;
+   rdgCriteriaSecClusters->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
 }
 //---------------------------------------------------------------------------
 /** enabled prospective start date controls */
