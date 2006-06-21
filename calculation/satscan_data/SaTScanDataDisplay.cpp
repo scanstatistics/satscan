@@ -92,7 +92,7 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   //print study period
   PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
   fprintf(fp,"%s - %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
-  if (gParameters.UseCoordinatesFile()) {
+  if (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile()) {
     //print number locations scanned
     PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
     fprintf(fp, "%ld\n", (long) m_nTracts);
