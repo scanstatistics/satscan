@@ -83,12 +83,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                               "For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
                               BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
       }
-      if (gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputRelativeRisksDBase()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n"
-                              "The relative risks output files can not be produced for the %s model.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
-      }
+      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
+      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
     }
     //validate range parameters
     if (! ValidateRangeParameters(PrintDirection))
@@ -1247,6 +1243,9 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
 
     //the locations neighbor file is irrelevant when analysis type is purely temporal
     if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).UseLocationNeighborsFile(false);
+    //since there is not location data, we can no report relative risk estimates per location
+    if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
+    if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateTemporalParameters()","ParametersValidate");
