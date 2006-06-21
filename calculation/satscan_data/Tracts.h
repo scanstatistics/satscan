@@ -94,7 +94,7 @@ class TractHandler {
     void                                tiGetTractIdentifiers(tract_t t, std::vector<std::string>& vIdentifiers) const;
     tract_t                             tiGetTractIndex(const char *tid) const;
     void                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
-    void                                tiInsertTnode(const char *tid);
+    tract_t                             tiInsertTnode(const char *tid);
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
     void                                tiSetCoordinateDimensions(int iDimensions);

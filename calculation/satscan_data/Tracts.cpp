@@ -327,20 +327,20 @@ tract_t TractHandler::tiGetTractIndex(const char *tid) const {
   return tPosReturn;
 }
 
-/** Insert a tract into the vector sorting by tract identifier. Ignores location ids
-    which already exist. */
-void TractHandler::tiInsertTnode(const char *tid) {
+/** Insert a tract into internal structure, sorting by tract identifier. Ignores location ids
+    which already exist. Returns tract identifers relative index into internal structure. */
+tract_t TractHandler::tiInsertTnode(const char *tid) {
   ZdPointerVector<TractDescriptor>::iterator itrPosition;
 
   try {
     if (gbAggregatingTracts) //when aggregating locations, insertion process always succeeds
-      return;
+      return 0;
 
     std::auto_ptr<TractDescriptor> Tract(new TractDescriptor(tid));
     itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), Tract.get(), CompareTractDescriptorIdentifier());
     if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
-      return;
-    gvTractDescriptors.insert(itrPosition, Tract.release());
+      return std::distance(gvTractDescriptors.begin(), itrPosition);
+    return std::distance(gvTractDescriptors.begin(), gvTractDescriptors.insert(itrPosition, Tract.release()));
   }
   catch (ZdException & x) {
     x.AddCallpath("tiInsertTnode()", "TractHandler");
