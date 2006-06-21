@@ -1362,7 +1362,7 @@ bool AnalysisRunner::RepeatAnalysis() {
            return false;
 
       //are there locations left?
-      if (gParameters.UseCoordinatesFile() && ((size_t)gpDataHub->GetNumTracts() - gpDataHub->GetNumNullifiedLocations()) < 2)
+      if (!gParameters.GetIsPurelyTemporalAnalysis() && ((size_t)gpDataHub->GetNumTracts() - gpDataHub->GetNumNullifiedLocations()) < 2)
          return false;
       //is the minimum number of cases per data data set remaining as required by probability model?
       if (gParameters.GetProbabilityModelType() == ORDINAL) {
