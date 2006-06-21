@@ -1118,7 +1118,10 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
   PrintFormat.SetMarginsAsOverviewSection();
   //if zero clusters retained in real data, then no clusters of significance were retained.
   if (gTopClustersContainer.GetNumClustersRetained() == 0) {
-    fprintf(fp, "\nNo clusters were found.\n");
+    if (gParameters.GetIsSequentialScanning() && giAnalysisCount > 1)
+      fprintf(fp, "\nNo further clusters were found.\n");
+    else
+      fprintf(fp, "\nNo clusters were found.\n");
     switch (gParameters.GetProbabilityModelType()) {
       case POISSON :
       case BERNOULLI :
@@ -1203,9 +1206,9 @@ void AnalysisRunner::PrintTopClusters() {
        //write cluster details to 'cluster information' file
        if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
          ClusterWriter->Write(TopCluster, i+1, giNumSimsExecuted);
-       //write cluster details to results file and 'location information' files -- only report
-       //cluster if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-       if (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank() <= giNumSimsExecuted)) {
+       //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
+       //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
+       if (i == 0 || (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank() <= giNumSimsExecuted))) {
            ++giClustersReported;
            switch (giClustersReported) {
              case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
@@ -1267,28 +1270,25 @@ void AnalysisRunner::PrintTopSequentialScanCluster() {
     if (gTopClustersContainer.GetNumClustersRetained()) {
       //get most likely cluster
       const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
-      //only report clutser if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-      if (TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank()  <= giNumSimsExecuted)) {
-        ++giClustersReported; bReportedCluster=true;
-        switch(giAnalysisCount) {
-          case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-          case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-          default : fprintf(fp, "                  _____________________________\n\n");
-        }
-        //print cluster definition to file stream
-        TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
-        //print cluster definition to 'cluster information' record buffer
-        if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
-          ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giClustersReported, giNumSimsExecuted);
-        //print cluster definition to 'location information' record buffer
-        if (gParameters.GetOutputAreaSpecificFiles()) {
-          LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
-          TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
-        }
-        //check track of whether this cluster was significant in top five percentage
-        if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
-          ++guwSignificantAt005;
+      ++giClustersReported; bReportedCluster=true;
+      switch(giAnalysisCount) {
+        case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+        case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
+        default : fprintf(fp, "                  _____________________________\n\n");
       }
+      //print cluster definition to file stream
+      TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+      //print cluster definition to 'cluster information' record buffer
+      if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
+        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giClustersReported, giNumSimsExecuted);
+      //print cluster definition to 'location information' record buffer
+      if (gParameters.GetOutputAreaSpecificFiles()) {
+        LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
+        TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
+      }
+      //check track of whether this cluster was significant in top five percentage
+      if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
+        ++guwSignificantAt005;
     }
 
     //if no clusters reported in this iteration but clusters were reported previuosly, print spacer
