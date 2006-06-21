@@ -15,7 +15,7 @@
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "OrdinalDataSetHandler.h"
 
-const short SaTScanDataReader::guLocationIndex = 0;
+const long SaTScanDataReader::guLocationIndex = 0;
 
 /** class constructor */
 SaTScanDataReader::SaTScanDataReader(CSaTScanData& DataHub)
@@ -29,7 +29,7 @@ SaTScanDataReader::SaTScanDataReader(CSaTScanData& DataHub)
     supports. Since we accumulate errors/warnings when reading input files,
     indication of a bad date is returned and any messages sent to print direction. */
 bool SaTScanDataReader::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & JulianDate, bool bStartDate) {
-  short                                 iDateIndex;
+  long                                  iDateIndex;
   DateStringParser                      DateParser;
   DateStringParser::ParserStatus        eStatus;
 
@@ -97,8 +97,6 @@ void SaTScanDataReader::Read() {
       default :
         ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
     };
-    if (gParameters.UseLocationNeighborsFile() && !ReadUserSpecifiedNeighbors())
-      bReadSuccess = false;
     if (!bReadSuccess)
       GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
     //now that all data has been read, the tract handler can combine references locations with duplicate coordinates
@@ -116,12 +114,12 @@ void SaTScanDataReader::Read() {
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
 bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
-  bool          bValid=true, bRestrictedLocations(!gDataHub.GetParameters().UseCoordinatesFile()), bEmpty=true;
+  bool          bValid=true, bRestrictedLocations(gDataHub.GetParameters().GetIsPurelyTemporalAnalysis()), bEmpty=true;
   tract_t       TractIndex, iMaxTract;
   double        dRelativeRisk;
   Julian        StartDate, EndDate;
   int           iNumWords;
-  const short   uLocationIndex=0, uAdjustmentIndex=1;
+  const long    uLocationIndex=0, uAdjustmentIndex=1;
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
@@ -288,17 +286,16 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
   bool          bReturn;
 
   try {
-    if (!gParameters.UseCoordinatesFile()) {
-      gDataHub.m_nTotalTractsAtStart = gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
-      return true;
+    if (gParameters.GetIsPurelyTemporalAnalysis()) {
+      gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
+      bReturn = true;
     }
-    gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
-    gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
-
-    if (gParameters.UseLocationNeighborsFile())
-      bReturn = ReadCoordinatesFileAsLocationIdFile(*Source);
+    else if (gParameters.UseLocationNeighborsFile())
+      bReturn = ReadUserSpecifiedNeighbors();
     else {
+      gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
+      std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
+      gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
       switch (gParameters.GetCoordinatesType()) {
         case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(*Source);
                          //now that the number of dimensions is known, validate against requested ellipses
@@ -333,7 +330,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
     Return value: true = success, false = errors encountered           */
 bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
   short                 iScanCount=0;
-  const short           uLocationIndex=0;
+  const long            uLocationIndex=0;
   bool                  bValid=true, bEmpty=true;
   ZdString              TractIdentifier;
   std::vector<double>   vCoordinates;
@@ -411,7 +408,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
   bool                  bValid=true, bEmpty=true;
   ZdString              TractIdentifier;
   std::vector<double>   vCoordinates;
-  const short           uLocationIndex=0;
+  const long            uLocationIndex=0;
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
@@ -449,49 +446,6 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "SaTScanDataReader");
-    throw;
-  }
-  return bValid;
-}
-
-/** Reads the coordinates file source to parse location identifiers only. That is,
-    no coordinates are expected or read. If invalid data is found in the file,
-    an error message is printed, that record is ignored, and reading continues.
-    Return value: true = success, false = errors encountered   */
-bool SaTScanDataReader::ReadCoordinatesFileAsLocationIdFile(DataSource& Source) {
-  bool                  bValid=true, bEmpty=true;
-  ZdString              TractIdentifier;
-  const short           uLocationIndex=0;
-
-  try {
-    gTractHandler.tiSetCoordinateDimensions(0);
-    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-        bEmpty=false;
-        //add the tract identifier and coordinates to tract handler
-        gTractHandler.tiInsertTnode(Source.GetValueAt(uLocationIndex));
-    }
-    //if invalid at this point then read encountered problems with data format,
-    //inform user of section to refer to in user guide for assistance
-    if (! bValid)
-      gPrint.Printf("Please see the 'Coordinates File' section in the user guide for help.\n", BasePrint::P_ERROR);
-    //print indication if file contained no data
-    else if (bEmpty) {
-      gPrint.Printf("Error: The coordinates file contains no data.\n", BasePrint::P_ERROR);
-      bValid = false;
-    }
-    //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
-    else if (gTractHandler.tiGetNumTracts() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
-      gPrint.Printf("Error: For a %s analysis, the coordinates file must contain more than one record.\n",
-                    BasePrint::P_ERROR, gParameters.GetAnalysisTypeAsString());
-      bValid = false;
-    }
-    //record number of locations read
-    gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
-    //record number of centroids read
-    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFileAsLocationIdFile()", "SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -715,7 +669,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
   bool          bValid=true, bEmpty=true;
   tract_t       TractIdentifierIndex;
   float         fPopulation;
-  const short   uLocationIndex=0, uPopulationIndex=1;
+  const long    uLocationIndex=0, uPopulationIndex=1;
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
@@ -891,7 +845,7 @@ bool SaTScanDataReader::ReadSpaceTimePermutationData() {
   return true;
 }
 
-/** Opens coordinates file data source and parses a list of location identifiers from each
+/** Opens neighbors file data source and parses a list of location identifiers from each
     record. These lists represent the geographical extension of a network of neighboring locations,
     centralized at the first location identifier in list. This process is alternative to the process
     of calculating neighbors about centroids through expanding circles. The lists read from file are
@@ -900,39 +854,55 @@ bool SaTScanDataReader::ReadSpaceTimePermutationData() {
     without detecting errors, else returns false. */
 bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
   bool                  bValid=true, bEmpty=true;
-  short                 uLocation0ffset;
+  long                  uLocation0ffset;
   tract_t               tLocationIndex;
-  std::vector<tract_t>  vRecordNeighborList;
+  std::vector<tract_t> vRecordNeighborList;
 
   try {
-    gPrint.Printf("Reading the location neighbors file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetLocationNeighborsFileName().c_str(), gPrint));
-    gDataHub.AllocateSortedArray();
+    gPrint.Printf("Reading the neighbors file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
+    gTractHandler.tiSetCoordinateDimensions(0);
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetLocationNeighborsFileName().c_str(), gPrint));
+    //first pass on neighbors file to determine all location identifiers referenced
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
       uLocation0ffset=0;
-      vRecordNeighborList.clear();
+      gDataHub.m_nGridTracts++;
       while (Source->GetValueAt(uLocation0ffset)) {
-        //Validate that tract identifer is one of those defined in the coordinates file.
-        if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source->GetValueAt(uLocation0ffset))) == -1) {
-           bValid = false;
-           gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
-                         "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
-                         gPrint.GetImpliedFileTypeString().c_str(), Source->GetCurrentRecordIndex(), Source->GetValueAt(uLocation0ffset));
-           break;
-        }
-        if (std::find(vRecordNeighborList.begin(), vRecordNeighborList.end(), tLocationIndex) != vRecordNeighborList.end()) {
-           bValid = false;
-           gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
-                          Source->GetValueAt(uLocation0ffset), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-           break;               
-        }
-          vRecordNeighborList.push_back(tLocationIndex);
+        //insert location identifier into tract handler class
+        gTractHandler.tiInsertTnode(Source->GetValueAt(uLocation0ffset));
         ++uLocation0ffset;
         bEmpty = false;
       }
-      if (bValid)
-        gDataHub.AllocateSortedArrayNeighbors(vRecordNeighborList);
+    }
+    //second pass - allocate respective sorted array
+    if (!bEmpty) {
+      //record number of locations read
+      gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
+      ZdSet  NeighborsSet(gDataHub.m_nTracts);
+      gDataHub.AllocateSortedArray();
+      Source->GotoFirstRecord();
+      while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
+        uLocation0ffset=0;
+        vRecordNeighborList.clear();
+        NeighborsSet.NoRecords();
+        while (Source->GetValueAt(uLocation0ffset)) {
+          //find location identifer internal index
+          tLocationIndex = gTractHandler.tiInsertTnode(Source->GetValueAt(uLocation0ffset));
+          if (NeighborsSet.GetIsInSet(tLocationIndex + 1)) {
+             bValid = false;
+             gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
+                            Source->GetValueAt(uLocation0ffset), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+             break;
+          }
+          NeighborsSet.SelectRecord(tLocationIndex + 1, true);
+          vRecordNeighborList.push_back(tLocationIndex);
+          ++uLocation0ffset;
+          bEmpty = false;
+        }
+        if (bValid)
+          //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
+          gDataHub.AllocateSortedArrayNeighbors(Source->GetCurrentRecordIndex() - 1, vRecordNeighborList);
+      }
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -961,14 +931,15 @@ SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(Dat
    //Validate that tract identifer is one of those defined in the coordinates file.
    if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
      if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
-       gPrint.Printf("Error: Unknown location ID in %s, record %ld.\n"
-                     "       '%s' not specified in the coordinates file.\n", BasePrint::P_READERROR,
-                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex));
+       gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
+                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
+                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
        return SaTScanDataReader::Rejected;
      }
      if (std::find(gmSourceLocationWarned.begin(), gmSourceLocationWarned.end(), reinterpret_cast<void*>(&Source)) == gmSourceLocationWarned.end()) {
-       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the coordinates file.\n"
-                     "         These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str());
+       gPrint.Printf("Warning: Some records in %s reference a location ID that was not specified in the %s file. "
+                     "These are ignored in the analysis.\n", BasePrint::P_WARNING, gPrint.GetImpliedFileTypeString().c_str(),
+                     (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates"));
        gmSourceLocationWarned.push_back(reinterpret_cast<void*>(&Source));
      }
      return SaTScanDataReader::Ignored;

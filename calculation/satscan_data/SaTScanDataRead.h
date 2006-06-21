@@ -19,7 +19,7 @@ class SaTScanDataReader {
     enum RecordStatusType       {Rejected=0, Ignored, Accepted};
 
   private:
-    static const short          guLocationIndex;           /** input record index for location */
+    static const long           guLocationIndex;           /** input record index for location */
     CSaTScanData              & gDataHub;
     BasePrint                 & gPrint;
     const CParameters         & gParameters;
@@ -34,7 +34,6 @@ class SaTScanDataReader {
     bool                        ReadCoordinatesFile();
     bool                        ReadCoordinatesFileAsCartesian(DataSource& Source);
     bool                        ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source);
-    bool                        ReadCoordinatesFileAsLocationIdFile(DataSource& Source);
     bool                        ReadExponentialData();
     bool                        ReadGridFile();
     bool                        ReadGridFileAsCartiesian(DataSource& Source);
