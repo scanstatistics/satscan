@@ -681,7 +681,9 @@ void TfrmAnalysis::EnableSettingsForAnalysisModelCombination() {
   try {
     EnableDatesByTimePrecisionUnits();
     EnableTimeAggregationGroup(GetAnalysisControlType() != PURELYSPATIAL);
-    EnableAdditionalOutFilesOptionsGroup(GetModelControlType() != SPACETIMEPERMUTATION);
+    EnableAdditionalOutFilesOptionsGroup(GetModelControlType() != SPACETIMEPERMUTATION &&
+                                         GetAnalysisControlType() != PURELYTEMPORAL &&
+                                         GetAnalysisControlType() != PROSPECTIVEPURELYTEMPORAL);
     gpfrmAdvancedParameters->EnableSettingsForAnalysisModelCombination();
   }
   catch (ZdException &x) {
@@ -1609,29 +1611,30 @@ void TfrmAnalysis::ValidateInputFiles() {
                                           "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
       }
     }
-    //validate coordinates file
     AnalysisType eAnalysisType(GetAnalysisControlType());
-    if (edtCoordinateFileName->Text.IsEmpty()) {
-      if (!(eAnalysisType == PURELYTEMPORAL || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+    //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
+    if (!(gpfrmAdvancedParameters->chkSpecifiyNeighborsFile->Enabled && gpfrmAdvancedParameters->chkSpecifiyNeighborsFile->Checked) &&
+        !(eAnalysisType == PURELYTEMPORAL || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
+      if (edtCoordinateFileName->Text.IsEmpty()) {
         PageControl1->ActivePage = tbInputFiles;
         edtCoordinateFileName->SetFocus();
         ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
       }
-    }  
-    else if (!ValidateFileAccess(edtCoordinateFileName->Text.c_str())) {
-      PageControl1->ActivePage = tbInputFiles;
-      edtCoordinateFileName->SetFocus();
-      ZdException::GenerateNotification("The coordinates file could not be opened for reading.\n"
-                                        "Please confirm that the path and/or file name are\n"
-                                        "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
-    }
-    //validate special grid file -- optional
-    if (!edtGridFileName->Text.IsEmpty() &&  !ValidateFileAccess(edtGridFileName->Text.c_str())) {
-      PageControl1->ActivePage = tbInputFiles;
-      edtGridFileName->SetFocus();
-      ZdException::GenerateNotification("The grid file could not be opened for reading.\n"
-                                        "Please confirm that the path and/or file name\n"
-                                        "are valid and that you have permissions to read\nfrom this directory and file.", "ValidateInputFiles()");
+      else if (!ValidateFileAccess(edtCoordinateFileName->Text.c_str())) {
+        PageControl1->ActivePage = tbInputFiles;
+        edtCoordinateFileName->SetFocus();
+        ZdException::GenerateNotification("The coordinates file could not be opened for reading.\n"
+                                          "Please confirm that the path and/or file name are\n"
+                                          "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
+      }
+      //validate special grid file -- optional
+      if (!edtGridFileName->Text.IsEmpty() &&  !ValidateFileAccess(edtGridFileName->Text.c_str())) {
+        PageControl1->ActivePage = tbInputFiles;
+        edtGridFileName->SetFocus();
+        ZdException::GenerateNotification("The grid file could not be opened for reading.\n"
+                                          "Please confirm that the path and/or file name\n"
+                                          "are valid and that you have permissions to read\nfrom this directory and file.", "ValidateInputFiles()");
+      }
     }
   }
   catch (ZdException & x) {
