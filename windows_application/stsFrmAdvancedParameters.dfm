@@ -405,18 +405,18 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object stStrictCoodinates: TStaticText
           Left = 30
           Top = 40
-          Width = 163
+          Width = 224
           Height = 17
-          Caption = 'are present in the coordinates file.'
+          Caption = 'are present in the coordinates or neighbors file.'
           TabOrder = 2
           OnClick = stStrictCoodinatesClick
         end
         object stRelaxedCoodinates: TStaticText
           Left = 30
           Top = 80
-          Width = 209
+          Width = 270
           Height = 17
-          Caption = 'to a location ID listed in the coordinates file.'
+          Caption = 'to a location ID listed in the coordinates or neighbors file.'
           TabOrder = 3
           OnClick = stRelaxedCoodinatesClick
         end
@@ -430,15 +430,15 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 8
         Width = 421
         Height = 93
-        Caption = 'Centroid Grouping'
+        Caption = 'Special Neighbor File'
         TabOrder = 0
         object lblNeighborsFile: TLabel
           Left = 30
           Top = 45
-          Width = 70
+          Width = 163
           Height = 13
           Anchors = []
-          Caption = 'Neighbors File:'
+          Caption = 'Non-Eucledian Neighbors:'
         end
         object edtNeighborsFile: TEdit
           Left = 30
@@ -474,7 +474,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 21
           Width = 389
           Height = 17
-          Caption = 'Specifiy geographical neighbors through user defined file'
+          Caption = 'Specify geographical neighbors through a user defined file'
           TabOrder = 0
           OnClick = chkSpecifiyNeighborsFileClick
         end
