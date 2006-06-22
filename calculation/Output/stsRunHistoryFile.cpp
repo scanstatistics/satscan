@@ -511,7 +511,7 @@ void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, co
 
       // if the temp string plus the work string lengths are less than the field width then append the work string
       // to temp string, else just print ',...'
-      if ((sOutputFileNames.GetLength() + sWorkString.GetLength()) < (OUTPUT_FILE_FIELD_LENGTH - 4))
+      if ((sOutputFileNames.GetLength() + sWorkString.GetLength()) < (OUTPUT_FILE_FIELD_LENGTH - 5))
          sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? ", " : "") << sWorkString;
       else if(!sOutputFileNames.EndsWith("..."))
          sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? "," : "") << "...";

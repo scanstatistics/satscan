@@ -202,6 +202,8 @@ static void SetStringField(ZdFileRecord& record, const ZdString& sValue, unsigne
    try {
       fv.SetType(record.GetFieldType(uwFieldNumber));
       fv.AsZdString() = sValue;
+      if (fv.AsZdString().GetLength() > static_cast<unsigned long>(record.GetFieldLength(uwFieldNumber)))
+        fv.AsZdString().Truncate(record.GetFieldLength(uwFieldNumber));
       record.PutFieldValue(uwFieldNumber, fv);
    }
    catch (ZdException &x) {
