@@ -423,7 +423,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
       end
     end
     object tabNeighborsFile: TTabSheet
-      Caption = 'Neighbors File'
+      Caption = 'Non-Eucledian Neighbors'
       ImageIndex = 7
       object grpNeighborsFile: TGroupBox
         Left = 8
@@ -435,10 +435,10 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblNeighborsFile: TLabel
           Left = 30
           Top = 45
-          Width = 124
+          Width = 70
           Height = 13
           Anchors = []
-          Caption = 'Non-Eucledian Neighbors:'
+          Caption = 'Neighbors File:'
         end
         object edtNeighborsFile: TEdit
           Left = 30
