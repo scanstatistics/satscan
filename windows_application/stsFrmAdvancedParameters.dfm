@@ -1242,13 +1242,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         object lblSeqentialCutoff: TLabel
           Left = 45
           Top = 67
-          Width = 148
+          Width = 169
           Height = 13
           AutoSize = False
-          Caption = 'Stop when p-value greater:'
+          Caption = 'Stop when p-value is greater than:'
         end
         object edtNumSequentialScans: TEdit
-          Left = 198
+          Left = 219
           Top = 37
           Width = 41
           Height = 21
@@ -1264,12 +1264,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 22
           Width = 210
           Height = 14
-          Caption = 'Adjusting for More Likely Clusters'
+          Caption = 'Adjust for more likely clusters'
           TabOrder = 0
           OnClick = chkPerformSequentialScanClick
         end
         object edtSequentialScanCutoff: TEdit
-          Left = 198
+          Left = 219
           Top = 63
           Width = 41
           Height = 21
@@ -1278,22 +1278,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Text = '.5'
           OnExit = edtSequentialScanCutoffExit
           OnKeyPress = PositiveFloatKeyPress
-        end
-        object stMaximumIterationsCriteria: TStaticText
-          Left = 250
-          Top = 38
-          Width = 114
-          Height = 17
-          Caption = '(between 1 and 32000)'
-          TabOrder = 3
-        end
-        object stStopPValue: TStaticText
-          Left = 250
-          Top = 68
-          Width = 89
-          Height = 17
-          Caption = ' (must be >0, <=1)'
-          TabOrder = 4
         end
       end
     end

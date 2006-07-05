@@ -745,8 +745,6 @@ void TfrmAdvancedParameters::EnableSequentialScanOptionsGroup(bool bEnable) {
   edtSequentialScanCutoff->Enabled = chkPerformSequentialScan->Checked && bEnable;
   edtSequentialScanCutoff->Color = edtSequentialScanCutoff->Enabled ? clWindow : clInactiveBorder;
   lblSeqentialCutoff->Enabled = chkPerformSequentialScan->Checked && bEnable;
-  stMaximumIterationsCriteria->Enabled = chkPerformSequentialScan->Checked && bEnable;
-  stStopPValue->Enabled = chkPerformSequentialScan->Checked && bEnable;
 }
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {

@@ -129,8 +129,6 @@ __published:	// IDE-managed Components
    TLabel *lblMaxSequentialScans;
    TEdit *edtSequentialScanCutoff;
    TLabel *lblSeqentialCutoff;
-   TStaticText *stMaximumIterationsCriteria;
-   TStaticText *stStopPValue;
    TTabSheet *tsDataChecking;
    TRadioGroup *rdgStudyPeriodCheck;
    TGroupBox *grpGeographicalCoordinatesCheck;
