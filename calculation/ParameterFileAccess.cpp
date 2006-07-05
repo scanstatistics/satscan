@@ -146,8 +146,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MAXGEODISTANCE_REPORTED  : return " maximum reported spatial size in distance from center {positive integer)";
       case USE_MAXGEOPOPFILE_REPORTED: return " restrict maximum reported spatial size - max circle file? (y/n)";
       case USE_MAXGEODISTANCE_REPORTED: return " restrict maximum reported spatial size - distance? (y/n)";
-      case LOCATION_NEIGHBORS_FILE  : return " location neighbors specification file";
-      case USE_LOCATION_NEIGHBORS_FILE : return " use location neighbors specification file (y/n)";
+      case LOCATION_NEIGHBORS_FILE  : return " neighbors file";
+      case USE_LOCATION_NEIGHBORS_FILE : return " use neighbors file (y/n)";
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
