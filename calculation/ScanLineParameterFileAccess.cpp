@@ -185,6 +185,13 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
       gParameters.SetVersion(Version);
     }
 
+    //In version 7.0, the maximum spatial cluster size feature was modified to 'always' impose maximum on spatial size
+    //and other maximums were made to be additional simultaneous restrictions.
+    //Before version 3.0, there was only this one spatial option available -- so we need to assign read maximum value
+    //here for parameter versions before 3.0.
+    if (gParameters.GetCreationVersion().iMajor < 3)
+      gParameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, gdMaxSpatialClusterSize, false);
+      
    ////Mark defaulted values.
    //if (iLinesRead != gParameters.GetNumReadParameters())
    //   while (++iLinesRead <= gParameters.GetNumReadParameters())
