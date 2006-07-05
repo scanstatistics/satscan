@@ -312,16 +312,18 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
     case RELAXEDBOUNDS    : fprintf(fp, "Ignore cases and controls that are outside the Study Period.\n"); break;
     default : ZdException::Generate("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
   }
-  fprintf(fp, "  Geographical Coordinates Check : ");
-  switch (gParameters.GetCoordinatesDataCheckingType()) {
-    case STRICTCOORDINATES  : fprintf(fp, "Check to ensure that all locations in the case, control\n"
-                                          "                                   and population files are present in the %s file.\n",
-                                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
-    case RELAXEDCOORDINATES : fprintf(fp, "Ignore data in the case, control and population files that \n"
-                                          "                                   do not correspond to a location ID listed in the %s file.\n",
-                                          (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
-    default : ZdException::Generate("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
-  }
+  if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+    fprintf(fp, "  Geographical Coordinates Check : ");
+    switch (gParameters.GetCoordinatesDataCheckingType()) {
+      case STRICTCOORDINATES  : fprintf(fp, "Check to ensure that all locations in the case, control\n"
+                                            "                                   and population files are present in the %s file.\n",
+                                            (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
+      case RELAXEDCOORDINATES : fprintf(fp, "Ignore data in the case, control and population files that \n"
+                                            "                                   do not correspond to a location ID listed in the %s file.\n",
+                                            (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
+      default : ZdException::Generate("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
+    }
+  }  
 }
 
 /** Prints 'Elliptic Scan' parameters to file stream. */
@@ -477,8 +479,9 @@ void ParametersPrint::PrintNeighborsFileParameters(FILE* fp) const {
     if (gParameters.GetIsPurelyTemporalAnalysis()) return;
 
     fprintf(fp, "\nNeighbors File\n--------------\n");
-    fprintf(fp, "  Use Location Neighbors File: %s\n", (gParameters.UseLocationNeighborsFile() ? "Yes" : "No"));
-    fprintf(fp, "  Location Neighbors File    : %s\n", gParameters.GetLocationNeighborsFileName().c_str());
+    fprintf(fp, "  Use Neighbors File : %s\n", (gParameters.UseLocationNeighborsFile() ? "Yes" : "No"));
+    if (gParameters.UseLocationNeighborsFile())
+      fprintf(fp, "  Neighbors File     : %s\n", gParameters.GetLocationNeighborsFileName().c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
