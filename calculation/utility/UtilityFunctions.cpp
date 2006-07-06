@@ -154,7 +154,7 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
   }
 }
 
-/** Returns estimated unbiased variance. */
+/** Returns estimated unbiased variance for the entire data set. */
 double GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure_t tSumSqMeasure) {
   double dUnbiasedVariance;
 
@@ -162,6 +162,19 @@ double GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure
 
   dUnbiasedVariance = std::fabs((tObservations == 1 ? 0.0 : (tSumSqMeasure - std::pow(tSumMeasure, 2)/tObservations)/(tObservations - 1)));
   return (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
+}
+
+/** Returns estimated combined variance for all observations adjusting for the cluster.
+    This can be thought of as the variance unexplained by the cluster. */
+double GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tSqMeasure, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure) {
+   double dEstimatedMeanInside = (tCases ? tMeasure/tCases : 0);
+   count_t tCasesOutside = tTotalCases - tCases;
+   double dEstimatedMeanOutside = (tCasesOutside ? (tTotalMeasure - tMeasure)/tCasesOutside : 0);
+   double dUnbiasedVariance = 1.0/(tTotalCases - 1) *
+                             (tSqMeasure - 2.0 * tMeasure * dEstimatedMeanInside + tCases * std::pow(dEstimatedMeanInside , 2) +
+                              (tTotalSqMeasure - tSqMeasure) - 2.0 * (tTotalMeasure - tMeasure) * dEstimatedMeanOutside +
+                              (tTotalCases - tCases) * std::pow(dEstimatedMeanOutside, 2));
+   return (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
 }
 
 /** Returns indication of whether file exists and is readable/writable. */
