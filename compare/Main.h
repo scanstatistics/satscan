@@ -23,7 +23,7 @@
 #include <vector>
 #include <dos.h>
 //---------------------------------------------------------------------------
-#include "zd540.h"
+#include "zd546.h"
 #include "Options.h"
 #include "mexcel.h"
 using namespace miniexcel;

@@ -1,15 +1,15 @@
 //---------------------------------------------------------------------------
 #include <vcl.h>
 #pragma hdrstop
-#include "zd540.h"
+#include "zd546.h"
 //---------------------------------------------------------------------------
 USERES("SaTScanCompare.res");
 USEFORM("Main.cpp", frmMain);
-USELIB("C:\Program Files\Borland\CBuilder5\Lib\zd540.lib");
 USEFORM("Options.cpp", frmOptions);
 USEFORM("QueueWindow.cpp", frmQueueWindow);
 USEFORM("QueueItemDefinition.cpp", frmBatchDefinition);
 USEUNIT("mexcel.cpp");
+USELIB("..\..\zero.dimension\zd546.lib");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {

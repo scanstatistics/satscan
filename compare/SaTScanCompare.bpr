@@ -9,7 +9,7 @@
     <RESFILES value="SaTScanCompare.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) Main.dfm Options.dfm QueueWindow.dfm QueueItemDefinition.dfm"/>
-    <LIBFILES value="&quot;C:\Program Files\Borland\CBuilder5\Lib\zd540.lib&quot;"/>
+    <LIBFILES value="..\..\zero.dimension\zd546.lib"/>
     <LIBRARIES value="TSGC5201.lib Vcl50.lib"/>
     <SPARELIBS value="Vcl50.lib TSGC5201.lib"/>
     <PACKAGES value="Vcl50.bpi Vclx50.bpi Qrpt50.bpi Vcldb50.bpi Vclbde50.bpi ibsmp50.bpi 
@@ -26,8 +26,8 @@
     <USERDEFINES value="INTEL_BASED"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="SaTScanCompare.cpp"/>
-    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid"/>
-    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid"/>
+    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\TopGrid;..\..\zero.dimension"/>
+    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;$(BCB)\lib\obj;$(BCB)\lib;..\..\zero.dimension;$(BCB)\TopGrid"/>
     <WARNINGS value="-w-par -w-8027 -w-8026"/>
   </MACROS>
   <OPTIONS>
@@ -72,37 +72,39 @@ ProductVersion=1.0.0.0
 Comments=
 
 [HistoryLists\hlIncludePath]
-Count=13
-Item0=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item1=..\..\misc\Batch Scheduler;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item2=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item3=$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item4=$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd
-Item5=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd
-Item6=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\
-Item7=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\
-Item8=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib
-Item9=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\
-Item10=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd
-Item11=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl
-Item12=C:\prj\spreadsheeteditor;$(BCB)\include;$(BCB)\include\vcl
+Count=14
+Item0=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\TopGrid;C:\prj\satscan.development\zero.dimension
+Item1=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item2=..\..\misc\Batch Scheduler;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item3=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item4=$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item5=$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd
+Item6=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;\\Nfse\imsdev\zd
+Item7=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\
+Item8=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\
+Item9=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib
+Item10=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd\
+Item11=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl;C:\Zd
+Item12=C:\prj\spreadsheeteditor\;$(BCB)\include;$(BCB)\include\vcl
+Item13=C:\prj\spreadsheeteditor;$(BCB)\include;$(BCB)\include\vcl
 
 [HistoryLists\hlLibraryPath]
-Count=14
-Item0=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item1=..\..\misc\Batch Scheduler;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item2=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item3=$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
-Item4=$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd
-Item5=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd
-Item6=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
-Item7=C:\Program Files\Borland\CBuilder5\Projects\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
-Item8=C:\Program Files\Borland\CBuilder5\Projects;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
-Item9=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib
-Item10=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
-Item11=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd
-Item12=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
-Item13=C:\prj\spreadsheeteditor;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Count=15
+Item0=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\prj\satscan.development\zero.dimension;$(BCB)\TopGrid
+Item1=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item2=..\..\misc\Batch Scheduler;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item3=C:\Program Files\Borland\CBuilder5\Projects;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item4=$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd;$(BCB)\TopGrid
+Item5=$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd
+Item6=C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;\\Nfse\imsdev\zd
+Item7=C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;C:\Program Files\Borland\CBuilder5\Projects\;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
+Item8=C:\Program Files\Borland\CBuilder5\Projects\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
+Item9=C:\Program Files\Borland\CBuilder5\Projects;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib\;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
+Item10=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\;C:\Program Files\Top Support\TopGrid 2.01 CBuilder5\Lib
+Item11=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd\
+Item12=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib;C:\Zd
+Item13=C:\prj\spreadsheeteditor\;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
+Item14=C:\prj\spreadsheeteditor;..\..\..\Top Support\TopGrid 2.01 CBuilder5\Lib;$(BCB)\lib\obj;$(BCB)\lib
 
 [HistoryLists\hlDebugSourcePath]
 Count=2
