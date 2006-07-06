@@ -1,8 +1,8 @@
 object frmSuggestedCitation: TfrmSuggestedCitation
-  Left = 264
-  Top = 218
+  Left = 368
+  Top = 204
   Width = 493
-  Height = 325
+  Height = 361
   Caption = 'Suggested Citation:'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frmSuggestedCitation: TfrmSuggestedCitation
     Left = 12
     Top = 12
     Width = 461
-    Height = 267
+    Height = 286
     Anchors = [akLeft, akTop, akRight, akBottom]
     BorderStyle = bsNone
     Font.Charset = DEFAULT_CHARSET
@@ -31,9 +31,19 @@ object frmSuggestedCitation: TfrmSuggestedCitation
     Lines.Strings = (
       'RichEdit1')
     ParentFont = False
+    ParentShowHint = False
     ReadOnly = True
     ScrollBars = ssVertical
+    ShowHint = False
     TabOrder = 0
+  end
+  object StatusBar1: TStatusBar
+    Left = 0
+    Top = 305
+    Width = 483
+    Height = 19
+    Panels = <>
+    SimplePanel = False
   end
   object ApplicationEvents1: TApplicationEvents
     OnIdle = ApplicationEvents1Idle

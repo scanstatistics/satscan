@@ -92,11 +92,16 @@ void __fastcall TfrmSuggestedCitation::WndProc(Messages::TMessage &Message) {
               std::map<long, size_t>::const_iterator itr=gmCharRangeMinToUrlIndex.find(pEnlink->chrg.cpMin);
               if (itr != gmCharRangeMinToUrlIndex.end())
                 ShellExecute(Handle, "open", gvCitationUrls.at(itr->second).c_str(), 0, 0, SW_SHOWDEFAULT);
-            }  
+            }
             break;
           case WM_LBUTTONDBLCLK :
           case WM_LBUTTONUP :
           case WM_MOUSEMOVE :
+            {
+              std::map<long, size_t>::const_iterator itr=gmCharRangeMinToUrlIndex.find(pEnlink->chrg.cpMin);
+              if (itr != gmCharRangeMinToUrlIndex.end())
+                 StatusBar1->SimpleText = gvCitationUrls.at(itr->second).c_str();
+            }
           case WM_RBUTTONDBLCLK :
           case WM_RBUTTONDOWN :
           case WM_RBUTTONUP :
@@ -106,6 +111,7 @@ void __fastcall TfrmSuggestedCitation::WndProc(Messages::TMessage &Message) {
       break;
     }
   }
+  else if (StatusBar1) StatusBar1->SimpleText = "";
 
   TForm::WndProc(Message);
 }
