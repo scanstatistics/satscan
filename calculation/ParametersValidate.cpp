@@ -90,8 +90,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (! ValidateRangeParameters(PrintDirection))
       bValid = false;
 
-    //validate sequential scan parameters
-    if (! ValidateSequentialScanParameters(PrintDirection))
+    //validate iterative scan parameters
+    if (! ValidateIterativeScanParameters(PrintDirection))
       bValid = false;
 
     //validate power calculation parameters
@@ -800,41 +800,41 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
   return bValid;
 }
 
-/** Validates parameters used in optional sequenatial scan feature.
+/** Validates parameters used in optional iterative scan feature.
     Prints errors to print direction and returns whether values are vaild.*/
-bool ParametersValidate::ValidateSequentialScanParameters(BasePrint & PrintDirection) const {
+bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirection) const {
   bool  bValid=true;
 
   try {
-    if (gParameters.GetIsSequentialScanning()) {
+    if (gParameters.GetIsIterativeScanning()) {
       if (gParameters.GetSimulationType() == FILESOURCE) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (gParameters.GetOutputSimulationData()) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL)) {
         //code only implemented for Poisson or Bernoulli models
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n", BasePrint::P_PARAMERROR);
         return false;
       }
-      if (gParameters.GetNumSequentialScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_SEQUENTIAL_ANALYSES)) {
+      if (gParameters.GetNumIterativeScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_ITERATIVE_ANALYSES)) {
         bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n%d exceeds the maximum number of sequential analyses allowed (%d).\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetNumSequentialScansRequested(), CParameters::MAXIMUM_SEQUENTIAL_ANALYSES);
+        PrintDirection.Printf("Invalid Parameter Setting:\n%d exceeds the maximum number of iterative analyses allowed (%d).\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetNumIterativeScansRequested(), CParameters::MAXIMUM_ITERATIVE_ANALYSES);
       }
-      if (gParameters.GetSequentialCutOffPValue() < 0 || gParameters.GetSequentialCutOffPValue() > 1) {
+      if (gParameters.GetIterativeCutOffPValue() < 0 || gParameters.GetIterativeCutOffPValue() > 1) {
         bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe sequential scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetSequentialCutOffPValue());
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetIterativeCutOffPValue());
       }
     }
   }
   catch (ZdException &x) {
-    x.AddCallpath("ValidateSequentialScanParameters()","ParametersValidate");
+    x.AddCallpath("ValidateIterativeScanParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -1256,7 +1256,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
 
 /** Validates the time aggregation units. */
 bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection) const {
-  ZdString      sPrecisionString;
+  ZdString      sPrecisionString, sBuffer;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   if (gParameters.GetAnalysisType() == PURELYSPATIAL) //validate settings for temporal analyses
@@ -1266,6 +1266,13 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
   GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
   if (gParameters.GetTimeAggregationUnitsType() == NONE) { //validate time aggregation units
     PrintDirection.Printf("Invalid Parameter Setting:\nTime aggregation units can not be 'none' for a temporal analysis.\n", BasePrint::P_PARAMERROR);
+    return false;
+  }
+  if (gParameters.GetTimeAggregationUnitsType() > gParameters.GetPrecisionOfTimesType()) {
+    GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, true, false);
+    GetDatePrecisionAsString(gParameters.GetPrecisionOfTimesType(), sBuffer, true, false);
+    PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation unit in %s exceeds precision of input case data (unit is %s).\n",
+                          BasePrint::P_PARAMERROR, sPrecisionString.GetCString(), sBuffer.GetCString());
     return false;
   }
   if (gParameters.GetTimeAggregationLength() <= 0) {

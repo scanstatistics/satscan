@@ -20,7 +20,7 @@ class ParametersValidate {
     bool                ValidateProspectiveDate(BasePrint& PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool                ValidateRangeParameters(BasePrint & PrintDirection) const;
-    bool                ValidateSequentialScanParameters(BasePrint & PrintDirection) const;
+    bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateSimulationDataParameters(BasePrint & PrintDirection) const;
     bool                ValidateSpatialParameters(BasePrint & PrintDirection) const;
     bool                ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const;
