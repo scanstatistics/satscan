@@ -29,8 +29,9 @@ UsageException::UsageException(const char * sExecutableFullpathName) : ZdExcepti
    ZdString s;
    
    s.printf("usage: %s [parameters file] [options]\n\n"
-            "options: -o -- ignore parameter result filename setting, use next parameter\n"
-            "               ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n",
+            "options: -o     -- ignore parameter result filename setting, use next parameter\n"
+            "                   ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n"
+            "         -c     -- confirm parameter file correctness only (does not perform analysis)",
             ZdFileName(sExecutableFullpathName).GetCompleteFileName());
                    	
    SetErrorMessage(s.GetCString());

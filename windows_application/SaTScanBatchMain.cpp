@@ -18,6 +18,7 @@
 
 int main(int argc, char *argv[]) {
   int                   i;
+  bool                  bHas_C_Arg=false;
   time_t                RunTime;
   CParameters           Parameters;
   ZdString              sMessage;
@@ -43,6 +44,8 @@ int main(int argc, char *argv[]) {
            GenerateUsageException(argv[0]);
          Parameters.SetOutputFileName(argv[++i]);
        }
+       else if (!stricmp(argv[i], "-c"))
+         bHas_C_Arg = true;
        else
          GenerateUsageException(argv[0]);
     }
@@ -53,6 +56,11 @@ int main(int argc, char *argv[]) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
+    }
+    if (bHas_C_Arg) {
+      Console.Printf("Parameters confirmed.\n", BasePrint::P_STDOUT);
+      BasisExit();
+      return 0;
     }
     //create analysis runner object and execute analysis
     AnalysisRunner(Parameters, RunTime, Console);
