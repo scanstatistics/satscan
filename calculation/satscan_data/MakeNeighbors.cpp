@@ -62,7 +62,7 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize() {
       //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
       //      as a percentage of the total population in all data sets.
       for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-         if (Parameters.GetProbabilityModelType() == ORDINAL)
+         if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
            tPopulation = DataSetHandler.GetDataSet(t).GetTotalCases();
          else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
            tPopulation = DataSetHandler.GetDataSet(t).GetTotalPopulation();
@@ -108,7 +108,7 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
       //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
       //      as a percentage of the total population in all data sets.
       for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-         if (Parameters.GetProbabilityModelType() == ORDINAL)
+         if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
            tPopulation = DataSetHandler.GetDataSet(t).GetTotalCases();
          else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
            tPopulation = DataSetHandler.GetDataSet(t).GetTotalPopulation();
@@ -408,6 +408,11 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
   //prospective space-time analyses, using prospective start date, do not use the population at risk to restrict maximum spatial size
   if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
     switch (Parameters.GetProbabilityModelType()) {
+      case NORMAL  :
+        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        ppCases = DataSetHandler.GetDataSet().GetCaseArray();
+        for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] = ppCases[0][j];
+        gpPopulation = &gvCalculatedPopulations[0]; break;
       case ORDINAL :
         //For the Ordinal model, populations for each location are calculated by adding up the
         //total individuals represented in the catgory case arrays.
