@@ -221,7 +221,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
        PrintFormat.PrintSectionLabelAtDataColumn(fp, sBuffer.GetCString());
      }
      //print total cases
-     PrintFormat.PrintSectionLabel(fp, "Total cases", false, true);
+     PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
      sBuffer.printf("%ld", GetObservedCount(*itr_Index));
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      tObserved = GetObservedCount(*itr_Index);
@@ -241,7 +241,9 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print common variance label
      PrintFormat.PrintSectionLabel(fp, "Common variance", false, true);
-     dUnbiasedVariance = GetUnbiasedVariance(tObserved, tExpected, pClusterData->GetMeasureSq(*itr_Index));
+     dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureSq(*itr_Index),
+                                             Handler.GetDataSet(*itr_Index).GetTotalCases(), Handler.GetDataSet(*itr_Index).GetTotalMeasure(),
+                                             Handler.GetDataSet(*itr_Index).GetTotalMeasureSq());
      sBuffer.printf("%.2f", dUnbiasedVariance);
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print common standard deviation

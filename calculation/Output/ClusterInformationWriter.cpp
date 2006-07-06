@@ -252,7 +252,9 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           ZdGenerateException("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
-        dUnbiasedVariance = GetUnbiasedVariance(dObserved, dExpected, pClusterData->GetMeasureSq(0));
+        dUnbiasedVariance = GetUnbiasedVariance(dObserved, dExpected, pClusterData->GetMeasureSq(0),
+                                                Handler.GetDataSet().GetTotalCases(), Handler.GetDataSet().GetTotalMeasure(),
+                                                Handler.GetDataSet().GetTotalMeasureSq());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
@@ -359,7 +361,9 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           ZdGenerateException("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
-        dUnbiasedVariance = GetUnbiasedVariance(dObserved, dExpected, pClusterData->GetMeasureSq(iSetIndex));
+        dUnbiasedVariance = GetUnbiasedVariance(dObserved, dExpected, pClusterData->GetMeasureSq(iSetIndex),
+                                                Handler.GetDataSet(iSetIndex).GetTotalCases(), Handler.GetDataSet(iSetIndex).GetTotalMeasure(),
+                                                Handler.GetDataSet(iSetIndex).GetTotalMeasureSq());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
