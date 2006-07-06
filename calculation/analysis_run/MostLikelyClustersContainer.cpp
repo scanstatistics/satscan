@@ -242,7 +242,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
 /** Reorders list of top cluster objects by sorting by loglikelihood ratio in
     descending order. Clusters that are not 'defined' are removed from top
     clusters list. Retained clusters of list are further restricted by:
-    for sequential scan
+    for iterative scan
       - only most likely cluster retained
     reporting secondary clusters, no restrictions
       - limit list size to the number of tract locations
@@ -263,7 +263,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
      //return from function if no clusters retained
      if (!gvTopClusterList.size()) return;
      //determine maximum number of clusters to retain
-     if (Parameters.GetIsSequentialScanning())
+     if (Parameters.GetIsIterativeScanning())
        uClustersToKeepEachPass = 1;
      else if (eClusterInclusionCriterion == NORESTRICTIONS)
        uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());

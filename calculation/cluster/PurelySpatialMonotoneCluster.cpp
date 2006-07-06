@@ -361,7 +361,7 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
     for (int s=0; s < m_nSteps; ++s) {
       for (i=gvFirstNeighborList.at(i); i <= gvLastNeighborList.at(i); ++i) {
          tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-         // Print location identifiers if location data has not been removed in sequential scan.
+         // Print location identifiers if location data has not been removed in iterative scan.
          if (!DataHub.GetIsNullifiedLocation(tTract)) {
            DataHub.GetTInfo()->tiGetTid(tTract, sLocationID);
            DataHub.GetTInfo()->tiRetrieveCoords(tTract, vCoords);

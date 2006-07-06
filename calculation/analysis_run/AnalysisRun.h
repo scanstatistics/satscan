@@ -51,7 +51,7 @@ class AnalysisRunner {
     void                                PrintRetainedClustersStatus(FILE* fp, bool bClusterReported);
     void                                PrintTopClusters();
     void                                PrintTopClusterLogLikelihood();
-    void                                PrintTopSequentialScanCluster();
+    void                                PrintTopIterativeScanCluster();
     void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
     void                                Setup();

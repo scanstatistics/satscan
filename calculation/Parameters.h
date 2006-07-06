@@ -13,7 +13,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     CLUSTERS, EXACTTIMES, TIME_AGGREGATION_UNITS, TIME_AGGREGATION, PURESPATIAL,
                                     TIMESIZE, REPLICAS, MODEL, RISKFUNCTION, POWERCALC, POWERX, POWERY, TIMETREND,
                                     TIMETRENDPERC, PURETEMPORAL, CONTROLFILE, COORDTYPE, OUTPUT_SIM_LLR_ASCII,
-                                    SEQUENTIAL, SEQNUM, SEQPVAL, VALIDATE, OUTPUT_RR_ASCII, WINDOW_SHAPE, ESHAPES,
+                                    ITERATIVE, ITERATIVE_NUM, ITERATIVE_PVAL, VALIDATE, OUTPUT_RR_ASCII, WINDOW_SHAPE, ESHAPES,
                                     ENUMBERS, START_PROSP_SURV, OUTPUT_AREAS_ASCII, OUTPUT_MLC_ASCII,
                                     CRITERIA_SECOND_CLUSTERS, MAX_TEMPORAL_TYPE, MAX_SPATIAL_TYPE,
                                     RUN_HISTORY_FILENAME, OUTPUT_MLC_DBASE, OUTPUT_AREAS_DBASE, OUTPUT_RR_DBASE,
@@ -142,10 +142,10 @@ class CParameters {
                                         gbOutputClusterCaseDBase;               /** indicates whether to output most likely cluster cases for each centroid in dBase format */
     bool                                gbOutputAreaSpecificAscii,              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
                                         gbOutputAreaSpecificDBase;              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
-        /* Sequential scans variables */
-    bool                                gbSequentialRuns;                       /* sequential analysis? */
-    unsigned int                        giNumSequentialRuns;                    /* number of sequential scans to attempt */
-    double                              gbSequentialCutOffPValue;               /* P-Value used to exit sequential analysis */
+        /* Iterative scans variables */
+    bool                                gbIterativeRuns;                       /* iterative analysis? */
+    unsigned int                        giNumIterativeRuns;                    /* number of iterative scans to attempt */
+    double                              gbIterativeCutOffPValue;               /* P-Value used to exit iterative analysis */
         /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
@@ -190,7 +190,7 @@ class CParameters {
     ~CParameters();
 
     static const int                    giNumParameters;                        /** number enumerated parameters */
-    static const int                    MAXIMUM_SEQUENTIAL_ANALYSES;            /** maximum number of permitted sequential scans */
+    static const int                    MAXIMUM_ITERATIVE_ANALYSES;             /** maximum number of permitted iterative scans */
     static const int                    MAXIMUM_ELLIPSOIDS;                     /** maximum number of permitted ellipsoids */
 
     CParameters                       & operator=(const CParameters &rhs);
@@ -228,7 +228,7 @@ class CParameters {
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
     bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsPurelyTemporalAnalysis() const;
-    bool                                GetIsSequentialScanning() const {return gbSequentialRuns;}
+    bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
     bool                                GetIsSpaceTimeAnalysis() const;
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
@@ -245,7 +245,7 @@ class CParameters {
     int                                 GetNumReadParameters() const {return giNumParameters;}
     unsigned int                        GetNumReplicationsRequested() const {return giReplications;}
     int                                 GetNumRequestedEllipses() const {return (int)gvEllipseShapes.size();}
-    unsigned int                        GetNumSequentialScansRequested() const {return giNumSequentialRuns;}
+    unsigned int                        GetNumIterativeScansRequested() const {return giNumIterativeRuns;}
     long                                GetNumTotalEllipses() const {return (gbUseLocationNeighborsFile || geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
@@ -283,7 +283,7 @@ class CParameters {
     bool                                GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
     const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
-    double                              GetSequentialCutOffPValue() const {return gbSequentialCutOffPValue;}
+    double                              GetIterativeCutOffPValue() const {return gbIterativeCutOffPValue;}
     const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}
     const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
     SimulationType                      GetSimulationType() const {return geSimulationType;}
@@ -331,7 +331,7 @@ class CParameters {
     void                                SetNumDataSets(size_t iNumDataSets);
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);
-    void                                SetNumSequentialScans(int iNumSequentialScans);
+    void                                SetNumIterativeScans(int iNumIterativeScans);
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
     void                                SetOutputAreaSpecificDBase(bool b) {gbOutputAreaSpecificDBase = b;}
     void                                SetOutputClusterCaseAscii(bool b) {gbOutputClusterCaseAscii = b;}
@@ -357,8 +357,8 @@ class CParameters {
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
     void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
-    void                                SetSequentialCutOffPValue(double dPValue);
-    void                                SetSequentialScanning(bool b) {gbSequentialRuns = b;}
+    void                                SetIterativeCutOffPValue(double dPValue);
+    void                                SetIterativeScanning(bool b) {gbIterativeRuns = b;}
     void                                SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
     void                                SetSimulationType(SimulationType eSimulationType);

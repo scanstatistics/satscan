@@ -250,9 +250,9 @@ void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s), GetParameterComment(EARLY_SIM_TERMINATION));
     WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
     WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s), GetParameterComment(REPORT_CRITICAL_VALUES));
-    WriteIniParameter(WriteFile, SEQUENTIAL, GetParameterString(SEQUENTIAL, s), GetParameterComment(SEQUENTIAL));
-    WriteIniParameter(WriteFile, SEQNUM, GetParameterString(SEQNUM, s), GetParameterComment(SEQNUM));
-    WriteIniParameter(WriteFile, SEQPVAL, GetParameterString(SEQPVAL, s), GetParameterComment(SEQPVAL));
+    WriteIniParameter(WriteFile, ITERATIVE, GetParameterString(ITERATIVE, s), GetParameterComment(ITERATIVE));
+    WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s), GetParameterComment(ITERATIVE_NUM));
+    WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s), GetParameterComment(ITERATIVE_PVAL));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");

@@ -127,7 +127,7 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     location specified in coordinates file. Files types creates are ASCII text
     and dBase, with the user's parameter settings indicating which.
     Note that relative risk information is printed for only first iteration of
-    sequential scan. This is primarily to prevent division by zero, since the
+    iterative scan. This is primarily to prevent division by zero, since the
     squential scan feature zeros out data used in creating relative risks. */
 void AnalysisRunner::CreateRelativeRiskFile() {
   macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
@@ -267,7 +267,7 @@ void AnalysisRunner::ExecuteSuccessively() {
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
-      //repeat analysis - sequential scan
+      //repeat analysis - iterative scan
       if ((bContinue = RepeatAnalysis()) == true) {
         //detect user cancellation
         if (gPrintDirection.GetIsCanceled())
@@ -714,7 +714,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
-      //repeat analysis - sequential scan
+      //repeat analysis - iterative scan
       if ((bContinue = RepeatAnalysis()) == true) {
         RemoveTopClusterData();
         //detect user cancellation
@@ -864,7 +864,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
-      //repeat analysis - sequential scan
+      //repeat analysis - iterative scan
       if ((bContinue = RepeatAnalysis()) == true) {
         RemoveTopClusterData();
         //detect user cancellation
@@ -1080,11 +1080,11 @@ void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
 }
 
 /** Displays progress information to print direction indicating that analysis
-    is calculating the most likely clusters in data. If sequential scan option
+    is calculating the most likely clusters in data. If iterative scan option
     was requested, the message printed reflects which iteration of the scan it
     is performing. */
 void AnalysisRunner::PrintFindClusterHeading() {
-  if (!gParameters.GetIsSequentialScanning())
+  if (!gParameters.GetIsIterativeScanning())
     gPrintDirection.Printf("Finding the most likely clusters.\n", BasePrint::P_STDOUT);
   else {
     switch(giAnalysisCount) {
@@ -1118,7 +1118,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
   PrintFormat.SetMarginsAsOverviewSection();
   //if zero clusters retained in real data, then no clusters of significance were retained.
   if (gTopClustersContainer.GetNumClustersRetained() == 0) {
-    if (gParameters.GetIsSequentialScanning() && giAnalysisCount > 1)
+    if (gParameters.GetIsIterativeScanning() && giAnalysisCount > 1)
       fprintf(fp, "\nNo further clusters were found.\n");
     else
       fprintf(fp, "\nNo clusters were found.\n");
@@ -1256,11 +1256,11 @@ void AnalysisRunner::PrintTopClusterLogLikelihood() {
 
 /** Prints most likely cluster information, if retained, to result file. This
     function only prints THE most likely cluster, as part of reporting with
-    the sequential scan option. So printing is directed by the particular
-    iteration of the sequential scan.
+    the iterative scan option. So printing is directed by the particular
+    iteration of the iterative scan.
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
-void AnalysisRunner::PrintTopSequentialScanCluster() {
+void AnalysisRunner::PrintTopIterativeScanCluster() {
   FILE        * fp=0;
   bool          bReportedCluster=false;
 
@@ -1303,13 +1303,13 @@ void AnalysisRunner::PrintTopSequentialScanCluster() {
   }
   catch (ZdException &x) {
     fclose(fp);
-    x.AddCallpath("PrintTopSequentialScanCluster()","AnalysisRunner");
+    x.AddCallpath("PrintTopIterativeScanCluster()","AnalysisRunner");
     throw;
   }
 }
 
 /** If a most likely cluster is defined, removes data of each location contained
-    within that cluster from consideration in next iteration of sequential scan.
+    within that cluster from consideration in next iteration of iterative scan.
     NOTE: There maybe more work here considering randomizers that are based off
           information that is now being removed. Look at space-time permutation
           randomizer and other similar randomizers. */
@@ -1331,27 +1331,27 @@ void AnalysisRunner::RemoveTopClusterData() {
 }
 
 /** Returns indication of whether analysis repeats.
-    Indication of true is returned if user requested sequential scan option and :
+    Indication of true is returned if user requested iterative scan option and :
     - analysis type is purely spatial or monotone purely spatial
     - a most likely cluster was retained
     - most likely cluster's p-value is not less than user specified cutoff p- value
     - after removing most likely cluster's contained locations, there are still locations
-    - the number of requested sequential scans has not been already reached
+    - the number of requested iterative scans has not been already reached
     - last iteration of simulations did not terminate early
-    Indication of false is returned if user did not request sequential scan option. */
+    Indication of false is returned if user did not request iterative scan option. */
 bool AnalysisRunner::RepeatAnalysis() {
   //NOTE: Still in the air as to the minimum for STP model, set to 2 for now.
   count_t      tMinCases = (gParameters.GetProbabilityModelType() == ORDINAL ? 4 : 2);
 
   try {
-    if (!gParameters.GetIsSequentialScanning()) return false;
-      if (giAnalysisCount >= gParameters.GetNumSequentialScansRequested())
+    if (!gParameters.GetIsIterativeScanning()) return false;
+      if (giAnalysisCount >= gParameters.GetNumIterativeScansRequested())
         return false;
       //determine whether a top cluster was found and it's p-value mets cutoff
       if (!gTopClustersContainer.GetNumClustersRetained())
         return false;
       //if user requested replications, validate that p-value does not exceed user defined cutoff  
-      if (gParameters.GetNumReplicationsRequested() && gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) > gParameters.GetSequentialCutOffPValue())
+      if (gParameters.GetNumReplicationsRequested() && gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) > gParameters.GetIterativeCutOffPValue())
          return false;
 
       //now we need to modify the data sets - removing data of locations in top cluster  
@@ -1420,7 +1420,7 @@ void AnalysisRunner::UpdatePowerCounts(double r) {
 }
 
 /** Updates results output file.
-    - prints most likely cluster(s) (optionally for sequential scan)
+    - prints most likely cluster(s) (optionally for iterative scan)
     - significant loglikelihood ratio indicator
     - power calculation results, if option requested by user
     - indication of when simulations terminated early */
@@ -1428,8 +1428,8 @@ void AnalysisRunner::UpdateReport() {
   macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
   try {
     gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
-    if (gParameters.GetIsSequentialScanning())
-      PrintTopSequentialScanCluster();
+    if (gParameters.GetIsIterativeScanning())
+      PrintTopIterativeScanCluster();
     else
       PrintTopClusters();
   }

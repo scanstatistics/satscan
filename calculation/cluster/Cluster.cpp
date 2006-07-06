@@ -136,7 +136,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
     for (i=nFirstTract; i <= nLastTract; ++i) {
        //get i'th neighbor tracts index
        tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-       // Print location identifiers if location data has not been removed in sequential scan.
+       // Print location identifiers if location data has not been removed in iterative scan.
        if (!DataHub.GetIsNullifiedLocation(tTract)) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
          DataHub.GetTInfo()->tiGetTractIdentifiers(tTract, vTractIdentifiers);
@@ -147,7 +147,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
          }
        }
     }
-    // There should be at least one location printed, else there is likely a bug in the sequential scan code.
+    // There should be at least one location printed, else there is likely a bug in the iterative scan code.
     if (!sLocations.GetLength())
       ZdGenerateException("Attempting to print cluster with no location identifiers.","DisplayCensusTractsInStep()");
 
@@ -755,7 +755,7 @@ void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const st
 
     for (i=1; i <= m_nTracts; ++i) {
        tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-       // Print location identifiers if location data has not been removed in sequential scan.
+       // Print location identifiers if location data has not been removed in iterative scan.
        if (!DataHub.GetIsNullifiedLocation(tTract)) {
          DataHub.GetTInfo()->tiGetTid(tTract, sLocationID);
          DataHub.GetTInfo()->tiRetrieveCoords(tTract, vCoords);

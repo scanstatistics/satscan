@@ -38,7 +38,7 @@ class stsRunHistoryFile {
       long                              glRunNumber;
       ZdPointerVector<ZdField>	        gvFields;
       BasePrint*                        gpPrintDirection;
-      bool                              gbPrintPVal, gbSequential;
+      bool                              gbPrintPVal, gbIterativeScan;
 
       void      GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType);
       void      GetCasePrecisionString(ZdString& sTempValue, int iPrecision);

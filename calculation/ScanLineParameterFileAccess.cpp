@@ -49,9 +49,9 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case CONTROLFILE               : return "Control Filename (line 29)";  
       case COORDTYPE                 : return "Coordinates Type (line 30)";  
       case OUTPUT_SIM_LLR_ASCII      : return "Output Simulation LLR - ASCII? (line 31)";  
-      case SEQUENTIAL                : return "Perform Sequential Scan? (line 32)";  
-      case SEQNUM                    : return "Num Sequential Scan Iterations (line 33)";  
-      case SEQPVAL                   : return "Sequential Scan P-Value Cutoff (line 34)";  
+      case ITERATIVE                 : return "Perform Iterative Scan? (line 32)";
+      case ITERATIVE_NUM             : return "Num Iterative Scan Iterations (line 33)";
+      case ITERATIVE_PVAL            : return "Iterative Scan P-Value Cutoff (line 34)";
       case VALIDATE                  : return "Validate Settings (line 35)";  
       case OUTPUT_RR_ASCII           : return "Output Relative Risks - ASCII? (line 36)";  
       case WINDOW_SHAPE              : return "Spatial Window Shape (line 37)";  

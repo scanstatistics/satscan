@@ -186,8 +186,8 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
                                         "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
       }
     }
-    if (gParameters.GetIsSequentialScanning())
-      fprintf(fp, "Sequential analysis performed.\n");
+    if (gParameters.GetIsIterativeScanning())
+      fprintf(fp, "Iterative analysis performed.\n");
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintAnalysisSummary()","ParametersPrint");
@@ -352,10 +352,10 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
      fprintf(fp, "  Prospective Start Date        : %s\n", gParameters.GetProspectiveStartDate().c_str());
   }
   fprintf(fp, "  Report Critical Values        : %s\n", (gParameters.GetReportCriticalValues() ? "Yes" : "No"));
-  fprintf(fp, "  Sequential Scan               : %s\n", (gParameters.GetIsSequentialScanning() ? "Yes" : "No"));
-  if (gParameters.GetIsSequentialScanning()) {
-    fprintf(fp, "  Number of Scans               : %u\n", gParameters.GetNumSequentialScansRequested());
-    fprintf(fp, "  P-value Cutoff                : %g\n", gParameters.GetSequentialCutOffPValue());
+  fprintf(fp, "  Iterative Scan                : %s\n", (gParameters.GetIsIterativeScanning() ? "Yes" : "No"));
+  if (gParameters.GetIsIterativeScanning()) {
+    fprintf(fp, "  Number of Scans               : %u\n", gParameters.GetNumIterativeScansRequested());
+    fprintf(fp, "  P-value Cutoff                : %g\n", gParameters.GetIterativeCutOffPValue());
   }  
 }
 

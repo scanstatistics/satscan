@@ -129,7 +129,7 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
   return true;
 }
 
-/** Sequential analyses will call this function to clear neighbor information and re-calculate neighbors. */
+/** Iterative analyses will call this function to clear neighbor information and re-calculate neighbors. */
 void CSaTScanData::AdjustNeighborCounts() {
   try {
     bool bDistanceOnlyMax = gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses() &&
@@ -323,7 +323,7 @@ void CSaTScanData::CalculateMeasure(RealDataSet& DataSet) {
   try {
     SetAdditionalCaseArrays(DataSet);
     m_pModel->CalculateMeasure(DataSet);
-    //record totals at start, the optional sequential scan feature modifies start values
+    //record totals at start, the optional iterative scan feature modifies start values
     DataSet.SetTotalCasesAtStart(DataSet.GetTotalCases());
     DataSet.SetTotalControlsAtStart(DataSet.GetTotalControls());
     DataSet.SetTotalMeasureAtStart(DataSet.GetTotalMeasure());
@@ -471,7 +471,7 @@ double CSaTScanData::GetEllipseShape(int iEllipseIndex) const {
 }
 
 /** Returns whether data of location at index has been removed as a result of
-    being part of most likely cluster in a sequential scan.*/
+    being part of most likely cluster in a iterative scan.*/
 bool CSaTScanData::GetIsNullifiedLocation(tract_t tLocationIndex) const {
    return std::find(gvNullifiedLocations.begin(), gvNullifiedLocations.end(), tLocationIndex) != gvNullifiedLocations.end();
 }
@@ -583,7 +583,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     tStopTract = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? m_nTracts - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.GetNumTractsInCluster()));
     while (tTractIndex != tStopTract) {
        tTractIndex = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? tTractIndex + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
-       // Previous iterations of sequential scan could have had this location as part of the most likely cluster.
+       // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
        if (GetIsNullifiedLocation(tTractIndex)) continue;
        if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
          gtTotalCases = 0;

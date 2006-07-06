@@ -328,8 +328,8 @@ void __fastcall TfrmAdvancedParameters::chkAdjustForKnownRelativeRisksClick(TObj
   DoControlExit();
 }
 //---------------------------------------------------------------------------
-/** event triggered when user selects perform sequential scans check box */
-void __fastcall TfrmAdvancedParameters::chkPerformSequentialScanClick(TObject *Sender) {
+/** event triggered when user selects perform iterative scans check box */
+void __fastcall TfrmAdvancedParameters::chkPerformIterativeScanClick(TObject *Sender) {
   EnableSettingsForAnalysisModelCombination();
   DoControlExit();
 }
@@ -477,11 +477,11 @@ void __fastcall TfrmAdvancedParameters::edtPopFileNameChange(TObject *Sender) {
 }
 //---------------------------------------------------------------------------
 /** event triggered when year control, of prospective start date, is exited. */
-void __fastcall TfrmAdvancedParameters::edtNumSequentialScansExit(TObject *Sender) {
-  if (edtNumSequentialScans->Text.IsEmpty() ||
-      atoi(edtNumSequentialScans->Text.c_str()) < 1 ||
-      atoi(edtNumSequentialScans->Text.c_str()) > CParameters::MAXIMUM_SEQUENTIAL_ANALYSES)
-    edtNumSequentialScans->Text = 10;
+void __fastcall TfrmAdvancedParameters::edtNumIterativeScansExit(TObject *Sender) {
+  if (edtNumIterativeScans->Text.IsEmpty() ||
+      atoi(edtNumIterativeScans->Text.c_str()) < 1 ||
+      atoi(edtNumIterativeScans->Text.c_str()) > CParameters::MAXIMUM_ITERATIVE_ANALYSES)
+    edtNumIterativeScans->Text = 10;
   DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -491,11 +491,11 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeEndDateExit(TObject *Sender
   DoControlExit();
 }
 //---------------------------------------------------------------------------
-/** event triggered when sequential scan cut off control is exited */
-void __fastcall TfrmAdvancedParameters::edtSequentialScanCutoffExit(TObject *Sender) {
-  if (edtSequentialScanCutoff->Text.IsEmpty() ||
-      edtSequentialScanCutoff->Text.ToDouble() <= 0 || edtSequentialScanCutoff->Text.ToDouble() > 1)
-    edtSequentialScanCutoff->Text = ".05";
+/** event triggered when iterative scan cut off control is exited */
+void __fastcall TfrmAdvancedParameters::edtIterativeScanCutoffExit(TObject *Sender) {
+  if (edtIterativeScanCutoff->Text.IsEmpty() ||
+      edtIterativeScanCutoff->Text.ToDouble() <= 0 || edtIterativeScanCutoff->Text.ToDouble() > 1)
+    edtIterativeScanCutoff->Text = ".05";
   DoControlExit();
 }
 //---------------------------------------------------------------------------
@@ -736,15 +736,15 @@ void TfrmAdvancedParameters::EnableReportedSpatialOptionsGroup(bool bEnable) {
    lblMaxReportedRadius->Enabled = bEnable && chkRestrictReportedClusters->Checked;
 }
 //---------------------------------------------------------------------------
-void TfrmAdvancedParameters::EnableSequentialScanOptionsGroup(bool bEnable) {
-  grpSequentialScan->Enabled = bEnable;
-  chkPerformSequentialScan->Enabled = bEnable;
-  edtNumSequentialScans->Enabled = chkPerformSequentialScan->Checked && bEnable;
-  edtNumSequentialScans->Color = edtNumSequentialScans->Enabled ? clWindow : clInactiveBorder;
-  lblMaxSequentialScans->Enabled = chkPerformSequentialScan->Checked && bEnable;
-  edtSequentialScanCutoff->Enabled = chkPerformSequentialScan->Checked && bEnable;
-  edtSequentialScanCutoff->Color = edtSequentialScanCutoff->Enabled ? clWindow : clInactiveBorder;
-  lblSeqentialCutoff->Enabled = chkPerformSequentialScan->Checked && bEnable;
+void TfrmAdvancedParameters::EnableIterativeScanOptionsGroup(bool bEnable) {
+  grpIterativeScan->Enabled = bEnable;
+  chkPerformIterativeScan->Enabled = bEnable;
+  edtNumIterativeScans->Enabled = chkPerformIterativeScan->Checked && bEnable;
+  edtNumIterativeScans->Color = edtNumIterativeScans->Enabled ? clWindow : clInactiveBorder;
+  lblMaxIterativeScans->Enabled = chkPerformIterativeScan->Checked && bEnable;
+  edtIterativeScanCutoff->Enabled = chkPerformIterativeScan->Checked && bEnable;
+  edtIterativeScanCutoff->Color = edtIterativeScanCutoff->Enabled ? clWindow : clInactiveBorder;
+  lblIterativeCutoff->Enabled = chkPerformIterativeScan->Checked && bEnable;
 }
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
@@ -818,7 +818,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
                             "EnableSettingsForAnalysisModelCombination()",gAnalysisSettings.GetAnalysisControlType());
     }
     EnableAdjustmentsGroup(bPoisson);
-    EnableSequentialScanOptionsGroup(!bSpaceTimePermutation && !bExponential);
+    EnableIterativeScanOptionsGroup(!bSpaceTimePermutation && !bExponential);
   }
   catch (ZdException &x) {
     x.AddCallpath("EnableSettingsForAnalysisModelCombination()","TfrmAdvancedParameters");
@@ -977,9 +977,9 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (edtProspectiveStartDateYear->Text.ToInt() == 1900 || edtProspectiveStartDateYear->Text.ToInt() == 2000);
    bReturn &= (edtProspectiveStartDateMonth->Text.ToInt() == 12);
    bReturn &= (edtProspectiveStartDateDay->Text.ToInt() == 31);
-   bReturn &= (chkPerformSequentialScan->Checked == false);
-   bReturn &= (edtNumSequentialScans->Text.ToInt() == 10);
-   bReturn &= (edtSequentialScanCutoff->Text.ToDouble() == .05);
+   bReturn &= (chkPerformIterativeScan->Checked == false);
+   bReturn &= (edtNumIterativeScans->Text.ToInt() == 10);
+   bReturn &= (edtIterativeScanCutoff->Text.ToDouble() == .05);
 
    // Spatial Window tab
    bReturn &= (edtMaxSpatialClusterSize->Text.ToDouble() == 50);
@@ -1300,9 +1300,9 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetMaxSpatialSizeForType(MAXDISTANCE, GetMaxReportedSpatialClusterSizeFromControl(MAXDISTANCE), true);
     ref.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, chkReportedSpatialDistance->Checked, true);
 
-    ref.SetSequentialCutOffPValue(edtSequentialScanCutoff->Text.ToDouble());
-    ref.SetSequentialScanning(chkPerformSequentialScan->Checked);
-    ref.SetNumSequentialScans(atoi(edtNumSequentialScans->Text.c_str()));
+    ref.SetIterativeCutOffPValue(edtIterativeScanCutoff->Text.ToDouble());
+    ref.SetIterativeScanning(chkPerformIterativeScan->Checked);
+    ref.SetNumIterativeScans(atoi(edtNumIterativeScans->Text.c_str()));
     ref.SetUseAdjustmentForRelativeRisksFile(chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked);
     ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
     ref.SetTimeTrendAdjustmentType(rdgTemporalTrendAdj->Enabled ? GetAdjustmentTimeTrendControlType() : NOTADJUSTED);
@@ -1394,9 +1394,9 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    edtProspectiveStartDateMonth->Text = "12";
    edtProspectiveStartDateDay->Text = "31";
    chkReportCriticalValues->Checked = false;
-   chkPerformSequentialScan->Checked = false;
-   edtNumSequentialScans->Text = "10";
-   edtSequentialScanCutoff->Text = ".05";
+   chkPerformIterativeScan->Checked = false;
+   edtNumIterativeScans->Text = "10";
+   edtIterativeScanCutoff->Text = ".05";
 
    // Spatial Window tab
    edtMaxSpatialClusterSize->Text = "50";
@@ -1643,9 +1643,9 @@ void TfrmAdvancedParameters::Setup() {
       // Inference tab
       chkTerminateEarly->Checked = ref.GetTerminateSimulationsEarly();
       chkReportCriticalValues->Checked = ref.GetReportCriticalValues();
-      chkPerformSequentialScan->Checked = ref.GetIsSequentialScanning();
-      edtNumSequentialScans->Text = (ref.GetNumSequentialScansRequested() < 1 || ref.GetNumSequentialScansRequested() > (unsigned int)CParameters::MAXIMUM_SEQUENTIAL_ANALYSES ? 10 : ref.GetNumSequentialScansRequested());
-      edtSequentialScanCutoff->Text = (ref.GetSequentialCutOffPValue() <= 0 || ref.GetSequentialCutOffPValue() > 1 ? 0.05 : ref.GetSequentialCutOffPValue());   
+      chkPerformIterativeScan->Checked = ref.GetIsIterativeScanning();
+      edtNumIterativeScans->Text = (ref.GetNumIterativeScansRequested() < 1 || ref.GetNumIterativeScansRequested() > (unsigned int)CParameters::MAXIMUM_ITERATIVE_ANALYSES ? 10 : ref.GetNumIterativeScansRequested());
+      edtIterativeScanCutoff->Text = (ref.GetIterativeCutOffPValue() <= 0 || ref.GetIterativeCutOffPValue() > 1 ? 0.05 : ref.GetIterativeCutOffPValue());
 
       // Output tab
       chkRestrictReportedClusters->Checked = ref.GetRestrictingMaximumReportedGeoClusterSize();

@@ -258,7 +258,7 @@ bool OrdinalLikelihoodCalculator::CalculateProbabilitiesInsideAndOutsideOfCluste
             dQ += vOrdinalTotalCases[j] - vOrdinalCases[j];
           dQ /= U;
           if (dTotalCasesInCategoryRange)
-            //when a sequential scan is performed, there is a possibility that
+            //when a iterative scan is performed, there is a possibility that
             //the number of cases in a ordinal category have become zero
             for (size_t j=i; j <= k; ++j) {
                gvP[j] = dP * (vOrdinalTotalCases[j]/dTotalCasesInCategoryRange);

@@ -5,7 +5,7 @@
 #include "Parameters.h"
 #include "Randomizer.h"
 
-const int CParameters::MAXIMUM_SEQUENTIAL_ANALYSES    = 32000;
+const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
 const int CParameters::giNumParameters 	              = 91;
 
@@ -71,9 +71,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsOutputFileName                       != rhs.gsOutputFileName) return false;
   if (gbOutputSimLogLikeliRatiosAscii        != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
   if (gbOutputRelativeRisksAscii             != rhs.gbOutputRelativeRisksAscii) return false;
-  if (gbSequentialRuns                       != rhs.gbSequentialRuns) return false;
-  if (giNumSequentialRuns                    != rhs.giNumSequentialRuns) return false;
-  if (gbSequentialCutOffPValue               != rhs.gbSequentialCutOffPValue) return false;
+  if (gbIterativeRuns                        != rhs.gbIterativeRuns) return false;
+  if (giNumIterativeRuns                     != rhs.giNumIterativeRuns) return false;
+  if (gbIterativeCutOffPValue                != rhs.gbIterativeCutOffPValue) return false;
   if (gsProspectiveStartDate                 != rhs.gsProspectiveStartDate) return false;
   if (gbOutputAreaSpecificAscii              != rhs.gbOutputAreaSpecificAscii) return false;
   if (gbOutputClusterLevelAscii              != rhs.gbOutputClusterLevelAscii) return false;
@@ -219,9 +219,9 @@ void CParameters::Copy(const CParameters &rhs) {
     gsOutputFileName                       = rhs.gsOutputFileName;
     gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
     gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
-    gbSequentialRuns                       = rhs.gbSequentialRuns;
-    giNumSequentialRuns                    = rhs.giNumSequentialRuns;
-    gbSequentialCutOffPValue               = rhs.gbSequentialCutOffPValue;
+    gbIterativeRuns                        = rhs.gbIterativeRuns;
+    giNumIterativeRuns                     = rhs.giNumIterativeRuns;
+    gbIterativeCutOffPValue                = rhs.gbIterativeCutOffPValue;
     gsProspectiveStartDate                 = rhs.gsProspectiveStartDate;
     gbOutputAreaSpecificAscii              = rhs.gbOutputAreaSpecificAscii;
     gbOutputClusterLevelAscii              = rhs.gbOutputClusterLevelAscii;
@@ -767,9 +767,9 @@ void CParameters::SetAsDefaulted() {
   gvControlFilenames.resize(1);
   geCoordinatesType                        = LATLON;
   gbOutputSimLogLikeliRatiosAscii          = false;
-  gbSequentialRuns                         = false;
-  giNumSequentialRuns                      = 0;
-  gbSequentialCutOffPValue                 = 0.05;
+  gbIterativeRuns                          = false;
+  giNumIterativeRuns                       = 0;
+  gbIterativeCutOffPValue                  = 0.05;
   gbOutputRelativeRisksAscii               = false;
   geSpatialWindowType                      = CIRCULAR;
   gvEllipseShapes.clear();
@@ -945,11 +945,11 @@ void CParameters::SetNumberMonteCarloReplications(unsigned int iReplications) {
   giReplications = iReplications;
 }
 
-/** Sets number of seqential scans to run. */
-void CParameters::SetNumSequentialScans(int iNumSequentialScans) {
+/** Sets number of iterative scans to run. */
+void CParameters::SetNumIterativeScans(int iNumIterativeScans) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-  giNumSequentialRuns = iNumSequentialScans;
+  giNumIterativeRuns = iNumIterativeScans;
 }
 
 /** Sets output data file name.
@@ -1162,11 +1162,11 @@ void  CParameters::SetSpatialWindowType(SpatialWindowType eSpatialWindowType) {
   }
 }
 
-/** Set p-value that is cut-off for sequentail scans. */
-void CParameters::SetSequentialCutOffPValue(double dPValue) {
+/** Set p-value that is cut-off for Iterative scans. */
+void CParameters::SetIterativeCutOffPValue(double dPValue) {
   //Validity of setting is checked in ValidateParameters() since this setting
   //might not be pertinent in calculation.
-  gbSequentialCutOffPValue = dPValue;
+  gbIterativeCutOffPValue = dPValue;
 }
 
 /** Sets filename of file used to load parameters. */

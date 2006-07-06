@@ -296,9 +296,9 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   Build_6_1_x_ParameterList();
 
   //Sequential Scan parameters moved to Inference section - removed SequentialScan section
-  gvParameterInfo[SEQUENTIAL - 1] = std::make_pair(Inference, (const char*)"SequentialScan");
-  gvParameterInfo[SEQNUM - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxIterations");
-  gvParameterInfo[SEQPVAL - 1] = std::make_pair(Inference, (const char*)"SequentialScanMaxPValue");
+  gvParameterInfo[ITERATIVE - 1] = std::make_pair(Inference, (const char*)"IterativeScan");
+  gvParameterInfo[ITERATIVE_NUM - 1] = std::make_pair(Inference, (const char*)"IterativeScanMaxIterations");
+  gvParameterInfo[ITERATIVE_PVAL - 1] = std::make_pair(Inference, (const char*)"IterativeScanMaxPValue");
   gvParameterInfo.push_back(std::make_pair(DataChecking, (const char*)"StudyPeriodCheckType"));
   gvParameterInfo.push_back(std::make_pair(DataChecking, (const char*)"GeographicalCoordinatesCheckType"));
   //Maximum spatial cluster size updated to use new parameters

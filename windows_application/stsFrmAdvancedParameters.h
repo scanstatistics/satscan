@@ -123,12 +123,12 @@ __published:	// IDE-managed Components
    TEdit *edtMaxReportedSpatialRadius;
    TEdit *edtMaxReportedSpatialPercentFile;
    TCheckBox *chkRestrictReportedClusters;
-   TGroupBox *grpSequentialScan;
-   TEdit *edtNumSequentialScans;
-   TCheckBox *chkPerformSequentialScan;
-   TLabel *lblMaxSequentialScans;
-   TEdit *edtSequentialScanCutoff;
-   TLabel *lblSeqentialCutoff;
+   TGroupBox *grpIterativeScan;
+   TEdit *edtNumIterativeScans;
+   TCheckBox *chkPerformIterativeScan;
+   TLabel *lblMaxIterativeScans;
+   TEdit *edtIterativeScanCutoff;
+   TLabel *lblIterativeCutoff;
    TTabSheet *tsDataChecking;
    TRadioGroup *rdgStudyPeriodCheck;
    TGroupBox *grpGeographicalCoordinatesCheck;
@@ -171,7 +171,7 @@ __published:	// IDE-managed Components
    void __fastcall edtMaxSpatialRadiusExit(TObject *Sender);
    void __fastcall edtMaxTemporalClusterSizeExit(TObject *Sender) ;
    void __fastcall edtMaxTemporalClusterSizeUnitsExit(TObject *Sender) ;
-   void __fastcall edtNumSequentialScansExit(TObject *Sender);
+   void __fastcall edtNumIterativeScansExit(TObject *Sender);
    void __fastcall edtStartRangeStartDateExit(TObject *Sender);
    void __fastcall edtEndRangeStartDateExit(TObject *Sender);
    void __fastcall edtStartRangeEndDateExit(TObject *Sender);
@@ -199,8 +199,8 @@ __published:	// IDE-managed Components
    void __fastcall edtMaxReportedSpatialClusterSizeExit(TObject *Sender);
    void __fastcall edtMaxReportedSpatialPercentFileExit(TObject *Sender);
    void __fastcall edtMaxReportedSpatialRadiusExit(TObject *Sender);
-   void __fastcall chkPerformSequentialScanClick(TObject *Sender);
-   void __fastcall edtSequentialScanCutoffExit(TObject *Sender);
+   void __fastcall chkPerformIterativeScanClick(TObject *Sender);
+   void __fastcall edtIterativeScanCutoffExit(TObject *Sender);
    void __fastcall rdgStudyPeriodCheckClick(TObject *Sender);
    void __fastcall stStrictCoodinatesClick(TObject *Sender);
    void __fastcall stRelaxedCoodinatesClick(TObject *Sender);
@@ -236,7 +236,7 @@ __published:	// IDE-managed Components
    void                     EnableProspectiveStartDate();
    void                     EnableProspectiveSurveillanceGroup(bool bEnable);
    void                     EnableReportedSpatialOptionsGroup(bool bEnable);
-   void                     EnableSequentialScanOptionsGroup(bool bEnable);
+   void                     EnableIterativeScanOptionsGroup(bool bEnable);
    void                     EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal);
    void                     EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
    void                     EnableTemporalRanges(bool bEnable, bool bEnableRanges);

@@ -1171,7 +1171,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 4
           TabOrder = 1
           Text = '1900'
-          OnExit = edtNumSequentialScansExit
+          OnExit = edtNumIterativeScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
@@ -1183,7 +1183,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 2
           TabOrder = 2
           Text = '12'
-          OnExit = edtNumSequentialScansExit
+          OnExit = edtNumIterativeScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateDay: TEdit
@@ -1195,7 +1195,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 2
           TabOrder = 3
           Text = '31'
-          OnExit = edtNumSequentialScansExit
+          OnExit = edtNumIterativeScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object chkAdjustForEarlierAnalyses: TCheckBox
@@ -1225,21 +1225,21 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = OnControlExit
         end
       end
-      object grpSequentialScan: TGroupBox
+      object grpIterativeScan: TGroupBox
         Left = 8
         Top = 184
         Width = 417
         Height = 91
-        Caption = 'Sequential Scan'
+        Caption = 'Iterative Scan'
         TabOrder = 3
-        object lblMaxSequentialScans: TLabel
+        object lblMaxIterativeScans: TLabel
           Left = 45
           Top = 43
           Width = 142
           Height = 13
           Caption = 'Maximum number of iterations:'
         end
-        object lblSeqentialCutoff: TLabel
+        object lblIterativeCutoff: TLabel
           Left = 45
           Top = 67
           Width = 169
@@ -1247,7 +1247,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           AutoSize = False
           Caption = 'Stop when p-value is greater than:'
         end
-        object edtNumSequentialScans: TEdit
+        object edtNumIterativeScans: TEdit
           Left = 219
           Top = 37
           Width = 41
@@ -1256,19 +1256,19 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 4
           TabOrder = 1
           Text = '10'
-          OnExit = edtNumSequentialScansExit
+          OnExit = edtNumIterativeScansExit
           OnKeyPress = NaturalNumberKeyPress
         end
-        object chkPerformSequentialScan: TCheckBox
+        object chkPerformIterativeScan: TCheckBox
           Left = 14
           Top = 22
           Width = 210
           Height = 14
           Caption = 'Adjust for more likely clusters'
           TabOrder = 0
-          OnClick = chkPerformSequentialScanClick
+          OnClick = chkPerformIterativeScanClick
         end
-        object edtSequentialScanCutoff: TEdit
+        object edtIterativeScanCutoff: TEdit
           Left = 219
           Top = 63
           Width = 41
@@ -1276,7 +1276,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Enabled = False
           TabOrder = 2
           Text = '.5'
-          OnExit = edtSequentialScanCutoffExit
+          OnExit = edtIterativeScanCutoffExit
           OnKeyPress = PositiveFloatKeyPress
         end
       end

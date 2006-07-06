@@ -51,7 +51,7 @@ const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection)
                   :gpPrintDirection(&PrintDirection),
                    gbPrintPVal(Parameters.GetNumReplicationsRequested() > 98),
-                   gbSequential(Parameters.GetIsSequentialScanning()) {
+                   gbIterativeScan(Parameters.GetIsIterativeScanning()) {
    try {
       Init();
       SetFileName(Parameters.GetRunHistoryFilename());
@@ -469,7 +469,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
       SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
-      if(!gbSequential && gbPrintPVal && AnalysisRun.GetIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
+      if(!gbIterativeScan && gbPrintPVal && AnalysisRun.GetIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
          SetDoubleField(*pRecord, AnalysisRun.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
          SetDoubleField(*pRecord, AnalysisRun.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
          SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field
