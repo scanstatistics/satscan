@@ -426,8 +426,17 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
   double CAT = (gParameters.GetProbabilityModelType() == ORDINAL ? 0 : 1);
   for (size_t i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
      CAT += gpDataHub->GetDataSetHandler().GetDataSet(i).GetPopulationData().GetNumOrdinalCategories();
-  //for exponential model, EXP =1 one for all other models     
-  double EXP = (gParameters.GetProbabilityModelType() == EXPONENTIAL ? 3 : 1);
+  //for exponential model, EXP =1 one for all other models
+  double EXP = 1; //EXP is mulitplied by 4 bytes
+  switch (gParameters.GetProbabilityModelType()) {
+    case POISSON:
+    case SPACETIMEPERMUTATION:
+    case BERNOULLI:
+    case ORDINAL: EXP = 1; break;
+    case EXPONENTIAL: EXP = 3; break; //cases and measure
+    case NORMAL: EXP = 4; break; //cases, measure and measure squared
+    default : ZdGenerateException("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
+  };
   //the total number of cases (for the ordinal model or multiple data sets, C=0)
   double C = (gParameters.GetProbabilityModelType() == ORDINAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).GetTotalCases());
   //1 when scanning for high rates only or low rates only, R=2 when scanning for either high or low rates
