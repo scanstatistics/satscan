@@ -14,11 +14,33 @@
 #include "AnalysisRun.h"
 #include "ParameterFileAccess.h"
 #include "ParametersValidate.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "ParametersPrint.h"
+
+/** Validates arguments of argument list. Throws UsageException if invalid.
+    Returns whether options suppress execution of analysis. */
+bool validateCommandLineArguments(int argc, char *argv[]) {
+  if (argc < 2) GenerateUsageException(argv[0]);
+  for (int i=2; i < argc; ++i) {
+    if ((stricmp(argv[i], "-o") && stricmp(argv[i], "-p") && stricmp(argv[i], "-c")) ||
+        (!stricmp(argv[i], "-o") && argc < i + 2))
+      GenerateUsageException(argv[0]);
+  }
+  for (int i=2; i < argc; ++i)
+     if (!stricmp(argv[i], "-p") || !stricmp(argv[i], "-c")) return true;
+  return false;
+}
+
+/** Returns index of 'arg' in argument list, returns zero if not found. */
+int getCommandLineArgumentIndex(int argc, char *argv[], const char * arg) {
+  for (int i=2; i < argc; ++i)
+     if (!stricmp(argv[i], arg)) return i;
+  return 0;
+}
 
 int main(int argc, char *argv[]) {
   int                   i;
-  bool                  bHas_C_Arg=false;
+  bool                  bExecuting;
   time_t                RunTime;
   CParameters           Parameters;
   ZdString              sMessage;
@@ -29,45 +51,35 @@ int main(int argc, char *argv[]) {
     BasisSetToolkit(new SaTScanToolkit(argv[0])); //Set toolkit
     ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
     Console.Printf(GetToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
-    if (argc < 2)
-      GenerateUsageException(argv[0]);
+    bExecuting = !validateCommandLineArguments(argc, argv);
     time(&RunTime); //get start time
     if (!ParameterAccessCoordinator(Parameters).Read(argv[1], Console)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
-    // read options
-    for (i=2; i < argc; ++i) {
-       if (!stricmp(argv[i], "-o")) {
-         if (argc < i + 2)
-           GenerateUsageException(argv[0]);
-         Parameters.SetOutputFileName(argv[++i]);
-       }
-       else if (!stricmp(argv[i], "-c"))
-         bHas_C_Arg = true;
-       else
-         GenerateUsageException(argv[0]);
-    }
+    // overide parameter filename, if requested
+    if ((i = getCommandLineArgumentIndex(argc, argv, "-o")) != 0)
+      Parameters.SetOutputFileName(argv[++i]);
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     //validate parameters - print errors to console
-    if (! ParametersValidate(Parameters).Validate(Console)) {
+    if (!ParametersValidate(Parameters).Validate(Console)) {
       sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
-    if (bHas_C_Arg) {
+    if (getCommandLineArgumentIndex(argc, argv, "-p"))
+      ParametersPrint(Parameters).Print(stdout);
+    if (getCommandLineArgumentIndex(argc, argv, "-c"))
       Console.Printf("Parameters confirmed.\n", BasePrint::P_STDOUT);
-      BasisExit();
-      return 0;
+    if (bExecuting) {
+      //create analysis runner object and execute analysis
+      AnalysisRunner(Parameters, RunTime, Console);
+      //report completion
+      Console.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",
+                     BasePrint::P_STDOUT, Parameters.GetOutputFileName().c_str());
     }
-    //create analysis runner object and execute analysis
-    AnalysisRunner(Parameters, RunTime, Console);
-
-    //report completion
-    Console.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",
-                   BasePrint::P_STDOUT, Parameters.GetOutputFileName().c_str());
     BasisExit();
   }
   catch (ResolvableException & x) {
