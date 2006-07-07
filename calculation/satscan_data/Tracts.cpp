@@ -441,10 +441,10 @@ void TractHandler::SortTractsByIndentifiers() {
   for (; itr != itr_end; ++itr) {
     //compare current identifier with next identifier
     if (!strcmp((*itr)->GetTractIdentifier(),(*(itr+1))->GetTractIdentifier()))
-      GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", (*itr)->GetTractIdentifier());
+      GenerateResolvableException("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", "tiInsertTnode()", (*itr)->GetTractIdentifier());
     //search for this indentifier in duplicates -- if many duplicates, this could slow things down
     if (gmDuplicateTracts.find(std::string((*itr)->GetTractIdentifier())) != gmDuplicateTracts.end())
-      GenerateResolvableException("Error: Location ID '%s' is specified multiple times in the coordinates file.", "tiInsertTnode()", (*itr)->GetTractIdentifier());
+      GenerateResolvableException("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", "tiInsertTnode()", (*itr)->GetTractIdentifier());
   }
 }
 
