@@ -103,7 +103,7 @@ class CSaTScanData {
     void                                        CalculateExpectedCases();
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
-    void                                        DisplaySummary(FILE* fp);
+    void                                        DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPeriod);
     void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors();
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
@@ -150,6 +150,7 @@ class CSaTScanData {
     inline measure_t                            GetTotalMeasureSq() const {return gtTotalMeasureSq;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
     inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalCases();}
+    double                                      GetAnnualRate(size_t iSetIndex) const;
     double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
