@@ -35,8 +35,13 @@ void AbstractNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
      ++ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
      ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable();
+     tTotalMeasure += itr_permuted->GetPermutedVariable();
      ppSqMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += std::pow(itr_permuted->GetPermutedVariable(), 2);
+     tTotalMeasureSq += std::pow(itr_permuted->GetPermutedVariable(), 2);
   }
+  RealSet.SetTotalCases(gvOriginalPermutedAttribute.size());
+  RealSet.SetTotalMeasure(tTotalMeasure);
+  RealSet.SetTotalMeasureSq(tTotalMeasureSq);
   //now set as cumulative
   for (tTract=0; tTract < iNumTracts; ++tTract)
      for (i=iNumTimeIntervals-2; i >= 0; --i) {
