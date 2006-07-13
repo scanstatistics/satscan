@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "AbstractDataFileWriter.h"
+#include "SaTScanData.h"
 
 /** class constructor */
 RecordBuffer::RecordBuffer(const ZdPointerVector<ZdField>& vFields) : vFieldDefinitions(vFields) {
@@ -14,6 +15,11 @@ RecordBuffer::RecordBuffer(const ZdPointerVector<ZdField>& vFields) : vFieldDefi
 
 /** class destructor */
 RecordBuffer::~RecordBuffer() {}
+
+/** ZdField definition for field with name. */
+const ZdField & RecordBuffer::GetFieldDefinition(const ZdString& sFieldName) const {
+  return *vFieldDefinitions[GetFieldIndex(sFieldName)];
+}
 
 /** ZdField definition for field at index. */
 const ZdField & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const {
@@ -150,6 +156,8 @@ const char * AbstractDataFileWriter::MEAN_OUTSIDE_FIELD                 = "MEAN_
 const char * AbstractDataFileWriter::VARIANCE_FIELD                     = "VARIANCE";
 const char * AbstractDataFileWriter::DEVIATION_FIELD                    = "DEVIATION";
 const char * AbstractDataFileWriter::MEAN_VALUE_FIELD                   = "MEAN";
+const size_t AbstractDataFileWriter::DEFAULT_LOC_FIELD_SIZE             = 30;
+const size_t AbstractDataFileWriter::MAX_LOC_FIELD_SIZE                 = 254;
 
 /** constructor */
 AbstractDataFileWriter::AbstractDataFileWriter(const CParameters& Parameters)
@@ -181,5 +189,12 @@ void AbstractDataFileWriter::CreateField(ZdPointerVector<ZdField>& vFields, cons
     x.AddCallpath("CreateField()","AbstractDataFileWriter");
     throw;
   }
+}
+
+/** Returns field length for location identifers fields. */
+size_t AbstractDataFileWriter::GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const {
+  const TractHandler* pHandler = DataHub.GetTInfo();
+
+  return std::max(DEFAULT_LOC_FIELD_SIZE, std::min(MAX_LOC_FIELD_SIZE, pHandler->tiGetMaxIdentifierLength()));
 }
 

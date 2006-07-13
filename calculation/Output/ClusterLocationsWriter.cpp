@@ -19,10 +19,10 @@ const char * LocationInformationWriter::CLU_MEAN_IN_FIELD         = "CLU_MEAN_I"
 const char * LocationInformationWriter::CLU_MEAN_OUT_FIELD        = "CLU_MEAN_O";
 
 /** class constructor */
-LocationInformationWriter::LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField, bool bAppend)
-                          :AbstractDataFileWriter(Parameters), gbExcludePValueField(bExcludePValueField) {
+LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend)
+                          :AbstractDataFileWriter(DataHub.GetParameters()), gbExcludePValueField(bExcludePValueField) {
   try {
-    DefineFields();
+    DefineFields(DataHub);
     if (gParameters.GetOutputAreaSpecificAscii())
       gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, AREA_SPECIFIC_FILE_EXT, bAppend);
     if (gParameters.GetOutputAreaSpecificDBase())
@@ -40,11 +40,11 @@ LocationInformationWriter::LocationInformationWriter(const CParameters& Paramete
 LocationInformationWriter::~LocationInformationWriter() {}
 
 // sets up the vector of field structs so that the ZdField Vector can be created
-void LocationInformationWriter::DefineFields() {
+void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
   unsigned short uwOffset = 0;
 
   try {
-    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
 
     if (!gbExcludePValueField)
@@ -99,10 +99,15 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
 
   try {
+    //do not report locations for which iterative scan has nullified this locations data
+    if (DataHub.GetIsNullifiedLocation(tTract)) return;
+
     DataHub.GetTInfo()->tiGetTractIdentifiers(tTract, vIdentifiers);
     for (t=0; t < vIdentifiers.size(); ++t) {
        Record.SetAllFieldsBlank(true);
        Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = vIdentifiers[t].c_str();
+       if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+         Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
        if (!gbExcludePValueField)
          Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);

@@ -23,10 +23,10 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_MEAN_OUT_FIELD;
       bool                      gbExcludePValueField;
 
-      void                      DefineFields();
+      void                      DefineFields(const CSaTScanData& DataHub);
 
   public:
-    LocationInformationWriter(const CParameters& Parameters, bool bExcludePValueField, bool bAppend=false);
+    LocationInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend=false);
     virtual ~LocationInformationWriter();
 
       virtual void              Write(const CCluster& theCluster, const CSaTScanData& theData,

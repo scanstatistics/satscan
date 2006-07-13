@@ -18,6 +18,7 @@ class RecordBuffer {
       virtual ~RecordBuffer();
 
       const ZdField                   & GetFieldDefinition(unsigned int iFieldIndex) const;
+      const ZdField                   & GetFieldDefinition(const ZdString& sFieldName) const;
       unsigned int                      GetFieldIndex(const ZdString& sFieldName) const;
       bool                              GetFieldIsBlank(unsigned int iFieldNumber) const;
       ZdFieldValue                    & RecordBuffer::GetFieldValue(const ZdString& sFieldName);
@@ -29,6 +30,7 @@ class RecordBuffer {
       void                              SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank);
 };
 
+class CSaTScanData;
 /** Abstract base class for writing record based data to files. */
 class AbstractDataFileWriter {
   protected:
@@ -53,9 +55,12 @@ class AbstractDataFileWriter {
     static const char         * VARIANCE_FIELD;
     static const char         * DEVIATION_FIELD;
     static const char         * MEAN_VALUE_FIELD;
+    static const size_t         DEFAULT_LOC_FIELD_SIZE;
+    static const size_t         MAX_LOC_FIELD_SIZE;
 
     void                        CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, char cType,
                                             short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex=false);
+    size_t                      GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
 
   public:
     AbstractDataFileWriter(const CParameters& Parameters);

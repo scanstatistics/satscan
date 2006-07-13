@@ -12,13 +12,13 @@ class LocationRiskEstimateWriter : public AbstractDataFileWriter {
       static const char       * REL_RISK_EXT;
       static const char       * TIME_TREND_FIELD;
 
-      void                      DefineFields();
+      void                      DefineFields(const CSaTScanData& DataHub);
       ZdString                & GetLocationId(ZdString& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const;
       void                      RecordRelativeRiskDataAsOrdinal(const CSaTScanData& DataHub);
       void                      RecordRelativeRiskDataStandard(const CSaTScanData& DataHub);
 
   public:
-    LocationRiskEstimateWriter(const CParameters& Parameters);
+    LocationRiskEstimateWriter(const CSaTScanData& DataHub);
     virtual ~LocationRiskEstimateWriter();
     
       void                      Write(const CSaTScanData& DataHub);

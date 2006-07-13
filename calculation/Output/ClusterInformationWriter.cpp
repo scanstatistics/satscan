@@ -72,7 +72,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
   try {
     //define fields of data file that describes cluster properties
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
-    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, 30, 0, uwOffset);
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, GetLocationIdentiferFieldLength(gDataHub), 0, uwOffset);
     if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
@@ -221,6 +221,8 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
   try {
     Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
     Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetAreaID(sBuffer, theCluster);
+    if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+      Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
     if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
       WriteCoordinates(Record, theCluster);
       if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
