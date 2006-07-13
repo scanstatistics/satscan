@@ -22,8 +22,12 @@
 bool validateCommandLineArguments(int argc, char *argv[]) {
   if (argc < 2) GenerateUsageException(argv[0]);
   for (int i=2; i < argc; ++i) {
-    if ((stricmp(argv[i], "-o") && stricmp(argv[i], "-p") && stricmp(argv[i], "-c")) ||
-        (!stricmp(argv[i], "-o") && argc < i + 2))
+    if (!stricmp(argv[i], "-o")) {
+      if (argc < i + 2) GenerateUsageException(argv[0]);
+      ++i; //next parameter is assumed to be filename
+      continue;
+    }
+    if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c"))
       GenerateUsageException(argv[0]);
   }
   for (int i=2; i < argc; ++i)
