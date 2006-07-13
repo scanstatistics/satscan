@@ -1171,7 +1171,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 4
           TabOrder = 1
           Text = '1900'
-          OnExit = edtNumIterativeScansExit
+          OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateMonth: TEdit
@@ -1183,7 +1183,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 2
           TabOrder = 2
           Text = '12'
-          OnExit = edtNumIterativeScansExit
+          OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object edtProspectiveStartDateDay: TEdit
@@ -1195,7 +1195,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           MaxLength = 2
           TabOrder = 3
           Text = '31'
-          OnExit = edtNumIterativeScansExit
+          OnExit = edtProspectiveStartDateExit
           OnKeyPress = NaturalNumberKeyPress
         end
         object chkAdjustForEarlierAnalyses: TCheckBox

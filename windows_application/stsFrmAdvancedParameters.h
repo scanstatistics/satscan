@@ -209,6 +209,7 @@ __published:	// IDE-managed Components
    void __fastcall chkSpecifiyNeighborsFileClick(TObject *Sender);
    void __fastcall edtNeighborsFileChange(TObject *Sender);
    void __fastcall btnBrowseForNeighborsFileClick(TObject *Sender);
+        void __fastcall edtProspectiveStartDateExit(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;

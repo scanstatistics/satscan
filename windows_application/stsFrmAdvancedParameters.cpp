@@ -749,8 +749,7 @@ void TfrmAdvancedParameters::EnableIterativeScanOptionsGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
   bool  bPoisson(gAnalysisSettings.GetModelControlType() == POISSON),
-        bSpaceTimePermutation(gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION),
-        bExponential(gAnalysisSettings.GetModelControlType() == EXPONENTIAL);
+        bSpaceTimePermutation(gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION);
 
   try {
     switch (gAnalysisSettings.GetAnalysisControlType()) {
@@ -764,6 +763,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableOutputOptions(true);
         EnableNeighborsFileGroup(true);
         EnableCoordinatesCheckGroup(true);
+        EnableIterativeScanOptionsGroup(true);
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -775,6 +775,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableOutputOptions(false);
         EnableNeighborsFileGroup(false);
         EnableCoordinatesCheckGroup(false);
+        EnableIterativeScanOptionsGroup(true);
         break;
       case SPACETIME                 :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -788,6 +789,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableOutputOptions(true);
         EnableNeighborsFileGroup(true);
         EnableCoordinatesCheckGroup(true);
+        EnableIterativeScanOptionsGroup(false);
         break;
       case PROSPECTIVESPACETIME      :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -801,6 +803,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableOutputOptions(true);
         EnableNeighborsFileGroup(true);
         EnableCoordinatesCheckGroup(true);
+        EnableIterativeScanOptionsGroup(false);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -812,13 +815,13 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableOutputOptions(false);
         EnableNeighborsFileGroup(false);
         EnableCoordinatesCheckGroup(false);
+        EnableIterativeScanOptionsGroup(true);
         break;
       default :
         ZdGenerateException("Unknown analysis type '%d'.",
                             "EnableSettingsForAnalysisModelCombination()",gAnalysisSettings.GetAnalysisControlType());
     }
     EnableAdjustmentsGroup(bPoisson);
-    EnableIterativeScanOptionsGroup(!bSpaceTimePermutation && !bExponential);
   }
   catch (ZdException &x) {
     x.AddCallpath("EnableSettingsForAnalysisModelCombination()","TfrmAdvancedParameters");
@@ -1301,7 +1304,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, chkReportedSpatialDistance->Checked, true);
 
     ref.SetIterativeCutOffPValue(edtIterativeScanCutoff->Text.ToDouble());
-    ref.SetIterativeScanning(chkPerformIterativeScan->Checked);
+    ref.SetIterativeScanning(chkPerformIterativeScan->Enabled && chkPerformIterativeScan->Checked);
     ref.SetNumIterativeScans(atoi(edtNumIterativeScans->Text.c_str()));
     ref.SetUseAdjustmentForRelativeRisksFile(chkAdjustForKnownRelativeRisks->Enabled && chkAdjustForKnownRelativeRisks->Checked);
     ref.SetAdjustmentsByRelativeRisksFilename(edtAdjustmentsByRelativeRisksFile->Text.c_str(), false);
@@ -2155,4 +2158,11 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   throw theException;
 }
 //---------------------------------------------------------------------------
+/** event triggered when year control, of prospective start date, is exited. */
+void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
+  TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+
 
