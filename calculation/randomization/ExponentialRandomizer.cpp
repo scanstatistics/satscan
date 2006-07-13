@@ -15,15 +15,21 @@ void AbstractExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeI
 }
 
 /** Calibrates accumulated continuous variables and assigns data to RealDataSet objects' structures. */
-void AbstractExponentialRandomizer::AssignFromAttributes(count_t tTotalCases, measure_t tTotalMeasure, RealDataSet& RealSet) {
+void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
   PermutedContainer_t::iterator         itr_permuted=gvOriginalPermutedAttribute.begin();
   int                                   i, tTract, iNumTracts = RealSet.GetNumTracts(), iNumTimeIntervals = RealSet.GetNumTimeIntervals();
-  count_t                            ** ppCases, ** ppCensoredCases;
-  measure_t                          ** ppMeasure, tCalibratedMeasure = 0, tCalibration = (measure_t)tTotalCases/tTotalMeasure;
+  count_t                            ** ppCases, ** ppCensoredCases, tTotalCases=0;
+  measure_t                          ** ppMeasure, tTotalMeasure=0, tCalibratedMeasure = 0, tCalibration;
 
   try {
+    for (; itr_permuted != gvOriginalPermutedAttribute.end(); ++itr_permuted) {
+       if ((*itr_permuted).GetPermutedVariable().second == 0) ++tTotalCases;
+       tTotalMeasure += (*itr_permuted).GetPermutedVariable().first;
+    }
     //calibrate permuted continuous variable
+    tCalibration = (measure_t)tTotalCases/tTotalMeasure;
+    itr_permuted=gvOriginalPermutedAttribute.begin();
     for (; itr_permuted != gvOriginalPermutedAttribute.end(); ++itr_permuted) {
       (*itr_permuted).ReferencePermutedVariable().first *= tCalibration;
       tCalibratedMeasure += (*itr_permuted).GetPermutedVariable().first;
@@ -34,6 +40,7 @@ void AbstractExponentialRandomizer::AssignFromAttributes(count_t tTotalCases, me
     //assign totals for observed and expected in this data set
     RealSet.SetTotalCases(tTotalCases);
     RealSet.SetTotalMeasure(tCalibratedMeasure);
+    RealSet.SetTotalPopulation(gvOriginalPermutedAttribute.size());
     RealSet.AllocateCasesArray(); ppCases = RealSet.GetCaseArray();
     RealSet.AllocateCensoredCasesArray(); ppCensoredCases = RealSet.GetCensoredCasesArrayHandler().GetArray();
     RealSet.AllocateMeasureArray(); ppMeasure = RealSet.GetMeasureArray();
@@ -59,6 +66,17 @@ void AbstractExponentialRandomizer::AssignFromAttributes(count_t tTotalCases, me
   }
 }
 
+/** Removes all stationary and permuted attributes associated with cases in interval and location. */
+void AbstractExponentialRandomizer::RemoveCase(int iTimeInterval, tract_t tTractIndex) {
+  ExponentialStationary_t               tAttribute(std::make_pair(iTimeInterval, tTractIndex));
+  StationaryContainer_t::iterator       itr;
+
+  while ((itr=std::find(gvStationaryAttribute.begin(), gvStationaryAttribute.end(), tAttribute)) != gvStationaryAttribute.end()) {
+       size_t t = std::distance(gvStationaryAttribute.begin(), itr);
+       gvOriginalPermutedAttribute.erase(gvOriginalPermutedAttribute.begin() + t);
+       gvStationaryAttribute.erase(itr);
+  }
+}
 
 //******************************************************************************
 

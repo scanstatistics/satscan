@@ -16,7 +16,8 @@ class AbstractExponentialRandomizer : public AbstractPermutedDataRandomizer<Expo
      virtual ~AbstractExponentialRandomizer() {}
 
     void                       AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored);
-    void                       AssignFromAttributes(count_t tTotalCases, measure_t tTotalMeasure, RealDataSet& RealSet);
+    void                       AssignFromAttributes(RealDataSet& RealSet);
+    virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
 };
 
 /** Exponential model data randomizer, derives from class AbstractExponentialRandomizer to define appropriate
