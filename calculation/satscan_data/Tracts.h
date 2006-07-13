@@ -80,6 +80,7 @@ class TractHandler {
     int                                          nDimensions;
     std::map<std::string,TractDescriptor*>       gmDuplicateTracts;
     bool                                         gbAggregatingTracts;
+    size_t                                       giMaxIdentifierLength;
 
   public:
     TractHandler(bool bAggregatingTracts);
@@ -95,6 +96,7 @@ class TractHandler {
     tract_t                             tiGetTractIndex(const char *tid) const;
     void                                tiInsertTnode(const char *tid, std::vector<double>& vCoordinates);
     tract_t                             tiInsertTnode(const char *tid);
+    size_t                              tiGetMaxIdentifierLength() const {return giMaxIdentifierLength;}
     void                                tiReportDuplicateTracts(FILE * fDisplay) const;
     void                                tiRetrieveCoords(tract_t t, std::vector<double> & vRepository) const;
     void                                tiSetCoordinateDimensions(int iDimensions);

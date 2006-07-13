@@ -194,8 +194,12 @@ void TractDescriptor::Setup(const char * sTractIdentifier, const double* pCoordi
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//////////////////// class TractHandler ////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 /** Constructor*/
-TractHandler::TractHandler(bool bAggregatingTracts) : nDimensions(0), gbAggregatingTracts(bAggregatingTracts) {
+TractHandler::TractHandler(bool bAggregatingTracts) : nDimensions(0), gbAggregatingTracts(bAggregatingTracts), giMaxIdentifierLength(0) {
   if (gbAggregatingTracts) gvTractDescriptors.push_back(new TractDescriptor("dummy_location"));
 }
 
@@ -336,6 +340,7 @@ tract_t TractHandler::tiInsertTnode(const char *tid) {
     if (gbAggregatingTracts) //when aggregating locations, insertion process always succeeds
       return 0;
 
+    giMaxIdentifierLength = std::max(strlen(tid), giMaxIdentifierLength);
     std::auto_ptr<TractDescriptor> Tract(new TractDescriptor(tid));
     itrPosition = lower_bound(gvTractDescriptors.begin(), gvTractDescriptors.end(), Tract.get(), CompareTractDescriptorIdentifier());
     if (itrPosition != gvTractDescriptors.end() && !strcmp((*itrPosition)->GetTractIdentifier(),tid))
@@ -358,6 +363,7 @@ void TractHandler::tiInsertTnode(const char *tid, std::vector<double>& vCoordina
       //when aggregating locations, insertion process always succeeds
       return;
 
+    giMaxIdentifierLength = std::max(strlen(tid), giMaxIdentifierLength);
     //search for location with these coordinates
     std::auto_ptr<TractDescriptor> Tract(new TractDescriptor(tid, &vCoordinates[0], nDimensions));
     //find insertion point based upon first coordinate
