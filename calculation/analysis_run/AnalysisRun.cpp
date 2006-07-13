@@ -161,7 +161,7 @@ void AnalysisRunner::CreateReport() {
     fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
     ParametersPrint(gParameters).PrintAnalysisSummary(fp);
     ParametersPrint(gParameters).PrintAdjustments(fp, gpDataHub->GetDataSetHandler());
-    gpDataHub->DisplaySummary(fp);
+    gpDataHub->DisplaySummary(fp, "SUMMARY OF DATA", true);
     fclose(fp);
   }
   catch (ZdException &x) {
@@ -222,8 +222,6 @@ void AnalysisRunner::Execute() {
 
 /** starts analysis execution - evaluating real data then replications */
 void AnalysisRunner::ExecuteSuccessively() {
-  bool  bContinue;
-
   try {
     //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
@@ -267,13 +265,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
-      //repeat analysis - iterative scan
-      if ((bContinue = RepeatAnalysis()) == true) {
-        //detect user cancellation
-        if (gPrintDirection.GetIsCanceled())
-          return;
-      }
-    } while (bContinue);
+      if (gPrintDirection.GetIsCanceled()) return;
+    } while (RepeatAnalysis()); //repeat analysis - iterative scan
     //finish report
     FinalizeReport();
   }
@@ -572,7 +565,6 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
 
 /** starts analysis execution - development */
 void AnalysisRunner::PerformCentric_Parallel() {
-  bool                  bContinue;
   unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(gpDataHub->m_nGridTracts));
   DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
@@ -723,13 +715,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
-      //repeat analysis - iterative scan
-      if ((bContinue = RepeatAnalysis()) == true) {
-        RemoveTopClusterData();
-        //detect user cancellation
-        if (gPrintDirection.GetIsCanceled()) return;
-      }
-    } while (bContinue);
+      if (gPrintDirection.GetIsCanceled()) return;
+    } while (RepeatAnalysis() == true); //repeat analysis - iterative scan
 
     //finish report
     FinalizeReport();
@@ -742,7 +729,6 @@ void AnalysisRunner::PerformCentric_Parallel() {
 
 /** starts analysis execution - development */
 void AnalysisRunner::PerformCentric_Serial() {
-  bool                  bContinue;
   DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
   try {
@@ -873,13 +859,8 @@ void AnalysisRunner::PerformCentric_Serial() {
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
-      //repeat analysis - iterative scan
-      if ((bContinue = RepeatAnalysis()) == true) {
-        RemoveTopClusterData();
-        //detect user cancellation
-        if (gPrintDirection.GetIsCanceled()) return;
-      }
-    } while (bContinue);
+      if (gPrintDirection.GetIsCanceled()) return;
+    } while (RepeatAnalysis()); //repeat analysis - iterative scan
 
     //finish report
     FinalizeReport();
@@ -1194,7 +1175,7 @@ void AnalysisRunner::PrintTopClusters() {
   try {
     //if creating 'location information' files, create record data buffers
     if (gParameters.GetOutputAreaSpecificFiles())
-      ClusterLocationWriter.reset(new LocationInformationWriter(gParameters, giNumSimsExecuted < 99));
+      ClusterLocationWriter.reset(new LocationInformationWriter(*gpDataHub, giNumSimsExecuted < 99));
 
     //if creating 'cluster information' files, create record data buffers
     if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
@@ -1280,11 +1261,14 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
       //get most likely cluster
       const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
       ++giClustersReported; bReportedCluster=true;
-      switch(giAnalysisCount) {
-        case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-        case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n");  break;
-        default : fprintf(fp, "                  _____________________________\n\n");
-      }
+      switch (giClustersReported) {
+       case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+       case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n");
+       default : {ZdString s; s.printf("REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
+                  gpDataHub->DisplaySummary(fp, s.GetCString(), false);
+                  fprintf(fp, "\n");
+                 }
+       }
       //print cluster definition to file stream
       TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
       //print cluster definition to 'cluster information' record buffer
@@ -1292,7 +1276,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
         ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giClustersReported, giNumSimsExecuted);
       //print cluster definition to 'location information' record buffer
       if (gParameters.GetOutputAreaSpecificFiles()) {
-        LocationInformationWriter Writer(gParameters, giNumSimsExecuted < 99, giAnalysisCount > 1);
+        LocationInformationWriter Writer(*gpDataHub, giNumSimsExecuted < 99, giAnalysisCount > 1);
         TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
       }
       //check track of whether this cluster was significant in top five percentage
