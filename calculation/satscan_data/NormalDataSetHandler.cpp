@@ -159,7 +159,7 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, 
   tract_t                               TractIndex;
   count_t                               Count, tTotalCases=0;
   measure_t                             tContinuousVariable;
-  double                           tTotalMeasure=0, tTotalSqMeasure=0;
+  double                                tTotalMeasure=0, tTotalSqMeasure=0;
   AbstractNormalRandomizer            * pRandomizer;
   DataSetHandler::RecordStatusType      eRecordStatus;
 
@@ -205,12 +205,8 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, 
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    else {
-      DataSet.SetTotalCases(tTotalCases);
-      DataSet.SetTotalMeasure(tTotalMeasure);
-      DataSet.SetTotalMeasureSq(tTotalSqMeasure);
+    else
       pRandomizer->AssignFromAttributes(DataSet);
-    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","NormalDataSetHandler");
