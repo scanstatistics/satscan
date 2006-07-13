@@ -81,21 +81,23 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
 }
 
 /** Prints summary of section to results file - detailing input data. */
-void CSaTScanData::DisplaySummary(FILE* fp) {
+void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPeriod) {
   ZdString              sBuffer, sWork, sLabel;
   AsciiPrintFormat      PrintFormat(gDataSets->GetNumDataSets() == 1);
   unsigned int          i;
 
   PrintFormat.SetMarginsAsSummarySection();
   PrintFormat.PrintSectionSeparatorString(fp, 0, 2);
-  fprintf(fp, "SUMMARY OF DATA\n\n");
+  fprintf(fp, "%s\n\n", sSummaryText.GetCString());
   //print study period
-  PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
-  fprintf(fp,"%s - %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+  if (bPrintPeriod) {
+    PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
+    fprintf(fp,"%s - %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+  }  
   if (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile()) {
     //print number locations scanned
     PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-    fprintf(fp, "%ld\n", (long) m_nTracts);
+    fprintf(fp, "%ld\n", (long)m_nTracts - GetNumNullifiedLocations());
   }  
   //print total population per data set
   switch (gParameters.GetProbabilityModelType()) {
@@ -123,10 +125,11 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
     case BERNOULLI            :
     case SPACETIMEPERMUTATION :
     case ORDINAL              :
+    case NORMAL               :
     case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
-                                sBuffer.printf("%ld", gDataSets->GetDataSet(0).GetTotalCasesAtStart());
+                                sBuffer.printf("%ld", gDataSets->GetDataSet(0).GetTotalCases());
                                 for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-                                  sWork.printf(", %ld", gDataSets->GetDataSet(i).GetTotalCasesAtStart());
+                                  sWork.printf(", %ld", gDataSets->GetDataSet(i).GetTotalCases());
                                   sBuffer << sWork;
                                 }
                                 PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -187,9 +190,9 @@ void CSaTScanData::DisplaySummary(FILE* fp) {
   if (gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile()) {
     sBuffer.printf("Annual cases / %.0f",  GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), true, false);
-    sBuffer.printf("%.1f", GetAnnualRateAtStart(0));
+    sBuffer.printf("%.1f", GetAnnualRate(0));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.1f", GetAnnualRateAtStart(i));
+       sWork.printf(", %.1f", GetAnnualRate(i));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -252,7 +255,7 @@ void CSaTScanData::DisplaySummary2(FILE* fp) {
 // post: prints the relative risk data to the output file
 void CSaTScanData::DisplayRelativeRisksForEachTract() const {
   try {
-    LocationRiskEstimateWriter(gParameters).Write(*this);
+    LocationRiskEstimateWriter(*this).Write(*this);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
