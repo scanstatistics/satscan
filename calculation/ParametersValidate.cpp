@@ -815,10 +815,14 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
         PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
         return false;
       }
+      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetIsPurelyTemporalAnalysis())) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for purely spatial and purely temporal analyses only.\n", BasePrint::P_PARAMERROR);
+        return false;
+      }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
-            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL)) {
-        //code only implemented for Poisson or Bernoulli models
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli and Ordinal models only.\n", BasePrint::P_PARAMERROR);
+            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL ||
+            gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli, Ordinal, Normal and Exponential models only.\n", BasePrint::P_PARAMERROR);
         return false;
       }
       if (gParameters.GetNumIterativeScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_ITERATIVE_ANALYSES)) {
