@@ -107,7 +107,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 // formats the information necessary in the relative risk output file and prints to the specified format
 void CSVTTData::DisplayRelativeRisksForEachTract() const {
   try {
-    LocationRiskEstimateWriter(gParameters).Write(*this);
+    LocationRiskEstimateWriter(*this).Write(*this);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayRelativeRisksForEachTract()","CSVTTData");
