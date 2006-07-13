@@ -146,7 +146,7 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
   bool                                  bReadSuccessful=true, bEmpty=true;
   Julian                                Date;
   tract_t                               tTractIndex;
-  count_t                               tPatients, tCensorAttribute, tTotalPopuation=0, tTotalCases=0;
+  count_t                               tPatients, tCensorAttribute, tTotalCases=0;
   measure_t                             tContinuousVariable, tTotalMeasure=0;
   AbstractExponentialRandomizer       * pRandomizer;
   DataSetHandler::RecordStatusType      eRecordStatus;
@@ -162,11 +162,6 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
              pRandomizer->AddPatients(tPatients, gDataHub.GetTimeIntervalOfDate(Date), tTractIndex, tContinuousVariable, tCensorAttribute);
-             tTotalPopuation += tPatients;
-             //check that addition did not exceed data type limitations
-             if (tTotalPopuation < 0)
-               GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
-                                           "ReadCounts()", std::numeric_limits<count_t>::max());
              tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
@@ -198,10 +193,8 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
                     BasePrint::P_ERROR, gtMinimumNotCensoredCases, (gtMinimumNotCensoredCases == 1 ? "" : "s"));
       bReadSuccessful = false;
     }
-    else {
-      pRandomizer->AssignFromAttributes(tTotalCases, tTotalMeasure, DataSet);
-      DataSet.SetTotalPopulation(tTotalPopuation); //total censored and non-censored cases
-    }
+    else
+      pRandomizer->AssignFromAttributes(DataSet);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","ExponentialDataSetHandler");
