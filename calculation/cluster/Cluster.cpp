@@ -247,7 +247,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      sBuffer.printf("%.2f", dUnbiasedVariance);
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print common standard deviation
-     PrintFormat.PrintSectionLabel(fp, "Common standard dev.", false, true);
+     PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
      sBuffer.printf("%.2f", std::sqrt(dUnbiasedVariance));
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
@@ -806,8 +806,15 @@ void CCluster::SetEllipseOffset(int iOffset, const CSaTScanData& DataHub) {
 /** Set class member 'm_MostCentralLocation' from neighbor information obtained
     from CSaTScanData object. */
 void CCluster::SetMostCentralLocationIndex(const CSaTScanData& DataHub) {
-  if (ClusterDefined())
-    m_MostCentralLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), 1);
+  if (ClusterDefined()) {
+    //when iterative scan performed, we want the most central, not nullified, location
+    m_MostCentralLocation = -1;
+    for (tract_t t=1; t <= GetNumTractsInCluster() && m_MostCentralLocation == -1; ++t) {
+       tract_t tLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), t);
+       if (!DataHub.GetIsNullifiedLocation(tLocation))
+         m_MostCentralLocation = tLocation;
+    }
+  }
 }
 
 /** Sets non compactness penalty for shape. */
@@ -831,7 +838,12 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
                                            DataHub.GetEllipseShape(m_iEllipseOffset), &vCoordsOfNeighborCluster[0], &vCoordsOfNeighborCluster[1]);
     }
     m_CartesianRadius = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
-    m_MostCentralLocation = Neighbors.GetNeighborTractIndex(0);
+    //when iterative scan performed, we want the most central, not nullified, location
+    m_MostCentralLocation = -1;
+    for (tract_t t=0; t < GetNumTractsInCluster() && m_MostCentralLocation == -1; ++t) {
+       if (!DataHub.GetIsNullifiedLocation(Neighbors.GetNeighborTractIndex(t)))
+         m_MostCentralLocation = Neighbors.GetNeighborTractIndex(t);
+    }
   }
 }
 
