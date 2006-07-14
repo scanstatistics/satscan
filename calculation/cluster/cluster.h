@@ -88,6 +88,7 @@ class CCluster {
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
     tract_t                       GetMostCentralLocationIndex() const;
     virtual tract_t               GetNumTractsInCluster() const {return m_nTracts;}
+    virtual tract_t               GetNumNonNullifiedTractsInCluster(const CSaTScanData& DataHub) const;
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
     virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual count_t               GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryIndex) const;

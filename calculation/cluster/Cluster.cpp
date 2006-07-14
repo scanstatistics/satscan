@@ -646,6 +646,19 @@ tract_t CCluster::GetMostCentralLocationIndex() const {
   return m_MostCentralLocation;
 }
 
+/** Returns the number of tract in cluster that are not nullified from previous iteration
+    of an iterative scan.*/
+tract_t CCluster::GetNumNonNullifiedTractsInCluster(const CSaTScanData& DataHub) const {
+  tract_t tClusterLocationCount=0;
+
+  for (tract_t t=1; t <= GetNumTractsInCluster(); ++t) {
+     tract_t tLocation = DataHub.GetNeighbor(GetEllipseOffset(), GetCentroidIndex(), t);
+     if (!DataHub.GetIsNullifiedLocation(tLocation))
+       ++tClusterLocationCount;
+  }
+  return tClusterLocationCount;
+}
+
 /** Returns number of observed cases in accumulated data. */
 count_t CCluster::GetObservedCount(size_t tSetIndex) const {
   return GetClusterData()->GetCaseCount(tSetIndex);

@@ -231,7 +231,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       }
     }
     Record.GetFieldValue(NUM_LOCATIONS_FIELD).AsDouble() =
-        theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumTractsInCluster();
+        theCluster.GetClusterType() == PURELYTEMPORALCLUSTER ? gDataHub.GetNumTracts() : theCluster.GetNumNonNullifiedTractsInCluster(gDataHub);
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     else {
@@ -288,15 +288,12 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
   float                         fRadius;
   unsigned int                  iFirstCoordIndex, iSecondCoordIndex;
   ZdString                      sBuffer;
-  tract_t                       tTractIndex;
 
    try {
      if (thisCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
        iFirstCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LAT_FIELD : COORD_X_FIELD);
        iSecondCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
        gDataHub.GetGInfo()->giRetrieveCoords(thisCluster.GetCentroidIndex(), vCoordinates);
-       tTractIndex = gDataHub.GetNeighbor(thisCluster.GetEllipseOffset(), thisCluster.GetCentroidIndex(),
-                                          thisCluster.GetNumTractsInCluster(), thisCluster.GetCartesianRadius());
        switch (gParameters.GetCoordinatesType()) {
          case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  vCoordinates[0];
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  vCoordinates[1];
