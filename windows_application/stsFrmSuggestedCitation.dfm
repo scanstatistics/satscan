@@ -3,8 +3,11 @@ object frmSuggestedCitation: TfrmSuggestedCitation
   Top = 204
   Width = 493
   Height = 361
+  BorderIcons = [biSystemMenu]
   Caption = 'Suggested Citation:'
   Color = clBtnFace
+  Constraints.MinHeight = 350
+  Constraints.MinWidth = 350
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
