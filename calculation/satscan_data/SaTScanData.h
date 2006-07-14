@@ -98,7 +98,7 @@ class CSaTScanData {
     int                                         m_nTimeIntervals;
 
     virtual void                                AdjustForKnownRelativeRisks(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure);
-    virtual void                                AdjustNeighborCounts(); // For iterative scanning analysis, after top cluster removed
+    virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
     virtual void                                DisplayNeighbors(FILE* pFile);

@@ -131,17 +131,17 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
 }
 
 /** Iterative analyses will call this function to clear neighbor information and re-calculate neighbors. */
-void CSaTScanData::AdjustNeighborCounts() {
+void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
   try {
     bool bDistanceOnlyMax = gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses() &&
                             !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) &&
                             !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
     //We do not need to recalculate the number of neighbors when the max spatial size restriction is by distance only.
-    if (!bDistanceOnlyMax && !gParameters.UseLocationNeighborsFile()) {
+    if (!bDistanceOnlyMax && !gParameters.UseLocationNeighborsFile() && geExecutingType != CENTRICALLY) {
       //Re-calculate neighboring locations about each centroid.
       CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
-      gvCentroidNeighborStore.DeleteAllElements();
     }
+    gvCentroidNeighborStore.DeleteAllElements();
   }
   catch (ZdException &x) {
     x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");

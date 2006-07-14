@@ -27,6 +27,7 @@ class AnalysisRunner {
     unsigned int                        giNumSimsExecuted;
     unsigned int                        giClustersReported;
     MostLikelyClustersContainer         gTopClustersContainer;
+    ExecutionType                       geExecutingType;
 
     void                                Execute();
     void                                ExecuteCentrically();

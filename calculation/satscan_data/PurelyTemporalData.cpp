@@ -27,7 +27,7 @@ CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrin
 CPurelyTemporalData::~CPurelyTemporalData() {}
 
 /** Not implemented throws ZdException. */
-void CPurelyTemporalData::AdjustNeighborCounts() {
+void CPurelyTemporalData::AdjustNeighborCounts(ExecutionType geExecutingType) {
   ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 

@@ -19,7 +19,7 @@ class CPurelyTemporalData : public CSaTScanData {
     CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CPurelyTemporalData();
 
-    virtual void        AdjustNeighborCounts();
+    virtual void        AdjustNeighborCounts(ExecutionType geExecutingType);
     virtual void        CalculateMeasure(RealDataSet& DataSet);
     virtual void        DisplayCases(FILE* pFile);
     virtual void        DisplayMeasure(FILE* pFile);

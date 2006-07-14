@@ -35,7 +35,8 @@
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
-               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection), giNumSimsExecuted(0) {
+               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection), giNumSimsExecuted(0),
+                geExecutingType(Parameters.GetExecutionType()) {
   try {
     macroRunTimeManagerInit();
     Init();
@@ -175,8 +176,6 @@ void AnalysisRunner::CreateReport() {
 
 /** Executes analysis - conditionally running successive or centric processes. */
 void AnalysisRunner::Execute() {
-  ExecutionType eExecutionType(gParameters.GetExecutionType());
-
   try {
     //read data
     macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
@@ -190,16 +189,16 @@ void AnalysisRunner::Execute() {
     macroRunTimeStopSerial();
     //calculation approxiate amount of memory required to run analysis
     std::pair<double, double> prMemory = GetMemoryApproxiation();
-    if (eExecutionType == AUTOMATIC) {
+    if (geExecutingType == AUTOMATIC) {
       //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
       if (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution())
-        eExecutionType = SUCCESSIVELY;
+        geExecutingType = SUCCESSIVELY;
       else
-        eExecutionType = CENTRICALLY;
+        geExecutingType = CENTRICALLY;
     }
     //start execution of analysis
     try {
-      switch (eExecutionType) {
+      switch (geExecutingType) {
         case CENTRICALLY  : //gPrintDirection.Printf("Centric execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.second);
                             ExecuteCentrically(); break;
         case SUCCESSIVELY :
@@ -211,7 +210,7 @@ void AnalysisRunner::Execute() {
       GenerateResolvableException("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
                                   "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
                                   "Note that memory needs are on the order of %.0lf MB.\n", "Execute()",
-                                  (eExecutionType == SUCCESSIVELY ? prMemory.first : prMemory.second));
+                                  (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second));
     }
   }
   catch (ZdException &x) {
@@ -1311,8 +1310,8 @@ void AnalysisRunner::RemoveTopClusterData() {
      if (gTopClustersContainer.GetNumClustersRetained()) {
        const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
        gpDataHub->RemoveClusterSignificance(TopCluster);
-       if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER)
-          gpDataHub->AdjustNeighborCounts();
+       if (!gParameters.GetIsPurelyTemporalAnalysis())
+         gpDataHub->AdjustNeighborCounts(geExecutingType);
      }
      //clear top clusters container
      gTopClustersContainer.Empty();
