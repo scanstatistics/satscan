@@ -157,7 +157,7 @@ bool AsciiFileDataSource::ReadRecord() {
   gsReadBuffer.clear();
   while (std::getline(gSourceFile, gsReadBuffer) && !gStringParser->SetString(gsReadBuffer)) ++glReadCount;
   ++glReadCount;
-  return (gsReadBuffer.size() > 0);
+  return (gsReadBuffer.size() > 0 && gStringParser->HasWords());
 }
 
 void AsciiFileDataSource::ThrowUnicodeException() {
