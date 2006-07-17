@@ -40,23 +40,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                             "Adjustment purpose for multiple data sets is not permitted with ordinal "
                             "probability model in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
     }
-    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetTerminateSimulationsEarly()) {
+    if (!ValidateExecutionTypeParameters(PrintDirection))
       bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The early termination of simulations option can not be applied "
-                            "with the centric analysis execution.\n", BasePrint::P_PARAMERROR);
-    }
-    if (gParameters.GetExecutionType() == CENTRICALLY &&
-        (gParameters.GetIsPurelyTemporalAnalysis() ||
-         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
-         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The centric analysis execution is not available for:\n"
-                            " purely temporal analyses\n purely spatial analyses with isotonic scan\n"
-                            " spatial variation of temporal trends analysis\n", BasePrint::P_PARAMERROR);
-    }
-
     //validate dates
     if (! ValidateDateParameters(PrintDirection))
       bValid = false;
@@ -162,7 +147,7 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
   catch (ZdException &x) {
     x.AddCallpath("ValidateDateParameters()","ParametersValidate");
     throw;
-  }                                                         
+  }
   return bValid;
 }
 
@@ -174,7 +159,7 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
 
   try {
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile() || gParameters.GetSpatialWindowType() != ELLIPTIC) return true;
-    
+
     if (gParameters.GetNumRequestedEllipses() < 1 || gParameters.GetNumRequestedEllipses() > CParameters::MAXIMUM_ELLIPSOIDS) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -217,6 +202,40 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateEllipseParameters()","ParametersValidate");
+    throw;
+  }
+  return bValid;
+}
+
+/** Validates execution type parameters. */
+bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirection) const {
+  bool          bValid=true;
+
+  try {
+    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetTerminateSimulationsEarly()) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The early termination of simulations option can not be applied "
+                            "with the centric analysis execution.\n", BasePrint::P_PARAMERROR);
+    }
+    if (gParameters.GetExecutionType() == CENTRICALLY &&
+        (gParameters.GetIsPurelyTemporalAnalysis() ||
+         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
+         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The centric analysis execution is not available for:\n"
+                            " purely temporal analyses\n purely spatial analyses with isotonic scan\n"
+                            " spatial variation of temporal trends analysis\n", BasePrint::P_PARAMERROR);
+    }
+    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.UseLocationNeighborsFile()) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Centric analysis execution is not implemented with the special neighbors file.\n", BasePrint::P_PARAMERROR);
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ValidateExecutionTypeParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -429,6 +448,50 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateFileParameters()","ParametersValidate");
+    throw;
+  }
+  return bValid;
+}
+
+/** Validates parameters used in optional iterative scan feature.
+    Prints errors to print direction and returns whether values are vaild.*/
+bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirection) const {
+  bool  bValid=true;
+
+  try {
+    if (gParameters.GetIsIterativeScanning()) {
+      if (gParameters.GetSimulationType() == FILESOURCE) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_PARAMERROR);
+        return false;
+      }
+      if (gParameters.GetOutputSimulationData()) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
+        return false;
+      }
+      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetIsPurelyTemporalAnalysis())) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for purely spatial and purely temporal analyses only.\n", BasePrint::P_PARAMERROR);
+        return false;
+      }
+      if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
+            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL ||
+            gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli, Ordinal, Normal and Exponential models only.\n", BasePrint::P_PARAMERROR);
+        return false;
+      }
+      if (gParameters.GetNumIterativeScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_ITERATIVE_ANALYSES)) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\n%d exceeds the maximum number of iterative analyses allowed (%d).\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetNumIterativeScansRequested(), CParameters::MAXIMUM_ITERATIVE_ANALYSES);
+      }
+      if (gParameters.GetIterativeCutOffPValue() < 0 || gParameters.GetIterativeCutOffPValue() > 1) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
+                              BasePrint::P_PARAMERROR, gParameters.GetIterativeCutOffPValue());
+      }
+    }
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ValidateIterativeScanParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -795,50 +858,6 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateRangeParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
-}
-
-/** Validates parameters used in optional iterative scan feature.
-    Prints errors to print direction and returns whether values are vaild.*/
-bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirection) const {
-  bool  bValid=true;
-
-  try {
-    if (gParameters.GetIsIterativeScanning()) {
-      if (gParameters.GetSimulationType() == FILESOURCE) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to read simulation data from file.\n", BasePrint::P_PARAMERROR);
-        return false;
-      }
-      if (gParameters.GetOutputSimulationData()) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
-        return false;
-      }
-      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetIsPurelyTemporalAnalysis())) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for purely spatial and purely temporal analyses only.\n", BasePrint::P_PARAMERROR);
-        return false;
-      }
-      if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
-            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL ||
-            gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli, Ordinal, Normal and Exponential models only.\n", BasePrint::P_PARAMERROR);
-        return false;
-      }
-      if (gParameters.GetNumIterativeScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_ITERATIVE_ANALYSES)) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n%d exceeds the maximum number of iterative analyses allowed (%d).\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetNumIterativeScansRequested(), CParameters::MAXIMUM_ITERATIVE_ANALYSES);
-      }
-      if (gParameters.GetIterativeCutOffPValue() < 0 || gParameters.GetIterativeCutOffPValue() > 1) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan analysis cutoff p-value of '%2g' is not a decimal value between 0 and 1.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetIterativeCutOffPValue());
-      }
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateIterativeScanParameters()","ParametersValidate");
     throw;
   }
   return bValid;

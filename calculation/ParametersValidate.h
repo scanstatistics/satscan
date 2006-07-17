@@ -13,14 +13,15 @@ class ParametersValidate {
 
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
+    bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
+    bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
     bool                ValidateProspectiveDate(BasePrint& PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool                ValidateRangeParameters(BasePrint & PrintDirection) const;
-    bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateSimulationDataParameters(BasePrint & PrintDirection) const;
     bool                ValidateSpatialParameters(BasePrint & PrintDirection) const;
     bool                ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const;
