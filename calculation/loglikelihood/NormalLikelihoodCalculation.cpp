@@ -34,13 +34,12 @@ double NormalLikelihoodCalculator::CalculateMaximizingValueNormal(count_t n, mea
   count_t   N = gvDataSetTotals[tSetIndex].first;
   measure_t U = gvDataSetTotals[tSetIndex].second;
   measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
-  if (!(N - n)) return -std::numeric_limits<double>::max(); //when the cluster contains all the cases in set
-  assert(n > 0);
+  if (!(N - n)/*when the cluster contains all the cases in set*/ || n == 0) return -std::numeric_limits<double>::max();
   double dEstimatedMeanInside = u/n;
   double dEstimatedMeanOutside = (U - u)/(N - n);
   double dEstimatedVariance = (1.0/N) * (u2 - 2.0 * u * dEstimatedMeanInside + n * std::pow(dEstimatedMeanInside, 2) +
                               (U2 - u2) - 2.0 * (U - u) * dEstimatedMeanOutside + (N - n) * std::pow(dEstimatedMeanOutside, 2));
-  return -1 * dEstimatedVariance;
+  return (dEstimatedVariance ? -1 * dEstimatedVariance : -std::numeric_limits<double>::max());
 }
 
 /** calculates the Normal log likelihood ratio given the number of observed, expected cases, and expected cases squared */
@@ -48,12 +47,14 @@ double NormalLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t n, measu
   count_t   N = gvDataSetTotals[tSetIndex].first;
   measure_t U = gvDataSetTotals[tSetIndex].second;
   measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
-  if (!(N - n)) return 0; //when the cluster contains all the cases in set, ratio is zero
-  assert(n > 0);
+  if (!(N - n)/*when the cluster contains all the cases in set, ratio is zero*/ || n == 0) return 0;
   double dEstimatedMeanInside = u/n;
   double dEstimatedMeanOutside = (U - u)/(N - n);
   double dEstimatedVariance = (1.0/N) * (u2 - 2.0 * u * dEstimatedMeanInside + n * std::pow(dEstimatedMeanInside, 2) +
                               (U2 - u2) - 2.0 * (U - u) * dEstimatedMeanOutside + (N - n) * std::pow(dEstimatedMeanOutside, 2));
-  return -1 * N * std::log(std::sqrt(dEstimatedVariance)) + N * std::log(std::sqrt(U2/N - std::pow(U/N, 2)));
+  if (dEstimatedVariance > 0)
+    return -1 * N * std::log(std::sqrt(dEstimatedVariance)) + N * std::log(std::sqrt(U2/N - std::pow(U/N, 2)));
+  else
+    return N * std::log(std::sqrt(U2/N - std::pow(U/N, 2)));
 }
 
