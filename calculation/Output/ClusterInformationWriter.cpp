@@ -341,7 +341,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
   if (theCluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || theCluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
     vComprisedDataSetIndexes.push_back(0);
   else
-    theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+    theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), *Calculator.get(), vComprisedDataSetIndexes);
 
   for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
@@ -397,7 +397,7 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(theCluster.GetClusterData())) == 0)
     ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n","WriteCountOrdinalData()");
 
-  theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio, Calculator, vComprisedDataSetIndexes);
+  theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), Calculator, vComprisedDataSetIndexes);
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
     //retrieve ordinal categories in combined state
     pClusterData->GetOrdinalCombinedCategories(Calculator, vCategoryContainer, *itr_Index);

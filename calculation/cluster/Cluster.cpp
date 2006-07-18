@@ -167,7 +167,7 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
 
-  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (DataHub.GetDataSetHandler().GetNumDataSets() > 1) {
@@ -213,7 +213,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
     ZdGenerateException("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n",
                         "DisplayClusterDataNormal()");
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
-  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (Handler.GetNumDataSets() > 1) {
@@ -268,7 +268,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(GetClusterData())) == 0)
     ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n",
                         "DisplayClusterDataOrdinal()");
-  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, Calculator, vComprisedDataSetIndexes);
+  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, Calculator, vComprisedDataSetIndexes);
 
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //retrieve collection of ordinal categories in combined state
@@ -372,7 +372,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
   if (GetClusterType() == PURELYSPATIALMONOTONECLUSTER || GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
     vComprisedDataSetIndexes.push_back(0);
   else
-    GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio, *Calculator.get(), vComprisedDataSetIndexes);
+    GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
 
 
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
