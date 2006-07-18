@@ -1300,28 +1300,6 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
   }
 }
 
-/** If a most likely cluster is defined, removes data of each location contained
-    within that cluster from consideration in next iteration of iterative scan.
-    NOTE: There maybe more work here considering randomizers that are based off
-          information that is now being removed. Look at space-time permutation
-          randomizer and other similar randomizers. */
-void AnalysisRunner::RemoveTopClusterData() {
-   try {
-     if (gTopClustersContainer.GetNumClustersRetained()) {
-       const CCluster& TopCluster = gTopClustersContainer.GetTopRankedCluster();
-       gpDataHub->RemoveClusterSignificance(TopCluster);
-       if (!gParameters.GetIsPurelyTemporalAnalysis())
-         gpDataHub->AdjustNeighborCounts(geExecutingType);
-     }
-     //clear top clusters container
-     gTopClustersContainer.Empty();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("RemoveTopClusterData()","AnalysisRunner");
-    throw;
-  }
-}
-
 /** Returns indication of whether analysis repeats.
     Indication of true is returned if user requested iterative scan option and :
     - analysis type is purely spatial or monotone purely spatial
@@ -1346,8 +1324,9 @@ bool AnalysisRunner::RepeatAnalysis() {
       if (gParameters.GetNumReplicationsRequested() && gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) > gParameters.GetIterativeCutOffPValue())
          return false;
 
-      //now we need to modify the data sets - removing data of locations in top cluster  
-      RemoveTopClusterData();
+      //now we need to modify the data sets - removing data of locations in top cluster
+      gpDataHub->RemoveClusterSignificance(gTopClustersContainer.GetTopRankedCluster());
+
       //does the minimum number of cases remain in all data sets?
       for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
          if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() < tMinCases)
@@ -1368,6 +1347,10 @@ bool AnalysisRunner::RepeatAnalysis() {
              return false;
         }
       }
+      if (!gParameters.GetIsPurelyTemporalAnalysis())
+        gpDataHub->AdjustNeighborCounts(geExecutingType);
+      //clear top clusters container
+      gTopClustersContainer.Empty();
   }
   catch (ZdException &x) {
     x.AddCallpath("RepeatAnalysis()","AnalysisRunner");

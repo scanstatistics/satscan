@@ -53,7 +53,6 @@ class AnalysisRunner {
     void                                PrintTopClusters();
     void                                PrintTopClusterLogLikelihood();
     void                                PrintTopIterativeScanCluster();
-    void                                RemoveTopClusterData();
     bool                                RepeatAnalysis();
     void                                Setup();
     void                                UpdatePowerCounts(double r);
