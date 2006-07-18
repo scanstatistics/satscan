@@ -29,10 +29,12 @@ __fastcall TfrmSuggestedCitation::TfrmSuggestedCitation(TComponent* Owner) : TFo
                         "outbreaks. PLoS Medicine, 2:216-224, 2005. [online]");
   RichEdit1->Lines->Add("");
   RichEdit1->Lines->Add("Ordinal Model: Jung I, Kulldorff M, Klassen A. A spatial scan statistic for ordinal data. "
-                        "Manuscript,2005.[online]");
+                        "Manuscript,2005. [online]");
   RichEdit1->Lines->Add("");
   RichEdit1->Lines->Add("Exponential Model: Huang L, Kulldorff M, Gregorio D. A spatial scan statistic for survival data. "
-                        "Manuscript, 2005.[online]");
+                        "Manuscript, 2005. [online]");
+  RichEdit1->Lines->Add("");
+  RichEdit1->Lines->Add("Normal  Model: Manuscript in preparation. Until available, please cite this User Guide.");
   RichEdit1->Lines->Add("");
   RichEdit1->Lines->Add("Software: Kulldorff M. and Information Management Services, Inc. SaTScan(TM) v6.1: Software "
                         "for the spatial and space-time scan  statistics. www.satscan.org, 2006.");
