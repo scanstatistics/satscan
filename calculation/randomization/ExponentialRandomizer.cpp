@@ -28,6 +28,8 @@ void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
        tTotalMeasure += (*itr_permuted).GetPermutedVariable().first;
     }
     //calibrate permuted continuous variable
+    if (tTotalMeasure == 0)
+      return; //when performing iterative scan, it is possible that total measure has become zero
     tCalibration = (measure_t)tTotalCases/tTotalMeasure;
     itr_permuted=gvOriginalPermutedAttribute.begin();
     for (; itr_permuted != gvOriginalPermutedAttribute.end(); ++itr_permuted) {
