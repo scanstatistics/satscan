@@ -44,7 +44,7 @@ void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCl
   int            iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
   count_t        tCases;
   measure_t      tMeasure;
-  TemporalData & Data =  GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
+  TemporalData & Data = (TemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<TemporalData>(*(Running.GetClusterData()));
   count_t      * pCases = Data.gpCases;
   measure_t    * pMeasure = Data.gpMeasure;
   AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
@@ -77,7 +77,7 @@ void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCl
     CMeasureList::AddMeasure(cases,measure). */
 void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList) {
   int                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  TemporalData        & Data = GetClusterDataAsType<TemporalData>(ClusterData);
+  TemporalData        & Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
   count_t             * pCases = Data.gpCases;
   measure_t           * pMeasure = Data.gpMeasure;
 
@@ -97,7 +97,7 @@ void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& Cluster
     which we are interested in. Returns greatest loglikelihood ratio. */
 double TemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
   int            iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  TemporalData & Data = GetClusterDataAsType<TemporalData>(ClusterData);
+  TemporalData & Data = (TemporalData&)ClusterData;//GetClusterDataAsType<TemporalData>(ClusterData);
   count_t      * pCases = Data.gpCases;
   measure_t    * pMeasure = Data.gpMeasure;
   double         dMaxValue(gdDefaultMaximizingValue);
@@ -141,7 +141,7 @@ MultiSetTemporalDataEvaluator::MultiSetTemporalDataEvaluator(const CSaTScanData&
           of unifying the calculated log likelihood ratios. */
 void MultiSetTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                                 iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
-  AbstractMultiSetTemporalData      & Data = GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
+  AbstractMultiSetTemporalData      & Data = (AbstractMultiSetTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetTemporalData>(*(Running.GetClusterData()));
   AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
@@ -178,7 +178,7 @@ void MultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&
     which we are interested in. Returns greatest loglikelihood ratio. */
 double MultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
   int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  AbstractMultiSetTemporalData        & Data =  GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
+  AbstractMultiSetTemporalData        & Data = (AbstractMultiSetTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetTemporalData>(ClusterData);
   AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
   double                                dRatio(0);
 
@@ -231,7 +231,7 @@ NormalTemporalDataEvaluator::NormalTemporalDataEvaluator(const CSaTScanData& Dat
           with the only deviation being the second measure. */
 void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                  iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
-  NormalTemporalData & Data =  GetClusterDataAsType<NormalTemporalData>(*(Running.GetClusterData()));
+  NormalTemporalData & Data = (NormalTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<NormalTemporalData>(*(Running.GetClusterData()));
   AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
 
   //iterate through windows
@@ -266,7 +266,7 @@ void NormalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, 
     which we are interested in. Returns greatest loglikelihood ratio. */
 double NormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
   int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  NormalTemporalData & Data = GetClusterDataAsType<NormalTemporalData>(ClusterData);
+  NormalTemporalData & Data = (NormalTemporalData&)ClusterData;//GetClusterDataAsType<NormalTemporalData>(ClusterData);
   double               dMaxValue(gdDefaultMaximizingValue);
   AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
 
@@ -309,7 +309,7 @@ MultiSetNormalTemporalDataEvaluator::MultiSetNormalTemporalDataEvaluator(const C
           of unifying the calculated log likelihood ratios. */
 void MultiSetNormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                                 iWindowStart, iMinWindowStart, iWindowEnd, iMaxEndWindow;
-  AbstractMultiSetNormalTemporalData& Data = GetClusterDataAsType<AbstractMultiSetNormalTemporalData>(*(Running.GetClusterData()));
+  AbstractMultiSetNormalTemporalData& Data = (AbstractMultiSetNormalTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetNormalTemporalData>(*(Running.GetClusterData()));
   AbstractLoglikelihoodRatioUnifier & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
@@ -347,7 +347,7 @@ void MultiSetNormalTemporalDataEvaluator::CompareMeasures(AbstractTemporalCluste
     which we are interested in. Returns greatest loglikelihood ratio. */
 double MultiSetNormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
   int                                   iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  AbstractMultiSetNormalTemporalData  & Data =  GetClusterDataAsType<AbstractMultiSetNormalTemporalData>(ClusterData);
+  AbstractMultiSetNormalTemporalData  & Data = (AbstractMultiSetNormalTemporalData&)(ClusterData);//GetClusterDataAsType<AbstractMultiSetNormalTemporalData>(ClusterData);
   AbstractLoglikelihoodRatioUnifier   & Unifier = gLikelihoodCalculator.GetUnifier();
   double                                dRatio(0);
 
@@ -401,7 +401,7 @@ CategoricalTemporalDataEvaluator::CategoricalTemporalDataEvaluator(const CSaTSca
           with the only deviation being the second measure. */
 void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CCluster& TopCluster) {
   int                       iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
-  CategoricalTemporalData & Data =  GetClusterDataAsType<CategoricalTemporalData>(*(Running.GetClusterData()));
+  CategoricalTemporalData & Data = (CategoricalTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<CategoricalTemporalData>(*(Running.GetClusterData()));
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -432,7 +432,7 @@ void CategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterDa
     which we are interested in. Returns greatest loglikelihood ratio. */
 double CategoricalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
   int                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  CategoricalTemporalData & Data =  GetClusterDataAsType<CategoricalTemporalData>(ClusterData);
+  CategoricalTemporalData & Data = (CategoricalTemporalData&)ClusterData;//GetClusterDataAsType<CategoricalTemporalData>(ClusterData);
   double                    dMaxValue(gdDefaultMaximizingValue);
 
   //iterate through windows
@@ -471,7 +471,7 @@ MultiSetCategoricalTemporalDataEvaluator::MultiSetCategoricalTemporalDataEvaluat
           with the only deviation being the second measure. */
 void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CCluster& TopCluster) {
   int                                       iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
-  AbstractMultiSetCategoricalTemporalData & Data = GetClusterDataAsType<AbstractMultiSetCategoricalTemporalData>(*(Running.GetClusterData()));
+  AbstractMultiSetCategoricalTemporalData & Data = (AbstractMultiSetCategoricalTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<AbstractMultiSetCategoricalTemporalData>(*(Running.GetClusterData()));
   AbstractLoglikelihoodRatioUnifier       & Unifier = gLikelihoodCalculator.GetUnifier();
 
   //iterate through windows
@@ -508,7 +508,7 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalC
     which we are interested in. Returns greatest loglikelihood ratio. */
 double MultiSetCategoricalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData) {
   int                                       iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
-  AbstractMultiSetCategoricalTemporalData & Data = GetClusterDataAsType<AbstractMultiSetCategoricalTemporalData>(ClusterData);
+  AbstractMultiSetCategoricalTemporalData & Data = (AbstractMultiSetCategoricalTemporalData&)ClusterData;//GetClusterDataAsType<AbstractMultiSetCategoricalTemporalData>(ClusterData);
   AbstractLoglikelihoodRatioUnifier       & Unifier = gLikelihoodCalculator.GetUnifier();
   double                                    dRatio(0);
 
