@@ -118,7 +118,10 @@ class CCluster {
 };
 
 /** Attempts to dynamically cast AbstractClusterData object to class type T.
-    Throws ZdException if cast fails, otherwise returns reference to casted type. */
+    Throws ZdException if cast fails, otherwise returns reference to casted type.
+    Note that use of this function in the CTimeIntervals object appears to have
+    a significant effect on runtime - therefore it is only useful during development
+    in the CTimeIntervals classes. */
 template <class T>
 T & GetClusterDataAsType(AbstractClusterData& DataObject) {
   T * t;
