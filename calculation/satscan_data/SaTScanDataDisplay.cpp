@@ -126,7 +126,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
     case SPACETIMEPERMUTATION :
     case ORDINAL              :
     case NORMAL               :
-    case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total cases", true, false);
+    case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
                                 sBuffer.printf("%ld", gDataSets->GetDataSet(0).GetTotalCases());
                                 for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
                                   sWork.printf(", %ld", gDataSets->GetDataSet(i).GetTotalCases());
