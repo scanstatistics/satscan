@@ -144,7 +144,7 @@
       ..\calculation\randomization\RankRandomizer.obj 
       stsFrmSuggestedCitation.obj ..\calculation\satscan_data\DataSource.obj 
       ..\calculation\cluster\MultiSetNormalClusterData.obj 
-      ..\calculation\cluster\TimeIntervals.obj"/>
+      ..\calculation\cluster\TimeIntervals.obj BasisVCL.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

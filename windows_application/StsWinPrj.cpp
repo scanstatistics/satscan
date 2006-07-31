@@ -162,6 +162,7 @@ USEFORM("stsFrmSuggestedCitation.cpp", frmSuggestedCitation);
 USEUNIT("..\calculation\satscan_data\DataSource.cpp");
 USEUNIT("..\calculation\cluster\MultiSetNormalClusterData.cpp");
 USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
+USEUNIT("BasisVCL.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
