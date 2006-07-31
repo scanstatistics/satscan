@@ -40,6 +40,13 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                             "Adjustment purpose for multiple data sets is not permitted with ordinal "
                             "probability model in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
     }
+    if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
+        !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS || gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "When using the non-Eucledian neighbors file, the criteria for reporting secondary clusters "
+                            "can either be set to 'no restrictions' or 'no geographical overlap'.\n", BasePrint::P_PARAMERROR);
+    }
     if (!ValidateExecutionTypeParameters(PrintDirection))
       bValid = false;
     //validate dates
