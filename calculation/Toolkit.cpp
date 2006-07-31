@@ -52,7 +52,6 @@ SaTScanToolkit::SaTScanToolkit(const char * sApplicationFullPath):BToolkit() {
 
 /** destructor */
 SaTScanToolkit::~SaTScanToolkit() {
-#ifndef __BATCH_COMPILE
   try {
     ZdString  theDrive, theDirectory;
     ZdFileName::GetCurDrive(theDrive);
@@ -60,7 +59,6 @@ SaTScanToolkit::~SaTScanToolkit() {
     SetLastDirectory(theDrive.GetCString());
   }
   catch (...){}
-#endif  
 }
 
 /** Adds parameter filename to parameter history. */
@@ -324,12 +322,10 @@ void SaTScanToolkit::InsureSessionStructure() {
   try {
     if (InsureRunHistoryFileName())
       bNeedsWrite = true;
-#ifndef __BATCH_COMPILE
     if (InsureLastDirectoryPath())
       bNeedsWrite = true;
     if (InsureLastImportDestinationDirectoryPath())
       bNeedsWrite = true;
-#endif
     //if (InsureSessionProperty(gsLoggingProperty, "true"))
     //  bNeedsWrite = true;
     //if (InsureSessionProperty(gsSaTScanWebSiteProperty, gsDefaultSaTScanWebSite))
