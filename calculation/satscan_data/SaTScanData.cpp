@@ -597,10 +597,11 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     while (tTractIndex != tStopTract) {
        tTractIndex = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? tTractIndex + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
        // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
-       if (GetIsNullifiedLocation(tTractIndex)) continue;
+       if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && GetIsNullifiedLocation(tTractIndex))
+         continue;
        if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
          gtTotalCases = 0;
-         gtTotalMeasure = gtTotalMeasureSq = 0;
+         gtTotalMeasure = 0;
          if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation = 0;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            RealDataSet& DataSet = gDataSets->GetDataSet(t);
@@ -622,6 +623,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
            //update totals for data set
            DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
            DataSet.SetTotalMeasure(DataSet.GetTotalMeasure() - tMeasureInInterval);
+           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalControls(DataSet.GetTotalControls() - (tMeasureInInterval - tCasesInInterval));
            if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalPopulation(DataSet.GetTotalPopulation() - tMeasureInInterval);
            //update class variables that defines totals across all data sets
            gtTotalCases += DataSet.GetTotalCases();
@@ -687,18 +689,23 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          gvMaxCirclePopulation[tTractIndex] = 0;
        }
        // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
-       if (Cluster.m_nFirstInterval == 0 && Cluster.m_nLastInterval == m_nTimeIntervals)
+       if (Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
          gvNullifiedLocations.push_back(tTractIndex);
     }
+
     //now update data sets as needed, given all cluster data has now been removed
     if (gParameters.GetProbabilityModelType() == POISSON) {
       //recalibrate the measure array to equal expected cases
       gtTotalMeasure = 0;
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+         RealDataSet& DataSet = gDataSets->GetDataSet(t);
          tAdjustedTotalMeasure=0;
-         tCalibration  = (measure_t)(gDataSets->GetDataSet(t).GetTotalCases())/(gDataSets->GetDataSet(t).GetTotalMeasure());
-         for (int i=0; i < m_nTimeIntervals; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] *= tCalibration;
-         for (tract_t tt=0; tt < m_nTracts; ++tt) tAdjustedTotalMeasure += ppMeasure[0][tt];
+         tCalibration  = (measure_t)(DataSet.GetTotalCases())/(DataSet.GetTotalMeasure());
+         ppMeasure = DataSet.GetMeasureArray();
+         for (int i=0; i < m_nTimeIntervals-1; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
+         for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[m_nTimeIntervals - 1][t] *= tCalibration;
+         DataSet.SetMeasureArrayAsCumulative();
+         for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
          gDataSets->GetDataSet(t).SetTotalMeasure(tAdjustedTotalMeasure);
          gtTotalMeasure += tAdjustedTotalMeasure;
       }
