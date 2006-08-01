@@ -664,7 +664,14 @@ void TfrmAdvancedParameters::EnableNewButton() {
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
 void TfrmAdvancedParameters::EnableOutputOptions(bool bEnable) {
-   rdgCriteriaSecClusters->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
+   rdgCriteriaSecClusters->Enabled = bEnable;
+   rdgCriteriaSecClusters->Controls[NOCENTROIDSINOTHER]->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
+   rdgCriteriaSecClusters->Controls[NOCENTROIDSINMORELIKE]->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
+   rdgCriteriaSecClusters->Controls[NOCENTROIDSINLESSLIKE]->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
+   rdgCriteriaSecClusters->Controls[NOPAIRSINEACHOTHERS]->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
+   if (bEnable && chkSpecifiyNeighborsFile->Enabled && chkSpecifiyNeighborsFile->Checked &&
+       !(rdgCriteriaSecClusters->ItemIndex == NOGEOOVERLAP || rdgCriteriaSecClusters->ItemIndex == NORESTRICTIONS))
+     rdgCriteriaSecClusters->ItemIndex = NOGEOOVERLAP;
 }
 //---------------------------------------------------------------------------
 /** enabled prospective start date controls */
