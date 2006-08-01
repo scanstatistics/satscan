@@ -272,10 +272,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
      //sort by descending m_ratio
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
 
-     //when using locations neighbors file, there are not coordinates -- so no geographical overlapp checking can be done
-     if (Parameters.UseLocationNeighborsFile()) return;
-
-     if (DataHub.GetTInfo()->tiGetDimensions() < 2)
+     if (DataHub.GetTInfo()->tiGetDimensions() < 2 && !(eClusterInclusionCriterion == NORESTRICTIONS || eClusterInclusionCriterion == NOGEOOVERLAP))
        ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
 
      if (eClusterInclusionCriterion != NORESTRICTIONS)
