@@ -1328,9 +1328,11 @@ bool AnalysisRunner::RepeatAnalysis() {
       gpDataHub->RemoveClusterSignificance(gTopClustersContainer.GetTopRankedCluster());
 
       //does the minimum number of cases remain in all data sets?
+      unsigned int iSetWithMinimumCases=0;
       for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-         if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() < tMinCases)
-           return false;
+         if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() < tMinCases) ++iSetWithMinimumCases;
+      if (gpDataHub->GetDataSetHandler().GetNumDataSets() == iSetWithMinimumCases)
+         return false;
 
       //are there locations left?
       if (!gParameters.GetIsPurelyTemporalAnalysis() && ((size_t)gpDataHub->GetNumTracts() - gpDataHub->GetNumNullifiedLocations()) < 2)
