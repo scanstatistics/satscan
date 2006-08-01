@@ -18,7 +18,7 @@ __fastcall TfrmSuggestedCitation::TfrmSuggestedCitation(TComponent* Owner) : TFo
 
   RichEdit1->Lines->Clear();
   RichEdit1->Lines->Add("The SaTScan software may be used freely, with the requirement that proper references are "
-                        "provided to the scientific papers describing the statistical methods. For the most common"
+                        "provided to the scientific papers describing the statistical methods. For the most common "
                         "analyses, the suggested citations are:");
   RichEdit1->Lines->Add("");
   RichEdit1->Lines->Add("Bernoulli and Poisson Models: Kulldorff M. A spatial scan statistic. Communications in "
@@ -36,8 +36,10 @@ __fastcall TfrmSuggestedCitation::TfrmSuggestedCitation(TComponent* Owner) : TFo
   RichEdit1->Lines->Add("");
   RichEdit1->Lines->Add("Normal  Model: Manuscript in preparation. Until available, please cite this User Guide.");
   RichEdit1->Lines->Add("");
-  RichEdit1->Lines->Add("Software: Kulldorff M. and Information Management Services, Inc. SaTScan(TM) v6.1: Software "
-                        "for the spatial and space-time scan  statistics. www.satscan.org, 2006.");
+  AnsiString text;
+  text.printf("Software: Kulldorff M. and Information Management Services, Inc. SaTScan(TM) v%s.%s: Software "
+                        "for the spatial and space-time scan  statistics. www.satscan.org, %s.", VERSION_MAJOR, VERSION_MINOR, TDateTime::CurrentDate().FormatString("yyyy").c_str());
+  RichEdit1->Lines->Add(text);
   RichEdit1->Lines->Add("");
   RichEdit1->Lines->Add("Users of SaTScan should in any reference to the software note that:");
   RichEdit1->Lines->Add("\"SaTScan(TM) is a trademark of Martin Kulldorff. The SaTScan(TM) software was developed "
