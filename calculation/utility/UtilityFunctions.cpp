@@ -183,7 +183,7 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
   bool          bReturn=true;
 
   bReturn = ((fp = fopen(filename.c_str(), bWriteEnable ? "w" : "r")) != NULL);
-  fclose(fp);
+  if (fp) fclose(fp);
 
   return bReturn;
 }
