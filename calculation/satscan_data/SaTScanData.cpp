@@ -623,7 +623,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
            //update totals for data set
            DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
            DataSet.SetTotalMeasure(DataSet.GetTotalMeasure() - tMeasureInInterval);
-           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalControls(DataSet.GetTotalControls() - (tMeasureInInterval - tCasesInInterval));
+           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalControls(DataSet.GetTotalControls() - static_cast<count_t>(tMeasureInInterval - tCasesInInterval));
            if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalPopulation(DataSet.GetTotalPopulation() - tMeasureInInterval);
            //update class variables that defines totals across all data sets
            gtTotalCases += DataSet.GetTotalCases();
@@ -697,8 +697,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     if (gParameters.GetProbabilityModelType() == POISSON) {
       //recalibrate the measure array to equal expected cases
       gtTotalMeasure = 0;
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-         RealDataSet& DataSet = gDataSets->GetDataSet(t);
+      for (size_t d=0; d < gDataSets->GetNumDataSets(); ++d) {
+         RealDataSet& DataSet = gDataSets->GetDataSet(d);
          tAdjustedTotalMeasure=0;
          tCalibration  = (measure_t)(DataSet.GetTotalCases())/(DataSet.GetTotalMeasure());
          ppMeasure = DataSet.GetMeasureArray();
@@ -706,7 +706,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[m_nTimeIntervals - 1][t] *= tCalibration;
          DataSet.SetMeasureArrayAsCumulative();
          for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
-         gDataSets->GetDataSet(t).SetTotalMeasure(tAdjustedTotalMeasure);
+         gDataSets->GetDataSet(d).SetTotalMeasure(tAdjustedTotalMeasure);
          gtTotalMeasure += tAdjustedTotalMeasure;
       }
     }
