@@ -16,7 +16,7 @@ CentroidHandler::GridPoint::GridPoint(const char * sLabel, const std::vector<dou
 /** constructor */
 CentroidHandler::GridPoint::GridPoint(const double* pCoordinates, int size) {
    gsLabel = new char[1];
-   gsLabel[0] = '/0';
+   gsLabel[0] = '\0';
    gpCoordinates = new double[size];
    std::memcpy(gpCoordinates, pCoordinates, size * sizeof(double));
 }
