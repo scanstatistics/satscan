@@ -347,7 +347,7 @@ const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
       ZdGenerateException("Index %d out of range [%d,%d].","GetCaseFileName()", iSetIndex,
-                          (gvCaseFilenames.size() ? 1 : -1), (gvCaseFilenames.size() ? gvCaseFilenames.size() : -1));
+                          (gvCaseFilenames.size() ? 1 : -1), (gvCaseFilenames.size() ? (int)gvCaseFilenames.size() : -1));
   }
   catch (ZdException & x) {
     x.AddCallpath("GetCaseFileName()","CParameters");
@@ -360,7 +360,7 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvControlFilenames.size())
       ZdGenerateException("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
-                          (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? gvControlFilenames.size() : -1));
+                          (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? (int)gvControlFilenames.size() : -1));
   }
   catch (ZdException & x) {
     x.AddCallpath("GetControlFileName()","CParameters");
@@ -491,7 +491,7 @@ const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvPopulationFilenames.size())
       ZdGenerateException("Index %d out of range [%d,%d].","GetPopulationFileName()", iSetIndex,
-                          (gvPopulationFilenames.size() ? 1 : -1), (gvPopulationFilenames.size() ? gvPopulationFilenames.size() : -1));
+                          (gvPopulationFilenames.size() ? 1 : -1), (gvPopulationFilenames.size() ? (int)gvPopulationFilenames.size() : -1));
   }
   catch (ZdException & x) {
     x.AddCallpath("GetPopulationFileName()","CParameters");
