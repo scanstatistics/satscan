@@ -161,7 +161,7 @@ double GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure
   if (tObservations < 1) return -1; //error condition
 
   dUnbiasedVariance = std::fabs((tObservations == 1 ? 0.0 : (tSumSqMeasure - std::pow(tSumMeasure, 2)/tObservations)/(tObservations - 1)));
-  return (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
+  return (dUnbiasedVariance < DBL_CMP_TOLERANCE ? 0.0 : dUnbiasedVariance);
 }
 
 /** Returns estimated combined variance for all observations adjusting for the cluster.
@@ -174,7 +174,7 @@ double GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tSqMeas
                              (tSqMeasure - 2.0 * tMeasure * dEstimatedMeanInside + tCases * std::pow(dEstimatedMeanInside , 2) +
                               (tTotalSqMeasure - tSqMeasure) - 2.0 * (tTotalMeasure - tMeasure) * dEstimatedMeanOutside +
                               (tTotalCases - tCases) * std::pow(dEstimatedMeanOutside, 2));
-   return (dUnbiasedVariance < 0.00000001 ? 0.0 : dUnbiasedVariance);
+   return (dUnbiasedVariance < DBL_CMP_TOLERANCE ? 0.0 : dUnbiasedVariance);
 }
 
 /** Returns indication of whether file exists and is readable/writable. */
