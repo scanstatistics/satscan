@@ -1207,7 +1207,7 @@ void AnalysisRunner::PrintTopClusters() {
            //print cluster definition to file stream
            TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
            //check track of whether this cluster was significant in top five percentage
-           if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
+           if (GetIsCalculatingSignificantRatios() && std::fabs(TopCluster.m_nRatio - gpSignificantRatios->GetAlpha05()) > DBL_CMP_TOLERANCE && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
              ++guwSignificantAt005;
            //print cluster definition to 'location information' record buffer
            if (gParameters.GetOutputAreaSpecificFiles())
@@ -1279,7 +1279,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
         TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
       }
       //check track of whether this cluster was significant in top five percentage
-      if (GetIsCalculatingSignificantRatios() && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
+      if (GetIsCalculatingSignificantRatios() && std::fabs(TopCluster.m_nRatio - gpSignificantRatios->GetAlpha05()) > DBL_CMP_TOLERANCE && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
         ++guwSignificantAt005;
     }
 

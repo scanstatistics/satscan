@@ -94,7 +94,7 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::CalculateTopClusterAboutCentr
 const CCluster& SpaceTimeIncludePurelySpatialCentricAnalysis::GetTopCalculatedCluster() {
   if (!gTopPSCluster->ClusterDefined())
     return *gTopCluster;
-  else if (gTopPSCluster->m_nRatio > gTopCluster->m_nRatio)
+  else if (std::fabs(gTopPSCluster->m_nRatio - gTopCluster->m_nRatio) > DBL_CMP_TOLERANCE && gTopPSCluster->m_nRatio > gTopCluster->m_nRatio)
     return *gTopPSCluster;
   else
     return *gTopCluster;

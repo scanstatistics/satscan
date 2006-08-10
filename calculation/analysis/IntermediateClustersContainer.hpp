@@ -51,7 +51,7 @@ T & IntermediateClustersContainer<T>::GetTopCluster() {
        //apply compactness correction
        gvClusters[t].m_nRatio *= gvClusters[t].GetNonCompactnessPenalty();
        //compare against current top cluster
-       if (gvClusters[t].m_nRatio > TopCluster.m_nRatio)
+       if (std::fabs(gvClusters[t].m_nRatio - TopCluster.m_nRatio) > DBL_CMP_TOLERANCE && gvClusters[t].m_nRatio > TopCluster.m_nRatio)
          TopCluster = gvClusters[t];
      }
   }

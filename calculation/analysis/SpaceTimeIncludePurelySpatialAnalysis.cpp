@@ -84,7 +84,7 @@ const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
     CCluster& STCluster = (CCluster&)gTopShapeClusters.GetTopCluster();
     if (!PSCluster.ClusterDefined())
       return STCluster;
-    else if (PSCluster.m_nRatio > STCluster.m_nRatio)
+    else if (std::fabs(PSCluster.m_nRatio - STCluster.m_nRatio) > DBL_CMP_TOLERANCE && PSCluster.m_nRatio > STCluster.m_nRatio)
       return PSCluster;
     else
       return STCluster;

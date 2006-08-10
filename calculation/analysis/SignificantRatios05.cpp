@@ -30,7 +30,7 @@ bool CSignificantRatios05::AddRatio(double dRatio) {
   bool          bAdded=false;
   unsigned int  i;
 
-  if (gvRatiosList.size() && dRatio > gvRatiosList.back()) {
+  if (gvRatiosList.size() && std::fabs(dRatio - gvRatiosList.back()) > DBL_CMP_TOLERANCE && dRatio > gvRatiosList.back()) {
      bAdded = true;
      //insert calculated ratio in descending order
      for (i=gvRatiosList.size() - 1; i > 0 && dRatio > gvRatiosList[i-1]; --i)

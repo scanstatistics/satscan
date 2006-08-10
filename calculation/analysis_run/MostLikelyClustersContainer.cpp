@@ -445,7 +445,7 @@ void MostLikelyClustersContainer::UpdateTopClustersRank(double r) {
   ZdPointerVector<CCluster>::reverse_iterator rev_end(gvTopClusterList.begin());
 
   for (; rev != rev_end; rev++) {
-     if ((*rev)->GetRatio() > r && fabs((*rev)->GetRatio() - r) > 0.0000000001)
+     if (std::fabs((*rev)->GetRatio() - r) > DBL_CMP_TOLERANCE && (*rev)->GetRatio() > r)
         break;
      (*rev)->IncrementRank();
    }

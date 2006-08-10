@@ -64,7 +64,7 @@ class MostLikelyClustersContainer {
        public:
          bool                   operator() (const CCluster* pCluster1, const CCluster* pCluster2)
                                 {
-                                  if (pCluster1->m_nRatio == pCluster2->m_nRatio) {
+                                  if (std::fabs(pCluster1->m_nRatio - pCluster2->m_nRatio) < DBL_CMP_TOLERANCE) {
                                     //rank a purely temporal cluster higher than other cluster types
                                     //when rank is the same -- there will be at most one pt cluster in list 
                                     if (pCluster1->GetClusterType() == PURELYTEMPORALCLUSTER)
