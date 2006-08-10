@@ -4,7 +4,7 @@ BASIS       := /prj/satscan/linux.unix.build.dir/basisdev/
 
 CC          := g++
 APPLICATION := SaTScan
-DEBUG       := -gstabs+ 
+DEBUG       := -ggdb 
 COMPILATION := -m32
 OPTIMIZATION := -O3
 COMPONENT_REPORT := #-DRPRTCMPT_RUNTIMES
