@@ -27,7 +27,7 @@ bool validateCommandLineArguments(int argc, char *argv[]) {
       ++i; //next parameter is assumed to be filename
       continue;
     }
-    if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c"))
+    if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c") && stricmp(argv[i], "-one-cpu"))
       GenerateUsageException(argv[0]);
   }
   for (int i=2; i < argc; ++i)
@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
     // overide parameter filename, if requested
     if ((i = getCommandLineArgumentIndex(argc, argv, "-o")) != 0)
       Parameters.SetOutputFileName(argv[++i]);
+    if (getCommandLineArgumentIndex(argc, argv, "-one-cpu"))
+      Parameters.SetNumParallelProcessesToExecute(1); //override parameter file setting, if requested
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
     Parameters.SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
     //validate parameters - print errors to console
