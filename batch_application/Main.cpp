@@ -27,7 +27,8 @@ bool validateCommandLineArguments(int argc, char *argv[]) {
       ++i; //next parameter is assumed to be filename
       continue;
     }
-    if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c") && stricmp(argv[i], "-one-cpu"))
+    if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c") &&
+        stricmp(argv[i], "-one-cpu") && stricmp(argv[i], "-centric") && stricmp(argv[i], "-all-out"))
       GenerateUsageException(argv[0]);
   }
   for (int i=2; i < argc; ++i)
@@ -62,9 +63,8 @@ int main(int argc, char *argv[]) {
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
-    // overide parameter filename, if requested
     if ((i = getCommandLineArgumentIndex(argc, argv, "-o")) != 0)
-      Parameters.SetOutputFileName(argv[++i]);
+      Parameters.SetOutputFileName(argv[++i]); // overide parameter filename, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-one-cpu"))
       Parameters.SetNumParallelProcessesToExecute(1); //override parameter file setting, if requested
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
@@ -75,6 +75,10 @@ int main(int argc, char *argv[]) {
       sMessage << "Please review above message(s) and modify parameter settings accordingly.";
       GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
     }
+    if (getCommandLineArgumentIndex(argc, argv, "-centric") && Parameters.GetPermitsCentricExecution())
+      Parameters.SetExecutionType(CENTRICALLY); // overide execution type, if requested
+    if (getCommandLineArgumentIndex(argc, argv, "-all-out"))
+      Parameters.RequestAllAdditionalOutputFiles(); // overide selected output files, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-p"))
       ParametersPrint(Parameters).Print(stdout);
     if (getCommandLineArgumentIndex(argc, argv, "-c"))
