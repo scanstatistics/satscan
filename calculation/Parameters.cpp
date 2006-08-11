@@ -558,6 +558,22 @@ void CParameters::SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, dou
   };
 }
 
+/** Selects additional output file parameters - for current parameters state. */
+void CParameters::RequestAllAdditionalOutputFiles() {
+   SetOutputAreaSpecificAscii(true);
+   SetOutputAreaSpecificDBase(true);
+   SetOutputClusterCaseAscii(true);
+   SetOutputClusterCaseDBase(true);
+   SetOutputClusterLevelAscii(true);
+   SetOutputClusterLevelDBase(true);
+   if (!GetIsPurelyTemporalAnalysis() && GetProbabilityModelType() != SPACETIMEPERMUTATION) {
+     SetOutputRelativeRisksAscii(true);
+     SetOutputRelativeRisksDBase(true);
+   }  
+   SetOutputSimLogLikeliRatiosAscii(true);
+   SetOutputSimLogLikeliRatiosDBase(true);
+}
+
 /** Sets whether maximum spatial cluster size is restricted by given type and whether retriction is for real or simulations. */
 void CParameters::SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported) {
   switch (eSpatialSizeType) {
