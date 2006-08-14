@@ -56,20 +56,22 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID      "11"  /** incremental version identifier - this value must
+#define VERSION_ID      "15"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "7"
 #define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Development" /** testing phase name - leave blank for release */
-#define VERSION_DATE    ""
+#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "August 14, 2006"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
 #define PI 3.1415926535897932384626433832795028841972
 /*radius of earth in km*/
 #define EARTH_RADIUS_km 6367
+/** comparision tolerance for double precision numbers */
+#define DBL_CMP_TOLERANCE 1.0E-9
 /** case count type */
 typedef long            count_t;
 /** measure type */
