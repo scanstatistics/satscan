@@ -93,6 +93,8 @@ const char * TfrmMain::SUPPRESS_CONSOLE_DATA            = "SuppressDosWindow";
 const char * TfrmMain::THREAD_PRIORITY_CLASS_DATA       = "ThreadPriority";
 const char * TfrmMain::INACTIVE_MINIMIZED_CONSOLE_DATA  = "InactiveMinimizedConsole";
 const char * TfrmMain::EXECUTE_METHOD_DATA              = "ExecuteMethod";
+const char * TfrmMain::EXECUTE_OPTIONS_YARDSTICK_DATA   = "YardstickExeOptions";
+const char * TfrmMain::EXECUTE_OPTIONS_SCRUTINIZED_DATA = "ScrutinizedExeOptions";
 
 
 /** constructor */
@@ -104,8 +106,8 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
   Caption = Application->Title;
   gpFrmOptions = new TfrmOptions(this);
   if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
-    edtBatchExecutableComparatorName->Text = pRegistry->ReadString(LASTAPPCOMPARATOR_DATA);
-    edtBatchExecutableName->Text = pRegistry->ReadString(LASTAPP_DATA);
+    edtYardstickExecutable->Text = pRegistry->ReadString(LASTAPPCOMPARATOR_DATA);
+    edtScutinizedExecutable->Text = pRegistry->ReadString(LASTAPP_DATA);
     ltvScheduledBatchs->Items->Clear();
     sParameterDataName.printf("%s%d", PARAMETER_DATA, iIndex);
     sParameterData = pRegistry->ReadString(sParameterDataName);
@@ -130,6 +132,8 @@ __fastcall TfrmMain::TfrmMain(TComponent* Owner) : TForm(Owner), gpFrmOptions(0)
       gpFrmOptions->chkMinimizeConsoleWindow->Checked = pRegistry->ReadBool(INACTIVE_MINIMIZED_CONSOLE_DATA);
     if (pRegistry->GetDataSize(EXECUTE_METHOD_DATA) != -1)
       gpFrmOptions->rdgExecuteMethod->ItemIndex = pRegistry->ReadInteger(EXECUTE_METHOD_DATA);
+    edtYardstickOptions->Text = pRegistry->ReadString(EXECUTE_OPTIONS_YARDSTICK_DATA);
+    edtScrutinizedOptions->Text = pRegistry->ReadString(EXECUTE_OPTIONS_SCRUTINIZED_DATA);
 
     pRegistry->CloseKey();
   }
@@ -152,8 +156,8 @@ __fastcall TfrmMain::~TfrmMain() {
 
 
     if (pRegistry->OpenKey(SCU_REGISTRY_KEY, true)) {
-      pRegistry->WriteString(LASTAPPCOMPARATOR_DATA, edtBatchExecutableComparatorName->Text);
-      pRegistry->WriteString(LASTAPP_DATA, edtBatchExecutableName->Text);
+      pRegistry->WriteString(LASTAPPCOMPARATOR_DATA, edtYardstickExecutable->Text);
+      pRegistry->WriteString(LASTAPP_DATA, edtScutinizedExecutable->Text);
       for (i=0; i < ltvScheduledBatchs->Items->Count;) {
         sParameterDataName.printf("%s%d", PARAMETER_DATA, i);
         pRegistry->WriteString(sParameterDataName, ltvScheduledBatchs->Items->Item[i]->Caption);
@@ -172,6 +176,8 @@ __fastcall TfrmMain::~TfrmMain() {
       pRegistry->WriteInteger(THREAD_PRIORITY_CLASS_DATA, gpFrmOptions->rdoGroupThreadPriority->ItemIndex);
       pRegistry->WriteBool(INACTIVE_MINIMIZED_CONSOLE_DATA, gpFrmOptions->chkMinimizeConsoleWindow->Checked);
       pRegistry->WriteInteger(EXECUTE_METHOD_DATA, gpFrmOptions->rdgExecuteMethod->ItemIndex);
+      pRegistry->WriteString(EXECUTE_OPTIONS_YARDSTICK_DATA, edtYardstickOptions->Text);
+      pRegistry->WriteString(EXECUTE_OPTIONS_SCRUTINIZED_DATA, edtScrutinizedOptions->Text);
       pRegistry->CloseKey();
     }
     delete pRegistry;
@@ -646,7 +652,7 @@ void __fastcall TfrmMain::btnBrowseBatchExecutableComparatorClick(TObject *Sende
   OpenDialog->Title = "Select SaTScan Batch Executable (comparator)";
   OpenDialog->Options >> ofAllowMultiSelect;
   if (OpenDialog->Execute())
-    edtBatchExecutableComparatorName->Text = OpenDialog->FileName;
+    edtYardstickExecutable->Text = OpenDialog->FileName;
 }
 
 /** Sets open dialog filters and displays for selecting executable. */
@@ -658,7 +664,7 @@ void __fastcall TfrmMain::btnBrowseBatchExecutableClick(TObject *Sender) {
   OpenDialog->Title = "Select SaTScan Batch Executable";
   OpenDialog->Options >> ofAllowMultiSelect;
   if (OpenDialog->Execute())
-    edtBatchExecutableName->Text = OpenDialog->FileName;
+    edtScutinizedExecutable->Text = OpenDialog->FileName;
 }
 
 /** Sets open dialog filters and displays for selecting parameter list file *//** compare Cluster Information files */
@@ -956,8 +962,8 @@ void TfrmMain::EnableSaveResultsAction() {
 
 /** enables start action */
 void TfrmMain::EnableStartAction() {
-  ActionStart->Enabled = edtBatchExecutableName->Text.Length() &&
-                         edtBatchExecutableComparatorName->Text.Length() &&
+  ActionStart->Enabled = edtScutinizedExecutable->Text.Length() &&
+                         edtYardstickExecutable->Text.Length() &&
                          ltvScheduledBatchs->Items->Count;
 }
 
@@ -1036,7 +1042,7 @@ void TfrmMain::ExecuteCreateProcessEachAnalysis() {
         //get filename that will be the result file
         GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableComparatorName->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str());
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtYardstickExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str(), edtYardstickOptions->Text.c_str());
         if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
           memMessages->Lines->Add("Yardstick Executable Failed/Cancelled : ");
           memMessages->Lines->Add(ltvScheduledBatchs->Items->Item[iItemIndex]->Caption);
@@ -1046,7 +1052,7 @@ void TfrmMain::ExecuteCreateProcessEachAnalysis() {
         //get filename that will be the result file created for comparison
         GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
         //Execute SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableName->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str());
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtScutinizedExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str(), edtScrutinizedOptions->Text.c_str());
         //execute SaTScan version that is in question
         if (!Execute(sCommand.c_str(), !gpFrmOptions->chkSuppressDosWindow->Checked, gpFrmOptions->GetThreadPriorityFlags(), gpFrmOptions->chkMinimizeConsoleWindow->Checked)) {
           memMessages->Lines->Add("Scrutinized Executable Failed/Cancelled : ");
@@ -1107,12 +1113,12 @@ void TfrmMain::ExecuteThroughBatchFile() {
         //get filename that will be the result file
         GetResultFileName(thisParameterInfo.GetFilename(), sComparatorFilename);
         //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableComparatorName->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str());
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtYardstickExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sComparatorFilename.c_str(), edtYardstickOptions->Text.c_str());
         filestream << sCommand.c_str() << std::endl;
         //get filename that will be the result file created for comparison
         GetInQuestionFilename(thisParameterInfo.GetFilename(), sCompareFilename);
         //Execute SatScan using the current Parameter file, but set commandline options for version check
-        sCommand.printf("\"%s\" \"%s\" -o \"%s\"", edtBatchExecutableName->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str());
+        sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", edtScutinizedExecutable->Text.c_str(), thisParameterInfo.GetFilenameString(), sCompareFilename.c_str(), edtScrutinizedOptions->Text.c_str());
         filestream << sCommand.c_str() << std::endl;
         gvParameterResultsInfo.push_back(thisParameterInfo);
    }
@@ -1291,19 +1297,19 @@ bool TfrmMain::PromptForCompareProgram() {
 }
 
 void __fastcall TfrmMain::btnExecuteQueueComparatorClick(TObject *Sender) {
-  std::auto_ptr<TfrmQueueWindow> pDialog(new TfrmQueueWindow(this));
+  std::auto_ptr<TfrmQueueWindow> pDialog(new TfrmQueueWindow(this, edtYardstickOptions->Text));
 
   for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
-     pDialog->AddBatch(edtBatchExecutableComparatorName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
+     pDialog->AddBatch(edtYardstickExecutable->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
 
   pDialog->ShowModal();
 }
 //---------------------------------------------------------------------------
 void __fastcall TfrmMain::btnExecuteQueueQuestionClick(TObject *Sender) {
-  std::auto_ptr<TfrmQueueWindow> pDialog(new TfrmQueueWindow(this));
+  std::auto_ptr<TfrmQueueWindow> pDialog(new TfrmQueueWindow(this, edtScrutinizedOptions->Text));
 
   for (int i=0; i < ltvScheduledBatchs->Items->Count; ++i)
-     pDialog->AddBatch(edtBatchExecutableName->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
+     pDialog->AddBatch(edtScutinizedExecutable->Text.c_str(), ltvScheduledBatchs->Items->Item[i]->Caption.c_str());
 
   pDialog->ShowModal();
 }

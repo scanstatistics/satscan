@@ -50,6 +50,7 @@ class TfrmQueueWindow : public TForm {
   private:
     bool                        gProcessRunning;
     std::string                 gsLastExe;
+    AnsiString                  gsExeOptions;
 
     void                ClearBatches();
     void                EnableBatchExecutingButtons(bool b);
@@ -64,7 +65,7 @@ class TfrmQueueWindow : public TForm {
     void                Setup();
 
   public:
-    __fastcall TfrmQueueWindow(TComponent* Owner);
+    __fastcall TfrmQueueWindow(TComponent* Owner, AnsiString sExeOptions);
 
     void                AddBatch(const char * sExecutableFilename, const char * sParameterFilename, const char * sStatus="queued");
 

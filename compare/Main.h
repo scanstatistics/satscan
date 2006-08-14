@@ -117,9 +117,9 @@ __published:	// IDE-managed Components
         TAction *ActionLoadParameterList;
         TPanel *pnlTopTop;
         TLabel *lblSaTScanBatchExecutableComparator;
-        TEdit *edtBatchExecutableComparatorName;
+        TEdit *edtYardstickExecutable;
         TLabel *lblSaTScanBatchExecutable;
-        TEdit *edtBatchExecutableName;
+        TEdit *edtScutinizedExecutable;
         TButton *btnBrowseBatchExecutable;
         TButton *btnBrowseBatchComparatorExecutable;
         TPanel *Panel1;
@@ -148,6 +148,9 @@ __published:	// IDE-managed Components
         TToolButton *ToolButton8;
         TSpeedButton *btnExecuteQueueComparator;
         TSpeedButton *btnExecuteQueueQuestion;
+        TEdit *edtYardstickOptions;
+        TEdit *edtScrutinizedOptions;
+        TLabel *Label1;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -195,6 +198,8 @@ __published:	// IDE-managed Components
     static const char                 * THREAD_PRIORITY_CLASS_DATA;
     static const char                 * INACTIVE_MINIMIZED_CONSOLE_DATA;
     static const char                 * EXECUTE_METHOD_DATA;
+    static const char                 * EXECUTE_OPTIONS_YARDSTICK_DATA;
+    static const char                 * EXECUTE_OPTIONS_SCRUTINIZED_DATA;
 
     void                                AddList(const ParameterResultsInfo& ResultsInfo, size_t tPosition);
     void                                AddSubItemForType(TListItem * pListItem, CompareType eType);

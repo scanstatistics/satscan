@@ -13,7 +13,7 @@
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
-__fastcall TfrmQueueWindow::TfrmQueueWindow(TComponent* Owner) : TForm(Owner) {
+__fastcall TfrmQueueWindow::TfrmQueueWindow(TComponent* Owner, AnsiString sExeOptions) : TForm(Owner), gsExeOptions(sExeOptions) {
   Setup();
 }
 
@@ -213,9 +213,9 @@ void TfrmQueueWindow::ExecuteCreateProcessEachAnalysis() {
                  ExtractFileName(ltvScheduledBatchs->Items->Item[i]->Caption).c_str());
     Application->Title = sText;
     //create process command line
-    sCommandLine.sprintf("\"%s\" \"%s\"", // for testing in future -- need ability to have -v option for v4.0 and up
+    sCommandLine.sprintf("\"%s\" \"%s\" %s", // for testing in future -- need ability to have -v option for v4.0 and up
                         ltvScheduledBatchs->Items->Item[i]->Caption.c_str(),
-                        ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[0].c_str());
+                        ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[0].c_str(), gsExeOptions.c_str());
     //mark as running
     ltvScheduledBatchs->Items->Item[i]->SubItems->Strings[1] = "running";
     Application->ProcessMessages();
@@ -269,7 +269,7 @@ void TfrmQueueWindow::ExecuteThroughBatchFile() {
        //get filename that will be the result file
        frmMain->GetResultFileName(ltvScheduledBatchs->Items->Item[iItemIndex]->SubItems->Strings[0].c_str(), sOutputFilename);
        //Execute comparator SatScan using the current Parameter file, but set commandline options for version check
-       sCommand.printf("\"%s\" \"%s\" -o \"%s\"", ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str(), ltvScheduledBatchs->Items->Item[iItemIndex]->SubItems->Strings[0].c_str(), sOutputFilename.c_str());
+       sCommand.printf("\"%s\" \"%s\" -o \"%s\" %s", ltvScheduledBatchs->Items->Item[iItemIndex]->Caption.c_str(), ltvScheduledBatchs->Items->Item[iItemIndex]->SubItems->Strings[0].c_str(), sOutputFilename.c_str(), gsExeOptions.c_str());
        filestream << sCommand.c_str() << std::endl;
   }
   filestream.close();
