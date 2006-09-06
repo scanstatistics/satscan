@@ -23,11 +23,6 @@ class LocationDistance {
 /** Function object used to compare LocationDistance objects by m_dDistance. */
 class CompareLocationDistance {
   private:
-    int                 	gi;                     /* loop index */
-    double              	gdCoordinateLHS,        /* coordinate variables */
-                        	gdCoordinateRHS;
-    std::string                 gsLHS, gsRHS;
-    bool                	gbContinue;             /* stops coordinate comparisons */
     const TractHandler 	      & gTractInformation;      /* tract information */
 
   public:

@@ -17,21 +17,16 @@ bool CompareLocationDistance::operator() (const LocationDistance& lhs, const Loc
     //       continue until last dimension(if needed)
     //   - lesser coordinate breaks tie, not for any particular reason
     //     that was the decision made by Martin
-    //   - if all coordinates are equal, then something is wrong as
-    //     duplicate coordinates should have been handled by this point
-    //     in program execution. Throw exception - else we've lost tie
-    //     breaking control.
-    for (gbContinue=true,gi=0; gi < gTractInformation.tiGetDimensions() && gbContinue; gi++) {
-       gdCoordinateLHS = gTractInformation.tiGetTractCoordinate(lhs.GetTractNumber(), gi);
-       gdCoordinateRHS = gTractInformation.tiGetTractCoordinate(rhs.GetTractNumber(), gi);
-       gbContinue = (gdCoordinateLHS == gdCoordinateRHS);
+    //   - if all coordinates are equal, then continue on to next set of associated coordinates
+    //   - finally compare number of associated coordinates
+    const TractHandler::Location::CoordsContainer_t& llhs = gTractInformation.getLocations().at(lhs.GetTractNumber())->getCoordinatesContainer();
+    const TractHandler::Location::CoordsContainer_t& rrhs = gTractInformation.getLocations().at(rhs.GetTractNumber())->getCoordinatesContainer();
+
+    for (size_t t=0, tMax=std::min(llhs.size(), rrhs.size()); t < tMax; ++t) {
+       if (llhs.at(t) != rrhs.at(t))
+         return *llhs.at(t) < *rrhs.at(t);
     }
-    if (gbContinue) // Done comparing coordinates, are they duplicates?
-      ZdGenerateException("Identical coordinates found during sort comparison for tracts \"%s\" and \"%s\".",
-                          "CompareTractDistance()",
-                          gTractInformation.tiGetTid(lhs.GetTractNumber(), gsLHS),
-                          gTractInformation.tiGetTid(rhs.GetTractNumber(), gsRHS));
-    return (gdCoordinateLHS < gdCoordinateRHS);
+    return llhs.size() < rrhs.size();
   }
   //distances not equal, compare as normal
   else
