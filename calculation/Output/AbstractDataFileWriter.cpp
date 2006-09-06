@@ -195,6 +195,6 @@ void AbstractDataFileWriter::CreateField(ZdPointerVector<ZdField>& vFields, cons
 size_t AbstractDataFileWriter::GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const {
   const TractHandler* pHandler = DataHub.GetTInfo();
 
-  return std::max(DEFAULT_LOC_FIELD_SIZE, std::min(MAX_LOC_FIELD_SIZE, pHandler->tiGetMaxIdentifierLength()));
+  return std::max(DEFAULT_LOC_FIELD_SIZE, std::min(MAX_LOC_FIELD_SIZE, pHandler->getMaxIdentifierLength()));
 }
 
