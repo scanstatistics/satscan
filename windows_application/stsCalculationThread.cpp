@@ -122,6 +122,14 @@ void __fastcall CalcThread::Execute() {
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
+  catch (std::exception& x) {
+    //handle exceptions that occured from unexcepted program error
+    gpPrintWindow->Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    Synchronize((TThreadMethod)&ResetProgressCloseButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
+    Synchronize((TThreadMethod)&EnableProgressEmailButton);
+    CancellJob();
+  }
   catch (...) {
     gpPrintWindow->Printf("\nUnknown Program Error Encountered\n"
                           "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
