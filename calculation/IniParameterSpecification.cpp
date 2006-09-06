@@ -34,7 +34,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_7_0_x_ParameterList();
+  Build_8_0_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -78,8 +78,10 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
     Build_6_0_x_ParameterList();
   else if (Version.iMajor == 6  && Version.iMinor == 1)
     Build_6_1_x_ParameterList();
-  else
+  else if (Version.iMajor == 7)
     Build_7_0_x_ParameterList();
+  else
+    Build_8_0_x_ParameterList();
 }
 
 /** destructor */
@@ -321,6 +323,12 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"NeighborsFilename"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseNeighborsFile"));
+}
+
+/** Version 8.0.x */
+void IniParameterSpecification::Build_8_0_x_ParameterList() {
+  Build_7_0_x_ParameterList();
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MultipleCoordinatesType"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
