@@ -29,7 +29,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     USE_MAXGEOPOPFILE, USE_MAXGEODISTANCE,
                                     MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
-                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE
+                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, MULTIPLE_COORDINATES_TYPE
                                     };
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
@@ -70,12 +70,15 @@ enum NonCompactnessPenaltyType     {NOPENALTY=0, MEDIUMPENALTY, STRONGPENALTY};
 enum StudyPeriodDataCheckingType   {STRICTBOUNDS=0, RELAXEDBOUNDS};
 /** geographical coordinates data checking type */
 enum CoordinatesDataCheckingType   {STRICTCOORDINATES=0, RELAXEDCOORDINATES};
+/** multiple coordinates type */
+enum MultipleCoordinatesType       {ONEPERLOCATION=0, ATLEASTONELOCATION, ALLLOCATIONS};
 
 class CParameters {
   public:
     struct CreationVersion {unsigned int iMajor; unsigned int iMinor; unsigned int iRelease;};
 
   private:
+    MultipleCoordinatesType             geMultipleCoordinatesType;              /** multiple locations type */
     unsigned int                        giNumRequestedParallelProcesses;        /** number of parallel processes to run */
     ExecutionType                       geExecutionType;                        /** execution process type */
     MultipleDataSetPurposeType          geMultipleSetPurposeType;               /** purpose for multiple data sets */
@@ -237,6 +240,7 @@ class CParameters {
     double                              GetMaximumTemporalClusterSize() const {return gdMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
+    MultipleCoordinatesType             GetMultipleCoordinatesType() const {return geMultipleCoordinatesType;}
     double                              GetNonCompactnessPenaltyPower() const {return (geNonCompactnessPenaltyType == NOPENALTY ? 0.0 : (geNonCompactnessPenaltyType == MEDIUMPENALTY ? .5 : 1.0));}
     NonCompactnessPenaltyType           GetNonCompactnessPenaltyType() const {return geNonCompactnessPenaltyType;}
     unsigned int                        GetNumDataSets() const {return gvCaseFilenames.size();}
@@ -328,6 +332,7 @@ class CParameters {
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
     void                                SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, double d, bool bReported);
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
+    void                                SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCoordinatesType);
     void                                SetNonCompactnessPenalty(NonCompactnessPenaltyType e);
     void                                SetNumDataSets(size_t iNumDataSets);
     void                                SetNumParallelProcessesToExecute(unsigned int i) {giNumRequestedParallelProcesses = i;}

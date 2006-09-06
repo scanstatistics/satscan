@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 91;
+const int CParameters::giNumParameters 	              = 92;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -123,8 +123,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdMaxSpatialSizeInMaxCirclePopulationFile_Reported != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported) return false;
   if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported) return false;
   if (gdMaxSpatialSizeInMaxDistanceFromCenter_Reported != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported) return false;
-  if (gsLocationNeighborsFilename != rhs.gsLocationNeighborsFilename) return false;
-  if (gbUseLocationNeighborsFile != rhs.gbUseLocationNeighborsFile) return false;
+  if (gsLocationNeighborsFilename            != rhs.gsLocationNeighborsFilename) return false;
+  if (gbUseLocationNeighborsFile             != rhs.gbUseLocationNeighborsFile) return false;
+  if (geMultipleCoordinatesType              != rhs.geMultipleCoordinatesType) return false;
 
   return true;
 }
@@ -271,8 +272,9 @@ void CParameters::Copy(const CParameters &rhs) {
     gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported;
     gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported;
     gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
-    gsLocationNeighborsFilename                = rhs.gsLocationNeighborsFilename;
-    gbUseLocationNeighborsFile                 = rhs.gbUseLocationNeighborsFile;
+    gsLocationNeighborsFilename            = rhs.gsLocationNeighborsFilename;
+    gbUseLocationNeighborsFile             = rhs.gbUseLocationNeighborsFile;
+    geMultipleCoordinatesType              = rhs.geMultipleCoordinatesType;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -850,6 +852,7 @@ void CParameters::SetAsDefaulted() {
   gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = 1.0;
   gsLocationNeighborsFilename = "";
   gbUseLocationNeighborsFile = false;
+  geMultipleCoordinatesType = ONEPERLOCATION;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1253,6 +1256,19 @@ void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMultipleDataSetPurposeType()","CParameters");
+    throw;
+  }
+}
+
+/** Set multiple coordinates type. Throws exception if out of range. */
+void CParameters::SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCoordinatesType) {
+  try {
+    if (eMultipleCoordinatesType < ONEPERLOCATION || eMultipleCoordinatesType > ALLLOCATIONS)
+      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMultipleCoordinatesType()", eMultipleCoordinatesType, ONEPERLOCATION, ALLLOCATIONS);
+    geMultipleCoordinatesType = eMultipleCoordinatesType;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("SetMultipleCoordinatesType()","CParameters");
     throw;
   }
 }

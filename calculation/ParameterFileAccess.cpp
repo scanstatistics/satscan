@@ -148,6 +148,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case USE_MAXGEODISTANCE_REPORTED: return " restrict maximum reported spatial size - distance? (y/n)";
       case LOCATION_NEIGHBORS_FILE  : return " neighbors file";
       case USE_LOCATION_NEIGHBORS_FILE : return " use neighbors file (y/n)";
+      case MULTIPLE_COORDINATES_TYPE: return " multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)"; 
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -265,6 +266,7 @@ ZdString & AbtractParameterFileAccess::GetParameterString(ParameterType eParamet
       case USE_MAXGEODISTANCE_REPORTED: return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true));
       case LOCATION_NEIGHBORS_FILE  : s = gParameters.GetLocationNeighborsFileName().c_str(); return s;
       case USE_LOCATION_NEIGHBORS_FILE : return AsString(s, gParameters.UseLocationNeighborsFile());
+      case MULTIPLE_COORDINATES_TYPE: return AsString(s, gParameters.GetMultipleCoordinatesType());
       default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -376,6 +378,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case USE_MAXGEODISTANCE_REPORTED: sDefaultValue = (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true) ? "y" : "n"); break;
       case LOCATION_NEIGHBORS_FILE  : sDefaultValue = "<blank>"; break;
       case USE_LOCATION_NEIGHBORS_FILE : sDefaultValue = (gParameters.UseLocationNeighborsFile() ? "y" : "n"); break;
+      case MULTIPLE_COORDINATES_TYPE: sDefaultValue = gParameters.GetMultipleCoordinatesType(); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
     };
 
@@ -758,6 +761,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case USE_MAXGEODISTANCE_REPORTED: gParameters.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, ReadBoolean(sParameter, eParameterType), true); break;
       case LOCATION_NEIGHBORS_FILE   : gParameters.SetLocationNeighborsFileName(sParameter.GetCString(), true); break;
       case USE_LOCATION_NEIGHBORS_FILE : gParameters.UseLocationNeighborsFile(ReadBoolean(sParameter, eParameterType)); break;
+      case MULTIPLE_COORDINATES_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, ONEPERLOCATION, ALLLOCATIONS);
+                                       gParameters.SetMultipleCoordinatesType((MultipleCoordinatesType)ReadInt(sParameter, eParameterType)); break;
       default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
     };
   }

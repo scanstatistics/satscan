@@ -471,6 +471,7 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s), GetParameterComment(MAXCIRCLEPOPFILE));
     WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s), GetParameterComment(WINDOW_SHAPE));
     WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s), GetParameterComment(NON_COMPACTNESS_PENALTY));
+    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpatialWindowSettings()","IniParameterFileAccess");
