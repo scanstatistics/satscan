@@ -326,7 +326,7 @@ void AnalysisRunner::FinalizeReport() {
     if (gParameters.GetProbabilityModelType() == POISSON)
       gpDataHub->GetDataSetHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
 
-    gpDataHub->GetTInfo()->tiReportDuplicateTracts(fp);
+    gpDataHub->GetTInfo()->reportCombinedLocations(fp);
     ParametersPrint(gParameters).Print(fp);
     macroRunTimeManagerPrint(fp);
     time(&CompletionTime);
@@ -389,7 +389,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
    //the number of location IDs in the coordinates file
   double L = gpDataHub->GetNumTracts();
   //the number of coordinates in the grid file (G=L if no grid file is specified)
-  //double G = gpDataHub->GetGInfo()->giGetNumTracts();
+  //double G = gpDataHub->GetGInfo()->getNumGridPoints();
   //maximum geographical cluster size, as a proportion of the population ( 0 < mg = ½ , mg=1 for a purely temporal analysis)
   double mg=0;
   if (gParameters.GetIsPurelyTemporalAnalysis()) mg = 0.0;
