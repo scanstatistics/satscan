@@ -115,6 +115,13 @@ int main(int argc, char *argv[]) {
     BasisExit();
     return 1;
   }
+  catch (std::exception& x) {
+    Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
+                   "Please contact technical support with the following information:\n"
+                   "%s\n%s\n", BasePrint::P_ERROR, x.what(), "Callpath not available.");
+    BasisExit();
+    return 1;
+  }
   catch (...) {
     Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
                    "Please contact technical support with the following information:\n"
