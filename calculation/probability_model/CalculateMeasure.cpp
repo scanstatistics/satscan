@@ -388,8 +388,7 @@ bool ValidateMeasures(const TractHandler *pTInfo,
     	 if (bErrorThisTract)
     	 {
     		bError = true;
-                std::string sBuffer;
-    		tid    = pTInfo->tiGetTid(t, sBuffer);
+    		tid    = pTInfo->getLocations().at(t)->getIndentifier().c_str();
                 char sMessage[200], sTemp[100];
     		sprintf(sMessage, "The maximum circle size is less than the expected number\n");
     		sprintf(sTemp, "  of cases in tract %s, therefore the program will not run.\n", tid);
