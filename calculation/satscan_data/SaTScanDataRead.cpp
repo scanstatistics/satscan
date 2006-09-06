@@ -99,8 +99,6 @@ void SaTScanDataReader::Read() {
     };
     if (!bReadSuccess)
       GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
-    //now that all data has been read, the tract handler can combine references locations with duplicate coordinates
-    gTractHandler.tiConcaticateDuplicateTractIdentifiers();
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadDataFromFiles()","SaTScanDataReader");
@@ -287,7 +285,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
 
   try {
     if (gParameters.GetIsPurelyTemporalAnalysis()) {
-      gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
+      gDataHub.m_nTracts = gTractHandler.getLocations().size();
       bReturn = true;
     }
     else if (gParameters.UseLocationNeighborsFile())
@@ -297,20 +295,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
       std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
       gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
       switch (gParameters.GetCoordinatesType()) {
-        case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(*Source);
-                         //now that the number of dimensions is known, validate against requested ellipses
-                         if (gTractHandler.tiGetDimensions() > 2 && gParameters.GetSpatialWindowType() == ELLIPTIC &&
-                             !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS ||
-                              gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
-                           gPrint.Printf("Error: Invalid parameter setting for ellipses. SaTScan permits only two\n"
-                                         "       dimensions be specified for a centroid when performing an analysis\n"
-                                         "       which contain ellipses and restricts reporting of secondary clusters\n"
-                                         "       to anything other than 'No Geographical Overlap'. You may want to\n"
-                                         "       change the criteria for reporting secondary clusters and run the\n"
-                                         "       analysis again.\n", BasePrint::P_ERROR);
-                           bReturn = false;
-                         }
-                         break;
+        case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(*Source); break;
         case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(*Source); break;
         default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",gParameters.GetCoordinatesType());
       };
@@ -347,11 +332,24 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
              gPrint.Printf("Error: The first record of the coordinates file contains %s.\n",
                            BasePrint::P_READERROR, iScanCount == 2 ? "only x-coordinate" : "no coordinates");
              bValid = false;
-             break; //stop reading records, the first record defines remaining records format 
+             break; //stop reading records, the first record defines remaining records format
+           }
+           //now that the number of dimensions is known, validate against requested ellipses
+           if (iScanCount - 1 > 2 && gParameters.GetSpatialWindowType() == ELLIPTIC &&
+               !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS ||
+               gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
+             gPrint.Printf("Error: Invalid parameter setting for ellipses. SaTScan permits only two\n"
+                           "       dimensions be specified for a centroid when performing an analysis\n"
+                           "       which contain ellipses and restricts reporting of secondary clusters\n"
+                           "       to anything other than 'No Geographical Overlap'. You may want to\n"
+                           "       change the criteria for reporting secondary clusters and run the\n"
+                           "       analysis again.\n", BasePrint::P_ERROR);
+             bValid = false;
+             break;
            }
            //ok, first record indicates that there are iScanCount - 1 dimensions (first scan is tract identifier)
            //data still could be invalid, but this will be determined like the remaining records
-           gTractHandler.tiSetCoordinateDimensions(iScanCount - 1);
+           gTractHandler.setCoordinateDimensions(iScanCount - 1);
            vCoordinates.resize(iScanCount - 1, 0);
          }
          //read and validate dimensions skip to next record if error reading coordinates as double
@@ -360,16 +358,16 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
            continue;
          }
          //validate that we read the correct number of coordinates
-         if (iScanCount < gTractHandler.tiGetDimensions()) {
+         if (iScanCount < gTractHandler.getCoordinateDimensions()) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
            gPrint.Printf("Error: Record %ld in the coordinates file contains %d dimension%s but the\n"
                          "       first record defined the number of dimensions as %d.\n", BasePrint::P_READERROR,
-                         Source.GetCurrentRecordIndex(), iScanCount, (iScanCount == 1 ? "" : "s"), gTractHandler.tiGetDimensions());
+                         Source.GetCurrentRecordIndex(), iScanCount, (iScanCount == 1 ? "" : "s"), gTractHandler.getCoordinateDimensions());
            bValid = false;
            continue;
          }
          //add the tract identifier and coordinates to trac handler
-         gTractHandler.tiInsertTnode(Source.GetValueAt(uLocationIndex), vCoordinates);
+         gTractHandler.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -381,17 +379,17 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
-    else if (gTractHandler.tiGetNumTracts() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
+    else if (gTractHandler.getLocations().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
       gPrint.Printf("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
                     BasePrint::P_ERROR, gParameters.GetAnalysisTypeAsString());
       bValid = false;
     }
-    //now sort tracts by identifiers
-    gTractHandler.SortTractsByIndentifiers();
+    //signal insertions completed
+    gTractHandler.additionsCompleted();
     //record number of locations read
-    gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
+    gDataHub.m_nTracts = gTractHandler.getLocations().size();
     //record number of centroids read
-    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
+    gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsCartesian()", "SaTScanDataReader");
@@ -412,7 +410,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
 
   try {
     vCoordinates.resize(3/*for conversion*/, 0);
-    gTractHandler.tiSetCoordinateDimensions(3/*for conversion*/);
+    gTractHandler.setCoordinateDimensions(3/*for conversion*/);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         bEmpty=false;
         if (! ReadLatitudeLongitudeCoordinates(Source, vCoordinates, 1, "coordinates")) {
@@ -420,7 +418,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
            continue;
         }
         //add the tract identifier and coordinates to trac handler
-        gTractHandler.tiInsertTnode(Source.GetValueAt(uLocationIndex), vCoordinates);
+        gTractHandler.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -432,17 +430,17 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
       bValid = false;
     }
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
-    else if (gTractHandler.tiGetNumTracts() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
+    else if (gTractHandler.getLocations().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
       gPrint.Printf("Error: For a %s analysis, the coordinates file must contain more than one record.\n",
                     BasePrint::P_ERROR, gParameters.GetAnalysisTypeAsString());
       bValid = false;
     }
-    //now sort tracts by identifiers
-    gTractHandler.SortTractsByIndentifiers();        
+    //signal insertions completed
+    gTractHandler.additionsCompleted();
     //record number of locations read
-    gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
+    gDataHub.m_nTracts = gTractHandler.getLocations().size();
     //record number of centroids read
-    gDataHub.m_nGridTracts = gCentroidsHandler.giGetNumTracts();
+    gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "SaTScanDataReader");
@@ -500,14 +498,13 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
   bool                          bValid=true, bEmpty=true;
   short                         iScanCount;
   std::vector<double>           vCoordinates;
-  ZdString                      sId;
   CentroidHandler             * pGridPoints;
-  
+
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
       ZdGenerateException("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
-    pGridPoints->giSetDimensions(gTractHandler.tiGetDimensions());
-    vCoordinates.resize(gTractHandler.tiGetDimensions(), 0);
+    pGridPoints->setDimensions(gTractHandler.getCoordinateDimensions());
+    vCoordinates.resize(gTractHandler.getCoordinateDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         //there are records with data, but not necessarily valid
         bEmpty = false;
@@ -517,17 +514,15 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
            continue;
          }
         //validate that we read the correct number of coordinates as defined by coordinates system or coordinates file
-        if (iScanCount < gTractHandler.tiGetDimensions()) {
+        if (iScanCount < gTractHandler.getCoordinateDimensions()) {
           gPrint.Printf("Error: Record %ld in the grid file contains %d dimension%s but the\n"
                         "       coordinates file defined the number of dimensions as %d.\n",
                         BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), iScanCount,
-                        (iScanCount == 1 ? "" : "s"), gTractHandler.tiGetDimensions());
+                        (iScanCount == 1 ? "" : "s"), gTractHandler.getCoordinateDimensions());
           bValid = false;
           continue;
         }
-        //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        sId = Source.GetCurrentRecordIndex();
-        pGridPoints->giInsertGnode(sId.GetCString(), vCoordinates);
+        pGridPoints->addGridPoint(vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -538,10 +533,9 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
       gPrint.Printf("Error: The Grid file does not contain any data.\n", BasePrint::P_ERROR);
       bValid = false;
     }
-    //now sort grid points by labels
-    pGridPoints->SortGridPointsByLabel();
+    pGridPoints->additionsCompleted();
     //record number of centroids read
-    gDataHub.m_nGridTracts = pGridPoints->giGetNumTracts();
+    gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadGridFileAsCartiesian()","SaTScanDataReader");
@@ -557,14 +551,13 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
 bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
   bool    	                bValid=true, bEmpty=true;
   std::vector<double>           vCoordinates;
-  ZdString                      sId;
   CentroidHandler             * pGridPoints;
-  
+
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
       ZdGenerateException("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
-    pGridPoints->giSetDimensions(gTractHandler.tiGetDimensions());
-    vCoordinates.resize(gTractHandler.tiGetDimensions(), 0);
+    pGridPoints->setDimensions(gTractHandler.getCoordinateDimensions());
+    vCoordinates.resize(gTractHandler.getCoordinateDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
         //there are records with data, but not necessarily valid
         bEmpty=false;
@@ -572,9 +565,7 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
            bValid = false;
            continue;
         }
-        //add created tract identifer(record number) and read coordinates to structure that mantains list of centroids
-        sId = Source.GetCurrentRecordIndex();
-        pGridPoints->giInsertGnode(sId.GetCString(), vCoordinates);
+        pGridPoints->addGridPoint(vCoordinates);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -585,10 +576,9 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
       gPrint.Printf("Error: The grid file does not contain any data.\n", BasePrint::P_ERROR);
       bValid = false;
     }
-    //now sort grid points by labels
-    pGridPoints->SortGridPointsByLabel();
+    pGridPoints->additionsCompleted();
     //record number of centroids read
-    gDataHub.m_nGridTracts = pGridPoints->giGetNumTracts();
+    gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
   }
   catch (ZdFileOpenFailedException &x) {
     gPrint.Printf("Error: The grid file '%s' could not be opened.\n",
@@ -861,7 +851,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
   try {
     gPrint.Printf("Reading the neighbors file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
-    gTractHandler.tiSetCoordinateDimensions(0);
+    gTractHandler.setCoordinateDimensions(0);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetLocationNeighborsFileName().c_str(), gPrint));
     //first pass on neighbors file to determine all location identifiers referenced
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
@@ -869,7 +859,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
       gDataHub.m_nGridTracts++;
       while (Source->GetValueAt(uLocation0ffset)) {
         //insert location identifier into tract handler class
-        gTractHandler.tiInsertTnode(Source->GetValueAt(uLocation0ffset));
+        gTractHandler.addLocation(Source->GetValueAt(uLocation0ffset));
         ++uLocation0ffset;
         bEmpty = false;
       }
@@ -877,7 +867,8 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     //second pass - allocate respective sorted array
     if (!bEmpty) {
       //record number of locations read
-      gDataHub.m_nTracts = gTractHandler.tiGetNumTracts();
+      gTractHandler.additionsCompleted();
+      gDataHub.m_nTracts = gTractHandler.getLocations().size();
       ZdSet  NeighborsSet(gDataHub.m_nTracts);
       gDataHub.AllocateSortedArray();
       Source->GotoFirstRecord();
@@ -887,7 +878,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
         NeighborsSet.NoRecords();
         while (Source->GetValueAt(uLocation0ffset)) {
           //find location identifer internal index
-          tLocationIndex = gTractHandler.tiInsertTnode(Source->GetValueAt(uLocation0ffset));
+          tLocationIndex = gTractHandler.getLocationIndex(Source->GetValueAt(uLocation0ffset));
           if (NeighborsSet.GetIsInSet(tLocationIndex + 1)) {
              bValid = false;
              gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
@@ -929,7 +920,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     - else returns SaTScanDataReader::Accepted */
 SaTScanDataReader::RecordStatusType SaTScanDataReader::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
    //Validate that tract identifer is one of those defined in the coordinates file.
-   if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
+   if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(Source.GetValueAt(guLocationIndex))) == -1) {
      if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
        gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
                      gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),
