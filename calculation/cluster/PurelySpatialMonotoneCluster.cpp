@@ -195,7 +195,7 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
   ZdString              sBuffer, sWork;
 
   try {
-    Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
+    Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
     PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
     for (size_t t=0; t < vCoordinates.size() - 1; ++t) {
        sWork.printf("%s%g,", (t == 0 ? "(" : "" ), vCoordinates[t]);
@@ -207,8 +207,8 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     sBuffer << ZdString::reset;
     for (int i=0; i < m_nSteps; ++i) {
-       Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
-       nRadius = (float)sqrt(Data.GetTInfo()->tiGetDistanceSq(vCoordinates, vCoodinatesOfStep));
+       CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
+       nRadius = (float)sqrt(Data.GetTInfo()->getDistanceSquared(vCoordinates, vCoodinatesOfStep));
        sWork.printf("%s%4.2f", (i > 0 ? ", " : ""), nRadius);
        sBuffer << sWork;
     }
@@ -223,22 +223,22 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
 /** Prints latitude/longitude coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   double                        dRadius, * pCoords2=0;
-  std::vector<double>           vCoordinates, vCoodinatesOfStep;
+  std::vector<double>           ClusterCenter, vCoodinatesOfStep;
   std::pair<double, double>     prLatitudeLongitude;
   char                          cNorthSouth, cEastWest;
   ZdString                      sBuffer, sWork;
 
   try {
-    Data.GetGInfo()->giRetrieveCoords(m_Center, vCoordinates);
-    prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+    Data.GetGInfo()->retrieveCoordinates(m_Center, ClusterCenter);
+    prLatitudeLongitude = ConvertToLatLong(ClusterCenter);
     prLatitudeLongitude.first >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     prLatitudeLongitude.second >= 0 ? cEastWest = 'W' : cEastWest = 'E';
     PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
     fprintf(fp, "(%.6f %c, %.6f %c)\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest);
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
     for (int i=0; i < m_nSteps; ++i) {
-      Data.GetTInfo()->tiRetrieveCoords(Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
-      dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->tiGetDistanceSq(vCoordinates, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
+      CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
+      dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
       sWork.printf("%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
       sBuffer << sWork;
     }
@@ -340,7 +340,6 @@ void CPSMonotoneCluster::Initialize(tract_t nCenter) {
 void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
   unsigned int                  k;
   tract_t                       i, tTract;
-  std::string                   sLocationID;
   std::ofstream                 outfilestream(sFilename.c_str(), ios::ate);
 
   try {
@@ -351,20 +350,20 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
 
     std::vector<double> vCoords;
     if (DataHub.GetParameters().UseSpecialGrid()) {
-      DataHub.GetGInfo()->giRetrieveCoords(GetCentroidIndex(), vCoords);
+      DataHub.GetGInfo()->retrieveCoordinates(GetCentroidIndex(), vCoords);
       outfilestream << "Central_Grid_Point";
       for (size_t t=0; t < vCoords.size(); ++t)
        outfilestream << " " << vCoords.at(t);
       outfilestream << std::endl;
-    }                                                                                 
+    }
 
     for (int s=0; s < m_nSteps; ++s) {
       for (i=gvFirstNeighborList.at(i); i <= gvLastNeighborList.at(i); ++i) {
          tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
          // Print location identifiers if location data has not been removed in iterative scan.
          if (!DataHub.GetIsNullifiedLocation(tTract)) {
-           DataHub.GetTInfo()->tiGetTid(tTract, sLocationID);
-           DataHub.GetTInfo()->tiRetrieveCoords(tTract, vCoords);
+           const std::string& sLocationID = DataHub.GetTInfo()->getLocations().at(tTract)->getIndentifier();
+           CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, tTract, vCoords);
            outfilestream << sLocationID.c_str();
            for (size_t t=0; t < vCoords.size(); ++t)
              outfilestream << " " << vCoords.at(t);

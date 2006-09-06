@@ -74,19 +74,19 @@ const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) c
 /** According to information contained in 'DataHub', what is the radius of 'theCluster'? */
 double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster) {
   double dResult;
-  std::vector<double> vCoordsOfCluster;
-  std::vector<double> vCoordsOfNeighborCluster;
+  std::vector<double> ClusterCenter, NeighborCoords;
   
   try {
     if (theCluster.GetRadiusDefined())
       return theCluster.GetCartesianRadius(); //return radius already calculated
     else {
-      DataHub.GetGInfo()->giRetrieveCoords(theCluster.GetCentroidIndex(), vCoordsOfCluster);
-      DataHub.GetTInfo()->tiRetrieveCoords(DataHub.GetNeighbor(theCluster.GetEllipseOffset(),
-                                                               theCluster.GetCentroidIndex(),
-                                                               theCluster.GetNumTractsInCluster()),
-                                                               vCoordsOfNeighborCluster);
-      dResult = std::sqrt(DataHub.GetTInfo()->tiGetDistanceSq(vCoordsOfCluster, vCoordsOfNeighborCluster));
+      DataHub.GetGInfo()->retrieveCoordinates(theCluster.GetCentroidIndex(), ClusterCenter);
+      CentroidNeighborCalculator::getTractCoordinates(DataHub, theCluster,
+                                                      DataHub.GetNeighbor(theCluster.GetEllipseOffset(),
+                                                                          theCluster.GetCentroidIndex(),
+                                                                          theCluster.GetNumTractsInCluster()),
+                                                      NeighborCoords);
+      dResult = std::sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, NeighborCoords));
     }
   }
   catch (ZdException &x) {
@@ -125,10 +125,10 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
     //possible determination of overlap knowing only centroids and previously calculated
     //radii (centric analyses).
     std::vector<double> vClusterOneCoords, vClusterTwoCoords;
-    DataHub.GetGInfo()->giRetrieveCoords(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
+    DataHub.GetGInfo()->retrieveCoordinates(ClusterOne.GetCentroidIndex(), vClusterOneCoords);
     double ClusterOneRadius = ClusterOne.GetCartesianRadius();
     double ClusterTwoRadius = ClusterTwo.GetCartesianRadius();
-    DataHub.GetGInfo()->giRetrieveCoords(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
+    DataHub.GetGInfo()->retrieveCoordinates(ClusterTwo.GetCentroidIndex(), vClusterTwoCoords);
     double dDistanceBetween = stsClusterCentroidGeometry(vClusterOneCoords).DistanceTo(stsClusterCentroidGeometry(vClusterTwoCoords));
 
     //Note: Since there might be a fractional difference in the calculation of the radii and/or distance, require that the
@@ -272,7 +272,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
      //sort by descending m_ratio
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
 
-     if (DataHub.GetTInfo()->tiGetDimensions() < 2 && !(eClusterInclusionCriterion == NORESTRICTIONS || eClusterInclusionCriterion == NOGEOOVERLAP))
+     if (DataHub.GetTInfo()->getCoordinateDimensions() < 2 && !(eClusterInclusionCriterion == NORESTRICTIONS || eClusterInclusionCriterion == NOGEOOVERLAP))
        ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
 
      if (eClusterInclusionCriterion != NORESTRICTIONS)
@@ -327,7 +327,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
       //always keep purely temporal cluster - we don't apply geographical overlap for these clusters
       return true;
 
-    DataHub.GetGInfo()->giRetrieveCoords(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
+    DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
     stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
     //validate conditions:
     switch (eCriterion) {
@@ -351,7 +351,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
       else {
         CCluster const & currCluster = **itrCurr;
-        DataHub.GetGInfo()->giRetrieveCoords(currCluster.GetCentroidIndex(), vCurrCenterCoords);
+        DataHub.GetGInfo()->retrieveCoordinates(currCluster.GetCentroidIndex(), vCurrCenterCoords);
         stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
         dCurrRadius = GetClusterRadius(DataHub, currCluster);
         switch (eCriterion) {
