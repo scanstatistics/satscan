@@ -59,7 +59,6 @@ void CSaTScanData::DisplayMeasure(FILE* pFile) {
 
 void CSaTScanData::DisplayNeighbors(FILE* pFile) {
   int                   i, j;
-  std::string           sBuffer;
   tract_t            ** ppNeighborCount(gpNeighborCountHandler->GetArray());
   unsigned short    *** pppSortedUShort((gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0));
   tract_t           *** pppSortedInt((gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0));
@@ -70,10 +69,10 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
     fprintf(pFile, "Grid Point # %i : ", i);
     if (pppSortedInt)
        for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->tiGetTid(pppSortedInt[0][i][j], sBuffer));
+         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier().c_str());
     else
        for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->tiGetTid(pppSortedUShort[0][i][j], sBuffer));
+         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier().c_str());
     fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[0][i]);
   }
 

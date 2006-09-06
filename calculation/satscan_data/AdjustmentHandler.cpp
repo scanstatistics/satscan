@@ -167,7 +167,7 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
     ZdGenerateException("Unable to create adjustments outpt file.","PrintAdjustments()");
 
   for (itr=gTractAdjustments.begin(); itr != gTractAdjustments.end(); ++itr) {
-     tHandler.tiGetTid(itr->first, sTractId);
+     const std::string& sTractId = tHandler.getLocations().at(itr->first)->getIndentifier();
      const TractContainer_t & tract_deque = itr->second;
      fprintf(pFile, "Tract %s:\n", sTractId.c_str());
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) {

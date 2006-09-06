@@ -365,7 +365,7 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
     - else returns SaTScanDataReader::Accepted */
 DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSource& Source, tract_t& tLocationIndex) {
    //Validate that tract identifer is one of those defined in the coordinates file.
-   if ((tLocationIndex = gDataHub.GetTInfo()->tiGetTractIndex(Source.GetValueAt(guLocationIndex))) == -1) {
+   if ((tLocationIndex = gDataHub.GetTInfo()->getLocationIndex(Source.GetValueAt(guLocationIndex))) == -1) {
      if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
        gPrint.Printf("Error: Unknown location ID in %s, record %ld. '%s' not specified in the %s file.\n", BasePrint::P_READERROR,
                      gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), Source.GetValueAt(guLocationIndex),

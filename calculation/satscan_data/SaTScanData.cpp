@@ -115,13 +115,12 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
      //if measure has been adjusted to zero, check that cases adjusted interval are also zero
      if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(ppCases, interval, Tract)) {
        ZdString         sStart, sEnd;
-       std::string      sId;
        GenerateResolvableException("Error: For locationID '%s', you have adjusted the expected number\n"
                                    "       of cases in the period %s to %s to be zero, but there\n"
                                    "       are cases in that interval.\n"
                                    "       If the expected is zero, the number of cases must also be zero.\n",
                                    "AdjustMeasure()",
-                                   (Tract == -1 ? "All" : gTractHandler->tiGetTid(Tract, sId)),
+                                   (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier().c_str()),
                                    JulianToString(sStart, StartDate).GetCString(),
                                    JulianToString(sEnd, EndDate).GetCString());
        return false;
@@ -985,7 +984,7 @@ void CSaTScanData::Setup() {
        }
     }
   }
-  gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis()));
+  gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
   if (gParameters.UseSpecialGrid())
     gCentroidsHandler.reset(new CentroidHandler());
   else
@@ -1001,7 +1000,6 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
   int           i;
   tract_t       t;
   ZdString      sStart, sEnd;
-  std::string   sId;
 
   try {
     for (i=0; i < m_nTimeIntervals; ++i)
@@ -1011,7 +1009,7 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
                                         "       the expected number of cases is zero but there were cases observed.\n"
                                         "       Please review the correctness of population and case files.",
                                         "ValidateObservedToExpectedCases()",
-                                        gTractHandler->tiGetTid(t, sId),
+                                        gTractHandler->getLocations().at(t)->getIndentifier().c_str(),
                                         JulianToString(sStart, gvTimeIntervalStartTimes[i]).GetCString(),
                                         JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).GetCString());
   }

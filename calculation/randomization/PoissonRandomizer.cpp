@@ -181,7 +181,7 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, Si
   RelativeRiskFile.open(gDataHub.GetParameters().GetAdjustmentsByRelativeRisksFilename().c_str());
   while (!RelativeRiskFile.eof()) {
        RelativeRiskFile >> sTractId;
-       if ((tractIndex = gDataHub.GetTInfo()->tiGetTractIndex(sTractId.c_str())) == -1)
+       if ((tractIndex = gDataHub.GetTInfo()->getLocationIndex(sTractId.c_str())) == -1)
          GenerateResolvableException("The Location ID '%s', in power estimation file, is not specified the coordinates file.",
                                      "RandomizeData()", sTractId.c_str());
         RelativeRiskFile >> gvRelativeRisks[tractIndex];

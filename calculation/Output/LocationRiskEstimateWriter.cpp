@@ -67,12 +67,11 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     to more than one location identifier, string returned contains first
     encountered location with string "et al" concatenated. */
 ZdString & LocationRiskEstimateWriter::GetLocationId(ZdString& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const {
-  std::vector<std::string> vIdentifiers;
-
-  DataHub.GetTInfo()->tiGetTractIdentifiers(tTractIndex, vIdentifiers);
-  sId = vIdentifiers.front().c_str();
-  if (vIdentifiers.size() > 1)
-    sId << " et al";
+  sId = DataHub.GetTInfo()->getLocations().at(tTractIndex)->getIndentifier().c_str();
+  if (DataHub.GetTInfo()->getLocations().at(tTractIndex)->getSecondaryIdentifiers().size()) {
+    if (sId.GetLength() + strlen(" et al") <= GetLocationIdentiferFieldLength(DataHub))
+      sId << " et al";
+  }
   return sId;
 }
 

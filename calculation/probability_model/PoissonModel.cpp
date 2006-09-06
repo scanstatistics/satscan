@@ -191,9 +191,9 @@ void CPoissonModel::AssignMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& No
     for (unsigned int tract=0; tract < DataSet.GetNumTracts(); ++tract)
        for (unsigned int interval=0; interval < DataSet.GetNumTimeIntervals(); ++interval)
           if (ppNonCumulativeMeasure[interval][tract] < 0) {
-             std::string sBuffer;
     	     ZdGenerateException("Negative measure: %g\ntract %d, tractid %s, interval %d.", "AssignMeasure()",
-                                 ppNonCumulativeMeasure[interval][tract], tract, gDataHub.GetTInfo()->tiGetTid(tract, sBuffer), interval);
+                                 ppNonCumulativeMeasure[interval][tract], tract,
+                                 gDataHub.GetTInfo()->getLocations().at(tract)->getIndentifier().c_str(), interval);
           }
 
   }

@@ -85,7 +85,7 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
   float                                                 fPopulation = 1000; /** arbitrarily selected population */
   std::vector<std::pair<Julian, DatePrecisionType> >    vprPopulationDates;
   const TractHandler&                                   theTracts = *(gDataHub.GetTInfo());
-  tract_t                                               t, tNumTracts = theTracts.tiGetNumTracts();
+  tract_t                                               t, tNumTracts = theTracts.getLocations().size();
   int                                                   iCategoryIndex;
 
   try {
