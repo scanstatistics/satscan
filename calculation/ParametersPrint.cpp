@@ -708,6 +708,14 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
                         break;
         default : ZdException::Generate("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
+
+      fprintf(fp, "  Multiple Coordinates Type             : ");
+      switch (gParameters.GetMultipleCoordinatesType()) {
+        case ONEPERLOCATION : fprintf(fp, "Allow only one coordinate per location.\n"); break;
+        case ATLEASTONELOCATION : fprintf(fp, "Include location in the scanning window if at least one coordinate is in the circle.\n"); break;
+        case ALLLOCATIONS : fprintf(fp, "Include location in the scanning window if all coordinates are in the circle.\n"); break;
+        default : ZdException::Generate("Unknown multiple coordinates type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetMultipleCoordinatesType());
+      }
     }
   }
   catch (ZdException &x) {
