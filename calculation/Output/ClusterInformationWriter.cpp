@@ -77,8 +77,8 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LAT_FIELD : COORD_X_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
       CreateField(vFieldDefinitions, (gParameters.GetCoordinatesType() != CARTESIAN) ? COORD_LONG_FIELD : COORD_Y_FIELD, ZD_NUMBER_FLD, 19, 4, uwOffset);
       //only Cartesian coordinates can have more than two dimensions
-      if (gParameters.GetCoordinatesType() == CARTESIAN && gDataHub.GetTInfo()->tiGetDimensions() > 2)
-        for (i=3; i <= (unsigned int)gDataHub.GetTInfo()->tiGetDimensions(); ++i) {
+      if (gParameters.GetCoordinatesType() == CARTESIAN && gDataHub.GetTInfo()->getCoordinateDimensions() > 2)
+        for (i=3; i <= (unsigned int)gDataHub.GetTInfo()->getCoordinateDimensions(); ++i) {
            sBuffer.printf("%s%i", COORD_Z_FIELD, i - 2);
            CreateField(vFieldDefinitions, sBuffer.GetCString(), ZD_NUMBER_FLD, 19, 4, uwOffset);
         }
@@ -162,13 +162,11 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
 
 /** formats string for the Area ID */
 ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster& thisCluster) const {
-  std::string   sBuffer;
-
   try {
     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       sAreaId = "All";
     else
-      sAreaId = gDataHub.GetTInfo()->tiGetTid(thisCluster.GetMostCentralLocationIndex(), sBuffer);
+      sAreaId = gDataHub.GetTInfo()->getLocations().at(thisCluster.GetMostCentralLocationIndex())->getIndentifier().c_str();
   }
   catch (ZdException &x) {
     x.AddCallpath("GetAreaID","ClusterInformationWriter");
@@ -293,7 +291,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
      if (thisCluster.GetClusterType() != PURELYTEMPORALCLUSTER) {
        iFirstCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LAT_FIELD : COORD_X_FIELD);
        iSecondCoordIndex = Record.GetFieldIndex(gParameters.GetCoordinatesType() != CARTESIAN ? COORD_LONG_FIELD : COORD_Y_FIELD);
-       gDataHub.GetGInfo()->giRetrieveCoords(thisCluster.GetCentroidIndex(), vCoordinates);
+       gDataHub.GetGInfo()->retrieveCoordinates(thisCluster.GetCentroidIndex(), vCoordinates);
        switch (gParameters.GetCoordinatesType()) {
          case CARTESIAN : Record.GetFieldValue(iFirstCoordIndex).AsDouble() =  vCoordinates[0];
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() =  vCoordinates[1];
