@@ -69,10 +69,10 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
     fprintf(pFile, "Grid Point # %i : ", i);
     if (pppSortedInt)
        for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier().c_str());
+         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier());
     else
        for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier().c_str());
+         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier());
     fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[0][i]);
   }
 

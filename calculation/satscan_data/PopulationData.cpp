@@ -366,7 +366,7 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
        if (fTractTotalPopulation == 0 && pCases[tTractIndex] > 0)
          GenerateResolvableException("Error: The total population is zero for location ID %s but it has %d cases.",
                                      "CheckCasesHavePopulations()",
-                                     Data.GetTInfo()->getLocations().at(tTractIndex)->getIndentifier().c_str(), pCases[tTractIndex]);
+                                     Data.GetTInfo()->getLocations().at(tTractIndex)->getIndentifier(), pCases[tTractIndex]);
     }
 
     //if there is at least one case in a category then the total population in
@@ -939,8 +939,8 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
             }
             JulianToChar(sDateBuffer, gvPopulationDates[j]);
             if (pDisplay)
-              fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier().c_str(), sDateBuffer);
-            PrintDirection.Printf("         Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier().c_str(), sDateBuffer);
+              fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
+            PrintDirection.Printf("         Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
           }
        }
     }

@@ -159,17 +159,15 @@ TractContainerIterator_t RelativeRiskAdjustmentHandler::GetMaxPeriodIndex(TractC
 void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
-  std::string                           sTractId;
   ZdString                              sStart, sEnd;
-  FILE                                * pFile;  
+  FILE                                * pFile;
 
   if ((pFile = fopen("c:\\Adustments.txt", "w")) == NULL)
     ZdGenerateException("Unable to create adjustments outpt file.","PrintAdjustments()");
 
   for (itr=gTractAdjustments.begin(); itr != gTractAdjustments.end(); ++itr) {
-     const std::string& sTractId = tHandler.getLocations().at(itr->first)->getIndentifier();
      const TractContainer_t & tract_deque = itr->second;
-     fprintf(pFile, "Tract %s:\n", sTractId.c_str());
+     fprintf(pFile, "Tract %s:\n", tHandler.getLocations().at(itr->first)->getIndentifier());
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) {
         JulianToString(sStart,(*itr_deque).GetStartDate());
         JulianToString(sEnd, (*itr_deque).GetEndDate());

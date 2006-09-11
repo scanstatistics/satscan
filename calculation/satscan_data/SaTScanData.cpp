@@ -120,7 +120,7 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulati
                                    "       are cases in that interval.\n"
                                    "       If the expected is zero, the number of cases must also be zero.\n",
                                    "AdjustMeasure()",
-                                   (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier().c_str()),
+                                   (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier()),
                                    JulianToString(sStart, StartDate).GetCString(),
                                    JulianToString(sEnd, EndDate).GetCString());
        return false;
@@ -1009,7 +1009,7 @@ void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases,
                                         "       the expected number of cases is zero but there were cases observed.\n"
                                         "       Please review the correctness of population and case files.",
                                         "ValidateObservedToExpectedCases()",
-                                        gTractHandler->getLocations().at(t)->getIndentifier().c_str(),
+                                        gTractHandler->getLocations().at(t)->getIndentifier(),
                                         JulianToString(sStart, gvTimeIntervalStartTimes[i]).GetCString(),
                                         JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).GetCString());
   }
