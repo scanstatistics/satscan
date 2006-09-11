@@ -9,7 +9,7 @@
 bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
   //first check whether distances are equal - we may need to break a tie
   if (lhs.GetDistance() == rhs.GetDistance()) {
-    // if lhs and rhs reference same location - just return false 
+    // if lhs and rhs reference same location - just return false
     if (lhs.GetTractNumber() == rhs.GetTractNumber())
       return false;
     // break ties in a controlled scheme:
@@ -19,13 +19,13 @@ bool CompareLocationDistance::operator() (const LocationDistance& lhs, const Loc
     //     that was the decision made by Martin
     //   - if all coordinates are equal, then continue on to next set of associated coordinates
     //   - finally compare number of associated coordinates
-    const TractHandler::Location::CoordsContainer_t& llhs = gTractInformation.getLocations().at(lhs.GetTractNumber())->getCoordinatesContainer();
-    const TractHandler::Location::CoordsContainer_t& rrhs = gTractInformation.getLocations().at(rhs.GetTractNumber())->getCoordinatesContainer();
-
-    for (size_t t=0, tMax=std::min(llhs.size(), rrhs.size()); t < tMax; ++t) {
-       if (llhs.at(t) != rrhs.at(t))
-         return *llhs.at(t) < *rrhs.at(t);
+    const TractHandler::Location::CoordsContainer_t& llhs = gTractInformation.getLocations()[lhs.GetTractNumber()]->getCoordinates();
+    const TractHandler::Location::CoordsContainer_t& rrhs = gTractInformation.getLocations()[rhs.GetTractNumber()]->getCoordinates();
+    for (unsigned int i=0, iMax=std::min(llhs.size(), rrhs.size()); i < iMax; ++i) {
+       if (llhs[i] != rrhs[i])
+         return *(llhs[i]) != *(rrhs[i]);
     }
+    if (llhs.size() == rrhs.size()) ZdGenerateException("Dulpicate coordinates encountered.", "operator()");
     return llhs.size() < rrhs.size();
   }
   //distances not equal, compare as normal

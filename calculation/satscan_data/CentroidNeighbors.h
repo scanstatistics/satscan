@@ -11,13 +11,12 @@ class LocationDistance {
      double     m_dDistance;        /* distance from centroid to location at m_tTractNumber */
 
    public:
-     LocationDistance(tract_t t=0, double d=0) {SetTractNumber(t); SetDistance(d);}
+     LocationDistance(tract_t t=0, double d=0) {Set(t, d);}
      virtual ~LocationDistance() {}
 
      double     GetDistance() const {return m_dDistance;}
      tract_t    GetTractNumber() const {return m_tTractNumber;}
-     void       SetDistance(double d) {m_dDistance=d;}
-     void       SetTractNumber(tract_t t) {m_tTractNumber=t;}
+     void       Set(tract_t t, double d) {m_tTractNumber=t;m_dDistance=d;}
 };
 
 /** Function object used to compare LocationDistance objects by m_dDistance. */
