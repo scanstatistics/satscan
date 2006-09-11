@@ -102,9 +102,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
     if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
     DataHub.GetTInfo()->getLocations().at(tTract)->retrieveAllIdentifiers(vIdentifiers);
-    for (size_t t=0; t < vIdentifiers.size(); ++t) {
+    for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
        Record.SetAllFieldsBlank(true);
-       Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = vIdentifiers[t].c_str();
+       Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = vIdentifiers[i].c_str();
        if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
          Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;

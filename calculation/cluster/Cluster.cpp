@@ -137,10 +137,10 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
        if (!DataHub.GetIsNullifiedLocation(tTract)) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
          DataHub.GetTInfo()->getLocations().at(tTract)->retrieveAllIdentifiers(vTractIdentifiers);
-         for (size_t k=0; k < vTractIdentifiers.size(); ++k) {
+         for (unsigned int i=0; i < vTractIdentifiers.size(); ++i) {
             if (sLocations.GetLength())
               sLocations << ", ";
-            sLocations << vTractIdentifiers[k].c_str();
+            sLocations << vTractIdentifiers[i].c_str();
          }
        }
     }
