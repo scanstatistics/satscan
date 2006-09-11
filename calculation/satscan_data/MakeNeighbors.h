@@ -8,6 +8,7 @@
 #include "CentroidNeighbors.h"
 
 class CSaTScanData; /** forward class declaration */
+class CCluster;
 
 /** Calculates neighboring locations about centroids with versatility as to whether
     calculations are stored in stored array of CSaTScanData object or allocated to
@@ -60,6 +61,7 @@ class CentroidNeighborCalculator {
     void                        CalculateNeighbors();
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid);
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid, double dMaxRadius);
+    static void                 getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& Coordinates);
     static  void                Transform(double Xold, double Yold, float EllipseAngle, float EllipseShape, double* pXnew, double* pYnew);
 };
 //*****************************************************************************

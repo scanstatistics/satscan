@@ -5,7 +5,9 @@
 #include "MakeNeighbors.h"
 #include "SaTScanData.h"
 #include "ExponentialRandomizer.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "cluster.h" 
+#include <boost/dynamic_bitset.hpp>
 
 /** constructor */
 CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -13,10 +15,7 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
                             gCentroidInfo(*DataHub.GetGInfo()), gLocationInfo(*DataHub.GetTInfo()),
                             gPrimaryNeighbors(0,0), gSecondaryNeighbors(0,0), gTertiaryNeighbors(0,0),
                             gPrimaryReportedNeighbors(0,0), gSecondaryReportedNeighbors(0,0), gTertiaryReportedNeighbors(0,0) {
-
-  //allocate vector of LocationDistance objects
-  for (tract_t t=0; t < gDataHub.GetNumTracts(); ++t)
-    gvCentroidToLocationDistances.push_back(LocationDistance(t));
+  gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
   SetupPopulationArrays();
   //calculate reported and actual maximum spatial clusters sizes
   CalculateMaximumSpatialClusterSize();
@@ -30,20 +29,17 @@ CentroidNeighborCalculator::~CentroidNeighborCalculator() {}
     in the transformed space represent ellipsoids in the original space.
     Stores transformed coordinates in internal array. */
 void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOffset) {
-  double                                                dAngle, dShape;
-  std::vector<double>                                   vCoordinates;
-  std::vector<std::pair<double, double> >::iterator     itr;
+  double                dAngle=gDataHub.GetEllipseAngle(tEllipseOffset),
+                        dShape=gDataHub.GetEllipseShape(tEllipseOffset);
 
   if (tEllipseOffset == 0 || gtCurrentEllipseCoordinates == tEllipseOffset)
     return;
 
-  gvLocationEllipticCoordinates.resize(gDataHub.GetNumTracts());
-  itr=gvLocationEllipticCoordinates.begin();
-  dAngle = gDataHub.GetEllipseAngle(tEllipseOffset);
-  dShape = gDataHub.GetEllipseShape(tEllipseOffset);
-  for (tract_t t=0; t < gDataHub.GetNumTracts(); ++t, ++itr) {
-     gLocationInfo.tiRetrieveCoords(t, vCoordinates);
-     Transform(vCoordinates[0], vCoordinates[1], dAngle, dShape, &(itr->first), &(itr->second));
+  gvLocationEllipticCoordinates.resize(gLocationInfo.getCoordinates().size());
+  for (size_t t=0; t < gLocationInfo.getCoordinates().size(); ++t) {
+     const TractHandler::Coordinates* pCoords = gLocationInfo.getCoordinates()[t];
+     std::pair<double, double>& eCoords = gvLocationEllipticCoordinates[pCoords->getInsertionOrdinal()];
+     Transform(pCoords->getCoordinates()[0], pCoords->getCoordinates()[1], dAngle, dShape, &(eCoords.first), &(eCoords.second));
   }
   gtCurrentEllipseCoordinates = tEllipseOffset;
 }
@@ -171,8 +167,33 @@ void CentroidNeighborCalculator::CalculateNeighbors() {
     to most distant; storing in gvCentroidToLocationDistances class member. */
 void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
   CenterLocationDistancesAbout(tEllipseOffsetIndex, tCentroidIndex);
-  //sort such locations are clostest to farthest
+  //sort locations clostest to farthest
   std::sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
+  switch (gDataHub.GetParameters().GetMultipleCoordinatesType()) {
+    case ONEPERLOCATION : break;
+    case ATLEASTONELOCATION :
+    { boost::dynamic_bitset<> theSet(gDataHub.GetNumTracts());
+      std::vector<LocationDistance>::iterator itr=gvCentroidToLocationDistances.begin();
+      for (;itr != gvCentroidToLocationDistances.end(); ++itr) {
+          if (theSet.test(itr->GetTractNumber()))
+            itr = gvCentroidToLocationDistances.erase(itr) - 1;
+          else
+            theSet.set(itr->GetTractNumber());
+      }
+    } break;
+    case ALLLOCATIONS :
+    { boost::dynamic_bitset<> theSet(gDataHub.GetNumTracts());
+      std::vector<LocationDistance>::iterator itr(gvCentroidToLocationDistances.end() - 1);
+      for (;; --itr) {
+          if (theSet.test(itr->GetTractNumber()))
+            itr = gvCentroidToLocationDistances.erase(itr);
+          else
+            theSet.set(itr->GetTractNumber());
+          if (itr == gvCentroidToLocationDistances.begin()) break;
+      }
+    } break;
+    default : ZdException::Generate("Unknown multiple coordinate type '%d'.", "CalculateNeighborsAboutCentroid", gDataHub.GetParameters().GetMultipleCoordinatesType());
+  }
 }
 
 /** Calculates neighboring locations about centroid for given ellipse offset and centroid;
@@ -216,6 +237,41 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
   Centroid.gtEllipseOffset = tEllipseOffsetIndex;
 }
 
+/** Returns the coordinates of tract given centroid of passed cluster object.
+    This process takes into account the MultipleCoordinatesType. */
+void CentroidNeighborCalculator::getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& Coordinates) {
+  if (DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION ||
+      DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates().size() == 1) {
+    DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(Coordinates);
+  }
+  else {//we'll have to determine which coordinate matches specified MultipleCoordinatesType.
+    double                              dCurrent, dDistance,
+                                        dAngle=DataHub.GetEllipseAngle(Cluster.GetEllipseOffset()),
+                                        dShape=DataHub.GetEllipseShape(Cluster.GetEllipseOffset());
+    std::vector<double>                 ClusterCenter, TractCoords;
+    const TractHandler::Coordinates   * pCoordinates, * pTarget=0;
+
+    DataHub.GetGInfo()->retrieveCoordinates(Cluster.GetCentroidIndex(), ClusterCenter);
+    if (Cluster.GetEllipseOffset() > 0)
+      Transform(ClusterCenter[0], ClusterCenter[1], dAngle, dShape, &ClusterCenter[0], &ClusterCenter[1]);
+    for (unsigned int i=0; i < DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates().size(); ++i) {
+       pCoordinates = DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[i];
+       pCoordinates->retrieve(TractCoords);
+       if (Cluster.GetEllipseOffset() > 0)
+         Transform(TractCoords[0], TractCoords[1], dAngle, dShape, &TractCoords[0], &TractCoords[1]);
+       dDistance = std::sqrt(TractHandler::getDistanceSquared(ClusterCenter, TractCoords));
+       if (DataHub.GetParameters().GetMultipleCoordinatesType() == ATLEASTONELOCATION) {
+         if (!pTarget || dCurrent > dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
+       }
+       else if (DataHub.GetParameters().GetMultipleCoordinatesType() == ALLLOCATIONS) {
+         if (!pTarget || dCurrent < dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
+       }
+       else
+         ZdGenerateException("Unknown multiple coordinates type '%d'.", "getTractCoordinates()", DataHub.GetParameters().GetMultipleCoordinatesType());
+    }
+    pTarget->retrieve(Coordinates);
+  }
+}
 
 /** Calculates neighboring locations about each centroid through expanding circle;
     storing results in sorted array contained in CSaTScanData object. */
@@ -365,30 +421,37 @@ tract_t CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopul
 
 /** Calculates distances from centroid to all locations, storing in gvCentroidToLocationDistances object. */
 void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex) {
-  std::vector<double>    vCentroidCoordinates, vLocationCoordinates;
+  std::vector<double>           vCentroidCoordinates, vLocationCoordinates;
 
+  gCentroidInfo.retrieveCoordinates(tCentroidIndex, vCentroidCoordinates);
+  gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
+  TractHandler::LocationsContainer_t::const_iterator  itr=gLocationInfo.getLocations().begin(),
+                                                      itr_end=gLocationInfo.getLocations().end();
   if (tEllipseOffsetIndex == 0) {
-    gCentroidInfo.giRetrieveCoords(tCentroidIndex, vCentroidCoordinates);
     //calculate distances from centroid to each location
-    for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
-       gvCentroidToLocationDistances[k].SetTractNumber(k);
-       gLocationInfo.tiRetrieveCoords(k, vLocationCoordinates);
-       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(vCentroidCoordinates, vLocationCoordinates)));
+    for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+       for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
+         (*itr)->getCoordinates()[c]->retrieve(vLocationCoordinates);
+         gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)));
+         ++i;
+       }
     }
   }
   else {
-    gCentroidInfo.giRetrieveCoords(tCentroidIndex, vCentroidCoordinates);
     //tranform centroid coordinates into elliptical space
     Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], gDataHub.GetEllipseAngle(tEllipseOffsetIndex),
               gDataHub.GetEllipseShape(tEllipseOffsetIndex), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
     vLocationCoordinates.resize(2);
     CalculateEllipticCoordinates(tEllipseOffsetIndex);
     //calculate distances from centroid to each location
-    for (tract_t k=0; k < gDataHub.GetNumTracts(); ++k) {
-       vLocationCoordinates[0] = gvLocationEllipticCoordinates[k].first;
-       vLocationCoordinates[1] = gvLocationEllipticCoordinates[k].second;
-       gvCentroidToLocationDistances[k].SetTractNumber(k);
-       gvCentroidToLocationDistances[k].SetDistance(std::sqrt(gLocationInfo.tiGetDistanceSq(vCentroidCoordinates, vLocationCoordinates)));
+    for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+       for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
+          unsigned int iPosition = (*itr)->getCoordinates()[c]->getInsertionOrdinal();
+          vLocationCoordinates[0] = gvLocationEllipticCoordinates[iPosition].first;
+          vLocationCoordinates[1] = gvLocationEllipticCoordinates[iPosition].second;
+          gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)));
+          ++i;
+       }
     }
   }
 }
