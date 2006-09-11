@@ -193,7 +193,7 @@ void CPoissonModel::AssignMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& No
           if (ppNonCumulativeMeasure[interval][tract] < 0) {
     	     ZdGenerateException("Negative measure: %g\ntract %d, tractid %s, interval %d.", "AssignMeasure()",
                                  ppNonCumulativeMeasure[interval][tract], tract,
-                                 gDataHub.GetTInfo()->getLocations().at(tract)->getIndentifier().c_str(), interval);
+                                 gDataHub.GetTInfo()->getLocations().at(tract)->getIndentifier(), interval);
           }
 
   }

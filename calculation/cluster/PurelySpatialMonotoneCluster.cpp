@@ -362,9 +362,8 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
          tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
          // Print location identifiers if location data has not been removed in iterative scan.
          if (!DataHub.GetIsNullifiedLocation(tTract)) {
-           const std::string& sLocationID = DataHub.GetTInfo()->getLocations().at(tTract)->getIndentifier();
            CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, tTract, vCoords);
-           outfilestream << sLocationID.c_str();
+           outfilestream << DataHub.GetTInfo()->getLocations().at(tTract)->getIndentifier();
            for (size_t t=0; t < vCoords.size(); ++t)
              outfilestream << " " << vCoords.at(t);
            outfilestream << std::endl;

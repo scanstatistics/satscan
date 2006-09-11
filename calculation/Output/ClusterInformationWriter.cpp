@@ -166,7 +166,7 @@ ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster&
     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       sAreaId = "All";
     else
-      sAreaId = gDataHub.GetTInfo()->getLocations().at(thisCluster.GetMostCentralLocationIndex())->getIndentifier().c_str();
+      sAreaId = gDataHub.GetTInfo()->getLocations().at(thisCluster.GetMostCentralLocationIndex())->getIndentifier();
   }
   catch (ZdException &x) {
     x.AddCallpath("GetAreaID","ClusterInformationWriter");
