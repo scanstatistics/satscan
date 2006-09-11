@@ -26,30 +26,6 @@ TractHandler::Coordinates::~Coordinates() {
   } catch(...){}
 }
 
-/** overloaded operator not equals */
-bool TractHandler::Coordinates::operator!=(const Coordinates& rhs) const {
-  if (giSize != rhs.giSize) return true;
-  return memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
-}
-
-/** overloaded operator less than */
-bool TractHandler::Coordinates::operator<(const Coordinates& rhs) const {
-  if (giSize != rhs.giSize) return giSize < rhs.giSize;
-
-  size_t t=0;
-  while (t < giSize) {
-      if (gpCoordinates[t] == rhs.gpCoordinates[t]) ++t;
-      else return gpCoordinates[t] < rhs.gpCoordinates[t];
-  }
-  return false;
-}
-
-/** overloaded operator equals */
-bool TractHandler::Coordinates::operator==(const Coordinates& rhs) const {
-  if (giSize != rhs.giSize) return false;
-  return !memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
-}
-
 /** retrieves coordinates into passed vector */
 void TractHandler::Coordinates::retrieve(std::vector<double>& Repository) const {
   Repository.resize(giSize);
@@ -60,8 +36,11 @@ void TractHandler::Coordinates::retrieve(std::vector<double>& Repository) const 
 //////////////// TractHandler::LocationIdentifier class ////////////////////////
 
 /** constructor */
-TractHandler::Location::Location(const std::string& sIdentifier, const Coordinates& aCoordinates) : gsIndentifier(sIdentifier) {
-  gvCoordinatesContainer.push_back(&aCoordinates);
+TractHandler::Location::Location(const char * sIdentifier, const Coordinates& aCoordinates)
+                       :gsIndentifier(0) {
+  gsIndentifier = new char[strlen(sIdentifier) + 1];
+  strcpy(gsIndentifier, sIdentifier);
+  gvCoordinatesContainer.add(&aCoordinates, true);
 }
 
 /** Associates passed coordinates with this LocationIdentifier object. Throws ResolvableException
@@ -69,24 +48,24 @@ TractHandler::Location::Location(const std::string& sIdentifier, const Coordinat
     already defined coordinates set. */
 void TractHandler::Location::addCoordinates(const Coordinates& aCoordinates, MultipleCoordinatesType eMultipleCoordinatesType) {
   //add coordinates in sorted order -- this is needed for consistancy reasons, should we need to break ties in neighbors calculation
-  CoordsContainer_t::iterator itr = std::lower_bound(gvCoordinatesContainer.begin(), gvCoordinatesContainer.end(), &aCoordinates, CompareCoordinates());
-  if (eMultipleCoordinatesType == ONEPERLOCATION && (itr == gvCoordinatesContainer.end() || *(*itr) != aCoordinates))
-    GenerateResolvableException("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", "addCoordinateIndex()", gsIndentifier.c_str());
-  if (itr == gvCoordinatesContainer.end() || *(*itr) != aCoordinates)
-   gvCoordinatesContainer.insert(itr, &aCoordinates);
+  bool bExists = gvCoordinatesContainer.exists(&aCoordinates);
+  if (eMultipleCoordinatesType == ONEPERLOCATION && !bExists && gvCoordinatesContainer.size())
+    GenerateResolvableException("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", "addCoordinateIndex()", gsIndentifier);
+  if (!bExists)
+     gvCoordinatesContainer.add(&aCoordinates, true);
 }
 
 /** Adds passed string as secondary location identifier to this object. */
 void TractHandler::Location::addSecondaryIdentifier(const std::string & sIdentifier) {
-  gvSecondaryIdentifiers.push_back(sIdentifier);
+  gvSecondaryIdentifiers.add(sIdentifier, false);
 }
 
 /** Retrieves all location identifiers associated with this object. */
 TractHandler::Location::StringContainer_t& TractHandler::Location::retrieveAllIdentifiers(StringContainer_t& Identifiers) const {
    Identifiers.clear();
-   Identifiers.push_back(gsIndentifier);
-   for (size_t s=0; s < gvSecondaryIdentifiers.size(); ++s)
-     Identifiers.push_back(gvSecondaryIdentifiers.at(s));
+   Identifiers.add(gsIndentifier, false);
+   for (unsigned int i=0; i < gvSecondaryIdentifiers.size(); ++i)
+     Identifiers.add(gvSecondaryIdentifiers[i], false);
    return Identifiers;
 }
 
@@ -94,7 +73,7 @@ void TractHandler::Location::addSecondaryIdentifier(const std::string & sIdentif
 
 /** Constructor*/
 TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType)
-             :giCoordinateDimensions(0), giMaxIdentifierLength(0), gAdditionStatus(Accepting),
+             :giCoordinateDimensions(0), giMaxIdentifierLength(0), gAdditionStatus(Accepting), giNumLocationCoordinates(0),
               gbAggregatingTracts(bAggregatingTracts), geMultipleCoordinatesType(eMultipleCoordinatesType) {
   if (gbAggregatingTracts) gvLocations.push_back(new Location("All", Coordinates()));
 }
@@ -109,24 +88,18 @@ void TractHandler::additionsCompleted() {
   std::sort(gvLocations.begin(), gvLocations.end(), CompareFirstCoordinatePointer());
   //search for duplicate locations -- those that have identical coordinate indexes
   size_t tSize=gvLocations.size();
+  giNumLocationCoordinates=0;
   for (size_t tOuter=0; tOuter < tSize; ++tOuter) {
+     giNumLocationCoordinates += gvLocations[tOuter]->getCoordinates().size();
      for (size_t tInner=tOuter+1; tInner < tSize; ++tInner) {
-        //since we sorted by the first coordinate pointer, we can say for sure that they do not equal if first is not equal
-        if (gvLocations[tOuter]->getCoordinatesContainer()[0] != gvLocations[tInner]->getCoordinatesContainer()[0]) {
-          //skip to next iterator in outer loop
-          break;
-        }
-        //we know the first coordinate pointer is equal, but how about the rest, might be of different sizes
-        if (gvLocations[tOuter]->getCoordinatesContainer() == gvLocations[tInner]->getCoordinatesContainer()) {
-          if (gvLocations[tOuter]->getIndentifier() != gvLocations[tInner]->getIndentifier()) {
-            //add identifier of itrNext to itrThis, they reference the same coordinate sets
-            gvLocations[tOuter]->addSecondaryIdentifier(gvLocations[tInner]->getIndentifier());
-            gmAggregateTracts[gvLocations[tInner]->getIndentifier()] = tOuter;
-          }
-          gvLocations.erase(gvLocations.begin() + tInner);
-          tInner = tInner - 1;
-          tSize = gvLocations.size();
-        }
+        //since we sorted by the first coordinate pointer, we know that duplicates will be adjacent
+        if (gvLocations[tOuter]->getCoordinates() != gvLocations[tInner]->getCoordinates()) break;
+        //add identifier of tInner to tOuter, they reference the same coordinate sets
+        gvLocations[tOuter]->addSecondaryIdentifier(gvLocations[tInner]->getIndentifier());
+        gmAggregateTracts[gvLocations[tInner]->getIndentifier()] = tOuter;
+        gvLocations.erase(gvLocations.begin() + tInner);
+        tInner = tInner - 1;
+        tSize = gvLocations.size();
      }
   }
   //re-sort locations by identifiers - TractHandler::getLocationIndex() relies upon this container being sorted by identifiers
@@ -148,7 +121,7 @@ tract_t TractHandler::addLocation(const char *sIdentifier) {
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
     itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier().c_str(), sIdentifier))
+    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier))
       return std::distance(gvLocations.begin(), itr);
     return std::distance(gvLocations.begin(), gvLocations.insert(itr, identifier.release()));
   }
@@ -181,12 +154,12 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
     ZdPointerVector<Location>::iterator itrIdentifiers;
     std::auto_ptr<Location> identifier(new Location(sIdentifier, *(*itrCoordinates)));
     itrIdentifiers = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itrIdentifiers != gvLocations.end() && !strcmp((*itrIdentifiers)->getIndentifier().c_str(), sIdentifier))
+    if (itrIdentifiers != gvLocations.end() && !strcmp((*itrIdentifiers)->getIndentifier(), sIdentifier))
       //when identifier already exists, then note that it is defined at this coordinate as well
       (*itrIdentifiers)->addCoordinates(*(*itrCoordinates), geMultipleCoordinatesType);
     else
       //otherwise this is a new identifier
-      gvLocations.push_back(identifier.release());
+      gvLocations.insert(itrIdentifiers, identifier.release());
   }
   catch (ZdException & x) {
     x.AddCallpath("addLocation()", "TractHandler");
@@ -226,7 +199,7 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
     ZdPointerVector<Location>::const_iterator   itr;
     std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
     itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier().c_str(), sIdentifier))
+    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier))
       tPosReturn = std::distance(gvLocations.begin(), itr);
     else
       tPosReturn = -1;
@@ -261,9 +234,9 @@ void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
          }
          //First retrieved location ID is the location that represents all others.
          ZdString  sBuffer;
-         sBuffer.printf("%s : %s", (*itr)->getIndentifier().c_str(), (*itr)->getSecondaryIdentifiers()[0].c_str());
-         for (size_t t=1; t < (*itr)->getSecondaryIdentifiers().size(); ++t)
-            sBuffer << ", " << (*itr)->getSecondaryIdentifiers()[t].c_str();
+         sBuffer.printf("%s : %s", (*itr)->getIndentifier(), (*itr)->getSecondaryIdentifiers()[0].c_str());
+         for (unsigned int i=1; i < (*itr)->getSecondaryIdentifiers().size(); ++i)
+            sBuffer << ", " << (*itr)->getSecondaryIdentifiers()[i].c_str();
          PrintFormat.PrintAlignedMarginsDataString(fDisplay, sBuffer);
        }
     }
