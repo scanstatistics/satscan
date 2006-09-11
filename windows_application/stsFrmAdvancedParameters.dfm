@@ -1,11 +1,11 @@
 object frmAdvancedParameters: TfrmAdvancedParameters
-  Left = 402
-  Top = 254
+  Left = 359
+  Top = 246
   ActiveControl = PageControl
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 311
+  ClientHeight = 393
   ClientWidth = 534
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,7 +23,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 450
     Top = 0
     Width = 84
-    Height = 311
+    Height = 393
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -62,7 +62,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 0
     Top = 0
     Width = 450
-    Height = 311
+    Height = 393
     ActivePage = tsDataSets
     Align = alClient
     TabOrder = 0
@@ -643,12 +643,12 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 182
         Width = 425
-        Height = 75
+        Height = 66
         Caption = 'Spatial Window Shape'
         TabOrder = 2
         object rdoCircular: TRadioButton
           Left = 16
-          Top = 24
+          Top = 17
           Width = 60
           Height = 17
           Caption = 'Circular'
@@ -657,7 +657,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object rdoElliptic: TRadioButton
           Left = 16
-          Top = 45
+          Top = 37
           Width = 53
           Height = 17
           Caption = 'Elliptic'
@@ -666,7 +666,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object stNonCompactnessPenalty: TStaticText
           Left = 104
-          Top = 45
+          Top = 37
           Width = 130
           Height = 17
           Caption = 'Non-compactness penalty:'
@@ -674,7 +674,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
         object cmbNonCompactnessPenalty: TComboBox
           Left = 240
-          Top = 45
+          Top = 37
           Width = 91
           Height = 21
           Style = csDropDownList
@@ -685,6 +685,58 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             'None'
             'Medium'
             'Strong')
+        end
+      end
+      object gpMultipleCoordinates: TGroupBox
+        Left = 8
+        Top = 251
+        Width = 425
+        Height = 106
+        Caption = 'Multiple Coordinate Locations per Location ID'
+        TabOrder = 3
+        object rdoOnePerLocationId: TRadioButton
+          Left = 8
+          Top = 18
+          Width = 409
+          Height = 17
+          Caption = 'Allow only one coordinate location per location ID.'
+          TabOrder = 0
+        end
+        object rdoAllLocations: TRadioButton
+          Left = 8
+          Top = 70
+          Width = 409
+          Height = 17
+          Caption = 
+            'Include location in the scanning window if all coordinate locati' +
+            'ons are in '
+          TabOrder = 1
+        end
+        object rdoAtLeastOne: TRadioButton
+          Left = 8
+          Top = 36
+          Width = 409
+          Height = 17
+          Caption = 
+            'Include location in the scanning window if at least one coordina' +
+            'te location '
+          TabOrder = 2
+        end
+        object stAtLeastOne: TStaticText
+          Left = 23
+          Top = 52
+          Width = 74
+          Height = 15
+          Caption = ' is in the circle.'
+          TabOrder = 3
+        end
+        object stAllLocations: TStaticText
+          Left = 26
+          Top = 87
+          Width = 50
+          Height = 14
+          Caption = 'the circle.'
+          TabOrder = 4
         end
       end
     end

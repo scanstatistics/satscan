@@ -148,6 +148,12 @@ __published:	// IDE-managed Components
    TEdit *edtNeighborsFile;
    TButton *btnBrowseForNeighborsFile;
    TCheckBox *chkSpecifiyNeighborsFile;
+        TGroupBox *gpMultipleCoordinates;
+        TRadioButton *rdoOnePerLocationId;
+        TRadioButton *rdoAllLocations;
+        TRadioButton *rdoAtLeastOne;
+        TStaticText *stAtLeastOne;
+        TStaticText *stAllLocations;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -209,7 +215,7 @@ __published:	// IDE-managed Components
    void __fastcall chkSpecifiyNeighborsFileClick(TObject *Sender);
    void __fastcall edtNeighborsFileChange(TObject *Sender);
    void __fastcall btnBrowseForNeighborsFileClick(TObject *Sender);
-        void __fastcall edtProspectiveStartDateExit(TObject *Sender);
+   void __fastcall edtProspectiveStartDateExit(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -242,8 +248,10 @@ __published:	// IDE-managed Components
    void                     EnableTemporalOptionsGroup(bool bEnable, bool bEnableIncludePurelySpatial, bool bEnableRanges);
    void                     EnableTemporalRanges(bool bEnable, bool bEnableRanges);
    void                     EnableWindowShapeGroup(bool bEnable);
+   void                     EnableMultipleLocationsGroup(bool bEnable);
    SpatialAdjustmentType    GetAdjustmentSpatialControlType() const;
    TimeTrendAdjustmentType  GetAdjustmentTimeTrendControlType() const;
+   MultipleCoordinatesType  GetMultipleCoordinatesType() const;
    void                     Init();
    void                     LaunchImporter(const char * sFileName, InputFileType eFileType) ;
    void                     ParseDate(const std::string& sDate, TEdit& Year, TEdit& Month, TEdit& Day, bool bStartRange);
@@ -284,6 +292,7 @@ public:
    void                     SetMaxSpatialClusterSizeControl(SpatialSizeType eSpatialSizeType, double dMaxSize);
    void                     SetMaxTemporalClusterSizeControl(double dMaxSize);
    void                     SetMaxTemporalClusterSizeTypeControl(TemporalSizeType eTemporalSizeType);
+   void                     SetMultipleCoordinatesType(MultipleCoordinatesType eType);
    void                     SetSpatialDistanceCaption();
    void                     SetStudyPeriodDataCheckingControl(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType);
    void                     SetTemporalTrendAdjustmentControl(TimeTrendAdjustmentType eTimeTrendAdjustmentType);

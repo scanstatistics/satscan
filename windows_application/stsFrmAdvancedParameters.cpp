@@ -771,6 +771,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableNeighborsFileGroup(true);
         EnableCoordinatesCheckGroup(true);
         EnableIterativeScanOptionsGroup(true);
+        EnableMultipleLocationsGroup(true);
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -783,6 +784,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableNeighborsFileGroup(false);
         EnableCoordinatesCheckGroup(false);
         EnableIterativeScanOptionsGroup(true);
+        EnableMultipleLocationsGroup(false);
         break;
       case SPACETIME                 :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -797,6 +799,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableNeighborsFileGroup(true);
         EnableCoordinatesCheckGroup(true);
         EnableIterativeScanOptionsGroup(false);
+        EnableMultipleLocationsGroup(true);
         break;
       case PROSPECTIVESPACETIME      :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -811,6 +814,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableNeighborsFileGroup(true);
         EnableCoordinatesCheckGroup(true);
         EnableIterativeScanOptionsGroup(false);
+        EnableMultipleLocationsGroup(true);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
@@ -823,6 +827,7 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableNeighborsFileGroup(false);
         EnableCoordinatesCheckGroup(false);
         EnableIterativeScanOptionsGroup(true);
+        EnableMultipleLocationsGroup(false);
         break;
       default :
         ZdGenerateException("Unknown analysis type '%d'.",
@@ -909,6 +914,15 @@ void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
    cmbNonCompactnessPenalty->Color = cmbNonCompactnessPenalty->Enabled ? clWindow : clInactiveBorder;
    if (!rdoElliptic->Enabled && rdoElliptic->Checked && rdoCircular->Enabled) rdoCircular->Checked = true;
    SetSpatialDistanceCaption();
+}
+//---------------------------------------------------------------------------
+void TfrmAdvancedParameters::EnableMultipleLocationsGroup(bool bEnable) {
+  gpMultipleCoordinates->Enabled = bEnable;
+  rdoOnePerLocationId->Enabled = bEnable;
+  rdoAtLeastOne->Enabled = bEnable;
+  stAtLeastOne->Enabled = bEnable;
+  rdoAllLocations->Enabled = bEnable;
+  stAllLocations->Enabled = bEnable;
 }
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */
@@ -1115,6 +1129,22 @@ double TfrmAdvancedParameters::GetMaxTemporalClusterSizeFromControl() const {
     default              : dReturn = edtMaxTemporalClusterSize->Text.ToDouble();
   }
   return dReturn;
+}
+//---------------------------------------------------------------------------
+/** returns MultipleCoordinatesType for controls */
+MultipleCoordinatesType TfrmAdvancedParameters::GetMultipleCoordinatesType() const {
+  MultipleCoordinatesType eReturn;
+
+  if (rdoOnePerLocationId->Checked)
+    eReturn = ONEPERLOCATION;
+  else if (rdoAtLeastOne->Checked)
+    eReturn = ATLEASTONELOCATION;
+  else if (rdoAllLocations->Checked)
+    eReturn = ALLLOCATIONS;
+  else
+    ZdGenerateException("MultipleCoordinatesType not selected.","GetMultipleCoordinatesType()");
+
+  return eReturn;
 }
 //---------------------------------------------------------------------------
 /** Returns study period data checking type as specified by control. */
@@ -1373,6 +1403,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetMaximumTemporalClusterSizeType(GetMaxTemporalClusterSizeControlType());
     ref.SetIncludePurelyTemporalClusters(chkInclPureTempClust->Enabled && chkInclPureTempClust->Checked);
     ref.SetIncludePurelySpatialClusters((chkIncludePureSpacClust->Enabled) && (chkIncludePureSpacClust->Checked));
+    ref.SetMultipleCoordinatesType(GetMultipleCoordinatesType());
   }
   catch (ZdException &x) {
     x.AddCallpath("SaveParameterSettings()","TfrmAdvancedParameters");
@@ -1555,6 +1586,15 @@ void TfrmAdvancedParameters::SetMaxTemporalClusterSizeTypeControl(TemporalSizeTy
   }
 }
 //---------------------------------------------------------------------------
+void TfrmAdvancedParameters::SetMultipleCoordinatesType(MultipleCoordinatesType eType) {
+  switch (eType) {
+    case ATLEASTONELOCATION : rdoAtLeastOne->Checked = true; break;
+    case ALLLOCATIONS       : rdoAllLocations->Checked = true; break;
+    case ONEPERLOCATION     : 
+    default                 : rdoOnePerLocationId->Checked = true;
+  }
+}
+//---------------------------------------------------------------------------
 /** Sets caption of spatial distance radio button based upon coordinates group setting. */
 void TfrmAdvancedParameters::SetSpatialDistanceCaption() {
   AnsiString    sRadioCaption, sLabelCaption;
@@ -1687,7 +1727,8 @@ void TfrmAdvancedParameters::Setup() {
 
       // Neighbors Tab
       chkSpecifiyNeighborsFile->Checked = ref.UseLocationNeighborsFile();
-      edtNeighborsFile->Text = ref.GetLocationNeighborsFileName().c_str(); 
+      edtNeighborsFile->Text = ref.GetLocationNeighborsFileName().c_str();
+      SetMultipleCoordinatesType(ref.GetMultipleCoordinatesType());
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -2171,5 +2212,6 @@ void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sen
   DoControlExit();
 }
 //---------------------------------------------------------------------------
+
 
 
