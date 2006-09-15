@@ -205,8 +205,6 @@ class CParameters {
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
-    const char                        * GetAnalysisTypeAsString() const;
-    static const char                 * GetAreaScanRateTypeAsString(AreaRateType eAreaRateType, ProbabilityModelType eProbabilityModelType);
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
     AreaRateType                        GetExecuteScanRateType() const;
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
@@ -279,7 +277,6 @@ class CParameters {
     double                              GetPowerCalculationY() const {return gdPower_Y;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     ProbabilityModelType                GetProbabilityModelType() const {return geProbabilityModelType;}
-    const char                        * GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType) const;
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     long                                GetRandomizationSeed() const {return glRandomizationSeed;}
     bool                                GetReportCriticalValues() const {return gbReportCriticalValues;}

@@ -282,69 +282,6 @@ void CParameters::Copy(const CParameters &rhs) {
   }
 }
 
-/** Returns analysis type as string. */
-const char * CParameters::GetAnalysisTypeAsString() const {
-  const char * sAnalysisType;
-
-  try {
-    switch (geAnalysisType) {
-      case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
-      case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
-      case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
-      case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
-      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
-      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
-      default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetAnalysisTypeAsString()","CParameters");
-    throw;
-  }
-  return sAnalysisType;
-}
-
-/** Returns area scan type as string based upon probability model type. */
-const char * CParameters::GetAreaScanRateTypeAsString(AreaRateType eAreaRateType, ProbabilityModelType eProbabilityModelType) {
-  try {
-    switch (eProbabilityModelType) {
-      case POISSON :
-      case BERNOULLI :
-      case SPACETIMEPERMUTATION :
-         switch (eAreaRateType) {
-            case HIGH       : return "High Rates";
-            case LOW        : return "Low Rates";
-            case HIGHANDLOW : return "High or Low Rates";
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", eAreaRateType);
-         }
-         break;
-      case ORDINAL :
-      case NORMAL :
-         switch (eAreaRateType) {
-            case HIGH       : return "High Values";
-            case LOW        : return "Low Values";
-            case HIGHANDLOW : return "High or Low Values";
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", eAreaRateType);
-         }
-         break;
-      case EXPONENTIAL :
-         switch (eAreaRateType) {
-            case HIGH       : return "Short Survival";
-            case LOW        : return "Long Survival";
-            case HIGHANDLOW : return "Short or Long Survival";
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", eAreaRateType);
-         }
-         break;
-      default : ZdGenerateException("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", eProbabilityModelType);
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetAreaScanRateTypeAsString()","CParameters");
-    throw;
-  }
-  return "?";
-}
-
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
   try {
     if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
@@ -500,29 +437,6 @@ const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
     throw;
   }
   return gvPopulationFilenames[iSetIndex - 1];
-}
-
-/** Returns probability model type as a character array. */
-const char * CParameters::GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType) const {
-  const char * sProbabilityModel;
-
-  try {
-    switch (eProbabilityModelType) {
-      case POISSON              : sProbabilityModel = "Poisson"; break;
-      case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
-      case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
-      case ORDINAL              : sProbabilityModel = "Ordinal"; break;
-      case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
-      case NORMAL               : sProbabilityModel = "Normal"; break;
-      case RANK                 : sProbabilityModel = "Rank"; break;
-      default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetProbabilityModelTypeAsString()","CParameters");
-    throw;
-  }
-  return sProbabilityModel;
 }
 
 /** If passed filename has same path as passed parameter filename, returns
