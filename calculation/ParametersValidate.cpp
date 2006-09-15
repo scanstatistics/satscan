@@ -5,6 +5,7 @@
 #include "ParametersValidate.h"
 #include "RandomNumberGenerator.h"
 #include "Randomizer.h"
+#include "ParametersPrint.h"
 
 /** constructor */
 ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -24,14 +25,6 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     //before version 6, critical values were always reported
     if (gParameters.GetCreationVersion().iMajor < 6)
       const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
-
-    //prevent access to Spatial Variation and Temporal Trends analysis -- still in development
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "Please note that spatial variation in temporal trends analysis is not implemented"
-                            " in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
-    }
     if (!ValidateMonotoneRisk(PrintDirection))
       bValid = false;
     if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
@@ -73,7 +66,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
@@ -529,7 +522,7 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "For the %s model, the maximum temporal cluster size as a percent "
                               "of the study period is %d percent.\n", BasePrint::P_PARAMERROR,
-                              gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()),
+                              ParametersPrint(gParameters).GetProbabilityModelTypeAsString(),
                               100/*(gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)*/);
         return false;
       }
@@ -908,7 +901,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nThe feature to read simulated data from a file is not implemented for "
                                 "the %s probability model.\n", BasePrint::P_PARAMERROR,
-                                gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+                                ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         }
         if (gParameters.GetNumDataSets() > 1){
           bValid = false;
@@ -998,7 +991,7 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       if (!gParameters.GetPermitsPurelySpatialCluster(gParameters.GetProbabilityModelType())) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nA purely spatial cluster cannot be included for a %s model.\n",
-                                BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
       else if (!gParameters.GetPermitsPurelySpatialCluster()) {
         bValid = false;
@@ -1204,7 +1197,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
                                 "Temporal trends adjustment settings will be ignored.\n",
-                                BasePrint::P_NOTICE, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+                                BasePrint::P_NOTICE, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentType(NOTADJUSTED);
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
@@ -1263,7 +1256,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       if (!gParameters.GetPermitsPurelyTemporalCluster(gParameters.GetProbabilityModelType())) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nScanning for purely temporal clusters can not be included when the %s model is used.\n",
-                                BasePrint::P_PARAMERROR, gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
       else if (!gParameters.GetPermitsPurelyTemporalCluster()) {
         bValid = false;
