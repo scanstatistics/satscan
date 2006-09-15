@@ -34,6 +34,9 @@ class ParametersPrint {
     ParametersPrint(const CParameters& Parameters);
     ~ParametersPrint();
 
+    const char        * GetAnalysisTypeAsString() const;
+    const char        * GetAreaScanRateTypeAsString() const;
+    const char        * GetProbabilityModelTypeAsString() const;
     void                Print(FILE* fp) const;
     void                PrintAdjustments(FILE* fp, const DataSetHandler& SetHandler) const;
     void                PrintAnalysisSummary(FILE* fp) const;

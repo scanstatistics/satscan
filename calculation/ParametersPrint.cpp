@@ -11,6 +11,100 @@ ParametersPrint::ParametersPrint(const CParameters& Parameters) : gParameters(Pa
 /** destructor */
 ParametersPrint::~ParametersPrint() {}
 
+/** Returns analysis type as string. */
+const char * ParametersPrint::GetAnalysisTypeAsString() const {
+  const char * sAnalysisType;
+
+  try {
+    switch (gParameters.GetAnalysisType()) {
+      case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
+      case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
+      case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
+      case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
+      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation of Temporal Trends"; break;
+      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
+      default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetAnalysisTypeAsString()","ParametersPrint");
+    throw;
+  }
+  return sAnalysisType;
+}
+
+/** Returns area scan type as string based upon probability model type. */
+const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
+  try {
+    switch (gParameters.GetProbabilityModelType()) {
+      case POISSON :  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+                         switch (gParameters.GetAreaScanRateType()) {
+                           case HIGH       : return "Increasing Rates";
+                           case LOW        : return "Decreasing Rates";
+                           case HIGHANDLOW : return "Increasing or Decreasing Rates";
+                           default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+                         }
+                         break;
+                      }
+      case BERNOULLI :
+      case SPACETIMEPERMUTATION :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : return "High Rates";
+            case LOW        : return "Low Rates";
+            case HIGHANDLOW : return "High or Low Rates";
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      case ORDINAL :
+      case NORMAL :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : return "High Values";
+            case LOW        : return "Low Values";
+            case HIGHANDLOW : return "High or Low Values";
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      case EXPONENTIAL :
+         switch (gParameters.GetAreaScanRateType()) {
+            case HIGH       : return "Short Survival";
+            case LOW        : return "Long Survival";
+            case HIGHANDLOW : return "Short or Long Survival";
+            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+         }
+         break;
+      default : ZdGenerateException("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", gParameters.GetProbabilityModelType());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetAreaScanRateTypeAsString()","ParametersPrint");
+    throw;
+  }
+  return "?";
+}
+
+/** Returns probability model type as a character array. */
+const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
+  const char * sProbabilityModel;
+
+  try {
+    switch (gParameters.GetProbabilityModelType()) {
+      case POISSON              : sProbabilityModel = "Poisson"; break;
+      case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
+      case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
+      case ORDINAL              : sProbabilityModel = "Ordinal"; break;
+      case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
+      case NORMAL               : sProbabilityModel = "Normal"; break;
+      case RANK                 : sProbabilityModel = "Rank"; break;
+      default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
+    }
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("GetProbabilityModelTypeAsString()","ParametersPrint");
+    throw;
+  }
+  return sProbabilityModel;
+}
+
 /** Prints parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::Print(FILE* fp) const {
   try {
@@ -114,11 +208,9 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
 
   try {
     fprintf(fp, "\nAnalysis\n--------\n");
-    fprintf(fp, "  Type of Analysis         : %s\n", gParameters.GetAnalysisTypeAsString());
-    fprintf(fp, "  Probability Model        : %s\n",
-            gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
-    if (eAnalysisType != SPATIALVARTEMPTREND)
-      fprintf(fp, "  Scan for Areas with      : %s\n", CParameters::GetAreaScanRateTypeAsString(gParameters.GetAreaScanRateType(), gParameters.GetProbabilityModelType()));
+    fprintf(fp, "  Type of Analysis         : %s\n", GetAnalysisTypeAsString());
+    fprintf(fp, "  Probability Model        : %s\n", GetProbabilityModelTypeAsString());
+    fprintf(fp, "  Scan for Areas with      : %s\n", GetAreaScanRateTypeAsString());
     if (eAnalysisType != PURELYSPATIAL) {
      fprintf(fp, "\n  Time Aggregation Units   : ");
       switch (gParameters.GetTimeAggregationUnitsType()) {
@@ -154,7 +246,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
     fprintf(fp, "scanning for ");
     if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
       fprintf(fp, "monotone ");
-    ZdString s(CParameters::GetAreaScanRateTypeAsString(gParameters.GetAreaScanRateType(), gParameters.GetProbabilityModelType()));
+    ZdString s(GetAreaScanRateTypeAsString());
     s.ToLowercase();
     fprintf(fp, "clusters with %s\n", s.GetCString());
     switch (gParameters.GetProbabilityModelType()) {
@@ -207,17 +299,17 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
   //NOTE: Each dataset has own calculated time trend.
 
   if (SetHandler.GetNumDataSets() == 1) {
-    if (SetHandler.GetDataSet(0).GetCalculatedTimeTrendPercentage() < 0)
+    if (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0)
       sPrintString.printf("Adjusted for time trend with an annual decrease ");
     else
       sPrintString.printf("Adjusted for time trend with an annual increase ");
-    sWorkString.printf("of %g%%.", fabs(SetHandler.GetDataSet(0).GetCalculatedTimeTrendPercentage()));
+    sWorkString.printf("of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
     sPrintString << sWorkString;
   }
   else {//multiple datasets print
     //count number of increasing and decreasing trends
     for (t=0; t < SetHandler.GetNumDataSets(); ++t) {
-       if (SetHandler.GetDataSet(t).GetCalculatedTimeTrendPercentage() < 0)
+       if (SetHandler.GetDataSet(t).getCalculatedTimeTrendPercentage() < 0)
          TrendDecrease.push_back(t);
        else
          TrendIncrease.push_back(t);
@@ -227,11 +319,11 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
     //print increasing trends first
     if (TrendIncrease.size()) {
        sWorkString.printf("increase of %0.2f%%",
-                          fabs(SetHandler.GetDataSet(TrendIncrease.front()).GetCalculatedTimeTrendPercentage()));
+                          fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage()));
        sPrintString << sWorkString;
        for (t=1; t < TrendIncrease.size(); ++t) {
           sWorkString.printf((t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%",
-                             fabs(SetHandler.GetDataSet(TrendIncrease[t]).GetCalculatedTimeTrendPercentage()));
+                             fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage()));
           sPrintString << sWorkString;
        }
        sWorkString.printf(" for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
@@ -248,11 +340,11 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
     //print decreasing trends
     if (TrendDecrease.size()) {
       sWorkString.printf("decrease of %0.2f%%",
-                         fabs(SetHandler.GetDataSet(TrendDecrease.front()).GetCalculatedTimeTrendPercentage()));
+                         fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage()));
       sPrintString << sWorkString;
       for (t=1; t < TrendDecrease.size(); ++t) {
          sWorkString.printf((t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%",
-                            fabs(SetHandler.GetDataSet(TrendDecrease[t]).GetCalculatedTimeTrendPercentage()));
+                            fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage()));
          sPrintString << sWorkString;
       }
       sWorkString.printf(" for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
