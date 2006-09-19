@@ -14,18 +14,6 @@ SpaceTimePermutationDataSetHandler::SpaceTimePermutationDataSetHandler(CSaTScanD
 /** destructor */
 SpaceTimePermutationDataSetHandler::~SpaceTimePermutationDataSetHandler() {}
 
-/** Allocates structures of respective data set object that will be used to store
-    data when reading case file. */
-void SpaceTimePermutationDataSetHandler::AllocateCaseStructures(RealDataSet& DataSet) {
-  try {
-    DataSet.AllocateCasesArray();
-  }
-  catch(ZdException &x) {
-    x.AddCallpath("AllocateCaseStructures()","SpaceTimePermutationDataSetHandler");
-    throw;
-  }
-}
-
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     needed by data set handler (probability model) and analysis type during evaluation
     of simulated data. */
@@ -38,8 +26,7 @@ SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulatio
         ZdGenerateException("AllocateSimulationData() not implemented for purely temporal analysis.","AllocateSimulationData()");
     case SPACETIME :
     case PROSPECTIVESPACETIME :
-        for (size_t t=0; t < Container.size(); ++t)
-          Container.at(t)->AllocateCasesArray();
+        std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
         break;
     case SPATIALVARTEMPTREND :
         ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
@@ -60,8 +47,8 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abst
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -71,8 +58,8 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abst
           ZdGenerateException("GetDataGateway() not implemented for purely temporal analysis.","GetDataGateway()");
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
         case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetDataGateway() not implemented for spatial variation and temporal trends analysis.","GetDataGateway()");
@@ -100,10 +87,10 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGa
     for (t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets.at(t);
-      const SimDataSet& S_DataSet = *Container.at(t);
+      const DataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -113,8 +100,8 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGa
           ZdGenerateException("GetSimulationDataGateway() not implemented for purely temporal analysis.","GetSimulationDataGateway()");
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(S_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           break;
         case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetSimulationDataGateway() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataGateway()");
@@ -134,7 +121,7 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGa
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription) {
+bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
   int                                   i, iCategoryIndex;
   bool                                  bReadSuccess=true, bEmpty=true;
   Julian                                Date;
@@ -143,23 +130,23 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSo
   DataSetHandler::RecordStatusType      eRecordStatus;  
 
   try {
-    ppCounts = DataSet.GetCaseArray();
+    ppCounts = DataSet.allocateCaseData().GetArray();
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(DataSet.GetPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
+           eRecordStatus = RetrieveCaseRecordData(DataSet.getPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
            if (eRecordStatus == DataSetHandler::Accepted) {
               bEmpty = false;
               //cumulatively add count to time by location structure
               ppCounts[0][TractIndex] += Count;
               if (ppCounts[0][TractIndex] < 0)
                 GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                            DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+                                            DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
               for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                 ppCounts[i][TractIndex] += Count;
               //record count as a case
-              DataSet.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
+              DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
               //record count in structure(s) based upon population category
-              ppCategoryCounts = DataSet.GetCategoryCaseArray(iCategoryIndex, true);
+              ppCategoryCounts = DataSet.getCategoryCaseData(iCategoryIndex, true).GetArray();
               ppCategoryCounts[0][TractIndex] += Count;
               for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                  ppCategoryCounts[i][TractIndex] += Count;
@@ -172,15 +159,15 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSo
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (!bReadSuccess)
-      gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
+      gPrint.Printf("Please see the '%s' section in the user guide for help.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
     //print indication if file contained no data
     else if (bEmpty) {
-      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, szDescription);
+      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bReadSuccess = false;
     }
     //if no errors in data read, create randomization data in respective randomizer object
     if (bReadSuccess && gParameters.GetSimulationType() != FILESOURCE)
-      ((SpaceTimeRandomizer*)gvDataSetRandomizers.at(DataSet.GetSetIndex() - 1))->CreateRandomizationData(DataSet);
+      ((SpaceTimeRandomizer*)gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))->CreateRandomizationData(DataSet);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCounts()","SpaceTimePermutationDataSetHandler");

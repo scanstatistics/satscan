@@ -7,8 +7,7 @@
 
 class SpaceTimePermutationDataSetHandler : public DataSetHandler {
   protected:
-    virtual void                        AllocateCaseStructures(RealDataSet& DataSet);
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual void                        SetRandomizers();
 
   public:
