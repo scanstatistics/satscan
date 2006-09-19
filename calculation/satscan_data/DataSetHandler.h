@@ -9,7 +9,7 @@
 class CSaTScanData; /** forward class definition */
 class DataSource;   /** forward class definition */
 
-typedef ZdPointerVector<SimDataSet>  SimulationDataContainer_t;
+typedef ZdPointerVector<DataSet>     SimulationDataContainer_t;
 typedef ZdPointerVector<RealDataSet> RealDataContainer_t;
 
 /** Manages all data sets. */
@@ -32,9 +32,8 @@ class DataSetHandler {
     std::deque<void*>                   gmSourceDateWarned;        /** indicates whether user has already been warned that records are being ignored */
     std::deque<void*>                   gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
 
-    virtual void                        AllocateCaseStructures(RealDataSet& DataSet);
     virtual bool                        ReadCaseFile(RealDataSet& DataSet);
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
     RecordStatusType                    RetrieveCaseRecordData(PopulationData& thePopulation, DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, int& iCategoryIndex);
     bool                                RetrieveCovariatesIndex(PopulationData& thePopulation, int& iCategoryIndex, short iCovariatesOffset, DataSource& Source);
     RecordStatusType                    RetrieveCountDate(DataSource& Source, Julian& JulianDate);
@@ -55,6 +54,7 @@ class DataSetHandler {
 
     AbstractDataSetGateway            * GetNewDataGatewayObject() const;
     size_t                              GetNumDataSets() const {return gvDataSets.size();}
+    RealDataContainer_t               & getDataSets() {return gvDataSets;}
     const RealDataSet                 & GetDataSet(size_t iSetIndex=0) const {return *gvDataSets.at(iSetIndex);}
     RealDataSet                       & GetDataSet(size_t iSetIndex=0) {return *gvDataSets.at(iSetIndex);}
     virtual AbstractRandomizer        * GetRandomizer(size_t iSetIndex);

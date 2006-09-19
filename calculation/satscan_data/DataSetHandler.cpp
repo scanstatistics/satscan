@@ -29,17 +29,6 @@ DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
 /** destructor */
 DataSetHandler::~DataSetHandler() {}
 
-/** Allocates cases structures of RealDataSet object that will store case source data. */
-void DataSetHandler::AllocateCaseStructures(RealDataSet& DataSet) {
-  try {
-    DataSet.AllocateCasesArray();
-  }
-  catch(ZdException &x) {
-    x.AddCallpath("AllocateCaseStructures()","DataSetHandler");
-    throw;
-  }
-}
-
 /** Returns new data gateway. Caller is responsible for deleting object.
     If number of data sets is more than one, a MultipleDataSetGateway
     object is returned, else a DataSetGateway object is returned. */
@@ -73,15 +62,15 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
   return Container;
 }
 
-/** Fills passed container with SimDataSet objects. Calls AllocateSimulationData on this container. */
+/** Fills passed container with DataSet objects. Calls AllocateSimulationData on this container. */
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new SimDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+    Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
   return AllocateSimulationData(Container);
 }
 
-/** Randomizes data of passed collection of SimDataSet objects in concert with
+/** Randomizes data of passed collection of DataSet objects in concert with
     internal RealDataSet objects through passed collection of randomizer objects. */
 void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   for (size_t t=0; t < gvDataSets.size(); ++t)
@@ -92,9 +81,8 @@ void DataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationD
 bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
   try {
     gPrint.SetImpliedInputFileType(BasePrint::CASEFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.GetSetIndex()), gPrint));
-    AllocateCaseStructures(DataSet);
-    return ReadCounts(DataSet, *Source, "case");
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gPrint));
+    return ReadCounts(DataSet, *Source);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadCaseFile()","DataSetHandler");
@@ -105,35 +93,35 @@ bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription) {
+bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
   int                                   i, iCategoryIndex;
   bool                                  bCaseFile, bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
   std::string                           sBuffer;
-  count_t                               Count, ** pCounts;
+  count_t                               Count, ** ppCounts;
   DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
-    bCaseFile = !strcmp(szDescription, "case");
-    pCounts = (bCaseFile ? DataSet.GetCaseArray() : DataSet.GetControlArray());
+    bCaseFile = gPrint.GetImpliedInputFileType() == BasePrint::CASEFILE;
+    ppCounts = (bCaseFile ? DataSet.allocateCaseData().GetArray() : DataSet.allocateControlData().GetArray());
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(DataSet.GetPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
+           eRecordStatus = RetrieveCaseRecordData(DataSet.getPopulationData(), Source, TractIndex, Count, Date, iCategoryIndex);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
              //cumulatively add count to time by location structure
-             pCounts[0][TractIndex] += Count;
-             if (pCounts[0][TractIndex] < 0)
+             ppCounts[0][TractIndex] += Count;
+             if (ppCounts[0][TractIndex] < 0)
                GenerateResolvableException("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                           (bCaseFile ? "cases" : "controls"), DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+                                           (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
              for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
-               pCounts[i][TractIndex] += Count;
+               ppCounts[i][TractIndex] += Count;
              //record count as a case or control
              if (bCaseFile)
-               DataSet.GetPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
+               DataSet.getPopulationData().AddCovariateCategoryCaseCount(iCategoryIndex, Count);
              else
-               DataSet.GetPopulationData().AddCovariateCategoryControlCount(iCategoryIndex, Count);
+               DataSet.getPopulationData().AddCovariateCategoryControlCount(iCategoryIndex, Count);
            }
            else if (eRecordStatus == DataSetHandler::Ignored)
              continue;
@@ -143,7 +131,7 @@ bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const 
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
-      gPrint.Printf("Please see the '%s file' section in the user guide for help.\n", BasePrint::P_ERROR, szDescription);
+      gPrint.Printf("Please see the '%s' section in the user guide for help.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
     //print indication if file contained no data
     else if (bEmpty) {
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
@@ -162,7 +150,7 @@ bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const 
 void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePrint * pPrintDirection) {
   if (!gParameters.GetSuppressingWarnings())
     for (size_t t=0; t < gvDataSets.size(); ++t)
-      gvDataSets.at(t)->GetPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
+      gvDataSets.at(t)->getPopulationData().ReportZeroPops(Data, pDisplay, *pPrintDirection);
 }
 
 /** Retrieves count date from current record of data source as a julian date. If an error
@@ -385,25 +373,12 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveLocationIndex(DataSourc
 
 /** Sets purely temporal measure array of RealDataSet object. */
 void DataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
-  try {
-    DataSet.SetPTMeasureArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalMeasureData()","DataSetHandler");
-    throw;
-  }
+  DataSet.setMeasureData_PT();
 }
 
-/** Sets purely temporal case array of each SimDataSet object. */
+/** Sets purely temporal case array of each DataSet object. */
 void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& SimDataContainer) {
-  try {
-    for (size_t t=0; t < SimDataContainer.size(); ++t)
-       SimDataContainer.at(t)->SetPTCasesArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalSimulationData()","DataSetHandler");
-    throw;
-  }
+  std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_PT));
 }
 
 /** internal initialization - allocates RealDataSet object for each data set. */
