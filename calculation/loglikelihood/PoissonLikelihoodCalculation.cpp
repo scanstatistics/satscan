@@ -11,8 +11,8 @@ PoissonLikelihoodCalculator::PoissonLikelihoodCalculator(const CSaTScanData& Dat
                             :AbstractLikelihoodCalculator(DataHub), gParameters(DataHub.GetParameters()) {
   //store data set loglikelihoods under null
   for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
-    count_t   N = DataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases();
-    measure_t U = DataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasure();
+    count_t   N = DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases();
+    measure_t U = DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure();
     gvDataSetLogLikelihoodUnderNull.push_back((N*log(N/U)));
   }
 }
@@ -113,9 +113,7 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSetIndex, CSVT
   SVTTClusterSetData& DataSet = Cluster->GetDataSet(tSetIndex);
 
   //calculate time trend inside of clusters tSetIndex'th dataset
-  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-  //      has not been decided yet.
+  //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                              
   DataSet.gTimeTrendInside.CalculateAndSet(DataSet.gpCasesInsideCluster,         // Inside Cluster
                                            DataSet.gpMeasureInsideCluster,
                                            gDataHub.m_nTimeIntervals,
@@ -127,9 +125,7 @@ double PoissonLikelihoodCalculator::CalcSVTTLogLikelihood(size_t tSetIndex, CSVT
                                                   GlobalTimeTrend.GetBeta());
 
   //calculate time trend outside of clusters tSetIndex'th dataset
-  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-  //      has not been decided yet.
+  //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                               
   DataSet.gTimeTrendOutside.CalculateAndSet(DataSet.gpCasesOutsideCluster,         // Outside Cluster
                                             DataSet.gpMeasureOutsideCluster,
                                             gDataHub.m_nTimeIntervals,

@@ -11,12 +11,11 @@
 // designed and utilized for the process of calculating the expected number of
 // cases with the Poisson probability model.
 
-std::vector<double>& CalcRisk(RealDataSet& DataSet, std::vector<double>& vRisk, Julian StudyStartDate, Julian StudyEndDate);
+std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate, std::vector<double>& vRisk);
 
-void Calcm(RealDataSet& thisSet, Julian StudyStartDate, Julian StudyEndDate);
+boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian StudyStartDate, const Julian StudyEndDate);
 
-measure_t CalcMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& NonCumulativeMeasureHandler,
-                      const std::vector<Julian>& vIntervalStartDates, Julian StartDate, Julian EndDate);
+void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, const std::vector<Julian>& vIntervalStartDates, const Julian StartDate, const Julian EndDate);
 
 // The following functions are either unfinished design thoughts or deprecated.
 

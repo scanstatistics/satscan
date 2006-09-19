@@ -16,12 +16,11 @@ class CPoissonModel : public CModel {
     const CParameters         & gParameters;
     CSaTScanData              & gDataHub; 
 
-    void                        AdjustForNonParameteric(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure);
-    void                        AdjustForLLPercentage(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, double nPercentage);
-    void                        AdjustForLogLinear(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure);
-    void                        AdjustMeasure(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure);
-    void                        AssignMeasure(RealDataSet& DataSet, TwoDimMeasureArray_t& NonCumulativeMeasureHandler);
-    void                        StratifiedSpatialAdjustment(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure);
+    void                        AdjustForNonParameteric(RealDataSet& DataSet);
+    void                        AdjustForLLPercentage(RealDataSet& DataSet, double nPercentage);
+    void                        AdjustForLogLinear(RealDataSet& DataSet);
+    void                        AdjustMeasure(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
+    void                        StratifiedSpatialAdjustment(RealDataSet& DataSet);
 
   public:
     CPoissonModel(CSaTScanData& DataHub);
