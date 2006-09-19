@@ -862,7 +862,24 @@ ProbabilityModelType TfrmAnalysis::GetModelControlType() const {
 
   return eReturn;
 }
-
+//---------------------------------------------------------------------------
+AnsiString TfrmAnalysis::GetModelControlTypeName() const {
+  if (rdoPoissonModel->Checked)
+    return rdoPoissonModel->Caption;
+  else if (rdoBernoulliModel->Checked)
+    return rdoBernoulliModel->Caption;
+  else if (rdoSpaceTimePermutationModel->Checked)
+    return rdoSpaceTimePermutationModel->Caption;
+  else if (rdoOrdinalModel->Checked)
+    return rdoOrdinalModel->Caption;
+  else if (rdoExponentialModel->Checked)
+    return rdoExponentialModel->Caption;
+  else if (rdoNormalModel->Checked)
+    return rdoNormalModel->Caption;
+  else
+    ZdGenerateException("Probability model type not selected.","GetModelControlType()");
+  return "";  
+}
 //---------------------------------------------------------------------------
 /** returns precision of time type for precision control index */
 DatePrecisionType TfrmAnalysis::GetPrecisionOfTimesControlType() const {

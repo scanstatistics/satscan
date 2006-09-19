@@ -192,6 +192,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     AnalysisType                GetAnalysisControlType() const;
     AreaRateType                GetAreaScanRateControlType() const;
     ProbabilityModelType        GetModelControlType() const;
+    AnsiString                  GetModelControlTypeName() const;
     DatePrecisionType           GetPrecisionOfTimesControlType() const;
     ZdDate                    & GetStudyPeriodEndDate(ZdDate& Date) const;
     ZdDate                    & GetStudyPeriodStartDate(ZdDate& Date) const;
