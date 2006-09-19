@@ -8,6 +8,7 @@
 #include "SaTScanDataRead.h"
 #include "NormalRandomizer.h"
 #include "ExponentialDataSetHandler.h"
+#include "ParametersPrint.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -43,7 +44,7 @@ CSaTScanData::~CSaTScanData() {
     - passed 'measure **' is in fact non-cumulative
     - passed 'measure **' points to valid memory, allocated to dimensions (number
       of time intervals plus one by number of tracts)                            */
-void CSaTScanData::AdjustForKnownRelativeRisks(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure) {
+void CSaTScanData::AdjustForKnownRelativeRisks(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure) {
   measure_t                             c, AdjustedTotalMeasure_t;
   int                                   i;
   tract_t                               t;  
@@ -54,17 +55,17 @@ void CSaTScanData::AdjustForKnownRelativeRisks(RealDataSet& DataSet, measure_t *
   for (itr=gRelativeRiskAdjustments.GetAdjustments().begin(); itr != gRelativeRiskAdjustments.GetAdjustments().end(); ++itr) {
      const TractContainer_t & tract_deque = itr->second;
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque)
-        AdjustMeasure(DataSet, ppNonCumulativeMeasure, itr->first, (*itr_deque).GetRelativeRisk(),
-                      (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
+        AdjustMeasure(Set, PopMeasure, itr->first, (*itr_deque).GetRelativeRisk(), (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
   }
 
   // calculate total adjusted measure
+  measure_t ** ppNonCumulativeMeasure = Set.getMeasureData().GetArray();
   for (AdjustedTotalMeasure_t=0, i=0; i < m_nTimeIntervals; ++i)
      for (t=0; t < m_nTracts; ++t)
         AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
   //Mutlipy the measure for each interval/tract by constant (c) to obtain total
   //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
-  c = DataSet.GetTotalMeasure()/AdjustedTotalMeasure_t;
+  c = Set.getTotalMeasure()/AdjustedTotalMeasure_t;
   for (i=0; i < m_nTimeIntervals; ++i)
      for (t=0; t < m_nTracts; ++t)
         ppNonCumulativeMeasure[i][t] *= c;
@@ -81,32 +82,23 @@ only that proportion is multiplied by the relative risk, and the other proportio
 the same, after which they are added.
 Input: Tract, Adjustment Time Period, Relative Risk
 *****************************************************************************************/
-bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
-  int                                   interval;
-  Julian                                AdjustmentStart, AdjustmentEnd;
-  measure_t                             tMaxMeasure_tValue;
-  measure_t				MeasurePre, MeasurePost, MeasureDuring, ** pp_m;
-  ZdString                              s;
+bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
+  const PopulationData & Population = DataSet.getPopulationData();
+  measure_t ** pp_m = PopMeasure.GetArray();
+  count_t ** ppCases = DataSet.getCaseData().GetArray();
+  measure_t ** pNonCumulativeMeasure = DataSet.getMeasureData().GetArray();
 
-  tMaxMeasure_tValue = std::numeric_limits<measure_t>::max();
-
-  //NOTE: The adjustment for known relative risks is hard coded to the first
-  //      dataset for the time being.
-  PopulationData & Population = DataSet.GetPopulationData();
-  pp_m = DataSet.GetPopulationMeasureArray();
-  count_t ** ppCases = DataSet.GetCaseArray();
-
-  for (interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
-     AdjustmentStart = std::max(StartDate, gvTimeIntervalStartTimes[interval]);
-     AdjustmentEnd = std::min(EndDate, gvTimeIntervalStartTimes[interval+1] - 1);
+  for (int interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
+     Julian AdjustmentStart = std::max(StartDate, gvTimeIntervalStartTimes[interval]);
+     Julian AdjustmentEnd = std::min(EndDate, gvTimeIntervalStartTimes[interval+1] - 1);
      //calculate measure for lower interval date to adjustment start date
-     MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, gvTimeIntervalStartTimes[interval], AdjustmentStart);
+     measure_t MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, gvTimeIntervalStartTimes[interval], AdjustmentStart);
      //calculate measure for adjustment period
-     MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
+     measure_t MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
      //calculate measure for adjustment end date to upper interval date
-     MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, gvTimeIntervalStartTimes[interval+1]);
+     measure_t MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, gvTimeIntervalStartTimes[interval+1]);
      //validate that data overflow will not occur
-     if (MeasureDuring && (dRelativeRisk > (tMaxMeasure_tValue - MeasurePre - MeasurePost) / MeasureDuring))
+     if (MeasureDuring && (dRelativeRisk > (std::numeric_limits<measure_t>::max() - MeasurePre - MeasurePost) / MeasureDuring))
        GenerateResolvableException("Error: Data overflow occurs when adjusting expected number of cases.\n"
                                    "       The specified relative risk %lf in the adjustment file\n"
                                    "       is too large.\n", "AssignMeasure()", dRelativeRisk);
@@ -272,7 +264,7 @@ Time Interval = [StartDate , EndDate]; EndDate = NextStartDate-1
 Note: The measure 'M' is the same measure used for the population points, which is later
 calibrated before being put into the measure array.
 **************************************************************************************/
-measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) {
+measure_t CSaTScanData::CalcMeasureForTimeInterval(const PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) const {
   int           i, iStartUpperIndex, iNextLowerIndex;
   long          nTotalDays = m_nEndDate+1 - m_nStartDate;
   measure_t     SumMeasure;
@@ -304,16 +296,14 @@ measure_t CSaTScanData::CalcMeasureForTimeInterval(PopulationData & Population, 
     measure, cases, and population for all datasets. Calls method to determines
     the maximum spatial cluster size. */
 void CSaTScanData::CalculateExpectedCases() {
-  size_t        t;
-
   gPrint.Printf("Calculating the expected number of cases\n", BasePrint::P_STDOUT);
   //calculates expected cases for each dataset
-  for (t=0; t < gDataSets->GetNumDataSets(); ++t) {
+  for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
      CalculateMeasure(gDataSets->GetDataSet(t));
-     gtTotalMeasure += gDataSets->GetDataSet(t).GetTotalMeasure();
-     gtTotalMeasureSq += gDataSets->GetDataSet(t).GetTotalMeasureSq();
-     gtTotalCases += gDataSets->GetDataSet(t).GetTotalCases();
-     gtTotalPopulation += gDataSets->GetDataSet(t).GetTotalPopulation();
+     gtTotalMeasure += gDataSets->GetDataSet(t).getTotalMeasure();
+     gtTotalMeasureSq += gDataSets->GetDataSet(t).getTotalMeasureSq();
+     gtTotalCases += gDataSets->GetDataSet(t).getTotalCases();
+     gtTotalPopulation += gDataSets->GetDataSet(t).getTotalPopulation();
   }
   FreeRelativeRisksAdjustments();
 }
@@ -321,12 +311,10 @@ void CSaTScanData::CalculateExpectedCases() {
 /** Calculates expected number of cases for dataset. */
 void CSaTScanData::CalculateMeasure(RealDataSet& DataSet) {
   try {
-    SetAdditionalCaseArrays(DataSet);
     m_pModel->CalculateMeasure(DataSet);
     //record totals at start, the optional iterative scan feature modifies start values
-    DataSet.SetTotalCasesAtStart(DataSet.GetTotalCases());
-    DataSet.SetTotalControlsAtStart(DataSet.GetTotalControls());
-    DataSet.SetTotalMeasureAtStart(DataSet.GetTotalMeasure());
+    DataSet.setTotalCasesAtStart(DataSet.getTotalCases());
+    DataSet.setTotalMeasureAtStart(DataSet.getTotalMeasure());
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CSaTScanData");
@@ -402,7 +390,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
   Finds the measure M for a requested tract and date.
   Input: Date, Tracts, #PopPoints
  ********************************************************************/
-measure_t CSaTScanData::DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) {
+measure_t CSaTScanData::DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const {
   int           iPopDateIndex=0, iNumPopDates;
   measure_t     tRelativePosition;
 
@@ -440,8 +428,8 @@ void CSaTScanData::FindNeighbors() {
 
 double CSaTScanData::GetAnnualRate(size_t tSetIndex) const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double dTotalCases = gDataSets->GetDataSet(tSetIndex).GetTotalCases();
-  double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
+  double dTotalCases = gDataSets->GetDataSet(tSetIndex).getTotalCases();
+  double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).getTotalPopulation();
   double nAnnualRate = (m_nAnnualRatePop*dTotalCases) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
@@ -449,8 +437,8 @@ double CSaTScanData::GetAnnualRate(size_t tSetIndex) const {
 
 double CSaTScanData::GetAnnualRateAtStart(size_t tSetIndex) const {
   double nYears      = (double)(m_nEndDate+1 - m_nStartDate) / 365.2425;
-  double dTotalCasesAtStart = gDataSets->GetDataSet(tSetIndex).GetTotalCasesAtStart();
-  double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
+  double dTotalCasesAtStart = gDataSets->GetDataSet(tSetIndex).getTotalCasesAtStart();
+  double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).getTotalPopulation();
   double nAnnualRate = (m_nAnnualRatePop*dTotalCasesAtStart) / (dTotalPopulation*nYears);
 
   return nAnnualRate;
@@ -489,8 +477,8 @@ bool CSaTScanData::GetIsNullifiedLocation(tract_t tLocationIndex) const {
     iDataSet'th dataset. For all other models, returns 1.*/
 double CSaTScanData::GetMeasureAdjustment(size_t tSetIndex) const {
   if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-    double dTotalCases = gDataSets->GetDataSet(tSetIndex).GetTotalCases();
-    double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).GetTotalPopulation();
+    double dTotalCases = gDataSets->GetDataSet(tSetIndex).getTotalCases();
+    double dTotalPopulation = gDataSets->GetDataSet(tSetIndex).getTotalPopulation();
     return dTotalCases / dTotalPopulation;
   }
   else
@@ -574,6 +562,8 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
 void CSaTScanData::ReadDataFromFiles() {
   try {
     SaTScanDataReader(*this).Read();
+    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+      std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadDataFromFiles()","CSaTScanData");
@@ -604,8 +594,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation = 0;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            RealDataSet& DataSet = gDataSets->GetDataSet(t);
-           ppCases = DataSet.GetCaseArray();
-           ppMeasure = DataSet.GetMeasureArray();
+           ppCases = DataSet.getCaseData().GetArray();
+           ppMeasure = DataSet.getMeasureData().GetArray();
            //get cases/measure in earliest interval - we'll need to remove these from intervals earlier than cluster window
            tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
            tMeasureInInterval = ppMeasure[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppMeasure[Cluster.m_nLastInterval][tTractIndex]);
@@ -620,14 +610,14 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
              ppMeasure[i][tTractIndex] -= tMeasureInInterval;
            }
            //update totals for data set
-           DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
-           DataSet.SetTotalMeasure(DataSet.GetTotalMeasure() - tMeasureInInterval);
-           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalControls(DataSet.GetTotalControls() - static_cast<count_t>(tMeasureInInterval - tCasesInInterval));
-           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.SetTotalPopulation(DataSet.GetTotalPopulation() - tMeasureInInterval);
+           DataSet.setTotalCases(DataSet.getTotalCases() - tCasesInInterval);
+           DataSet.setTotalMeasure(DataSet.getTotalMeasure() - tMeasureInInterval);
+           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.setTotalControls(DataSet.getTotalControls() - static_cast<count_t>(tMeasureInInterval - tCasesInInterval));
+           if (gParameters.GetProbabilityModelType() == BERNOULLI) DataSet.setTotalPopulation(DataSet.getTotalPopulation() - tMeasureInInterval);
            //update class variables that defines totals across all data sets
-           gtTotalCases += DataSet.GetTotalCases();
-           gtTotalMeasure += DataSet.GetTotalMeasure();
-           if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation += DataSet.GetTotalPopulation();
+           gtTotalCases += DataSet.getTotalCases();
+           gtTotalMeasure += DataSet.getTotalMeasure();
+           if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation += DataSet.getTotalPopulation();
          }
        }
        else if (gParameters.GetProbabilityModelType() == ORDINAL) {
@@ -635,10 +625,10 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          gtTotalPopulation = 0;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            RealDataSet& DataSet = gDataSets->GetDataSet(t);
-           PopulationData& thisPopulation = DataSet.GetPopulationData();
+           PopulationData& thisPopulation = DataSet.getPopulationData();
            // Remove observed cases for location from data set ordinal categories
-           for (size_t c=0; c < DataSet.GetCasesByCategory().size(); ++c) {
-             ppCases = DataSet.GetCategoryCaseArray(c);
+           for (size_t c=0; c < DataSet.getCaseData_Cat().size(); ++c) {
+             ppCases = DataSet.getCategoryCaseData(c).GetArray();
              //get cases in earliest interval - we'll need to remove these from intervals earlier than cluster window
              tCasesInInterval = ppCases[Cluster.m_nFirstInterval][tTractIndex] - (Cluster.m_nLastInterval == m_nTimeIntervals ? 0 : ppCases[Cluster.m_nLastInterval][tTractIndex]);
              //zero out cases/measure in clusters defined temporal window
@@ -650,12 +640,12 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
              //update category population
              thisPopulation.RemoveOrdinalCategoryCases(c, tCasesInInterval);
              //update totals for data set
-             DataSet.SetTotalCases(DataSet.GetTotalCases() - tCasesInInterval);
-             DataSet.SetTotalPopulation(DataSet.GetTotalPopulation() - tCasesInInterval);
+             DataSet.setTotalCases(DataSet.getTotalCases() - tCasesInInterval);
+             DataSet.setTotalPopulation(DataSet.getTotalPopulation() - tCasesInInterval);
            }
            //update class variables that defines totals across all data sets
-           gtTotalCases += DataSet.GetTotalCases();
-           gtTotalPopulation += DataSet.GetTotalCases();
+           gtTotalCases += DataSet.getTotalCases();
+           gtTotalPopulation += DataSet.getTotalCases();
          }
        }
        else if (gParameters.GetProbabilityModelType() == NORMAL) {
@@ -681,7 +671,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        }
        else
          ZdGenerateException("RemoveClusterSignificance() not implemented for %s model.",
-                               "RemoveClusterSignificance()", gParameters.GetProbabilityModelTypeAsString(gParameters.GetProbabilityModelType()));
+                               "RemoveClusterSignificance()", ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
        // Remove location population data as specified in maximum circle population file
        if (gvMaxCirclePopulation.size()) {
          m_nTotalMaxCirclePopulation -= gvMaxCirclePopulation[tTractIndex];
@@ -699,13 +689,13 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
       for (size_t d=0; d < gDataSets->GetNumDataSets(); ++d) {
          RealDataSet& DataSet = gDataSets->GetDataSet(d);
          tAdjustedTotalMeasure=0;
-         tCalibration  = (measure_t)(DataSet.GetTotalCases())/(DataSet.GetTotalMeasure());
-         ppMeasure = DataSet.GetMeasureArray();
+         tCalibration  = (measure_t)(DataSet.getTotalCases())/(DataSet.getTotalMeasure());
+         ppMeasure = DataSet.getMeasureData().GetArray();
          for (int i=0; i < m_nTimeIntervals-1; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
          for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[m_nTimeIntervals - 1][t] *= tCalibration;
-         DataSet.SetMeasureArrayAsCumulative();
+         DataSet.setMeasureDataToCumulative();
          for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
-         gDataSets->GetDataSet(d).SetTotalMeasure(tAdjustedTotalMeasure);
+         gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
          gtTotalMeasure += tAdjustedTotalMeasure;
       }
     }
@@ -719,8 +709,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
            ZdGenerateException("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
          pRandomizer->AssignFromAttributes(DataSet);
-         gtTotalCases += DataSet.GetTotalCases();
-         gtTotalMeasure += DataSet.GetTotalMeasure();
+         gtTotalCases += DataSet.getTotalCases();
+         gtTotalMeasure += DataSet.getTotalMeasure();
       }
     }
     if (gParameters.GetProbabilityModelType() == NORMAL) {
@@ -734,23 +724,21 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
           ZdGenerateException("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
         pRandomizer->AssignFromAttributes(DataSet);
         //update class variables that defines totals across all data sets
-        gtTotalCases += DataSet.GetTotalCases();
-        gtTotalMeasure += DataSet.GetTotalMeasure();
-        gtTotalMeasureSq += DataSet.GetTotalMeasureSq();
+        gtTotalCases += DataSet.getTotalCases();
+        gtTotalMeasure += DataSet.getTotalMeasure();
+        gtTotalMeasureSq += DataSet.getTotalMeasureSq();
       }
     }
     //now recalculate purely temporal arrays as needed
     if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-        switch (gParameters.GetProbabilityModelType()) {
-          case NORMAL      : gDataSets->GetDataSet(t).SetPTSqMeasureArray();
-          case EXPONENTIAL :
-          case BERNOULLI   :
-          case POISSON     : gDataSets->GetDataSet(t).SetPTCasesArray();
-                             gDataSets->GetDataSet(t).SetPTMeasureArray(); break;
-          case ORDINAL     : gDataSets->GetDataSet(t).SetPTCategoryCasesArray(); break;
-          default : ZdGenerateException("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
-        }  
+      switch (gParameters.GetProbabilityModelType()) {
+       case NORMAL      : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Sq));
+       case EXPONENTIAL :
+       case BERNOULLI   :
+       case POISSON     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
+                          std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
+       case ORDINAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
+       default : ZdGenerateException("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
       }
     }
   }
@@ -783,19 +771,6 @@ void CSaTScanData::SetActiveNeighborReferenceType(ActiveNeighborReferenceType eT
   }
   catch (ZdException &x) {
     x.AddCallpath("SetActiveNeighborReferenceType()","CSaTScanData");
-    throw;
-  }
-}
-
-/** Conditionally allocates and sets additional case arrays. */
-void CSaTScanData::SetAdditionalCaseArrays(RealDataSet& DataSet) {
-  try {
-    if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
-        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
-      DataSet.SetCasesPerTimeIntervalArray();  
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetAdditionalCaseArrays()","CSaTScanData");
     throw;
   }
 }
@@ -896,10 +871,10 @@ void CSaTScanData::SetPurelyTemporalCases() {
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL)
       for (t=0; t < gDataSets->GetNumDataSets(); ++t)
-        gDataSets->GetDataSet(t).SetPTCategoryCasesArray();
+        gDataSets->GetDataSet(t).setCaseData_PT_Cat();
     else
       for (t=0; t < gDataSets->GetNumDataSets(); ++t)
-        gDataSets->GetDataSet(t).SetPTCasesArray();
+        gDataSets->GetDataSet(t).setCaseData_PT();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");
@@ -996,10 +971,14 @@ void CSaTScanData::Setup() {
     the Poisson model, this situation is likely the result of incorrect
     data provided in the population file, possibly the case file. For the
     other probability models, this is probably a bug in the code itself. */
-void CSaTScanData::ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const {
+void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
   int           i;
   tract_t       t;
   ZdString      sStart, sEnd;
+
+  //note that cases must be cummulative and measure non-cummulative
+  count_t   ** ppCumulativeCases=Set.getCaseData().GetArray();
+  measure_t ** ppNonCumulativeMeasure=Set.getMeasureData().GetArray();
 
   try {
     for (i=0; i < m_nTimeIntervals; ++i)

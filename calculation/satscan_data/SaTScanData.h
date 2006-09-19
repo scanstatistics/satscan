@@ -67,14 +67,13 @@ class CSaTScanData {
     std::vector<tract_t>                        gvNullifiedLocations;
     mutable ZdPointerVector<CentroidNeighbors>  gvCentroidNeighborStore;
 
-    bool                                        AdjustMeasure(RealDataSet& DataSet, measure_t ** pNonCumulativeMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
-    measure_t                                   CalcMeasureForTimeInterval(PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate);
+    bool                                        AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
+    measure_t                                   CalcMeasureForTimeInterval(const PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) const;
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
-    measure_t                                   DateMeasure(PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract);
+    measure_t                                   DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const;
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
-    virtual void                                SetAdditionalCaseArrays(RealDataSet & thisSet);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
@@ -97,14 +96,13 @@ class CSaTScanData {
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals;
 
-    virtual void                                AdjustForKnownRelativeRisks(RealDataSet& DataSet, measure_t ** ppNonCumulativeMeasure);
+    virtual void                                AdjustForKnownRelativeRisks(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPeriod);
-    void                                        DisplaySummary2(FILE* fp);
     virtual void                                FindNeighbors();
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
@@ -143,13 +141,13 @@ class CSaTScanData {
     virtual void                                ReadDataFromFiles();
     void                                        RemoveClusterSignificance(const CCluster& ClusterObj);
     void                                        SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType);
-    virtual void                                ValidateObservedToExpectedCases(count_t ** ppCumulativeCases, measure_t ** ppNonCumulativeMeasure) const;
+    virtual void                                ValidateObservedToExpectedCases(const DataSet& Set) const;
 
-    inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalMeasure();}
+    inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).getTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
     inline measure_t                            GetTotalMeasureSq() const {return gtTotalMeasureSq;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
-    inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).GetTotalCases();}
+    inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).getTotalCases();}
     double                                      GetAnnualRate(size_t iSetIndex) const;
     double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
