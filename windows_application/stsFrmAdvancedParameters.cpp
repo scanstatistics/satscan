@@ -2115,7 +2115,7 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
       //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
       if (edtMaxTemporalClusterSize->Text.ToDouble() > (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90)) {
         sErrorMessage.printf("For the %s model, the maximum temporal cluster size as a percent of the study period is %d percent.",
-                             gAnalysisSettings.gParameters.GetProbabilityModelTypeAsString(gAnalysisSettings.GetModelControlType()),
+                             gAnalysisSettings.GetModelControlTypeName().c_str(),
                              (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90));
         GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
       }
