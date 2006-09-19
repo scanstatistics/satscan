@@ -18,7 +18,7 @@ void AbstractExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeI
 void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
   PermutedContainer_t::iterator         itr_permuted=gvOriginalPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = RealSet.GetNumTracts(), iNumTimeIntervals = RealSet.GetNumTimeIntervals();
+  int                                   i, tTract, iNumTracts = RealSet.getLocationDimension(), iNumTimeIntervals = RealSet.getIntervalDimension();
   count_t                            ** ppCases, ** ppCensoredCases, tTotalCases=0;
   measure_t                          ** ppMeasure, tTotalMeasure=0, tCalibratedMeasure = 0, tCalibration;
 
@@ -40,12 +40,12 @@ void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
     if (fabs((measure_t)tTotalCases - tCalibratedMeasure) > 0.0001)
       ZdGenerateException("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n", "CalibrateAndAssign()", tCalibratedMeasure, tTotalCases);
     //assign totals for observed and expected in this data set
-    RealSet.SetTotalCases(tTotalCases);
-    RealSet.SetTotalMeasure(tCalibratedMeasure);
-    RealSet.SetTotalPopulation(gvOriginalPermutedAttribute.size());
-    RealSet.AllocateCasesArray(); ppCases = RealSet.GetCaseArray();
-    RealSet.AllocateCensoredCasesArray(); ppCensoredCases = RealSet.GetCensoredCasesArrayHandler().GetArray();
-    RealSet.AllocateMeasureArray(); ppMeasure = RealSet.GetMeasureArray();
+    RealSet.setTotalCases(tTotalCases);
+    RealSet.setTotalMeasure(tCalibratedMeasure);
+    RealSet.setTotalPopulation(gvOriginalPermutedAttribute.size());
+    ppCases = RealSet.allocateCaseData().GetArray();
+    ppCensoredCases = RealSet.allocateCaseData_Censored().GetArray();
+    ppMeasure = RealSet.allocateMeasureData().GetArray();
     //assign randomized data to measure, cases, and censored cases arrays
     itr_permuted=gvOriginalPermutedAttribute.begin();
     for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
@@ -82,16 +82,16 @@ void AbstractExponentialRandomizer::RemoveCase(int iTimeInterval, tract_t tTract
 
 //******************************************************************************
 
-/** Assigns randomized data to SimDataSet objects' structures. */
-void ExponentialRandomizer::AssignRandomizedData(const RealDataSet&, SimDataSet& SimSet) {
+/** Assigns randomized data to DataSet objects' structures. */
+void ExponentialRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
   PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = SimSet.GetNumTracts(), iNumTimeIntervals = SimSet.GetNumTimeIntervals();
-  count_t                            ** ppCases = SimSet.GetCaseArray();
-  measure_t                          ** ppMeasure = SimSet.GetMeasureArray();   
+  int                                   i, tTract, iNumTracts = SimSet.getLocationDimension(), iNumTimeIntervals = SimSet.getIntervalDimension();
+  count_t                            ** ppCases = SimSet.getCaseData().GetArray();
+  measure_t                          ** ppMeasure = SimSet.getMeasureData().GetArray();   
 
-  SimSet.GetCaseArrayHandler().Set(0);
-  SimSet.GetMeasureArrayHandler().Set(0);
+  SimSet.getCaseData().Set(0);
+  SimSet.getMeasureData().Set(0);
   //assign randomized continuous data to measure and case arrays
   for (; itr_stationary != gvStationaryAttribute.end(); ++itr_permuted, ++itr_stationary) {
      ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += (*itr_permuted).GetPermutedVariable().first;
@@ -120,13 +120,13 @@ std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(st
 
 //******************************************************************************
 
-/** Assigns randomized data to SimDataSet objects' purely temporal structures. */
-void ExponentialPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet&, SimDataSet& SimSet) {
+/** Assigns randomized data to DataSet objects' purely temporal structures. */
+void ExponentialPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
   PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = SimSet.GetNumTracts(), iNumTimeIntervals = SimSet.GetNumTimeIntervals();
-  count_t                             * pCases = SimSet.GetPTCasesArray();
-  measure_t                           * pMeasure = SimSet.GetPTMeasureArray();
+  int                                   i, tTract, iNumTracts = SimSet.getLocationDimension(), iNumTimeIntervals = SimSet.getIntervalDimension();
+  count_t                             * pCases = SimSet.getCaseData_PT();
+  measure_t                           * pMeasure = SimSet.getMeasureData_PT();
 
   memset(pCases, 0, (iNumTimeIntervals+1) * sizeof(count_t));
   memset(pMeasure, 0, (iNumTimeIntervals+1) * sizeof(measure_t));

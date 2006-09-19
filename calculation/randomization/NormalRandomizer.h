@@ -23,7 +23,7 @@ class AbstractNormalRandomizer :  public AbstractPermutedDataRandomizer<NormalSt
     randomized data to simulation measure structures. */
 class NormalRandomizer : public AbstractNormalRandomizer {
   protected:
-    virtual void               AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
     NormalRandomizer::NormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(lInitialSeed) {}
@@ -37,7 +37,7 @@ class NormalRandomizer : public AbstractNormalRandomizer {
     randomized data to simulation meaure structures. */
 class NormalPurelyTemporalRandomizer : public AbstractNormalRandomizer {
   protected:
-    virtual void               AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
     NormalPurelyTemporalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(lInitialSeed) {}

@@ -16,17 +16,17 @@ SpaceTimeRandomizer * SpaceTimeRandomizer::Clone() const {
   return new SpaceTimeRandomizer(*this);
 }
 
-/** Assigns randomized data to SimDataSet objects' 'interval by location' case array. */
-void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) {
-  int                                   iInterval, tNumTimeIntervals = thisRealSet.GetNumTimeIntervals();
-  unsigned int                          tTract, tNumTracts = thisRealSet.GetNumTracts();
-  count_t                            ** ppSimCases = thisSimSet.GetCaseArray();
+/** Assigns randomized data to DataSet objects' 'interval by location' case array. */
+void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, DataSet& thisSimSet) {
+  int                                   iInterval, tNumTimeIntervals = thisRealSet.getIntervalDimension();
+  unsigned int                          tTract, tNumTracts = thisRealSet.getLocationDimension();
+  count_t                            ** ppSimCases = thisSimSet.getCaseData().GetArray();
   CategoryContainer_t::const_iterator   itr_category=gCategoryAttributes.begin(), itr_cat_end=gCategoryAttributes.end();
   StationaryContainer_t::const_iterator itr_stationary;
   PermutedContainer_t::const_iterator   itr_permuted, itr_end;
 
   //reset simulation case structure to zero
-  thisSimSet.GetCaseArrayHandler().Set(0);
+  thisSimSet.getCaseData().Set(0);
 
   //assign permuted attribute to simulation case array
   for (; itr_category != itr_cat_end; ++itr_category) {
@@ -51,16 +51,16 @@ void SpaceTimeRandomizer::AssignRandomizedData(const RealDataSet& thisRealSet, S
           previous versions, this function must performed as is; otherwise the initial
           ordering, when randomization starts, will differ. */
 void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet) {
-  int	                iNumIntervals=thisRealSet.GetNumTimeIntervals();
-  unsigned int          iNumCases, iNumCategories(thisRealSet.GetPopulationData().GetNumCovariateCategories());
+  int	                iNumIntervals=thisRealSet.getIntervalDimension();
+  unsigned int          iNumCases, iNumCategories(thisRealSet.getPopulationData().GetNumCovariateCategories());
   count_t            ** ppCases=0;
 
   gCategoryAttributes.resize(iNumCategories);
   for (unsigned int c=0; c < iNumCategories; ++c) {
      CategoryGrouping & theseCategoryAttributes = gCategoryAttributes[c];
-     ppCases = thisRealSet.GetCategoryCaseArray(c);
+     ppCases = thisRealSet.getCategoryCaseData(c).GetArray();
      for (int i=iNumIntervals; i > 0; --i) {
-        for (unsigned int j=0; j < thisRealSet.GetNumTracts(); ++j) {
+        for (unsigned int j=0; j < thisRealSet.getLocationDimension(); ++j) {
            iNumCases = ppCases[i-1][j] - (i == iNumIntervals ? 0 : ppCases[i][j]);
            for (unsigned int k=0; k < iNumCases; ++k) {
               theseCategoryAttributes.gvStationaryAttribute.push_back(j);
@@ -72,10 +72,10 @@ void SpaceTimeRandomizer::CreateRandomizationData(const RealDataSet& thisRealSet
   }
 }
 
-/** Generates randomized data, assigning to 'interval by location' case array of SimDataSet object. */
-void SpaceTimeRandomizer::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+/** Generates randomized data, assigning to 'interval by location' case array of DataSet object. */
+void SpaceTimeRandomizer::RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation) {
   //set seed for simulation number
-  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  SetSeed(iSimulation, thisSimSet.getSetIndex());
   //assign random numbers to permuted attribute and sort
   SortPermutedAttribute();
   //re-assign dataset's simulation data

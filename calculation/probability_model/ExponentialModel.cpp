@@ -20,8 +20,8 @@ void ExponentialModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData& DataHub) const {
   double       dPopulation=0.0;
   tract_t      tNeighborIndex;
-  count_t   ** ppCases(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()),
-            ** ppCensoredCases(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetCensoredCasesArray());
+  count_t   ** ppCases(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData().GetArray()),
+            ** ppCensoredCases(DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData_Censored().GetArray());
 
   try {
     switch (Cluster.GetClusterType()) {

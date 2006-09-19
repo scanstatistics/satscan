@@ -27,7 +27,7 @@ class SpaceTimeRandomizer : public AbstractRandomizer {
   protected:
     CategoryContainer_t              gCategoryAttributes;
 
-    virtual void                     AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet);
+    virtual void                     AssignRandomizedData(const RealDataSet& thisRealSet, DataSet& thisSimSet);
     virtual void                     SortPermutedAttribute();
 
   public:
@@ -37,7 +37,7 @@ class SpaceTimeRandomizer : public AbstractRandomizer {
     virtual SpaceTimeRandomizer    * Clone() const;
 
     void                             CreateRandomizationData(const RealDataSet& thisRealSet);
-    virtual void	             RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void	             RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

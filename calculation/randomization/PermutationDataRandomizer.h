@@ -116,14 +116,14 @@ class AbstractPermutedDataRandomizer : public AbstractRandomizer {
     PermutedContainer_t         gvOriginalPermutedAttribute;
     PermutedContainer_t         gvPermutedAttribute;
 
-    virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet) = 0;
+    virtual void                AssignRandomizedData(const RealDataSet& thisRealSet, DataSet& thisSimSet) = 0;
     virtual void                SortPermutedAttribute();
 
   public:
     AbstractPermutedDataRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
     virtual ~AbstractPermutedDataRandomizer();
 
-    virtual void	        RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void	        RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation);
 };
 
 /** constructor */
@@ -136,9 +136,9 @@ AbstractPermutedDataRandomizer<S, P>::~AbstractPermutedDataRandomizer() {}
 
 /** randomizes data of dataset */
 template <class S, class P>
-void AbstractPermutedDataRandomizer<S, P>::RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) {
+void AbstractPermutedDataRandomizer<S, P>::RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation) {
   //set seed for simulation number
-  SetSeed(iSimulation, thisSimSet.GetSetIndex());
+  SetSeed(iSimulation, thisSimSet.getSetIndex());
   //assign random numbers to permuted attribute and sort
   SortPermutedAttribute();
   //re-assign dataset's simulation data

@@ -3,6 +3,7 @@
 #define __BernoulliRandomizer_H
 //******************************************************************************
 #include "DenominatorDataRandomizer.h"
+#include <boost/cast.hpp>
 
 /** Bernoulli randomizer for null hypothesis. */
 class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataRandomizer {
@@ -12,7 +13,7 @@ class BernoulliNullHypothesisRandomizer : public AbstractOrdinalDenominatorDataR
 
     virtual BernoulliNullHypothesisRandomizer * Clone() const {return new BernoulliNullHypothesisRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
 /** Bernoulli randomizer for null hypothesis, optimized for purely temporal analyses. */
@@ -23,7 +24,7 @@ class BernoulliPurelyTemporalNullHypothesisRandomizer : public AbstractOrdinalDe
 
     virtual BernoulliPurelyTemporalNullHypothesisRandomizer * Clone() const {return new BernoulliPurelyTemporalNullHypothesisRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

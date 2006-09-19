@@ -113,12 +113,12 @@ ZdString& CPurelySpatialCluster::GetEndDate(ZdString& sDateString, const CSaTSca
 
 /** Returns the measure for location as defined by cluster. */
 measure_t CPurelySpatialCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTractIndex];
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
 }
 
 /** returns the number of cases for location as defined by cluster */
 count_t CPurelySpatialCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTractIndex];
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData().GetArray()[0][tTractIndex];
 }
 
 /** returns start date of defined cluster as formated string */

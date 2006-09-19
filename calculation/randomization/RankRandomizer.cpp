@@ -21,15 +21,12 @@ void AbstractRankRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_t 
 void AbstractRankRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts=RealSet.GetNumTracts(), iNumTimeIntervals=RealSet.GetNumTimeIntervals();
+  int                                   i, tTract, iNumTracts=RealSet.getLocationDimension(), iNumTimeIntervals=RealSet.getIntervalDimension();
   measure_t                          ** ppMeasure;
   count_t                            ** ppCases;
 
-  RealSet.AllocateCasesArray();
-  ppCases = RealSet.GetCaseArray();
-  RealSet.AllocateMeasureArray();
-  ppMeasure = RealSet.GetMeasureArray();
-
+  ppCases = RealSet.allocateCaseData().GetArray();
+  ppMeasure = RealSet.allocateMeasureData().GetArray();
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
      ++ppCases[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second];
      ppMeasure[itr_stationary->GetStationaryVariable().first][itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable();
@@ -46,15 +43,15 @@ void AbstractRankRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
 //******************************************************************************
 
 /** Assigns randomized data to data set's simulation measure structures. */
-void RankRandomizer::AssignRandomizedData(const RealDataSet&, SimDataSet& SimSet) {
+void RankRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = SimSet.GetNumTracts(), iNumTimeIntervals=SimSet.GetNumTimeIntervals();
+  int                                   i, tTract, iNumTracts = SimSet.getLocationDimension(), iNumTimeIntervals=SimSet.getIntervalDimension();
   measure_t                          ** ppMeasure;
 
   //reset simulation measure arrays to zero
-  SimSet.GetMeasureArrayHandler().Set(0);
-  ppMeasure = SimSet.GetMeasureArray();
+  SimSet.getMeasureData().Set(0);
+  ppMeasure = SimSet.getMeasureData().GetArray();
 
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_permuted, ++itr_stationary)
@@ -69,15 +66,15 @@ void RankRandomizer::AssignRandomizedData(const RealDataSet&, SimDataSet& SimSet
 //******************************************************************************
 
 /** Assigns randomized data to data set's simulation measure structures. */
-void RankPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet&, SimDataSet& SimSet) {
+void RankPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, iNumTimeIntervals=SimSet.GetNumTimeIntervals();
+  int                                   i, iNumTimeIntervals=SimSet.getIntervalDimension();
   measure_t                           * pMeasure;
 
   //reset simulation measure arrays to zero
-  SimSet.GetMeasureArrayHandler().Set(0);
-  pMeasure = SimSet.GetPTMeasureArray();
+  SimSet.getMeasureData().Set(0);
+  pMeasure = SimSet.getMeasureData_PT();
 
   //assign randomized continuous data to measure and measure squared arrays
   for (; itr_stationary != itr_end; ++itr_permuted, ++itr_stationary)

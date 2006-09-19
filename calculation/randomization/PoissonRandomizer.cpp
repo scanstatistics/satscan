@@ -6,15 +6,15 @@
 #include "SaTScanData.h"
 #include "SSException.h" 
 
-/** Creates randomized under the null hypothesis for Poisson model, assigning data to SimDataSet objects structures.
+/** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
-void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
-  unsigned int          t, tNumTracts = RealSet.GetNumTracts(),
-                        i, tNumTimeIntervals = RealSet.GetNumTimeIntervals();
-  count_t               c, d, cumcases=0, tTotalCases = RealSet.GetTotalCases(), ** ppSimCases = SimSet.GetCaseArray();
-  measure_t             cummeasure=0, tTotalMeasure = RealSet.GetTotalMeasure(), ** ppMeasure(RealSet.GetMeasureArray());
+void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          t, tNumTracts = RealSet.getLocationDimension(),
+                        i, tNumTimeIntervals = RealSet.getIntervalDimension();
+  count_t               c, d, cumcases=0, tTotalCases = RealSet.getTotalCases(), ** ppSimCases = SimSet.getCaseData().GetArray();
+  measure_t             cummeasure=0, tTotalMeasure = RealSet.getTotalMeasure(), ** ppMeasure(RealSet.getMeasureData().GetArray());
 
-  SetSeed(iSimulation, SimSet.GetSetIndex());
+  SetSeed(iSimulation, SimSet.getSetIndex());
   for (t=0; t < tNumTracts; ++t) {
      if (tTotalMeasure-cummeasure > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases - cumcases,
@@ -38,17 +38,17 @@ void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, 
 
 //******************************************************************************
 
-/** Creates randomized under the null hypothesis for Poisson model, assigning data to SimDataSet objects structures.
+/** Creates randomized under the null hypothesis for Poisson model, assigning data to DataSet objects structures.
     Random number generator seed initialized based upon 'iSimulation' index. */
-void PoissonPurelyTemporalNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
-  unsigned int          i, tNumTimeIntervals = RealSet.GetNumTimeIntervals();
-  count_t               d, tTotalCases = RealSet.GetTotalCases();
-  measure_t             tTotalMeasure = RealSet.GetTotalMeasure();
+void PoissonPurelyTemporalNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          i, tNumTimeIntervals = RealSet.getIntervalDimension();
+  count_t               d, tTotalCases = RealSet.getTotalCases();
+  measure_t             tTotalMeasure = RealSet.getTotalMeasure();
 
-  SimSet.AllocatePTCasesArray();
-  count_t * pSimPTCases = SimSet.GetPTCasesArray();
-  measure_t * pPTMeasure = RealSet.GetPTMeasureArray();
-  SetSeed(iSimulation, SimSet.GetSetIndex());
+  SimSet.allocateCaseData_PT();
+  count_t * pSimPTCases = SimSet.getCaseData_PT();
+  measure_t * pPTMeasure = RealSet.getMeasureData_PT();
+  SetSeed(iSimulation, SimSet.getSetIndex());
   pSimPTCases[0] = gBinomialGenerator.GetBinomialDistributedVariable(tTotalCases, pPTMeasure[0]/tTotalMeasure, gRandomNumberGenerator);
   for (i=0; i < tNumTimeIntervals-1; ++i) {
     if (pPTMeasure[i] > 0)
@@ -62,15 +62,15 @@ void PoissonPurelyTemporalNullHypothesisRandomizer::RandomizeData(const RealData
 //******************************************************************************
 
 /** Creates randomized under the null hypothesis for Poisson model, non-parametric (time stratified), and assigning
-    data to SimDataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
-void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
-  unsigned int          tract, tNumTracts = RealSet.GetNumTracts();
-  count_t               c, cumcases=0, * pCasesPerInterval = RealSet.GetCasesPerTimeIntervalArray(), ** ppSimCases = SimSet.GetCaseArray();
-  measure_t             cummeasure=0, * pMeasurePerInterval = RealSet.GetMeasurePerTimeIntervalArray(), ** ppMeasure = RealSet.GetMeasureArray();
+    data to DataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
+void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          tract, tNumTracts = RealSet.getLocationDimension();
+  count_t               c, cumcases=0, * pCasesPerInterval = RealSet.getCaseData_PT_NC(), ** ppSimCases = SimSet.getCaseData().GetArray();
+  measure_t             cummeasure=0, * pMeasurePerInterval = RealSet.getMeasureData_PT_NC(), ** ppMeasure = RealSet.getMeasureData().GetArray();
   int                   interval;
 
-  SetSeed(iSimulation, SimSet.GetSetIndex());
-  interval = RealSet.GetNumTimeIntervals() - 1;
+  SetSeed(iSimulation, SimSet.getSetIndex());
+  interval = RealSet.getIntervalDimension() - 1;
   for (tract=0; tract < tNumTracts; ++tract) {
      if (pCasesPerInterval[interval] - cumcases > 0)
        c = gBinomialGenerator.GetBinomialDistributedVariable(pCasesPerInterval[interval] - cumcases,
@@ -102,18 +102,18 @@ void PoissonTimeStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, 
 //******************************************************************************
 
 /** Creates randomized under the null hypothesis for Poisson model, non-parametric (location stratified), and assigning
-    data to SimDataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
-void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
+    data to DataSet objects structures. Random number generator seed initialized based upon 'iSimulation' index. */
+void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
   int                   interval;
   unsigned int          tract;
-  count_t               tCases, tCumCases=0, ** ppCases = RealSet.GetCaseArray(), ** ppSimCases = SimSet.GetCaseArray();
-  measure_t             tCumMeasure=0, ** ppMeasure = RealSet.GetMeasureArray();
+  count_t               tCases, tCumCases=0, ** ppCases = RealSet.getCaseData().GetArray(), ** ppSimCases = SimSet.getCaseData().GetArray();
+  measure_t             tCumMeasure=0, ** ppMeasure = RealSet.getMeasureData().GetArray();
 
   //reset seed for simulation number
-  SetSeed(iSimulation, SimSet.GetSetIndex());
+  SetSeed(iSimulation, SimSet.getSetIndex());
   //create randomized data for each tract's last time interval
-  interval = RealSet.GetNumTimeIntervals() - 1;
-  for (tract=0; tract < RealSet.GetNumTracts(); ++tract) {
+  interval = RealSet.getIntervalDimension() - 1;
+  for (tract=0; tract < RealSet.getLocationDimension(); ++tract) {
      if (ppCases[0][tract])
        ppSimCases[interval][tract] = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract],
                                            ppMeasure[interval][tract]/(ppMeasure[0][tract]), gRandomNumberGenerator);
@@ -121,10 +121,10 @@ void PoissonSpatialStratifiedRandomizer::RandomizeData(const RealDataSet& RealSe
        ppSimCases[interval][tract] = 0;
   }
   //create randomized data for each tract's remaining time intervals
-  for (tract=0; tract < RealSet.GetNumTracts(); ++tract) {
+  for (tract=0; tract < RealSet.getLocationDimension(); ++tract) {
      tCumCases = 0;
      tCumMeasure = 0;
-     interval = RealSet.GetNumTimeIntervals() - 2;
+     interval = RealSet.getIntervalDimension() - 2;
      for (; interval >= 0; --interval) {
         if (ppCases[0][tract] - tCumCases)
           tCases = gBinomialGenerator.GetBinomialDistributedVariable(ppCases[0][tract] - tCumCases,
@@ -156,16 +156,16 @@ AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const AlternateHypo
   gAlternativeMeasure = rhs.gAlternativeMeasure;
 }
 
-/** Creates randomized under an alternative hypothesis for Poisson model and assigning data to SimDataSet
+/** Creates randomized under an alternative hypothesis for Poisson model and assigning data to DataSet
     objects structures. Random number generator seed initialized based upon 'iSimulation' index.
     !!! This class is in the experiential stage. !!! */
-void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation) {
-  unsigned int          j, t, i, tNumTracts = RealSet.GetNumTracts(), tNumTimeIntervals = RealSet.GetNumTimeIntervals();
+void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation) {
+  unsigned int          j, t, i, tNumTracts = RealSet.getLocationDimension(), tNumTimeIntervals = RealSet.getIntervalDimension();
   std::ifstream         RelativeRiskFile;
   std::string           sTractId;
   tract_t               tractIndex;
-  measure_t             cummeasure=0, TotalMeasure = RealSet.GetTotalMeasure(), ** ppMeasure = RealSet.GetMeasureArray();
-  count_t               c, d, cumcases=0, ** ppSimCases = SimSet.GetCaseArray();
+  measure_t             cummeasure=0, TotalMeasure = RealSet.getTotalMeasure(), ** ppMeasure = RealSet.getMeasureData().GetArray();
+  count_t               c, d, cumcases=0, ** ppSimCases = SimSet.getCaseData().GetArray();
 
   //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
   //the gvRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
@@ -213,7 +213,7 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, Si
    //start alternative simulations
   for (t=0; t < tNumTracts; ++t) {
     if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(RealSet.GetTotalCases() - cumcases,
+        c = gBinomialGenerator.GetBinomialDistributedVariable(RealSet.getTotalCases() - cumcases,
                                                               gvMeasure[t] / (TotalMeasure-cummeasure),
                                                               gRandomNumberGenerator);
     else

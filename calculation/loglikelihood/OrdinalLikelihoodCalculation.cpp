@@ -53,7 +53,7 @@ OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& Dat
   // assemble total number of cases in each ordinal category for each data set and
   // calculate loglikelihood under null for each data set
   for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
-    const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(t).GetPopulationData();
+    const PopulationData& Population = DataHub.GetDataSetHandler().GetDataSet(t).getPopulationData();
     gvDataSetTotalCasesPerCategory.push_back(std::vector<double>());
     LL0 = 0;
     for (size_t i=0; i < Population.GetNumOrdinalCategories(); ++i) {
@@ -62,7 +62,7 @@ OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& Dat
        gvDataSetTotalCasesPerCategory.back().push_back(tCategoryCases);
        // add this categories contribution to loglikelihood under null to LL0
        if (tCategoryCases)
-         LL0 += (double)tCategoryCases * log((double)tCategoryCases/(double)DataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases());
+         LL0 += (double)tCategoryCases * log((double)tCategoryCases/(double)DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases());
     }
     // set loglikelihood under null for this data set
     gvDataSetLogLikelihoodUnderNull.push_back(LL0);

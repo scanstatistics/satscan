@@ -100,11 +100,11 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
   try {
     for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
        const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(i);
-       const PopulationData& Population = DataSet.GetPopulationData();
+       const PopulationData& Population = DataSet.getPopulationData();
        // first calculate populations for each location irrespective of category
        vDataSetLocationPopulation.assign(DataHub.GetNumTracts(), 0);
        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-          pCases = DataSet.GetCategoryCaseArray(j)[0];
+          pCases = DataSet.getCategoryCaseData(j).GetArray()[0];
           for (tract_t m=0; m < DataHub.GetNumTracts(); ++m)
               vDataSetLocationPopulation[m] += pCases[m];
        }
@@ -112,7 +112,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
        for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
           GetLocationId(sBuffer, t, DataHub);
           for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
-             pCases = DataSet.GetCategoryCaseArray(j)[0];
+             pCases = DataSet.getCategoryCaseData(j).GetArray()[0];
              Record.SetAllFieldsBlank(true);
              Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = sBuffer;
              if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
@@ -121,7 +121,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
                Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
              Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = j + 1;
              Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
-             dExpected = (double)vDataSetLocationPopulation[t] * (double)Population.GetNumOrdinalCategoryCases(j) / DataSet.GetTotalPopulation();
+             dExpected = (double)vDataSetLocationPopulation[t] * (double)Population.GetNumOrdinalCategoryCases(j) / DataSet.getTotalPopulation();
              Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
              if (dExpected) {
                Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
@@ -155,10 +155,10 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
 
   try {
     for (i=0; i < Handler.GetNumDataSets(); ++i) {
-       pCases = Handler.GetDataSet(i).GetCaseArray()[0];
-       pMeasure = Handler.GetDataSet(i).GetMeasureArray()[0];
+       pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
+       pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
        if (gParameters.GetProbabilityModelType() == NORMAL)
-         pSqMeasure = Handler.GetDataSet(i).GetSqMeasureArray()[0];
+         pSqMeasure = Handler.GetDataSet(i).getMeasureData_Sq().GetArray()[0];
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
@@ -178,8 +178,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
             Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
             if (dExpected) {
               Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
-              dDenominator = Handler.GetDataSet(i).GetTotalCases() - dExpected;
-              dNumerator = Handler.GetDataSet(i).GetTotalCases() - pCases[t];
+              dDenominator = Handler.GetDataSet(i).getTotalCases() - dExpected;
+              dNumerator = Handler.GetDataSet(i).getTotalCases() - pCases[t];
               if (dDenominator && dNumerator/dDenominator)
                 Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
             }
@@ -211,10 +211,10 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
 
   try {
     for (i=0; i < gParameters.GetNumDataSets(); ++i) {
-       pCases = DataHub.GetDataSetHandler().GetDataSet(i).GetCaseArray()[0];
-       pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).GetMeasureArray()[0];
-       ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).GetNCCaseArray();
-       ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).GetNCMeasureArray();
+       pCases = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData().GetArray()[0];
+       pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData().GetArray()[0];
+       ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_NC().GetArray();
+       ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_NC().GetArray();
        for (t=0; t < DataHub.GetNumTracts(); ++t) {
           Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
@@ -227,8 +227,8 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
           Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
           if (dExpected) {
             Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = ((double)pCases[t])/dExpected;
-            dDenominator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - dExpected;
-            dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).GetTotalCases() - pCases[t];
+            dDenominator = DataHub.GetDataSetHandler().GetDataSet(i).getTotalCases() - dExpected;
+            dNumerator = DataHub.GetDataSetHandler().GetDataSet(i).getTotalCases() - pCases[t];
             if (dDenominator && dNumerator/dDenominator)
               Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
           }
@@ -239,6 +239,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
           }
           TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
+          //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                              
           TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
           Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend();
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);

@@ -137,8 +137,8 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
            count_t tObserved = theCluster.GetObservedCount();
            measure_t tExpected = theCluster.GetExpectedCount(DataHub);
            if (tObserved) Record.GetFieldValue(CLU_MEAN_IN_FIELD).AsDouble() = tExpected/tObserved;
-           count_t tCasesOutside = DataHub.GetDataSetHandler().GetDataSet().GetTotalCases() - tObserved;
-           if (tCasesOutside) Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = (Handler.GetDataSet().GetTotalMeasure() - tExpected)/tCasesOutside;
+           count_t tCasesOutside = DataHub.GetDataSetHandler().GetDataSet().getTotalCases() - tObserved;
+           if (tCasesOutside) Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - tExpected)/tCasesOutside;
 
          }
          if (gParameters.GetProbabilityModelType() != NORMAL) {

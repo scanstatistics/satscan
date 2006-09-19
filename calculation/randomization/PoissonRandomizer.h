@@ -26,7 +26,7 @@ class PoissonNullHypothesisRandomizer : public PoissonRandomizer {
 
     virtual PoissonNullHypothesisRandomizer * Clone() const {return new PoissonNullHypothesisRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
 /** Poisson randomizer for null hypothesis. Optimized for purely temporal analyses. */
@@ -38,7 +38,7 @@ class PoissonPurelyTemporalNullHypothesisRandomizer : public PoissonRandomizer {
 
     virtual PoissonPurelyTemporalNullHypothesisRandomizer * Clone() const {return new PoissonPurelyTemporalNullHypothesisRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
 /** Poisson randomizer for null hypothesis applying the time stratified adjustment. */
@@ -49,7 +49,7 @@ class PoissonTimeStratifiedRandomizer : public PoissonRandomizer {
     virtual ~PoissonTimeStratifiedRandomizer() {}
     virtual PoissonTimeStratifiedRandomizer * Clone() const {return new PoissonTimeStratifiedRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
 /** Poisson randomizer for null hypothesis applying the spatial stratified adjustment. */
@@ -60,7 +60,7 @@ class PoissonSpatialStratifiedRandomizer : public PoissonRandomizer {
     virtual ~PoissonSpatialStratifiedRandomizer() {}
     virtual PoissonSpatialStratifiedRandomizer * Clone() const {return new PoissonSpatialStratifiedRandomizer(*this);}
 
-    virtual void  RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void  RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
 class CSaTScanData; /** forward class declaration */
@@ -81,7 +81,7 @@ class AlternateHypothesisRandomizer : public PoissonRandomizer {
     
     virtual AlternateHypothesisRandomizer     * Clone() const {return new AlternateHypothesisRandomizer(*this);}
 
-    virtual void	                        RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void	                        RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

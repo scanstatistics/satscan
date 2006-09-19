@@ -445,7 +445,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
 
       // covariates number
       SetDoubleField(*pRecord,
-                     (double)AnalysisRun.GetDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).GetPopulationData().GetNumCovariateCategories(),
+                     (double)AnalysisRun.GetDataHub().GetDataSetHandler().GetDataSet(0/*for now*/).getPopulationData().GetNumCovariateCategories(),
                      GetFieldNumber(gvFields, COVARIATES_FIELD));
 
       SetBoolField(*pRecord, params.UseSpecialGrid(), GetFieldNumber(gvFields, GRID_FILE_FIELD)); // special grid file used field

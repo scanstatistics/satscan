@@ -15,18 +15,16 @@ CBernoulliModel::~CBernoulliModel() {}
 void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
   unsigned int          i, j;
   count_t               tTotalCases(0), tTotalControls(0),
-                     ** ppCases(DataSet.GetCaseArray()),
-                     ** ppControls(DataSet.GetControlArray());
+                     ** ppCases(DataSet.getCaseData().GetArray()),
+                     ** ppControls(DataSet.getControlData().GetArray());
   measure_t          ** ppMeasure, tTotalMeasure(0);
 
   try {
-    DataSet.AllocateMeasureArray();
-    ppMeasure = DataSet.GetMeasureArray();
-
-    for (j=0; j < DataSet.GetNumTracts(); ++j) {
+    ppMeasure = DataSet.allocateMeasureData().GetArray();
+    for (j=0; j < DataSet.getLocationDimension(); ++j) {
        tTotalCases    += ppCases[0][j];
        tTotalControls += ppControls[0][j];
-       for (i=0; i < DataSet.GetNumTimeIntervals(); ++i) {
+       for (i=0; i < DataSet.getIntervalDimension(); ++i) {
           ppMeasure[i][j]  = ppCases[i][j] + ppControls[i][j];
        }
        tTotalMeasure += ppMeasure[0][j];
@@ -34,19 +32,19 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
        // Check to see if total case or control values have wrapped
         if (tTotalCases < 0)
           GenerateResolvableException("Error: : The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
-                                      "CBernoulliModel", DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+                                      "CBernoulliModel", DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
         if (tTotalControls < 0)
           GenerateResolvableException("Error: The total number of controls in dataset %u is greater than the maximum allowed of %ld.\n",
-                                      "CBernoulliModel", DataSet.GetSetIndex(), std::numeric_limits<count_t>::max());
+                                      "CBernoulliModel", DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
     }
 
     if (tTotalControls == 0)
-      GenerateResolvableException("Error: No controls found in data set %u.\n", "CBernoulliModel", DataSet.GetSetIndex());
+      GenerateResolvableException("Error: No controls found in data set %u.\n", "CBernoulliModel", DataSet.getSetIndex());
 
-    DataSet.SetTotalCases(tTotalCases);
-    DataSet.SetTotalControls(tTotalControls);
-    DataSet.SetTotalMeasure(tTotalMeasure);
-    DataSet.SetTotalPopulation(tTotalMeasure);
+    DataSet.setTotalCases(tTotalCases);
+    DataSet.setTotalControls(tTotalControls);
+    DataSet.setTotalMeasure(tTotalMeasure);
+    DataSet.setTotalPopulation(tTotalMeasure);
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateMeasure()","CBernoulliModel");
@@ -63,12 +61,12 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
   try {
     switch (Cluster.GetClusterType()) {
      case PURELYTEMPORALCLUSTER            :
-          pPTMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetPTMeasureArray();
+          pPTMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData_PT();
           dPopulation = pPTMeasure[Cluster.m_nFirstInterval] - pPTMeasure[Cluster.m_nLastInterval];
         break;
      case SPACETIMECLUSTER                 :
         if (Cluster.m_nLastInterval != DataHub.GetNumTimeIntervals()) {
-          ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
+          ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
           for (int i=1; i <= Cluster.GetNumTractsInCluster(); ++i) {
             nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
             dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor] - ppMeasure[Cluster.m_nLastInterval][nNeighbor];
@@ -77,7 +75,7 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
         }
      case PURELYSPATIALCLUSTER             :
      case PURELYSPATIALMONOTONECLUSTER     :
-        ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
+        ppMeasure = DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
         for (int i=1; i <= Cluster.GetNumTractsInCluster(); ++i) {
           nNeighbor = DataHub.GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), i, Cluster.GetCartesianRadius());
           dPopulation += ppMeasure[Cluster.m_nFirstInterval][nNeighbor];

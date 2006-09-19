@@ -10,8 +10,8 @@ BernoulliLikelihoodCalculator::BernoulliLikelihoodCalculator(const CSaTScanData&
                               :AbstractLikelihoodCalculator(DataHub) {
   //store data set loglikelihoods under null
   for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
-    count_t   N = DataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases();
-    measure_t U = DataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasure();
+    count_t   N = DataHub.GetDataSetHandler().GetDataSet(t).getTotalCases();
+    measure_t U = DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure();
     gvDataSetLogLikelihoodUnderNull.push_back((N*log(N/U) + (U-N)*log((U-N)/U)));
   }
 }

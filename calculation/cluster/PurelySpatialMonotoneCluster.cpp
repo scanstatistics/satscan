@@ -67,7 +67,7 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs)
 /** Adds neighbor data to cluster definition. */
 void CPSMonotoneCluster::AddNeighbor(int iEllipse, const CSaTScanData& Data, count_t** pCases, tract_t n) {
   tract_t       nNeighbor = Data.GetNeighbor(0, m_Center, n);
-  measure_t   * pMeasure(Data.GetDataSetHandler().GetDataSet(0/*for now*/).GetMeasureArray()[0]);
+  measure_t   * pMeasure(Data.GetDataSetHandler().GetDataSet(0/*for now*/).getMeasureData().GetArray()[0]);
 
   m_nSteps++;
 
@@ -292,7 +292,7 @@ measure_t CPSMonotoneCluster::GetExpectedCount(const CSaTScanData& DataHub, size
 
 /** Returns the measure for tract as defined by cluster. */
 measure_t CPSMonotoneCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
-  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray()[0][tTractIndex];
+  return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
 }
 
 /** Returns log likelihood of cluster. */
@@ -302,7 +302,7 @@ double CPSMonotoneCluster::GetLogLikelihood() const {
 
 /** returns the number of cases for tract as defined by cluster */
 count_t CPSMonotoneCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data,size_t tSetIndex) const {
-  return Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray()[0][tTractIndex];
+  return Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData().GetArray()[0][tTractIndex];
 }
 
 /** If ratio flag is set, returns log likelihood ratio else returns -1.*/

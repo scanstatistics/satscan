@@ -21,10 +21,10 @@ class AbstractExponentialRandomizer : public AbstractPermutedDataRandomizer<Expo
 };
 
 /** Exponential model data randomizer, derives from class AbstractExponentialRandomizer to define appropriate
-    functionality needed to assigned randomized data to SimDataSet object. */
+    functionality needed to assigned randomized data to DataSet object. */
 class ExponentialRandomizer : public AbstractExponentialRandomizer {
   protected:
-    virtual void                        AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void                        AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
     ExponentialRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractExponentialRandomizer(lInitialSeed) {}
@@ -36,10 +36,10 @@ class ExponentialRandomizer : public AbstractExponentialRandomizer {
 };
 
 /** Exponential model data randomizer, derives from class AbstractExponentialRandomizer to define appropriate
-    functionality needed to assigned randomized data to SimDataSet object. Optimized for purely temporal analyses. */
+    functionality needed to assigned randomized data to DataSet object. Optimized for purely temporal analyses. */
 class ExponentialPurelyTemporalRandomizer : public AbstractExponentialRandomizer {
   protected:
-    virtual void                        AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void                        AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
     ExponentialPurelyTemporalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractExponentialRandomizer(lInitialSeed) {}

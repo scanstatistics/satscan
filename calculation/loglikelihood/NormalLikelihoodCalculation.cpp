@@ -10,7 +10,7 @@ NormalLikelihoodCalculator::NormalLikelihoodCalculator(const CSaTScanData& DataH
                            :AbstractLikelihoodCalculator(DataHub) {
   //pre-calculate each data sets loglikelihood under the null
   for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t)
-     gvDataSetMeasureSqTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasureSq());
+     gvDataSetMeasureSqTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureSq());
 }
 
 /** destructor */

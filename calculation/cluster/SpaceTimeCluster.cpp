@@ -79,7 +79,7 @@ void CSpaceTimeCluster::CopyEssentialClassMembers(const CCluster& rhs) {
 /** Returns the measure for tract as defined by cluster. */
 measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
   measure_t      tMeasure,
-              ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetMeasureArray();
+              ** ppMeasure = Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tMeasure = ppMeasure[m_nFirstInterval][tTractIndex];
@@ -92,7 +92,7 @@ measure_t CSpaceTimeCluster::GetExpectedCountForTract(tract_t tTractIndex, const
 /** returns the number of cases for tract as defined by cluster */
 count_t CSpaceTimeCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex) const {
   count_t      tCaseCount,
-            ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).GetCaseArray();
+            ** ppCases = Data.GetDataSetHandler().GetDataSet(tSetIndex).getCaseData().GetArray();
 
   if (m_nLastInterval == Data.GetNumTimeIntervals())
     tCaseCount = ppCases[m_nFirstInterval][tTractIndex];

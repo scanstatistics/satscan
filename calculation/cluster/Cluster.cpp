@@ -232,15 +232,15 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      //print estimated mean outside label
      PrintFormat.PrintSectionLabel(fp, "Mean outside", false, true);
      //print estimated mean inside
-     count_t tCasesOutside = Handler.GetDataSet(*itr_Index).GetTotalCases() - tObserved;
-     dEstimatedMeanOutside = (tCasesOutside ? (Handler.GetDataSet(*itr_Index).GetTotalMeasure() - tExpected)/tCasesOutside : 0);
+     count_t tCasesOutside = Handler.GetDataSet(*itr_Index).getTotalCases() - tObserved;
+     dEstimatedMeanOutside = (tCasesOutside ? (Handler.GetDataSet(*itr_Index).getTotalMeasure() - tExpected)/tCasesOutside : 0);
      sBuffer.printf("%.2f", dEstimatedMeanOutside);
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print unexplained variance label
      PrintFormat.PrintSectionLabel(fp, "Unexplained variance", false, true);
      dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureSq(*itr_Index),
-                                             Handler.GetDataSet(*itr_Index).GetTotalCases(), Handler.GetDataSet(*itr_Index).GetTotalMeasure(),
-                                             Handler.GetDataSet(*itr_Index).GetTotalMeasureSq());
+                                             Handler.GetDataSet(*itr_Index).getTotalCases(), Handler.GetDataSet(*itr_Index).getTotalMeasure(),
+                                             Handler.GetDataSet(*itr_Index).getTotalMeasureSq());
      sBuffer.printf("%.2f", dUnbiasedVariance);
      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
      //print common standard deviation
@@ -291,7 +291,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
          sWork.printf("%s%g%s",
                       (m == 0 ? "[" : ", "),
-                      thisDataSet.GetPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(m)),
+                      thisDataSet.getPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(m)),
                       (m + 1 == itrCategory->GetNumCombinedCategories() ? "]" : ""));
          sBuffer << sWork;
        }
@@ -344,7 +344,7 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-          tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
        if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases)) == -1)
          sWork.printf("%sinfinity", (itrCategory == vCategoryContainer.begin() ? "" : ", "));
@@ -632,7 +632,7 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
   const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(tSetIndex);
 
   return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this, DataHub) *
-             DataSet.GetPopulationData().GetNumOrdinalCategoryCases(iCategoryIndex) / DataSet.GetTotalPopulation();
+             DataSet.getPopulationData().GetNumOrdinalCategoryCases(iCategoryIndex) / DataSet.getTotalPopulation();
 
 }
 
@@ -713,7 +713,7 @@ double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
 double CCluster::GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex) const {
   return GetRelativeRisk(GetObservedCount(tSetIndex),
                          GetExpectedCount(DataHub, tSetIndex),
-                         DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalCases());
+                         DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases());
 }
 
 /** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data.
@@ -731,7 +731,7 @@ double CCluster::GetRelativeRisk(double dObserved, double dExpected, double dTot
 double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex) const {
   return GetRelativeRisk(GetObservedCountForTract(tTractIndex, DataHub, tSetIndex),
                          GetExpectedCountForTract(tTractIndex, DataHub, tSetIndex),
-                         DataHub.GetDataSetHandler().GetDataSet(tSetIndex).GetTotalCases());
+                         DataHub.GetDataSetHandler().GetDataSet(tSetIndex).getTotalCases());
 }
 
 /** returns start date of defined cluster as formated string */

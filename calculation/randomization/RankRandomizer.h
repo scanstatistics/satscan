@@ -20,7 +20,7 @@ class AbstractRankRandomizer :  public AbstractPermutedDataRandomizer<RankStatio
 /** Rank model randomizer for null hypothesis. */
 class RankRandomizer : public AbstractRankRandomizer {
   protected:
-    virtual void             AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void             AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
     RankRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRankRandomizer(lInitialSeed) {}
@@ -32,7 +32,7 @@ class RankRandomizer : public AbstractRankRandomizer {
 /** Rank model randomizer for null hypothesis. Optimized for purely temporal analyses. */
 class RankPurelyTemporalRandomizer : public AbstractRankRandomizer {
   protected:
-    virtual void             AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void             AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
     RankPurelyTemporalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractRankRandomizer(lInitialSeed) {}

@@ -247,14 +247,14 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         dObserved = theCluster.GetObservedCount();
         dExpected = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = dExpected/dObserved;
-        dCasesOutside = Handler.GetDataSet().GetTotalCases() - dObserved;
-        if (dCasesOutside) Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (Handler.GetDataSet().GetTotalMeasure() - dExpected)/dCasesOutside;
+        dCasesOutside = Handler.GetDataSet().getTotalCases() - dObserved;
+        if (dCasesOutside) Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - dExpected)/dCasesOutside;
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           ZdGenerateException("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
         dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureSq(0),
-                                                Handler.GetDataSet().GetTotalCases(), Handler.GetDataSet().GetTotalMeasure(),
-                                                Handler.GetDataSet().GetTotalMeasureSq());
+                                                Handler.GetDataSet().getTotalCases(), Handler.GetDataSet().getTotalMeasure(),
+                                                Handler.GetDataSet().getTotalMeasureSq());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
@@ -353,14 +353,14 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
         dObserved = theCluster.GetObservedCount(iSetIndex);
         dExpected = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = (dObserved ? dExpected/dObserved : 0);
-        dCasesOutside = Handler.GetDataSet(iSetIndex).GetTotalCases() - dObserved;
-        Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (dCasesOutside ? (Handler.GetDataSet(iSetIndex).GetTotalMeasure() - dExpected)/dCasesOutside : 0);
+        dCasesOutside = Handler.GetDataSet(iSetIndex).getTotalCases() - dObserved;
+        Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (dCasesOutside ? (Handler.GetDataSet(iSetIndex).getTotalMeasure() - dExpected)/dCasesOutside : 0);
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           ZdGenerateException("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
         dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureSq(iSetIndex),
-                                                Handler.GetDataSet(iSetIndex).GetTotalCases(), Handler.GetDataSet(iSetIndex).GetTotalMeasure(),
-                                                Handler.GetDataSet(iSetIndex).GetTotalMeasureSq());
+                                                Handler.GetDataSet(iSetIndex).getTotalCases(), Handler.GetDataSet(iSetIndex).getTotalMeasure(),
+                                                Handler.GetDataSet(iSetIndex).getTotalMeasureSq());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
@@ -410,7 +410,7 @@ void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster,
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
           tObserved += theCluster.GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += theCluster.GetExpectedCountOrdinal(gDataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr_Index).GetPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
+          tTotalCategoryCases += gDataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
        //record observed/expected cases - categories which were combined will have the same value
        tObservedDivExpected = (tExpected ? (double)tObserved/tExpected  : 0);

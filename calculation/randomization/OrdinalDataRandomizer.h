@@ -14,7 +14,7 @@ class OrdinalDenominatorDataRandomizer : public AbstractOrdinalDenominatorDataRa
     
     virtual OrdinalDenominatorDataRandomizer * Clone() const {return new OrdinalDenominatorDataRandomizer(*this);}
 
-    virtual void        RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void        RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 
     static const size_t gtMaximumCategories;
 };
@@ -28,7 +28,7 @@ class OrdinalPurelyTemporalDenominatorDataRandomizer : public AbstractOrdinalDen
     
     virtual OrdinalPurelyTemporalDenominatorDataRandomizer * Clone() const {return new OrdinalPurelyTemporalDenominatorDataRandomizer(*this);}
 
-    virtual void        RandomizeData(const RealDataSet& RealSet, SimDataSet& SimSet, unsigned int iSimulation);
+    virtual void        RandomizeData(const RealDataSet& RealSet, DataSet& SimSet, unsigned int iSimulation);
 };
 
 typedef StationaryAttribute<std::pair<int, tract_t> >   OrdinalStationary_t;
@@ -41,7 +41,7 @@ typedef PermutedAttribute<int>                          OrdinalPermuted_t;
           fewer cases). As such, it will not be used at this time. */
 class OrdinalPermutedDataRandomizer : public AbstractPermutedDataRandomizer<OrdinalStationary_t, OrdinalPermuted_t> {
   protected:
-    virtual void                AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void                AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
     void                        Setup(const RealDataSet& RealSet);
 
   public:
@@ -61,7 +61,7 @@ typedef StationaryAttribute<int>   OrdinalPurelyTemporalStationary_t;
           fewer cases). As such, it will not be used at this time. */
 class OrdinalPurelyTemporalPermutedDataRandomizer : public AbstractPermutedDataRandomizer<OrdinalPurelyTemporalStationary_t, OrdinalPermuted_t> {
   protected:
-    virtual void                AssignRandomizedData(const RealDataSet& RealSet, SimDataSet& SimSet);
+    virtual void                AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
     void                        Setup(const RealDataSet& RealSet);
 
   public:
