@@ -17,7 +17,7 @@ stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (st
     if (gDataHub.GetParameters().GetOutputSimulationData()) {
       boost::mutex::scoped_lock     lock(gMutex);
       for (size_t t=0; t < gpSimulationDataContainer->size(); ++t)
-         (*gpSimulationDataContainer)[t]->WriteSimulationData(gDataHub.GetParameters(), param);
+         gDataWriter->write((*(*gpSimulationDataContainer)[t]), gDataHub.GetParameters());
     }
     //perform simulation to get loglikelihood ratio
     macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);

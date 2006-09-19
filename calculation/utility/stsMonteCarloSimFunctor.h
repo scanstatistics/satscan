@@ -6,6 +6,7 @@
 #include "boost/thread/mutex.hpp"
 #include "AnalysisRun.h"
 #include "stsMCSimJobSource.h"
+#include "DataSetWriter.h"
 
 //runs jobs for the "successive" algorithm
 class stsMCSimSuccessiveFunctor
@@ -15,12 +16,13 @@ public:
   typedef stsMCSimJobSource::result_type result_type;
 
 private:
-  boost::mutex                       & gMutex;
-  CSaTScanData const &                 gDataHub;
-  boost::shared_ptr<AbstractDataSetGateway> gpDataGateway;
-  boost::shared_ptr<CAnalysis>         gpAnalysis;
+  boost::mutex                               & gMutex;
+  CSaTScanData const                         & gDataHub;
+  boost::shared_ptr<AbstractDataSetGateway>    gpDataGateway;
+  boost::shared_ptr<CAnalysis>                 gpAnalysis;
   boost::shared_ptr<SimulationDataContainer_t> gpSimulationDataContainer;
   boost::shared_ptr<RandomizerContainer_t>     gpRandomizationContainer;
+  boost::shared_ptr<AbstractDataSetWriter>     gDataWriter;
 
 public:
   stsMCSimSuccessiveFunctor(
@@ -45,6 +47,7 @@ public:
     gDataHub.GetDataSetHandler().GetSimulationDataGateway(*gpDataGateway, *gpSimulationDataContainer);
     //allocate appropriate data members for simulation algorithm
     gpAnalysis->AllocateSimulationObjects(*gpDataGateway);
+    gDataWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(theDataHub.GetParameters()));
   }
 
 //  ~stsMonteCarloSimFunctor()
