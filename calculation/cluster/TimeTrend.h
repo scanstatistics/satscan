@@ -26,7 +26,8 @@ class CTimeTrend {
     double                      Alpha(double nSC, double nSME) const;
     double                      F(double nSC, double nSTC, double nSME, double nSTME) const;
     double                      S(double nSC, double nSTC, double nSTME, double nST2ME) const;
-
+    double                      safe_exp(double dValue) const;
+    
   public:
     CTimeTrend();
     virtual ~CTimeTrend();

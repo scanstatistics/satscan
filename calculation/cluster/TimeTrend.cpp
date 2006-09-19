@@ -4,6 +4,14 @@
 //*****************************************************************************
 #include "TimeTrend.h"
 
+static unsigned int iLessThanOne=0;
+static unsigned int iLessThanFive=0;
+static unsigned int iLessThanTen=0;
+static unsigned int iLessThanFifteen=0;
+static unsigned int iLessThanTwenty=0;
+static unsigned int iLessThanFifty=0;
+static unsigned int iRemainder=0;
+
 /** constructor */
 CTimeTrend::CTimeTrend() {
   Initialize();
@@ -41,6 +49,28 @@ double CTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeInt
   }
 
   return rval;
+}
+
+double CTimeTrend::safe_exp(double dValue) const {
+   if (dValue < 1)
+     ++iLessThanOne;
+   else if (dValue < 5)
+     ++iLessThanFive;
+   else if (dValue < 10)
+     ++iLessThanTen;
+   else if (dValue < 15)
+     ++iLessThanFifteen;
+   else if (dValue < 20)
+     ++iLessThanTwenty;
+   else
+     ++iRemainder;
+
+   double d = exp(dValue);
+   if (d == HUGE_VAL)
+     ZdGenerateException("exp(%lf) overflow", "safe_exp()", dValue);
+   if (d == 0)
+     ZdGenerateException("exp(%lf) underflow", "safe_exp()", dValue);
+   return d;
 }
 
 // ******************************************************************************
@@ -114,9 +144,9 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   nIterations = 0;
   while (!bGoodBetaStart && nIterations < MAX_BETA_TEST_ITERATIONS) {
      for (t=0; t < nTimeIntervals; t++) {
-        nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaStart * t);
-        nSumTime_Msr_ExpBeta += t * pMeasure[t] * exp(nBetaStart * t);
-        nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * exp(nBetaStart * t);
+        nSumMsr_ExpBeta += pMeasure[t] * safe_exp(nBetaStart * t);
+        nSumTime_Msr_ExpBeta += t * pMeasure[t] * safe_exp(nBetaStart * t);
+        nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * safe_exp(nBetaStart * t);
      }
      if ( S(nSumCases,nSumTime_Cases,nSumTime_Msr_ExpBeta,nSumTimeSquared_Msr_ExpBeta) < -1)
          bGoodBetaStart = true;
@@ -143,9 +173,9 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
     // Create sum terms for calculations in derivatives F() and S(), the first and second derivatives of Alpha.
     // ********************************************************************************************************
     for (t=0; t < nTimeIntervals; t++) {
-      nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaOld * t);
-      nSumTime_Msr_ExpBeta += t * pMeasure[t] * exp(nBetaOld * t);
-      nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * exp(nBetaOld * t);
+      nSumMsr_ExpBeta += pMeasure[t] * safe_exp(nBetaOld * t);
+      nSumTime_Msr_ExpBeta += t * pMeasure[t] * safe_exp(nBetaOld * t);
+      nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * safe_exp(nBetaOld * t);
     }
 
     // Uses Newton-Raphsons method to find the zero of F(Alpha),
@@ -177,7 +207,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   if (bConvergence) {
     nSumMsr_ExpBeta=0.0;
     for (t=0; t < nTimeIntervals; t++)
-      nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaNew * t);
+      nSumMsr_ExpBeta += pMeasure[t] * safe_exp(nBetaNew * t);
     gdAlpha = Alpha(nSumCases,nSumMsr_ExpBeta);
     gdBeta = nBetaNew;
     //Set status, a negative beta is not likely, but perform check regardless.
@@ -224,7 +254,30 @@ double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double n
                                      "SetAnnualTimeTrend()", eDatePrecision);
   }
 
-  gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
+  //**SVTT::TODO**  In a previous revision of this file, we created a status enumeration
+  //                to reflect that 'gdBeta' was negative. When calculating loglikelihood,
+  //                we have not yet defined the behavior when this object's status is
+  //                anything other than TREND_CONVERGED. As a result, we can eventually
+  //                call SetAnnualTimeTrend() with a negative 'gdBeta' or some other state.
+  //                Until I can discuss this further with Martin, take that absolute value
+  //                when negative.
+  if (gStatus == TREND_CONVERGED)
+    gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
+  else if (gStatus == TREND_NEGATIVE) {
+    gdAnnualTimeTrend = (pow(1 + std::fabs(gdBeta), nUnits/nIntervalLen) - 1) * 100;
+    printf("Undefined behavior, calling SetAnnualTimeTrend() with negative beta.\n");
+  }
+  else if (gStatus == TREND_UNDEF)
+    printf("Undefined behavior, calling SetAnnualTimeTrend() with undefined trend.\n");
+  else if (gStatus == TREND_INF)
+    printf("Undefined behavior, calling SetAnnualTimeTrend() with infinite trend.\n");
+  else if (gStatus == TREND_NOTCONVERGED)
+    printf("Undefined behavior, calling SetAnnualTimeTrend() with not converged trend.\n");
+  else if (gStatus == TREND_NOTCONVERGED)
+    printf("Undefined behavior, calling SetAnnualTimeTrend() with not converged trend.\n");
+  else
+    printf("Undefined behavior, calling SetAnnualTimeTrend() with unknown trend.\n");
+
   return gdAnnualTimeTrend;
 }
 
