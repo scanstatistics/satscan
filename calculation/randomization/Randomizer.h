@@ -5,6 +5,7 @@
 #include "RandomNumberGenerator.h"
 #include "RandomDistribution.h"
 #include "DataSet.h"
+#include "DataSetReader.h"
 
 /** abstract randomizer class to randomize data for replications */
 class AbstractRandomizer {
@@ -21,7 +22,7 @@ class AbstractRandomizer {
     
     virtual AbstractRandomizer * Clone() const = 0;
 
-    virtual void	         RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation) = 0;
+    virtual void	         RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation) = 0;
 };
 
 typedef ZdPointerVector<AbstractRandomizer>     RandomizerContainer_t;
@@ -30,7 +31,8 @@ typedef ZdPointerVector<AbstractRandomizer>     RandomizerContainer_t;
     NOTE: This unit has note been thoughly tested, especially with multiple datasets. */
 class FileSourceRandomizer : public AbstractRandomizer {
   protected:
-    const CParameters            & gParameters;
+    const CParameters                  & gParameters;
+    std::auto_ptr<AbstractDataSetReader> gReader;
 
   public:
     	    FileSourceRandomizer(const CParameters& Parameters, long lInitialSeed=RandomNumberGenerator::glDefaultSeed);
@@ -38,7 +40,7 @@ class FileSourceRandomizer : public AbstractRandomizer {
     virtual ~FileSourceRandomizer();
 
     virtual FileSourceRandomizer * Clone() const;
-    virtual void	           RandomizeData(const RealDataSet& thisRealSet, SimDataSet& thisSimSet, unsigned int iSimulation);
+    virtual void	           RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation);
 };
 //******************************************************************************
 #endif

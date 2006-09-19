@@ -42,7 +42,9 @@ void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDa
 
 /** constructor */
 FileSourceRandomizer::FileSourceRandomizer(const CParameters& Parameters, long lInitialSeed)
-                     :AbstractRandomizer(lInitialSeed), gParameters(Parameters) {}
+                     :AbstractRandomizer(lInitialSeed), gParameters(Parameters) {
+  gReader.reset(AbstractDataSetReader::getNewDataSetReader(Parameters));
+}
 
 /** copy constructor */
 FileSourceRandomizer::FileSourceRandomizer(const FileSourceRandomizer& rhs)
@@ -53,7 +55,7 @@ FileSourceRandomizer::~FileSourceRandomizer() {}
 
 /** returns pointer to newly cloned FileSourceRandomizer */
 FileSourceRandomizer * FileSourceRandomizer::Clone() const {
-  return new FileSourceRandomizer(*this);
+  return new FileSourceRandomizer(gParameters, gRandomNumberGenerator.GetSeed());
 }
 
 /** Reads number of simulated cases from a text file rather than generating them randomly.
@@ -64,6 +66,6 @@ FileSourceRandomizer * FileSourceRandomizer::Clone() const {
           3) file does not actually contains numerical data
           Use of this feature should be discouraged except from someone who has
           detailed knowledge of how code works.                                                           */
-void FileSourceRandomizer::RandomizeData(const RealDataSet&, SimDataSet& thisSimSet, unsigned int iSimulation) {
-  thisSimSet.ReadSimulationData(gParameters, iSimulation);
+void FileSourceRandomizer::RandomizeData(const RealDataSet&, DataSet& thisSimSet, unsigned int iSimulation) {
+  gReader->read(thisSimSet, gParameters, iSimulation);
 }
