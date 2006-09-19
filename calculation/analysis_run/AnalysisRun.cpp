@@ -184,7 +184,7 @@ void AnalysisRunner::Execute() {
     gpDataHub->CalculateExpectedCases();
     //validate that data set contains cases
     for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-       if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() == 0)
+       if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
          GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
     macroRunTimeStopSerial();
     //calculation approxiate amount of memory required to run analysis
@@ -417,7 +417,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
   //the number of categories in the ordinal model (CAT=1 for other models)
   double CAT = (gParameters.GetProbabilityModelType() == ORDINAL ? 0 : 1);
   for (size_t i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-     CAT += gpDataHub->GetDataSetHandler().GetDataSet(i).GetPopulationData().GetNumOrdinalCategories();
+     CAT += gpDataHub->GetDataSetHandler().GetDataSet(i).getPopulationData().GetNumOrdinalCategories();
   //for exponential model, EXP =1 one for all other models
   double EXP = 1; //EXP is mulitplied by 4 bytes
   switch (gParameters.GetProbabilityModelType()) {
@@ -430,7 +430,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     default : ZdGenerateException("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the total number of cases (for the ordinal model or multiple data sets, C=0)
-  double C = (gParameters.GetProbabilityModelType() == ORDINAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).GetTotalCases());
+  double C = (gParameters.GetProbabilityModelType() == ORDINAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).getTotalCases());
   //1 when scanning for high rates only or low rates only, R=2 when scanning for either high or low rates
   double R = (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2 : 1);
   //number of data sets
@@ -589,7 +589,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
       AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
       //data gateway object for real data
       std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
-      std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
+      std::auto_ptr<LoglikelihoodRatioWriter>      RatioWriter;
+      std::auto_ptr<AbstractDataSetWriter>         DataSetWriter;
 
       //get data randomizers
       DataHandler.GetRandomizerContainer(RandomizationContainer);
@@ -597,14 +598,16 @@ void AnalysisRunner::PerformCentric_Parallel() {
       DataHandler.GetDataGateway(*DataSetGateway);
       if (gParameters.GetNumReplicationsRequested())
         gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
-      if (gParameters.GetOutputSimulationData())
+      if (gParameters.GetOutputSimulationData()) {
         remove(gParameters.GetSimulationDataOutputFilename().c_str());
+        DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gParameters));
+      }
       //create simulation data sets -- randomize each and set corresponding data gateway object
       for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new SimDataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -614,7 +617,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
          //print simulation data to file, if requested
          if (gParameters.GetOutputSimulationData())
            for (size_t t=0; t < thisDataCollection.size(); ++t)
-              thisDataCollection[t]->WriteSimulationData(gParameters, i);
+              DataSetWriter->write(*thisDataCollection[t], gParameters);
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
@@ -758,6 +761,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       std::auto_ptr<AbstractCentricAnalysis>      CentricAnalysis;
       //centroid neighbors calculator
       std::auto_ptr<CentroidNeighborCalculator>   CentroidCalculator;
+      std::auto_ptr<AbstractDataSetWriter>        DataSetWriter;
 
       //get data randomizers
       DataHandler.GetRandomizerContainer(RandomizationContainer);
@@ -766,14 +770,16 @@ void AnalysisRunner::PerformCentric_Serial() {
 
       if (gParameters.GetNumReplicationsRequested())
         gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
-      if (gParameters.GetOutputSimulationData())
+      if (gParameters.GetOutputSimulationData()) {
         remove(gParameters.GetSimulationDataOutputFilename().c_str());
+        DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gParameters));
+      }
       //create simulation data sets -- randomize each and set corresponding data gateway object
       for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new SimDataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -783,7 +789,7 @@ void AnalysisRunner::PerformCentric_Serial() {
         //print simulation data to file, if requested
         if (gParameters.GetOutputSimulationData())
           for (size_t t=0; t < thisDataCollection.size(); ++t)
-             thisDataCollection[t]->WriteSimulationData(gParameters, i);
+             DataSetWriter->write(*thisDataCollection[t], gParameters);
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
          DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
@@ -938,6 +944,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
   SimulationDataContainer_t               SimulationDataContainer;
   RandomizerContainer_t                   RandomizationContainer;
   std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
+  std::auto_ptr<AbstractDataSetWriter>    DataSetWriter;
 
   try {
     giNumSimsExecuted = 0;
@@ -964,8 +971,10 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     //allocate appropriate data members for simulation algorithm
     pAnalysis->AllocateSimulationObjects(*pDataGateway);
     //if writing simulation data to file, delete file now
-    if (gParameters.GetOutputSimulationData())
+    if (gParameters.GetOutputSimulationData()) {
       remove(gParameters.GetSimulationDataOutputFilename().c_str());
+      DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gParameters));
+    }
     //start clock for estimating approximate time to complete
     boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
     {//block for the scope of SimulationPrintDirection
@@ -980,7 +989,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
         //print simulation data to file, if requested
         if (gParameters.GetOutputSimulationData())
           for (size_t t=0; t < SimulationDataContainer.size(); ++t)
-             SimulationDataContainer[t]->WriteSimulationData(gParameters, iSimulationNumber);
+             DataSetWriter->write(*SimulationDataContainer[t], gParameters);
         //perform simulation to get loglikelihood ratio
         macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
         dSimulatedRatio = pAnalysis->ExecuteSimulation(*pDataGateway);
@@ -1330,7 +1339,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       //does the minimum number of cases remain in all data sets?
       unsigned int iSetWithMinimumCases=0;
       for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-         if (gpDataHub->GetDataSetHandler().GetDataSet(i).GetTotalCases() < tMinCases) ++iSetWithMinimumCases;
+         if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTotalCases() < tMinCases) ++iSetWithMinimumCases;
       if (gpDataHub->GetDataSetHandler().GetNumDataSets() == iSetWithMinimumCases)
          return false;
 
@@ -1341,7 +1350,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       if (gParameters.GetProbabilityModelType() == ORDINAL) {
         int iCategoriesWithCases=0;
         for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i) {
-           const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).GetPopulationData();
+           const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).getPopulationData();
            for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t)
               if (Population.GetNumOrdinalCategoryCases(t))
                 ++iCategoriesWithCases;
