@@ -163,6 +163,8 @@ USEUNIT("..\calculation\satscan_data\DataSource.cpp");
 USEUNIT("..\calculation\cluster\MultiSetNormalClusterData.cpp");
 USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
 USEUNIT("BasisVCL.cpp");
+USEUNIT("..\calculation\satscan_data\DataSetWriter.cpp");
+USEUNIT("..\calculation\satscan_data\DataSetReader.cpp");
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;

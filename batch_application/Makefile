@@ -151,6 +151,8 @@ SRC         := Main.cpp \
 	             $(SATDATA)/ExponentialDataSetHandler.cpp \
 	             $(SATDATA)/OrdinalDataSetHandler.cpp \
 	             $(SATDATA)/DataSource.cpp \
+	             $(SATDATA)/DataSetReader.cpp \
+	             $(SATDATA)/DataSetWriter.cpp \
 	             $(UTILITY)/DBFFile.cpp \
 	             $(UTILITY)/JulianDates.cpp \
 	             $(UTILITY)/RandomDistribution.cpp \

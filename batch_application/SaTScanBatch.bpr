@@ -136,7 +136,9 @@
       ..\calculation\randomization\RankRandomizer.obj 
       ..\calculation\satscan_data\DataSource.obj 
       ..\calculation\cluster\MultiSetNormalClusterData.obj 
-      ..\calculation\cluster\TimeIntervals.obj"/>
+      ..\calculation\cluster\TimeIntervals.obj 
+      ..\calculation\satscan_data\DataSetReader.obj 
+      ..\calculation\satscan_data\DataSetWriter.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
