@@ -10,31 +10,22 @@
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : for (; itr != itr_end; ++itr)
-                                       (*itr)->AllocateCasesArray();
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr)
-                                       (*itr)->AllocatePTCasesArray();
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocateCasesArray();
-                                       if (gParameters.GetIncludePurelyTemporalClusters())
-                                         (*itr)->AllocatePTCasesArray();
-                                     }
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+                                     if (gParameters.GetIncludePurelyTemporalClusters())
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
-    case SPATIALVARTEMPTREND       : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocateCasesArray();
-                                       (*itr)->AllocateNCCasesArray();
-                                       (*itr)->AllocatePTCasesArray();
-                                     }
+    case SPATIALVARTEMPTREND       : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_NC));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT_NC));
                                      break;
-    default                        :
-       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+    default : ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -91,14 +82,14 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
   try {
     // Make the dataset aggregate categories - this will way the reading of case data can proceed without problems.
     // Normally the population data dictates all possible population catgories and the case file data must follow suit.
-    DataSet.SetAggregateCovariateCategories(true);
+    DataSet.setAggregateCovariateCategories(true);
     iCategoryIndex = 0; /* with aggregation, only one population category with index of zero */
     // Use the same arbitrarily selected population date for each location - we'll use the study period start date.
     vprPopulationDates.push_back(std::pair<Julian, DatePrecisionType>(gDataHub.GetStudyPeriodStartDate(), YEAR));
-    DataSet.GetPopulationData().SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
+    DataSet.getPopulationData().SetPopulationDates(vprPopulationDates, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
     // for each location, assign the same population count and date
     for (t=0; t < tNumTracts; ++t)
-      DataSet.GetPopulationData().AddCovariateCategoryPopulation(t, iCategoryIndex, vprPopulationDates.back(), fPopulation);
+      DataSet.getPopulationData().AddCovariateCategoryPopulation(t, iCategoryIndex, vprPopulationDates.back(), fPopulation);
   }
   catch (ZdException &x) {
     x.AddCallpath("CreatePopulationData()","PoissonDataSetHandler");
@@ -120,36 +111,36 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
-          Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
+          Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
+          Interface.SetPTCaseArray(DataSet.getCaseData_PT());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
+            Interface.SetPTCaseArray(DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           }
           break;
         case SPATIALVARTEMPTREND        :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetNCCaseArray(DataSet.GetNCCaseArray());
-          Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
-          Interface.SetNCMeasureArray(DataSet.GetNCMeasureArray());
-          Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
-          Interface.SetTimeTrend(&DataSet.GetTimeTrend());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetNCCaseArray(DataSet.getCaseData_NC().GetArray());
+          Interface.SetPTCaseArray(DataSet.getCaseData_PT_NC());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
+          Interface.SetNCMeasureArray(DataSet.getMeasureData_NC().GetArray());
+          Interface.SetPTMeasureArray(DataSet.getMeasureData_PT_NC());
+          Interface.SetTimeTrend(&DataSet.getTimeTrend());
           break;
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
@@ -176,38 +167,38 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets.at(t);
-      const SimDataSet& S_DataSet = *Container.at(t);
+      const DataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(S_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(S_DataSet.GetPTCasesArray());
-          Interface.SetPTMeasureArray(R_DataSet.GetPTMeasureArray());
+          Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
+          Interface.SetPTMeasureArray(R_DataSet.getMeasureData_PT());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(S_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(S_DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(R_DataSet.GetPTMeasureArray());
+            Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(R_DataSet.getMeasureData_PT());
           }
           break;
         case SPATIALVARTEMPTREND        :
-          Interface.SetCaseArray(S_DataSet.GetCaseArray());
-          Interface.SetNCCaseArray(S_DataSet.GetNCCaseArray());
-          Interface.SetPTCaseArray(S_DataSet.GetPTCasesArray());
-          Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
-          Interface.SetNCMeasureArray(R_DataSet.GetNCMeasureArray());
-          Interface.SetPTMeasureArray(R_DataSet.GetPTMeasureArray());
-          Interface.SetTimeTrend(&S_DataSet.GetTimeTrend());
+          Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
+          Interface.SetNCCaseArray(S_DataSet.getCaseData_NC().GetArray());
+          Interface.SetPTCaseArray(S_DataSet.getCaseData_PT_NC());
+          Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
+          Interface.SetNCMeasureArray(R_DataSet.getMeasureData_NC().GetArray());
+          Interface.SetPTMeasureArray(R_DataSet.getMeasureData_PT_NC());
+          Interface.SetTimeTrend(&S_DataSet.getTimeTrend());
           break;
         default :
           ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
@@ -242,7 +233,7 @@ bool PoissonDataSetHandler::ReadData() {
        else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(GetDataSet(t))) return false;
        //validate population data against case data (if population was read from file)  
-       if (gParameters.UsePopulationFile()) GetDataSet(t).CheckPopulationDataCases(gDataHub);
+       if (gParameters.UsePopulationFile()) GetDataSet(t).checkPopulationDataCases(gDataHub);
     }
   }
   catch (ZdException & x) {
@@ -276,7 +267,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::POPFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.GetSetIndex()), gPrint));
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetPopulationFileName(DataSet.getSetIndex()), gPrint));
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         bEmpty=false;
@@ -304,7 +295,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
     //2nd pass, read data in structures.
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
-      DataSet.GetPopulationData().SetPopulationDates(vprPopulationDates,
+      DataSet.getPopulationData().SetPopulationDates(vprPopulationDates,
                                                         CharToJulian(gParameters.GetStudyPeriodStartDate().c_str()),
                                                         CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()));
       vprPopulationDates.clear(); //dump memory
@@ -347,12 +338,12 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
           }
           //Scan for covariates to create population categories or find index.
           //First category created sets precedence as to how many covariates remaining records must have.
-          if ((iCategoryIndex = DataSet.GetPopulationData().CreateCovariateCategory(*Source, uCovariateIndex, gPrint)) == -1) {
+          if ((iCategoryIndex = DataSet.getPopulationData().CreateCovariateCategory(*Source, uCovariateIndex, gPrint)) == -1) {
             bValid = false;
             continue;
           }
           //Add population count for this tract/category/year
-          DataSet.GetPopulationData().AddCovariateCategoryPopulation(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
+          DataSet.getPopulationData().AddCovariateCategoryPopulation(TractIdentifierIndex, iCategoryIndex, prPopulationDate, fPopulation);
           bEmpty = false;
       }
     }
@@ -365,7 +356,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
       gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    if (!DataSet.GetPopulationData().CheckZeroPopulations(stderr, gPrint))
+    if (!DataSet.getPopulationData().CheckZeroPopulations(stderr, gPrint))
       return false;
   }
   catch (ZdException &x) {
