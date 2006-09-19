@@ -56,7 +56,7 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) {
   for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTCases [%u] = %i\n", i, gDataSets->GetDataSet(j).GetPTCasesArray()[i]);
+        fprintf(pFile, "PTCases [%u] = %i\n", i, gDataSets->GetDataSet(j).getCaseData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
 }
@@ -71,7 +71,7 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
   for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
      fprintf(pFile, "Data Set %u:\n", j);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gDataSets->GetDataSet(j).GetPTMeasureArray()[i]);
+        fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gDataSets->GetDataSet(j).getMeasureData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
 }

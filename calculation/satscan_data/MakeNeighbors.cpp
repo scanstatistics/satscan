@@ -59,11 +59,11 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize() {
       //      as a percentage of the total population in all data sets.
       for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
          if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
-           tPopulation = DataSetHandler.GetDataSet(t).GetTotalCases();
+           tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
          else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
-           tPopulation = DataSetHandler.GetDataSet(t).GetTotalPopulation();
+           tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
          else
-           tPopulation = DataSetHandler.GetDataSet(t).GetTotalMeasure();
+           tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
          if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
            GenerateResolvableException("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
                                        "CalculateMaximumReportedSpatialClusterSize()", std::numeric_limits<measure_t>::max());
@@ -105,11 +105,11 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
       //      as a percentage of the total population in all data sets.
       for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
          if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
-           tPopulation = DataSetHandler.GetDataSet(t).GetTotalCases();
+           tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
          else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
-           tPopulation = DataSetHandler.GetDataSet(t).GetTotalPopulation();
+           tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
          else
-           tPopulation = DataSetHandler.GetDataSet(t).GetTotalMeasure();
+           tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
          if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
            GenerateResolvableException("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
                                        "CalculateMaximumSpatialClusterSize()", std::numeric_limits<measure_t>::max());
@@ -473,7 +473,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
     switch (Parameters.GetProbabilityModelType()) {
       case NORMAL  :
         gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
-        ppCases = DataSetHandler.GetDataSet().GetCaseArray();
+        ppCases = DataSetHandler.GetDataSet().getCaseData().GetArray();
         for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] = ppCases[0][j];
         gpPopulation = &gvCalculatedPopulations[0]; break;
       case ORDINAL :
@@ -481,8 +481,8 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         //total individuals represented in the catgory case arrays.
         gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
         //Population is calculated from first data set - even when multiple data sets are defined.
-        for (unsigned int k=0; k < DataSetHandler.GetDataSet().GetCasesByCategory().size(); ++k) {
-          ppCases = DataSetHandler.GetDataSet().GetCasesByCategory()[k]->GetArray();
+        for (unsigned int k=0; k < DataSetHandler.GetDataSet().getCaseData_Cat().size(); ++k) {
+          ppCases = DataSetHandler.GetDataSet().getCaseData_Cat()[k]->GetArray();
           for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] += ppCases[0][j];
         }
         gpPopulation = &gvCalculatedPopulations[0]; break;
@@ -496,7 +496,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
          gpPopulation = &gvCalculatedPopulations[0]; break;
       default :
         //Population is calculated from first data set - even when multiple data sets are defined.
-        gpPopulation = DataSetHandler.GetDataSet().GetMeasureArray()[0];
+        gpPopulation = DataSetHandler.GetDataSet().getMeasureData().GetArray()[0];
     }
   }
 }
