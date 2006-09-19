@@ -14,6 +14,7 @@
 #include "PoissonDataSetHandler.h"
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "OrdinalDataSetHandler.h"
+#include "ParametersPrint.h"
 
 const long SaTScanDataReader::guLocationIndex = 0;
 
@@ -381,7 +382,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
     else if (gTractHandler.getLocations().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
       gPrint.Printf("Error: For a %s analysis, the coordinates file must contain more than one location.\n",
-                    BasePrint::P_ERROR, gParameters.GetAnalysisTypeAsString());
+                    BasePrint::P_ERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
       bValid = false;
     }
     //signal insertions completed
@@ -432,7 +433,7 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
     //validate that we have more than one tract, only a purely temporal analysis is the exception to this rule
     else if (gTractHandler.getLocations().size() == 1 && !gParameters.GetIsPurelyTemporalAnalysis()) {
       gPrint.Printf("Error: For a %s analysis, the coordinates file must contain more than one record.\n",
-                    BasePrint::P_ERROR, gParameters.GetAnalysisTypeAsString());
+                    BasePrint::P_ERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
       bValid = false;
     }
     //signal insertions completed
