@@ -22,7 +22,7 @@ class CSVTTData : public CSaTScanData {
 
   protected:
     virtual void        CalculateMeasure(RealDataSet& DataSet);
-    virtual void        SetAdditionalCaseArrays(RealDataSet& DataSet);
+    virtual void        ReadDataFromFiles();
 
   public:
     CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection);

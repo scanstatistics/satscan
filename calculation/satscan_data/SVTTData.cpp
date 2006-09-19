@@ -26,10 +26,8 @@ CSVTTData::~CSVTTData() {}
 void CSVTTData::CalculateMeasure(RealDataSet& DataSet) {
   CSaTScanData::CalculateMeasure(DataSet);
   //calculate time trend for dataset data set
-  //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-  //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-  //      has not been decided yet.
-  DataSet.GetTimeTrend().CalculateAndSet(DataSet.GetCasesPerTimeIntervalArray(), DataSet.GetMeasurePerTimeIntervalArray(),
+  //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                                
+  DataSet.getTimeTrend().CalculateAndSet(DataSet.getCaseData_PT_NC(), DataSet.getMeasureData_PT_NC(),
                                             m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
 }
 
@@ -41,9 +39,9 @@ void CSVTTData::DisplayCases(FILE* pFile) {
 
   for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
      fprintf(pFile, "Data Set %u:\n", i);
-     DisplayCounts(pFile, gDataSets->GetDataSet(i).GetCaseArray(), "Cases Array",
-                   gDataSets->GetDataSet(i).GetNCCaseArray(), "Cases Non-Cumulative Array",
-                   gDataSets->GetDataSet(i).GetPTCasesArray(), "Cases_TotalByTimeInt");
+     DisplayCounts(pFile, gDataSets->GetDataSet(i).getCaseData().GetArray(), "Cases Array",
+                   gDataSets->GetDataSet(i).getCaseData_NC().GetArray(), "Cases Non-Cumulative Array",
+                   gDataSets->GetDataSet(i).getCaseData_PT(), "Cases_TotalByTimeInt");
   }                 
 }
 
@@ -86,8 +84,8 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
 
   for (k=0; k < gDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Set %u:\n", k);
-     ppMeasure = gDataSets->GetDataSet(k).GetMeasureArray();
-     ppMeasureNC = gDataSets->GetDataSet(k).GetNCMeasureArray();
+     ppMeasure = gDataSets->GetDataSet(k).getMeasureData().GetArray();
+     ppMeasureNC = gDataSets->GetDataSet(k).getMeasureData_NC().GetArray();
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
         for (j=0; j < (unsigned int)m_nTracts; ++j) {
            fprintf(pFile, "ppMeasure [%i][%i] = %12.5f     ", i, j, ppMeasure[i][j]);
@@ -99,7 +97,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
   for (k=0; k < gDataSets->GetNumDataSets(); ++k) {
      fprintf(pFile, "Data Set %u:\n", k);
      for (i=0; i < (unsigned int)m_nTimeIntervals; ++i)
-       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gDataSets->GetDataSet(k).GetPTMeasureArray()[i]);
+       fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gDataSets->GetDataSet(k).getMeasureData_PT()[i]);
      fprintf(pFile, "\n");
   }
 }
@@ -134,17 +132,16 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t]->SetNonCumulativeCaseArrays();
+       SimDataContainer[t]->setCaseData_NC();
+       SimDataContainer[t]->setCaseData_PT_NC();
        //calculate time trend for entire randomized data set
-       //TODO: The status of the time trend needs to be checked after CalculateAndSet() returns.
-       //      The correct behavior for anything other than CTimeTrend::TREND_CONVERGED
-       //      has not been decided yet.
-       SimDataContainer[t]->GetTimeTrend().CalculateAndSet(gDataSets->GetDataSet(t).GetCasesPerTimeIntervalArray(),
-                                                           gDataSets->GetDataSet(t).GetMeasurePerTimeIntervalArray(),
+       //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                              
+       SimDataContainer[t]->getTimeTrend().CalculateAndSet(gDataSets->GetDataSet(t).getCaseData_PT_NC(),
+                                                           gDataSets->GetDataSet(t).getMeasureData_PT_NC(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
-       //QUESTION: Should the purely temporal case array passed to CalculateAndSet() be from
-       //          the simulated dataset? It doesn't seem to make sense otherwise.
+       //**SVTT::QUESTION** Should the purely temporal case array passed to CalculateAndSet() be from
+       //                   the simulated dataset? It doesn't seem to make sense otherwise.
     }
   }
   catch (ZdException &x) {
@@ -153,15 +150,15 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   }
 }
 
-/** Redefines base class method to call dataset method
-    DataSet::SetNonCumulativeCaseArrays() which allocates and sets cases
-    per time interval array and non cumulative case array. */
-void CSVTTData::SetAdditionalCaseArrays(RealDataSet& DataSet) {
+/** Calls base class CSaTScanData::ReadDataFromFiles() then sets non-cummulative case data strcutures. */
+void CSVTTData::ReadDataFromFiles() {
   try {
-    DataSet.SetNonCumulativeCaseArrays();
+    CSaTScanData::ReadDataFromFiles();
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
   }
   catch (ZdException &x) {
-    x.AddCallpath("SetAdditionalCaseArrays()","CSVTTData");
+    x.AddCallpath("ReadDataFromFiles()","CSVTTData");
     throw;
   }
 }
