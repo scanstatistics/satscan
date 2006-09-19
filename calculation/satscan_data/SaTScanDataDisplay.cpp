@@ -8,7 +8,7 @@
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppCases(gDataSets->GetDataSet(0/*for now*/).GetCaseArray());
+  count_t            ** ppCases(gDataSets->GetDataSet(0/*for now*/).getCaseData().GetArray());
 
   fprintf(pFile, "Case counts (Cases Array)\n\n");
   for (i = 0; i < m_nTimeIntervals; ++i)
@@ -20,7 +20,7 @@ void CSaTScanData::DisplayCases(FILE* pFile) {
 
 void CSaTScanData::DisplayControls(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppControls(gDataSets->GetDataSet(0/*for now*/).GetControlArray());
+  count_t            ** ppControls(gDataSets->GetDataSet(0/*for now*/).getControlData().GetArray());
 
   fprintf(pFile, "Control counts (Controls Array)\n\n");
 
@@ -46,7 +46,7 @@ void CSaTScanData::DisplaySimCases(FILE* pFile) {
 
 void CSaTScanData::DisplayMeasure(FILE* pFile) {
   int           i, j;
-  measure_t  ** ppMeasure(gDataSets->GetDataSet(0/*for now*/).GetMeasureArray());
+  measure_t  ** ppMeasure(gDataSets->GetDataSet(0/*for now*/).getMeasureData().GetArray());
 
   fprintf(pFile, "Measures (Measure Array)\n\n");
 
@@ -109,9 +109,9 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
   switch (gParameters.GetProbabilityModelType()) {
     case POISSON     : if (!gParameters.UsePopulationFile()) break;
     case BERNOULLI   :
-    case EXPONENTIAL : sBuffer.printf("%.0f", gDataSets->GetDataSet(0).GetTotalPopulation());
+    case EXPONENTIAL : sBuffer.printf("%.0f", gDataSets->GetDataSet(0).getTotalPopulation());
                        for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-                         sWork.printf(", %.0f", gDataSets->GetDataSet(i).GetTotalPopulation());
+                         sWork.printf(", %.0f", gDataSets->GetDataSet(i).getTotalPopulation());
                          sBuffer << sWork;
                        }
                        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -126,9 +126,9 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
     case ORDINAL              :
     case NORMAL               :
     case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
-                                sBuffer.printf("%ld", gDataSets->GetDataSet(0).GetTotalCases());
+                                sBuffer.printf("%ld", gDataSets->GetDataSet(0).getTotalCases());
                                 for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-                                  sWork.printf(", %ld", gDataSets->GetDataSet(i).GetTotalCases());
+                                  sWork.printf(", %ld", gDataSets->GetDataSet(i).getTotalCases());
                                   sBuffer << sWork;
                                 }
                                 PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -139,7 +139,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
   if (gParameters.GetProbabilityModelType() == ORDINAL) {
     if (gDataSets->GetNumDataSets() == 1) {
       PrintFormat.PrintSectionLabel(fp, "Category values", false, false);
-      const PopulationData& Population = gDataSets->GetDataSet().GetPopulationData();
+      const PopulationData& Population = gDataSets->GetDataSet().getPopulationData();
       sBuffer="";
       for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
          sWork.printf("%s%g", (j ? ", " : ""), Population.GetOrdinalCategoryValue(j));
@@ -158,7 +158,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
       for (i=0, sBuffer=""; i < gDataSets->GetNumDataSets(); ++i, sBuffer="") {
         sLabel.printf("Category values, data set #%d", i + 1);
         PrintFormat.PrintSectionLabel(fp, sLabel.GetCString(), false, false);
-        const PopulationData& Population = gDataSets->GetDataSet(i).GetPopulationData();
+        const PopulationData& Population = gDataSets->GetDataSet(i).getPopulationData();
         for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
            sWork.printf("%s%g", (j ? ", " : ""), Population.GetOrdinalCategoryValue(j));
            sBuffer << sWork;
@@ -178,9 +178,9 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
   //for the exponential probability model, also print total censored cases
   if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
     PrintFormat.PrintSectionLabel(fp, "Total censored", true, false);
-    sBuffer.printf("%.0f", gDataSets->GetDataSet(0).GetTotalPopulation() - gDataSets->GetDataSet(0).GetTotalCases());
+    sBuffer.printf("%.0f", gDataSets->GetDataSet(0).getTotalPopulation() - gDataSets->GetDataSet(0).getTotalCases());
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.0f", gDataSets->GetDataSet(i).GetTotalPopulation() - gDataSets->GetDataSet(i).GetTotalCases());
+       sWork.printf(", %.0f", gDataSets->GetDataSet(i).getTotalPopulation() - gDataSets->GetDataSet(i).getTotalCases());
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
@@ -198,30 +198,30 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
   }
   if (gParameters.GetProbabilityModelType() == NORMAL) {
     PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
-    sBuffer.printf("%.2f", gDataSets->GetDataSet(0).GetTotalMeasure()/gDataSets->GetDataSet(0).GetTotalCases());
+    sBuffer.printf("%.2f", gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.2f", gDataSets->GetDataSet(i).GetTotalMeasure()/gDataSets->GetDataSet(i).GetTotalCases());
+       sWork.printf(", %.2f", gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalCases());
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    sBuffer.printf("%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq()));
+    sBuffer.printf("%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureSq()));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq()));
+       sWork.printf(", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureSq()));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
     PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    sBuffer.printf("%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).GetTotalCases(), gDataSets->GetDataSet(0).GetTotalMeasure(), gDataSets->GetDataSet(0).GetTotalMeasureSq())));
+    sBuffer.printf("%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureSq())));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       sWork.printf(", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).GetTotalCases(), gDataSets->GetDataSet(i).GetTotalMeasure(), gDataSets->GetDataSet(i).GetTotalMeasureSq())));
+       sWork.printf(", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureSq())));
        sBuffer << sWork;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
   }
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-    double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).GetTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-    if (gDataSets->GetDataSet(0/*for now*/).GetTimeTrend().IsNegative())
+    double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).getTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+    if (gDataSets->GetDataSet(0/*for now*/).getTimeTrend().IsNegative())
       sBuffer = "Annual decrease";
     else
       sBuffer = "Annual increase";
@@ -230,23 +230,6 @@ void CSaTScanData::DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPe
     fprintf(fp, "\n");
   }
   PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
-}
-
-void CSaTScanData::DisplaySummary2(FILE* fp) {
-  fprintf(fp, "SUMMARY OF DATA\n\n");
-  fprintf(fp, "m_nTracts..............: %i\n", m_nTracts);
-  fprintf(fp, "m_nGridTracts..........: %i\n", m_nGridTracts);
-  fprintf(fp, "m_nTimeIntervals.......: %i\n", m_nTimeIntervals);
-  fprintf(fp, "m_nIntervalCut.........: %i\n", m_nIntervalCut);
-  for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-    fprintf(fp, "Set %i Summary...\n", t + 1);
-    fprintf(fp, "TotalCasesAtStart...: %ld\n", gDataSets->GetDataSet(t).GetTotalCasesAtStart());
-    fprintf(fp, "TotalCases..........: %ld\n", gDataSets->GetDataSet(t).GetTotalCases());
-    fprintf(fp, "TotalPop............: %.0f\n", gDataSets->GetDataSet(t).GetTotalPopulation());
-    fprintf(fp, "TotalMeasureAtStart.: %.0f\n", gDataSets->GetDataSet(t).GetTotalMeasureAtStart());
-    fprintf(fp, "TotalMeasure........: %.0f\n", gDataSets->GetDataSet(t).GetTotalMeasure());
-  }
-  AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
