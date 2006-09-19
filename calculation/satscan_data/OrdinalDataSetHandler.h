@@ -12,8 +12,7 @@ class OrdinalDataSetHandler : public DataSetHandler {
     static const size_t                 gtMinimumCategories;
     static const count_t                gtMinimumCases;
 
-    virtual void                        AllocateCaseStructures(RealDataSet& DataSet) {/*no action*/}
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char*);
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
     virtual void                        SetRandomizers();
 

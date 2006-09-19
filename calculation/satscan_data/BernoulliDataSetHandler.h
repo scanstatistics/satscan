@@ -7,7 +7,6 @@
 
 class BernoulliDataSetHandler : public DataSetHandler {
   protected:
-    void                                AllocateControlStructures(RealDataSet& DataSet);
     bool                                ReadControlFile(RealDataSet& DataSet);
     virtual void                        SetRandomizers();
 

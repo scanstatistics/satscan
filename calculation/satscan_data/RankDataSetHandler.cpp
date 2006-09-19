@@ -9,22 +9,16 @@
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t & RankDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : for (; itr != itr_end; ++itr)
-                                       (*itr)->AllocateMeasureArray();
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr)
-                                       (*itr)->AllocatePTMeasureArray();
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocateMeasureArray();
-                                       if (gParameters.GetIncludePurelyTemporalClusters())
-                                          (*itr)->AllocatePTMeasureArray();
-                                     }
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+                                     if (gParameters.GetIncludePurelyTemporalClusters())
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
                                      break;
     case SPATIALVARTEMPTREND       :
       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
@@ -44,26 +38,26 @@ AbstractDataSetGateway & RankDataSetHandler::GetDataGateway(AbstractDataSetGatew
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
-          Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
+          Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
+          Interface.SetPTCaseArray(DataSet.getCaseData_PT());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
+            Interface.SetPTCaseArray(DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -90,28 +84,28 @@ AbstractDataSetGateway & RankDataSetHandler::GetSimulationDataGateway(AbstractDa
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to real and simulation datasets
       const RealDataSet& R_DataSet = *gvDataSets.at(t);
-      const SimDataSet& S_DataSet = *Container.at(t);
+      const DataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(R_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(S_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(R_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(R_DataSet.GetPTCasesArray());
-          Interface.SetPTMeasureArray(S_DataSet.GetPTMeasureArray());
+          Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
+          Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(R_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(S_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(R_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(R_DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(S_DataSet.GetPTMeasureArray());
+            Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -187,7 +181,7 @@ DataSetHandler::RecordStatusType RankDataSetHandler::RetrieveCaseRecordData(Data
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char*) {
+bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
@@ -197,7 +191,7 @@ bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, co
   DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
-    if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers.at(DataSet.GetSetIndex() - 1))) == 0)
+    if ((pRandomizer = dynamic_cast<AbstractRankRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
       ZdGenerateException("Data set randomizer not AbstractRankRandomizer type.", "ReadCounts()");
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            bEmpty = false;
@@ -223,8 +217,8 @@ bool RankDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, co
     }
     else {
       pRandomizer->AssignFromAttributes(DataSet);
-      DataSet.SetTotalCases(tTotalCases);
-      DataSet.SetTotalMeasure(tTotalMeasure);
+      DataSet.setTotalCases(tTotalCases);
+      DataSet.setTotalMeasure(tTotalMeasure);
     }
 
   }
@@ -257,16 +251,7 @@ bool RankDataSetHandler::ReadData() {
 
 /** sets purely temporal structures used in simulations */
 void RankDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-
-  try {
-    for (; itr != itr_end; ++itr)
-       (*itr)->SetPTMeasureArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalSimulationData()","RankDataSetHandler");
-    throw;
-  }
+  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
 }
 
 /** Allocates randomizers for each dataset. There are currently 2 randomization types

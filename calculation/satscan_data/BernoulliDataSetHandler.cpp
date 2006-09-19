@@ -6,36 +6,19 @@
 #include "BernoulliDataSetHandler.h"
 #include "DataSource.h"
 
-/** allocates cases structures for dataset*/
-void BernoulliDataSetHandler::AllocateControlStructures(RealDataSet& DataSet) {
-  try {
-    DataSet.AllocateControlsArray();
-  }
-  catch(ZdException &x) {
-    x.AddCallpath("AllocateControlStructures()","BernoulliDataSetHandler");
-    throw;
-  }
-}
-
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
 SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : for (; itr != itr_end; ++itr)
-                                       (*itr)->AllocateCasesArray();
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr)
-                                       (*itr)->AllocatePTCasesArray();
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocateCasesArray();
-                                       if (gParameters.GetIncludePurelyTemporalClusters())
-                                         (*itr)->AllocatePTCasesArray();
-                                     }
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
+                                     if (gParameters.GetIncludePurelyTemporalClusters())
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
     case SPATIALVARTEMPTREND       :
        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
@@ -55,26 +38,26 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSet
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets[t];
       //set total cases and measure
-      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
-          Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
+          Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
+          Interface.SetPTCaseArray(DataSet.getCaseData_PT());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
+            Interface.SetPTCaseArray(DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -101,28 +84,28 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(Abstr
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to real and simulation datasets
       const RealDataSet& R_DataSet = *gvDataSets[t];
-      const SimDataSet& S_DataSet = *Container[t];
+      const DataSet& S_DataSet = *Container[t];
       //set total cases and measure
-      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
+      Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(S_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(S_DataSet.GetPTCasesArray());
-          Interface.SetPTMeasureArray(R_DataSet.GetPTMeasureArray());
+          Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
+          Interface.SetPTMeasureArray(R_DataSet.getMeasureData_PT());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(S_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(R_DataSet.GetMeasureArray());
+          Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(S_DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(R_DataSet.GetPTMeasureArray());
+            Interface.SetPTCaseArray(S_DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(R_DataSet.getMeasureData_PT());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -144,9 +127,8 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(Abstr
 bool BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
   try {
     gPrint.SetImpliedInputFileType(BasePrint::CONTROLFILE);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.GetSetIndex()), gPrint));
-    AllocateControlStructures(DataSet);
-    return ReadCounts(DataSet, *Source, "control");
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gPrint));
+    return ReadCounts(DataSet, *Source);
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadControlFile()","BernoulliDataSetHandler");
@@ -159,7 +141,7 @@ bool BernoulliDataSetHandler::ReadData() {
   try {
     SetRandomizers();
     for (size_t t=0; t < GetNumDataSets(); ++t) {
-       GetDataSet(t).SetAggregateCovariateCategories(true);
+       GetDataSet(t).setAggregateCovariateCategories(true);
        if (GetNumDataSets() == 1)
          gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else

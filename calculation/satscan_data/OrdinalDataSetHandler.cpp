@@ -18,19 +18,19 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL             :
        for (; itr != itr_end; ++itr)
-         (*itr)->AllocateCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+         (*itr)->allocateCaseData_Cat(GetDataSet(std::distance(Container.begin(), itr)).getPopulationData().GetNumOrdinalCategories());
        break;
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL :
        for (; itr != itr_end; ++itr)
-         (*itr)->AllocatePTCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+         (*itr)->allocateCaseData_PT_Cat(GetDataSet(std::distance(Container.begin(), itr)).getPopulationData().GetNumOrdinalCategories());
        break;
     case SPACETIME                 :
     case PROSPECTIVESPACETIME      :
        for (; itr != itr_end; ++itr) {
-         (*itr)->AllocateCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+         (*itr)->allocateCaseData_Cat(GetDataSet(std::distance(Container.begin(), itr)).getPopulationData().GetNumOrdinalCategories());
          if (gParameters.GetIncludePurelyTemporalClusters())
-           (*itr)->AllocatePTCategoryCasesArray(GetDataSet(std::distance(Container.begin(), itr)).GetPopulationData().GetNumOrdinalCategories());
+           (*itr)->allocateCaseData_PT_Cat(GetDataSet(std::distance(Container.begin(), itr)).getPopulationData().GetNumOrdinalCategories());
        }
        break;
     case SPATIALVARTEMPTREND       :
@@ -51,22 +51,22 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases
-      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      Interface.SetNumOrdinalCategories(DataSet.GetPopulationData().GetNumOrdinalCategories());
+      Interface.SetTotalCasesCount(DataSet.getTotalCases());
+      Interface.SetNumOrdinalCategories(DataSet.getPopulationData().GetNumOrdinalCategories());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCategoryCaseArrays(DataSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(DataSet.getCaseData_Cat());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
        case PURELYTEMPORAL             :
-          Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArrayHandler().GetArray());
+          Interface.SetPTCategoryCaseArray(DataSet.getCaseData_PT_Cat().GetArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCategoryCaseArrays(DataSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(DataSet.getCaseData_Cat());
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Interface.SetPTCategoryCaseArray(DataSet.GetPTCategoryCasesArrayHandler().GetArray());
+            Interface.SetPTCategoryCaseArray(DataSet.getCaseData_PT_Cat().GetArray());
           break;
        case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
@@ -92,24 +92,24 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets.at(t);
-      const SimDataSet& S_DataSet = *Container.at(t);
+      const DataSet& S_DataSet = *Container.at(t);
       //set total cases
-      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      Interface.SetNumOrdinalCategories(R_DataSet.GetPopulationData().GetNumOrdinalCategories());
+      Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
+      Interface.SetNumOrdinalCategories(R_DataSet.getPopulationData().GetNumOrdinalCategories());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCategoryCaseArrays(S_DataSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(S_DataSet.getCaseData_Cat());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArrayHandler().GetArray());
+          Interface.SetPTCategoryCaseArray(S_DataSet.getCaseData_PT_Cat().GetArray());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCategoryCaseArrays(S_DataSet.GetCasesByCategory());
+          Interface.SetCategoryCaseArrays(S_DataSet.getCaseData_Cat());
           if (gParameters.GetIncludePurelyTemporalClusters())
-            Interface.SetPTCategoryCaseArray(S_DataSet.GetPTCategoryCasesArrayHandler().GetArray());
+            Interface.SetPTCategoryCaseArray(S_DataSet.getCaseData_PT_Cat().GetArray());
          break;
         case SPATIALVARTEMPTREND        :
           ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
@@ -187,7 +187,7 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char*) {
+bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
   bool                                  bReadSuccessful=true, bEmpty=true;
   Julian                                Date;
   tract_t                               tLocationIndex;
@@ -215,7 +215,7 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source,
                  GenerateResolvableException("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n",
                                              "ReadCounts()", std::numeric_limits<count_t>::max());
                //record count and get category's 2-D array pointer
-               ppCategoryCounts = DataSet.AddOrdinalCategoryCaseCount(tOrdinalVariable, tCount);
+               ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount).GetArray();
                //update location case counts such that 'tCount' is reprented cumulatively through
                //time from start date through specifed date in record
                ppCategoryCounts[0][tLocationIndex] += tCount;
@@ -238,18 +238,18 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source,
       bReadSuccessful = false;
     }
     //validate that input data contained minimum number of ordinal categories
-    else if (DataSet.GetPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
-      if (DataSet.GetPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
+    else if (DataSet.getPopulationData().GetNumOrdinalCategories() < gtMinimumCategories) {
+      if (DataSet.getPopulationData().GetNumOrdinalCategories() == vReadCategories.size()) {
         gPrint.Printf("Error: Data set case file specifies %i categories with cases but a minimum\n"
                       "       of %i categories is required.\n", BasePrint::P_ERROR,
-                      DataSet.GetPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
+                      DataSet.getPopulationData().GetNumOrdinalCategories(), gtMinimumCategories);
         bReadSuccessful = false;
       }
       else {
         gPrint.Printf("Error: The number of categories with cases is required to be a mimumum of %i.\n"
                       "       Data set case file specifies %i categories with %i of them containing no cases.\n",
                       BasePrint::P_ERROR, gtMinimumCategories, vReadCategories.size(),
-                      vReadCategories.size() - DataSet.GetPopulationData().GetNumOrdinalCategories());
+                      vReadCategories.size() - DataSet.getPopulationData().GetNumOrdinalCategories());
         bReadSuccessful = false;
       }
     }
@@ -261,8 +261,8 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source,
     }
     //record total cases and total population to data set object
     else {
-      DataSet.SetTotalCases(tTotalCases);
-      DataSet.SetTotalPopulation(tTotalCases);
+      DataSet.setTotalCases(tTotalCases);
+      DataSet.setTotalPopulation(tTotalCases);
     }
   }
   catch (ZdException & x) {
@@ -296,16 +296,7 @@ bool OrdinalDataSetHandler::ReadData() {
 
 /** sets purely temporal structures used in simulations */
 void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-
-  try {
-    for (; itr != itr_end; ++itr)
-       (*itr)->SetPTCategoryCasesArray();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalSimulationData()","OrdinalDataSetHandler");
-    throw;
- }
+  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setCaseData_PT_Cat));
 }
 
 /** Instanciates randomizer object for each data set. Currently there are two

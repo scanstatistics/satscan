@@ -11,28 +11,20 @@
     needed by data set handler (probability model) and analysis type during evaluation
     of simulated data. */
 SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-  
   switch (gParameters.GetAnalysisType()) {
-    case PURELYSPATIAL             : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocateMeasureArray();
-                                       (*itr)->AllocateSqMeasureArray();
-                                     }
+    case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Sq));
                                      break;
     case PURELYTEMPORAL            :
-    case PROSPECTIVEPURELYTEMPORAL : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocatePTMeasureArray();
-                                       (*itr)->AllocatePTSqMeasureArray();
-                                     }
+    case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Sq));
                                      break;
     case SPACETIME                 :
-    case PROSPECTIVESPACETIME      : for (; itr != itr_end; ++itr) {
-                                       (*itr)->AllocateMeasureArray();
-                                       (*itr)->AllocateSqMeasureArray();
-                                       if (gParameters.GetIncludePurelyTemporalClusters()) {
-                                         (*itr)->AllocatePTMeasureArray();
-                                         (*itr)->AllocatePTSqMeasureArray();
-                                       }
+    case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Sq));
+                                     if (gParameters.GetIncludePurelyTemporalClusters()) {
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Sq));
                                      }
                                      break;
     case SPATIALVARTEMPTREND       :
@@ -54,31 +46,31 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
       //get reference to dataset
       const RealDataSet& DataSet = *gvDataSets.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(DataSet.GetTotalMeasure());
-      Interface.SetTotalMeasureSqCount(DataSet.GetTotalMeasureSq());
+      Interface.SetTotalCasesCount(DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
+      Interface.SetTotalMeasureSqCount(DataSet.getTotalMeasureSq());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
-          Interface.SetSqMeasureArray(DataSet.GetSqMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
+          Interface.SetSqMeasureArray(DataSet.getMeasureData_Sq().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
-          Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
-          Interface.SetPTSqMeasureArray(DataSet.GetPTSqMeasureArray());
+          Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
+          Interface.SetPTCaseArray(DataSet.getCaseData_PT());
+          Interface.SetPTSqMeasureArray(DataSet.getMeasureData_PT_Sq());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(DataSet.GetCaseArray());
-          Interface.SetMeasureArray(DataSet.GetMeasureArray());
-          Interface.SetSqMeasureArray(DataSet.GetSqMeasureArray());
+          Interface.SetCaseArray(DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
+          Interface.SetSqMeasureArray(DataSet.getMeasureData_Sq().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(DataSet.GetPTMeasureArray());
-            Interface.SetPTSqMeasureArray(DataSet.GetPTSqMeasureArray());
+            Interface.SetPTCaseArray(DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
+            Interface.SetPTSqMeasureArray(DataSet.getMeasureData_PT_Sq());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -106,33 +98,33 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
     for (size_t t=0; t < gvDataSets.size(); ++t) {
       //get reference to datasets
       const RealDataSet& R_DataSet = *gvDataSets.at(t);
-      const SimDataSet& S_DataSet = *Container.at(t);
+      const DataSet& S_DataSet = *Container.at(t);
       //set total cases and measure
-      Interface.SetTotalCasesCount(R_DataSet.GetTotalCases());
-      Interface.SetTotalMeasureCount(R_DataSet.GetTotalMeasure());
-      Interface.SetTotalMeasureSqCount(R_DataSet.GetTotalMeasureSq());
+      Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
+      Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
+      Interface.SetTotalMeasureSqCount(R_DataSet.getTotalMeasureSq());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          Interface.SetCaseArray(R_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(S_DataSet.GetMeasureArray());
-          Interface.SetSqMeasureArray(S_DataSet.GetSqMeasureArray());
+          Interface.SetCaseArray(R_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
+          Interface.SetSqMeasureArray(S_DataSet.getMeasureData_Sq().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          Interface.SetPTCaseArray(R_DataSet.GetPTCasesArray());
-          Interface.SetPTMeasureArray(S_DataSet.GetPTMeasureArray());
-          Interface.SetPTSqMeasureArray(S_DataSet.GetPTSqMeasureArray());
+          Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
+          Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
+          Interface.SetPTSqMeasureArray(S_DataSet.getMeasureData_PT_Sq());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
-          Interface.SetCaseArray(R_DataSet.GetCaseArray());
-          Interface.SetMeasureArray(S_DataSet.GetMeasureArray());
-          Interface.SetSqMeasureArray(S_DataSet.GetSqMeasureArray());
+          Interface.SetCaseArray(R_DataSet.getCaseData().GetArray());
+          Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
+          Interface.SetSqMeasureArray(S_DataSet.getMeasureData_Sq().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
-            Interface.SetPTCaseArray(R_DataSet.GetPTCasesArray());
-            Interface.SetPTMeasureArray(S_DataSet.GetPTMeasureArray());
-            Interface.SetPTSqMeasureArray(S_DataSet.GetPTSqMeasureArray());
+            Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
+            Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
+            Interface.SetPTSqMeasureArray(S_DataSet.getMeasureData_PT_Sq());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -153,7 +145,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
 /** Read the count data source, storing data in respective DataSet object. As a
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription) {
+bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
@@ -164,7 +156,7 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source, 
   DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
-    if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.GetSetIndex() - 1))) == 0)
+    if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
       ZdGenerateException("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
@@ -297,8 +289,8 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
 
 void NormalDataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
   try {
-    DataSet.SetPTMeasureArray();
-    DataSet.SetPTSqMeasureArray();
+    DataSet.setMeasureData_PT();
+    DataSet.setMeasureData_PT_Sq();
   }
   catch (ZdException &x) {
     x.AddCallpath("SetPurelyTemporalMeasureData()","NormalDataSetHandler");
@@ -308,18 +300,8 @@ void NormalDataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
 
 /** sets purely temporal structures used in simulations */
 void NormalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
-  SimulationDataContainer_t::iterator itr=Container.begin(), itr_end=Container.end();
-
-  try {
-    for (; itr != itr_end; ++itr) {
-      (*itr)->SetPTMeasureArray();
-      (*itr)->SetPTSqMeasureArray();
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalSimulationData()","NormalDataSetHandler");
-    throw;
-  }
+  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
+  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT_Sq));
 }
 
 /** Allocates randomizers for each dataset. There are currently 3 randomization types

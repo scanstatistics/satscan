@@ -9,8 +9,7 @@ class ExponentialDataSetHandler : public DataSetHandler {
   protected:
     static const count_t                gtMinimumNotCensoredCases;
 
-    virtual void                        AllocateCaseStructures(RealDataSet& DataSet) {/* no action */}
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source, const char* szDescription);
+    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& tPatients, Julian& nDate, measure_t& tContinuousVariable, count_t& tCensorAttribute);
     virtual void                        SetRandomizers();
 
