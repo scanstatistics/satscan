@@ -1,6 +1,5 @@
 
 SATSCAN     := /prj/satscan/linux.unix.build.dir/satscan
-BASIS       := /prj/satscan/linux.unix.build.dir/basisdev/
 
 CC          := g++
 APPLICATION := SaTScan
@@ -29,11 +28,10 @@ XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 BOOSTDIR    := $(SATSCAN)/../boost/boost_1_33_1
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
-               -I$(BASIS)/include -I$(BASIS)/source/nonvcl -I$(BASIS)/source/vcldep -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
+               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
 	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR)
 
-DEFINES     := -D__BASIS_NO_VCL \
-               -D__BATCH_COMPILE \
+DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB \
                -DZDHEADER=\"zd$(ZDVER).h\"
                               
@@ -153,11 +151,11 @@ SRC         := Main.cpp \
 	             $(SATDATA)/DataSource.cpp \
 	             $(SATDATA)/DataSetReader.cpp \
 	             $(SATDATA)/DataSetWriter.cpp \
+	             $(SATDATA)/MetaTractManager.cpp \
 	             $(UTILITY)/DBFFile.cpp \
 	             $(UTILITY)/JulianDates.cpp \
 	             $(UTILITY)/RandomDistribution.cpp \
 	             $(UTILITY)/RandomNumberGenerator.cpp \
-	             $(UTILITY)/Salloc.cpp \
 	             $(UTILITY)/ScanfFile.cpp \
 	             $(UTILITY)/SSException.cpp \
 	             $(UTILITY)/UtilityFunctions.cpp \
@@ -170,13 +168,13 @@ SRC         := Main.cpp \
 	             $(CALCULATION)/Parameters.cpp \
 	             $(CALCULATION)/ParametersPrint.cpp \
 	             $(CALCULATION)/ParametersValidate.cpp \
-	             $(CALCULATION)/SaTScanBasis.cpp \
 	             $(CALCULATION)/Toolkit.cpp \
 	             $(CALCULATION)/ParameterFileAccess.cpp \
 	             $(CALCULATION)/ScanLineParameterFileAccess.cpp \
 	             $(CALCULATION)/IniParameterSpecification.cpp \
 	             $(CALCULATION)/IniParameterFileAccess.cpp \
 	             $(CALCULATION)/RunTimeComponents.cpp \
+	             $(CALCULATION)/IniSession.cpp \
 	             $(BOOSTDIR)/libs/thread/src/xtime.cpp \
 	             $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
 	             $(BOOSTDIR)/libs/thread/src/mutex.cpp \
