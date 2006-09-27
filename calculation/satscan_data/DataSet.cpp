@@ -334,7 +334,7 @@ void DataSet::setCaseData_NC() {
     for (unsigned int t=0; t < giLocationDimensions; ++t)  {
       ppCases_NC[giIntervalsDimensions-1][t] = ppCases[giIntervalsDimensions-1][t];
       for (unsigned int i=0; i < giIntervalsDimensions - 1; ++i)
-        ppCases_NC[i][i] = ppCases[i][t] - ppCases[i+1][t];
+        ppCases_NC[i][t] = ppCases[i][t] - ppCases[i+1][t];
     }
   }
   catch (ZdException &x) {
