@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "stsMonteCarloSimFunctor.h"
+#include "Toolkit.h"
 
 stsMCSimSuccessiveFunctor::result_type stsMCSimSuccessiveFunctor::operator() (stsMCSimSuccessiveFunctor::param_type const & param)
 {
