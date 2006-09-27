@@ -7,7 +7,7 @@
 #include "SaTScanData.h"
 #include "AsciiPrintFormat.h"
 #include "SSException.h"
-#include "DataSource.h"  
+#include "DataSource.h"
 
 /** Constructor */
 CovariateCategory::CovariateCategory(int iPopulationDatesCount, int iCategoryIndex) : gpNextDescriptor(0), gpPopulationList(0) {
@@ -394,9 +394,8 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
 bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const {
   UInt                          month, day, year;
   bool                          bValid = true;
-  float                       * PopTotalsArray = 0;
   int                           i, j, nPEndIndex, nPStartIndex = 0;
-  const CovariateCategory     * pCategoryDescriptor;  
+  const CovariateCategory     * pCategoryDescriptor;
 
   try {
     if (gbStartAsPopDt)
@@ -406,9 +405,7 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
     else
       nPEndIndex = (int)gvPopulationDates.size()-1;
 
-    PopTotalsArray = (float*)Smalloc((int)gvPopulationDates.size() *sizeof(float), 0);
-    memset(PopTotalsArray, 0, (int)gvPopulationDates.size() * sizeof(float));
-
+    std::vector<float> PopTotalsArray(gvPopulationDates.size(), 0);
     for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
        pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
        while (pCategoryDescriptor) {
@@ -427,11 +424,8 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
           PrintDirection.Printf("Error: The population is zero for all location IDs in %d.\n", BasePrint::P_ERROR, year);
        }
     }
-
-    free (PopTotalsArray);
   }
   catch (ZdException &x) {
-    free (PopTotalsArray);
     x.AddCallpath("CheckZeroPopulations()","PopulationData");
     throw;
   }
@@ -902,7 +896,6 @@ void PopulationData::RemoveOrdinalCategoryCases(size_t iCategoryIndex, count_t t
 void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, BasePrint& PrintDirection) const {
   int                           i, j, nPEndIndex, nPStartIndex = 0;
   bool                          bZeroFound = false;
-  float                       * PopTotalsArray = 0;
   std::string                   sBuffer;
   char                          sDateBuffer[20];
   const CovariateCategory     * pCategoryDescriptor;
@@ -915,10 +908,9 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
     else
       nPEndIndex = GetNumPopulationDates() - 1;
 
-    PopTotalsArray = (float*)Smalloc(GetNumPopulationDates() * sizeof(float));
-
+    std::vector<float> PopTotalsArray(gvPopulationDates.size());
     for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
-       memset(PopTotalsArray, 0, GetNumPopulationDates() * sizeof(float));
+       std::fill(PopTotalsArray.begin(), PopTotalsArray.end(), 0);
        pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
        while (pCategoryDescriptor) {
           for (j=nPStartIndex; j <= nPEndIndex; j++)
@@ -944,11 +936,8 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
           }
        }
     }
-
-    free (PopTotalsArray);
   }
   catch (ZdException &x) {
-    free (PopTotalsArray);
     x.AddCallpath("ReportZeroPops()","PopulationData");
     throw;
   }
