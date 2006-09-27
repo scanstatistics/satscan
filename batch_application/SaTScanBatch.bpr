@@ -4,11 +4,10 @@
   <MACROS>
     <VERSION value="BCB.05.03"/>
     <PROJECT value="SaTScanBatch.exe"/>
-    <OBJFILES value="Main.obj ..\calculation\Parameters.obj ..\calculation\SaTScanBasis.obj 
-      ..\calculation\Toolkit.obj ..\calculation\utility\UtilityFunctions.obj 
+    <OBJFILES value="Main.obj ..\calculation\Parameters.obj ..\calculation\Toolkit.obj 
+      ..\calculation\utility\UtilityFunctions.obj 
       ..\calculation\utility\JulianDates.obj 
       ..\calculation\utility\RandomNumberGenerator.obj 
-      ..\calculation\utility\Salloc.obj 
       ..\calculation\utility\RandomDistribution.obj 
       ..\calculation\utility\SSException.obj ..\calculation\utility\DBFFile.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
@@ -138,7 +137,9 @@
       ..\calculation\cluster\MultiSetNormalClusterData.obj 
       ..\calculation\cluster\TimeIntervals.obj 
       ..\calculation\satscan_data\DataSetReader.obj 
-      ..\calculation\satscan_data\DataSetWriter.obj"/>
+      ..\calculation\satscan_data\DataSetWriter.obj 
+      ..\calculation\satscan_data\MetaTractManager.obj 
+      ..\calculation\IniSession.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
@@ -156,11 +157,11 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB"/>
+    <USERDEFINES value="INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
-    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src"/>
+    <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src"/>
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
@@ -233,21 +234,24 @@ Item4=..\..\boost\boost_1_33_1\libs\thread\src;..\calculation\analysis_run;..\ca
 Item5=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlDebugSourcePath]
-Count=2
-Item0=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
-Item1=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
+Count=3
+Item0=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
+Item1=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
+Item2=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\
 
 [HistoryLists\hlConditionals]
-Count=6
-Item0=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
-Item1=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;RPRTCMPT_RUNTIMES
-Item2=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB
-Item3=INTEL_BASED;__BATCH_COMPILE
-Item4=INTEL_BASED;__BATCH_COMPILE;_DEBUG
-Item5=INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS
+Count=8
+Item0=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;_DEBUG
+Item1=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;_DEBUG
+Item2=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB
+Item3=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd543.lib&quot;;ZDHEADER=&quot;zd543.h&quot;;BASIS_AUTOLINKLIB;RPRTCMPT_RUNTIMES
+Item4=INTEL_BASED;__BATCH_COMPILE;BOOST_ALL_NO_LIB
+Item5=INTEL_BASED;__BATCH_COMPILE
+Item6=INTEL_BASED;__BATCH_COMPILE;_DEBUG
+Item7=INTEL_BASED;__BATCH_COMPILE;_DEBUG;PARALLEL_SIMULATIONS
 
 [Debugging]
-DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SaTScan Project\basisdev\include;C:\Prj\SaTScan Project\basisdev\source\nonvcl;C:\Prj\SaTScan Project\basisdev\source\vcldep;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
+DebugSourceDirs=c:\program files\borland\cbuilder5\source\vcl;C:\Prj\SatScan\xbase\xbase_2.0.0;\\Nfse\imsdev\zd\zd543;C:\Prj\SaTScan Project\SatScan\xbase\xbase_2.0.0\xbase\;F:\zd\zd543\
 
 [Parameters]
 RunParams=&quot;C:\Prj\SaTScan Project\data.sets\_Ordinal\ordinal.prm&quot;
@@ -260,5 +264,10 @@ RemoteDebug=0
 ShowInfoMsgs=0
 LinkDebugVcl=0
 LinkCGLIB=0
+
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
   </IDEOPTIONS>
 </PROJECT>
