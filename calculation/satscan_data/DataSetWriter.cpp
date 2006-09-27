@@ -27,7 +27,7 @@ void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
   std::ofstream stream;
 
   //open output file
-  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), ios::ate);
+  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate);
   if (!stream) GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "write()",
                                            Parameters.GetSimulationDataOutputFilename().c_str());
 
@@ -68,7 +68,7 @@ void OrdinalDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
   std::ofstream stream;
 
   //open output file
-  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), ios::ate);
+  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate);
   if (!stream) GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "write()",
                                                 Parameters.GetSimulationDataOutputFilename().c_str());
   switch (Parameters.GetAnalysisType()) {
@@ -114,7 +114,7 @@ void ExponentialDataSetWriter::write(const DataSet& Set, const CParameters& Para
   std::ofstream stream;
 
   //open output file
-  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), ios::ate);
+  stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate);
   if (!stream) GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "write()",
                                            Parameters.GetSimulationDataOutputFilename().c_str());
 
