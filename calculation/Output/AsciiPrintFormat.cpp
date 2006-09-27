@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "AsciiPrintFormat.h"
+#include "Toolkit.h"
 
 /** width of label with one dataset for cluster section */
 const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
@@ -161,7 +162,7 @@ void AsciiPrintFormat::PrintVersionHeader(FILE* fp) {
      putc('_', fp);
   fprintf(fp, "\n\n");
 
-  sBuffer.printf("SaTScan v%s", GetToolkit().GetVersion());
+  sBuffer.printf("SaTScan v%s", AppToolkit::getToolkit().GetVersion());
   iTextMargin = (giRightMargin - sBuffer.GetLength())/2;
   iPrint=0;
   while (iPrint++ < iTextMargin)
