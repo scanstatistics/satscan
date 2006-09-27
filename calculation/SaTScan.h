@@ -25,16 +25,25 @@
   #define auto_ptr zd_auto_ptr
   #define auto_ptr_ref zd_auto_ptr_ref
 #endif
-#include "Salloc.h"//now zd543.h will declare std::zd_auto_ptr.
-#include "BasePrint.h"
-#include <Basis540Unix.h>
+
+#if (defined(__BORLANDC__) && defined(__BATCH_COMPILE))
+  #ifndef ZDLIB
+    #define ZDLIB "zd543.lib"
+  #endif
+  #pragma comment(lib, ZDLIB)
+  #pragma message(__FILE__ " : zd lib requested")
+#endif
+
+#ifndef ZDHEADER
+   #define ZDHEADER "zd543.h"
+#endif
+#include ZDHEADER
+
 #if defined(LINUX_BASED) && (__GNUC__ == 2) && ( __GNUC_MINOR__ <= 96)
 //now take away the defs so that the rest of the code references std::auto_ptr :
   #undef auto_ptr
   #undef auto_ptr_ref
 #endif
-
-#include "Toolkit.h"
 
 #include <utility>
 #include <deque>
@@ -51,6 +60,8 @@
 #pragma warn +8066
 #pragma warn +8055
 
+#include "BasePrint.h"
+
 /**********************************************************************
  file: SaTScan.h
  This file contains header information for all SaTScan program files
@@ -59,11 +70,11 @@
 #define VERSION_ID      "15"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
-#define VERSION_MAJOR   "7"
+#define VERSION_MAJOR   "8"
 #define VERSION_MINOR   "0"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "August 14, 2006"
+#define VERSION_PHASE   "dev" /** testing phase name - leave blank for release */
+#define VERSION_DATE    ""
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
