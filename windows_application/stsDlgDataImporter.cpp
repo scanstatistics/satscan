@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <fstream>
+#include "Toolkit.h"
 
 /** Constructor */
 SourceViewController::SourceViewController(TtsGrid * pTopGrid, BGridZdAbstractFileModel * pGridDataModel)
@@ -643,7 +644,7 @@ TModalResult TBDlgDataImporter::ImportFile() {
     sMessage << "This is most likely occuring because write permissions are not granted for\n";
     sMessage << "specified directory. Please check path or review user permissions for specified directory.\n";
     TBMessageBox(0, "Import cancelled!", sMessage.GetCString(), XBMB_OK|XBMB_EXCLAMATION).ShowModal();
-    SetCurrentDir(GetToolkit().GetLastDirectory());
+    SetCurrentDir(AppToolkit::getToolkit().GetLastDirectory());
     Modal = mrNone;
   }
   catch (BImportRejectedException &x) {
@@ -802,7 +803,7 @@ void TBDlgDataImporter::OnExecuteImport() {
   try {
     DisableButtonsForImport(true);
     ModalResult = ImportFile();
-    GetToolkit().SetLastImportDirectory(edtOutputDirectory->Text.c_str());
+    AppToolkit::getToolkit().SetLastImportDirectory(edtOutputDirectory->Text.c_str());
     DisableButtonsForImport(false);
   }
   catch (ZdException &x) {
@@ -887,8 +888,8 @@ void TBDlgDataImporter::OnViewMappingPanel() {
 void TBDlgDataImporter::OnViewOutputSettingsPanel() {
   CheckForRequiredVariables();
   if (edtOutputDirectory->Text.IsEmpty()) {
-     if (GetToolkit().GetLastImportDirectory())
-       edtOutputDirectory->Text = GetToolkit().GetLastImportDirectory();
+     if (AppToolkit::getToolkit().GetLastImportDirectory())
+       edtOutputDirectory->Text = AppToolkit::getToolkit().GetLastImportDirectory();
      else if (getenv("TMP"))
        edtOutputDirectory->Text = getenv("TMP");
      else

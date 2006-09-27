@@ -6,6 +6,7 @@
 #include "stsSaTScan.h"
 #pragma hdrstop
 #include "stsFrmUpdateCheck.h"
+#include "Toolkit.h"
 #include <Masks.hpp>
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -43,7 +44,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
 
   try {
     Show();
-    sUpdateURL.printf(gsURLFormat, VERSION_ID, GetToolkit().GetVersion());
+    sUpdateURL.printf(gsURLFormat, VERSION_ID, AppToolkit::getToolkit().GetVersion());
     sUpdateURL.Replace(" ", "%20", true);
     try {
       // let the Get() do the connecting since reading results from perlscript
@@ -53,7 +54,7 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
     catch (...) {
       ZdException::GenerateNotification("SaTScan was unable to connect to the internet.\n"
                                         "Please visit %s to check for version updates.",
-                                        "ConnectToServerForUpdateCheck()", GetToolkit().GetWebSite());
+                                        "ConnectToServerForUpdateCheck()", AppToolkit::getToolkit().GetWebSite());
     }
     remove(pHTTPConnect->Header.c_str());
     // get perlscript results -- list of files descriptions at specified url

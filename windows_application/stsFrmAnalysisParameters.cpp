@@ -22,6 +22,7 @@
 #include "ParameterFileAccess.h"
 #include "RandomNumberGenerator.h"
 #include "Randomizer.h"
+#include "Toolkit.h"
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
@@ -766,7 +767,7 @@ void __fastcall TfrmAnalysis::FormActivate(TObject *Sender) {
 void __fastcall TfrmAnalysis::FormClose(TObject *Sender , TCloseAction &Action) {
   try {
     if ((Action = (gbPromptOnExist ? (QueryWindowCanClose() ? caFree : caNone) : caFree)) == caFree) {
-      GetToolkit().AddParameterToHistory(gParameters.GetSourceFileName().c_str());
+      AppToolkit::getToolkit().AddParameterToHistory(gParameters.GetSourceFileName().c_str());
       frmMainForm->RefreshOpenList();
     }
   }

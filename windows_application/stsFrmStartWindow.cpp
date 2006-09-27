@@ -3,6 +3,7 @@
 #pragma hdrstop
 //---------------------------------------------------------------------------
 #include "stsFrmStartWindow.h"
+#include "Toolkit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
 #pragma resource "*.dfm"
@@ -53,7 +54,7 @@ void __fastcall TfrmStartWindow::FormKeyDown(TObject *Sender, WORD &Key,TShiftSt
 /** internal setup function */
 void TfrmStartWindow::Setup() {
   try {
-    btnOpenLast->Enabled = GetToolkit().GetParameterHistory().size();
+    btnOpenLast->Enabled = AppToolkit::getToolkit().GetParameterHistory().size();
   }
   catch (ZdException & x) {
     x.AddCallpath("Setup()","TfrmStartWindow");

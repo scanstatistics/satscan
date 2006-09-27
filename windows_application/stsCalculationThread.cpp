@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "AnalysisRun.h"
 #include "ParametersValidate.h"
+#include "Toolkit.h"
 
 /** Constructor */
 __fastcall CalcThread::CalcThread(TfrmAnalysisRun& Progress, const CParameters& Parameters)
@@ -63,7 +64,7 @@ void __fastcall CalcThread::Execute() {
   ZdString      Acknowledgment;
 
   try {
-    gpPrintWindow->Printf(GetToolkit().GetAcknowledgment(Acknowledgment), BasePrint::P_STDOUT);
+    gpPrintWindow->Printf(AppToolkit::getToolkit().GetAcknowledgment(Acknowledgment), BasePrint::P_STDOUT);
 
     time(&RunTime);         // Pass to analysis to include in report
 
@@ -247,7 +248,7 @@ void CalcThread::Setup(const CParameters& Parameters) {
   try {
     gpParameters = new CParameters(Parameters);
     gpPrintWindow = new PrintWindow(*this, gpParameters->GetSuppressingWarnings());
-    gpParameters->SetRunHistoryFilename(GetToolkit().GetRunHistoryFileName());
+    gpParameters->SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     Priority = tpNormal;  
     FreeOnTerminate = false;
   }

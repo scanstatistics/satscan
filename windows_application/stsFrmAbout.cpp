@@ -2,6 +2,7 @@
 #include "stsSaTScan.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
+#include "Toolkit.h"
 #pragma package(smart_init)
 #pragma resource "*.dfm"
 
@@ -18,7 +19,7 @@ void __fastcall TfrmAbout::Button1Click(TObject *Sender) {
 
 void __fastcall TfrmAbout::lblWebSiteClick(TObject *Sender) {
   try {
-    int iResult = ( int )ShellExecute(Handle, "open", GetToolkit().GetWebSite(), 0, 0, SW_SHOWDEFAULT);
+    int iResult = ( int )ShellExecute(Handle, "open", AppToolkit::getToolkit().GetWebSite(), 0, 0, SW_SHOWDEFAULT);
     if (iResult <= 32)
       ZdException::GenerateNotification("Unable to open SaTScan Web site.\nIf problem persists, please contact technical support.( code %d )", "OnSquishClick()", iResult);
   }
@@ -31,12 +32,12 @@ void __fastcall TfrmAbout::lblWebSiteClick(TObject *Sender) {
 /** internal setup function */
 void TfrmAbout::Setup() {
   try {
-    lblVersion->Caption = AnsiString("SaTScan v") + GetToolkit().GetVersion();
+    lblVersion->Caption = AnsiString("SaTScan v") + AppToolkit::getToolkit().GetVersion();
     lblVersion->Width = 440;
     lblTitle->Width = 440;
     lblReleaseDate->Caption = AnsiString("Release Date: ") + VERSION_DATE;
-    lblWebSite->Caption = GetToolkit().GetWebSite();
-    lblEmailAddress->Caption = GetToolkit().GetSubstantiveSupportEmail();
+    lblWebSite->Caption = AppToolkit::getToolkit().GetWebSite();
+    lblEmailAddress->Caption = AppToolkit::getToolkit().GetSubstantiveSupportEmail();
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()", "TfrmAbout");
@@ -53,7 +54,7 @@ void __fastcall TfrmAbout::lblEmailAddressClick(TObject *Sender) {
 
    try {
       Screen->Cursor = crHourGlass;
-      ulError = MapiResolveName ( 0, 0, const_cast<char*>(GetToolkit().GetSubstantiveSupportEmail()), 0, 0, pRecipient );
+      ulError = MapiResolveName ( 0, 0, const_cast<char*>(AppToolkit::getToolkit().GetSubstantiveSupportEmail()), 0, 0, pRecipient );
       if ( ulError == SUCCESS_SUCCESS ){
          theMapiMessage.ulReserved = 0;
          theMapiMessage.lpszSubject = "SaTScan";
