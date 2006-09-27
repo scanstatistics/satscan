@@ -12,6 +12,7 @@
 #include "stsBaseAnalysisChildForm.h"
 #include "stsDlgExecuteOptions.h"
 #include "stsFrmSuggestedCitation.h"
+#include "Toolkit.h"
 
 TfrmMainForm *frmMainForm;
 
@@ -51,7 +52,7 @@ void __fastcall TfrmMainForm::AdobeUserGuideActionExecute(TObject *Sender) {
     else {
       sMessage  << "SaTScan User Guide was unable to open. File may be missing or corrupt."
                    "\nPlease contact technical support at website: "
-                << GetToolkit().GetWebSite() << ".";
+                << AppToolkit::getToolkit().GetWebSite() << ".";
     }
     Application->MessageBox(sMessage.GetCString(), "SaTScan User Guide", MB_OK);
   }
@@ -202,12 +203,12 @@ void __fastcall TfrmMainForm::HelpActionExecute(TObject *Sender) {
       sMessage  << "SaTScan Help was unable to open. Please note that SaTScan Help "
                    "requires Internet Explorer 4.0 or later installed."
                    "\nPlease contact technical support at website: "
-                << GetToolkit().GetWebSite() << " for more information.";
+                << AppToolkit::getToolkit().GetWebSite() << " for more information.";
     }
     else {
       sMessage  << "SaTScan Help was unable to open. Help file may be missing or corrupt."
                    "\nPlease contact technical support at website: "
-                << GetToolkit().GetWebSite() << ".";
+                << AppToolkit::getToolkit().GetWebSite() << ".";
     }
     Application->MessageBox(sMessage.GetCString(), "SaTScan Help", MB_OK);
   }
@@ -244,10 +245,10 @@ void __fastcall TfrmMainForm::OnFormActivate(TObject *Sender) {
         switch (frmStartWindow->GetOpenType()) {
           case TfrmStartWindow::NEW    : new TfrmAnalysis(this, ActionList); break;
           case TfrmStartWindow::SAVED  : OpenAFile(); break;
-          case TfrmStartWindow::LAST   : if (!ValidateFileAccess(GetToolkit().GetParameterHistory()[0].c_str()))
+          case TfrmStartWindow::LAST   : if (!ValidateFileAccess(AppToolkit::getToolkit().GetParameterHistory()[0].c_str()))
                                            ZdException::GenerateNotification("Cannot open file '%s'.", "FormActivate()",
-                                                                             GetToolkit().GetParameterHistory()[0].c_str());
-                                         new TfrmAnalysis(this, ActionList, const_cast<char*>(GetToolkit().GetParameterHistory()[0].c_str()));
+                                                                             AppToolkit::getToolkit().GetParameterHistory()[0].c_str());
+                                         new TfrmAnalysis(this, ActionList, const_cast<char*>(AppToolkit::getToolkit().GetParameterHistory()[0].c_str()));
                                          break;
           case TfrmStartWindow::CANCEL : break;
           default : ZdException::GenerateNotification("Unknown operation index % d.",
@@ -327,12 +328,12 @@ void __fastcall TfrmMainForm::PrintResultsActionExecute(TObject *Sender) {
 
 /** refreshes 'reopen' menu item to reflect possibly updated history list */
 void TfrmMainForm::RefreshOpenList() {
-  SaTScanToolkit::ParameterHistory_t::const_iterator     itr;
+  AppToolkit::ParameterHistory_t::const_iterator     itr;
   TMenuItem                                            * pItem=0;
   size_t                                                 t=1;
 
   mitReopen->Clear();
-  const SaTScanToolkit::ParameterHistory_t & Parameters = GetToolkit().GetParameterHistory();
+  const AppToolkit::ParameterHistory_t & Parameters = AppToolkit::getToolkit().GetParameterHistory();
   mitReopen->Enabled = !Parameters.empty();
   for (t=0; t < Parameters.size(); t++) {
      pItem = new TMenuItem(mitReopen);
@@ -352,7 +353,7 @@ void __fastcall TfrmMainForm::ReopenActionExecute(TObject *Sender) {
   try {
     pItem = dynamic_cast<TMenuItem *>(Sender);
     if (pItem) {
-      sFileName = GetToolkit().GetParameterHistory()[pItem->Tag];
+      sFileName = AppToolkit::getToolkit().GetParameterHistory()[pItem->Tag];
       if (!ValidateFileAccess(sFileName))
         ZdException::GenerateNotification("Cannot open file '%s'.","ReopenActionExecute()", sFileName.c_str());
       new TfrmAnalysis(this, ActionList, const_cast<char*>(sFileName.c_str()));
@@ -423,7 +424,7 @@ void TfrmMainForm::Setup() {
     EnableActions(true);
     RefreshOpenList();
     //reset current working directory to that of last instance of application
-    chdir(GetToolkit().GetLastDirectory());
+    chdir(AppToolkit::getToolkit().GetLastDirectory());
     //force the current directory to be used when using save/open dialogs
     ForceCurrentDirectory = true;
   }
@@ -458,8 +459,8 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
         frmDownloadProgress->Add(frmUpdateCheck->GetUpdateArchiveInfo());
         frmDownloadProgress->DownloadFiles();
         if (frmDownloadProgress->GetDownloadCompleted()) {
-          GetToolkit().SetUpdateArchiveFilename(frmUpdateCheck->GetUpdateArchiveInfo().first.GetCString());
-          GetToolkit().SetRunUpdateOnTerminate(true);
+          AppToolkit::getToolkit().SetUpdateArchiveFilename(frmUpdateCheck->GetUpdateArchiveInfo().first.GetCString());
+          AppToolkit::getToolkit().SetRunUpdateOnTerminate(true);
           Close();
         }
       }
