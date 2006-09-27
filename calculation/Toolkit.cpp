@@ -1,57 +1,68 @@
-//---------------------------------------------------------------------------
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//---------------------------------------------------------------------------
+//******************************************************************************
+#include "Toolkit.h"
+#include "DBFFile.h"
 
 /** system filename */
-const char * SaTScanToolkit::gsSystemIniFileName = "system.ini";
+const char * AppToolkit::gsSystemIniFileName = "system.ini";
 /** ini section property name for run history filename */
-const char * SaTScanToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName";
+const char * AppToolkit::gsHistoryFileNameProperty = "[RunHistory].FileName";
 /** ini section property name for parameter history filenames */
-const char * SaTScanToolkit::gsParameterNameProperty = "[ParameterHistory].Parameter";
+const char * AppToolkit::gsParameterNameProperty = "[ParameterHistory].Parameter";
 /** maximum number of parameter history items to record */
-const size_t SaTScanToolkit::giMaximumParameterHistoryItems = 10;
+const size_t AppToolkit::giMaximumParameterHistoryItems = 10;
 /** last directory browsed */
-const char * SaTScanToolkit::gsLastDirectoryProperty = "[LastDirectory].Path";
+const char * AppToolkit::gsLastDirectoryProperty = "[LastDirectory].Path";
 /** last import destination directory browsed */
-const char * SaTScanToolkit::gsLastImportDestinationDirectoryProperty = "[LastDirectory].ImportDestination";
+const char * AppToolkit::gsLastImportDestinationDirectoryProperty = "[LastDirectory].ImportDestination";
 
 /** ini section property name for logging run history */
-//const char * SaTScanToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
+//const char * AppToolkit::gsLoggingProperty = "[RunHistory].LogHistory";
 /** ini section property name for website */
-//const char * SaTScanToolkit::gsSaTScanWebSiteProperty = "[Internet].WebsiteURL";
+//const char * AppToolkit::gsSaTScanWebSiteProperty = "[Internet].WebsiteURL";
 /** ini section property name for license website */
-//const char * SaTScanToolkit::gsSaTScanLicenceWebSiteProperty = "[Internet].LicenceURL";
+//const char * AppToolkit::gsSaTScanLicenceWebSiteProperty = "[Internet].LicenceURL";
 /** ini section property name for substantive support email */
-//const char * SaTScanToolkit::gsSubstantiveSupportEmailProperty = "[Email].SubstantiveSupportEmail";
+//const char * AppToolkit::gsSubstantiveSupportEmailProperty = "[Email].SubstantiveSupportEmail";
 /** ini section property name for technical support email */
-//const char * SaTScanToolkit::gsTechnicalSupportEmailProperty = "[Email].TechnicalSupportEmail";
+//const char * AppToolkit::gsTechnicalSupportEmailProperty = "[Email].TechnicalSupportEmail";
 /** analysis history filename */
-const char * SaTScanToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
+const char * AppToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
 /** Default website. */
 #ifdef INTEL_BASED
-const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http:/\/www.satscan.org/";
+const char * AppToolkit::gsDefaultSaTScanWebSite = "http:/\/www.satscan.org/";
 #else
-const char * SaTScanToolkit::gsDefaultSaTScanWebSite = "http://www.satscan.org/";
+const char * AppToolkit::gsDefaultSaTScanWebSite = "http://www.satscan.org/";
 #endif
 /** Default Substantive Support Email. */
-const char * SaTScanToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@satscan.org";
+const char * AppToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@satscan.org";
 /** Default Technical Support Email. */
-const char * SaTScanToolkit::gsDefaultTechnicalSupportEmail = "techsupport@satscan.org";
+const char * AppToolkit::gsDefaultTechnicalSupportEmail = "techsupport@satscan.org";
+AppToolkit * AppToolkit::gpToolKit = 0;
+
+void AppToolkit::ToolKitCreate(const char * sApplicationFullPath) {
+  AppToolkit::gpToolKit = new AppToolkit(sApplicationFullPath);
+}
+
+void AppToolkit::ToolKitDestroy() {
+  try {delete AppToolkit::gpToolKit; AppToolkit::gpToolKit=0;}catch(...){}
+}
 
 /** constructor */
-SaTScanToolkit::SaTScanToolkit(const char * sApplicationFullPath):BToolkit() {
+AppToolkit::AppToolkit(const char * sApplicationFullPath) {
   try {
     Setup(sApplicationFullPath);
   }
   catch (ZdException& x) {
-    x.AddCallpath("constructor()", "SaTScanToolkit");
+    x.AddCallpath("constructor()", "AppToolkit");
     throw;
   }
 }
 
 /** destructor */
-SaTScanToolkit::~SaTScanToolkit() {
+AppToolkit::~AppToolkit() {
   try {
     ZdString  theDrive, theDirectory;
     ZdFileName::GetCurDrive(theDrive);
@@ -62,7 +73,7 @@ SaTScanToolkit::~SaTScanToolkit() {
 }
 
 /** Adds parameter filename to parameter history. */
-void SaTScanToolkit::AddParameterToHistory(const char * sParameterFileName) {
+void AppToolkit::AddParameterToHistory(const char * sParameterFileName) {
   std::vector<std::string>::iterator      itr;
 
   try {
@@ -87,14 +98,14 @@ void SaTScanToolkit::AddParameterToHistory(const char * sParameterFileName) {
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("AddParameterToHistory()", "SaTScanToolkit");
+    x.AddCallpath("AddParameterToHistory()", "AppToolkit");
     throw;
   }
 }
 
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
-const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {
+const char * AppToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {
   try {
     Acknowledgment << ZdString::reset << "You are running SaTScan v" << GetVersion();
     Acknowledgment << ".\n\nSaTScan is free, available for download from ";
@@ -103,50 +114,50 @@ const char * SaTScanToolkit::GetAcknowledgment(ZdString & Acknowledgment) const 
     Acknowledgment << "statistical methodology.\n\n";
   }
   catch (ZdException& x) {
-    x.AddCallpath("GetAcknowledgment()", "SaTScanToolkit");
+    x.AddCallpath("GetAcknowledgment()", "AppToolkit");
     throw;
   }
   return Acknowledgment.GetCString();
 }
 
 /** Returns applications full path */
-const char * SaTScanToolkit::GetApplicationFullPath() const {
+const char * AppToolkit::GetApplicationFullPath() const {
   return gsApplicationFullPath.GetCString();
 }
 
 /** last opened directory */
-const char * SaTScanToolkit::GetLastDirectory() /*const*/ {
-  return GetSession().GetProperty(gsLastDirectoryProperty)->GetValue();
+const char * AppToolkit::GetLastDirectory() /*const*/ {
+  return gSession.GetProperty(gsLastDirectoryProperty)->GetValue();
 }
 
-const char * SaTScanToolkit::GetLastImportDirectory() /*const*/ {
-  return GetSession().GetProperty(gsLastImportDestinationDirectoryProperty)->GetValue();
+const char * AppToolkit::GetLastImportDirectory() /*const*/ {
+  return gSession.GetProperty(gsLastImportDestinationDirectoryProperty)->GetValue();
 }
 
 /** Returns run history filename. */
-const char * SaTScanToolkit::GetRunHistoryFileName() /*const*/ {
-  return GetSession().GetProperty(gsHistoryFileNameProperty)->GetValue();
+const char * AppToolkit::GetRunHistoryFileName() /*const*/ {
+  return gSession.GetProperty(gsHistoryFileNameProperty)->GetValue();
 }
 
 /** Returns substantive support email address. */
-const char * SaTScanToolkit::GetSubstantiveSupportEmail() const {
-  //return GetSession().GetProperty(gsSubstantiveSupportEmailProperty)->GetValue();
+const char * AppToolkit::GetSubstantiveSupportEmail() const {
+  //return gSession.GetProperty(gsSubstantiveSupportEmailProperty)->GetValue();
   return gsDefaultSubstantiveSupportEmail;
 }
 /** Returns substantive support email address. */
-const char * SaTScanToolkit::GetTechnicalSupportEmail() const {
-  //return GetSession().GetProperty(gsTechnicalSupportEmailProperty)->GetValue();
+const char * AppToolkit::GetTechnicalSupportEmail() const {
+  //return gSession.GetProperty(gsTechnicalSupportEmailProperty)->GetValue();
   return gsDefaultTechnicalSupportEmail;
 }
 
 /** Returns website URL. */
-const char * SaTScanToolkit::GetWebSite() const {
-  //return GetSession().GetProperty(gsSaTScanWebSiteProperty)->GetValue();
+const char * AppToolkit::GetWebSite() const {
+  //return gSession.GetProperty(gsSaTScanWebSiteProperty)->GetValue();
   return gsDefaultSaTScanWebSite;
 }
 
 /** Insures last directory path section in ZdIniSession. */
-bool SaTScanToolkit::InsureLastDirectoryPath() {
+bool AppToolkit::InsureLastDirectoryPath() {
   ZdFileName            FileName;
   ZdString              sDefaultPath;
   long                  lPosition;
@@ -159,16 +170,16 @@ bool SaTScanToolkit::InsureLastDirectoryPath() {
       sDefaultPath = ZdFileName(gsApplicationFullPath.GetCString()).GetLocation();
 
     //run history filename property
-    lPosition = GetSession().FindProperty(gsLastDirectoryProperty);
+    lPosition = gSession.FindProperty(gsLastDirectoryProperty);
     if (lPosition == -1) {
-      GetSession().AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
+      gSession.AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
-      pProperty = GetSession().GetProperty(lPosition);
+      pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        GetSession().AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
+        gSession.AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
         bUpdatedSection = true;
       }
       else {
@@ -186,14 +197,14 @@ bool SaTScanToolkit::InsureLastDirectoryPath() {
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("InsureLastDirectoryPath()", "SaTScanToolkit");
+    x.AddCallpath("InsureLastDirectoryPath()", "AppToolkit");
     throw;
   }
   return bUpdatedSection;
 }
 
 /** Insures last imported directory path section in ZdIniSession. */
-bool SaTScanToolkit::InsureLastImportDestinationDirectoryPath() {
+bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
   ZdFileName            FileName;
   ZdString              sDefaultPath;
   long                  lPosition;
@@ -202,16 +213,16 @@ bool SaTScanToolkit::InsureLastImportDestinationDirectoryPath() {
 
   try {
     sDefaultPath = getenv("TMP") ? getenv("TMP") : "";
-    lPosition = GetSession().FindProperty(gsLastImportDestinationDirectoryProperty);
+    lPosition = gSession.FindProperty(gsLastImportDestinationDirectoryProperty);
     if (lPosition == -1) {
-      GetSession().AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
+      gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
-      pProperty = GetSession().GetProperty(lPosition);
+      pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        GetSession().AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
+        gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
         bUpdatedSection = true;
       }
       else {
@@ -225,14 +236,14 @@ bool SaTScanToolkit::InsureLastImportDestinationDirectoryPath() {
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("InsureLastImportDestinationDirectoryPath()", "SaTScanToolkit");
+    x.AddCallpath("InsureLastImportDestinationDirectoryPath()", "AppToolkit");
     throw;
   }
   return bUpdatedSection;
 }
 
 /** Insures run history filename section in ZdIniSession. */
-bool SaTScanToolkit::InsureRunHistoryFileName() {
+bool AppToolkit::InsureRunHistoryFileName() {
   ZdFileName            FileName;
   ZdString              sDefaultHistoryFileName;
   long                  lPosition;
@@ -244,16 +255,16 @@ bool SaTScanToolkit::InsureRunHistoryFileName() {
     sDefaultHistoryFileName << DBFFileType::GetDefaultInstance().GetFileTypeExtension();
 
     //run history filename property
-    lPosition = GetSession().FindProperty(gsHistoryFileNameProperty);
+    lPosition = gSession.FindProperty(gsHistoryFileNameProperty);
     if (lPosition == -1) {
-      GetSession().AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.GetCString());
+      gSession.AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.GetCString());
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
-      pProperty = GetSession().GetProperty(lPosition);
+      pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        GetSession().AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.GetCString());
+        gSession.AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.GetCString());
         bUpdatedSection = true;
       }
       else {
@@ -279,36 +290,36 @@ bool SaTScanToolkit::InsureRunHistoryFileName() {
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("InsureRunHistoryFileName()", "SaTScanToolkit");
+    x.AddCallpath("InsureRunHistoryFileName()", "AppToolkit");
     throw;
   }
   return bUpdatedSection;
 }
 
 /** */
-bool SaTScanToolkit::InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue) {
+bool AppToolkit::InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue) {
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
 
   try {
     //log history property
-    lPosition = GetSession().FindProperty(sSessionProperty);
+    lPosition = gSession.FindProperty(sSessionProperty);
     if (lPosition == -1) {
-      GetSession().AddProperty(sSessionProperty, sDefaultValue);
+      gSession.AddProperty(sSessionProperty, sDefaultValue);
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
-      pProperty = GetSession().GetProperty(lPosition);
+      pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        GetSession().AddProperty(sSessionProperty, sDefaultValue);
+        gSession.AddProperty(sSessionProperty, sDefaultValue);
         bUpdatedSection = true;
       }
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("InsureSessionProperty()", "SaTScanToolkit");
+    x.AddCallpath("InsureSessionProperty()", "AppToolkit");
     throw;
   }
   return bUpdatedSection;
@@ -316,7 +327,7 @@ bool SaTScanToolkit::InsureSessionProperty(const char * sSessionProperty, const 
 
 /** Insures that all section keys are present and writes to disk if
     necessary and permissions permit. */
-void SaTScanToolkit::InsureSessionStructure() {
+void AppToolkit::InsureSessionStructure() {
   bool                  bNeedsWrite=false;
 
   try {
@@ -338,7 +349,7 @@ void SaTScanToolkit::InsureSessionStructure() {
     //Write to same directory as executable, when needed.
     if (bNeedsWrite) {
       try {
-        GetSession().Write(gsSystemFileName.GetCString());
+        gSession.Write(gsSystemFileName.GetCString());
       }
       catch (ZdException & x){
          /* File not currently writable.
@@ -348,13 +359,13 @@ void SaTScanToolkit::InsureSessionStructure() {
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("InsureSessionStructure()", "SaTScanToolkit");
+    x.AddCallpath("InsureSessionStructure()", "AppToolkit");
     throw;
   }
 }
 
 /** reads parameter history from ini file */
-void SaTScanToolkit::ReadParametersHistory() {
+void AppToolkit::ReadParametersHistory() {
   long                  lPosition;
   BSessionProperty    * pProperty;
   ZdString              sParameterSectionName;
@@ -362,50 +373,49 @@ void SaTScanToolkit::ReadParametersHistory() {
 
   try {
     sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
-    lPosition = GetSession().FindProperty(sParameterSectionName.GetCString());
+    lPosition = gSession.FindProperty(sParameterSectionName.GetCString());
     while (lPosition != -1) {
-      pProperty = GetSession().GetProperty(lPosition);
+      pProperty = gSession.GetProperty(lPosition);
       if (pProperty->GetValue() && strlen(pProperty->GetValue()))
         gvParameterHistory.push_back(pProperty->GetValue());
       sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
-      lPosition = GetSession().FindProperty(sParameterSectionName.GetCString());
+      lPosition = gSession.FindProperty(sParameterSectionName.GetCString());
     }
   }
   catch (ZdException& x) {
-    x.AddCallpath("ReadParametersHistory()","SaTScanToolkit");
+    x.AddCallpath("ReadParametersHistory()","AppToolkit");
     throw;
   }
 }
 
-void SaTScanToolkit::SetLastDirectory(const char * sLastDirectory) {
-  GetSession().AddProperty(gsLastDirectoryProperty, sLastDirectory);
-  GetSession().Write(gsSystemFileName.GetCString());
+void AppToolkit::SetLastDirectory(const char * sLastDirectory) {
+  gSession.AddProperty(gsLastDirectoryProperty, sLastDirectory);
+  gSession.Write(gsSystemFileName.GetCString());
 }
 
-void SaTScanToolkit::SetLastImportDirectory(const char * sLastDirectory) {
-  GetSession().AddProperty(gsLastImportDestinationDirectoryProperty, sLastDirectory);
-  GetSession().Write(gsSystemFileName.GetCString());
+void AppToolkit::SetLastImportDirectory(const char * sLastDirectory) {
+  gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sLastDirectory);
+  gSession.Write(gsSystemFileName.GetCString());
 }
 
 /** internal setup */
-void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
+void AppToolkit::Setup(const char * sApplicationFullPath) {
   try {
     gbRunUpdateOnTerminate = false;
     //set application full path
     gsApplicationFullPath = sApplicationFullPath;
     //Set system ini located at same directory as executable.
     gsSystemFileName << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << gsSystemIniFileName;
-    
     try {
       //Open or create system ini file.
-      GetSession().Read(gsSystemFileName.GetCString(), ZDIO_OPEN_READ);
+      gSession.Read(gsSystemFileName.GetCString(), ZDIO_OPEN_READ);
     }
     catch (ZdException & x){
       /* can't read ini file: missing/corrupt/permissions? */
     }
 
     InsureSessionStructure();
-    SetErrorReportDestination(GetTechnicalSupportEmail());
+    //SetErrorReportDestination(GetTechnicalSupportEmail());
     ReadParametersHistory();
     gsVersion.printf("%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR,
                      (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
@@ -413,13 +423,13 @@ void SaTScanToolkit::Setup(const char * sApplicationFullPath) {
                      (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
   }
   catch (ZdException& x) {
-    x.AddCallpath("Setup()", "SaTScanToolkit");
+    x.AddCallpath("Setup()", "AppToolkit");
     throw;
   }
 }
 
 /** Writes parameter history to ini file */
-void SaTScanToolkit::WriteParametersHistory() {
+void AppToolkit::WriteParametersHistory() {
   ZdString                        sParameterSectionName;
   ParameterHistory_t::iterator    itr;
   int                             iItem=0;
@@ -427,18 +437,13 @@ void SaTScanToolkit::WriteParametersHistory() {
   try {
     for (itr=gvParameterHistory.begin(); itr != gvParameterHistory.end(); itr++) {
        sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
-       GetSession().AddProperty(sParameterSectionName.GetCString(), itr->c_str());
+       gSession.AddProperty(sParameterSectionName.GetCString(), itr->c_str());
     }
-    GetSession().Write(gsSystemFileName.GetCString());
+    gSession.Write(gsSystemFileName.GetCString());
   }
   catch (ZdException& x) {
-    x.AddCallpath("WriteParametersHistory()","SaTScanToolkit");
+    x.AddCallpath("WriteParametersHistory()","AppToolkit");
     throw;
   }
-}
-
-/** Returns referance to toolkit. */
-SaTScanToolkit & GetToolkit() {
-  return dynamic_cast<SaTScanToolkit&>(BasisGetToolkit());
 }
 
