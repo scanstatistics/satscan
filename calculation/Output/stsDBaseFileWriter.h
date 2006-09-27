@@ -3,6 +3,7 @@
 #define DBaseFileWriter_H
 //******************************************************************************
 #include "Parameters.h"
+#include <DBFFile.h>
 
 class RecordBuffer;  /** forward class declaration */
 

@@ -3,7 +3,6 @@
 #pragma hdrstop
 //******************************************************************************
 #include "stsDBaseFileWriter.h"
-#include <DBFFile.h>
 #include "AbstractDataFileWriter.h"
 
 const char * DBaseDataFileWriter::DBASE_FILE_EXT    = ".dbf";
