@@ -1,11 +1,9 @@
 USEUNIT("Main.cpp");
 USEUNIT("..\calculation\Parameters.cpp");
-USEUNIT("..\calculation\SaTScanBasis.cpp");
 USEUNIT("..\calculation\Toolkit.cpp");
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
 USEUNIT("..\calculation\utility\RandomNumberGenerator.cpp");
-USEUNIT("..\calculation\utility\Salloc.cpp");
 USEUNIT("..\calculation\utility\RandomDistribution.cpp");
 USEUNIT("..\calculation\utility\SSException.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
@@ -143,6 +141,8 @@ USEUNIT("..\calculation\cluster\MultiSetNormalClusterData.cpp");
 USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetReader.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetWriter.cpp");
+USEUNIT("..\calculation\satscan_data\MetaTractManager.cpp");
+USEUNIT("..\calculation\IniSession.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
