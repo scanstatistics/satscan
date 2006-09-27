@@ -188,3 +188,9 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
   return bReturn;
 }
 
+/** Trims leading and trailing 't' strings from source, inplace. */
+void trim(std::string &source, const std::string &t) {
+  source.erase(0, source.find_first_not_of(t));
+  source.erase(source.find_last_not_of(t)+1);
+}
+

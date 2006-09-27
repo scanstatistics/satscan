@@ -14,6 +14,7 @@ boost::posix_time::ptime        GetCurrentTime_HighResolution();
 double                          GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure_t tSumSqMeasure);
 double                          GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tSqMeasure, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure);
 bool                            ValidateFileAccess(const std::string& filename, bool bWriteEnable=false);
+void                            trim(std::string &source, const std::string &t=" ");
 //******************************************************************************
 #endif
 
