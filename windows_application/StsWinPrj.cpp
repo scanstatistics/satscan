@@ -1,8 +1,9 @@
 //---------------------------------------------------------------------------
 #include "stsSaTScan.h"
 #pragma hdrstop
-#include "stsFrmUpdateCheck.h"
 //---------------------------------------------------------------------------
+#include "stsFrmUpdateCheck.h"
+#include "Toolkit.h"
 
 USERES("StsWinPrj.res");
 USEFORM("stsMain.cpp", frmMainForm);
@@ -21,12 +22,10 @@ USEFORM("stsFrmStartWindow.cpp", frmStartWindow);
 USEFORM("stsFrmAdvancedParameters.cpp", frmAdvancedParameters);
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\Toolkit.cpp");
-USEUNIT("..\calculation\SaTScanBasis.cpp");
 USEUNIT("..\calculation\utility\ScanfFile.cpp");
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
 USEUNIT("..\calculation\utility\RandomNumberGenerator.cpp");
-USEUNIT("..\calculation\utility\Salloc.cpp");
 USEUNIT("..\calculation\utility\RandomDistribution.cpp");
 USEUNIT("..\calculation\utility\SSException.cpp");
 USEUNIT("..\calculation\utility\DBFFile.cpp");
@@ -165,6 +164,19 @@ USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
 USEUNIT("BasisVCL.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetWriter.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetReader.cpp");
+USEUNIT("..\calculation\satscan_data\MetaTractManager.cpp");
+//---------------------------------------------------------------------------
+void __SaTScanInit() {
+  BasisInit();
+  AppToolkit::ToolKitCreate(_argv[0]);
+  BasisGetToolkit().SetErrorReportDestination(AppToolkit::getToolkit().GetTechnicalSupportEmail());
+}
+
+void __SaTScanExit() {
+  AppToolkit::ToolKitDestroy();
+  BasisExit();
+}
+
 //---------------------------------------------------------------------------
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         bool            bRunUpdate=false;
@@ -174,8 +186,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
         try {
            Application->Initialize();
-           BasisInit();
-           BasisSetToolkit(new SaTScanToolkit(_argv[0]));
+           __SaTScanInit();
            ZdGetFileTypeArray()->AddElement( &(DBFFileType::GetDefaultInstance()) );
            Application->Title = "SaTScan - Software for the Spatial and Space-Time Scan Statistics";
                  Application->HelpFile = "";
@@ -186,22 +197,22 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            }
            Application->CreateForm(__classid(TfrmMainForm), &frmMainForm);
            Application->Run();
-           if ((bRunUpdate = GetToolkit().GetRunUpdateOnTerminate()) == true)
+           if ((bRunUpdate = AppToolkit::getToolkit().GetRunUpdateOnTerminate()) == true)
              sUpdateDataParameter.printf("\"%s%s\" \"%s\" %s", ExtractFilePath(Application->ExeName).c_str(),
-                                         GetToolkit().GetUpdateArchiveFilename().GetCString(), Application->ExeName.c_str(),
+                                         AppToolkit::getToolkit().GetUpdateArchiveFilename().GetCString(), Application->ExeName.c_str(),
                                          sOmitULA_Parameter.c_str());
-           BasisExit();
+           __SaTScanExit();
         }
         catch (ZdException &x) {
            DisplayBasisException(Application, x);
-           BasisExit();
+           __SaTScanExit();
         }
         catch (Exception &exception) {
            Application->ShowException(&exception);
-           BasisExit();
+           __SaTScanExit();
         }
         catch(...) {
-           BasisExit();
+           __SaTScanExit();
         }
         // run update application if flag set
         if (bRunUpdate) {

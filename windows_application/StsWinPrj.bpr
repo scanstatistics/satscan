@@ -10,12 +10,10 @@
       stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
       stsBaseAnalysisChildForm.obj stsFrmStartWindow.obj 
       stsFrmAdvancedParameters.obj ..\calculation\Parameters.obj 
-      ..\calculation\Toolkit.obj ..\calculation\SaTScanBasis.obj 
-      ..\calculation\utility\ScanfFile.obj 
+      ..\calculation\Toolkit.obj ..\calculation\utility\ScanfFile.obj 
       ..\calculation\utility\UtilityFunctions.obj 
       ..\calculation\utility\JulianDates.obj 
       ..\calculation\utility\RandomNumberGenerator.obj 
-      ..\calculation\utility\Salloc.obj 
       ..\calculation\utility\RandomDistribution.obj 
       ..\calculation\utility\SSException.obj ..\calculation\utility\DBFFile.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
@@ -146,7 +144,8 @@
       ..\calculation\cluster\MultiSetNormalClusterData.obj 
       ..\calculation\cluster\TimeIntervals.obj BasisVCL.obj 
       ..\calculation\satscan_data\DataSetWriter.obj 
-      ..\calculation\satscan_data\DataSetReader.obj"/>
+      ..\calculation\satscan_data\DataSetReader.obj 
+      ..\calculation\satscan_data\MetaTractManager.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
