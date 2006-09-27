@@ -4,7 +4,12 @@
 //******************************************************************************
 #include <list>
 #include "RunTimeComponents.h"
-#include "IniSession.h"
+
+#ifdef __BATCH_COMPILE
+  #include "IniSession.h"
+#else
+  #include <Basis540Unix.h>
+#endif
 
 class AppToolkit {
   public:
