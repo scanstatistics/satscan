@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "AbstractClusterData.h"
 #include "MeasureList.h"
+#include "Toolkit.h"
 
 /** Class representing accumulated data of spatial clustering. */
 class SpatialData : public AbstractSpatialClusterData {

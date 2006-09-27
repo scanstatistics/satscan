@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "MeasureList.h"
+#include "Toolkit.h"
 
 /** Constructor */
 CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)

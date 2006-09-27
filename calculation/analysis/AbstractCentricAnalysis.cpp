@@ -7,6 +7,7 @@
 #include "MeasureList.h"
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
+#include "Toolkit.h"
 
 /** constructor */
 AbstractCentricAnalysis::AbstractCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection)
