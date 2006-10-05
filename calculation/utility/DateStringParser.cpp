@@ -73,26 +73,27 @@ DateStringParser::ParserStatus DateStringParser::GetInParts(const char * sDateSt
                                                            DatePrecisionType& ePrecision, DateFormat& eDateFormat) {
   unsigned int        iLength, iCount=1;
   const char        * ptr = sDateString;
-  ZdString            sFormat("%u");
+  std::string         sFormat("%u");
 
   //determine precision
   while ((iLength = strcspn(ptr, "/-.*")) < strlen(ptr)) {
       ptr += iLength;
       if (++iCount > DAY)
         return INVALID_DATE;
-      sFormat << *ptr << "%u";
+      sFormat += *ptr;
+      sFormat += "%u";
       ptr += 1;
   }
   ePrecision = (DatePrecisionType)iCount;
   //scan into parts - determined by precision
   switch (ePrecision) {
-      case YEAR  : if (sscanf(sDateString, sFormat.GetCString(), &iOne) != 1)
+      case YEAR  : if (sscanf(sDateString, sFormat.c_str(), &iOne) != 1)
                      return INVALID_DATE;
                    break;
-      case MONTH : if (sscanf(sDateString, sFormat.GetCString(), &iOne, &iTwo) != 2)
+      case MONTH : if (sscanf(sDateString, sFormat.c_str(), &iOne, &iTwo) != 2)
                      return INVALID_DATE;
                    break;
-      case DAY   : if (sscanf(sDateString, sFormat.GetCString(), &iOne, &iTwo, &iThree) != 3)
+      case DAY   : if (sscanf(sDateString, sFormat.c_str(), &iOne, &iTwo, &iThree) != 3)
                      return INVALID_DATE;
                    break;
   };
