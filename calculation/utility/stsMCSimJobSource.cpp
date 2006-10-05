@@ -79,11 +79,11 @@ void stsMCSimJobSource::Assert_NoExceptionsCaught() const
     std::deque<exception_type>::const_iterator itr = gvExceptions.begin();
     for (; itr != gvExceptions.end(); ++itr) {
        if (itr->second.second.eException_type == job_result::zdmemory) {
-         ZdString sTemp;
-         sTemp.printf(szExceptionIntroFormatString, itr->first);
+         std::string sTemp;
+         printString(sTemp, szExceptionIntroFormatString, itr->first);
 
-         ZdMemoryException MemoryException(sTemp.GetCString());
-         MemoryException.AddMessage(sTemp.GetCString(), false);
+         ZdMemoryException MemoryException(sTemp.c_str());
+         MemoryException.AddMessage(sTemp.c_str(), false);
          MemoryException.AddMessage(szExceptionMessageTitle, false);
          MemoryException.AddMessage(itr->second.second.Exception.GetErrorMessage(), false);
          MemoryException.AddMessage(szExceptionCallPathTitle, false);
@@ -94,9 +94,9 @@ void stsMCSimJobSource::Assert_NoExceptionsCaught() const
 
     ZdCarrierException<exception_sequence_type> lclException(gvExceptions, "", "stsMCSimJobSource");
     exception_type const & rFirstException(lclException->front());
-    ZdString sTemp;
-    sTemp.printf(szExceptionIntroFormatString, rFirstException.first);
-    lclException.AddMessage(sTemp.GetCString(), false);
+    std::string sTemp;
+    printString(sTemp, szExceptionIntroFormatString, rFirstException.first);
+    lclException.AddMessage(sTemp.c_str(), false);
     lclException.AddMessage(szExceptionMessageTitle, false);
     lclException.AddMessage(rFirstException.second.second.Exception.GetErrorMessage(), false);
     lclException.AddMessage(szExceptionCallPathTitle, false);
