@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "AsciiPrintFormat.h"
 #include "Toolkit.h"
+#include "UtilityFunctions.h"
 
 /** width of label with one dataset for cluster section */
 const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
@@ -38,21 +39,21 @@ AsciiPrintFormat::~AsciiPrintFormat() {}
           (giRightMargin - giDataLeftMargin)'th character beyond beginning of a
           line. Subsequent lines that wrap do incorporate appropriate padding of
           blanks. */
-void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, ZdString& sDataString, unsigned int iPostNewlines) const {
+void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, std::string& sDataString, unsigned int iPostNewlines) const {
   unsigned int  iStart, iScan, iPrint, iDataPrintWidth;
 
   iStart = 0;
   //calculate number of characters in the data print area
   iDataPrintWidth = giRightMargin - giDataLeftMargin;
   //if data string is wider than print area then cause it to wrap
-  while (iStart + iDataPrintWidth < sDataString.GetLength()) {
+  while (iStart + iDataPrintWidth < sDataString.size()) {
       //scan backwards from iStart + iDataPrintWidth, looking for blank to replace
       iScan = iStart + iDataPrintWidth;
       while (iScan > iStart) {
-           if (sDataString.GetCharAt(iScan) == ' ' || sDataString.GetCharAt(iScan) == '\n') {
+           if (sDataString[iScan] == ' ' || sDataString[iScan] == '\n') {
              //found insertion point - first print characters up to iScan
              for (iPrint=iStart; iPrint < iScan; ++iPrint)
-               putc(sDataString.GetCharAt(iPrint), fp);
+               putc(sDataString[iPrint], fp);
              //print newline character - wrap
              putc('\n', fp);
              //pad with blanks to align data
@@ -67,7 +68,7 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, ZdString& sDataSt
       if (iScan == iStart) {
         //print characters up to iDataPrintWidth
         for (iPrint=iStart; iPrint < iStart + iDataPrintWidth; ++iPrint)
-           putc(sDataString.GetCharAt(iPrint), fp);
+           putc(sDataString[iPrint], fp);
         //print newline - wrap
         putc('\n', fp);
         //pad with blanks to align data
@@ -77,8 +78,8 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, ZdString& sDataSt
       }
   }
   //print remaining characters of sDataString
-  for (iPrint=iStart; iPrint < sDataString.GetLength(); ++iPrint)
-     putc(sDataString.GetCharAt(iPrint), fp);
+  for (iPrint=iStart; iPrint < sDataString.size(); ++iPrint)
+     putc(sDataString[iPrint], fp);
   //append newlines as requested
   while (iPostNewlines-- > 0)
      putc('\n', fp);
@@ -149,7 +150,7 @@ void AsciiPrintFormat::PrintSectionSeparatorString(FILE* fp, unsigned int iPreNe
 /** Prints version header to file stream */
 void AsciiPrintFormat::PrintVersionHeader(FILE* fp) {
   unsigned int  iSeparatorsMargin, iTextMargin, iPrint;
-  ZdString      sBuffer;
+  std::string   buffer;
 
   //calculate padding to center separators
   iSeparatorsMargin = (giRightMargin - giVersionHeaderWidth)/2;
@@ -162,12 +163,12 @@ void AsciiPrintFormat::PrintVersionHeader(FILE* fp) {
      putc('_', fp);
   fprintf(fp, "\n\n");
 
-  sBuffer.printf("SaTScan v%s", AppToolkit::getToolkit().GetVersion());
-  iTextMargin = (giRightMargin - sBuffer.GetLength())/2;
+  printString(buffer, "SaTScan v%s", AppToolkit::getToolkit().GetVersion());
+  iTextMargin = (giRightMargin - buffer.size())/2;
   iPrint=0;
   while (iPrint++ < iTextMargin)
      putc(' ', fp);
-  fprintf(fp, "%s\n", sBuffer.GetCString());
+  fprintf(fp, "%s\n", buffer.c_str());
 
   iPrint=0;
   while (iPrint++ < iSeparatorsMargin)

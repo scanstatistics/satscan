@@ -2,6 +2,7 @@
 #pragma hdrstop
 #include "JulianDates.h"
 #include "SSException.h"
+#include "UtilityFunctions.h"
 
 /* Date module - SaTScan                                  */
 /*                                                        */
@@ -119,11 +120,11 @@ char* JulianToChar(char* szDateString, Julian JNum) {
 }
 
 /** Converts Julian into date string. */
-ZdString& JulianToString(ZdString& sDate, Julian JNum) {
+std::string& JulianToString(std::string& sDate, Julian JNum) {
   UInt month, day, year;
 
   JulianToMDY(&month, &day, &year, JNum);
-  sDate.printf("%u/%u/%u", year, month, day);
+  printString(sDate, "%u/%u/%u", year, month, day);
 
   return sDate;
 }
@@ -202,14 +203,14 @@ Julian MDYToJulian(UInt m, UInt d, UInt y) {
 /** Prints julian dates for file. Debug function. */
 void PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFilename) {
   FILE                                * pFile=0;
-  ZdString                              sBuffer;
+  std::string                           sBuffer;
 
   try {
     if ((pFile = fopen(sFilename, "w")) == NULL)
       GenerateResolvableException("Unable to open file.", "PrintJulianDates()");
 
     for (size_t t=0; t < vJulianDates.size(); ++t)
-       fprintf(pFile, "Date %u: %s\n", t + 1, JulianToString(sBuffer, vJulianDates[t]).GetCString());
+       fprintf(pFile, "Date %u: %s\n", t + 1, JulianToString(sBuffer, vJulianDates[t]).c_str());
     fclose(pFile); pFile=0;
    }
   catch (ZdException &x) {
