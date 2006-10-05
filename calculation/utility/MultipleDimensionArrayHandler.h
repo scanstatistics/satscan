@@ -3,6 +3,41 @@
 #define __MULTIDIMARRAYHANDLER_H
 //---------------------------------------------------------------------------
 
+//specialized templated C array class -- used instead of standard template library containers
+//Reasoning: Standard library containers do not provide a public means for which to define growth,
+//           but instead commonly grow in chunks (Borland ~256b). In the context of the TractHandler
+//           class, we really want certain arrays to growth in an 'as needed' manner; otherwise
+//           we could be wasting considerable amounts of memory.
+template <class T>
+class MinimalGrowthArray {
+   private:
+     T             * gpArray;
+     unsigned int    giSize;
+
+   public:
+     MinimalGrowthArray() : giSize(0), gpArray(0) {}
+     ~MinimalGrowthArray() {try {delete[] gpArray;}catch(...){}}
+
+     const T       & operator[](const unsigned int i) const {return gpArray[i];}
+     bool            operator!=(const MinimalGrowthArray<T> & rhs) const {
+                       if (giSize != rhs.giSize) return true;
+                       for (unsigned int i=0; i < giSize; ++i) if (gpArray[i]!=rhs.gpArray[i]) return true;
+                       return false;
+                     }
+     void            add(const T& x, bool bSort) {
+                       T * p = new T[giSize + 1];
+                       for (unsigned int i=0; i < giSize; ++i) p[i] = gpArray[i];
+                       std::swap(p, gpArray); delete[] p;
+                       gpArray[giSize] = x; ++giSize; if (bSort) std::sort(gpArray, gpArray + giSize);
+                     }
+     void            clear() {delete[] gpArray; gpArray=0; giSize=0;}
+     bool            exists(const T& x) const {
+                       for (unsigned int i=0; i < giSize; ++i) if (gpArray[i] == x) return true;
+                       return false;
+                     }
+     unsigned int    size() const {return giSize;}
+};
+
 /** Templated multi-dimensional array handler classes. These classes are intended
     to help manage allocation and deallocation of multiple dimensional arrays. The
     arrays themselves are public to whom ever wants them, inorder to keep access
