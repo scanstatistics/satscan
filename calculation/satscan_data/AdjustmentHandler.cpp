@@ -159,7 +159,7 @@ TractContainerIterator_t RelativeRiskAdjustmentHandler::GetMaxPeriodIndex(TractC
 void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
-  ZdString                              sStart, sEnd;
+  std::string                           sStart, sEnd;
   FILE                                * pFile;
 
   if ((pFile = fopen("c:\\Adustments.txt", "w")) == NULL)
@@ -171,7 +171,7 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) {
         JulianToString(sStart,(*itr_deque).GetStartDate());
         JulianToString(sEnd, (*itr_deque).GetEndDate());
-        fprintf(pFile, "%lf\t%s\t%s\n", (*itr_deque).GetRelativeRisk(), sStart.GetCString(), sEnd.GetCString());
+        fprintf(pFile, "%lf\t%s\t%s\n", (*itr_deque).GetRelativeRisk(), sStart.c_str(), sEnd.c_str());
      }
      fprintf(pFile, "\n\n");
   }
