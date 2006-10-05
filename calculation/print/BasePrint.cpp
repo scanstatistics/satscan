@@ -111,6 +111,7 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
     case MAXCIRCLEPOPFILE        : gsInputFileString = "max circle size file"; break;
     case ADJ_BY_RR_FILE          : gsInputFileString = "adjustments file"; break;
     case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
+    case META_LOCATIONS_FILE     : gsInputFileString = "meta locations file"; break;
     default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
   }
 }
