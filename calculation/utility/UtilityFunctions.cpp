@@ -89,18 +89,18 @@ boost::posix_time::ptime GetCurrentTime_HighResolution()
 #endif
 
 /** Returns date precision as string. */
-const char * GetDatePrecisionAsString(DatePrecisionType eType, ZdString& sString, bool bPlural, bool bCapitalizeFirstLetter) {
-  sString.Clear();
+const char * GetDatePrecisionAsString(DatePrecisionType eType, std::string& sString, bool bPlural, bool bCapitalizeFirstLetter) {
+  sString.clear();
   switch (eType) {
-    case YEAR  : sString << (bCapitalizeFirstLetter ? "Y" : "y") << "ear"; break;
-    case MONTH : sString << (bCapitalizeFirstLetter ? "M" : "m") << "onth"; break;
-    case DAY   : sString << (bCapitalizeFirstLetter ? "D" : "d") << "ay"; break;
+    case YEAR  : sString = (bCapitalizeFirstLetter ? "Y" : "y"); sString += "ear"; break;
+    case MONTH : sString = (bCapitalizeFirstLetter ? "M" : "m"); sString += "onth"; break;
+    case DAY   : sString = (bCapitalizeFirstLetter ? "D" : "d"); sString += "ay"; break;
     default    : sString = "none"; break;
   };
   if (bPlural)
-    sString << "s";
+    sString += "s";
 
-  return sString.GetCString();
+  return sString.c_str();
 }
 
 /** Returns number of processors in the system. */
@@ -189,8 +189,34 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
 }
 
 /** Trims leading and trailing 't' strings from source, inplace. */
-void trim(std::string &source, const std::string &t) {
+void trimString(std::string &source, const std::string &t) {
   source.erase(0, source.find_first_not_of(t));
   source.erase(source.find_last_not_of(t)+1);
 }
 
+/** assigns formatted strng to destination */
+std::string& printString(std::string& destination, const char * format, ...) {
+  va_list varArgs;
+  va_start (varArgs, format);
+  printStringArgs(destination, varArgs, format);
+  va_end(varArgs);
+  return destination;
+}
+
+/** assigns formatted strng to destination */
+std::string& printStringArgs(std::string& destination, va_list varArgs, const char * format) {
+   try {
+     if (!format) return destination;
+
+     std::vector<char> temp;
+     // vsnprintf will calculate the required length, not including the NULL,
+     // for the format string when given a NULL pointer and a zero length as
+     // the first two parameters.
+     size_t iStringLength = vsnprintf(0, 0, format, varArgs);
+     temp.resize(iStringLength + 1);
+     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
+     destination = &temp[0];
+   }
+   catch (...) {}
+   return destination;
+}
