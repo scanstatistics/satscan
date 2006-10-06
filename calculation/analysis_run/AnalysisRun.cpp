@@ -151,15 +151,14 @@ void AnalysisRunner::CreateRelativeRiskFile() {
     header summary information is printed. File pointer does not remain open. */
 void AnalysisRunner::CreateReport() {
   macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-
   FILE       * fp=0;
-  ZdString     sStartTime;
+  std::string  sStartTime;
 
   try {
     OpenReportFile(fp, false);
     AsciiPrintFormat::PrintVersionHeader(fp);
     sStartTime = ctime(&gStartTime);
-    fprintf(fp,"\nProgram run on: %s\n", sStartTime.GetCString());
+    fprintf(fp,"\nProgram run on: %s\n", sStartTime.c_str());
     ParametersPrint(gParameters).PrintAnalysisSummary(fp);
     ParametersPrint(gParameters).PrintAdjustments(fp, gpDataHub->GetDataSetHandler());
     gpDataHub->DisplaySummary(fp, "SUMMARY OF DATA", true);
@@ -180,8 +179,6 @@ void AnalysisRunner::Execute() {
     //read data
     macroRunTimeStartSerial(SerialRunTimeComponent::DataRead);
     gpDataHub->ReadDataFromFiles();
-    //calculate expected cases
-    gpDataHub->CalculateExpectedCases();
     //validate that data set contains cases
     for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
        if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
@@ -303,7 +300,7 @@ void AnalysisRunner::FinalizeReport() {
   const char        * szMinutes = "minutes";
   const char        * szSeconds = "seconds";
   AsciiPrintFormat    PrintFormat;
-  ZdString            sBuffer;
+  std::string         buffer;
 
   try {
     gPrintDirection.Printf("Printing analysis settings to the results file...\n", BasePrint::P_STDOUT);
@@ -311,16 +308,16 @@ void AnalysisRunner::FinalizeReport() {
     PrintFormat.SetMarginsAsOverviewSection();
     if (giClustersReported && gParameters.GetNumReplicationsRequested() == 0) {
       fprintf(fp, "\n");
-      sBuffer = "Note: As the number of Monte Carlo replications was set to "
-                "zero, no hypothesis testing was done and no p-values are reported.";
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      buffer = "Note: As the number of Monte Carlo replications was set to "
+               "zero, no hypothesis testing was done and no p-values are reported.";
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
     if (giClustersReported && gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetNumReplicationsRequested() <= 98) {
       fprintf(fp, "\n");
-      sBuffer = "Note: The number of Monte Carlo replications was set too low, "
-                "and a meaningful hypothesis test cannot be done. Consequently, "
-                "no p-values are reported.";
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      buffer = "Note: The number of Monte Carlo replications was set too low, "
+               "and a meaningful hypothesis test cannot be done. Consequently, "
+               "no p-values are reported.";
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
 
     if (gParameters.GetProbabilityModelType() == POISSON)
@@ -607,7 +604,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(),  gpDataHub->GetNumMetaTracts(), j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -779,7 +776,7 @@ void AnalysisRunner::PerformCentric_Serial() {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), j + 1));
+            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), gpDataHub->GetNumMetaTracts(), j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -1052,15 +1049,15 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
 /** Prints calculated critical values to report file. */
 void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
   AsciiPrintFormat      PrintFormat;
-  ZdString              sBuffer;
+  std::string           buffer;
 
   if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19) {
     PrintFormat.SetMarginsAsOverviewSection();
     fprintf(fp,"\n");
-    sBuffer.printf("A cluster is statistically significant when its %s "
-                   "is greater than the critical value, which is, for significance level:",
-                   (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    printString(buffer, "A cluster is statistically significant when its %s "
+                        "is greater than the critical value, which is, for significance level:",
+                        (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     if (giNumSimsExecuted >= 99)
       fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
     if (giNumSimsExecuted >= 19)
@@ -1097,12 +1094,12 @@ void AnalysisRunner::PrintFindClusterHeading() {
 /** Prints power calculations status to report file. */
 void AnalysisRunner::PrintPowerCalculationsStatus(FILE* fp) {
   AsciiPrintFormat      PrintFormat;
-  ZdString              sBuffer;
+  std::string           buffer;
 
   if (gParameters.GetIsPowerCalculated() && giNumSimsExecuted) {
     fprintf(fp, "\n");
-    sBuffer = "Percentage of Monte Carlo replications with a likelihood greater than";
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    buffer = "Percentage of Monte Carlo replications with a likelihood greater than";
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(), ((double)giPower_X_Count)/giNumSimsExecuted);
     fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(), ((double)giPower_Y_Count)/giNumSimsExecuted);
   }
@@ -1111,7 +1108,7 @@ void AnalysisRunner::PrintPowerCalculationsStatus(FILE* fp) {
 /** Prints indication of whether no clusters were retained nor reported. */
 void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported) {
   AsciiPrintFormat    PrintFormat;
-  ZdString            sBuffer;
+  std::string         buffer;
 
   PrintFormat.SetMarginsAsOverviewSection();
   //if zero clusters retained in real data, then no clusters of significance were retained.
@@ -1125,49 +1122,49 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
          switch (gParameters.GetAreaScanRateType()) {
-            case HIGH       : sBuffer = "All areas scanned had either only one case or an equal or fewer number of cases than expected."; break;
-            case LOW        : sBuffer = "All areas scanned had either only one case or an equal or greater number of cases than expected."; break;
-            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or an equal cases to expected."; break;
+            case HIGH       : buffer = "All areas scanned had either only one case or an equal or fewer number of cases than expected."; break;
+            case LOW        : buffer = "All areas scanned had either only one case or an equal or greater number of cases than expected."; break;
+            case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal cases to expected."; break;
             default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       case ORDINAL :
          switch (gParameters.GetAreaScanRateType()) {
-            case HIGH       : sBuffer = "All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut-off."; break;
-            case LOW        : sBuffer = "All areas scanned had either only one case or an equal or higher number of low value cases than expected for any cut-off."; break;
-            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
+            case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut-off."; break;
+            case LOW        : buffer = "All areas scanned had either only one case or an equal or higher number of low value cases than expected for any cut-off."; break;
+            case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
             default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       case NORMAL :
          switch (gParameters.GetAreaScanRateType()) {
-            case HIGH       : sBuffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;
-            case LOW        : sBuffer = "All areas scanned had either only one case or an equal or higher mean than outside the area."; break;
-            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or an equal mean to outside the area."; break;
+            case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;
+            case LOW        : buffer = "All areas scanned had either only one case or an equal or higher mean than outside the area."; break;
+            case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal mean to outside the area."; break;
             default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       case EXPONENTIAL :
          switch (gParameters.GetAreaScanRateType()) {
-            case HIGH       : sBuffer = "All areas scanned had either only one case or equal or longer survival than outside the area."; break;
-            case LOW        : sBuffer = "All areas scanned had either only one case or equal or shorter survival than outside the area."; break;
-            case HIGHANDLOW : sBuffer = "All areas scanned had either only one case or equal survival to outside the area."; break;
+            case HIGH       : buffer = "All areas scanned had either only one case or equal or longer survival than outside the area."; break;
+            case LOW        : buffer = "All areas scanned had either only one case or equal or shorter survival than outside the area."; break;
+            case HIGHANDLOW : buffer = "All areas scanned had either only one case or equal survival to outside the area."; break;
             default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       default : ZdGenerateException("Unknown probability model '%d'.", "PrintRetainedClustersStatus()", gParameters.GetProbabilityModelType());
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   else if (!bClusterReported) {
     fprintf(fp, "\nNo clusters reported.\n");
     if (gTopClustersContainer.GetTopRankedCluster().GetRatio() < gdMinRatioToReport)
-      sBuffer.printf("All clusters had a %s less than %g.",
-                      (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
-                      gdMinRatioToReport);
+      printString(buffer, "All clusters had a %s less than %g.",
+                  (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"),
+                  gdMinRatioToReport);
     else
-      sBuffer.printf("All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      printString(buffer, "All clusters had a rank greater than %i.", gParameters.GetNumReplicationsRequested());
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
 
@@ -1272,8 +1269,8 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
       switch (giClustersReported) {
        case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
        case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n");
-       default : {ZdString s; s.printf("REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
-                  gpDataHub->DisplaySummary(fp, s.GetCString(), false);
+       default : {std::string s; printString(s, "REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
+                  gpDataHub->DisplaySummary(fp, s, false);
                   fprintf(fp, "\n");
                  }
        }
