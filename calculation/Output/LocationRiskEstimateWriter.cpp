@@ -66,11 +66,11 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
 /** Returns location identifier for tract at tTractIndex. If tTractIndex refers
     to more than one location identifier, string returned contains first
     encountered location with string "et al" concatenated. */
-ZdString & LocationRiskEstimateWriter::GetLocationId(ZdString& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const {
-  sId = DataHub.GetTInfo()->getLocations().at(tTractIndex)->getIndentifier();
-  if (DataHub.GetTInfo()->getLocations().at(tTractIndex)->getSecondaryIdentifiers().size()) {
-    if (sId.GetLength() + strlen(" et al") <= GetLocationIdentiferFieldLength(DataHub))
-      sId << " et al";
+std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const {
+  sId = DataHub.GetTInfo()->getIdentifier(tTractIndex);
+  if ((size_t)tTractIndex < DataHub.GetTInfo()->getLocations().size() && DataHub.GetTInfo()->getLocations().at(tTractIndex)->getSecondaryIdentifiers().size()) {
+    if (sId.size() + strlen(" et al") <= GetLocationIdentiferFieldLength(DataHub))
+      sId += " et al";
   }
   return sId;
 }
@@ -91,7 +91,7 @@ void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
 
 /** writes relative risk data to record and appends to internal buffer of records */
 void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanData& DataHub) {
-  ZdString              sBuffer;
+  std::string           sBuffer;
   count_t             * pCases;
   double                dExpected, dDenominator, dNumerator;
   std::vector<count_t>  vDataSetLocationPopulation;
@@ -101,16 +101,17 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
     for (size_t i=0; i < gParameters.GetNumDataSets(); ++i) {
        const RealDataSet& DataSet = DataHub.GetDataSetHandler().GetDataSet(i);
        const PopulationData& Population = DataSet.getPopulationData();
+       tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
        // first calculate populations for each location irrespective of category
-       vDataSetLocationPopulation.assign(DataHub.GetNumTracts(), 0);
+       vDataSetLocationPopulation.assign(tTotalLocations, 0);
        for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
           pCases = DataSet.getCategoryCaseData(j).GetArray()[0];
-          for (tract_t m=0; m < DataHub.GetNumTracts(); ++m)
+          for (tract_t m=0; m < tTotalLocations; ++m)
               vDataSetLocationPopulation[m] += pCases[m];
        }
        // for each category in data set, record relative risk data
-       for (tract_t t=0; t < DataHub.GetNumTracts(); ++t) {
-          GetLocationId(sBuffer, t, DataHub);
+       for (tract_t t=0; t < tTotalLocations; ++t) {
+          getLocationId(sBuffer, t, DataHub);
           for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
              pCases = DataSet.getCategoryCaseData(j).GetArray()[0];
              Record.SetAllFieldsBlank(true);
@@ -146,7 +147,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
 void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanData& DataHub) {
   unsigned int          i;
   tract_t               t;
-  ZdString              sBuffer;
+  std::string           sBuffer;
   count_t             * pCases;
   measure_t           * pMeasure, * pSqMeasure(0);
   double                dExpected, dDenominator, dNumerator;
@@ -159,9 +160,10 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
        pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
        if (gParameters.GetProbabilityModelType() == NORMAL)
          pSqMeasure = Handler.GetDataSet(i).getMeasureData_Sq().GetArray()[0];
-       for (t=0; t < DataHub.GetNumTracts(); ++t) {
+       tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+       for (t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
-          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
+          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = getLocationId(sBuffer, t, DataHub);
           if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
             Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)
@@ -200,7 +202,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
 void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
   unsigned int                  i, j;
   tract_t                       t;
-  ZdString                      sBuffer;
+  std::string                   sBuffer;
   count_t                     * pCases, ** ppCasesNC;
   std::vector<count_t>          vTemporalTractCases(DataHub.GetNumTimeIntervals());
   measure_t                   * pMeasure, ** ppMeasureNC;
@@ -215,9 +217,10 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
        pMeasure = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData().GetArray()[0];
        ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_NC().GetArray();
        ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_NC().GetArray();
-       for (t=0; t < DataHub.GetNumTracts(); ++t) {
+       tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+       for (t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
-          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = GetLocationId(sBuffer, t, DataHub);
+          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = getLocationId(sBuffer, t, DataHub);
           if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
             Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)

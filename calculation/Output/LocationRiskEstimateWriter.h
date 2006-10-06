@@ -13,7 +13,7 @@ class LocationRiskEstimateWriter : public AbstractDataFileWriter {
       static const char       * TIME_TREND_FIELD;
 
       void                      DefineFields(const CSaTScanData& DataHub);
-      ZdString                & GetLocationId(ZdString& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const;
+      std::string             & getLocationId(std::string& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const;
       void                      RecordRelativeRiskDataAsOrdinal(const CSaTScanData& DataHub);
       void                      RecordRelativeRiskDataStandard(const CSaTScanData& DataHub);
 

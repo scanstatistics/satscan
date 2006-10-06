@@ -161,12 +161,12 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
 }
 
 /** formats string for the Area ID */
-ZdString& ClusterInformationWriter::GetAreaID(ZdString& sAreaId, const CCluster& thisCluster) const {
+std::string& ClusterInformationWriter::GetAreaID(std::string& sAreaId, const CCluster& thisCluster) const {
   try {
     if (thisCluster.GetClusterType() == PURELYTEMPORALCLUSTER)
       sAreaId = "All";
     else
-      sAreaId = gDataHub.GetTInfo()->getLocations().at(thisCluster.GetMostCentralLocationIndex())->getIndentifier();
+      sAreaId = gDataHub.GetTInfo()->getIdentifier(thisCluster.GetMostCentralLocationIndex());
   }
   catch (ZdException &x) {
     x.AddCallpath("GetAreaID","ClusterInformationWriter");
@@ -211,7 +211,7 @@ void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCl
 }
 
 void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
-  ZdString          sBuffer;
+  std::string       sBuffer;
   RecordBuffer      Record(vFieldDefinitions);
   double            dObserved, dExpected, dCasesOutside, dUnbiasedVariance, dRelativeRisk;
   const DataSetHandler & Handler = gDataHub.GetDataSetHandler();
@@ -381,7 +381,6 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
 
 /** Write obvserved, expected and  observed/expected to record for ordinal data.*/
 void ClusterInformationWriter::WriteCountOrdinalData(const CCluster& theCluster, int iClusterNumber) const {
-  ZdString                                              sBuffer;
   OrdinalLikelihoodCalculator                           Calculator(gDataHub);
   std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
   std::vector<OrdinalCombinedCategory>::iterator        itrCategory;
