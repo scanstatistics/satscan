@@ -199,7 +199,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
            Application->Run();
            if ((bRunUpdate = AppToolkit::getToolkit().GetRunUpdateOnTerminate()) == true)
              sUpdateDataParameter.printf("\"%s%s\" \"%s\" %s", ExtractFilePath(Application->ExeName).c_str(),
-                                         AppToolkit::getToolkit().GetUpdateArchiveFilename().GetCString(), Application->ExeName.c_str(),
+                                         AppToolkit::getToolkit().GetUpdateArchiveFilename(), Application->ExeName.c_str(),
                                          sOmitULA_Parameter.c_str());
            __SaTScanExit();
         }
