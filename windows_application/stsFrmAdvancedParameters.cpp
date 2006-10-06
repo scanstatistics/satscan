@@ -75,6 +75,24 @@ void __fastcall TfrmAdvancedParameters::btnCaseBrowseClick(TObject *Sender) {
 //---------------------------------------------------------------------------
 /** Event triggered when user selects button to import neighbors file. A file selection
     dialog is display and if user selects a file, the file import dialog is launched. */
+void __fastcall TfrmAdvancedParameters::btnBrowseForMetaLocationsFileClick(TObject *Sender) {
+  try {
+    OpenDialog->FileName = "";
+    OpenDialog->DefaultExt = "*.rr";
+    OpenDialog->Filter = "Meta Locations files (*.meta)|*.meta|Text files (*.txt)|*.txt|All files (*.*)|*.*";
+    OpenDialog->FilterIndex = 0;
+    OpenDialog->Title = "Select Meta Locations File";
+    if (OpenDialog->Execute())
+      edtMetaLocationsFile->Text = OpenDialog->FileName;
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("btnBrowseForMetaLocationsFileClick()","TfrmAdvancedParameters");
+    DisplayBasisException(this, x);
+  }
+}
+//---------------------------------------------------------------------------
+/** Event triggered when user selects button to import neighbors file. A file selection
+    dialog is display and if user selects a file, the file import dialog is launched. */
 void __fastcall TfrmAdvancedParameters::btnBrowseForNeighborsFileClick(TObject *Sender) {
   try {
     OpenDialog->FileName = "";
@@ -464,6 +482,17 @@ void __fastcall TfrmAdvancedParameters::edtMaxTemporalClusterSizeUnitsExit(TObje
   DoControlExit();
 }
 //---------------------------------------------------------------------------
+/** event triggered when meta locations edit control changes. */
+void __fastcall TfrmAdvancedParameters::edtMetaLocationsFileChange(TObject *Sender) {
+  edtMetaLocationsFile->Hint = edtMetaLocationsFile->Text;
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
+/** event triggered when mutliple coordiantes control is clicked. */
+void __fastcall TfrmAdvancedParameters::OnMultipleCoordinatesClick(TObject *Sender) {
+  DoControlExit();
+}
+//---------------------------------------------------------------------------
 /** Event triggered when user changes the text of the neighbors filename control.
     Control hint is updated and DoControlExit(). */
 void __fastcall TfrmAdvancedParameters::edtNeighborsFileChange(TObject *Sender) {
@@ -474,6 +503,12 @@ void __fastcall TfrmAdvancedParameters::edtNeighborsFileChange(TObject *Sender) 
 /** Event triggered when TEdit for population file changes. */
 void __fastcall TfrmAdvancedParameters::edtPopFileNameChange(TObject *Sender) {
   gvPopFiles.at(lstInputDataSets->ItemIndex) = edtPopFileName->Text;
+}
+//---------------------------------------------------------------------------
+/** event triggered when year control, of prospective start date, is exited. */
+void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
+  TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);
+  DoControlExit();
 }
 //---------------------------------------------------------------------------
 /** event triggered when year control, of prospective start date, is exited. */
@@ -652,9 +687,13 @@ void TfrmAdvancedParameters::EnableNeighborsFileGroup(bool bEnable) {
    grpNeighborsFile->Enabled = bEnable;
    chkSpecifiyNeighborsFile->Enabled = bEnable;
    edtNeighborsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
-   lblNeighborsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
    edtNeighborsFile->Color = edtNeighborsFile->Enabled ? clWindow : clInactiveBorder;
    btnBrowseForNeighborsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
+
+   chkSpecifiyMetaLocationsFile->Enabled = bEnable && chkSpecifiyNeighborsFile->Checked;
+   edtMetaLocationsFile->Enabled = bEnable && chkSpecifiyMetaLocationsFile->Checked && chkSpecifiyNeighborsFile->Checked;
+   edtMetaLocationsFile->Color = edtMetaLocationsFile->Enabled ? clWindow : clInactiveBorder;
+   btnBrowseForMetaLocationsFile->Enabled =  bEnable && chkSpecifiyMetaLocationsFile->Checked && chkSpecifiyNeighborsFile->Checked;
 }
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
@@ -720,8 +759,6 @@ void TfrmAdvancedParameters::EnableRemoveButton() {
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
 void TfrmAdvancedParameters::EnableReportedSpatialOptionsGroup(bool bEnable) {
-   bEnable &= !chkSpecifiyNeighborsFile->Checked;
-
    rdgReportedSpatialOptions->Enabled = bEnable;
    chkRestrictReportedClusters->Enabled = bEnable;
 
@@ -736,11 +773,11 @@ void TfrmAdvancedParameters::EnableReportedSpatialOptionsGroup(bool bEnable) {
    edtMaxReportedSpatialPercentFile->Color = bEnable && chkRestrictReportedClusters->Checked && chkReportedSpatialPopulationFile->Checked ? clWindow : clInactiveBorder;
    lblReportedPercentageOfPopFile->Enabled = bEnable && chkRestrictReportedClusters->Checked;
 
-   chkReportedSpatialDistance->Enabled = bEnable && chkRestrictReportedClusters->Checked;
-   lblReportedMaxDistance->Enabled = bEnable && chkRestrictReportedClusters->Checked;
-   edtMaxReportedSpatialRadius->Enabled = bEnable && chkRestrictReportedClusters->Checked && chkReportedSpatialDistance->Checked;
-   edtMaxReportedSpatialRadius->Color = bEnable && chkRestrictReportedClusters->Checked && chkReportedSpatialDistance->Checked ? clWindow : clInactiveBorder;
-   lblMaxReportedRadius->Enabled = bEnable && chkRestrictReportedClusters->Checked;
+   chkReportedSpatialDistance->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked && chkRestrictReportedClusters->Checked;
+   lblReportedMaxDistance->Enabled = chkReportedSpatialDistance->Enabled && chkRestrictReportedClusters->Checked;
+   edtMaxReportedSpatialRadius->Enabled = chkReportedSpatialDistance->Enabled && chkRestrictReportedClusters->Checked && chkReportedSpatialDistance->Checked;
+   edtMaxReportedSpatialRadius->Color = chkReportedSpatialDistance->Enabled && chkRestrictReportedClusters->Checked && chkReportedSpatialDistance->Checked ? clWindow : clInactiveBorder;
+   lblMaxReportedRadius->Enabled = chkReportedSpatialDistance->Enabled && chkRestrictReportedClusters->Checked;
 }
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableIterativeScanOptionsGroup(bool bEnable) {
@@ -843,13 +880,11 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
 void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnableIncludePurelyTemporal) {
-   bEnable &= !chkSpecifiyNeighborsFile->Checked;
-
    rdgSpatialOptions->Enabled = bEnable;
 
    bool bEnablePopPercentage = !(gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME &&
-                                 chkAdjustForEarlierAnalyses->Enabled && chkAdjustForEarlierAnalyses->Checked); 
-   
+                                 chkAdjustForEarlierAnalyses->Enabled && chkAdjustForEarlierAnalyses->Checked);
+
    edtMaxSpatialClusterSize->Enabled = bEnable && bEnablePopPercentage;
    edtMaxSpatialClusterSize->Color = bEnable && bEnablePopPercentage ? clWindow : clInactiveBorder;
    lblPercentOfPopulation->Enabled = bEnable && bEnablePopPercentage;
@@ -863,11 +898,11 @@ void TfrmAdvancedParameters::EnableSpatialOptionsGroup(bool bEnable, bool bEnabl
    btnBrowseMaxCirclePopFile->Enabled = bEnable;
    btnImportMaxCirclePopFile->Enabled = bEnable;
 
-   chkSpatialDistance->Enabled = bEnable;
-   edtMaxSpatialRadius->Enabled = bEnable && chkSpatialDistance->Checked;
-   edtMaxSpatialRadius->Color = bEnable && chkSpatialDistance->Checked ? clWindow : clInactiveBorder;
-   lblDistancePrefix->Enabled = bEnable;
-   lblMaxRadius->Enabled = bEnable;
+   chkSpatialDistance->Enabled = bEnable && !chkSpecifiyNeighborsFile->Checked;
+   edtMaxSpatialRadius->Enabled = chkSpatialDistance->Enabled && chkSpatialDistance->Checked;
+   edtMaxSpatialRadius->Color = chkSpatialDistance->Enabled && chkSpatialDistance->Checked ? clWindow : clInactiveBorder;
+   lblDistancePrefix->Enabled = chkSpatialDistance->Enabled;
+   lblMaxRadius->Enabled = chkSpatialDistance->Enabled;
 
    chkInclPureTempClust->Enabled = bEnable && bEnableIncludePurelyTemporal;
    EnableReportedSpatialOptionsGroup(bEnable);
@@ -917,6 +952,7 @@ void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
 }
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableMultipleLocationsGroup(bool bEnable) {
+  bEnable &= !chkSpecifiyNeighborsFile->Checked;
   gpMultipleCoordinates->Enabled = bEnable;
   rdoOnePerLocationId->Enabled = bEnable;
   rdoAtLeastOne->Enabled = bEnable;
@@ -1015,6 +1051,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (chkInclPureTempClust->Checked == false);
    bReturn &= (rdoCircular->Checked == true);
    bReturn &= (cmbNonCompactnessPenalty->ItemIndex == 1);
+   bReturn &= (rdoOnePerLocationId->Checked == true);
 
    // Temporal tab
    bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
@@ -1058,6 +1095,8 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bReturn &= (rdoStrictCoordinates->Checked == true);
    bReturn &= (chkSpecifiyNeighborsFile->Checked == false);
    bReturn &= (edtNeighborsFile->Text == "");
+   bReturn &= (chkSpecifiyMetaLocationsFile->Checked == false);
+   bReturn &= (edtMetaLocationsFile->Text == "");
 
    return bReturn;
 }
@@ -1328,17 +1367,19 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   try {
     ref.UseLocationNeighborsFile(chkSpecifiyNeighborsFile->Checked);
     ref.SetLocationNeighborsFileName(edtNeighborsFile->Text.c_str());
+    ref.UseMetaLocationsFile(chkSpecifiyMetaLocationsFile->Checked);
+    ref.setMetaLocationsFilename(edtMetaLocationsFile->Text.c_str());
     ref.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, GetMaxSpatialClusterSizeFromControl(PERCENTOFPOPULATION), false);
     ref.SetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, GetMaxSpatialClusterSizeFromControl(PERCENTOFMAXCIRCLEFILE), false);
-    ref.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, chkSpatialPopulationFile->Checked, false);
+    ref.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, chkSpatialPopulationFile->Enabled && chkSpatialPopulationFile->Checked, false);
     ref.SetMaxSpatialSizeForType(MAXDISTANCE, GetMaxSpatialClusterSizeFromControl(MAXDISTANCE), false);
-    ref.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, chkSpatialDistance->Checked, false);
+    ref.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, chkSpatialDistance->Enabled && chkSpatialDistance->Checked, false);
     ref.SetRestrictReportedClusters(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked);
     ref.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, GetMaxReportedSpatialClusterSizeFromControl(PERCENTOFPOPULATION), true);
     ref.SetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, GetMaxReportedSpatialClusterSizeFromControl(PERCENTOFMAXCIRCLEFILE), true);
-    ref.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, chkReportedSpatialPopulationFile->Checked, true);
+    ref.SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, chkReportedSpatialPopulationFile->Enabled && chkReportedSpatialPopulationFile->Checked, true);
     ref.SetMaxSpatialSizeForType(MAXDISTANCE, GetMaxReportedSpatialClusterSizeFromControl(MAXDISTANCE), true);
-    ref.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, chkReportedSpatialDistance->Checked, true);
+    ref.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, chkReportedSpatialDistance->Enabled && chkReportedSpatialDistance->Checked, true);
 
     ref.SetIterativeCutOffPValue(edtIterativeScanCutoff->Text.ToDouble());
     ref.SetIterativeScanning(chkPerformIterativeScan->Enabled && chkPerformIterativeScan->Checked);
@@ -1449,6 +1490,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    chkInclPureTempClust->Checked = false;
    rdoCircular->Checked = true;
    cmbNonCompactnessPenalty->ItemIndex = 1;
+   rdoOnePerLocationId->Checked = true;
    SetSpatialDistanceCaption();
 
    // Temporal tab
@@ -1497,6 +1539,8 @@ void TfrmAdvancedParameters::SetDefaultsForInputTab() {
 
    chkSpecifiyNeighborsFile->Checked = false;
    edtNeighborsFile->Text = "";
+   chkSpecifiyMetaLocationsFile->Checked = false;
+   edtMetaLocationsFile->Text = "";
 }
 //---------------------------------------------------------------------------
 /** Sets default values for Output related tab and respective controls
@@ -1665,6 +1709,7 @@ void TfrmAdvancedParameters::Setup() {
       rdoElliptic->Checked = ref.GetSpatialWindowType() == ELLIPTIC;
       cmbNonCompactnessPenalty->ItemIndex = ref.GetNonCompactnessPenaltyType();
       SetSpatialDistanceCaption();
+      SetMultipleCoordinatesType(ref.GetMultipleCoordinatesType());
 
       // Temporal tab
       SetMaxTemporalClusterSizeTypeControl(ref.GetMaximumTemporalClusterSizeType());
@@ -1728,7 +1773,8 @@ void TfrmAdvancedParameters::Setup() {
       // Neighbors Tab
       chkSpecifiyNeighborsFile->Checked = ref.UseLocationNeighborsFile();
       edtNeighborsFile->Text = ref.GetLocationNeighborsFileName().c_str();
-      SetMultipleCoordinatesType(ref.GetMultipleCoordinatesType());
+      chkSpecifiyMetaLocationsFile->Checked = ref.UseMetaLocationsFile();
+      edtMetaLocationsFile->Text = ref.getMetaLocationsFilename().c_str();
     }
     catch (ZdException &x) {
       x.AddCallpath("Setup()","TfrmAdvancedParameters");
@@ -1943,6 +1989,16 @@ void TfrmAdvancedParameters::ValidateNeighborsFileSettings() {
                             "valid and that you have permissions to read from\nthis directory and file.",
                             "ValidateNeighborsFileSettings()",*edtNeighborsFile, INPUT_TABS);
     }
+    if (grpNeighborsFile->Enabled && chkSpecifiyMetaLocationsFile->Enabled && chkSpecifiyMetaLocationsFile->Checked) {
+      //validate the case file for this dataset
+      if (edtMetaLocationsFile->Text.IsEmpty())
+        GenerateAFException("Please specify a meta locations file.", "ValidateNeighborsFileSettings()",*edtMetaLocationsFile, INPUT_TABS);
+      if (!ValidateFileAccess(edtMetaLocationsFile->Text.c_str()))
+        GenerateAFException("The meta locations file could not be opened for reading.\n"
+                            "Please confirm that the path and/or file name are\n"
+                            "valid and that you have permissions to read from\nthis directory and file.",
+                            "ValidateNeighborsFileSettings()",*edtMetaLocationsFile, INPUT_TABS);
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateNeighborsFileSettings()", "TfrmAdvancedParameters");
@@ -1992,16 +2048,24 @@ void TfrmAdvancedParameters::ValidateProspDateRange() {
 /** validates reported clusters limiting control setting - throws exception */
 void TfrmAdvancedParameters::ValidateReportedSpatialClusterSize() {
   try {
-    //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
-    //as percentage of max circle population or as a distance.
-    if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Enabled &&
-        chkAdjustForEarlierAnalyses->Checked && chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked &&
-        !chkReportedSpatialPopulationFile->Checked && !chkReportedSpatialDistance->Checked)
-      GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
-                          "cluster size must be defined as a percentage of the population as defined in a max\n"
-                          "circle size file.\n"
-                          "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
-                          "max circle size file is not required.\n", "ValidateReportedSpatialClusterSize()", *chkReportedSpatialPopulationFile, ANALYSIS_TABS);
+    if (!(chkRestrictReportedClusters->Enabled && chkRestrictReportedClusters->Checked)) return;
+    //When analysis type is prospective space-time, adjusting for earlier analyses and using neighbors file - max spatial size must be defined
+    //as percentage of max circle population.
+    if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Enabled && chkAdjustForEarlierAnalyses->Checked) {
+       if (!chkReportedSpatialPopulationFile->Checked && chkSpecifiyNeighborsFile->Enabled && chkSpecifiyNeighborsFile->Checked)
+         GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses and defining\n"
+                             "non-eucledian neighbors, the maximum reported spatial cluster size must be defined\n"
+                             "as a percentage of the population as defined in a max circle size file.\n",
+                             "ValidateReportedSpatialClusterSize()", *chkReportedSpatialPopulationFile, ANALYSIS_TABS);
+       //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
+       //as percentage of max circle population or as a distance.
+       else if (!chkReportedSpatialPopulationFile->Checked && !chkReportedSpatialDistance->Checked)
+         GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses, the maximum\n"
+                             "reported spatial cluster size must be defined as a percentage of the population\n"
+                             "as defined in a max circle size file.\n"
+                             "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
+                             "max circle size file is not required.\n", "ValidateReportedSpatialClusterSize()", *chkReportedSpatialPopulationFile, ANALYSIS_TABS);
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateReportedSpatialClusterSize()","TfrmAdvancedParameters");
@@ -2084,15 +2148,23 @@ void TfrmAdvancedParameters::ValidateSpatialClusterSize() {
                           "A maximum circle file is required when restricting the maximum\n"
                           "reported spatial cluster size by a population defined through a\n"
                           "maximum circle file.","ValidateSpatialClusterSize()", *edtMaxCirclePopulationFilename, ANALYSIS_TABS);
-    //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
-    //as percentage of max circle population or as a distance.
-    if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Enabled &&
-        chkAdjustForEarlierAnalyses->Checked && !chkSpatialPopulationFile->Checked && !chkSpatialDistance->Checked)
-      GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
-                          "cluster size must be defined as a percentage of the population as defined in a max\n"
-                          "circle size file.\n"
-                          "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
-                          "max circle size file is not required.\n", "ValidateSpatialClusterSize()", *chkSpatialPopulationFile, ANALYSIS_TABS);
+    //When analysis type is prospective space-time, adjusting for earlier analyses and using neighbors file - max spatial size must be defined
+    //as percentage of max circle population.
+    if (gAnalysisSettings.GetAnalysisControlType() == PROSPECTIVESPACETIME && chkAdjustForEarlierAnalyses->Enabled && chkAdjustForEarlierAnalyses->Checked) {
+      if (!chkSpatialPopulationFile->Checked && chkSpecifiyNeighborsFile->Enabled && chkSpecifiyNeighborsFile->Checked)
+        GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses and defining\n"
+                            "non-eucledian neighbors, the maximum spatial cluster size must be defined as a\n"
+                            "percentage of the population as defined in a max circle size file.\n",
+                            "ValidateSpatialClusterSize()", *chkSpatialPopulationFile, ANALYSIS_TABS);
+       //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
+       //as percentage of max circle population or as a distance.
+       else if (!chkSpatialPopulationFile->Checked && !chkSpatialDistance->Checked)
+         GenerateAFException("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n"
+                             "cluster size must be defined as a percentage of the population as defined in a max\n"
+                             "circle size file.\n"
+                             "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n"
+                             "max circle size file is not required.\n", "ValidateSpatialClusterSize()", *chkSpatialPopulationFile, ANALYSIS_TABS);
+    }
   }
   catch (ZdException & x) {
     x.AddCallpath("ValidateSpatialClusterSize()","TfrmAdvancedParameters");
@@ -2101,7 +2173,7 @@ void TfrmAdvancedParameters::ValidateSpatialClusterSize() {
 }
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
-  ZdString      sErrorMessage, sPrecisionString;
+  std::string   sErrorMessage, sPrecisionString;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
@@ -2114,22 +2186,22 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
         GenerateAFException("Please specify a maximum temporal cluster size.","ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
       //check maximum temporal cluster size(as percentage of population) is less than maximum for given probability model
       if (edtMaxTemporalClusterSize->Text.ToDouble() > (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90)) {
-        sErrorMessage.printf("For the %s model, the maximum temporal cluster size as a percent of the study period is %d percent.",
-                             gAnalysisSettings.GetModelControlTypeName().c_str(),
-                             (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90));
-        GenerateAFException(sErrorMessage.GetCString(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
+        printString(sErrorMessage, "For the %s model, the maximum temporal cluster size as a percent of the study period is %d percent.",
+                                   gAnalysisSettings.GetModelControlTypeName().c_str(),
+                                  (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90));
+        GenerateAFException(sErrorMessage.c_str(), "ValidateTemporalClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
       }
       //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
       dStudyPeriodLengthInUnits = gAnalysisSettings.CalculateTimeAggregationUnitsInStudyPeriod();
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * edtMaxTemporalClusterSize->Text.ToDouble()/100.0);
       if (dMaxTemporalLengthInUnits < 1) {
         GetDatePrecisionAsString(gAnalysisSettings.GetTimeAggregationControlType(), sPrecisionString, false, false);
-        sErrorMessage.printf("A maximum temporal cluster size as %g percent of a %d %s study period\n"
-                             "results in a maximum temporal cluster size that is less than one time\n"
-                             "aggregation %s.\n", edtMaxTemporalClusterSize->Text.ToDouble(),
-                             static_cast<int>(dStudyPeriodLengthInUnits),
-                             sPrecisionString.GetCString(), sPrecisionString.GetCString());
-        GenerateAFException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
+        printString(sErrorMessage, "A maximum temporal cluster size as %g percent of a %d %s study period\n"
+                                   "results in a maximum temporal cluster size that is less than one time\n"
+                                   "aggregation %s.\n", edtMaxTemporalClusterSize->Text.ToDouble(),
+                                   static_cast<int>(dStudyPeriodLengthInUnits),
+                                   sPrecisionString.c_str(), sPrecisionString.c_str());
+        GenerateAFException(sErrorMessage.c_str(), "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSize, ANALYSIS_TABS);
       }
     }
     else if (GetMaxTemporalClusterSizeControlType() == TIMETYPE) {
@@ -2139,15 +2211,15 @@ void TfrmAdvancedParameters::ValidateTemporalClusterSize() {
       dStudyPeriodLengthInUnits = gAnalysisSettings.CalculateTimeAggregationUnitsInStudyPeriod();
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
       if (edtMaxTemporalClusterSizeUnits->Text.ToDouble() > dMaxTemporalLengthInUnits) {
-        sErrorMessage.printf("A maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period.\n"
-                             "Note that current settings limit the maximum to %d %s%s.",
-                             edtMaxTemporalClusterSizeUnits->Text.ToInt(), sPrecisionString.GetCString(),
-                             (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1 ? "" : "s"),
-                             (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90),
-                             static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
-                             static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.GetCString(),
-                             (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
-        GenerateAFException(sErrorMessage.GetCString(), "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
+        printString(sErrorMessage, "A maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period.\n"
+                                   "Note that current settings limit the maximum to %d %s%s.",
+                                   edtMaxTemporalClusterSizeUnits->Text.ToInt(), sPrecisionString.c_str(),
+                                   (edtMaxTemporalClusterSizeUnits->Text.ToInt() == 1 ? "" : "s"),
+                                   (gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION ? 50 : 90),
+                                   static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(),
+                                   static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(),
+                                  (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
+        GenerateAFException(sErrorMessage.c_str(), "ValidateTemoralClusterSize()", *edtMaxTemporalClusterSizeUnits, ANALYSIS_TABS);
       }
     }
     else
@@ -2206,12 +2278,4 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   throw theException;
 }
 //---------------------------------------------------------------------------
-/** event triggered when year control, of prospective start date, is exited. */
-void __fastcall TfrmAdvancedParameters::edtProspectiveStartDateExit(TObject *Sender) {
-  TfrmAnalysis::ValidateDate(*edtProspectiveStartDateYear, *edtProspectiveStartDateMonth, *edtProspectiveStartDateDay);
-  DoControlExit();
-}
-//---------------------------------------------------------------------------
-
-
 

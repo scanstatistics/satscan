@@ -429,21 +429,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 421
-        Height = 93
+        Height = 125
         Caption = 'Special Neighbor File'
         TabOrder = 0
-        object lblNeighborsFile: TLabel
-          Left = 30
-          Top = 45
-          Width = 70
-          Height = 13
-          Anchors = []
-          Caption = 'Neighbors File:'
-        end
         object edtNeighborsFile: TEdit
           Left = 30
-          Top = 60
-          Width = 320
+          Top = 44
+          Width = 353
           Height = 21
           ParentShowHint = False
           ShowHint = True
@@ -452,8 +444,8 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnExit = OnControlExit
         end
         object btnBrowseForNeighborsFile: TButton
-          Left = 356
-          Top = 60
+          Left = 388
+          Top = 44
           Width = 23
           Height = 22
           Hint = 'Browse for neighbors file ...'
@@ -470,13 +462,51 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           OnClick = btnBrowseForNeighborsFileClick
         end
         object chkSpecifiyNeighborsFile: TCheckBox
-          Left = 12
+          Left = 8
           Top = 21
           Width = 389
           Height = 17
           Caption = 'Specify geographical neighbors through a user defined file'
           TabOrder = 0
           OnClick = chkSpecifiyNeighborsFileClick
+        end
+        object chkSpecifiyMetaLocationsFile: TCheckBox
+          Left = 8
+          Top = 71
+          Width = 389
+          Height = 17
+          Caption = 'Specify geographical meta locations through a user defined file'
+          TabOrder = 3
+          OnClick = chkSpecifiyNeighborsFileClick
+        end
+        object edtMetaLocationsFile: TEdit
+          Left = 30
+          Top = 90
+          Width = 353
+          Height = 21
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 4
+          OnChange = edtMetaLocationsFileChange
+          OnExit = OnControlExit
+        end
+        object btnBrowseForMetaLocationsFile: TButton
+          Left = 388
+          Top = 90
+          Width = 23
+          Height = 22
+          Hint = 'Browse for meta locations file ...'
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btnBrowseForMetaLocationsFileClick
         end
       end
     end
@@ -701,6 +731,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Height = 17
           Caption = 'Allow only one coordinate location per location ID.'
           TabOrder = 0
+          OnClick = OnMultipleCoordinatesClick
         end
         object rdoAllLocations: TRadioButton
           Left = 8
@@ -711,6 +742,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             'Include location in the scanning window if all coordinate locati' +
             'ons are in '
           TabOrder = 1
+          OnClick = OnMultipleCoordinatesClick
         end
         object rdoAtLeastOne: TRadioButton
           Left = 8
@@ -721,12 +753,13 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             'Include location in the scanning window if at least one coordina' +
             'te location '
           TabOrder = 2
+          OnClick = OnMultipleCoordinatesClick
         end
         object stAtLeastOne: TStaticText
           Left = 23
           Top = 52
           Width = 74
-          Height = 15
+          Height = 17
           Caption = ' is in the circle.'
           TabOrder = 3
         end
@@ -734,7 +767,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Left = 26
           Top = 87
           Width = 50
-          Height = 14
+          Height = 17
           Caption = 'the circle.'
           TabOrder = 4
         end

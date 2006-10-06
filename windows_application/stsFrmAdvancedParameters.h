@@ -144,16 +144,18 @@ __published:	// IDE-managed Components
    TLabel *lblReportedMaxDistance;
    TTabSheet *tabNeighborsFile;
    TGroupBox *grpNeighborsFile;
-   TLabel *lblNeighborsFile;
    TEdit *edtNeighborsFile;
    TButton *btnBrowseForNeighborsFile;
    TCheckBox *chkSpecifiyNeighborsFile;
-        TGroupBox *gpMultipleCoordinates;
-        TRadioButton *rdoOnePerLocationId;
-        TRadioButton *rdoAllLocations;
-        TRadioButton *rdoAtLeastOne;
-        TStaticText *stAtLeastOne;
-        TStaticText *stAllLocations;
+   TGroupBox *gpMultipleCoordinates;
+   TRadioButton *rdoOnePerLocationId;
+   TRadioButton *rdoAllLocations;
+   TRadioButton *rdoAtLeastOne;
+   TStaticText *stAtLeastOne;
+   TStaticText *stAllLocations;
+   TCheckBox *chkSpecifiyMetaLocationsFile;
+   TEdit *edtMetaLocationsFile;
+   TButton *btnBrowseForMetaLocationsFile;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -216,6 +218,9 @@ __published:	// IDE-managed Components
    void __fastcall edtNeighborsFileChange(TObject *Sender);
    void __fastcall btnBrowseForNeighborsFileClick(TObject *Sender);
    void __fastcall edtProspectiveStartDateExit(TObject *Sender);
+   void __fastcall edtMetaLocationsFileChange(TObject *Sender);
+   void __fastcall btnBrowseForMetaLocationsFileClick(TObject *Sender);
+   void __fastcall OnMultipleCoordinatesClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
