@@ -111,8 +111,10 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case USE_MAXGEOPOPFILE_REPORTED: return "Restrict maximum reported spatial size - max circle file (line 88)";
       case USE_MAXGEODISTANCE_REPORTED : return "Restrict maximum reported spatial size - distance (line 89)";
       case LOCATION_NEIGHBORS_FILE   : return "Location neighbors filename (line 90)";
-      case USE_LOCATION_NEIGHBORS_FILE  : return "Use location neighbors file (line 91)";
+      case USE_LOCATION_NEIGHBORS_FILE : return "Use location neighbors file (line 91)";
       case MULTIPLE_COORDINATES_TYPE : return "Multiple Coordinates Type (line 92)";
+      case META_LOCATIONS_FILE       : return "Meta locations filename (line 93)";
+      case USE_META_LOCATIONS_FILE   : return "Use meta locations file (line 94)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
@@ -126,15 +128,18 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
 /** Read scanning line version of parameter file. */
 bool ScanLineParameterFileAccess::Read(const char* sFileName) {
   bool          bEOF=false;
-  int           iPos, iLinesRead=0;
-  ZdIO          ParametersFile;
-  ZdString      sLineBuffer;
+  size_t        iPos, iLinesRead=0;
+  std::ifstream SourceFile;
+  std::string   sLineBuffer;
 
   try {
     gvParametersMissingDefaulted.clear();
     gbReadStatusError = false;
-  
-    ParametersFile.Open(sFileName, ZDIO_OPEN_READ);
+
+    SourceFile.open(sFileName);
+    if (!SourceFile)
+      GenerateResolvableException("Error: Could not open file:\n'%s'.\n", "Read()", sFileName);
+
     gParameters.SetSourceFileName(sFileName);
     gParameters.SetAsDefaulted();
 
@@ -142,8 +147,8 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
     CParameters::CreationVersion Version = {2, 1, 3};
     gParameters.SetVersion(Version);
 
-    while (iLinesRead < gParameters.GetNumReadParameters() && !bEOF) {
-         bEOF = !ParametersFile.ReadLine(sLineBuffer);
+    while (iLinesRead < (size_t)gParameters.GetNumReadParameters() && !bEOF) {
+         bEOF = !std::getline(SourceFile, sLineBuffer);
          if (!bEOF) {
            ++iLinesRead;
            //Pre-process parameters that have descriptions, strip decription off.
@@ -152,11 +157,11 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
                 (ParameterType)iLinesRead == GRIDFILE || (ParameterType)iLinesRead == CONTROLFILE ||
                 (ParameterType)iLinesRead == MAXCIRCLEPOPFILE || (ParameterType)iLinesRead == SIMULATION_SOURCEFILE ||
                 (ParameterType)iLinesRead == SIMULATION_DATA_OUTFILE || (ParameterType)iLinesRead == ADJ_BY_RR_FILE ||
-                (ParameterType)iLinesRead == LOCATION_NEIGHBORS_FILE)) {
-              if ((iPos = sLineBuffer.Find("//")) > -1)
-                sLineBuffer.Truncate(iPos);
+                (ParameterType)iLinesRead == LOCATION_NEIGHBORS_FILE || (ParameterType)iLinesRead == META_LOCATIONS_FILE)) {
+              if ((iPos = sLineBuffer.find("//")) != sLineBuffer.npos)
+                sLineBuffer.resize(iPos);
            }
-           sLineBuffer.Deblank();
+           trimString(sLineBuffer);
            SetParameter((ParameterType)iLinesRead, sLineBuffer, gPrintDirection);
          }
     }
@@ -208,7 +213,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
 /** Write parameters to file - not implemented for multiple data sets. */
 void ScanLineParameterFileAccess::Write(const char * sFilename) {
   std::ofstream parameters;
-  ZdString      s, c;
+  std::string   s, c;
   unsigned int  iLen;
 
   try {
@@ -221,21 +226,21 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
       GenerateResolvableException("Error: Could not open parameter file '%s' for write.\n", "Write()", sFilename);
 
     for (int eParameterType=ANALYSISTYPE; eParameterType <= gParameters.giNumParameters; ++eParameterType) {
-       parameters << GetParameterString((ParameterType)eParameterType, s).GetCString();
+       parameters << GetParameterString((ParameterType)eParameterType, s).c_str();
        //Don't write comment string for parameters which specify filenames -- problem for read
        if (!((ParameterType)eParameterType == CASEFILE || (ParameterType)eParameterType == POPFILE ||
              (ParameterType)eParameterType == COORDFILE || (ParameterType)eParameterType == OUTPUTFILE ||
              (ParameterType)eParameterType == GRIDFILE || (ParameterType)eParameterType == CONTROLFILE ||
              (ParameterType)eParameterType == MAXCIRCLEPOPFILE || (ParameterType)eParameterType == SIMULATION_SOURCEFILE ||
              (ParameterType)eParameterType == SIMULATION_DATA_OUTFILE || (ParameterType)eParameterType == ADJ_BY_RR_FILE ||
-             (ParameterType)eParameterType == LOCATION_NEIGHBORS_FILE)) {
-          iLen = s.GetLength();
+             (ParameterType)eParameterType == LOCATION_NEIGHBORS_FILE || (ParameterType)eParameterType == META_LOCATIONS_FILE)) {
+          iLen = s.size();
           while (++iLen < 30) parameters << ' ';
           //older versions of SaTScan limited each line to 150 characters - so print just enough of comment
           //to get idea what is it.
           c = GetParameterComment((ParameterType)eParameterType);
-          c.Truncate(std::min(c.GetLength(), (unsigned long)50));
-          parameters << "   // " << c.GetCString();
+          c.resize(std::min(c.size(), (size_t)50));
+          parameters << "   // " << c.c_str();
         }
        parameters << std::endl;
     }
