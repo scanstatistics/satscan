@@ -9,6 +9,8 @@
 #include "NormalRandomizer.h"
 #include "ExponentialDataSetHandler.h"
 #include "ParametersPrint.h"
+#include <boost/dynamic_bitset.hpp>
+#include "MetaTractManager.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -106,15 +108,15 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_
      pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
      //if measure has been adjusted to zero, check that cases adjusted interval are also zero
      if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(ppCases, interval, Tract)) {
-       ZdString         sStart, sEnd;
+       std::string  sStart, sEnd;
        GenerateResolvableException("Error: For locationID '%s', you have adjusted the expected number\n"
                                    "       of cases in the period %s to %s to be zero, but there\n"
                                    "       are cases in that interval.\n"
                                    "       If the expected is zero, the number of cases must also be zero.\n",
                                    "AdjustMeasure()",
                                    (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier()),
-                                   JulianToString(sStart, StartDate).GetCString(),
-                                   JulianToString(sEnd, EndDate).GetCString());
+                                   JulianToString(sStart, StartDate).c_str(),
+                                   JulianToString(sEnd, EndDate).c_str());
        return false;
      }
   }
@@ -150,7 +152,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     to zero. */
 void CSaTScanData::AllocateSortedArray() {
   try {
-    if (m_nTracts < std::numeric_limits<unsigned short>::max()) {
+    if (m_nTracts + (tract_t)(gTractHandler->getMetaLocations().getLocations().size()) < std::numeric_limits<unsigned short>::max()) {
       if (!gpSortedUShortHandler)
         gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
       else
@@ -184,6 +186,18 @@ void CSaTScanData::AllocateSortedArray() {
   }
 }
 
+/** Set the number of neighbors about ellipse/circle at centroid index. Care must be taken
+    when calling this function since it sets the variables which detail the size of the sorted arrays.*/
+void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
+  //update neighbor array(s) for number of calculated neighbors
+  if (!gpNeighborCountHandler)
+    ZdGenerateException("Neighbor array not allocated.","setNeighborCounts()");
+
+  if (gpReportedNeighborCountHandler)
+    gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumReportedNeighbors;
+  gpNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumMaximumNeighbors;
+}
+
 /** Allocates third dimension of sorted at 'array[iEllipseIndex][iCentroidIndex]'
     to length specifed by variable 'iNumMaximumNeighbors'; assigning locations indexes
     as detailed by 'vOrderLocations' variable. Sets multi-dimension arrays which detail
@@ -210,11 +224,7 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
       ZdGenerateException("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
 
     //update neighbor array(s) for number of calculated neighbors
-    if (!gpNeighborCountHandler)
-      ZdGenerateException("Neighbor array not allocated.","AllocateSortedArrayNeighbors()");
-    gpNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumMaximumNeighbors;
-    if (gpReportedNeighborCountHandler)
-      gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumReportedNeighbors;
+    setNeighborCounts(iEllipseIndex, iCentroidIndex, iNumReportedNeighbors, iNumMaximumNeighbors);
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
@@ -246,9 +256,7 @@ void CSaTScanData::AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const st
       ZdGenerateException("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
 
     //update neighbor array(s) for number of calculated neighbors
-    if (!gpNeighborCountHandler)
-      ZdGenerateException("Neighbor array not allocated.","AllocateSortedArrayNeighbors()");
-    gpNeighborCountHandler->GetArray()[0][iCentroidIndex] = vLocations.size();
+    setNeighborCounts(0, iCentroidIndex, 0, vLocations.size());
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
@@ -417,8 +425,7 @@ measure_t CSaTScanData::DateMeasure(const PopulationData & Population, measure_t
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 void CSaTScanData::FindNeighbors() {
   try {
-    if (!gParameters.UseLocationNeighborsFile())
-      CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
+    CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
   }
   catch (ZdException &x) {
     x.AddCallpath("FindNeighbors()","CSaTScanData");
@@ -564,6 +571,9 @@ void CSaTScanData::ReadDataFromFiles() {
     SaTScanDataReader(*this).Read();
     if (gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION || gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
       std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
+    CalculateExpectedCases();
+    if (gParameters.UseMetaLocationsFile())
+      gDataSets->assignMetaLocationData(gDataSets->getDataSets());
   }
   catch (ZdException & x) {
     x.AddCallpath("ReadDataFromFiles()","CSaTScanData");
@@ -571,12 +581,10 @@ void CSaTScanData::ReadDataFromFiles() {
   }
 }
 
-/** Removes all cases/controls from data sets, geographically and temporally, for
-    location at tTractIndex in specified interval range. */
+/** Removes all cases/controls/measure from data sets, geographically and temporally, for passed cluster object. */
 void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
-  count_t       tCasesInInterval, ** ppCases;
-  measure_t     tCalibration, tAdjustedTotalMeasure, tMeasureInInterval, ** ppMeasure , ** ppSqMeasure, tSqMeasureInInterval;
-  tract_t       tStopTract(0), tTractIndex(-1), iNeighborIndex=0;
+  tract_t               tStopTract(0), tTractIndex(-1), iNeighborIndex=0;
+  std::vector<tract_t>  atomicIndexes;
 
   try {
     if (Cluster.GetClusterType() == SPACETIMECLUSTER)
@@ -588,6 +596,92 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
        if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && GetIsNullifiedLocation(tTractIndex))
          continue;
+       if (tTractIndex < m_nTracts)
+         RemoveTractSignificance(Cluster, tTractIndex);
+       else {//tract is a meta location
+         gTractHandler->getMetaLocations().getAtomicIndexes(tTractIndex - m_nTracts, atomicIndexes);
+         for (size_t a=0; a < atomicIndexes.size(); ++a) {
+           if (!GetIsNullifiedLocation(atomicIndexes[a]))
+             RemoveTractSignificance(Cluster, atomicIndexes[a]);
+         }
+       }
+    }
+
+    //now update data sets as needed, given all cluster data has now been removed
+    if (gParameters.GetProbabilityModelType() == POISSON) {
+      //recalibrate the measure array to equal expected cases
+      gtTotalMeasure = 0;
+      for (size_t d=0; d < gDataSets->GetNumDataSets(); ++d) {
+         RealDataSet& DataSet = gDataSets->GetDataSet(d);
+         measure_t tAdjustedTotalMeasure=0;
+         measure_t tCalibration = (measure_t)(DataSet.getTotalCases())/(DataSet.getTotalMeasure());
+         measure_t ** ppMeasure = DataSet.getMeasureData().GetArray();
+         for (int i=0; i < m_nTimeIntervals-1; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
+         for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[m_nTimeIntervals - 1][t] *= tCalibration;
+         DataSet.setMeasureDataToCumulative();
+         for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
+         gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
+         gtTotalMeasure += tAdjustedTotalMeasure;
+      }
+    }
+    if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
+      //recalibrate the measure to equal expected cases
+      AbstractExponentialRandomizer *pRandomizer;
+      gtTotalCases = 0;
+      gtTotalMeasure = 0;
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+         RealDataSet& DataSet = gDataSets->GetDataSet(t);
+         if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+           ZdGenerateException("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
+         pRandomizer->AssignFromAttributes(DataSet);
+         gtTotalCases += DataSet.getTotalCases();
+         gtTotalMeasure += DataSet.getTotalMeasure();
+      }
+    }
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
+      //recalculate the data set cases/measure given updated randomizer data
+      AbstractNormalRandomizer *pRandomizer;
+      gtTotalCases=0;
+      gtTotalMeasure=gtTotalMeasureSq=0;
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+        RealDataSet& DataSet = gDataSets->GetDataSet(t);
+        if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+          ZdGenerateException("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+        pRandomizer->AssignFromAttributes(DataSet);
+        //update class variables that defines totals across all data sets
+        gtTotalCases += DataSet.getTotalCases();
+        gtTotalMeasure += DataSet.getTotalMeasure();
+        gtTotalMeasureSq += DataSet.getTotalMeasureSq();
+      }
+    }
+    //now recalculate purely temporal arrays as needed
+    if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
+      switch (gParameters.GetProbabilityModelType()) {
+       case NORMAL      : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Sq));
+       case EXPONENTIAL :
+       case BERNOULLI   :
+       case POISSON     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
+                          std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
+       case ORDINAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
+       default : ZdGenerateException("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
+      }
+    }
+    //now recalculate meta data as needed
+    if (gParameters.UseMetaLocationsFile())
+      gDataSets->assignMetaLocationData(gDataSets->getDataSets());
+  }
+  catch (ZdException & x) {
+    x.AddCallpath("RemoveClusterSignificance()", "CSaTScanData");
+    throw;
+  }
+}
+
+/** Removes all cases/controls/measure from data sets, geographically and temporally, for
+    location at tTractIndex in specified interval range. */
+void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex) {
+  count_t       tCasesInInterval, ** ppCases;
+  measure_t     tCalibration, tAdjustedTotalMeasure, tMeasureInInterval, ** ppMeasure , ** ppSqMeasure, tSqMeasureInInterval;
+
        if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
          gtTotalCases = 0;
          gtTotalMeasure = 0;
@@ -680,72 +774,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
        if (Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
          gvNullifiedLocations.push_back(tTractIndex);
-    }
 
-    //now update data sets as needed, given all cluster data has now been removed
-    if (gParameters.GetProbabilityModelType() == POISSON) {
-      //recalibrate the measure array to equal expected cases
-      gtTotalMeasure = 0;
-      for (size_t d=0; d < gDataSets->GetNumDataSets(); ++d) {
-         RealDataSet& DataSet = gDataSets->GetDataSet(d);
-         tAdjustedTotalMeasure=0;
-         tCalibration  = (measure_t)(DataSet.getTotalCases())/(DataSet.getTotalMeasure());
-         ppMeasure = DataSet.getMeasureData().GetArray();
-         for (int i=0; i < m_nTimeIntervals-1; ++i) for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[i][t] = (ppMeasure[i][t] - ppMeasure[i+1][t]) * tCalibration;
-         for (tract_t t=0; t < m_nTracts; ++t) ppMeasure[m_nTimeIntervals - 1][t] *= tCalibration;
-         DataSet.setMeasureDataToCumulative();
-         for (tract_t t=0; t < m_nTracts; ++t) tAdjustedTotalMeasure += ppMeasure[0][t];
-         gDataSets->GetDataSet(d).setTotalMeasure(tAdjustedTotalMeasure);
-         gtTotalMeasure += tAdjustedTotalMeasure;
-      }
-    }
-    if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
-      //recalibrate the measure to equal expected cases
-      AbstractExponentialRandomizer *pRandomizer;
-      gtTotalCases = 0;
-      gtTotalMeasure = 0;
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-         RealDataSet& DataSet = gDataSets->GetDataSet(t);
-         if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-           ZdGenerateException("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
-         pRandomizer->AssignFromAttributes(DataSet);
-         gtTotalCases += DataSet.getTotalCases();
-         gtTotalMeasure += DataSet.getTotalMeasure();
-      }
-    }
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
-      //recalculate the data set cases/measure given updated randomizer data
-      AbstractNormalRandomizer *pRandomizer;
-      gtTotalCases=0;
-      gtTotalMeasure=gtTotalMeasureSq=0;
-      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-        RealDataSet& DataSet = gDataSets->GetDataSet(t);
-        if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-          ZdGenerateException("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
-        pRandomizer->AssignFromAttributes(DataSet);
-        //update class variables that defines totals across all data sets
-        gtTotalCases += DataSet.getTotalCases();
-        gtTotalMeasure += DataSet.getTotalMeasure();
-        gtTotalMeasureSq += DataSet.getTotalMeasureSq();
-      }
-    }
-    //now recalculate purely temporal arrays as needed
-    if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
-      switch (gParameters.GetProbabilityModelType()) {
-       case NORMAL      : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Sq));
-       case EXPONENTIAL :
-       case BERNOULLI   :
-       case POISSON     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
-                          std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
-       case ORDINAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
-       default : ZdGenerateException("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
-      }
-    }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("RemoveClusterSignificance()", "CSaTScanData");
-    throw;
-  }
 }
 
 /** Set neighbor array pointer requested type. */
@@ -884,7 +913,7 @@ void CSaTScanData::SetPurelyTemporalCases() {
 
 /** Sets indexes of time interval ranges into interval start time array. */
 void CSaTScanData::SetTimeIntervalRangeIndexes() {
-  ZdString      sTimeIntervalType, sMessage, sDateWST, sDateMaxWET; 
+  std::string   sTimeIntervalType, sMessage, sDateWST, sDateMaxWET; 
   int           iMaxEndWindow, iWindowStart;
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
@@ -907,10 +936,10 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                                   "       ending time minus %i %s) and a maximum window end time of %s\n"
                                   "       (start range ending time plus %i %s), which results in no windows scanned.",
                                   "Setup()", m_nIntervalCut * gParameters.GetTimeAggregationLength(),
-                                  sTimeIntervalType.GetCString(), sDateWST.GetCString(),
+                                  sTimeIntervalType.c_str(), sDateWST.c_str(),
                                   m_nIntervalCut * gParameters.GetTimeAggregationLength(),
-                                  sTimeIntervalType.GetCString(), sDateMaxWET.GetCString(),
-                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
+                                  sTimeIntervalType.c_str(), sDateMaxWET.c_str(),
+                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
     }
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
@@ -922,8 +951,8 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                                   "       With the incorporation of a maximum temporal cluster size of %i %s\n"
                                   "       the maximum window end time becomes %s (start range ending\n"
                                   "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
-                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString(),
-                                  sDateMaxWET.GetCString(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.GetCString());
+                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str(),
+                                  sDateMaxWET.c_str(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
     }
 
     // Collapse unused time intervals at end of study period, if possible.
@@ -963,7 +992,7 @@ void CSaTScanData::Setup() {
   if (gParameters.UseSpecialGrid())
     gCentroidsHandler.reset(new CentroidHandler());
   else
-    gCentroidsHandler.reset(new CentroidHandlerPassThrow(*gTractHandler.get()));
+    gCentroidsHandler.reset(new CentroidHandlerPassThrow(*gTractHandler));
 }
 
 /** Throws exception if case(s) were observed for an interval/location
@@ -974,7 +1003,7 @@ void CSaTScanData::Setup() {
 void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
   int           i;
   tract_t       t;
-  ZdString      sStart, sEnd;
+  std::string   sStart, sEnd;
 
   //note that cases must be cummulative and measure non-cummulative
   count_t   ** ppCumulativeCases=Set.getCaseData().GetArray();
@@ -989,8 +1018,8 @@ void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
                                         "       Please review the correctness of population and case files.",
                                         "ValidateObservedToExpectedCases()",
                                         gTractHandler->getLocations().at(t)->getIndentifier(),
-                                        JulianToString(sStart, gvTimeIntervalStartTimes[i]).GetCString(),
-                                        JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).GetCString());
+                                        JulianToString(sStart, gvTimeIntervalStartTimes[i]).c_str(),
+                                        JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("ValidateObservedToExpectedCases()","CSaTScanData");

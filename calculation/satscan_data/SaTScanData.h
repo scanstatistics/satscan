@@ -15,16 +15,25 @@
 #include "MultipleDimensionArrayHandler.h"
 #include "DataSetHandler.h"
 #include "AdjustmentHandler.h"
+#include "SaTScanDataRead.h"
 
 /** Central data hub class which contains all data either read or created from
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
   friend class SaTScanDataReader;
-  
+  friend void  CentroidNeighborCalculator::CalculateNeighbors();
+  friend void  CentroidNeighborCalculator::CalculateNeighborsByCircles();
+  friend void  CentroidNeighborCalculator::CalculateNeighborsByEllipses();
+
   public:
     enum           ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
 
   private:
+    void                                        AllocateSortedArray();
+    void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
+                                                                             int iEllipseIndex, tract_t iCentroidIndex,
+                                                                             tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
+    void                                        AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const std::vector<tract_t>& vLocations);
     void                                        Init();
     virtual void                                SetProbabilityModel() = 0;
     void                                        Setup();
@@ -50,7 +59,6 @@ class CSaTScanData {
     std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
     std::vector<measure_t>                      gvMaxCirclePopulation;          /* population by locations */
     tract_t                                     m_nTracts;
-    measure_t                                   m_nTotalTractsAtStart;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
     measure_t                                   gtTotalMeasureSq;               /** total square measure for all data sets */
@@ -74,10 +82,12 @@ class CSaTScanData {
     measure_t                                   DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const;
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
+    void                                        RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
+    void                                        setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
     void                                        SetPurelyTemporalCases();
     void                                        SetTimeIntervalRangeIndexes();
 
@@ -85,12 +95,6 @@ class CSaTScanData {
     CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CSaTScanData();
 
-
-    void                                        AllocateSortedArray();
-    void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
-                                                                             int iEllipseIndex, tract_t iCentroidIndex,
-                                                                             tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
-    void                                        AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const std::vector<tract_t>& vLocations);
     inline void                                 FreeNeighborInfo(tract_t iCentroidIndex) const;
 
     tract_t                                     m_nGridTracts;
@@ -102,7 +106,7 @@ class CSaTScanData {
     void                                        CalculateExpectedCases();
     virtual void                                DisplayNeighbors(FILE* pFile);
     virtual void                                DisplayRelativeRisksForEachTract() const;
-    void                                        DisplaySummary(FILE* fp, ZdString sSummaryText, bool bPrintPeriod);
+    void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
     void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
@@ -122,6 +126,7 @@ class CSaTScanData {
     inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline size_t                               GetNumDataSets() const {return gDataSets->GetNumDataSets();}
+    inline tract_t                              GetNumMetaTracts() const {return (tract_t)gTractHandler->getMetaLocations().getLocations().size();}
     size_t                                      GetNumNullifiedLocations() const {return gvNullifiedLocations.size();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}
