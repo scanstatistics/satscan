@@ -66,7 +66,7 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), t + 1));
+    Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), t + 1));
   return AllocateSimulationData(Container);
 }
 
@@ -201,7 +201,7 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
                     gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
       return DataSetHandler::Rejected;
     case DateStringParser::LESSER_PRECISION : {
-       ZdString sBuffer;
+       std::string sBuffer;
        //Dates in the case/control files must be at least as precise as ePrecision units.
        gPrint.Printf("Error: The date '%s' of record %ld in the %s must be precise to %s,\n"
                      "       as specified by %s units.\n", BasePrint::P_READERROR,
@@ -385,7 +385,7 @@ void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& 
 void DataSetHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
-      gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), i + 1));
+      gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), i + 1));
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","DataSetHandler");

@@ -30,6 +30,14 @@ SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(Simulat
   return Container;
 }
 
+/** For each data set, assigns data at meta location indexes. */
+void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+  for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
+    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+  }
+}
+
 /** Converts passed string specifiying a population date to a julian date using
     DateStringParser object. Since we accumulate errors/warnings when reading
     input files, indication of a bad date is returned as false and message
@@ -103,7 +111,7 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
 
   try {
     DataGatway.Clear();
@@ -160,7 +168,7 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
 AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
 
   try {
     DataGatway.Clear();
@@ -211,6 +219,15 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
     throw;
   }
   return DataGatway;
+}
+
+/** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
+void PoissonDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
+  DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
+  if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis()) {
+    for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
+      (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+  }
 }
 
 /** Attempts to read population and case data files into class RealDataSet objects. */

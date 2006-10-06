@@ -41,9 +41,15 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
   return Container;
 }
 
+/** For each data set, assigns data at meta location indexes. */
+void OrdinalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
+  for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr)
+    (*itr)->setCaseData_Cat_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+}
+
 /** returns data gateway for real data */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
 
   try {
     DataGatway.Clear();
@@ -85,7 +91,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
 
 /** returns data gateway for simulation data */
 AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
 
   try {
     DataGatway.Clear();
@@ -182,6 +188,15 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
     throw;
   }
   return DataSetHandler::Accepted;
+}
+
+/** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
+void OrdinalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
+  DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
+  if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis()) {
+    for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
+      (*itr)->setCaseData_Cat_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+  }
 }
 
 /** Reads the count data source, storing data in RealDataSet object. As a
