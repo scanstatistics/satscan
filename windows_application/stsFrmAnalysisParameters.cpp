@@ -280,7 +280,7 @@ double TfrmAnalysis::CalculateTimeAggregationUnitsInStudyPeriod() const {
 //---------------------------------------------------------------------------
 /** Validates time interval length is not less than zero. */
 void TfrmAnalysis::CheckTimeAggregationLength() {
-  ZdString      sPrecisionString;
+  std::string   sPrecisionString;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
@@ -295,20 +295,20 @@ void TfrmAnalysis::CheckTimeAggregationLength() {
       if (dStudyPeriodLengthInUnits < edtTimeAggregationLength->Text.ToDouble())
         ZdException::GenerateNotification("A time aggregation of %d %s%s is greater than the %d %s study period.\n",
                                           "CheckTimeAggregationLength()", edtTimeAggregationLength->Text.ToInt(),
-                                          sPrecisionString.GetCString(),
+                                          sPrecisionString.c_str(),
                                           (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
                                           static_cast<int>(dStudyPeriodLengthInUnits),
-                                          sPrecisionString.GetCString());
+                                          sPrecisionString.c_str());
       if (ceil(dStudyPeriodLengthInUnits/edtTimeAggregationLength->Text.ToDouble()) <= 1)
         ZdException::GenerateNotification("A time aggregation of %d %s%s with a %d %s study period results in only\n"
                                           "one time period to analyze. Temporal and space-time analyses can not be performed\n"
                                           "on less than two time periods.\n",
                                           "CheckTimeAggregationLength()",
                                           edtTimeAggregationLength->Text.ToInt(),
-                                          sPrecisionString.GetCString(),
+                                          sPrecisionString.c_str(),
                                           (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
                                           static_cast<int>(dStudyPeriodLengthInUnits),
-                                          sPrecisionString.GetCString());
+                                          sPrecisionString.c_str());
       if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == PERCENTAGETYPE)
         dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl()/100.0);
       else if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == TIMETYPE)
@@ -320,10 +320,10 @@ void TfrmAnalysis::CheckTimeAggregationLength() {
           ZdException::GenerateNotification("The time aggregation of %d %s%s is greater than the maximum temporal "
                                             "cluster size of %g %s%s.\nPlease review settings.",
                                             "CheckTimeAggregationLength()", edtTimeAggregationLength->Text.ToInt(),
-                                            sPrecisionString.GetCString(),
+                                            sPrecisionString.c_str(),
                                             (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
                                             gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl(),
-                                            sPrecisionString.GetCString(),
+                                            sPrecisionString.c_str(),
                                             (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl() == 1 ? "" : "s"));
         else if (gpfrmAdvancedParameters->GetMaxTemporalClusterSizeControlType() == PERCENTAGETYPE)
           ZdException::GenerateNotification("With the maximum temporal cluster size as %g%% of a %d %s study period,\n"
@@ -331,12 +331,12 @@ void TfrmAnalysis::CheckTimeAggregationLength() {
                                             "temporal cluster size of %g %s%s.\nPlease review settings.",
                                             "CheckTimeAggregationLength()",
                                             gpfrmAdvancedParameters->GetMaxTemporalClusterSizeFromControl(),
-                                            static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
+                                            static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(),
                                             edtTimeAggregationLength->Text.ToInt(),
-                                            sPrecisionString.GetCString(),
+                                            sPrecisionString.c_str(),
                                             (edtTimeAggregationLength->Text.ToInt() == 1 ? "" : "s"),
                                             dMaxTemporalLengthInUnits,
-                                            sPrecisionString.GetCString(),
+                                            sPrecisionString.c_str(),
                                             (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
       }
     }

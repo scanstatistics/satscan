@@ -61,7 +61,7 @@ void __fastcall CalcThread::EnableProgressPrintAction(void) {
 /** Main Thread execution function. */
 void __fastcall CalcThread::Execute() {
   time_t        RunTime;
-  ZdString      Acknowledgment;
+  std::string   Acknowledgment;
 
   try {
     gpPrintWindow->Printf(AppToolkit::getToolkit().GetAcknowledgment(Acknowledgment), BasePrint::P_STDOUT);
