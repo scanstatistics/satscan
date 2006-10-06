@@ -131,9 +131,9 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                               unsigned int iSimulationNumber) const {
   try {
     CSaTScanData::RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
+    std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_NC));
+    std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
-       SimDataContainer[t]->setCaseData_NC();
-       SimDataContainer[t]->setCaseData_PT_NC();
        //calculate time trend for entire randomized data set
        //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                              
        SimDataContainer[t]->getTimeTrend().CalculateAndSet(gDataSets->GetDataSet(t).getCaseData_PT_NC(),
