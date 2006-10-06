@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "Toolkit.h"
 #include "DBFFile.h"
+#include "UtilityFunctions.h"
 
 /** system filename */
 const char * AppToolkit::gsSystemIniFileName = "system.ini";
@@ -105,24 +106,17 @@ void AppToolkit::AddParameterToHistory(const char * sParameterFileName) {
 
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
-const char * AppToolkit::GetAcknowledgment(ZdString & Acknowledgment) const {
-  try {
-    Acknowledgment << ZdString::reset << "You are running SaTScan v" << GetVersion();
-    Acknowledgment << ".\n\nSaTScan is free, available for download from ";
-    Acknowledgment << GetWebSite() << ".\nIt may be used free of charge as long as proper ";
-    Acknowledgment << "citations are given\nto both the SaTScan software and the underlying ";
-    Acknowledgment << "statistical methodology.\n\n";
-  }
-  catch (ZdException& x) {
-    x.AddCallpath("GetAcknowledgment()", "AppToolkit");
-    throw;
-  }
-  return Acknowledgment.GetCString();
+const char * AppToolkit::GetAcknowledgment(std::string & Acknowledgment) const {
+  printString(Acknowledgment, "You are running SaTScan v%s.\n\nSaTScan is free, available for download from %s"
+                              ".\nIt may be used free of charge as long as proper "
+                              "citations are given\nto both the SaTScan software and the underlying "
+                              "statistical methodology.\n\n", GetVersion(), GetWebSite());
+  return Acknowledgment.c_str();
 }
 
 /** Returns applications full path */
 const char * AppToolkit::GetApplicationFullPath() const {
-  return gsApplicationFullPath.GetCString();
+  return gsApplicationFullPath.c_str();
 }
 
 /** last opened directory */
@@ -159,38 +153,40 @@ const char * AppToolkit::GetWebSite() const {
 /** Insures last directory path section in ZdIniSession. */
 bool AppToolkit::InsureLastDirectoryPath() {
   ZdFileName            FileName;
-  ZdString              sDefaultPath;
+  std::stringstream     sDefaultPath;
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
 
   try {
-    sDefaultPath << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << "sample data" << ZDFILENAME_SLASH;
-    if (access(sDefaultPath.GetCString(), 00) < 0)
-      sDefaultPath = ZdFileName(gsApplicationFullPath.GetCString()).GetLocation();
+    sDefaultPath << ZdFileName(gsApplicationFullPath.c_str()).GetLocation() << "sample data" << ZDFILENAME_SLASH;
+    if (access(sDefaultPath.str().c_str(), 00) < 0) {
+      sDefaultPath.clear();
+      sDefaultPath << ZdFileName(gsApplicationFullPath.c_str()).GetLocation();
+    }
 
     //run history filename property
     lPosition = gSession.FindProperty(gsLastDirectoryProperty);
     if (lPosition == -1) {
-      gSession.AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
+      gSession.AddProperty(gsLastDirectoryProperty, sDefaultPath.str().c_str());
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
       pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        gSession.AddProperty(gsLastDirectoryProperty, sDefaultPath.GetCString());
+        gSession.AddProperty(gsLastDirectoryProperty, sDefaultPath.str().c_str());
         bUpdatedSection = true;
       }
       else {
         FileName.SetFullPath(pProperty->GetValue());
         if (strlen(FileName.GetFileName()) || strlen(FileName.GetExtension())) {
-          pProperty->SetValue(sDefaultPath.GetCString());
+          pProperty->SetValue(sDefaultPath.str().c_str());
           bUpdatedSection = true;
         }
         //validate path
         else if (access(FileName.GetLocation(), 00) < 0) {
-          pProperty->SetValue(sDefaultPath.GetCString());        
+          pProperty->SetValue(sDefaultPath.str().c_str());        
           bUpdatedSection = true;
         }
       }
@@ -206,7 +202,7 @@ bool AppToolkit::InsureLastDirectoryPath() {
 /** Insures last imported directory path section in ZdIniSession. */
 bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
   ZdFileName            FileName;
-  ZdString              sDefaultPath;
+  std::string           sDefaultPath;
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
@@ -215,21 +211,21 @@ bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
     sDefaultPath = getenv("TMP") ? getenv("TMP") : "";
     lPosition = gSession.FindProperty(gsLastImportDestinationDirectoryProperty);
     if (lPosition == -1) {
-      gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
+      gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.c_str());
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
       pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.GetCString());
+        gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sDefaultPath.c_str());
         bUpdatedSection = true;
       }
       else {
         FileName.SetFullPath(pProperty->GetValue());
         //validate path
         if (access(FileName.GetLocation(), 00) < 0) {
-          pProperty->SetValue(sDefaultPath.GetCString());        
+          pProperty->SetValue(sDefaultPath.c_str());        
           bUpdatedSection = true;
         }
       }
@@ -245,26 +241,26 @@ bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
 /** Insures run history filename section in ZdIniSession. */
 bool AppToolkit::InsureRunHistoryFileName() {
   ZdFileName            FileName;
-  ZdString              sDefaultHistoryFileName;
+  std::stringstream     sDefaultHistoryFileName;
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
 
   try {
-    sDefaultHistoryFileName << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << gsDefaultRunHistoryFileName;
+    sDefaultHistoryFileName << ZdFileName(gsApplicationFullPath.c_str()).GetLocation() << gsDefaultRunHistoryFileName;
     sDefaultHistoryFileName << DBFFileType::GetDefaultInstance().GetFileTypeExtension();
 
     //run history filename property
     lPosition = gSession.FindProperty(gsHistoryFileNameProperty);
     if (lPosition == -1) {
-      gSession.AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.GetCString());
+      gSession.AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.str().c_str());
       bUpdatedSection = true;
     }
     else {
       //property exists but does it have a value?
       pProperty = gSession.GetProperty(lPosition);
       if (!pProperty->GetValue() || !strlen(pProperty->GetValue())) {
-        gSession.AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.GetCString());
+        gSession.AddProperty(gsHistoryFileNameProperty, sDefaultHistoryFileName.str().c_str());
         bUpdatedSection = true;
       }
       else {
@@ -283,7 +279,7 @@ bool AppToolkit::InsureRunHistoryFileName() {
         }
         //validate path
         if (access(FileName.GetLocation(), 00) < 0) {
-          pProperty->SetValue(sDefaultHistoryFileName);
+          pProperty->SetValue(sDefaultHistoryFileName.str().c_str());
           bUpdatedSection = true;
         }
       }
@@ -349,7 +345,7 @@ void AppToolkit::InsureSessionStructure() {
     //Write to same directory as executable, when needed.
     if (bNeedsWrite) {
       try {
-        gSession.Write(gsSystemFileName.GetCString());
+        gSession.Write(gsSystemFileName.c_str());
       }
       catch (ZdException & x){
          /* File not currently writable.
@@ -368,18 +364,18 @@ void AppToolkit::InsureSessionStructure() {
 void AppToolkit::ReadParametersHistory() {
   long                  lPosition;
   BSessionProperty    * pProperty;
-  ZdString              sParameterSectionName;
+  std::string           parametername;
   int                   iItem=0;
 
   try {
-    sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
-    lPosition = gSession.FindProperty(sParameterSectionName.GetCString());
+    printString(parametername, "%s%i", gsParameterNameProperty, iItem++);
+    lPosition = gSession.FindProperty(parametername.c_str());
     while (lPosition != -1) {
       pProperty = gSession.GetProperty(lPosition);
       if (pProperty->GetValue() && strlen(pProperty->GetValue()))
         gvParameterHistory.push_back(pProperty->GetValue());
-      sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
-      lPosition = gSession.FindProperty(sParameterSectionName.GetCString());
+      printString(parametername, "%s%i", gsParameterNameProperty, iItem++);
+      lPosition = gSession.FindProperty(parametername.c_str());
     }
   }
   catch (ZdException& x) {
@@ -390,12 +386,12 @@ void AppToolkit::ReadParametersHistory() {
 
 void AppToolkit::SetLastDirectory(const char * sLastDirectory) {
   gSession.AddProperty(gsLastDirectoryProperty, sLastDirectory);
-  gSession.Write(gsSystemFileName.GetCString());
+  gSession.Write(gsSystemFileName.c_str());
 }
 
 void AppToolkit::SetLastImportDirectory(const char * sLastDirectory) {
   gSession.AddProperty(gsLastImportDestinationDirectoryProperty, sLastDirectory);
-  gSession.Write(gsSystemFileName.GetCString());
+  gSession.Write(gsSystemFileName.c_str());
 }
 
 /** internal setup */
@@ -405,10 +401,11 @@ void AppToolkit::Setup(const char * sApplicationFullPath) {
     //set application full path
     gsApplicationFullPath = sApplicationFullPath;
     //Set system ini located at same directory as executable.
-    gsSystemFileName << ZdFileName(gsApplicationFullPath.GetCString()).GetLocation() << gsSystemIniFileName;
+    gsSystemFileName = ZdFileName(gsApplicationFullPath.c_str()).GetLocation();
+    gsSystemFileName += gsSystemIniFileName;
     try {
       //Open or create system ini file.
-      gSession.Read(gsSystemFileName.GetCString(), ZDIO_OPEN_READ);
+      gSession.Read(gsSystemFileName.c_str(), ZDIO_OPEN_READ);
     }
     catch (ZdException & x){
       /* can't read ini file: missing/corrupt/permissions? */
@@ -417,10 +414,10 @@ void AppToolkit::Setup(const char * sApplicationFullPath) {
     InsureSessionStructure();
     //SetErrorReportDestination(GetTechnicalSupportEmail());
     ReadParametersHistory();
-    gsVersion.printf("%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR,
-                     (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
-                     (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
-                     (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
+    printString(gsVersion, "%s.%s%s%s%s%s", VERSION_MAJOR, VERSION_MINOR,
+                          (!strcmp(VERSION_RELEASE, "0") ? "" : "."),
+                          (!strcmp(VERSION_RELEASE, "0") ? "" : VERSION_RELEASE),
+                          (strlen(VERSION_PHASE) ? " " : ""), VERSION_PHASE);
   }
   catch (ZdException& x) {
     x.AddCallpath("Setup()", "AppToolkit");
@@ -430,16 +427,16 @@ void AppToolkit::Setup(const char * sApplicationFullPath) {
 
 /** Writes parameter history to ini file */
 void AppToolkit::WriteParametersHistory() {
-  ZdString                        sParameterSectionName;
+  std::string                     sParameterSectionName;
   ParameterHistory_t::iterator    itr;
   int                             iItem=0;
 
   try {
     for (itr=gvParameterHistory.begin(); itr != gvParameterHistory.end(); itr++) {
-       sParameterSectionName.printf("%s%i", gsParameterNameProperty, iItem++);
-       gSession.AddProperty(sParameterSectionName.GetCString(), itr->c_str());
+       printString(sParameterSectionName, "%s%i", gsParameterNameProperty, iItem++);
+       gSession.AddProperty(sParameterSectionName.c_str(), itr->c_str());
     }
-    gSession.Write(gsSystemFileName.GetCString());
+    gSession.Write(gsSystemFileName.c_str());
   }
   catch (ZdException& x) {
     x.AddCallpath("WriteParametersHistory()","AppToolkit");

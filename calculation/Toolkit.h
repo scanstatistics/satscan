@@ -32,12 +32,12 @@ class AppToolkit {
     static const char         * gsDefaultSubstantiveSupportEmail;
     static const char         * gsDefaultTechnicalSupportEmail;
 
-    ZdString                    gsSystemFileName;
-    ZdString                    gsApplicationFullPath;
+    std::string                 gsSystemFileName;
+    std::string                 gsApplicationFullPath;
     ParameterHistory_t          gvParameterHistory;
     bool                        gbRunUpdateOnTerminate;
-    ZdString                    gsUpdateArchiveFilename;
-    ZdString                    gsVersion;
+    std::string                 gsUpdateArchiveFilename;
+    std::string                 gsVersion;
     RunTimeComponentManager     gRunTimeComponentManager;
     BZdIniSession               gSession;
 
@@ -56,7 +56,7 @@ class AppToolkit {
     virtual ~AppToolkit();
 
    void                         AddParameterToHistory(const char * sParameterFileName);
-   const char                 * GetAcknowledgment(ZdString & Acknowledgment) const;
+   const char                 * GetAcknowledgment(std::string & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
    const char                 * GetLastDirectory() /*const*/;
    const char                 * GetLastImportDirectory() /*const*/;
@@ -67,8 +67,8 @@ class AppToolkit {
    const char                 * GetSubstantiveSupportEmail() const;
    const char                 * GetSystemIniFileName() const {return gsSystemIniFileName;}
    const char                 * GetTechnicalSupportEmail() const;
-   const ZdString             & GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename;}
-   const char                 * GetVersion() const {return gsVersion.GetCString();}
+   const char                 * GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename.c_str();}
+   const char                 * GetVersion() const {return gsVersion.c_str();}
    const char                 * GetWebSite() const;
    void                         SetLastImportDirectory(const char * sLastDirectory);
    void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
