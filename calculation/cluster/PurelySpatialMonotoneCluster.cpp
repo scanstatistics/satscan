@@ -170,15 +170,14 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLike
 
 /** Prints locations of cluster, detailed by step, to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  int           i;
-  ZdString      sBuffer;
+  std::string buffer;
 
   try {
     PrintFormat.PrintSectionLabel(fp, "Steps in risk function", false, true);
     fprintf(fp, "%i\n", m_nSteps);
-    for (i=0; i < m_nSteps; ++i) {
-       sBuffer.printf("  Step %i",i + 1);
-       PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
+    for (int i=0; i < m_nSteps; ++i) {
+       printString(buffer, "  Step %i",i + 1);
+       PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, true);
        DisplayCensusTractsInStep(fp, Data, gvFirstNeighborList.at(i), gvLastNeighborList.at(i), PrintFormat);
     }
   }
@@ -192,27 +191,27 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
 void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   std::vector<double>   vCoordinates, vCoodinatesOfStep;
   float                 nRadius;
-  ZdString              sBuffer, sWork;
+  std::string           buffer, work;
 
   try {
     Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
     PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
     for (size_t t=0; t < vCoordinates.size() - 1; ++t) {
-       sWork.printf("%s%g,", (t == 0 ? "(" : "" ), vCoordinates[t]);
-       sBuffer << sWork;
+       printString(work, "%s%g,", (t == 0 ? "(" : "" ), vCoordinates[t]);
+       buffer += work;
     }
-    sWork.printf("%g)", vCoordinates.back());
-    sBuffer << sWork;
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    printString(work, "%g)", vCoordinates.back());
+    buffer += work;
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     PrintFormat.PrintSectionLabel(fp, "Radius for each step", false, true);
-    sBuffer << ZdString::reset;
+    buffer = "";
     for (int i=0; i < m_nSteps; ++i) {
        CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
        nRadius = (float)sqrt(Data.GetTInfo()->getDistanceSquared(vCoordinates, vCoodinatesOfStep));
-       sWork.printf("%s%4.2f", (i > 0 ? ", " : ""), nRadius);
-       sBuffer << sWork;
+       printString(work, "%s%4.2f", (i > 0 ? ", " : ""), nRadius);
+       buffer += work;
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayCoordinates()","CPSMonotoneCluster");
@@ -226,7 +225,7 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
   std::vector<double>           ClusterCenter, vCoodinatesOfStep;
   std::pair<double, double>     prLatitudeLongitude;
   char                          cNorthSouth, cEastWest;
-  ZdString                      sBuffer, sWork;
+  std::string                   buffer, work;
 
   try {
     Data.GetGInfo()->retrieveCoordinates(m_Center, ClusterCenter);
@@ -239,10 +238,10 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
     for (int i=0; i < m_nSteps; ++i) {
       CentroidNeighborCalculator::getTractCoordinates(Data, *this, Data.GetNeighbor(0, m_Center, gvLastNeighborList.at(i)), vCoodinatesOfStep);
       dRadius = 2 * EARTH_RADIUS_km * asin(sqrt(Data.GetTInfo()->getDistanceSquared(ClusterCenter, vCoodinatesOfStep))/(2 * EARTH_RADIUS_km));
-      sWork.printf("%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
-      sBuffer << sWork;
+      printString(work, "%s%5.2lf km", (i == 0 ? "(" : "" ), dRadius);
+      buffer += work;
     }
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayLatLongCoords()", "CPSMonotoneCluster");
@@ -252,15 +251,15 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
 
 /** Prints observed divided by expected and relative risk of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString      sBuffer;
+  std::string buffer;
 
   try {
     CCluster::DisplayObservedDivExpected(fp, iDataSetIndex, DataHub, PrintFormat);
     if (m_nSteps == 1)
       return;
     PrintFormat.PrintSectionLabel(fp, "Relative risk by step", false, true);
-    sBuffer.printf("%.3f", GetRelativeRisk(iDataSetIndex, DataHub));
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    printString(buffer, "%.3f", GetRelativeRisk(iDataSetIndex, DataHub));
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayObservedDivExpected()","CPSMonotoneCluster");
@@ -281,7 +280,7 @@ const AbstractClusterData * CPSMonotoneCluster::GetClusterData() const {
 }
 
 /** returns end date of defined cluster as formated string */
-ZdString& CPSMonotoneCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPSMonotoneCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
@@ -316,7 +315,7 @@ double CPSMonotoneCluster::GetRelativeRisk(tract_t nStep, const CSaTScanData& Da
 }
 
 /** returns start date of defined cluster as formated string */
-ZdString& CPSMonotoneCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPSMonotoneCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0]);
 }
 

@@ -55,7 +55,7 @@ class CPSMonotoneCluster : public CCluster {
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return PURELYSPATIALMONOTONECLUSTER;}
-    virtual ZdString          & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     tract_t                     GetLastCircleIndex() const {return m_nSteps-1;};
@@ -65,7 +65,7 @@ class CPSMonotoneCluster : public CCluster {
     double                      GetRelativeRisk(tract_t nStep, const CSaTScanData& DataHub) const;
     double                      GetRatio() const;
     double                      GetLogLikelihood() const;
-    virtual ZdString          & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     void                        SetRate(int nRate);
     virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,

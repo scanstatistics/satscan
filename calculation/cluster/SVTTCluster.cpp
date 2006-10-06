@@ -224,14 +224,14 @@ void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
 }
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
-  ZdString      sBuffer;
+  std::string buffer;
 
   PrintFormat.PrintSectionLabel(fp, "Time trend", false, true);
-  sBuffer.printf("%f  (%.3f%% %s",
-               gvSetData[0].gTimeTrendInside.GetBeta(),
-               gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend(),
-               (gvSetData[0].gTimeTrendInside.IsNegative() ? "annual decrease)\n" : "annual increase)"));
-  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  printString(buffer, "%f  (%.3f%% %s",
+              gvSetData[0].gTimeTrendInside.GetBeta(),
+              gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend(),
+              (gvSetData[0].gTimeTrendInside.IsNegative() ? "annual decrease)\n" : "annual increase)"));
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 AbstractClusterData * CSVTTCluster::GetClusterData() {
@@ -245,7 +245,7 @@ const AbstractClusterData * CSVTTCluster::GetClusterData() const {
 }
 
 /** returns end date of defined cluster as formated string */
-ZdString& CSVTTCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CSVTTCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
@@ -265,7 +265,7 @@ count_t CSVTTCluster::GetObservedCountForTract(tract_t tTractIndex, const CSaTSc
 }
 
 /** returns start date of defined cluster as formated string */
-ZdString& CSVTTCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CSVTTCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0]);
 }
 
