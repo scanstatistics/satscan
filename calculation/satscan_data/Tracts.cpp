@@ -7,6 +7,7 @@
 #include "AsciiPrintFormat.h"
 #include "SSException.h"
 #include "cluster.h"
+#include "MetaTractManager.h"
 
 //////////////// TractHandler::Coordinates class ///////////////////////////////
 
@@ -82,6 +83,8 @@ TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMul
     collection of location identifiers, looking for duplicates locations. */
 void TractHandler::additionsCompleted() {
   gAdditionStatus = Closed;
+  getMetaLocations().assignAtomicIndexes(*this);
+
   if (gvLocations.size() < 2 || giCoordinateDimensions == 0) return;
 
   //sort by first coordinates index
@@ -117,6 +120,8 @@ tract_t TractHandler::addLocation(const char *sIdentifier) {
 
     if (gbAggregatingTracts) //when aggregating locations, insertion process always succeeds
       return 0;
+
+    if (gMetaLocationManager.getMetaLocationIndex(sIdentifier) > -1) return -1;
 
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
@@ -180,6 +185,14 @@ double TractHandler::getDistanceSquared(const std::vector<double>& vFirstPoint, 
   return dDistanceSquared;
 }
 
+/** Returns identifier associated with location at 'tIndex'. If 'tIndex' is greater than
+    number of locations, it is assumed to be referencing a meta location. */
+const char * TractHandler::getIdentifier(tract_t tIndex) const {
+  if ((size_t)tIndex < gvLocations.size())
+    return gvLocations.at(tIndex)->getIndentifier();
+  return gMetaLocationManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier();
+}
+
 /** Searches for tract identifier and returns it's internal index, or -1 if not found.
     When aggregating locations, always return zero. */
 tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
@@ -224,20 +237,21 @@ void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
        if ((*itr)->getSecondaryIdentifiers().size()) {
          if (!bPrinted) {
            PrintFormat.SetMarginsAsOverviewSection();
-           ZdString sBuffer = "\nNote: The coordinates file contains location IDs with identical "
-                              "coordinates that where combined into one location. In the "
-                              "optional output files, combined locations are represented by a "
-                              "single location ID as follows:";
-           PrintFormat.PrintAlignedMarginsDataString(fDisplay, sBuffer);
+           std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
+                                "coordinates that where combined into one location. In the "
+                                "optional output files, combined locations are represented by a "
+                                "single location ID as follows:";
+           PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
            PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
            bPrinted=true;
          }
          //First retrieved location ID is the location that represents all others.
-         ZdString  sBuffer;
-         sBuffer.printf("%s : %s", (*itr)->getIndentifier(), (*itr)->getSecondaryIdentifiers()[0].c_str());
-         for (unsigned int i=1; i < (*itr)->getSecondaryIdentifiers().size(); ++i)
-            sBuffer << ", " << (*itr)->getSecondaryIdentifiers()[i].c_str();
-         PrintFormat.PrintAlignedMarginsDataString(fDisplay, sBuffer);
+         std::string buffer;
+         printString(buffer, "%s : %s", (*itr)->getIndentifier(), (*itr)->getSecondaryIdentifiers()[0].c_str());
+         for (unsigned int i=1; i < (*itr)->getSecondaryIdentifiers().size(); ++i) {
+            buffer += ", "; buffer += (*itr)->getSecondaryIdentifiers()[i].c_str();
+         }   
+         PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
        }
     }
   }
@@ -245,6 +259,18 @@ void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
     x.AddCallpath("reportCombinedLocations()", "TractHandler");
     throw;
   }
+}
+
+/** Retrieves identifiers associated with location at 'tIndex'. If 'tIndex' is greater than
+    number of locations, it is assumed to be referencing a meta location. */
+TractHandler::Location::StringContainer_t & TractHandler::retrieveAllIdentifiers(tract_t tIndex, TractHandler::Location::StringContainer_t& Identifiers) const {
+  if ((size_t)tIndex < gvLocations.size())
+    gvLocations.at(tIndex)->retrieveAllIdentifiers(Identifiers);
+  else {
+    Identifiers.clear();
+    Identifiers.add(std::string(gMetaLocationManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier()), false);
+  }
+  return Identifiers;
 }
 
 /** Sets dimensions of location coordinates. If aggregating locations, function just returns; otherwise

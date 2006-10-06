@@ -5,6 +5,8 @@
 #include "SaTScan.h"
 #include "JulianDates.h"
 #include "Parameters.h"
+#include "MultipleDimensionArrayHandler.h"
+#include "MetaTractManager.h"
 
 /**********************************************************************
  file: Tracts.h
@@ -57,40 +59,6 @@ class TractHandler {
        public:
          bool operator() (const Coordinates * plhs, const Coordinates * prhs) { return *plhs < *prhs; }
     };
-    //specialized templated C array class -- used instead of standard template library containers
-    //Reasoning: Standard library containers do not provide a public means for which to define growth,
-    //           but instead commonly grow in chunks (Borland ~256b). In the context of the TractHandler
-    //           class, we really want certain arrays to growth in an 'as needed' manner; otherwise
-    //           we could be wasting considerable amounts of memory.
-    template <class T>
-    class MinimalGrowthArray {
-      private:
-        T             * gpArray;
-        unsigned int    giSize;
-
-      public:
-        MinimalGrowthArray() : giSize(0), gpArray(0) {}
-        ~MinimalGrowthArray() {try {delete[] gpArray;}catch(...){}}
-
-        const T       & operator[](const unsigned int i) const {return gpArray[i];}
-        bool            operator!=(const MinimalGrowthArray<T> & rhs) const {
-                          if (giSize != rhs.giSize) return true;
-                          for (unsigned int i=0; i < giSize; ++i) if (gpArray[i]!=rhs.gpArray[i]) return true;
-                          return false;
-                        }
-        void            add(const T& x, bool bSort) {
-                          T * p = new T[giSize + 1];
-                          for (unsigned int i=0; i < giSize; ++i) p[i] = gpArray[i];
-                          std::swap(p, gpArray); delete[] p;
-                          gpArray[giSize] = x; ++giSize; if (bSort) std::sort(gpArray, gpArray + giSize);
-                        }
-        void            clear() {delete[] gpArray; gpArray=0; giSize=0;}
-        bool            exists(const T& x) const {
-                          for (unsigned int i=0; i < giSize; ++i) if (gpArray[i] == x) return true;
-                          return false;
-                        }
-        unsigned int    size() const {return giSize;}
-    };
     /** class representing location defined in coordinates file -- with functionality
         that permits association with mutliple coordinates and location identifiers. */
     class Location {
@@ -124,6 +92,7 @@ class TractHandler {
 
     typedef ZdPointerVector<Coordinates> CoordinatesContainer_t;
     typedef ZdPointerVector<Location>    LocationsContainer_t;
+    enum addition_status_t               {Accepting=0, Closed};
 
   private:
     /** Function object used to compare LocationIdentifier::gvCoordinatesContainer[0]. */
@@ -134,7 +103,6 @@ class TractHandler {
          }
     };
 
-    enum addition_status_t              {Accepting=0, Closed};
     addition_status_t                   gAdditionStatus;
     CoordinatesContainer_t              gvCoordinates;
     LocationsContainer_t                gvLocations;
@@ -144,6 +112,7 @@ class TractHandler {
     MultipleCoordinatesType             geMultipleCoordinatesType;
     size_t                              giMaxIdentifierLength;
     size_t                              giNumLocationCoordinates;
+    MetaLocationManager                 gMetaLocationManager;
 
   public:
     TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType);
@@ -152,14 +121,19 @@ class TractHandler {
     void                                additionsCompleted();
     tract_t                             addLocation(const char *sIdentifier);
     void                                addLocation(const char *sIdentifier, std::vector<double>& vCoordinates);
+    addition_status_t                   getAddStatus() const {return gAdditionStatus;}
     const CoordinatesContainer_t      & getCoordinates() const {return gvCoordinates;}
     int                                 getCoordinateDimensions() const {return giCoordinateDimensions;}
     static double                       getDistanceSquared(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint);
+    const char                        * getIdentifier(tract_t tIndex) const;
     const LocationsContainer_t        & getLocations() const {return gvLocations;}
     tract_t                             getLocationIndex(const char *sIdentifier) const;
     size_t                              getMaxIdentifierLength() const {return giMaxIdentifierLength;}
+    MetaLocationManager               & getMetaLocations() {return gMetaLocationManager;}
+    const MetaLocationManager         & getMetaLocations() const {return gMetaLocationManager;}
     size_t                              getNumLocationCoordinates() const {return giNumLocationCoordinates;}
     void                                reportCombinedLocations(FILE * fDisplay) const;
+    Location::StringContainer_t       & retrieveAllIdentifiers(tract_t tIndex, Location::StringContainer_t& Identifiers) const;
     void                                setCoordinateDimensions(size_t iDimensions);
 };
 //*****************************************************************************
