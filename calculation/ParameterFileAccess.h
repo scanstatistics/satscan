@@ -25,16 +25,16 @@ class AbtractParameterFileAccess {
 
   private:
     virtual const char        * GetParameterLabel(ParameterType eParameterType) const = 0;
-    bool                        ReadBoolean(const ZdString& sValue, ParameterType eParameterType) const;
-    void                        ReadDate(const ZdString& sValue, ParameterType eParameterType) const;
-    void                        ReadDateRange(const ZdString& sValue, ParameterType eParameterType, DateRange_t& Range) const;
-    double                      ReadDouble(const ZdString& sValue, ParameterType eParameterType) const;
-    void                        ReadEllipseRotations(const ZdString& sParameter) const;
-    void                        ReadEllipseShapes(const ZdString& sParameter) const;
+    bool                        ReadBoolean(const std::string& sValue, ParameterType eParameterType) const;
+    void                        ReadDate(const std::string& sValue, ParameterType eParameterType) const;
+    void                        ReadDateRange(const std::string& sValue, ParameterType eParameterType, DateRange_t& Range) const;
+    double                      ReadDouble(const std::string& sValue, ParameterType eParameterType) const;
+    void                        ReadEllipseRotations(const std::string& sParameter) const;
+    void                        ReadEllipseShapes(const std::string& sParameter) const;
     int                         ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const;
-    int                         ReadInt(const ZdString& sValue, ParameterType eParameterType) const;
-    int                         ReadUnsignedInt(const ZdString& sValue, ParameterType eParameterType) const;
-    void                        ReadVersion(const ZdString& sValue) const;
+    int                         ReadInt(const std::string& sValue, ParameterType eParameterType) const;
+    int                         ReadUnsignedInt(const std::string& sValue, ParameterType eParameterType) const;
+    void                        ReadVersion(const std::string& sValue) const;
 
   protected:
     CParameters               & gParameters;
@@ -45,16 +45,16 @@ class AbtractParameterFileAccess {
     double                      gdMaxSpatialClusterSize;
     double                      gdMaxReportedSpatialClusterSize;
 
-    ZdString                  & AsString(ZdString& ref, int i) const {ref = i; return ref;}
-    ZdString                  & AsString(ZdString& ref, unsigned int i) const {ref.Clear(); ref << i; return ref;}
-    ZdString                  & AsString(ZdString& ref, float f) const {ref.printf("%g", f);; return ref;}
-    ZdString                  & AsString(ZdString& ref, double d) const {ref.printf("%g", d); return ref;}
-    ZdString                  & AsString(ZdString& ref, bool b) const {ref = (b ? (gbWriteBooleanAsDigit ? "1" : "y") : (gbWriteBooleanAsDigit ? "0" : "n")); return ref;}
-    ZdString                  & AsString(ZdString& ref, const CParameters::CreationVersion& v) const {ref.printf("%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
+    std::string               & AsString(std::string& ref, int i) const {printString(ref, "%d", i); return ref;}
+    std::string               & AsString(std::string& ref, unsigned int i) const {printString(ref, "%u", i); return ref;}
+    std::string               & AsString(std::string& ref, float f) const {printString(ref, "%g", f); return ref;}
+    std::string               & AsString(std::string& ref, double d) const {printString(ref, "%g", d); return ref;}
+    std::string               & AsString(std::string& ref, bool b) const {printString(ref, "%s", (b ? (gbWriteBooleanAsDigit ? "1" : "y") : (gbWriteBooleanAsDigit ? "0" : "n"))); return ref;}
+    std::string               & AsString(std::string& ref, const CParameters::CreationVersion& v) const {printString(ref, "%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
     const char                * GetParameterComment(ParameterType eParameterType) const;
-    ZdString                  & GetParameterString(ParameterType eParameterType, ZdString& s) const;
+    std::string               & GetParameterString(ParameterType eParameterType, std::string& s) const;
     void                        MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint& PrintDirection);
-    void                        SetParameter(ParameterType eParameterType, const ZdString& sParameter, BasePrint& PrintDirection);
+    void                        SetParameter(ParameterType eParameterType, const std::string& sParameter, BasePrint& PrintDirection);
 
   public:
      AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit=false);
