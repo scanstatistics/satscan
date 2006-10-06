@@ -90,8 +90,6 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
 void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScanData& DataHub, int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted) {
-  ZdString                                      sTempValue;
-  std::string                                   sBuffer;
   TractHandler::Location::StringContainer_t     vIdentifiers;
   double                                        dRelativeRisk;
   RecordBuffer                                  Record(vFieldDefinitions);
@@ -101,7 +99,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
     //do not report locations for which iterative scan has nullified this locations data
     if (DataHub.GetIsNullifiedLocation(tTract)) return;
 
-    DataHub.GetTInfo()->getLocations().at(tTract)->retrieveAllIdentifiers(vIdentifiers);
+    DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
     for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
        Record.SetAllFieldsBlank(true);
        Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = vIdentifiers[i].c_str();
