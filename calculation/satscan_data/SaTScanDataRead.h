@@ -40,6 +40,7 @@ class SaTScanDataReader {
     bool                        ReadGridFileAsLatitudeLongitude(DataSource& Source);
     bool                        ReadLatitudeLongitudeCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short iWordOffSet, const char * sSourceFile);
     bool                        ReadMaxCirclePopulationFile();
+    bool                        ReadMetaLocationsFile();
     bool                        ReadNormalData();
     bool                        ReadOrdinalData();
     bool                        ReadPoissonData();

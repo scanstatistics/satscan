@@ -15,6 +15,7 @@
 #include "SpaceTimePermutationDataSetHandler.h"
 #include "OrdinalDataSetHandler.h"
 #include "ParametersPrint.h"
+#include "MetaTractManager.h"
 
 const long SaTScanDataReader::guLocationIndex = 0;
 
@@ -292,6 +293,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
     else if (gParameters.UseLocationNeighborsFile())
       bReturn = ReadUserSpecifiedNeighbors();
     else {
+      gDataHub.gTractHandler->getMetaLocations().additionsCompleted(gTractHandler);
       gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
       std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
       gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
@@ -301,7 +303,6 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
         default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",gParameters.GetCoordinatesType());
       };
     }
-    gDataHub.m_nTotalTractsAtStart = gDataHub.m_nTracts;
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadCoordinatesFile()","SaTScanDataReader");
@@ -318,7 +319,6 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
   short                 iScanCount=0;
   const long            uLocationIndex=0;
   bool                  bValid=true, bEmpty=true;
-  ZdString              TractIdentifier;
   std::vector<double>   vCoordinates;
 
   try {
@@ -405,7 +405,6 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
     Return value: true = success, false = errors encountered   */
 bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Source) {
   bool                  bValid=true, bEmpty=true;
-  ZdString              TractIdentifier;
   std::vector<double>   vCoordinates;
   const long            uLocationIndex=0;
 
@@ -668,7 +667,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
     gPrint.Printf("Reading the max circle size file\n", BasePrint::P_STDOUT);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetMaxCirclePopulationFileName(), gPrint));
     //initialize circle-measure array
-    gDataHub.gvMaxCirclePopulation.resize(gDataHub.m_nTracts, 0);
+    gDataHub.gvMaxCirclePopulation.resize(gDataHub.m_nTracts + gDataHub.GetTInfo()->getMetaLocations().getLocations().size(), 0);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
@@ -724,9 +723,66 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
       gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
+    //set meta locations
+    std::vector<tract_t> atomicIndexes;
+    for (size_t t=0; t < gDataHub.GetTInfo()->getMetaLocations().getLocations().size(); ++t) {
+       gDataHub.GetTInfo()->getMetaLocations().getAtomicIndexes(t, atomicIndexes);
+       for (size_t a=0; a < atomicIndexes.size(); ++a)
+         gDataHub.gvMaxCirclePopulation[(size_t)gDataHub.m_nTracts + t] += gDataHub.gvMaxCirclePopulation[atomicIndexes[a]];
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadMaxCirclePopulationFile()","SaTScanDataReader");
+    throw;
+  }
+  return bValid;
+}
+
+/** Opens meta locations file data source and parses meta location definitions. */
+bool SaTScanDataReader::ReadMetaLocationsFile() {
+  bool                  bValid=true, bEmpty=true;
+  std::string           sIdentifier;
+
+  try {
+    if (!gParameters.UseMetaLocationsFile()) {
+      gTractHandler.getMetaLocations().additionsCompleted(gTractHandler);
+      return true;
+    }
+    gPrint.Printf("Reading the meta locations file\n", BasePrint::P_STDOUT);
+    gPrint.SetImpliedInputFileType(BasePrint::META_LOCATIONS_FILE);
+    AsciiFileDataSource Source(gParameters.getMetaLocationsFilename().c_str(), gPrint, '=');
+
+    //first pass on neighbors file to determine all location identifiers referenced
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+      bEmpty = false;
+      sIdentifier = Source.GetValueAt(0);
+      trimString(sIdentifier);
+      if (!Source.GetValueAt(1)) {
+        gPrint.Printf("Error: Incorrectly defined meta location at record %d of the %s.\n",
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        bValid = false;
+        continue;
+      }
+      if(!gTractHandler.getMetaLocations().addMetaLocation(sIdentifier, Source.GetValueAt(1))) {
+        gPrint.Printf("Error: Incorrectly defined meta location at record %d of the %s.\n",
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        bValid = false;
+        continue;
+      }
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gPrint.Printf("Please see the 'Meta Locations File' section in the user guide for help.\n", BasePrint::P_READERROR);
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+      bValid = false;
+    }
+    gTractHandler.getMetaLocations().additionsCompleted(gTractHandler);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("ReadMetaLocationsFile()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -847,9 +903,10 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
   bool                  bValid=true, bEmpty=true;
   long                  uLocation0ffset;
   tract_t               tLocationIndex;
-  std::vector<tract_t> vRecordNeighborList;
+  std::vector<tract_t> vRecordNeighborList, AtomicIndexes;
 
   try {
+    if (!ReadMetaLocationsFile()) return false;
     gPrint.Printf("Reading the neighbors file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::LOCATION_NEIGHBORS_FILE);
     gTractHandler.setCoordinateDimensions(0);
@@ -870,24 +927,39 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
       //record number of locations read
       gTractHandler.additionsCompleted();
       gDataHub.m_nTracts = gTractHandler.getLocations().size();
-      ZdSet  NeighborsSet(gDataHub.m_nTracts);
+      boost::dynamic_bitset<> NeighborsSet(gDataHub.m_nTracts + gTractHandler.getMetaLocations().getLocations().size());
       gDataHub.AllocateSortedArray();
       Source->GotoFirstRecord();
       while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
         uLocation0ffset=0;
         vRecordNeighborList.clear();
-        NeighborsSet.NoRecords();
+        NeighborsSet.reset();
         while (Source->GetValueAt(uLocation0ffset)) {
           //find location identifer internal index
-          tLocationIndex = gTractHandler.getLocationIndex(Source->GetValueAt(uLocation0ffset));
-          if (NeighborsSet.GetIsInSet(tLocationIndex + 1)) {
-             bValid = false;
-             gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
+          if ((tLocationIndex = gTractHandler.getLocationIndex(Source->GetValueAt(uLocation0ffset))) > -1) {
+            if (NeighborsSet.test(tLocationIndex)) {
+              bValid = false;
+              gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
                             Source->GetValueAt(uLocation0ffset), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-             break;
+            }
+            else {
+              NeighborsSet.set(tLocationIndex);
+              vRecordNeighborList.push_back(tLocationIndex);
+            }  
           }
-          NeighborsSet.SelectRecord(tLocationIndex + 1, true);
-          vRecordNeighborList.push_back(tLocationIndex);
+          else {
+            tLocationIndex = gTractHandler.getMetaLocations().getMetaLocationIndex(Source->GetValueAt(uLocation0ffset));
+            gTractHandler.getMetaLocations().getAtomicIndexes(tLocationIndex, AtomicIndexes);
+            for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+              if (NeighborsSet.test(AtomicIndexes[t])) {
+                bValid = false;
+                gPrint.Printf("Error: Location ID '%s' occurs multiple times in record %ld of %s.\n", BasePrint::P_READERROR,
+                              gTractHandler.getLocations()[AtomicIndexes[t]]->getIndentifier(), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+              }
+              NeighborsSet.set(AtomicIndexes[t]);
+            }
+            vRecordNeighborList.push_back(tLocationIndex + gDataHub.m_nTracts);
+          }
           ++uLocation0ffset;
           bEmpty = false;
         }
