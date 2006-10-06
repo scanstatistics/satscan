@@ -189,7 +189,7 @@ bool ValidateFileAccess(const std::string& filename, bool bWriteEnable) {
 }
 
 /** Trims leading and trailing 't' strings from source, inplace. */
-void trimString(std::string &source, const std::string &t) {
+void trimString(std::string &source, const char * t) {
   source.erase(0, source.find_first_not_of(t));
   source.erase(source.find_last_not_of(t)+1);
 }
@@ -208,11 +208,11 @@ std::string& printStringArgs(std::string& destination, va_list varArgs, const ch
    try {
      if (!format) return destination;
 
-     std::vector<char> temp;
+     std::vector<char> temp(1);
      // vsnprintf will calculate the required length, not including the NULL,
      // for the format string when given a NULL pointer and a zero length as
      // the first two parameters.
-     size_t iStringLength = vsnprintf(0, 0, format, varArgs);
+     size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, varArgs);
      temp.resize(iStringLength + 1);
      vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
      destination = &temp[0];
