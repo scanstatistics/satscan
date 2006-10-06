@@ -320,7 +320,6 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"UseDistanceFromCenterOption_Reported"));
   //validate parameters no longer used
   gvParameterInfo[VALIDATE - 1] = std::make_pair(NotUsed, NotUsed);
-
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"NeighborsFilename"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseNeighborsFile"));
 }
@@ -329,6 +328,8 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 void IniParameterSpecification::Build_8_0_x_ParameterList() {
   Build_7_0_x_ParameterList();
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MultipleCoordinatesType"));
+  gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"MetaLocationsFilename"));
+  gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseMetaLocationsFile"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.
