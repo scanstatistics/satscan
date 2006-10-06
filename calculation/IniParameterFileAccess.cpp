@@ -71,7 +71,7 @@ void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, Param
       if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
         const ZdIniSection  * pSection = SourceFile.GetSection(lSectionIndex);
         if ((lKeyIndex = pSection->FindKey(sKey)) > -1)
-          SetParameter(eParameterType, ZdString(pSection->GetLine(lKeyIndex)->GetValue()), gPrintDirection);
+          SetParameter(eParameterType, std::string(pSection->GetLine(lKeyIndex)->GetValue()), gPrintDirection);
       }
     }
     //if (lKeyIndex == -1)
@@ -86,9 +86,9 @@ void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, Param
 /** Reads parameter from ini file and returns all found key values in vector for
     those parameters that have optional additional keys, such as files with
     multiple datasets. */
-std::vector<ZdString>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<ZdString>& vParameters) const {
+std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const {
   long                  lSectionIndex, lKeyIndex;
-  ZdString              sNextKey;
+  std::string           sNextKey;
   const char          * sSectionName, * sKey;
   size_t                iDataSets=2;
 
@@ -97,10 +97,10 @@ std::vector<ZdString>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile&
     //read possibly other dataset case source
     if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
       const ZdIniSection  * pSection = SourceFile.GetSection(lSectionIndex);
-      sNextKey.printf("%s%i", sKey, iDataSets);
-      while ((lKeyIndex = pSection->FindKey(sNextKey)) > -1) {
-           vParameters.push_back(ZdString(pSection->GetLine(lKeyIndex)->GetValue()));
-           sNextKey.printf("%s%i", sKey, ++iDataSets);
+      printString(sNextKey, "%s%i", sKey, iDataSets);
+      while ((lKeyIndex = pSection->FindKey(sNextKey.c_str())) > -1) {
+           vParameters.push_back(std::string(pSection->GetLine(lKeyIndex)->GetValue()));
+           printString(sNextKey, "%s%i", sKey, ++iDataSets);
       }
     }
   }
@@ -110,23 +110,23 @@ std::vector<ZdString>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile&
 
 /** Reads parameter settings grouped under 'Mutliple Data Sets'. */
 void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile) {
-  std::vector<ZdString>         vFilenames;
+  std::vector<std::string>      vFilenames;
   size_t                        t, iMostDataSets=1;
 
   try {
     ReadIniParameter(SourceFile, MULTI_DATASET_PURPOSE_TYPE);
     ReadIniParameter(SourceFile, CASEFILE, vFilenames);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetCaseFileName(vFilenames[t].GetCString(), true, t + 2);
+      gParameters.SetCaseFileName(vFilenames[t].c_str(), true, t + 2);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     ReadIniParameter(SourceFile, CONTROLFILE, vFilenames);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetControlFileName(vFilenames[t].GetCString(), true, t + 2);
+      gParameters.SetControlFileName(vFilenames[t].c_str(), true, t + 2);
     ReadIniParameter(SourceFile, POPFILE, vFilenames);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
-      gParameters.SetPopulationFileName(vFilenames[t].GetCString(), true, t + 2);
+      gParameters.SetPopulationFileName(vFilenames[t].c_str(), true, t + 2);
     //Synchronize collections of dataset filesnames so that we can ask for
     //any file of a particular dataset, even if blank. This keeps the same behavior
     //as when there was only one dataset.
@@ -178,15 +178,15 @@ void IniParameterFileAccess::Write(const char* sFilename) {
 
 /** Writes parameter settings grouped under 'Analysis'. */
 void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, ANALYSISTYPE, GetParameterString(ANALYSISTYPE, s), GetParameterComment(ANALYSISTYPE));
-    WriteIniParameter(WriteFile, MODEL, GetParameterString(MODEL, s), GetParameterComment(MODEL));
-    WriteIniParameter(WriteFile, SCANAREAS, GetParameterString(SCANAREAS, s), GetParameterComment(SCANAREAS));
-    WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, GetParameterString(TIME_AGGREGATION_UNITS, s), GetParameterComment(TIME_AGGREGATION_UNITS));
-    WriteIniParameter(WriteFile, TIME_AGGREGATION, GetParameterString(TIME_AGGREGATION, s), GetParameterComment(TIME_AGGREGATION));
-    WriteIniParameter(WriteFile, REPLICAS, GetParameterString(REPLICAS, s), GetParameterComment(REPLICAS));
+    WriteIniParameter(WriteFile, ANALYSISTYPE, GetParameterString(ANALYSISTYPE, s).c_str(), GetParameterComment(ANALYSISTYPE));
+    WriteIniParameter(WriteFile, MODEL, GetParameterString(MODEL, s).c_str(), GetParameterComment(MODEL));
+    WriteIniParameter(WriteFile, SCANAREAS, GetParameterString(SCANAREAS, s).c_str(), GetParameterComment(SCANAREAS));
+    WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, GetParameterString(TIME_AGGREGATION_UNITS, s).c_str(), GetParameterComment(TIME_AGGREGATION_UNITS));
+    WriteIniParameter(WriteFile, TIME_AGGREGATION, GetParameterString(TIME_AGGREGATION, s).c_str(), GetParameterComment(TIME_AGGREGATION));
+    WriteIniParameter(WriteFile, REPLICAS, GetParameterString(REPLICAS, s).c_str(), GetParameterComment(REPLICAS));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteAnalysisSettings()","IniParameterFileAccess");
@@ -196,16 +196,16 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Clusters Reported'. */
 void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
-    WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s), GetParameterComment(USE_REPORTED_GEOSIZE));
-    WriteIniParameter(WriteFile, MAXGEOPOPATRISK_REPORTED, GetParameterString(MAXGEOPOPATRISK_REPORTED, s), GetParameterComment(MAXGEOPOPATRISK_REPORTED));
-    WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s), GetParameterComment(MAXGEOPOPFILE_REPORTED));
-    WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s), GetParameterComment(MAXGEODISTANCE_REPORTED));
-    WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE_REPORTED, GetParameterString(USE_MAXGEOPOPFILE_REPORTED, s), GetParameterComment(USE_MAXGEOPOPFILE_REPORTED));
-    WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
+    WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
+    WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s).c_str(), GetParameterComment(USE_REPORTED_GEOSIZE));
+    WriteIniParameter(WriteFile, MAXGEOPOPATRISK_REPORTED, GetParameterString(MAXGEOPOPATRISK_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPATRISK_REPORTED));
+    WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPFILE_REPORTED));
+    WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(MAXGEODISTANCE_REPORTED));
+    WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE_REPORTED, GetParameterString(USE_MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE_REPORTED));
+    WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteClustersReportedSettings()","IniParameterFileAccess");
@@ -215,11 +215,11 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
 
 /** Writes parameter settings grouped under 'Data Checking'. */
 void IniParameterFileAccess::WriteDataCheckingSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, STUDYPERIOD_DATACHECK, GetParameterString(STUDYPERIOD_DATACHECK, s), GetParameterComment(STUDYPERIOD_DATACHECK));
-    WriteIniParameter(WriteFile, COORDINATES_DATACHECK, GetParameterString(COORDINATES_DATACHECK, s), GetParameterComment(COORDINATES_DATACHECK));
+    WriteIniParameter(WriteFile, STUDYPERIOD_DATACHECK, GetParameterString(STUDYPERIOD_DATACHECK, s).c_str(), GetParameterComment(STUDYPERIOD_DATACHECK));
+    WriteIniParameter(WriteFile, COORDINATES_DATACHECK, GetParameterString(COORDINATES_DATACHECK, s).c_str(), GetParameterComment(COORDINATES_DATACHECK));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteDataCheckingSettings()","IniParameterFileAccess");
@@ -229,11 +229,11 @@ void IniParameterFileAccess::WriteDataCheckingSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under '[Elliptic Scan]'. */
 void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s), GetParameterComment(ESHAPES));
-    WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s), GetParameterComment(ENUMBERS));
+    WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s).c_str(), GetParameterComment(ESHAPES));
+    WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s).c_str(), GetParameterComment(ENUMBERS));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteEllipticScanSettings()","IniParameterFileAccess");
@@ -243,16 +243,16 @@ void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Inference'. */
 void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, START_PROSP_SURV, GetParameterString(START_PROSP_SURV, s), GetParameterComment(START_PROSP_SURV));
-    WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s), GetParameterComment(EARLY_SIM_TERMINATION));
-    WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
-    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s), GetParameterComment(REPORT_CRITICAL_VALUES));
-    WriteIniParameter(WriteFile, ITERATIVE, GetParameterString(ITERATIVE, s), GetParameterComment(ITERATIVE));
-    WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s), GetParameterComment(ITERATIVE_NUM));
-    WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s), GetParameterComment(ITERATIVE_PVAL));
+    WriteIniParameter(WriteFile, START_PROSP_SURV, GetParameterString(START_PROSP_SURV, s).c_str(), GetParameterComment(START_PROSP_SURV));
+    WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s).c_str(), GetParameterComment(EARLY_SIM_TERMINATION));
+    WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s).c_str(), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
+    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
+    WriteIniParameter(WriteFile, ITERATIVE, GetParameterString(ITERATIVE, s).c_str(), GetParameterComment(ITERATIVE));
+    WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s).c_str(), GetParameterComment(ITERATIVE_NUM));
+    WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s).c_str(), GetParameterComment(ITERATIVE_PVAL));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -293,10 +293,10 @@ void IniParameterFileAccess::WriteIniParameterAsKey(ZdIniFile& WriteFile, const 
 
 /** Writes parameter settings grouped under '[Isotonic Scan]'. */
 void IniParameterFileAccess::WriteIsotonicScanSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s), GetParameterComment(RISKFUNCTION));
+    WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s).c_str(), GetParameterComment(RISKFUNCTION));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteIsotonicScanSettings()","IniParameterFileAccess");
@@ -306,19 +306,19 @@ void IniParameterFileAccess::WriteIsotonicScanSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Input'. */
 void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s), GetParameterComment(CASEFILE));
-    WriteIniParameter(WriteFile, CONTROLFILE, GetParameterString(CONTROLFILE, s), GetParameterComment(CONTROLFILE));
-    WriteIniParameter(WriteFile, POPFILE, GetParameterString(POPFILE, s), GetParameterComment(POPFILE));
-    WriteIniParameter(WriteFile, COORDFILE, GetParameterString(COORDFILE, s), GetParameterComment(COORDFILE));
-    WriteIniParameter(WriteFile, SPECIALGRID, GetParameterString(SPECIALGRID, s), GetParameterComment(SPECIALGRID));
-    WriteIniParameter(WriteFile, GRIDFILE, GetParameterString(GRIDFILE, s), GetParameterComment(GRIDFILE));
-    WriteIniParameter(WriteFile, PRECISION, GetParameterString(PRECISION, s), GetParameterComment(PRECISION));
-    WriteIniParameter(WriteFile, COORDTYPE, GetParameterString(COORDTYPE, s), GetParameterComment(COORDTYPE));
-    WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s), GetParameterComment(STARTDATE));
-    WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s), GetParameterComment(ENDDATE));
+    WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s).c_str(), GetParameterComment(CASEFILE));
+    WriteIniParameter(WriteFile, CONTROLFILE, GetParameterString(CONTROLFILE, s).c_str(), GetParameterComment(CONTROLFILE));
+    WriteIniParameter(WriteFile, POPFILE, GetParameterString(POPFILE, s).c_str(), GetParameterComment(POPFILE));
+    WriteIniParameter(WriteFile, COORDFILE, GetParameterString(COORDFILE, s).c_str(), GetParameterComment(COORDFILE));
+    WriteIniParameter(WriteFile, SPECIALGRID, GetParameterString(SPECIALGRID, s).c_str(), GetParameterComment(SPECIALGRID));
+    WriteIniParameter(WriteFile, GRIDFILE, GetParameterString(GRIDFILE, s).c_str(), GetParameterComment(GRIDFILE));
+    WriteIniParameter(WriteFile, PRECISION, GetParameterString(PRECISION, s).c_str(), GetParameterComment(PRECISION));
+    WriteIniParameter(WriteFile, COORDTYPE, GetParameterString(COORDTYPE, s).c_str(), GetParameterComment(COORDTYPE));
+    WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s).c_str(), GetParameterComment(STARTDATE));
+    WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s).c_str(), GetParameterComment(ENDDATE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteInputSettings()","IniParameterFileAccess");
@@ -328,32 +328,32 @@ void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Multiple Data Sets'. */
 void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile) {
-  ZdString      s, sComment;
+  std::string   s, sComment;
   const char  * sSectionName, * sBaseKey;
 
   try {
-    WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()),
+    WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()).c_str(),
                       " multiple data sets purpose type (0=Multivariate, 1=Adjustment)");
 
     if (GetSpecifications().GetMultipleParameterIniInfo(CASEFILE, &sSectionName, &sBaseKey)) {
       for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
-         s.printf("%s%i", sBaseKey, t + 1);
-         sComment.printf(" case data filename (additional data set %i)", t + 1);
-         WriteIniParameterAsKey(WriteFile, sSectionName, s.GetCString(), gParameters.GetCaseFileName(t + 1).c_str(), sComment.GetCString());
+         printString(s, "%s%i", sBaseKey, t + 1);
+         printString(sComment, " case data filename (additional data set %i)", t + 1);
+         WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetCaseFileName(t + 1).c_str(), sComment.c_str());
       }
     }
     if (GetSpecifications().GetMultipleParameterIniInfo(CONTROLFILE, &sSectionName, &sBaseKey)) {
       for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
-         s.printf("%s%i", sBaseKey, t + 1);
-         sComment.printf(" control data filename (additional data set %i)", t + 1);
-         WriteIniParameterAsKey(WriteFile, sSectionName, s.GetCString(), gParameters.GetControlFileName(t + 1).c_str(), sComment.GetCString());
+         printString(s, "%s%i", sBaseKey, t + 1);
+         printString(sComment, " control data filename (additional data set %i)", t + 1);
+         WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetControlFileName(t + 1).c_str(), sComment.c_str());
       }
     }
     if (GetSpecifications().GetMultipleParameterIniInfo(POPFILE, &sSectionName, &sBaseKey)) {
       for (size_t t=1; t < gParameters.GetNumDataSets(); ++t) {
-         s.printf("%s%i", sBaseKey, t + 1);
-         sComment.printf(" population data filename (additional data set %i)", t + 1);
-         WriteIniParameterAsKey(WriteFile, sSectionName, s.GetCString(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.GetCString());
+         printString(s, "%s%i", sBaseKey, t + 1);
+         printString(sComment, " population data filename (additional data set %i)", t + 1);
+         WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.c_str());
       }
     }
   }
@@ -365,11 +365,13 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile)
 
 /** Writes parameter settings grouped under 'Neighbors File'. */
 void IniParameterFileAccess::WriteNeighborsFileSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s), GetParameterComment(LOCATION_NEIGHBORS_FILE));
-    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, META_LOCATIONS_FILE, GetParameterString(META_LOCATIONS_FILE, s).c_str(), GetParameterComment(META_LOCATIONS_FILE));
+    WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
@@ -379,20 +381,20 @@ void IniParameterFileAccess::WriteNeighborsFileSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Output'. */
 void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, OUTPUTFILE, GetParameterString(OUTPUTFILE, s), GetParameterComment(OUTPUTFILE));
-    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, GetParameterString(OUTPUT_SIM_LLR_ASCII, s), GetParameterComment(OUTPUT_SIM_LLR_ASCII));
-    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, GetParameterString(OUTPUT_SIM_LLR_DBASE, s), GetParameterComment(OUTPUT_SIM_LLR_DBASE));
-    WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, GetParameterString(OUTPUT_RR_ASCII, s), GetParameterComment(OUTPUT_RR_ASCII));
-    WriteIniParameter(WriteFile, OUTPUT_RR_DBASE, GetParameterString(OUTPUT_RR_DBASE, s), GetParameterComment(OUTPUT_RR_DBASE));
-    WriteIniParameter(WriteFile, OUTPUT_AREAS_ASCII, GetParameterString(OUTPUT_AREAS_ASCII, s), GetParameterComment(OUTPUT_AREAS_ASCII));
-    WriteIniParameter(WriteFile, OUTPUT_AREAS_DBASE, GetParameterString(OUTPUT_AREAS_DBASE, s), GetParameterComment(OUTPUT_AREAS_DBASE));
-    WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, GetParameterString(OUTPUT_MLC_ASCII, s), GetParameterComment(OUTPUT_MLC_ASCII));
-    WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s), GetParameterComment(OUTPUT_MLC_DBASE));
-    WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
-    WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
+    WriteIniParameter(WriteFile, OUTPUTFILE, GetParameterString(OUTPUTFILE, s).c_str(), GetParameterComment(OUTPUTFILE));
+    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, GetParameterString(OUTPUT_SIM_LLR_ASCII, s).c_str(), GetParameterComment(OUTPUT_SIM_LLR_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, GetParameterString(OUTPUT_SIM_LLR_DBASE, s).c_str(), GetParameterComment(OUTPUT_SIM_LLR_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, GetParameterString(OUTPUT_RR_ASCII, s).c_str(), GetParameterComment(OUTPUT_RR_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_RR_DBASE, GetParameterString(OUTPUT_RR_DBASE, s).c_str(), GetParameterComment(OUTPUT_RR_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_AREAS_ASCII, GetParameterString(OUTPUT_AREAS_ASCII, s).c_str(), GetParameterComment(OUTPUT_AREAS_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_AREAS_DBASE, GetParameterString(OUTPUT_AREAS_DBASE, s).c_str(), GetParameterComment(OUTPUT_AREAS_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_ASCII, GetParameterString(OUTPUT_MLC_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteOutputSettings()","IniParameterFileAccess");
@@ -402,16 +404,16 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under '[Power Simulations]'. */
 void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, POWERCALC, GetParameterString(POWERCALC, s), GetParameterComment(POWERCALC));
-    WriteIniParameter(WriteFile, POWERX, GetParameterString(POWERX, s), GetParameterComment(POWERX));
-    WriteIniParameter(WriteFile, POWERY, GetParameterString(POWERY, s), GetParameterComment(POWERY));
-    WriteIniParameter(WriteFile, SIMULATION_TYPE, GetParameterString(SIMULATION_TYPE, s), GetParameterComment(SIMULATION_TYPE));
-    WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, GetParameterString(SIMULATION_SOURCEFILE, s), GetParameterComment(SIMULATION_SOURCEFILE));
-    WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s), GetParameterComment(OUTPUT_SIMULATION_DATA));
-    WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, GetParameterString(SIMULATION_DATA_OUTFILE, s), GetParameterComment(SIMULATION_DATA_OUTFILE));
+    WriteIniParameter(WriteFile, POWERCALC, GetParameterString(POWERCALC, s).c_str(), GetParameterComment(POWERCALC));
+    WriteIniParameter(WriteFile, POWERX, GetParameterString(POWERX, s).c_str(), GetParameterComment(POWERX));
+    WriteIniParameter(WriteFile, POWERY, GetParameterString(POWERY, s).c_str(), GetParameterComment(POWERY));
+    WriteIniParameter(WriteFile, SIMULATION_TYPE, GetParameterString(SIMULATION_TYPE, s).c_str(), GetParameterComment(SIMULATION_TYPE));
+    WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, GetParameterString(SIMULATION_SOURCEFILE, s).c_str(), GetParameterComment(SIMULATION_SOURCEFILE));
+    WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s).c_str(), GetParameterComment(OUTPUT_SIMULATION_DATA));
+    WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, GetParameterString(SIMULATION_DATA_OUTFILE, s).c_str(), GetParameterComment(SIMULATION_DATA_OUTFILE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -421,18 +423,18 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
 
 /** Writes parameter settings grouped under '[Run Options]'. */
 void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
     // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
     // which we'll determine by whether it is different than default seed
     if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)
-      WriteIniParameter(WriteFile, RANDOMIZATION_SEED, GetParameterString(RANDOMIZATION_SEED, s), GetParameterComment(RANDOMIZATION_SEED));
-    //WriteIniParameter(WriteFile, TIMETRENDCONVRG, GetParameterString(TIMETRENDCONVRG, s), GetParameterComment(TIMETRENDCONVRG));  //---  until SVTT is available, don't write
-    WriteIniParameter(WriteFile, EXECUTION_TYPE, GetParameterString(EXECUTION_TYPE, s), GetParameterComment(EXECUTION_TYPE));
-    WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s), GetParameterComment(NUM_PROCESSES));
-    WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s), GetParameterComment(LOG_HISTORY));
-    WriteIniParameter(WriteFile, SUPPRESS_WARNINGS, GetParameterString(SUPPRESS_WARNINGS, s), GetParameterComment(SUPPRESS_WARNINGS));
+      WriteIniParameter(WriteFile, RANDOMIZATION_SEED, GetParameterString(RANDOMIZATION_SEED, s).c_str(), GetParameterComment(RANDOMIZATION_SEED));
+    //WriteIniParameter(WriteFile, TIMETRENDCONVRG, GetParameterString(TIMETRENDCONVRG, s).c_str(), GetParameterComment(TIMETRENDCONVRG));  //---  until SVTT is available, don't write
+    WriteIniParameter(WriteFile, EXECUTION_TYPE, GetParameterString(EXECUTION_TYPE, s).c_str(), GetParameterComment(EXECUTION_TYPE));
+    WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s).c_str(), GetParameterComment(NUM_PROCESSES));
+    WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s).c_str(), GetParameterComment(LOG_HISTORY));
+    WriteIniParameter(WriteFile, SUPPRESS_WARNINGS, GetParameterString(SUPPRESS_WARNINGS, s).c_str(), GetParameterComment(SUPPRESS_WARNINGS));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
@@ -442,14 +444,14 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, TIMETREND, GetParameterString(TIMETREND, s), GetParameterComment(TIMETREND));
-    WriteIniParameter(WriteFile, TIMETRENDPERC, GetParameterString(TIMETRENDPERC, s), GetParameterComment(TIMETRENDPERC));
-    WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, GetParameterString(ADJ_BY_RR_FILE, s), GetParameterComment(ADJ_BY_RR_FILE));
-    WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s), GetParameterComment(USE_ADJ_BY_RR_FILE));
-    WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s), GetParameterComment(SPATIAL_ADJ_TYPE));
+    WriteIniParameter(WriteFile, TIMETREND, GetParameterString(TIMETREND, s).c_str(), GetParameterComment(TIMETREND));
+    WriteIniParameter(WriteFile, TIMETRENDPERC, GetParameterString(TIMETRENDPERC, s).c_str(), GetParameterComment(TIMETRENDPERC));
+    WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, GetParameterString(ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(ADJ_BY_RR_FILE));
+    WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(USE_ADJ_BY_RR_FILE));
+    WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
@@ -459,19 +461,19 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& Writ
 
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s), GetParameterComment(MAXGEOPOPATRISK));
-    WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s), GetParameterComment(MAXGEOPOPFILE));
-    WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s), GetParameterComment(MAXGEODISTANCE));
-    WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s), GetParameterComment(USE_MAXGEOPOPFILE));
-    WriteIniParameter(WriteFile, USE_MAXGEODISTANCE, GetParameterString(USE_MAXGEODISTANCE, s), GetParameterComment(USE_MAXGEODISTANCE));
-    WriteIniParameter(WriteFile, PURETEMPORAL, GetParameterString(PURETEMPORAL, s), GetParameterComment(PURETEMPORAL));
-    WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s), GetParameterComment(MAXCIRCLEPOPFILE));
-    WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s), GetParameterComment(WINDOW_SHAPE));
-    WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s), GetParameterComment(NON_COMPACTNESS_PENALTY));
-    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
+    WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s).c_str(), GetParameterComment(MAXGEOPOPATRISK));
+    WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s).c_str(), GetParameterComment(MAXGEOPOPFILE));
+    WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s).c_str(), GetParameterComment(MAXGEODISTANCE));
+    WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE));
+    WriteIniParameter(WriteFile, USE_MAXGEODISTANCE, GetParameterString(USE_MAXGEODISTANCE, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE));
+    WriteIniParameter(WriteFile, PURETEMPORAL, GetParameterString(PURETEMPORAL, s).c_str(), GetParameterComment(PURETEMPORAL));
+    WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s).c_str(), GetParameterComment(MAXCIRCLEPOPFILE));
+    WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s).c_str(), GetParameterComment(WINDOW_SHAPE));
+    WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s).c_str(), GetParameterComment(NON_COMPACTNESS_PENALTY));
+    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpatialWindowSettings()","IniParameterFileAccess");
@@ -481,10 +483,10 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under '[System]'. */
 void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string s;
 
   try {
-    WriteIniParameter(WriteFile, CREATION_VERSION, GetParameterString(CREATION_VERSION, s), GetParameterComment(CREATION_VERSION));
+    WriteIniParameter(WriteFile, CREATION_VERSION, GetParameterString(CREATION_VERSION, s).c_str(), GetParameterComment(CREATION_VERSION));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSystemSettings()","IniParameterFileAccess");
@@ -494,15 +496,15 @@ void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
 
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteTemporalWindowSettings(ZdIniFile& WriteFile) {
-  ZdString      s;
+  std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, TIMESIZE, GetParameterString(TIMESIZE, s), GetParameterComment(TIMESIZE));
-    WriteIniParameter(WriteFile, PURESPATIAL, GetParameterString(PURESPATIAL, s), GetParameterComment(PURESPATIAL));
-    WriteIniParameter(WriteFile, MAX_TEMPORAL_TYPE, GetParameterString(MAX_TEMPORAL_TYPE, s), GetParameterComment(MAX_TEMPORAL_TYPE));
-    WriteIniParameter(WriteFile, CLUSTERS, GetParameterString(CLUSTERS, s), GetParameterComment(CLUSTERS));
-    WriteIniParameter(WriteFile, INTERVAL_STARTRANGE, GetParameterString(INTERVAL_STARTRANGE, s), GetParameterComment(INTERVAL_STARTRANGE));
-    WriteIniParameter(WriteFile, INTERVAL_ENDRANGE, GetParameterString(INTERVAL_ENDRANGE, s), GetParameterComment(INTERVAL_ENDRANGE));
+    WriteIniParameter(WriteFile, TIMESIZE, GetParameterString(TIMESIZE, s).c_str(), GetParameterComment(TIMESIZE));
+    WriteIniParameter(WriteFile, PURESPATIAL, GetParameterString(PURESPATIAL, s).c_str(), GetParameterComment(PURESPATIAL));
+    WriteIniParameter(WriteFile, MAX_TEMPORAL_TYPE, GetParameterString(MAX_TEMPORAL_TYPE, s).c_str(), GetParameterComment(MAX_TEMPORAL_TYPE));
+    WriteIniParameter(WriteFile, CLUSTERS, GetParameterString(CLUSTERS, s).c_str(), GetParameterComment(CLUSTERS));
+    WriteIniParameter(WriteFile, INTERVAL_STARTRANGE, GetParameterString(INTERVAL_STARTRANGE, s).c_str(), GetParameterComment(INTERVAL_STARTRANGE));
+    WriteIniParameter(WriteFile, INTERVAL_ENDRANGE, GetParameterString(INTERVAL_ENDRANGE, s).c_str(), GetParameterComment(INTERVAL_ENDRANGE));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteTemporalWindowSettings()","IniParameterFileAccess");

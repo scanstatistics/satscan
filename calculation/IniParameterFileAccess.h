@@ -14,7 +14,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     virtual const char                * GetParameterLabel(ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
     void                                ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType);
-    std::vector<ZdString>             & ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<ZdString>& vParameters) const;
+    std::vector<std::string>          & ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const;
     void                                ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile);
 
     void                                WriteAnalysisSettings(ZdIniFile& WriteFile);
