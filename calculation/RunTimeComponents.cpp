@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "RunTimeComponents.h"
 #include "AsciiPrintFormat.h"
+#include "UtilityFunctions.h"
 
 /** constructor */
 RunTimeComponentManager::RunTimeComponentManager() {}
@@ -45,11 +46,11 @@ const char * RunTimeComponentManager::GetLabel(FocusRunTimeComponent::Type eComp
 }
 
 /** Returns formated string which indicates total run time. */
-ZdString & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, ZdString& sTimeString) const {
+std::string & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, std::string& sTimeString) const {
   short                 uwDays, uwHours, uwMinutes;
-  ZdString              sBuffer;
+  std::string           buffer;
 
-  sTimeString.Clear();
+  sTimeString = "";
 
 //  uwDays = static_cast<short>(dTimeInSeconds / 86400);
 //  dTimeInSeconds -= uwDays * 86400;
@@ -65,8 +66,9 @@ ZdString & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, ZdStrin
 //  if (uwMinutes)
 //    sTimeString << uwMinutes << " m ";
 
-  sBuffer.printf("%g", std::max(dTimeInSeconds, 0.0));
-  sTimeString << sBuffer << " s ";
+  printString(buffer, "%g", std::max(dTimeInSeconds, 0.0));
+  sTimeString += buffer;
+  sTimeString += " s ";
 
   return sTimeString;
 }
@@ -82,7 +84,7 @@ void RunTimeComponentManager::Initialize() {
 /** Prints details of component runtimes to file stream. */
 void RunTimeComponentManager::Print(FILE* fp) {
   double                dTotalExecutionTime;
-  ZdString              sBuffer;
+  std::string           buffer;
   AsciiPrintFormat      Printer;
 
   //stop total execution timer
@@ -93,24 +95,24 @@ void RunTimeComponentManager::Print(FILE* fp) {
   fprintf(fp, "Run Time Components\n");
   fprintf(fp, "-------------------\n");
   Printer.PrintSectionLabel(fp, "Total Time", false, true);
-  Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, sBuffer));
+  Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, buffer));
   for (const_srt_itr_t itr=gtRunTimeComponents.begin(); itr != gtRunTimeComponents.end(); ++itr) {
-     sBuffer.printf("%d) %s", itr->second.GetType(), GetLabel(itr->second.GetType()));
-     Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
+     printString(buffer, "%d) %s", itr->second.GetType(), GetLabel(itr->second.GetType()));
+     Printer.PrintSectionLabel(fp, buffer.c_str(), false, true);
      dTotalExecutionTime -= itr->second.GetTotalTime();
-     Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), sBuffer));
+     Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), buffer));
   }
-  sBuffer.printf("%d) %s", SerialRunTimeComponent::CatchAll, GetLabel(SerialRunTimeComponent::CatchAll));
-  Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-  Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, sBuffer));
+  printString(buffer, "%d) %s", SerialRunTimeComponent::CatchAll, GetLabel(SerialRunTimeComponent::CatchAll));
+  Printer.PrintSectionLabel(fp, buffer.c_str(), false, true);
+  Printer.PrintAlignedMarginsDataString(fp, GetTimeString(dTotalExecutionTime, buffer));
   //print FocusRunTimeComponent objects
   if (gtFocusedRunTimeComponents.size()) {
     fprintf(fp, "\nFocused Components\n");
     fprintf(fp, "------------------\n");
     for (const_frt_itr_t itr=gtFocusedRunTimeComponents.begin(); itr != gtFocusedRunTimeComponents.end(); ++itr) {
-       sBuffer.printf("%s (%d)", GetLabel(itr->second.GetType()), itr->second.GetBelongingSerialType());
-       Printer.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-       Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), sBuffer));
+       printString(buffer, "%s (%d)", GetLabel(itr->second.GetType()), itr->second.GetBelongingSerialType());
+       Printer.PrintSectionLabel(fp, buffer.c_str(), false, true);
+       Printer.PrintAlignedMarginsDataString(fp, GetTimeString(itr->second.GetTotalTime(), buffer));
     }
   }  
   Printer.PrintSectionSeparatorString(fp);

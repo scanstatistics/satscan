@@ -75,7 +75,7 @@ class RunTimeComponentManager {
     SerialRunTimeComponent::Type  GetCorrespondingRunTimeComponent(FocusRunTimeComponent::Type eType) const;
     const char                  * GetLabel(SerialRunTimeComponent::Type eComponent) const;
     const char                  * GetLabel(FocusRunTimeComponent::Type eComponent) const;
-    ZdString                    & GetTimeString(double dTimeInSeconds, ZdString& sTimeString) const;
+    std::string                 & GetTimeString(double dTimeInSeconds, std::string& sTimeString) const;
 
   public:
     RunTimeComponentManager();
