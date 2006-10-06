@@ -29,8 +29,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     USE_MAXGEOPOPFILE, USE_MAXGEODISTANCE,
                                     MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
-                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, MULTIPLE_COORDINATES_TYPE
-                                    };
+                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, MULTIPLE_COORDINATES_TYPE,
+                                    META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -161,14 +161,16 @@ class CParameters {
     bool                                gbUseSpecialGridFile;                   /** indicator of special grid file usage */
     std::string                         gsMaxCirclePopulationFileName;           /** special population file for constructing circles only */
     std::string                         gsOutputFileName;                       /** results output filename */
-    ZdString                            gsRunHistoryFilename;                   /** run history filename */
+    std::string                         gsRunHistoryFilename;                   /** run history filename */
     bool                                gbLogRunHistory;                        /** indicates whether to log history */
     std::string                         gsSimulationDataSourceFileName;         /** simualtion data source filename */
     bool                                gbUseAdjustmentsForRRFile;              /** indicates whether to use adjustments for known relative risks file */
     std::string                         gsAdjustmentsByRelativeRisksFileName;   /** adjustments by known relative risks filename */
     std::string                         gsSimulationDataOutputFilename;         /** simulation data output filename */
-    std::string                         gsLocationNeighborsFilename;                /** sorted array neighbor file */
-    bool                                gbUseLocationNeighborsFile;                 /** use sorted array neighbor file? */
+    std::string                         gsLocationNeighborsFilename;            /** sorted array neighbor file */
+    bool                                gbUseLocationNeighborsFile;             /** use sorted array neighbor file? */
+    std::string                         gsMetaLocationsFilename;                /** meta locations file -- neighbors file */
+    bool                                gbUseMetaLocationsFile;                 /** use meta locations file? */
         /* Analysis dates */
     std::string                         gsProspectiveStartDate;                 /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
     std::string                         gsStudyPeriodStartDate;                 /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
@@ -185,7 +187,7 @@ class CParameters {
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
-    const char                        * GetRelativeToParameterName(const ZdFileName& fParameterName, const std::string& sFilename, ZdString& sValue) const;
+    const char                        * GetRelativeToParameterName(const ZdFileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
 
   public:
     CParameters();
@@ -237,6 +239,7 @@ class CParameters {
     double                              GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     double                              GetMaximumTemporalClusterSize() const {return gdMaxTemporalClusterSize;}
     TemporalSizeType                    GetMaximumTemporalClusterSizeType() const {return geMaxTemporalClusterSizeType;}
+    const std::string                 & getMetaLocationsFilename() const {return gsMetaLocationsFilename;}  
     MultipleDataSetPurposeType          GetMultipleDataSetPurposeType() const {return geMultipleSetPurposeType;}
     MultipleCoordinatesType             GetMultipleCoordinatesType() const {return geMultipleCoordinatesType;}
     double                              GetNonCompactnessPenaltyPower() const {return (geNonCompactnessPenaltyType == NOPENALTY ? 0.0 : (geNonCompactnessPenaltyType == MEDIUMPENALTY ? .5 : 1.0));}
@@ -283,7 +286,7 @@ class CParameters {
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     bool                                GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
-    const ZdString                    & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
+    const std::string                 & GetRunHistoryFilename() const  { return gsRunHistoryFilename; }
     double                              GetIterativeCutOffPValue() const {return gbIterativeCutOffPValue;}
     const std::string                 & GetSimulationDataOutputFilename() const {return gsSimulationDataOutputFilename;}
     const std::string                 & GetSimulationDataSourceFilename() const {return gsSimulationDataSourceFileName;}
@@ -328,6 +331,7 @@ class CParameters {
     void                                SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize);
     void                                SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType);
     void                                SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, double d, bool bReported);
+    void                                setMetaLocationsFilename(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath=false);
     void                                SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType);
     void                                SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCoordinatesType);
     void                                SetNonCompactnessPenalty(NonCompactnessPenaltyType e);
@@ -359,7 +363,7 @@ class CParameters {
     void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
-    void                                SetRunHistoryFilename(const ZdString& sFilename) {gsRunHistoryFilename = sFilename;}
+    void                                SetRunHistoryFilename(const std::string& sFilename) {gsRunHistoryFilename = sFilename;}
     void                                SetIterativeCutOffPValue(double dPValue);
     void                                SetIterativeScanning(bool b) {gbIterativeRuns = b;}
     void                                SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath=false);
@@ -382,13 +386,15 @@ class CParameters {
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
+    void                                UseMetaLocationsFile(bool b) {gbUseMetaLocationsFile = b;}
     void                                UseLocationNeighborsFile(bool b) {gbUseLocationNeighborsFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetVersion(const CreationVersion& vVersion);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
     bool                                UseCoordinatesFile() const {return !GetIsPurelyTemporalAnalysis() && !UseLocationNeighborsFile();}
-    bool                                UseLocationNeighborsFile() const {return gbUseLocationNeighborsFile;}
+    bool                                UseMetaLocationsFile() const {return !GetIsPurelyTemporalAnalysis() && UseLocationNeighborsFile() && gbUseMetaLocationsFile;}
+    bool                                UseLocationNeighborsFile() const {return !GetIsPurelyTemporalAnalysis() && gbUseLocationNeighborsFile;}
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
     void                                SetPopulationFile(bool b) {gbUsePopulationFile = b;}  /******/
     bool                                UseSpecialGrid() const {return gbUseSpecialGridFile;}

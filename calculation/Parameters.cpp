@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 92;
+const int CParameters::giNumParameters 	              = 94;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -126,6 +126,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsLocationNeighborsFilename            != rhs.gsLocationNeighborsFilename) return false;
   if (gbUseLocationNeighborsFile             != rhs.gbUseLocationNeighborsFile) return false;
   if (geMultipleCoordinatesType              != rhs.geMultipleCoordinatesType) return false;
+  if (gsMetaLocationsFilename                != rhs.gsMetaLocationsFilename) return false;
+  if (gbUseMetaLocationsFile                 != rhs.gbUseMetaLocationsFile) return false;
 
   return true;
 }
@@ -275,6 +277,8 @@ void CParameters::Copy(const CParameters &rhs) {
     gsLocationNeighborsFilename            = rhs.gsLocationNeighborsFilename;
     gbUseLocationNeighborsFile             = rhs.gbUseLocationNeighborsFile;
     geMultipleCoordinatesType              = rhs.geMultipleCoordinatesType;
+    gsMetaLocationsFilename                = rhs.gsMetaLocationsFilename;
+    gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -443,14 +447,14 @@ const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
     'name.extension' else returns filename. */
 const char * CParameters::GetRelativeToParameterName(const ZdFileName& fParameterName,
                                                      const std::string& sFilename,
-                                                     ZdString& sValue) const {
+                                                     std::string& sValue) const {
   ZdFileName fInputFilename(sFilename.c_str());
 
   if (!stricmp(fInputFilename.GetLocation(), fParameterName.GetLocation()))
     sValue = fInputFilename.GetCompleteFileName();
   else
     sValue = sFilename.c_str();
-  return sValue;
+  return sValue.c_str();
 }
 
 /** Returns indication of whether maximum spatial cluster size is restricted by given type and for real or simulations. */
@@ -767,6 +771,8 @@ void CParameters::SetAsDefaulted() {
   gsLocationNeighborsFilename = "";
   gbUseLocationNeighborsFile = false;
   geMultipleCoordinatesType = ONEPERLOCATION;
+  gsMetaLocationsFilename = "";
+  gbUseMetaLocationsFile = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -838,6 +844,25 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
   }
   catch (ZdException &x) {
     x.AddCallpath("SetMaximumTemporalClusterSizeType()","CParameters");
+    throw;
+  }
+}
+
+/** Sets meta locations data file name.
+    If bCorrectForRelativePath is true, an attempt is made to modify filename
+    to path relative to executable. This is only attempted if current file
+    does not exist. */
+void CParameters::setMetaLocationsFilename(const char * sMetaLocationsFileName, bool bCorrectForRelativePath) {
+  try {
+    if (! sMetaLocationsFileName)
+      ZdGenerateException("Null pointer.", "setMetaLocationsFileName()");
+
+    gsMetaLocationsFilename = sMetaLocationsFileName;
+    if (bCorrectForRelativePath)
+      ConvertRelativePath(gsMetaLocationsFilename);
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("setMetaLocationsFileName()", "CParameters");
     throw;
   }
 }
