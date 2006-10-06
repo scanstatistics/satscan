@@ -4,11 +4,12 @@
 //******************************************************************************
 #include "DataSet.h"
 #include "SaTScanData.h"
-#include "SSException.h" 
+#include "SSException.h"
+#include "MetaTractManager.h" 
 
 /** constructor */
-DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex)
-           : giIntervalsDimensions(iNumTimeIntervals), giLocationDimensions(iNumTracts), giSetIndex(iSetIndex),
+DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex)
+           : giIntervalsDimensions(iNumTimeIntervals), giLocationDimensions(iNumTracts), giMetaLocations(iMetaLocations), giSetIndex(iSetIndex),
              gpCaseData_PT(0), gpCaseData(0), gpCaseData_NC(0), gpMeasureData(0), gpMeasureData_NC(0),
              gpMeasureData_Sq(0), gpMeasureData_PT(0), gpMeasureData_PT_Sq(0), gpCaseData_PT_NC(0),
              gpMeasureData_PT_NC(0), gpCaseData_PT_Cat(0) {}
@@ -52,7 +53,7 @@ DataSet & DataSet::operator=(const DataSet& rhs) {
 TwoDimCountArray_t & DataSet::allocateCaseData() {
   try {
     if (!gpCaseData)
-      gpCaseData = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions);
+      gpCaseData = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpCaseData->Set(0);
   }
   catch (ZdException &x) {
@@ -69,7 +70,7 @@ CasesByCategory_t & DataSet::allocateCaseData_Cat(unsigned int iNumCategories) {
   try {
     gvCaseData_Cat.DeleteAllElements();
     for (unsigned int i=0; i < iNumCategories; ++i)
-       gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions, 0));
+       gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
   }
   catch (ZdException &x) {
     x.AddCallpath("allocateCaseData_Cat()","DataSet");
@@ -83,7 +84,7 @@ CasesByCategory_t & DataSet::allocateCaseData_Cat(unsigned int iNumCategories) {
 TwoDimCountArray_t & DataSet::allocateCaseData_NC() {
   try {
     if (!gpCaseData_NC)
-      gpCaseData_NC = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions);
+      gpCaseData_NC = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpCaseData_NC->Set(0);
   }
   catch(ZdException &x) {
@@ -155,7 +156,7 @@ count_t * DataSet::allocateCaseData_PT_NC() {
 TwoDimMeasureArray_t & DataSet::allocateMeasureData() {
   try {
     if (!gpMeasureData)
-      gpMeasureData = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions);
+      gpMeasureData = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpMeasureData->Set(0);
   }
   catch (ZdException &x) {
@@ -170,7 +171,7 @@ TwoDimMeasureArray_t & DataSet::allocateMeasureData() {
 TwoDimMeasureArray_t & DataSet::allocateMeasureData_NC() {
   try {
     if (!gpMeasureData_NC)
-      gpMeasureData_NC = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions);
+      gpMeasureData_NC = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpMeasureData_NC->Set(0);
   }
   catch(ZdException &x) {
@@ -239,7 +240,7 @@ measure_t * DataSet::allocateMeasureData_PT_Sq() {
 TwoDimMeasureArray_t & DataSet::allocateMeasureData_Sq() {
   try {
     if (!gpMeasureData_Sq)
-      gpMeasureData_Sq = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions);
+      gpMeasureData_Sq = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpMeasureData_Sq->Set(0);
   }
   catch (ZdException &x) {
@@ -326,12 +327,86 @@ TwoDimMeasureArray_t & DataSet::getMeasureData_Sq() const {
   return *gpMeasureData_Sq;
 }
 
+/** Sets case data at meta location indexes. */
+void DataSet::setCaseData_MetaLocations(const MetaLocationManager& MetaLocations) {
+  std::vector<tract_t>  AtomicIndexes;
+  count_t ** ppCases = getCaseData().GetArray();
+
+  for (unsigned int m=0; m < giMetaLocations; ++m) {
+     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     tract_t MetaIndex = m + giLocationDimensions;
+     for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+        ppCases[i][MetaIndex] = 0;
+     for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+        tract_t Atomic = AtomicIndexes[t];
+        for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+           ppCases[i][MetaIndex] += ppCases[i][Atomic];
+     }
+  }
+}
+
+/** Sets case category data at meta location indexes. */
+void DataSet::setCaseData_Cat_MetaLocations(const MetaLocationManager& MetaLocations) {
+  std::vector<tract_t>  AtomicIndexes;
+
+  for (unsigned int m=0; m < giMetaLocations; ++m) {
+     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     tract_t MetaIndex = m + giLocationDimensions;
+     for (unsigned int c=0; c < getCaseData_Cat().size(); ++c) {
+       count_t ** ppCases = getCaseData_Cat()[c]->GetArray();
+       for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+          ppCases[i][MetaIndex] = 0;
+       for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+          tract_t Atomic = AtomicIndexes[t];
+          for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+             ppCases[i][MetaIndex] += ppCases[i][Atomic];
+       }
+     }
+  }
+}
+
+/** Sets measure data at meta location indexes. */
+void DataSet::setMeasureData_MetaLocations(const MetaLocationManager& MetaLocations) {
+  std::vector<tract_t>  AtomicIndexes;
+  measure_t ** ppMeasure = getMeasureData().GetArray();
+
+  for (unsigned int m=0; m < giMetaLocations; ++m) {
+     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     tract_t MetaIndex = m + giLocationDimensions;
+     for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+        ppMeasure[i][MetaIndex] = 0;
+     for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+        tract_t Atomic = AtomicIndexes[t];
+        for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+           ppMeasure[i][MetaIndex] += ppMeasure[i][Atomic];
+     }
+  }
+}
+
+/** Sets measure sqaure data at meta location indexes. */
+void DataSet::setMeasureData_Sq_MetaLocations(const MetaLocationManager& MetaLocations) {
+  std::vector<tract_t>  AtomicIndexes;
+  measure_t ** ppMeasure = getMeasureData_Sq().GetArray();
+
+  for (unsigned int m=0; m < giMetaLocations; ++m) {
+     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     tract_t MetaIndex = m + giLocationDimensions;
+     for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+        ppMeasure[i][MetaIndex] = 0;
+     for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+        tract_t Atomic = AtomicIndexes[t];
+        for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+           ppMeasure[i][MetaIndex] += ppMeasure[i][Atomic];
+     }
+  }
+}
+
 /** Allocates and sets not cumulative case data (time by space) from cumulative
     case data (time by space). */
 void DataSet::setCaseData_NC() {
   try {
     count_t ** ppCases = getCaseData().GetArray(), ** ppCases_NC = allocateCaseData_NC().GetArray();
-    for (unsigned int t=0; t < giLocationDimensions; ++t)  {
+    for (unsigned int t=0; t < giLocationDimensions + giMetaLocations; ++t)  {
       ppCases_NC[giIntervalsDimensions-1][t] = ppCases[giIntervalsDimensions-1][t];
       for (unsigned int i=0; i < giIntervalsDimensions - 1; ++i)
         ppCases_NC[i][t] = ppCases[i][t] - ppCases[i+1][t];
@@ -402,7 +477,7 @@ void DataSet::setMeasureData_NC() {
   try {
     measure_t ** ppMeasure = getMeasureData().GetArray();
     measure_t ** ppMeasureNC = allocateMeasureData_NC().GetArray();
-    for (unsigned int t=0; t < giLocationDimensions; ++t) {
+    for (unsigned int t=0; t < giLocationDimensions + giMetaLocations; ++t) {
       ppMeasureNC[giIntervalsDimensions-1][t] = ppMeasure[giIntervalsDimensions-1][t];
       for (unsigned int i=0; i < giIntervalsDimensions - 1; ++i)
         ppMeasureNC[i][t] = ppMeasure[i][t] - ppMeasure[i+1][t];
@@ -470,7 +545,7 @@ void DataSet::setMeasureData_PT_Sq() {
 void DataSet::setMeasureDataToCumulative() {
   if (giIntervalsDimensions < 2) return;
   measure_t ** ppMeasure = getMeasureData().GetArray();
-  for (unsigned int t=0; t < giLocationDimensions; ++t) {
+  for (unsigned int t=0; t < giLocationDimensions + giMetaLocations; ++t) {
      for (unsigned int i=giIntervalsDimensions-2; ; --i) {
         ppMeasure[i][t]= ppMeasure[i][t] + ppMeasure[i+1][t];
         if (i == 0) break;
@@ -483,8 +558,8 @@ void DataSet::setMeasureDataToCumulative() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /** constructor */
-RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex)
-            :DataSet(iNumTimeIntervals, iNumTracts, iSetIndex),
+RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex)
+            :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, iSetIndex),
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
              gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
              gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureSq(0) {
@@ -508,7 +583,7 @@ RealDataSet::~RealDataSet() {
 TwoDimCountArray_t & RealDataSet::allocateCaseData_Censored() {
   try {
     if (!gpCaseData_Censored)
-      gpCaseData_Censored = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions);
+      gpCaseData_Censored = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpCaseData_Censored->Set(0);
   }
   catch (ZdException &x) {
@@ -523,7 +598,7 @@ TwoDimCountArray_t & RealDataSet::allocateCaseData_Censored() {
 TwoDimCountArray_t & RealDataSet::allocateControlData() {
   try {
     if (!gpControlData)
-      gpControlData = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions);
+      gpControlData = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpControlData->Set(0);
   }
   catch (ZdException &x) {
@@ -542,7 +617,7 @@ TwoDimCountArray_t & RealDataSet::addOrdinalCategoryCaseCount(double dOrdinalNum
 
   tCategoryIndex = gPopulation.AddOrdinalCategoryCaseCount(dOrdinalNumber, Count);
   if (gPopulation.GetNumOrdinalCategories() > gvCaseData_Cat.size())
-    gvCaseData_Cat.insert(gvCaseData_Cat.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions, 0));
+    gvCaseData_Cat.insert(gvCaseData_Cat.begin() + tCategoryIndex, new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
 
   return *gvCaseData_Cat[tCategoryIndex];
 }
@@ -575,7 +650,7 @@ TwoDimCountArray_t & RealDataSet::getCategoryCaseData(unsigned int iCategoryInde
       ZdGenerateException("Index %u out of range [size=%u].","GetCategoryCaseArray()", iCategoryIndex, gvCaseData_Cat.size());
     size_t tNumAllocate = iCategoryIndex + 1 - gvCaseData_Cat.size();
     for (size_t t=0; t < tNumAllocate; ++t)
-      gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions, 0));
+      gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
   }
 
   return *gvCaseData_Cat.at(iCategoryIndex);
@@ -593,5 +668,41 @@ TwoDimCountArray_t & RealDataSet::getCaseData_Censored() const {
 TwoDimCountArray_t & RealDataSet::getControlData() const {
   if (!gpControlData) ZdGenerateException("gpControlData not allocated.","getControlData()");
   return *gpControlData;
+}
+
+/** Sets case data at meta location indexes. */
+void RealDataSet::setCaseData_Censored_MetaLocations(const MetaLocationManager& MetaLocations) {
+  std::vector<tract_t>  AtomicIndexes;
+  count_t ** ppCases = getCaseData_Censored().GetArray();
+
+  for (unsigned int m=0; m < giMetaLocations; ++m) {
+     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     tract_t MetaIndex = m + giLocationDimensions;
+     for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+        ppCases[i][MetaIndex] = 0;
+     for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+        tract_t Atomic = AtomicIndexes[t];
+        for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+           ppCases[i][MetaIndex] += ppCases[i][Atomic];
+     }
+  }
+}
+
+/** Sets control data at meta location indexes. */
+void RealDataSet::setControlData_MetaLocations(const MetaLocationManager& MetaLocations) {
+  std::vector<tract_t>  AtomicIndexes;
+  count_t ** ppControls = getControlData().GetArray();
+
+  for (unsigned int m=0; m < giMetaLocations; ++m) {
+     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     tract_t MetaIndex = m + giLocationDimensions;
+     for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+        ppControls[i][MetaIndex] = 0;
+     for (size_t t=0; t < AtomicIndexes.size(); ++t) {
+        tract_t Atomic = AtomicIndexes[t];
+        for (unsigned int i=0; i < giIntervalsDimensions; ++i)
+           ppControls[i][MetaIndex] += ppControls[i][Atomic];
+     }
+  }
 }
 

@@ -17,6 +17,7 @@ typedef ZdPointerVector<TwoDimCountArray_t>    CasesByCategory_t;
 
 class CSaTScanData; /** forward class declaration */
 class DataSetHandler; /** forward class declaration */
+class MetaLocationManager;
 
 /** Encapsulates data for each input data set. */
 class DataSet {
@@ -24,6 +25,7 @@ class DataSet {
   protected:
     unsigned int                giIntervalsDimensions;                     /** number of time intervals */
     unsigned int                giLocationDimensions;                            /** number of tracts*/
+    unsigned int                giMetaLocations;                            /** number of meta-tracts*/
 
     count_t                   * gpCaseData_PT;                         /** number of cases, cumulatively stratified by time intervals */
     count_t                   * gpCaseData_PT_NC;                       /** number of cases in each time interval */
@@ -53,7 +55,7 @@ class DataSet {
     DataSet                   & operator=(const DataSet& rhs);
 
   public:
-    DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex);
+    DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations,unsigned int iSetIndex);
     virtual ~DataSet();
 
     virtual DataSet           * Clone() const;
@@ -89,10 +91,14 @@ class DataSet {
     CTimeTrend                & getTimeTrend() {return gTimeTrend;}
     const CTimeTrend          & getTimeTrend() const {return gTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
+    void                        setCaseData_MetaLocations(const MetaLocationManager& MetaLocations);
+    void                        setCaseData_Cat_MetaLocations(const MetaLocationManager& MetaLocations);
     void                        setCaseData_NC();
     void                        setCaseData_PT();
     void                        setCaseData_PT_Cat();
     void                        setCaseData_PT_NC();
+    void                        setMeasureData_MetaLocations(const MetaLocationManager& MetaLocations);
+    void                        setMeasureData_Sq_MetaLocations(const MetaLocationManager& MetaLocations);
     void                        setMeasureData_NC();
     void                        setMeasureData_PT();
     void                        setMeasureData_PT_NC();
@@ -123,7 +129,7 @@ class RealDataSet : public DataSet {
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
 
   public:
-    RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iSetIndex);
+    RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex);
     virtual ~RealDataSet();
 
     TwoDimCountArray_t        & allocateCaseData_Censored();
@@ -146,6 +152,8 @@ class RealDataSet : public DataSet {
     double                      getTotalPopulation() const {return gdTotalPop;}
     void                        setAggregateCovariateCategories(bool b) {gPopulation.SetAggregateCovariateCategories(b);}
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
+    void                        setCaseData_Censored_MetaLocations(const MetaLocationManager& MetaLocations);
+    void                        setControlData_MetaLocations(const MetaLocationManager& MetaLocations);
     void                        setTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}
     void                        setTotalCasesAtStart(count_t tTotalCases) {gtTotalCasesAtStart = tTotalCases;}
     void                        setTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
