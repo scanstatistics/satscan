@@ -379,22 +379,22 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
 
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
-    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses() &&
-        !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial "
-                            "cluster size must be defined as a percentage of the population as defined in a max "
-                            "circle size file. Alternatively you may choose to specify the maximum as a fixed radius, "
-                            "in which case a max circle size file is not required.\n", BasePrint::P_PARAMERROR);
-    }
-
-    //validate max circle population file
-    if (gParameters.UseLocationNeighborsFile()) {
-      //when using location neighbors file, parameters related to maximum spatial cluster size become irrelevant
-      const_cast<CParameters&>(gParameters).SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false, false);
-      const_cast<CParameters&>(gParameters).SetRestrictReportedClusters(false);
-      const_cast<CParameters&>(gParameters).SetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false, true);
+    if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) {
+      if (gParameters.UseMetaLocationsFile() && !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false)) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "For a prospective space-time analysis adjusting for ealier analyses and defining "
+                              "non-eucledian neighbors, the maximum spatial cluster size must be defined as a "
+                              "percentage of the population as defined in a max circle size file.\n", BasePrint::P_PARAMERROR);
+      }
+      else if (!gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial "
+                              "cluster size must be defined as a percentage of the population as defined in a max "
+                              "circle size file. Alternatively you may choose to specify the maximum as a fixed radius, "
+                              "in which case a max circle size file is not required.\n", BasePrint::P_PARAMERROR);
+      }
     }
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
         (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))) {
@@ -431,6 +431,19 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                               "Please confirm that the path and/or file name are valid and that you "
                               "have permissions to read from this directory and file.\n",
                               BasePrint::P_PARAMERROR, gParameters.GetLocationNeighborsFileName().c_str());
+    }
+    //validate meta locations file
+    if (gParameters.UseMetaLocationsFile() && gParameters.getMetaLocationsFilename().empty()) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nNo meta locations file specified.\n", BasePrint::P_PARAMERROR);
+    }
+    else if (gParameters.UseMetaLocationsFile() && !ValidateFileAccess(gParameters.getMetaLocationsFilename())) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\n"
+                              "The meta locations file '%s' could not be opened for reading. "
+                              "Please confirm that the path and/or file name are valid and that you "
+                              "have permissions to read from this directory and file.\n",
+                              BasePrint::P_PARAMERROR, gParameters.getMetaLocationsFilename().c_str());
     }
     //validate output file
     if (gParameters.GetOutputFileName().empty()) {
@@ -499,7 +512,7 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
 
 /** Validates the maximum temporal cluster size parameters. */
 bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const {
-  ZdString      sPrecisionString;
+  std::string   sPrecisionString;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   try {
@@ -537,7 +550,7 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
                               "A maximum temporal cluster size as %g percent of a %d %s study period results in a maximum "
                               "temporal cluster size that is less than one time aggregation %s.\n", BasePrint::P_PARAMERROR,
                               gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
-                              sPrecisionString.GetCString(), sPrecisionString.GetCString());
+                              sPrecisionString.c_str(), sPrecisionString.c_str());
         return false;
       }
     }
@@ -561,10 +574,10 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
                               "A maximum temporal cluster size of %d %s%s exceeds %d percent of a %d %s study period. "
                               "Note that current settings limit the maximum to %d %s%s.\n",
                               BasePrint::P_PARAMERROR, static_cast<int>(gParameters.GetMaximumTemporalClusterSize()),
-                              sPrecisionString.GetCString(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
+                              sPrecisionString.c_str(), (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"),
                               (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90),
-                              static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString(),
-                              static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.GetCString(),
+                              static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str(),
+                              static_cast<int>(dMaxTemporalLengthInUnits), sPrecisionString.c_str(),
                               (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
         return false;
       }
@@ -645,7 +658,6 @@ bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDire
 bool ParametersValidate::ValidateProspectiveDate(BasePrint& PrintDirection) const {
   UInt          uiYear, uiMonth, uiDay;
   bool          bReturnValue=true;
-  ZdString      sDate;
 
   try {
     //validate study period end date based upon precision of times parameter setting
@@ -942,7 +954,19 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
 
   try {
     //validate spatial options
-    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
+    if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+      //validate maximum is specified as a pecentage of population at risk when using neighbors file
+      if (gParameters.UseLocationNeighborsFile() && gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nWhen specifying geographical neighbors through the non-Eucledian neighbors file, "
+                              "the maximum spatial cluster size can not be defined as a fixed distance.", BasePrint::P_PARAMERROR);
+      }
+      //validate reported maximum is specified as a pecentage of population at risk when using neighbors file
+      if (gParameters.UseLocationNeighborsFile() && gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nWhen specifying geographical neighbors through the non-Eucledian neighbors file, "
+                              "the maximum reported spatial cluster size can not be defined as a fixed distance.", BasePrint::P_PARAMERROR);
+      }
       //validate maximum as pecentage of population at risk
       dValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false);
       if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && dValue <= 0.0 || dValue > 100.0/*50.0*/) {
@@ -1279,7 +1303,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
 
 /** Validates the time aggregation units. */
 bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection) const {
-  ZdString      sPrecisionString, sBuffer;
+  std::string   sPrecisionString, sBuffer;
   double        dStudyPeriodLengthInUnits, dMaxTemporalLengthInUnits;
 
   if (gParameters.GetAnalysisType() == PURELYSPATIAL) //validate settings for temporal analyses
@@ -1295,7 +1319,7 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
     GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, true, false);
     GetDatePrecisionAsString(gParameters.GetPrecisionOfTimesType(), sBuffer, true, false);
     PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation unit in %s exceeds precision of input case data (unit is %s).\n",
-                          BasePrint::P_PARAMERROR, sPrecisionString.GetCString(), sBuffer.GetCString());
+                          BasePrint::P_PARAMERROR, sPrecisionString.c_str(), sBuffer.c_str());
     return false;
   }
   if (gParameters.GetTimeAggregationLength() <= 0) {
@@ -1309,17 +1333,17 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
                                                                   gParameters.GetTimeAggregationUnitsType(), 1));
   if (dStudyPeriodLengthInUnits < static_cast<double>(gParameters.GetTimeAggregationLength()))  {
     PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation of %d %s%s is greater than the %d %s study period.\n",
-                          BasePrint::P_PARAMERROR, gParameters.GetTimeAggregationLength(), sPrecisionString.GetCString(),
+                          BasePrint::P_PARAMERROR, gParameters.GetTimeAggregationLength(), sPrecisionString.c_str(),
                           (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
-                          static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
+                          static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str());
     return false;
   }
   if (ceil(dStudyPeriodLengthInUnits/static_cast<double>(gParameters.GetTimeAggregationLength())) <= 1) {
     PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation of %d %s%s with a %d %s study period results in only "
                           "one time period to analyze. Temporal and space-time analyses can not be performed "
                           "on less than two time periods.\n", BasePrint::P_PARAMERROR,
-                          gParameters.GetTimeAggregationLength(), sPrecisionString.GetCString(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
-                          static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.GetCString());
+                          gParameters.GetTimeAggregationLength(), sPrecisionString.c_str(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
+                          static_cast<int>(dStudyPeriodLengthInUnits), sPrecisionString.c_str());
     return false;
   }
 
@@ -1337,17 +1361,17 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
       PrintDirection.Printf("Invalid Parameter Setting:\nThe time aggregation of %d %s%s is greater than the maximum temporal "
                             "cluster size of %g %s%s.\n",
                             BasePrint::P_PARAMERROR, gParameters.GetTimeAggregationLength(),
-                            sPrecisionString.GetCString(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
-                            gParameters.GetMaximumTemporalClusterSize(), sPrecisionString.GetCString(),
+                            sPrecisionString.c_str(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
+                            gParameters.GetMaximumTemporalClusterSize(), sPrecisionString.c_str(),
                             (gParameters.GetMaximumTemporalClusterSize() == 1 ? "" : "s"));
     else if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
       PrintDirection.Printf("Invalid Parameter Setting:\nWith the maximum temporal cluster size as %g percent of a %d %s study period, "
                             "the time aggregation as %d %s%s is greater than the resulting maximum "
                             "temporal cluster size of %g %s%s.\n", BasePrint::P_PARAMERROR,
                             gParameters.GetMaximumTemporalClusterSize(), static_cast<int>(dStudyPeriodLengthInUnits),
-                            sPrecisionString.GetCString(), gParameters.GetTimeAggregationLength(),
-                            sPrecisionString.GetCString(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
-                            dMaxTemporalLengthInUnits, sPrecisionString.GetCString(),
+                            sPrecisionString.c_str(), gParameters.GetTimeAggregationLength(),
+                            sPrecisionString.c_str(), (gParameters.GetTimeAggregationLength() == 1 ? "" : "s"),
+                            dMaxTemporalLengthInUnits, sPrecisionString.c_str(),
                             (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
     return false;
   }
