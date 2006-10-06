@@ -153,9 +153,26 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
     array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighbors() {
   try {
-    const_cast<CSaTScanData&>(gDataHub).AllocateSortedArray();
-    CalculateNeighborsByCircles();
-    CalculateNeighborsByEllipses();
+    if (gDataHub.GetParameters().UseLocationNeighborsFile()) {
+      std::pair<int, int>   prNeighborsCount;
+      boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
+      gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
+      //Calculate maximum neighboring locations about each centroid for circular regions
+      for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
+         gvCentroidToLocationDistances.resize(gDataHub.GetNeighborCountArray()[0][t]);
+         //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
+         for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
+           gvCentroidToLocationDistances[c].Set(gDataHub.GetNeighbor(0, t, c+1), 0);
+         CalculateNeighborsForCurrentState(prNeighborsCount);
+         const_cast<CSaTScanData&>(gDataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
+         if (t == 9) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
+      }
+    }
+    else {
+      const_cast<CSaTScanData&>(gDataHub).AllocateSortedArray();
+      CalculateNeighborsByCircles();
+      CalculateNeighborsByEllipses();
+    }  
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateNeighbors()", "CentroidNeighborCalculator");
@@ -456,6 +473,18 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
   }
 }
 
+/** Resizes passed vector to #of tracts plus # of meta locations. Assigns meta location data. */
+void CentroidNeighborCalculator::setMetaLocations(std::vector<measure_t>& popMeasure) {
+  popMeasure.resize(gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaLocations().getLocations().size(), 0);
+
+  std::vector<tract_t> atomicIndexes;
+  for (size_t t=0; t < gLocationInfo.getMetaLocations().getLocations().size(); ++t) {
+     gLocationInfo.getMetaLocations().getAtomicIndexes(t, atomicIndexes);
+     for (size_t a=0; a < atomicIndexes.size(); ++a)
+       popMeasure[(size_t)gDataHub.GetNumTracts() + t] += popMeasure[atomicIndexes[a]];
+  }
+}
+
 /** Based upon parameter settings, stores references to population arrays maintained by
     CSaTScanData object or calculates population, storing in class member structure. */
 void CentroidNeighborCalculator::SetupPopulationArrays() {
@@ -475,6 +504,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
         ppCases = DataSetHandler.GetDataSet().getCaseData().GetArray();
         for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] = ppCases[0][j];
+        setMetaLocations(gvCalculatedPopulations);
         gpPopulation = &gvCalculatedPopulations[0]; break;
       case ORDINAL :
         //For the Ordinal model, populations for each location are calculated by adding up the
@@ -485,7 +515,8 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
           ppCases = DataSetHandler.GetDataSet().getCaseData_Cat()[k]->GetArray();
           for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] += ppCases[0][j];
         }
-        gpPopulation = &gvCalculatedPopulations[0]; break;
+        setMetaLocations(gvCalculatedPopulations);
+        gpPopulation = &gvCalculatedPopulations[0];  break;
       case EXPONENTIAL:
         // consider population as cases and non-censored cases
         gvCalculatedPopulations.assign(gDataHub.GetNumTracts(), 0);
@@ -493,6 +524,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         pRandomizer = dynamic_cast<const ExponentialRandomizer*>(DataSetHandler.GetRandomizer(0));
         if (!pRandomizer) ZdGenerateException("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
           pRandomizer->CalculateMaxCirclePopulationArray(gvCalculatedPopulations);
+         setMetaLocations(gvCalculatedPopulations);
          gpPopulation = &gvCalculatedPopulations[0]; break;
       default :
         //Population is calculated from first data set - even when multiple data sets are defined.
