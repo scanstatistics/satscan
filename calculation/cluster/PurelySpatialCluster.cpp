@@ -107,7 +107,7 @@ void CPurelySpatialCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataH
 }
 
 /** returns end date of defined cluster as formated string */
-ZdString& CPurelySpatialCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPurelySpatialCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
 }
 
@@ -122,7 +122,7 @@ count_t CPurelySpatialCluster::GetObservedCountForTract(tract_t tTractIndex, con
 }
 
 /** returns start date of defined cluster as formated string */
-ZdString& CPurelySpatialCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CPurelySpatialCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0]);
 }
 

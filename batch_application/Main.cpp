@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
   bool                  bExecuting;
   time_t                RunTime;
   CParameters           Parameters;
-  ZdString              sMessage;
+  std::string           sMessage;
   PrintScreen           Console(false);
 
   try {
@@ -68,11 +68,9 @@ int main(int argc, char *argv[]) {
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     bExecuting = !validateCommandLineArguments(argc, argv);
     time(&RunTime); //get start time
-    if (!ParameterAccessCoordinator(Parameters).Read(argv[1], Console)) {
-      sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
-      sMessage << "Please review above message(s) and modify parameter settings accordingly.";
-      GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
-    }
+    if (!ParameterAccessCoordinator(Parameters).Read(argv[1], Console))
+      GenerateResolvableException("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+                                  "Please review above message(s) and modify parameter settings accordingly.", "main(int,char*)");
     if ((i = getCommandLineArgumentIndex(argc, argv, "-o")) != 0)
       Parameters.SetOutputFileName(argv[++i]); // overide parameter filename, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-one-cpu"))
@@ -80,11 +78,9 @@ int main(int argc, char *argv[]) {
     Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
     Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     //validate parameters - print errors to console
-    if (!ParametersValidate(Parameters).Validate(Console)) {
-      sMessage << ZdString::reset << "\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n";
-      sMessage << "Please review above message(s) and modify parameter settings accordingly.";
-      GenerateResolvableException(sMessage.GetCString(),"main(int,char*)");
-    }
+    if (!ParametersValidate(Parameters).Validate(Console))
+      GenerateResolvableException("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+                                  "Please review above message(s) and modify parameter settings accordingly.", "main(int,char*)");
     if (getCommandLineArgumentIndex(argc, argv, "-centric") && Parameters.GetPermitsCentricExecution())
       Parameters.SetExecutionType(CENTRICALLY); // overide execution type, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-all-out"))

@@ -81,8 +81,8 @@ CPurelySpatialProspectiveCluster * CPurelySpatialProspectiveCluster::Clone() con
 }
 
 /** returns end date of defined cluster as formated string */
-ZdString& CPurelySpatialProspectiveCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
-  sDateString.Clear();
+std::string& CPurelySpatialProspectiveCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+  sDateString.clear();
   return sDateString;
 }
 
@@ -99,8 +99,8 @@ count_t CPurelySpatialProspectiveCluster::GetObservedCountForTract(tract_t, cons
 }
 
 /** returns start date of defined cluster as formated string */
-ZdString& CPurelySpatialProspectiveCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
-  sDateString.Clear();
+std::string& CPurelySpatialProspectiveCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
+  sDateString.clear();
   return sDateString;
 }
 
