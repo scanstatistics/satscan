@@ -152,7 +152,7 @@ void ParametersPrint::Print(FILE* fp) const {
 
 /** Prints time trend adjustment parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandler) const {
-  ZdString              sBuffer;
+  std::string           buffer;
   AsciiPrintFormat      PrintFormat;
 
   try {
@@ -161,39 +161,39 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case NOTADJUSTED :
         break;
       case NONPARAMETRIC :
-        sBuffer = "Adjusted for time nonparametrically."; break;
+        buffer = "Adjusted for time nonparametrically."; break;
       case LOGLINEAR_PERC :
-        sBuffer.printf("of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
+        printString(buffer, "of %g%% per year.", fabs(gParameters.GetTimeTrendAdjustmentPercentage()));
         if (gParameters.GetTimeTrendAdjustmentPercentage() < 0)
-          sBuffer.Insert("Adjusted for time with a decrease ", 0);
+          buffer.insert(0, "Adjusted for time with a decrease ");
         else
-          sBuffer.Insert("Adjusted for time with an increase ", 0);
+          buffer.insert(0, "Adjusted for time with an increase ");
         break;
       case CALCULATED_LOGLINEAR_PERC :
         PrintCalculatedTimeTrend(fp, SetHandler); break;
       case STRATIFIED_RANDOMIZATION  :
-        sBuffer = "Adjusted for time by stratified randomization."; break;
+        buffer = "Adjusted for time by stratified randomization."; break;
       default :
         ZdException::Generate("Unknown time trend adjustment type '%d'\n.",
                               "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
     }
-    if (sBuffer.GetLength())
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    if (buffer.size())
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     //display spatial adjustments
     switch (gParameters.GetSpatialAdjustmentType()) {
       case NO_SPATIAL_ADJUSTMENT :
         break;
       case SPATIALLY_STRATIFIED_RANDOMIZATION :
-        sBuffer = "Adjusted for purely spatial clusters by stratified randomization.";
-        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer); break;
+        buffer = "Adjusted for purely spatial clusters by stratified randomization.";
+        PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       default :
         ZdException::Generate("Unknown time trend adjustment type '%d'\n.",
                               "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
     }
     //display space-time adjustments
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
-        sBuffer = "Adjusted for known relative risks.";
-        PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+        buffer = "Adjusted for known relative risks.";
+        PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }    
   }
   catch (ZdException &x) {
@@ -246,9 +246,9 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
     fprintf(fp, "scanning for ");
     if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
       fprintf(fp, "monotone ");
-    ZdString s(GetAreaScanRateTypeAsString());
-    s.ToLowercase();
-    fprintf(fp, "clusters with %s\n", s.GetCString());
+    std::string s(GetAreaScanRateTypeAsString());
+    std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
+    fprintf(fp, "clusters with %s\n", s.c_str());
     switch (gParameters.GetProbabilityModelType()) {
       case POISSON              : fprintf(fp, "using the Poisson model.\n"); break;
       case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
@@ -290,7 +290,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
 /** Prints calculated time trend adjustment parameters, in a particular format, to passed ascii file. */
 void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
   unsigned int                  t;
-  ZdString                      sPrintString, sWorkString;
+  std::string                   buffer, work;
   std::deque<unsigned int>      TrendIncrease, TrendDecrease;              
 
   if (gParameters.GetTimeTrendAdjustmentType() != CALCULATED_LOGLINEAR_PERC)
@@ -300,11 +300,11 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
 
   if (SetHandler.GetNumDataSets() == 1) {
     if (SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage() < 0)
-      sPrintString.printf("Adjusted for time trend with an annual decrease ");
+      printString(buffer, "Adjusted for time trend with an annual decrease ");
     else
-      sPrintString.printf("Adjusted for time trend with an annual increase ");
-    sWorkString.printf("of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
-    sPrintString << sWorkString;
+      printString(buffer, "Adjusted for time trend with an annual increase ");
+    printString(work, "of %g%%.", fabs(SetHandler.GetDataSet(0).getCalculatedTimeTrendPercentage()));
+    buffer += work;
   }
   else {//multiple datasets print
     //count number of increasing and decreasing trends
@@ -315,51 +315,51 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
          TrendIncrease.push_back(t);
     }
     //now print
-    sPrintString.printf("Adjusted for time trend with an annual ");
+    buffer = "Adjusted for time trend with an annual ";
     //print increasing trends first
     if (TrendIncrease.size()) {
-       sWorkString.printf("increase of %0.2f%%",
-                          fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage()));
-       sPrintString << sWorkString;
+       printString(work, "increase of %0.2f%%",
+                         fabs(SetHandler.GetDataSet(TrendIncrease.front()).getCalculatedTimeTrendPercentage()));
+       buffer += work;
        for (t=1; t < TrendIncrease.size(); ++t) {
-          sWorkString.printf((t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%",
-                             fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage()));
-          sPrintString << sWorkString;
+          printString(work, (t < TrendIncrease.size() - 1) ? ", %g%%" : " and %g%%",
+                            fabs(SetHandler.GetDataSet(TrendIncrease[t]).getCalculatedTimeTrendPercentage()));
+          buffer += work;
        }
-       sWorkString.printf(" for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
-       sPrintString << sWorkString;
+       printString(work, " for data set%s %u", (TrendIncrease.size() == 1 ? "" : "s"), TrendIncrease.front() + 1);
+       buffer += work;
        for (t=1; t < TrendIncrease.size(); ++t) {
-          sWorkString.printf((t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1);
-          sPrintString << sWorkString;
+          printString(work, (t < TrendIncrease.size() - 1 ? ", %u" : " and %u"), TrendIncrease[t] + 1);
+          buffer += work;
        }
-       sWorkString.printf((TrendIncrease.size() > 1 ? " respectively" : ""));
-       sPrintString << sWorkString;
-       sWorkString.printf((TrendDecrease.size() > 0 ? " and an annual " : "."));
-       sPrintString << sWorkString;
+       printString(work, (TrendIncrease.size() > 1 ? " respectively" : ""));
+       buffer += work;
+       printString(work, (TrendDecrease.size() > 0 ? " and an annual " : "."));
+       buffer += work;
     }
     //print decreasing trends
     if (TrendDecrease.size()) {
-      sWorkString.printf("decrease of %0.2f%%",
-                         fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage()));
-      sPrintString << sWorkString;
+      printString(work, "decrease of %0.2f%%",
+                        fabs(SetHandler.GetDataSet(TrendDecrease.front()).getCalculatedTimeTrendPercentage()));
+      buffer += work;
       for (t=1; t < TrendDecrease.size(); ++t) {
-         sWorkString.printf((t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%",
-                            fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage()));
-         sPrintString << sWorkString;
+         printString(work, (t < TrendDecrease.size() - 1) ? ", %g%%" : " and %0.2f%%",
+                           fabs(SetHandler.GetDataSet(TrendDecrease[t]).getCalculatedTimeTrendPercentage()));
+         buffer += work;
       }
-      sWorkString.printf(" for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
-      sPrintString << sWorkString;
+      printString(work, " for data set%s %u", (TrendDecrease.size() == 1 ? "" : "s"), TrendDecrease.front() + 1);
+      buffer += work;
       for (t=1; t < TrendDecrease.size(); ++t) {
-         sWorkString.printf((t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1);
-         sPrintString << sWorkString;
+         printString(work, (t < TrendDecrease.size() - 1 ? ", %u" : " and %u"), TrendDecrease[t] + 1);
+         buffer += work;
       }
-      sWorkString.printf((TrendDecrease.size() > 1 ? " respectively." : "."));
-      sPrintString << sWorkString;
+      printString(work, (TrendDecrease.size() > 1 ? " respectively." : "."));
+      buffer += work;
     }
   }
   AsciiPrintFormat PrintFormat;
   PrintFormat.SetMarginsAsOverviewSection();
-  PrintFormat.PrintAlignedMarginsDataString(fp, sPrintString);
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 /** Prints 'Clusters Reported' tab parameters to file stream. */
@@ -570,10 +570,13 @@ void ParametersPrint::PrintNeighborsFileParameters(FILE* fp) const {
   try {
     if (gParameters.GetIsPurelyTemporalAnalysis()) return;
 
-    fprintf(fp, "\nNeighbors File\n--------------\n");
-    fprintf(fp, "  Use Neighbors File : %s\n", (gParameters.UseLocationNeighborsFile() ? "Yes" : "No"));
+    fprintf(fp, "\nNon-Eucledian Neighbors\n-----------------------\n");
+    fprintf(fp, "  Use Neighbors File      : %s\n", (gParameters.UseLocationNeighborsFile() ? "Yes" : "No"));
     if (gParameters.UseLocationNeighborsFile())
-      fprintf(fp, "  Neighbors File     : %s\n", gParameters.GetLocationNeighborsFileName().c_str());
+      fprintf(fp, "  Neighbors File          : %s\n", gParameters.GetLocationNeighborsFileName().c_str());
+    fprintf(fp, "  Use Meta Locations File : %s\n", (gParameters.UseMetaLocationsFile() ? "Yes" : "No"));
+    if (gParameters.UseMetaLocationsFile())
+      fprintf(fp, "  Meta Locations File     : %s\n", gParameters.getMetaLocationsFilename().c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
@@ -766,18 +769,14 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     if (gParameters.GetIsPurelyTemporalAnalysis())
       return;
 
-    if (!gParameters.UseLocationNeighborsFile() || (gParameters.UseLocationNeighborsFile() &&
-         gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()))
-      fprintf(fp, "\nSpatial Window\n--------------\n");
-
-    if ((gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
-         gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) && !gParameters.UseLocationNeighborsFile()) )
+    fprintf(fp, "\nSpatial Window\n--------------\n");
+    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
       fprintf(fp, "  Max Circle Size File                  : %s\n", gParameters.GetMaxCirclePopulationFileName().c_str());
     if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && !gParameters.UseLocationNeighborsFile())
       fprintf(fp, "  Maximum Spatial Cluster Size          : %g%% of population at risk\n", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
-    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && !gParameters.UseLocationNeighborsFile())
+    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false))
       fprintf(fp, "  Maximum Spatial Cluster Size          : %g%% of population defined in max circle file\n", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
-    if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false) && !gParameters.UseLocationNeighborsFile())
+    if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false))
       fprintf(fp, "  Maximum Spatial Cluster Size          : %g%s\n",
               gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units\n" : " km\n"));
     if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
@@ -831,7 +830,7 @@ void ParametersPrint::PrintSystemParameters(FILE* fp) const {
 
 /** Prints 'Spatial Window' tab parameters to file stream. */
 void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
-  ZdString sBuffer;
+  std::string sBuffer;
 
   try {
     if (gParameters.GetAnalysisType() == PURELYSPATIAL)
