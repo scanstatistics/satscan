@@ -129,10 +129,9 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGa
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
 void SpaceTimePermutationDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
-  if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis()) {
+  if (gParameters.UseMetaLocationsFile())
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
       (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-  }
 }
 
 /** Read the count data source, storing data in respective DataSet object. As a

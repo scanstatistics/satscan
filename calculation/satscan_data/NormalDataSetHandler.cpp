@@ -154,7 +154,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
 void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
-  if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis()) {
+  if (gParameters.UseMetaLocationsFile()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
       (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
       (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());

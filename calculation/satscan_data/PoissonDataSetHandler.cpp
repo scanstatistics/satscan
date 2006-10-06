@@ -224,10 +224,9 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
 void PoissonDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
-  if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis()) {
+  if (gParameters.UseMetaLocationsFile())
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr)
       (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-  }
 }
 
 /** Attempts to read population and case data files into class RealDataSet objects. */
