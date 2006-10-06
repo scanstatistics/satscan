@@ -31,16 +31,18 @@ class AsciiFileDataSource : public DataSource {
          BasePrint                 & gPrint;
          const std::string         * gpParseLine;
          const char                * gcp;
+         const char                  gcDelimiter;
 
          void                        ThrowAsciiException();
 
        public:
-         StringParser(BasePrint& Print) : gPrint(Print), gwCurrentWordIndex(-1), gcp(0) {}
+         StringParser(BasePrint& Print, const char cDelimiter) : gPrint(Print), gwCurrentWordIndex(-1), gcp(0), gcDelimiter(cDelimiter) {}
 
          bool                        HasWords() {return GetWord(0) != 0;}
+         bool                        isDelimiter(char c) const {return isspace(gcDelimiter) ? isspace(c) : c == gcDelimiter;}
          long                        GetNumberWords();
          const char                * GetWord(long wWordIndex);
-         bool                        SetString(const std::string& sParseLine);
+         bool                        SetString(std::string& sParseLine);
      };
 
      std::auto_ptr<StringParser>        gStringParser;
@@ -52,7 +54,7 @@ class AsciiFileDataSource : public DataSource {
     void                                ThrowUnicodeException();
 
    public:
-     AsciiFileDataSource(const std::string& sSourceFilename, BasePrint& Print);
+     AsciiFileDataSource(const std::string& sSourceFilename, BasePrint& Print, const char cDelimiter=' ');
      virtual ~AsciiFileDataSource() {}
 
      virtual long                       GetCurrentRecordIndex() const {return glReadCount;}
@@ -66,6 +68,7 @@ class AsciiFileDataSource : public DataSource {
 class ZdFileDataSource : public DataSource {
    private:
      std::auto_ptr<ZdFile>              gSourceFile;
+     std::string                        gsValue;
      mutable char                       gTempBuffer[ZD_BUFFER_LEN];
      long                               gwCurrentFieldIndex;
      bool                               gbFirstRead;

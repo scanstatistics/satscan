@@ -65,9 +65,9 @@ const char * AsciiFileDataSource::StringParser::GetWord(long wWordIndex) {
   while(*gcp != '\0' && isspace(*gcp)) ++gcp;
 
   /* find start of word */
-  inwd = !isspace(*gcp);
+  inwd = !isDelimiter(*gcp);
   while (*gcp != '\0' && (w > 0 || !inwd)) {
-       if (inwd == !!(isspace(*gcp))) { /* entered or exited a word */
+       if (inwd == isDelimiter(*gcp)) { /* entered or exited a word */
          inwd = !inwd;
          if (inwd) /* if entered a word, count it */
            if (--w == 0)
@@ -81,7 +81,7 @@ const char * AsciiFileDataSource::StringParser::GetWord(long wWordIndex) {
 
   /* find end of word */
   cp2 = gcp + 1;
-  while (*cp2 != '\0' &&  !isspace(*cp2)) ++cp2;
+  while (*cp2 != '\0' &&  !isDelimiter(*cp2)) ++cp2;
   wdlen = cp2 - gcp;
   gsWord.assign (gcp, wdlen);
   cp3 = gsWord.c_str();
@@ -101,8 +101,9 @@ const char * AsciiFileDataSource::StringParser::GetWord(long wWordIndex) {
 }
 
 /** sets current parsing string -- returns indication of whether string contains any words. */
-bool AsciiFileDataSource::StringParser::SetString(const std::string& sParseLine) {
+bool AsciiFileDataSource::StringParser::SetString(std::string& sParseLine) {
    gwCurrentWordIndex=-1; //clear word index
+   trimString(sParseLine, "\r"); //std::getline is leaving carriage return on Solaris
    gpParseLine = &sParseLine;
    gcp = gpParseLine->c_str();
    return HasWords();
@@ -115,8 +116,8 @@ void AsciiFileDataSource::StringParser::ThrowAsciiException() {
 }
 
 /** constructor */
-AsciiFileDataSource::AsciiFileDataSource(const std::string& sSourceFilename, BasePrint& Print)
-                    :DataSource(), glReadCount(0), gPrint(Print), gStringParser(new StringParser(Print)) {
+AsciiFileDataSource::AsciiFileDataSource(const std::string& sSourceFilename, BasePrint& Print, const char cDelimiter)
+                    :DataSource(), glReadCount(0), gPrint(Print), gStringParser(new StringParser(Print, cDelimiter)) {
   try {
     gSourceFile.open(sSourceFilename.c_str());
     if (!gSourceFile)
@@ -132,7 +133,7 @@ AsciiFileDataSource::AsciiFileDataSource(const std::string& sSourceFilename, Bas
 void AsciiFileDataSource::GotoFirstRecord() {
   glReadCount = 0;
   gSourceFile.clear();
-  gSourceFile.seekg(0L, ios::beg);
+  gSourceFile.seekg(0L, std::ios::beg);
 }
 
 /** Attempts to read line from source and parse into 'words'. If read count is zero, first
@@ -152,7 +153,7 @@ bool AsciiFileDataSource::ReadRecord() {
         (bom[0] == 0xfe && bom[1] == 0xff) ||                               // UTF-16, big-endian
         (bom[0] == 0xff && bom[1] == 0xfe))                                 // UTF-16, little-endian
       ThrowUnicodeException();
-    gSourceFile.seekg(0L, ios::beg);
+    gSourceFile.seekg(0L, std::ios::beg);
   }
   gsReadBuffer.clear();
   while (std::getline(gSourceFile, gsReadBuffer) && !gStringParser->SetString(gsReadBuffer)) ++glReadCount;
