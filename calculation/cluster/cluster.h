@@ -25,7 +25,7 @@ class CCluster {
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
 
-    ZdString                    & GetPopulationAsString(ZdString& sString, double dPopulation) const;
+    std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
 
   public:
     CCluster();
@@ -81,7 +81,7 @@ class CCluster {
     virtual tract_t               GetCentroidIndex() const {return m_Center;}
     double                        GetNonCompactnessPenalty() const {return m_NonCompactnessPenalty;}
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
-    virtual ZdString            & GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
@@ -103,7 +103,7 @@ class CCluster {
     double                        GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const;
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    virtual ZdString            & GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const;
+    virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;

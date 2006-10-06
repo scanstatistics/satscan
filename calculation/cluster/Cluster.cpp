@@ -102,13 +102,13 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
 
 /** Prints annual cases to file stream is in format required by result output file. */
 void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString               sBuffer;
+  std::string buffer;
 
   if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
-    sBuffer.printf("Annual cases / %.0f", DataHub.GetAnnualRatePop());
-    PrintFormat.PrintSectionLabel(fp, sBuffer.GetCString(), false, true);
-    sBuffer.printf("%.1f", DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex));
-    PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    printString(buffer, "Annual cases / %.0f", DataHub.GetAnnualRatePop());
+    PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, true);
+    printString(buffer, "%.1f", DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex));
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
 
@@ -126,7 +126,7 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const Asc
 
 /** Writes clusters location information in format required by result output file. */
 void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, tract_t nFirstTract, tract_t nLastTract, const AsciiPrintFormat& PrintFormat) const {
-  ZdString                                      sLocations;
+  std::string                                   locations;
   TractHandler::Location::StringContainer_t     vTractIdentifiers;
 
   try {
@@ -136,19 +136,19 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
        // Print location identifiers if location data has not been removed in iterative scan.
        if (!DataHub.GetIsNullifiedLocation(tTract)) {
          //get all locations ids for tract at index tTract -- might be more than one if combined
-         DataHub.GetTInfo()->getLocations().at(tTract)->retrieveAllIdentifiers(vTractIdentifiers);
+         DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
          for (unsigned int i=0; i < vTractIdentifiers.size(); ++i) {
-            if (sLocations.GetLength())
-              sLocations << ", ";
-            sLocations << vTractIdentifiers[i].c_str();
+            if (locations.size())
+              locations += ", ";
+            locations += vTractIdentifiers[i].c_str();
          }
        }
     }
     // There should be at least one location printed, else there is likely a bug in the iterative scan code.
-    if (!sLocations.GetLength())
+    if (!locations.size())
       ZdGenerateException("Attempting to print cluster with no location identifiers.","DisplayCensusTractsInStep()");
 
-    PrintFormat.PrintAlignedMarginsDataString(fp, sLocations);
+    PrintFormat.PrintAlignedMarginsDataString(fp, locations);
   }
   catch (ZdException &x) {
     x.AddCallpath("DisplayCensusTractsInStep()","CCluster");
@@ -159,7 +159,7 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
 /** Prints observed cases, expected cases and observed/expected, for exponetial model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString                                      sBuffer;
+  std::string                                   buffer;
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
@@ -168,27 +168,27 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (DataHub.GetDataSetHandler().GetNumDataSets() > 1) {
-       sBuffer.printf("Data Set #%ld", *itr_Index + 1);
-       PrintFormat.PrintSectionLabelAtDataColumn(fp, sBuffer.GetCString());
+       printString(buffer, "Data Set #%ld", *itr_Index + 1);
+       PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
      }
      //print total individuals (censored and non-censored)
      PrintFormat.PrintSectionLabel(fp, "Total individuals", false, true);
-     GetPopulationAsString(sBuffer, DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub));
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     GetPopulationAsString(buffer, DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print total cases (non-censored)
      PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-     sBuffer.printf("%ld", GetObservedCount(*itr_Index));
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%ld", GetObservedCount(*itr_Index));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //not printing censored information at Martin's directive, but leave in place for now
      ////print total censored cases
      //PrintFormat.PrintSectionLabel(fp, "Number censored cases", false, true);
      //GetPopulationAsString(sBuffer, DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub) - GetObservedCount(*itr_Index));
-     //PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print expected cases label
      PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
      //print expected cases
-     sBuffer.printf("%.2f", GetExpectedCount(DataHub, *itr_Index));
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%.2f", GetExpectedCount(DataHub, *itr_Index));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      DisplayObservedDivExpected(fp, *itr_Index, DataHub, PrintFormat);
      //NOTE: Not printing relative risk information for exponential model at this time.
   }
@@ -197,7 +197,7 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
 /** Prints observed cases, expected cases and observed/expected, for Normal model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString                                      sBuffer;
+  std::string                                   buffer;
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
@@ -214,46 +214,46 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (Handler.GetNumDataSets() > 1) {
-       sBuffer.printf("Data Set #%ld", *itr_Index + 1);
-       PrintFormat.PrintSectionLabelAtDataColumn(fp, sBuffer.GetCString());
+       printString(buffer, "Data Set #%ld", *itr_Index + 1);
+       PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
      }
      //print total cases
      PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-     sBuffer.printf("%ld", GetObservedCount(*itr_Index));
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%ld", GetObservedCount(*itr_Index));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      tObserved = GetObservedCount(*itr_Index);
      tExpected = GetExpectedCount(DataHub, *itr_Index);
      //print estimated mean inside label
      PrintFormat.PrintSectionLabel(fp, "Mean inside", false, true);
      //print estimated mean inside
      dEstimatedMeanInside = (tObserved ? tExpected/tObserved : 0);
-     sBuffer.printf("%.2f", dEstimatedMeanInside);
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%.2f", dEstimatedMeanInside);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print estimated mean outside label
      PrintFormat.PrintSectionLabel(fp, "Mean outside", false, true);
      //print estimated mean inside
      count_t tCasesOutside = Handler.GetDataSet(*itr_Index).getTotalCases() - tObserved;
      dEstimatedMeanOutside = (tCasesOutside ? (Handler.GetDataSet(*itr_Index).getTotalMeasure() - tExpected)/tCasesOutside : 0);
-     sBuffer.printf("%.2f", dEstimatedMeanOutside);
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%.2f", dEstimatedMeanOutside);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print unexplained variance label
      PrintFormat.PrintSectionLabel(fp, "Unexplained variance", false, true);
      dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureSq(*itr_Index),
                                              Handler.GetDataSet(*itr_Index).getTotalCases(), Handler.GetDataSet(*itr_Index).getTotalMeasure(),
                                              Handler.GetDataSet(*itr_Index).getTotalMeasureSq());
-     sBuffer.printf("%.2f", dUnbiasedVariance);
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%.2f", dUnbiasedVariance);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print common standard deviation
      PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
-     sBuffer.printf("%.2f", std::sqrt(dUnbiasedVariance));
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%.2f", std::sqrt(dUnbiasedVariance));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
 
 /** Prints observed cases, expected cases and observed/expected, for Ordinal model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString                                              sWork, sBuffer;
+  std::string                                           work, buffer;
   double                                                dTotalCasesInClusterDataSet=0;
   OrdinalLikelihoodCalculator                           Calculator(DataHub);
   std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
@@ -275,53 +275,54 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        continue;
      //print data set number if analyzing more than one data set
      if (DataHub.GetDataSetHandler().GetNumDataSets() > 1) {
-       sBuffer.printf("Data Set #%ld", *itr_Index + 1);
-       PrintFormat.PrintSectionLabelAtDataColumn(fp, sBuffer.GetCString());
+       printString(buffer, "Data Set #%ld", *itr_Index + 1);
+       printString(buffer, "Data Set #%ld", *itr_Index + 1);
+       PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
      }
      //print total cases per data set
      PrintFormat.PrintSectionLabel(fp, "Total cases", false, true);
      dTotalCasesInClusterDataSet = DataHub.GetProbabilityModel().GetPopulation(*itr_Index, *this, DataHub);
-     PrintFormat.PrintAlignedMarginsDataString(fp, GetPopulationAsString(sBuffer, dTotalCasesInClusterDataSet));
+     PrintFormat.PrintAlignedMarginsDataString(fp, GetPopulationAsString(buffer, dTotalCasesInClusterDataSet));
      //print category ordinal values
      PrintFormat.PrintSectionLabel(fp, "Category", false, true);
      const RealDataSet& thisDataSet = DataHub.GetDataSetHandler().GetDataSet(*itr_Index);
-     sBuffer = "";
+     buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
-       sBuffer << (itrCategory == vCategoryContainer.begin() ? "" : ", ");
+       buffer += (itrCategory == vCategoryContainer.begin() ? "" : ", ");
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m) {
-         sWork.printf("%s%g%s",
+         printString(work, "%s%g%s",
                       (m == 0 ? "[" : ", "),
                       thisDataSet.getPopulationData().GetOrdinalCategoryValue(itrCategory->GetCategoryIndex(m)),
                       (m + 1 == itrCategory->GetNumCombinedCategories() ? "]" : ""));
-         sBuffer << sWork;
+         buffer += work;
        }
      }
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print observed case data per category
      PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-     sBuffer = "";
+     buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        count_t tObserved=0;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
           tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
-       sWork.printf("%s%ld", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tObserved);
-       sBuffer << sWork;
+       printString(work, "%s%ld", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tObserved);
+       buffer += work;
      }
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print expected case data per category
      PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
-     sBuffer = "";
+     buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        measure_t tExpected=0;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-       sWork.printf("%s%.2f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tExpected);
-       sBuffer << sWork;
+       printString(work, "%s%.2f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tExpected);
+       buffer += work;
      }
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print observed div expected case data per category
      PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
-     sBuffer = "";
+     buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        count_t   tObserved=0;
        measure_t tExpected=0;
@@ -329,14 +330,14 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
           tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
        }
-       sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "),
+       printString(work, "%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "),
                     (tExpected ? (double)tObserved/tExpected  : 0));
-       sBuffer << sWork;
+       buffer += work;
      }
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print relative data - note that we will possibly be combining categories
      PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
-     sBuffer = "";
+     buffer = "";
      for (itrCategory=vCategoryContainer.begin(); itrCategory != vCategoryContainer.end(); ++itrCategory) {
        double           tRelativeRisk=0;
        count_t          tObserved=0, tTotalCategoryCases=0;
@@ -347,19 +348,19 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
           tTotalCategoryCases += DataHub.GetDataSetHandler().GetDataSet(*itr_Index).getPopulationData().GetNumOrdinalCategoryCases(itrCategory->GetCategoryIndex(m));
        }
        if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases)) == -1)
-         sWork.printf("%sinfinity", (itrCategory == vCategoryContainer.begin() ? "" : ", "));
+         printString(work, "%sinfinity", (itrCategory == vCategoryContainer.begin() ? "" : ", "));
        else
-         sWork.printf("%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
-       sBuffer << sWork;
+         printString(work, "%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
+       buffer += work;
      }
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
 
 /** Prints population, observed cases, expected cases and relative risk
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString                                      sBuffer;
+  std::string                                   buffer;
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
@@ -375,19 +376,19 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (DataHub.GetDataSetHandler().GetNumDataSets() > 1) {
-       sBuffer.printf("Data Set #%ld", *itr_Index + 1);
-       PrintFormat.PrintSectionLabelAtDataColumn(fp, sBuffer.GetCString());
+       printString(buffer, "Data Set #%ld", *itr_Index + 1);
+       PrintFormat.PrintSectionLabelAtDataColumn(fp, buffer.c_str());
      }
      //print observed cases label
      PrintFormat.PrintSectionLabel(fp, "Number of cases", false, true);
-     sBuffer.printf("%ld", GetObservedCount(*itr_Index));
+     printString(buffer, "%ld", GetObservedCount(*itr_Index));
      //print observed cases
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print expected cases label
      PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
      //print expected cases
-     sBuffer.printf("%.2f", GetExpectedCount(DataHub, *itr_Index));
-     PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+     printString(buffer, "%.2f", GetExpectedCount(DataHub, *itr_Index));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      DisplayAnnualCaseInformation(fp, *itr_Index, DataHub, PrintFormat);
      DisplayObservedDivExpected(fp, *itr_Index ,DataHub, PrintFormat);
      if (DataHub.GetParameters().GetProbabilityModelType() == POISSON  || DataHub.GetParameters().GetProbabilityModelType() == BERNOULLI)
@@ -399,33 +400,32 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   std::vector<double>   vCoordinates;
-  ZdString              sBuffer, sWork;
+  std::string           buffer, work;
 
   try {
     Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
-
     //print coordinates differently when ellipses are requested
     if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
       PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
-         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
-         sBuffer << sWork;
+         printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
+         buffer += work;
       }
       //to keep radius value consistant with previous versions, down cast double to float
       float radius = static_cast<float>(m_CartesianRadius);
-      sWork.printf("%g) / %-5.2f", vCoordinates.back(), radius);
-      sBuffer << sWork;
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      printString(work, "%g) / %-5.2f", vCoordinates.back(), radius);
+      buffer += work;
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
     else {//print ellipse settings
       PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
-         sWork.printf("%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
-         sBuffer << sWork;
+         printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
+         buffer += work;
       }
-      sWork.printf("%g)", vCoordinates.back());
-      sBuffer << sWork;
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      printString(work, "%g)", vCoordinates.back());
+      buffer += work;
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       //print ellipse particulars
       PrintFormat.PrintSectionLabel(fp, "Semiminor axis", false, true);
       fprintf(fp, "%-g\n", (float)m_CartesianRadius);
@@ -467,7 +467,7 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
 void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
                                             const AsciiPrintFormat& PrintFormat,
                                             unsigned int iNumSimsCompleted) const {
-  ZdString      sFormat, sReplicas;
+  std::string   format, replicas;
   float         fPValue;  
                                             
   if (iNumSimsCompleted) {
@@ -477,16 +477,16 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
   if (iNumSimsCompleted > 98) {
     PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
     fPValue = (float)GetPValue(iNumSimsCompleted);
-    sReplicas << iNumSimsCompleted;
-    sFormat.printf("%%.%df\n", sReplicas.GetLength());
-    fprintf(fp, sFormat.GetCString(), fPValue);
+    printString(replicas, "%u", iNumSimsCompleted);
+    printString(format, "%%.%df\n", replicas.size());
+    fprintf(fp, format.c_str(), fPValue);
   }
 }
 
 /** Writes clusters null occurance rate in format required by result output file. */
 void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations, const AsciiPrintFormat& PrintFormat) const {
   float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
-  ZdString      sBuffer;
+  std::string   buffer;
   const float   AVERAGE_DAYS_IN_YEAR(365.25);
 
   try {
@@ -496,7 +496,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
       fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
       fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
       switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
-        case YEAR   : sBuffer.printf("%.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
+        case YEAR   : printString(buffer, "%.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
                       break;
         case MONTH  : fYears = floor(fUnitsInOccurrence/12);
                       fMonths = fUnitsInOccurrence - (fYears * 12);
@@ -509,11 +509,11 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         fMonths = 0;
                       //Print correctly formatted statement.
                       if (fMonths == 0)
-                        sBuffer.printf("%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
+                        printString(buffer, "%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
                       else if (fYears == 0)
-                        sBuffer.printf("%.0f month%s", fMonths, (fMonths < 1.5 ? "" : "s"));
+                        printString(buffer, "%.0f month%s", fMonths, (fMonths < 1.5 ? "" : "s"));
                       else /*Having both zero month and year should never happen.*/
-                        sBuffer.printf("%.0f year%s %0.f month%s", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
+                        printString(buffer, "%.0f year%s %0.f month%s", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
                       break;
         case DAY    : fYears = floor(fUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR);
                       fDays = fUnitsInOccurrence - (fYears * AVERAGE_DAYS_IN_YEAR);
@@ -522,17 +522,17 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                         fDays = 0;
                       //Print correctly formatted statement.
                       if (fDays == 0)
-                        sBuffer.printf("%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
+                        printString(buffer, "%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
                       else if (fYears == 0)
-                        sBuffer.printf("%.0f day%s", fDays, (fDays < 1.5 ? "" : "s"));
+                        printString(buffer, "%.0f day%s", fDays, (fDays < 1.5 ? "" : "s"));
                       else /*Having both zero day and year should never happen.*/
-                        sBuffer.printf("%.0f year%s %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
+                        printString(buffer, "%.0f year%s %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
         default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
                                           "DisplayNullOccurrence()", Data.GetParameters().GetTimeAggregationUnitsType());
       }
       //print data to file stream
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
   }
   catch (ZdException & x) {
@@ -544,7 +544,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
 /** Writes clusters population in format required by result output file. */
 void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   unsigned int           i;
-  ZdString               sWork, sBuffer;
+  std::string            work, buffer;
   const DataSetHandler & DataSets = DataHub.GetDataSetHandler();
   double                 dPopulation;
 
@@ -557,14 +557,14 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const As
       for (i=0; i < DataSets.GetNumDataSets(); ++i) {
         dPopulation = DataHub.GetProbabilityModel().GetPopulation(i, *this, DataHub);
         if (dPopulation < .5)
-          sWork.printf("%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
+          printString(work, "%s%g", (i > 0 ? ", " : ""), dPopulation); // display all decimals for populations less than .5
         else if (dPopulation < 1)
-          sWork.printf("%s%.1f", (i > 0 ? ", " : ""), dPopulation); // display one decimal for populations less than 1
+          printString(work, "%s%.1f", (i > 0 ? ", " : ""), dPopulation); // display one decimal for populations less than 1
         else
-          sWork.printf("%s%.0f", (i > 0 ? ", " : ""), dPopulation); // else display no decimals
-        sBuffer << sWork;
+          printString(work, "%s%.0f", (i > 0 ? ", " : ""), dPopulation); // else display no decimals
+        buffer += work;
       }
-      PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       break;
     default : break;
   };
@@ -588,36 +588,36 @@ void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPr
 
 /** Writes clusters relative risk in format required by result output file. */
 void CCluster::DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString      sBuffer;
-  double        dRelativeRisk;
+  std::string buffer;
+  double      dRelativeRisk;
 
   PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
   if ((dRelativeRisk = GetRelativeRisk(DataHub, iDataSetIndex)) == -1)
-    sBuffer = "infinity";
+    buffer = "infinity";
   else
-    sBuffer.printf("%.3f", dRelativeRisk);
-  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+    printString(buffer, "%.3f", dRelativeRisk);
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 /** Writes clusters overall relative risk in format required by result output file. */
 void CCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString      sBuffer;
+  std::string buffer;
 
   PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
-  sBuffer.printf("%.3f", GetObservedDivExpected(DataHub, iDataSetIndex));
-  PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
+  printString(buffer, "%.3f", GetObservedDivExpected(DataHub, iDataSetIndex));
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 /** Prints clusters time frame in format required by result output file. */
 void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  ZdString  sStart, sEnd;
+  std::string  sStart, sEnd;
 
   PrintFormat.PrintSectionLabel(fp, "Time frame", false, true);
-  fprintf(fp, "%s - %s\n", GetStartDate(sStart, DataHub).GetCString(), GetEndDate(sEnd, DataHub).GetCString());
+  fprintf(fp, "%s - %s\n", GetStartDate(sStart, DataHub).c_str(), GetEndDate(sEnd, DataHub).c_str());
 }
 
 /** returns end date of defined cluster as formated string */
-ZdString& CCluster::GetEndDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1);
 }
 
@@ -693,13 +693,13 @@ double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size
 }
 
 /** Returns population as string with varied precision, based upon value. */
-ZdString & CCluster::GetPopulationAsString(ZdString& sString, double dPopulation) const {
+std::string & CCluster::GetPopulationAsString(std::string& sString, double dPopulation) const {
   if (dPopulation < .5)
-    sString.printf("%g", dPopulation); // display all decimals for populations less than .5
+    printString(sString, "%g", dPopulation); // display all decimals for populations less than .5
   else if (dPopulation < 1)
-    sString.printf("%.1f", dPopulation); // display one decimal for populations less than 1
+    printString(sString, "%.1f", dPopulation); // display one decimal for populations less than 1
   else
-    sString.printf("%.0f", dPopulation); // else display no decimals
+    printString(sString, "%.0f", dPopulation); // else display no decimals
 
   return sString;
 }
@@ -735,7 +735,7 @@ double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData
 }
 
 /** returns start date of defined cluster as formated string */
-ZdString& CCluster::GetStartDate(ZdString& sDateString, const CSaTScanData& DataHub) const {
+std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
   return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval]);
 }
 
