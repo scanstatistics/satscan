@@ -5,6 +5,7 @@
 #include "ParameterFileAccess.h"
 #include "ScanLineParameterFileAccess.h"
 #include "IniParameterFileAccess.h"
+#include<boost/tokenizer.hpp>
 
 /** constructor */
 ParameterAccessCoordinator::ParameterAccessCoordinator(CParameters& Parameters)
@@ -459,17 +460,20 @@ void AbtractParameterFileAccess::ReadDate(const std::string& sValue, ParameterTy
 
 /** Attempts to interpret passed string as comma separated string of dates. Throws InvalidParameterException. */
 void AbtractParameterFileAccess::ReadDateRange(const std::string& sValue, ParameterType eParameterType, DateRange_t& Range) const {
-  int                   iNumTokens;
+  int   iNumTokens=0;
 
   try {
     if (sValue.size()) {
-      ZdStringTokenizer     Tokenizer(sValue.c_str(), ",");
-      iNumTokens = Tokenizer.GetNumTokens();
+      boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sValue);
+      for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+        if (iNumTokens == 0) Range.first = *itr;
+        else if (iNumTokens == 1) Range.second = *itr;
+        ++iNumTokens;
+      }
+
       if (iNumTokens != 2)
         InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', %d values specified but should have 2.\n",
                                             "ReadDateRange()", GetParameterLabel(eParameterType), iNumTokens);
-      Range.first = Tokenizer.GetNextToken().GetCString();
-      Range.second = Tokenizer.GetNextToken().GetCString();
     }
   }
   catch (ZdException & x) {
@@ -503,18 +507,20 @@ double AbtractParameterFileAccess::ReadDouble(const std::string & sValue, Parame
     the number of rotations ellipse will make. No attempt to convert is made if no
     ellipses defined.  Throws InvalidParameterException. */
 void AbtractParameterFileAccess::ReadEllipseRotations(const std::string& sParameter) const {
-  int                   i, iNumTokens, iReadRotations;
+  int   iNumTokens=0, iReadRotations;
 
   try {
     if (sParameter.size()) {
-      ZdStringTokenizer     Tokenizer(sParameter.c_str(), (sParameter.find(',') == sParameter.npos ? " " : "," ));
-      iNumTokens = Tokenizer.GetNumTokens();
-      for (i=0; i < iNumTokens; i++) {
-         if (sscanf(Tokenizer.GetToken(i).GetCString(), "%i", &iReadRotations))
-           gParameters.AddEllipsoidRotations(iReadRotations, (i == 0));
+      boost::escaped_list_separator<char> separator('\\', (sParameter.find(',') == sParameter.npos ? ' ' : ','), '\"');
+      boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sParameter, separator);
+      for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+         if (sscanf((*itr).c_str(), "%i", &iReadRotations)) {
+           gParameters.AddEllipsoidRotations(iReadRotations, (iNumTokens == 0));
+           ++iNumTokens;
+         }
          else
            InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an integer.\n", "ReadEllipseRotations()",
-                                               GetParameterLabel(ENUMBERS), Tokenizer.GetToken(i).GetCString());
+                                               GetParameterLabel(ENUMBERS), (*itr).c_str());
       }
     }
   }
@@ -528,19 +534,21 @@ void AbtractParameterFileAccess::ReadEllipseRotations(const std::string& sParame
     the shape of each ellipsoid. No attempt to convert is made if there are no
     ellipses defined.  Throws InvalidParameterException. */
 void AbtractParameterFileAccess::ReadEllipseShapes(const std::string& sParameter) const {
-  int                   i, iNumTokens;
-  double                dReadShape;
+  int           iNumTokens=0;
+  double        dReadShape;
 
   try {
     if (sParameter.size()) {
-      ZdStringTokenizer     Tokenizer(sParameter.c_str(), (sParameter.find(',') == sParameter.npos ? " " : "," ));
-      iNumTokens = Tokenizer.GetNumTokens();
-      for (i=0; i < iNumTokens; i++) {
-         if (sscanf(Tokenizer.GetToken(i).GetCString(), "%lf", &dReadShape))
-           gParameters.AddEllipsoidShape(dReadShape, (i == 0));
+      boost::escaped_list_separator<char> separator('\\', (sParameter.find(',') == sParameter.npos ? ' ' : ','), '\"');
+      boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sParameter, separator);
+      for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+         if (sscanf((*itr).c_str(), "%lf", &dReadShape)) {
+           gParameters.AddEllipsoidShape(dReadShape, (iNumTokens == 0));
+           ++iNumTokens;
+         }
          else
            InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an decimal number.\n",
-                                               "ReadEllipseShapes()", GetParameterLabel(ESHAPES), Tokenizer.GetToken(i).GetCString());
+                                               "ReadEllipseShapes()", GetParameterLabel(ESHAPES), (*itr).c_str());
       }
     }
   }
