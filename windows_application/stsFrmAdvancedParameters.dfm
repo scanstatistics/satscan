@@ -430,7 +430,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 8
         Width = 421
         Height = 125
-        Caption = 'Special Neighbor File'
+        Caption = 'Special Neighbor Files'
         TabOrder = 0
         object edtNeighborsFile: TEdit
           Left = 30
@@ -466,7 +466,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 21
           Width = 389
           Height = 17
-          Caption = 'Specify geographical neighbors through a user defined file'
+          Caption = 'Specify neighbors through a user defined file'
           TabOrder = 0
           OnClick = chkSpecifiyNeighborsFileClick
         end
@@ -475,7 +475,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Top = 71
           Width = 389
           Height = 17
-          Caption = 'Specify geographical meta locations through a user defined file'
+          Caption = 'Specify meta locations through a user defined file'
           TabOrder = 3
           OnClick = chkSpecifiyNeighborsFileClick
         end
