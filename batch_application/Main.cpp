@@ -47,6 +47,7 @@ int getCommandLineArgumentIndex(int argc, char *argv[], const char * arg) {
 void __SaTScanInit(const char * sApplicationFullPath) {
   ZdInit();
   AppToolkit::ToolKitCreate(sApplicationFullPath);
+  ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
 }
 
 void __SaTScanExit() {
@@ -64,7 +65,6 @@ int main(int argc, char *argv[]) {
 
   try {
     __SaTScanInit(argv[0]);
-    ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     bExecuting = !validateCommandLineArguments(argc, argv);
     time(&RunTime); //get start time
