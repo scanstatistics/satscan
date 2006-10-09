@@ -54,8 +54,8 @@ class MetaLocationManager {
          MetaLocation(const char * sIdentifier);
 
          bool                           operator==(const MetaLocation& rhs) const {
-                                          if (!strcmp(rhs.getIndentifier(), getIndentifier())) return true;
-                                          return !(gLocations != rhs.gLocations);
+                                          if (!strcmp(rhs.getIndentifier(), getIndentifier()) && !(gLocations != rhs.gLocations)) return true;
+                                          return false;
                                         }
          void                           addLocation(const AtomicMetaLocation* pLocation);
          void                           addLocation(const MetaLocation* pLocation);
