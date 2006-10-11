@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 91;
+const int CParameters::giNumParameters 	              = 92;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -125,6 +125,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdMaxSpatialSizeInMaxDistanceFromCenter_Reported != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported) return false;
   if (gsLocationNeighborsFilename != rhs.gsLocationNeighborsFilename) return false;
   if (gbUseLocationNeighborsFile != rhs.gbUseLocationNeighborsFile) return false;
+  if (gbRandomlyGenerateSeed != rhs.gbRandomlyGenerateSeed) return false;
 
   return true;
 }
@@ -273,6 +274,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
     gsLocationNeighborsFilename                = rhs.gsLocationNeighborsFilename;
     gbUseLocationNeighborsFile                 = rhs.gbUseLocationNeighborsFile;
+    gbRandomlyGenerateSeed                 = rhs.gbRandomlyGenerateSeed;
   }
   catch (ZdException & x) {
     x.AddCallpath("Copy()", "CParameters");
@@ -850,6 +852,7 @@ void CParameters::SetAsDefaulted() {
   gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = 1.0;
   gsLocationNeighborsFilename = "";
   gbUseLocationNeighborsFile = false;
+  gbRandomlyGenerateSeed = false;
 }
 
 /** Sets start range start date. Throws exception. */

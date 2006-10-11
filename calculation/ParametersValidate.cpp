@@ -5,6 +5,8 @@
 #include "ParametersValidate.h"
 #include "RandomNumberGenerator.h"
 #include "Randomizer.h"
+#include <boost/random/linear_congruential.hpp>
+#include <boost/random/uniform_int.hpp>
 
 /** constructor */
 ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -683,13 +685,18 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
   double        dMaxRandomizationSeed, dMaxReplications, dMaxSeed;
 
   if (gParameters.GetNumReplicationsRequested()) {
+    if (gParameters.GetIsRandomlyGeneratingSeed()) {
+      dMaxSeed = (double)RandomNumberGenerator::glM - (double)gParameters.GetNumReplicationsRequested() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
+      boost::minstd_rand generator(static_cast<int>(time(0)));
+      const_cast<CParameters&>(gParameters).SetRandomizationSeed(boost::uniform_int<>(1,static_cast<int>(dMaxSeed))(generator));
+      return true;
+    }
     //validate hidden parameter which specifies randomization seed
     if (!(0 < gParameters.GetRandomizationSeed() && gParameters.GetRandomizationSeed() < RandomNumberGenerator::glM)) {
       PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed out of range [1 - %ld].\n",
                             BasePrint::P_PARAMERROR, RandomNumberGenerator::glM - 1);
       return false;
     }
-
     //validate that generated seeds during randomization will not exceed defined range
     // - note that though the number of data sets has a bearing on the maximum seed, but we
     //   will not indicate to user to reduce the number of data sets in order to correct issues.
@@ -726,7 +733,7 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       else if (dMaxReplications < 9) {
         PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
                               "The intial seed specified prevents any replications from being performed. "
-                              "With %ld replications, the initial seed can be [0 - %.0lf].\n",
+                              "With %ld replications, the initial seed can be [1 - %.0lf].\n",
                               BasePrint::P_PARAMERROR, gParameters.GetNumReplicationsRequested(), dMaxSeed);
       }
       //check that number of replications isn't too large

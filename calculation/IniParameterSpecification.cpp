@@ -321,6 +321,7 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"NeighborsFilename"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseNeighborsFile"));
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"RandomlyGenerateSeed"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -112,6 +112,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
       case USE_MAXGEODISTANCE_REPORTED : return "Restrict maximum reported spatial size - distance (line 89)";
       case LOCATION_NEIGHBORS_FILE   : return "Location neighbors filename (line 90)";
       case USE_LOCATION_NEIGHBORS_FILE  : return "Use location neighbors file (line 91)";
+      case RANDOMLY_GENERATE_SEED    : return "Randomly generate seed (line 92)";
       default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
     };
   }
