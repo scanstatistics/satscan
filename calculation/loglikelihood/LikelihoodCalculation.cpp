@@ -8,12 +8,53 @@
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub)
-                             :gDataHub(DataHub), gpUnifier(0) {
-  Setup();
+                             :gDataHub(DataHub), gpUnifier(0), gtMinLowRateCases(0), gtMinHighRateCases(2) {
+  try {
+    //store data set totals for later calculation
+    for (size_t t=0; t < gDataHub.GetDataSetHandler().GetNumDataSets(); ++t)
+       gvDataSetTotals.push_back(std::make_pair(gDataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases(),
+                                                gDataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasure()));
+                                                
+    switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
+      case LOW        : gpRateOfInterest = &AbstractLikelihoodCalculator::LowRate; break;
+      case HIGHANDLOW : gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate; break;
+      case HIGH       :
+      default         : gpRateOfInterest = &AbstractLikelihoodCalculator::HighRate;
+    };
+
+    if (gDataHub.GetParameters().GetNumDataSets() > 1) {
+      switch (gDataHub.GetParameters().GetMultipleDataSetPurposeType()) {
+        case MULTIVARIATE :
+          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
+        case ADJUSTMENT :
+          gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
+        default :
+          ZdGenerateException("Unknown purpose for multiple data sets '%d'.","constructor()",
+                              gDataHub.GetParameters().GetMultipleDataSetPurposeType());
+      }
+    }
+    switch (gDataHub.GetParameters().GetProbabilityModelType()) {
+      case POISSON              :
+      case BERNOULLI            :
+      case SPACETIMEPERMUTATION :
+      case ORDINAL              :
+      case RANK                 :
+      case EXPONENTIAL          : gtMinLowRateCases = 0; gtMinHighRateCases = 2; break;
+      case NORMAL               : gtMinLowRateCases = 2; gtMinHighRateCases = 2; break;
+      default : ZdGenerateException("Unknown data model type '%d'.","constructor()", gDataHub.GetParameters().GetProbabilityModelType());
+    };
+  }
+  catch (ZdException &x) {
+    delete gpUnifier;
+    x.AddCallpath("constructor()","AbstractLikelihoodCalculator");
+    throw;
+  }
 }
 
 /** class destructor */
-AbstractLikelihoodCalculator::~AbstractLikelihoodCalculator() {}
+AbstractLikelihoodCalculator::~AbstractLikelihoodCalculator() {
+  try {delete gpUnifier;}catch(...){}
+}
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihood(count_t, measure_t) const {
@@ -87,38 +128,5 @@ AbstractLoglikelihoodRatioUnifier & AbstractLikelihoodCalculator::GetUnifier() c
   if (!gpUnifier)
     ZdGenerateException("Log likelihood unifier not allocated.","GetUnifier()");
   return *gpUnifier;
-}
-
-/** Internal class setup */
-void AbstractLikelihoodCalculator::Setup() {
-  try {
-    //store data set totals for later calculation
-    for (size_t t=0; t < gDataHub.GetDataSetHandler().GetNumDataSets(); ++t)
-       gvDataSetTotals.push_back(std::make_pair(gDataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases(),
-                                                gDataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasure()));
-                                                
-    switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
-      case LOW        : gpRateOfInterest = &AbstractLikelihoodCalculator::LowRate; break;
-      case HIGHANDLOW : gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate; break;
-      case HIGH       :
-      default         : gpRateOfInterest = &AbstractLikelihoodCalculator::HighRate;
-    };
-
-    if (gDataHub.GetParameters().GetNumDataSets() > 1) {
-      switch (gDataHub.GetParameters().GetMultipleDataSetPurposeType()) {
-        case MULTIVARIATE :
-          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
-        case ADJUSTMENT :
-          gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
-        default :
-          ZdGenerateException("Unknown purpose for multiple data sets '%d'.","GetUnifier",
-                              gDataHub.GetParameters().GetMultipleDataSetPurposeType());
-      }
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","AbstractLikelihoodCalculator");
-    throw;
-  }
 }
 
