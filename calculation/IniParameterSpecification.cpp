@@ -327,6 +327,7 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 /** Version 8.0.x */
 void IniParameterSpecification::Build_8_0_x_ParameterList() {
   Build_7_0_x_ParameterList();
+  gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"RandomlyGenerateSeed"));
   gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MultipleCoordinatesType"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"MetaLocationsFilename"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseMetaLocationsFile"));

@@ -6,6 +6,8 @@
 #include "RandomNumberGenerator.h"
 #include "Randomizer.h"
 #include "ParametersPrint.h"
+#include <boost/random/linear_congruential.hpp>
+#include <boost/random/uniform_int.hpp>
 
 /** constructor */
 ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -688,6 +690,12 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
   double        dMaxRandomizationSeed, dMaxReplications, dMaxSeed;
 
   if (gParameters.GetNumReplicationsRequested()) {
+    if (gParameters.GetIsRandomlyGeneratingSeed()) {
+      dMaxSeed = (double)RandomNumberGenerator::glM - (double)gParameters.GetNumReplicationsRequested() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet - 1;
+      boost::minstd_rand generator(static_cast<int>(time(0)));
+      const_cast<CParameters&>(gParameters).SetRandomizationSeed(boost::uniform_int<>(1,static_cast<int>(dMaxSeed))(generator));
+      return true;
+    }
     //validate hidden parameter which specifies randomization seed
     if (!(0 < gParameters.GetRandomizationSeed() && gParameters.GetRandomizationSeed() < RandomNumberGenerator::glM)) {
       PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed out of range [1 - %ld].\n",

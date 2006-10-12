@@ -149,6 +149,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case USE_MAXGEODISTANCE_REPORTED: return " restrict maximum reported spatial size - distance? (y/n)";
       case LOCATION_NEIGHBORS_FILE  : return " neighbors file";
       case USE_LOCATION_NEIGHBORS_FILE : return " use neighbors file (y/n)";
+      case RANDOMLY_GENERATE_SEED   : return " randomly generate seed (y/n)";
       case MULTIPLE_COORDINATES_TYPE: return " multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)";
       case META_LOCATIONS_FILE      : return " meta locations file";
       case USE_META_LOCATIONS_FILE  : return " use meta locations file (y/n)";
@@ -271,6 +272,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case USE_MAXGEODISTANCE_REPORTED: return AsString(s, gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true));
       case LOCATION_NEIGHBORS_FILE  : s = gParameters.GetLocationNeighborsFileName(); return s;
       case USE_LOCATION_NEIGHBORS_FILE : return AsString(s, gParameters.UseLocationNeighborsFile());
+      case RANDOMLY_GENERATE_SEED   : return AsString(s, gParameters.GetIsRandomlyGeneratingSeed());
       case MULTIPLE_COORDINATES_TYPE: return AsString(s, gParameters.GetMultipleCoordinatesType());
       case META_LOCATIONS_FILE      : s = gParameters.getMetaLocationsFilename(); return s;
       case USE_META_LOCATIONS_FILE  : return AsString(s, gParameters.UseMetaLocationsFile());
@@ -385,6 +387,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case USE_MAXGEODISTANCE_REPORTED: default_value = (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true) ? "y" : "n"); break;
       case LOCATION_NEIGHBORS_FILE  : default_value = "<blank>"; break;
       case USE_LOCATION_NEIGHBORS_FILE : default_value = (gParameters.UseLocationNeighborsFile() ? "y" : "n"); break;
+      case RANDOMLY_GENERATE_SEED   : default_value = (gParameters.GetIsRandomlyGeneratingSeed() ? "y" : "n"); break;
       case MULTIPLE_COORDINATES_TYPE: AsString(default_value, gParameters.GetMultipleCoordinatesType()); break;
       case META_LOCATIONS_FILE      : default_value = "<blank>"; break;
       case USE_META_LOCATIONS_FILE  : default_value = (gParameters.UseMetaLocationsFile() ? "y" : "n"); break;
@@ -776,6 +779,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case USE_MAXGEODISTANCE_REPORTED: gParameters.SetRestrictMaxSpatialSizeForType(MAXDISTANCE, ReadBoolean(sParameter, eParameterType), true); break;
       case LOCATION_NEIGHBORS_FILE   : gParameters.SetLocationNeighborsFileName(sParameter.c_str(), true); break;
       case USE_LOCATION_NEIGHBORS_FILE : gParameters.UseLocationNeighborsFile(ReadBoolean(sParameter, eParameterType)); break;
+      case RANDOMLY_GENERATE_SEED    : gParameters.SetIsRandomlyGeneratingSeed(ReadBoolean(sParameter, eParameterType)); break;
       case MULTIPLE_COORDINATES_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, ONEPERLOCATION, ALLLOCATIONS);
                                        gParameters.SetMultipleCoordinatesType((MultipleCoordinatesType)ReadInt(sParameter, eParameterType)); break;
       case META_LOCATIONS_FILE       : gParameters.setMetaLocationsFilename(sParameter.c_str(), true); break;

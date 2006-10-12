@@ -691,6 +691,8 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
       fprintf(fp, "All Available Proccessors\n");
     else
       fprintf(fp, "At Most %u Proccessors\n", gParameters.GetNumRequestedParallelProcesses());
+    if (gParameters.GetIsRandomlyGeneratingSeed())
+      fprintf(fp, "  Use Random Seed     : %s\n", (gParameters.GetIsRandomlyGeneratingSeed() ? "Yes" : "No"));
     if (gParameters.GetRandomizationSeed() != RandomNumberGenerator::glDefaultSeed)
       fprintf(fp, "  Randomization Seed  : %ld\n", gParameters.GetRandomizationSeed());
     if (gParameters.GetExecutionType() != AUTOMATIC) {

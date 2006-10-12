@@ -29,8 +29,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     USE_MAXGEOPOPFILE, USE_MAXGEODISTANCE,
                                     MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
-                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, MULTIPLE_COORDINATES_TYPE,
-                                    META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE};
+                                    LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
+                                    MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -181,6 +181,7 @@ class CParameters {
     std::string                         gsStartRangeEndDate;
     struct CreationVersion              gCreationVersion;
     long                                glRandomizationSeed;                    /** randomization seed */
+    bool                                gbRandomlyGenerateSeed;                 /** indicates whether to randomly generate seed */
     bool                                gbReportCriticalValues;                 /** indicates whether to report critical llr values */
     bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
     SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
@@ -232,6 +233,7 @@ class CParameters {
     bool                                GetIsProspectiveAnalysis() const;
     bool                                GetIsPurelyTemporalAnalysis() const;
     bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
+    bool                                GetIsRandomlyGeneratingSeed() const {return gbRandomlyGenerateSeed;}
     bool                                GetIsSpaceTimeAnalysis() const;
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
@@ -326,6 +328,7 @@ class CParameters {
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
     void                                SetIsLoggingHistory(bool b) {gbLogRunHistory = b;}
+    void                                SetIsRandomlyGeneratingSeed(bool b) {gbRandomlyGenerateSeed = b;}
     void                                SetLocationNeighborsFileName(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath=false);
     void                                SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath=false);
     void                                SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize);

@@ -374,7 +374,7 @@ void IniParameterFileAccess::WriteNeighborsFileSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
   }
   catch (ZdException &x) {
-    x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
+    x.AddCallpath("WriteNeighborsFileSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -435,6 +435,9 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, NUM_PROCESSES, GetParameterString(NUM_PROCESSES, s).c_str(), GetParameterComment(NUM_PROCESSES));
     WriteIniParameter(WriteFile, LOG_HISTORY, GetParameterString(LOG_HISTORY, s).c_str(), GetParameterComment(LOG_HISTORY));
     WriteIniParameter(WriteFile, SUPPRESS_WARNINGS, GetParameterString(SUPPRESS_WARNINGS, s).c_str(), GetParameterComment(SUPPRESS_WARNINGS));
+    // since randomly generating seed is a hidden parameter, only write to file if user has switched from default;
+    if (gParameters.GetIsRandomlyGeneratingSeed())
+      WriteIniParameter(WriteFile, RANDOMLY_GENERATE_SEED, GetParameterString(RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(RANDOMLY_GENERATE_SEED));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");

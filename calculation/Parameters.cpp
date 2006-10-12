@@ -7,7 +7,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 94;
+const int CParameters::giNumParameters 	              = 95;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -125,6 +125,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gdMaxSpatialSizeInMaxDistanceFromCenter_Reported != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported) return false;
   if (gsLocationNeighborsFilename            != rhs.gsLocationNeighborsFilename) return false;
   if (gbUseLocationNeighborsFile             != rhs.gbUseLocationNeighborsFile) return false;
+  if (gbRandomlyGenerateSeed != rhs.gbRandomlyGenerateSeed) return false;
   if (geMultipleCoordinatesType              != rhs.geMultipleCoordinatesType) return false;
   if (gsMetaLocationsFilename                != rhs.gsMetaLocationsFilename) return false;
   if (gbUseMetaLocationsFile                 != rhs.gbUseMetaLocationsFile) return false;
@@ -276,6 +277,7 @@ void CParameters::Copy(const CParameters &rhs) {
     gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
     gsLocationNeighborsFilename            = rhs.gsLocationNeighborsFilename;
     gbUseLocationNeighborsFile             = rhs.gbUseLocationNeighborsFile;
+    gbRandomlyGenerateSeed                 = rhs.gbRandomlyGenerateSeed;
     geMultipleCoordinatesType              = rhs.geMultipleCoordinatesType;
     gsMetaLocationsFilename                = rhs.gsMetaLocationsFilename;
     gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
@@ -770,6 +772,7 @@ void CParameters::SetAsDefaulted() {
   gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = 1.0;
   gsLocationNeighborsFilename = "";
   gbUseLocationNeighborsFile = false;
+  gbRandomlyGenerateSeed = false;
   geMultipleCoordinatesType = ONEPERLOCATION;
   gsMetaLocationsFilename = "";
   gbUseMetaLocationsFile = false;
