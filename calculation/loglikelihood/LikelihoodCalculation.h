@@ -19,8 +19,8 @@ class AbstractLikelihoodCalculator {
     const CSaTScanData                & gDataHub;                      /** const reference to data hub */
     AbstractLoglikelihoodRatioUnifier * gpUnifier;                     /** log likelihood ratio unifier for multiple data sets */
     std::vector<std::pair<count_t,measure_t> > gvDataSetTotals;
-
-    void                                Setup();
+    count_t                             gtMinLowRateCases;
+    count_t                             gtMinHighRateCases;
 
   public:
     AbstractLikelihoodCalculator(const CSaTScanData& DataHub);
@@ -50,7 +50,7 @@ class AbstractLikelihoodCalculator {
 /** Indicates whether an area has lower than expected cases for a clustering
     within a single dataset. */
 inline bool AbstractLikelihoodCalculator::LowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
-   if (nMeasure == 0) return false;
+   if (nMeasure == 0 || nCases < gtMinLowRateCases) return false;
    return (nCases*gvDataSetTotals[tSetIndex].second < nMeasure*gvDataSetTotals[tSetIndex].first);
 }
 /** Indicates whether an area has high than expected cases for a clustering
@@ -58,17 +58,17 @@ inline bool AbstractLikelihoodCalculator::LowRate(count_t nCases, measure_t nMea
     considered for high rates. Note this function should not be used for scannning
     for high rates with an analysis with multiple datasets; use MultipleSetsHighRate() */
 inline bool AbstractLikelihoodCalculator::HighRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
-   if (nMeasure == 0 || nCases < 2/*one case should not be considered a high rate*/) return false;
+   if (nMeasure == 0 || nCases < gtMinHighRateCases) return false;
    return (nCases*gvDataSetTotals[tSetIndex].second  > nMeasure*gvDataSetTotals[tSetIndex].first);
 }
 /** Indicates whether an area has lower than expected cases for a clustering
     within a single dataset. */
 inline bool AbstractLikelihoodCalculator::HighOrLowRate(count_t nCases, measure_t nMeasure, size_t tSetIndex) const {
    if (nMeasure == 0) return false;
-   //check for high rate -- must have more than one case to be considered high rate
-   if (nCases*gvDataSetTotals[tSetIndex].second > nMeasure*gvDataSetTotals[tSetIndex].first) return (nCases > 1);
+   //check for high rate
+   if (nCases >= gtMinHighRateCases && nCases*gvDataSetTotals[tSetIndex].second > nMeasure*gvDataSetTotals[tSetIndex].first) return true;
    //check for low rate
-   else if (nCases*gvDataSetTotals[tSetIndex].second < nMeasure*gvDataSetTotals[tSetIndex].first) return true;
+   else if (nCases >= gtMinLowRateCases && nCases*gvDataSetTotals[tSetIndex].second < nMeasure*gvDataSetTotals[tSetIndex].first) return true;
    else return false;
 }
 /** For multiple sets, the criteria that a high rate must have more than one case
