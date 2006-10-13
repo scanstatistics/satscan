@@ -12,9 +12,9 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
   try {
     //store data set totals for later calculation
     for (size_t t=0; t < gDataHub.GetDataSetHandler().GetNumDataSets(); ++t)
-       gvDataSetTotals.push_back(std::make_pair(gDataHub.GetDataSetHandler().GetDataSet(t).GetTotalCases(),
-                                                gDataHub.GetDataSetHandler().GetDataSet(t).GetTotalMeasure()));
-                                                
+       gvDataSetTotals.push_back(std::make_pair(gDataHub.GetDataSetHandler().GetDataSet(t).getTotalCases(),
+                                                gDataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure()));
+
     switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
       case LOW        : gpRateOfInterest = &AbstractLikelihoodCalculator::LowRate; break;
       case HIGHANDLOW : gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate; break;
