@@ -127,6 +127,7 @@ class CSaTScanData {
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline size_t                               GetNumDataSets() const {return gDataSets->GetNumDataSets();}
     inline tract_t                              GetNumMetaTracts() const {return (tract_t)gTractHandler->getMetaLocations().getLocations().size();}
+    inline tract_t                              GetNumMetaTractsReferenced() const {return (tract_t)gTractHandler->getMetaLocations().getNumReferencedLocations();}
     size_t                                      GetNumNullifiedLocations() const {return gvNullifiedLocations.size();}
     inline int                                  GetNumTimeIntervals() const {return m_nTimeIntervals;}
     inline tract_t                              GetNumTracts() const {return m_nTracts;}

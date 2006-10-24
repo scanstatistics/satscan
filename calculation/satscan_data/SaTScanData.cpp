@@ -152,7 +152,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     to zero. */
 void CSaTScanData::AllocateSortedArray() {
   try {
-    if (m_nTracts + (tract_t)(gTractHandler->getMetaLocations().getLocations().size()) < std::numeric_limits<unsigned short>::max()) {
+    if (m_nTracts + (tract_t)(gTractHandler->getMetaLocations().getNumReferencedLocations()) < std::numeric_limits<unsigned short>::max()) {
       if (!gpSortedUShortHandler)
         gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
       else
