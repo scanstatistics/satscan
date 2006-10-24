@@ -81,9 +81,10 @@ TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMul
 
 /** This method should be called once all insertions are completed. Scans internal
     collection of location identifiers, looking for duplicates locations. */
-void TractHandler::additionsCompleted() {
+void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
   gAdditionStatus = Closed;
-  getMetaLocations().assignAtomicIndexes(*this);
+  gMetaLocationsManager.getMetaLocationPool().assignAtomicIndexes(*this);
+  gMetaLocationsManager.setStateFixed(bReportingRiskEstimates);
 
   if (gvLocations.size() < 2 || giCoordinateDimensions == 0) return;
 
@@ -111,24 +112,23 @@ void TractHandler::additionsCompleted() {
 
 /** Insert a tract into internal structure, sorting by tract identifier. Ignores location ids
     which already exist. Returns tract identifers relative index into internal structure. */
-tract_t TractHandler::addLocation(const char *sIdentifier) {
+void TractHandler::addLocation(const char *sIdentifier) {
+  assert(gAdditionStatus == Accepting);
   ZdPointerVector<Location>::iterator itr;
 
   try {
-    if (gAdditionStatus == Closed)
-      ZdGenerateException("This TractHandler object is closed to insertions.", "addLocation()");
+    if (gbAggregatingTracts) return;//when aggregating locations, insertion process always succeeds
 
-    if (gbAggregatingTracts) //when aggregating locations, insertion process always succeeds
-      return 0;
-
-    if (gMetaLocationManager.getMetaLocationIndex(sIdentifier) > -1) return -1;
+    tract_t tLocationIndex=gMetaLocationsManager.getMetaLocationPool().getMetaLocationIndex(sIdentifier);
+    if (tLocationIndex > -1) {
+      gMetaLocationsManager.addReferenced(tLocationIndex); return;
+    }
 
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
     itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier))
-      return std::distance(gvLocations.begin(), itr);
-    return std::distance(gvLocations.begin(), gvLocations.insert(itr, identifier.release()));
+    if (itr == gvLocations.end() || strcmp((*itr)->getIndentifier(), sIdentifier))
+      gvLocations.insert(itr, identifier.release());
   }
   catch (ZdException & x) {
     x.AddCallpath("addLocation()", "TractHandler");
@@ -138,10 +138,8 @@ tract_t TractHandler::addLocation(const char *sIdentifier) {
 
 /** Inserts a locations identifier into internal structures.  */
 void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCoordinates) {
+  assert(gAdditionStatus == Accepting);
   try {
-    if (gAdditionStatus == Closed)
-      ZdGenerateException("This TractHandler object is closed to insertions.", "addLocation()");
-
     if (gbAggregatingTracts) return; //when aggregating locations, insertion process always succeeds
 
     if (vCoordinates.size() != giCoordinateDimensions)
@@ -190,7 +188,7 @@ double TractHandler::getDistanceSquared(const std::vector<double>& vFirstPoint, 
 const char * TractHandler::getIdentifier(tract_t tIndex) const {
   if ((size_t)tIndex < gvLocations.size())
     return gvLocations.at(tIndex)->getIndentifier();
-  return gMetaLocationManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier();
+  return gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier();
 }
 
 /** Searches for tract identifier and returns it's internal index, or -1 if not found.
@@ -268,7 +266,7 @@ TractHandler::Location::StringContainer_t & TractHandler::retrieveAllIdentifiers
     gvLocations.at(tIndex)->retrieveAllIdentifiers(Identifiers);
   else {
     Identifiers.clear();
-    Identifiers.add(std::string(gMetaLocationManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier()), false);
+    Identifiers.add(std::string(gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier()), false);
   }
   return Identifiers;
 }

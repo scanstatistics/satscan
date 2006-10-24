@@ -112,14 +112,14 @@ class TractHandler {
     MultipleCoordinatesType             geMultipleCoordinatesType;
     size_t                              giMaxIdentifierLength;
     size_t                              giNumLocationCoordinates;
-    MetaLocationManager                 gMetaLocationManager;
+    MetaLocationManager                 gMetaLocationsManager;
 
   public:
     TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType);
     ~TractHandler() {}
 
-    void                                additionsCompleted();
-    tract_t                             addLocation(const char *sIdentifier);
+    void                                additionsCompleted(bool bReportingRiskEstimates=false);
+    void                                addLocation(const char *sIdentifier);
     void                                addLocation(const char *sIdentifier, std::vector<double>& vCoordinates);
     addition_status_t                   getAddStatus() const {return gAdditionStatus;}
     const CoordinatesContainer_t      & getCoordinates() const {return gvCoordinates;}
@@ -129,8 +129,8 @@ class TractHandler {
     const LocationsContainer_t        & getLocations() const {return gvLocations;}
     tract_t                             getLocationIndex(const char *sIdentifier) const;
     size_t                              getMaxIdentifierLength() const {return giMaxIdentifierLength;}
-    MetaLocationManager               & getMetaLocations() {return gMetaLocationManager;}
-    const MetaLocationManager         & getMetaLocations() const {return gMetaLocationManager;}
+    MetaLocationManager               & getMetaLocations() {return gMetaLocationsManager;}
+    const MetaLocationManager         & getMetaLocations() const {return gMetaLocationsManager;}
     size_t                              getNumLocationCoordinates() const {return giNumLocationCoordinates;}
     void                                reportCombinedLocations(FILE * fDisplay) const;
     Location::StringContainer_t       & retrieveAllIdentifiers(tract_t tIndex, Location::StringContainer_t& Identifiers) const;
