@@ -47,7 +47,7 @@ void NormalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in internal data set collection. */
 AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
 
   try {
     DataGatway.Clear();
@@ -100,7 +100,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in passed simulation data collection. */
 AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
 
   try {
     DataGatway.Clear();

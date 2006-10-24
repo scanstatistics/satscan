@@ -47,7 +47,7 @@ void SpaceTimePermutationDataSetHandler::assignMetaLocationData(RealDataContaine
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in internal data set collection. */
 AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
 
   try {
     DataGatway.Clear();
@@ -87,7 +87,7 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abst
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in passed simulation data collection. */
 AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface        Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
+  DataSetInterface        Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
   size_t                     t;
 
   try {

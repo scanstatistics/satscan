@@ -47,7 +47,7 @@ void ExponentialDataSetHandler::assignMetaLocationData(RealDataContainer_t& Cont
 
 /** returns new data gateway for real data */
 AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTracts());
+  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
 
   try {
     DataGatway.Clear();
