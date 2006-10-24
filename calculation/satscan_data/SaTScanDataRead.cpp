@@ -293,7 +293,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
     else if (gParameters.UseLocationNeighborsFile())
       bReturn = ReadUserSpecifiedNeighbors();
     else {
-      gDataHub.gTractHandler->getMetaLocations().additionsCompleted(gTractHandler);
+      gDataHub.gTractHandler->getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
       gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
       std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
       gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
@@ -667,7 +667,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
     gPrint.Printf("Reading the max circle size file\n", BasePrint::P_STDOUT);
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetMaxCirclePopulationFileName(), gPrint));
     //initialize circle-measure array
-    gDataHub.gvMaxCirclePopulation.resize(gDataHub.m_nTracts + gDataHub.GetTInfo()->getMetaLocations().getLocations().size(), 0);
+    gDataHub.gvMaxCirclePopulation.resize(gDataHub.m_nTracts + gDataHub.GetTInfo()->getMetaLocations().getNumReferencedLocations(), 0);
 
     //1st pass, determine unique population dates. Notes errors with records and continues reading.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
@@ -725,7 +725,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
     }
     //set meta locations
     std::vector<tract_t> atomicIndexes;
-    for (size_t t=0; t < gDataHub.GetTInfo()->getMetaLocations().getLocations().size(); ++t) {
+    for (size_t t=0; t < gDataHub.GetTInfo()->getMetaLocations().getNumReferencedLocations(); ++t) {
        gDataHub.GetTInfo()->getMetaLocations().getAtomicIndexes(t, atomicIndexes);
        for (size_t a=0; a < atomicIndexes.size(); ++a)
          gDataHub.gvMaxCirclePopulation[(size_t)gDataHub.m_nTracts + t] += gDataHub.gvMaxCirclePopulation[atomicIndexes[a]];
@@ -745,7 +745,7 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
 
   try {
     if (!gParameters.UseMetaLocationsFile()) {
-      gTractHandler.getMetaLocations().additionsCompleted(gTractHandler);
+      gTractHandler.getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
       return true;
     }
     gPrint.Printf("Reading the meta locations file\n", BasePrint::P_STDOUT);
@@ -763,7 +763,7 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
         bValid = false;
         continue;
       }
-      if(!gTractHandler.getMetaLocations().addMetaLocation(sIdentifier, Source.GetValueAt(1))) {
+      if(!gTractHandler.getMetaLocations().getMetaLocationPool().addMetaLocation(sIdentifier, Source.GetValueAt(1))) {
         gPrint.Printf("Error: Incorrectly defined meta location at record %d of the %s.\n",
                       BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         bValid = false;
@@ -779,7 +779,7 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
       gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    gTractHandler.getMetaLocations().additionsCompleted(gTractHandler);
+    gTractHandler.getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadMetaLocationsFile()","SaTScanDataReader");
@@ -925,9 +925,9 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
     //second pass - allocate respective sorted array
     if (!bEmpty) {
       //record number of locations read
-      gTractHandler.additionsCompleted();
+      gTractHandler.additionsCompleted(gParameters.GetOutputRelativeRisksFiles());
       gDataHub.m_nTracts = gTractHandler.getLocations().size();
-      boost::dynamic_bitset<> NeighborsSet(gDataHub.m_nTracts + gTractHandler.getMetaLocations().getLocations().size());
+      boost::dynamic_bitset<> NeighborsSet(gDataHub.m_nTracts);
       gDataHub.AllocateSortedArray();
       Source->GotoFirstRecord();
       while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
