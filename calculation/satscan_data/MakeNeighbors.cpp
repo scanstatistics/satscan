@@ -475,10 +475,10 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
 
 /** Resizes passed vector to #of tracts plus # of meta locations. Assigns meta location data. */
 void CentroidNeighborCalculator::setMetaLocations(std::vector<measure_t>& popMeasure) {
-  popMeasure.resize(gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaLocations().getLocations().size(), 0);
+  popMeasure.resize(gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaLocations().getNumReferencedLocations(), 0);
 
   std::vector<tract_t> atomicIndexes;
-  for (size_t t=0; t < gLocationInfo.getMetaLocations().getLocations().size(); ++t) {
+  for (size_t t=0; t < gLocationInfo.getMetaLocations().getNumReferencedLocations(); ++t) {
      gLocationInfo.getMetaLocations().getAtomicIndexes(t, atomicIndexes);
      for (size_t a=0; a < atomicIndexes.size(); ++a)
        popMeasure[(size_t)gDataHub.GetNumTracts() + t] += popMeasure[atomicIndexes[a]];
