@@ -7,62 +7,62 @@
 #include "SSException.h"
 #include<boost/tokenizer.hpp>
 
-////////////////// MetaLocationManager::AbstractMetaLocation////////////////////
+////////////////// AbstractMetaLocation////////////////////
 
 /** constructor */
-MetaLocationManager::AbstractMetaLocation::AbstractMetaLocation(const char * sIdentifier) {
+AbstractMetaLocation::AbstractMetaLocation(const char * sIdentifier) {
   gsIndentifier = new char[strlen(sIdentifier) + 1];
   strcpy(gsIndentifier, sIdentifier);
 }
 
 /** destructor */
-MetaLocationManager::AbstractMetaLocation::~AbstractMetaLocation() {
+AbstractMetaLocation::~AbstractMetaLocation() {
   try {delete[] gsIndentifier;} catch(...){}
 }
 
-////////////////// MetaLocationManager::AtomicMetaLocation////////////////////
+////////////////// AtomicMetaLocation////////////////////
 
 /** constructor */
-MetaLocationManager::AtomicMetaLocation::AtomicMetaLocation(const char * sIdentifier)
+AtomicMetaLocation::AtomicMetaLocation(const char * sIdentifier)
                     :AbstractMetaLocation(sIdentifier), giTractIndex(0), gpPromotedMetaLocation(0) {}
 
 /** Returns indication of whether this location contains 'tAtomicIndex'. */
-bool MetaLocationManager::AtomicMetaLocation::contains(tract_t tAtomicIndex) const {
+bool AtomicMetaLocation::contains(tract_t tAtomicIndex) const {
   if (gpPromotedMetaLocation) return gpPromotedMetaLocation->contains(tAtomicIndex);
   return tAtomicIndex == giTractIndex;
 }
 
 /** Returns indication of whether this location contains 'pMetaLocation'. */
-bool MetaLocationManager::AtomicMetaLocation::contains(const MetaLocation& pMetaLocation) const {
+bool AtomicMetaLocation::contains(const MetaLocation& pMetaLocation) const {
   if (gpPromotedMetaLocation) return gpPromotedMetaLocation->contains(pMetaLocation);
   return false;
 }
 
 /** Retrieves atomic indexes of contained locations, in sequential order. */
-void MetaLocationManager::AtomicMetaLocation::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
+void AtomicMetaLocation::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
   if (gpPromotedMetaLocation) gpPromotedMetaLocation->getAtomicIndexes(AtomicIndexes);
   else AtomicIndexes.push_back(giTractIndex);
 }
 
 /** Returns indication of whether passed location object intersect geographically with this object. */
-bool MetaLocationManager::AtomicMetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
+bool AtomicMetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
   if (gpPromotedMetaLocation) return gpPromotedMetaLocation->intersects(pLocation);
   return pLocation.contains(giTractIndex);
 }
 
-////////////////// MetaLocationManager::MetaLocation ///////////////////////////
+////////////////// MetaLocation ///////////////////////////
 
 /** constructor */
-MetaLocationManager::MetaLocation::MetaLocation(const char * sIdentifier) : AbstractMetaLocation(sIdentifier) {}
+MetaLocation::MetaLocation(const char * sIdentifier) : AbstractMetaLocation(sIdentifier) {}
 
 /** Adds atomic location object to this objects collection of AbstractMetaLocation locations. */
-void MetaLocationManager::MetaLocation::addLocation(const AtomicMetaLocation * pLocation) {
+void MetaLocation::addLocation(const AtomicMetaLocation * pLocation) {
   gLocations.add(pLocation, false);
 }
 
 /** Adds meta location object to this objects collection of AbstractMetaLocation locations.
     Throw ZdExeption if 'this' object is contained is passed object. */
-void MetaLocationManager::MetaLocation::addLocation(const MetaLocation * pLocation) {
+void MetaLocation::addLocation(const MetaLocation * pLocation) {
   if (pLocation->contains(*this))
     GenerateResolvableException("Error: Circular definition between meta locations '%s' and '%s'.",
                                 "addMetaLocation()", getIndentifier(), pLocation->getIndentifier());
@@ -70,14 +70,14 @@ void MetaLocationManager::MetaLocation::addLocation(const MetaLocation * pLocati
 }
 
 /** Returns indication of whether this location contains 'tAtomicIndex'. */
-bool MetaLocationManager::MetaLocation::contains(tract_t tAtomicIndex) const {
+bool MetaLocation::contains(tract_t tAtomicIndex) const {
   for (unsigned int t=0; t < gLocations.size(); ++t)
      if (gLocations[t]->contains(tAtomicIndex)) return true;
   return false;
 }
 
 /** Returns indication of whether this location contains 'pMetaLocation'. */
-bool MetaLocationManager::MetaLocation::contains(const MetaLocation& pMetaLocation) const {
+bool MetaLocation::contains(const MetaLocation& pMetaLocation) const {
   if (this == &pMetaLocation) return true;
   for (unsigned int t=0; t < gLocations.size(); ++t)
      if (gLocations[t]->contains(pMetaLocation)) return true;
@@ -85,28 +85,28 @@ bool MetaLocationManager::MetaLocation::contains(const MetaLocation& pMetaLocati
 }
 
 /** Retrieves atomic indexes of contained locations, in sequential order. */
-void MetaLocationManager::MetaLocation::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
+void MetaLocation::getAtomicIndexes(std::vector<tract_t>& AtomicIndexes) const {
   for (unsigned int t=0; t < gLocations.size(); ++t)
      gLocations[t]->getAtomicIndexes(AtomicIndexes);
 }
 
 /** Returns indication of whether passed location object intersect geographically with this object. */
-bool MetaLocationManager::MetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
+bool MetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
   for (unsigned int t=0; t < gLocations.size(); ++t)
      if (gLocations[t]->intersects(pLocation)) return true;
   return false;   
 }
 
-/////////////////////////// MetaLocationManager ////////////////////////////////
+/////////////////////////// MetaLocationPool ///////////////////////////////////
 
 /** Adds meta-location with */
-bool MetaLocationManager::addMetaLocation(const std::string& sMetaIdentifier, const std::string& sLocationIndentifiers) {
+bool MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const std::string& sLocationIndentifiers) {
   assert(gAdditionStatus == Accepting);
 
   if (sMetaIdentifier.size() == 0) return false;
   std::auto_ptr<MetaLocation> pMetaLocation(new MetaLocation(sMetaIdentifier.c_str()));
   tract_t tIndex;
-  if ((tIndex = getAtomicLocationIndex(sMetaIdentifier.c_str())) != -1) {
+  if ((tIndex = getAtomicLocationIndex(sMetaIdentifier)) != -1) {
     AtomicMetaLocation *pAtomicMetaLocation = gvAtomicLocations[tIndex];
     pAtomicMetaLocation->setAsPromotedMetaLocation(pMetaLocation.get());
     gvAtomicLocations.RemoveElement(tIndex);
@@ -121,7 +121,7 @@ bool MetaLocationManager::addMetaLocation(const std::string& sMetaIdentifier, co
      if (token.size() == 0) return false;
      if (token == sMetaIdentifier)
        GenerateResolvableException("Error: Meta location ID '%s' defines itself as a member.", "addMetaLocation()", sMetaIdentifier.c_str());
-     else if ((tIndex = getMetaLocationIndex(token.c_str())) != -1)
+     else if ((tIndex = getMetaLocationIndex(token)) != -1)
        pMetaLocation->addLocation(gvMetaLocations[tIndex]);
      else {
        //assume for now that token is referencing an atomic location
@@ -144,7 +144,7 @@ bool MetaLocationManager::addMetaLocation(const std::string& sMetaIdentifier, co
 
 /** Closes object to further additions of meta location definitions. Adds all accumulated
     atomic locations to TractHandler object. */
-void MetaLocationManager::additionsCompleted(TractHandler& TInfo) {
+void MetaLocationPool::additionsCompleted(TractHandler& TInfo) {
   assert(gAdditionStatus == Accepting);
   gAdditionStatus = Closed;
   AtomicLocationsContainer_t::const_iterator itr=gvAtomicLocations.begin(), itr_end=gvAtomicLocations.end();
@@ -154,7 +154,7 @@ void MetaLocationManager::additionsCompleted(TractHandler& TInfo) {
 }
 
 /** Assigns atomic indexes to each atomic location, as gotten from TractHandler object. */
-void MetaLocationManager::assignAtomicIndexes(TractHandler& TInfo) {
+void MetaLocationPool::assignAtomicIndexes(TractHandler& TInfo) {
   assert(gAdditionStatus == Closed);
   assert(TInfo.getAddStatus() == TractHandler::Closed);
   AtomicLocationsContainer_t::const_iterator itr=gvAtomicLocations.begin(), itr_end=gvAtomicLocations.end();
@@ -162,15 +162,8 @@ void MetaLocationManager::assignAtomicIndexes(TractHandler& TInfo) {
      (*itr)->setTractIndex(TInfo.getLocationIndex((*itr)->getIndentifier()));
 }
 
-/** Retrieves atomic indexes as defined by meta location at 'tMetaLocation'. */
-std::vector<tract_t> & MetaLocationManager::getAtomicIndexes(unsigned int tMetaLocation, std::vector<tract_t>& AtomicIndexes) const {
-  AtomicIndexes.clear();
-  gvMetaLocations.at(tMetaLocation)->getAtomicIndexes(AtomicIndexes);
-  return AtomicIndexes;
-}
-
 /** Returns index of location in internal collection atomic locations. Returns negative one if not found. */
-tract_t MetaLocationManager::getAtomicLocationIndex(const std::string& sIdentifier) const {
+tract_t MetaLocationPool::getAtomicLocationIndex(const std::string& sIdentifier) const {
   std::auto_ptr<AtomicMetaLocation> search(new AtomicMetaLocation(sIdentifier.c_str()));
   AtomicLocationsContainer_t::const_iterator itr=std::lower_bound(gvAtomicLocations.begin(), gvAtomicLocations.end(), search.get(), compareIdentifiers());
   if (itr != gvAtomicLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier.c_str()))
@@ -180,7 +173,7 @@ tract_t MetaLocationManager::getAtomicLocationIndex(const std::string& sIdentifi
 }
 
 /** Returns index of location in internal collection meta locations. Returns negative one if not found. */
-tract_t MetaLocationManager::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
+tract_t MetaLocationPool::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
   std::auto_ptr<MetaLocation> search(new MetaLocation(sMetaIdentifier.c_str()));
   MetaLocationsContainer_t::const_iterator itr=std::lower_bound(gvMetaLocations.begin(), gvMetaLocations.end(), search.get(), compareIdentifiers());
   if (itr != gvMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
@@ -189,22 +182,11 @@ tract_t MetaLocationManager::getMetaLocationIndex(const std::string& sMetaIdenti
     return -1;
 }
 
-/** Returns indication of whether 'tTractIndex' is contained in meta location at 'tMetaLocation'. */
-bool MetaLocationManager::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
-  return gvMetaLocations.at(tMetaLocation)->contains(tTractIndex);
-}
-
-/** Returns indication of whether two meta locations intersect geographically. */
-bool MetaLocationManager::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
-  if (tMetaLocationL == tMetaLocationR) return true;
-  return gvMetaLocations.at(tMetaLocationL)->intersects(*gvMetaLocations.at(tMetaLocationR));
-}
-
 /** Prints defined meta locations to file stream. */
-void MetaLocationManager::print(TractHandler& TInfo, FILE * stream) const {
+void MetaLocationPool::print(TractHandler& TInfo, FILE * stream) const {
   FILE * fp=0;
   if (!stream) {
-    if ((fp = fopen("MetaLocationManager.print", "w")) == NULL) return;
+    if ((fp = fopen("MetaLocationPool.print", "w")) == NULL) return;
     stream = fp;
   }
 
@@ -222,11 +204,78 @@ void MetaLocationManager::print(TractHandler& TInfo, FILE * stream) const {
   for (size_t t=0; t < gvMetaLocations.size(); ++t) {
      fprintf(stream, "%s", gvMetaLocations[t]->getIndentifier());
      AtomicIndexes.clear();
-     getAtomicIndexes(t, AtomicIndexes);
+     gvMetaLocations[t]->getAtomicIndexes(AtomicIndexes);
      for (unsigned int t=0; t < AtomicIndexes.size(); ++t)
        fprintf(stream, "%s%s(index=%d)", (t == 0 ? "=" : ","), TInfo.getLocations().at(AtomicIndexes.at(t))->getIndentifier(), AtomicIndexes.at(t));
      fprintf(stream, "\n");
   }
   fclose(fp);
+}
+
+/////////////////////////// MetaLocationManager ////////////////////////////////
+
+/** Adds meta location at index collection of locations that are directly referenced
+    in the neighbors file definition. */
+unsigned int MetaLocationManager::addReferenced(unsigned int tMetaLocation) {
+  assert(geState == accepting);
+  const MetaLocation* pLocation = gMetaLocationPool.getLocations().at(tMetaLocation);
+  MetaLocationsRefContainer_t::iterator itr=std::lower_bound(gMetaLocations.begin(), gMetaLocations.end(), pLocation, compareIdentifiers());
+  if (itr == gMetaLocations.end() || strcmp((*itr)->getIndentifier(), pLocation->getIndentifier()))
+    itr = gMetaLocations.insert(itr, pLocation);
+  giReferencedMetaLocations = gMetaLocations.size();
+  return std::distance(gMetaLocations.begin(), itr);
+}
+
+/** Retrieves atomic indexes as defined by meta location at 'tMetaLocation'. */
+std::vector<tract_t> & MetaLocationManager::getAtomicIndexes(unsigned int tMetaLocation, std::vector<tract_t>& AtomicIndexes) const {
+  AtomicIndexes.clear();
+  gMetaLocations.at(tMetaLocation)->getAtomicIndexes(AtomicIndexes);
+  return AtomicIndexes;
+}
+
+/** Returns index of location in internal collection meta locations. Returns negative one if not found. */
+tract_t MetaLocationManager::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
+  std::auto_ptr<MetaLocation> search(new MetaLocation(sMetaIdentifier.c_str()));
+  MetaLocationsRefContainer_t::const_iterator itr=std::lower_bound(gMetaLocations.begin(), gMetaLocations.begin() + giReferencedMetaLocations, search.get(), compareIdentifiers());
+  if (itr != gMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
+    return std::distance(gMetaLocations.begin(), itr);
+  else
+    return -1;
+}
+
+/** Returns reference to meta locations pool. */
+MetaLocationPool & MetaLocationManager::getMetaLocationPool() {
+  assert(geState == accepting);
+  return gMetaLocationPool;
+}
+
+/** Returns indication of whether 'tTractIndex' is contained in meta location at 'tMetaLocation'. */
+bool MetaLocationManager::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
+  return gMetaLocations.at(tMetaLocation)->contains(tTractIndex);
+}
+
+/** Returns indication of whether two meta locations intersect geographically. */
+bool MetaLocationManager::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
+  if (tMetaLocationL == tMetaLocationR) return true;
+  return gMetaLocations.at(tMetaLocationL)->intersects(*gMetaLocations.at(tMetaLocationR));
+}
+
+/** Closes manager to further updates and appends remaining not referenced meta locations
+    to list of referenced meta locations (if 'bIncludePoolRemainders' is true). Appending not
+    referenced meta locations is needed when user requests the risk estimates file; otherwise
+    only meta locations referenced in the neighbors file will be reported in that optional file. 
+    Not that the number of referenced meta locations is stored in class variable 'giReferencedMetaLocations'.*/
+void MetaLocationManager::setStateFixed(bool bIncludePoolRemainders) {
+  assert(geState == accepting);
+  if (bIncludePoolRemainders) {
+    MetaLocationPool::MetaLocationsContainer_t::const_iterator itr=gMetaLocationPool.getLocations().begin(),
+                                                               itr_end=gMetaLocationPool.getLocations().end();
+    for (; itr != itr_end; ++itr) {
+      MetaLocationsRefContainer_t::iterator itrPos=std::lower_bound(gMetaLocations.begin(), gMetaLocations.begin() + giReferencedMetaLocations, *itr, compareIdentifiers());
+      if (itrPos == gMetaLocations.end() || strcmp((*itrPos)->getIndentifier(), (*itr)->getIndentifier()))
+        gMetaLocations.push_back(*itr);
+    }
+  }
+  geState = closed;
 }
 
