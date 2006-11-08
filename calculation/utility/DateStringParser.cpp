@@ -29,7 +29,7 @@ DateStringParser::ParserStatus DateStringParser::Ensure4DigitYear(unsigned int& 
   nLowerD = nLowerBound - nLowerC*100;
   nUpperD = nUpperBound - nUpperC*100;
 
-  if (y > MIN_YEAR)                              // Return y if 4 digit
+  if (y >= MIN_YEAR)                              // Return y if 4 digit
     return VALID_DATE;
   else if (y > 99)
     return INVALID_DATE;
