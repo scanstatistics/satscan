@@ -122,6 +122,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintDataCheckingParameters(fp);
     //print 'Neighbors File' tab settings
     PrintNeighborsFileParameters(fp);
+    //print 'Multiple Coordinates Per Location' tab settings
+    PrintMultipleCoordinatesParameters(fp);
     //print 'Spatial Window' tab settings
     PrintSpatialWindowParameters(fp);
     //print 'Temporal Window' tab settings
@@ -134,8 +136,6 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintClustersReportedParameters(fp);
     //print 'Elliptic Scan' settings
     PrintEllipticScanParameters(fp);
-    //print 'Isotonic Scan' settings
-    PrintIsotonicScanParameters(fp);
     //print 'Power Simulations' settings
     PrintPowerSimulationsParameters(fp);
     //print 'RunOptions' settings
@@ -512,17 +512,18 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
   }
 }
 
-/** Prints 'Isotonic Scan' parameters to file stream. */
-void ParametersPrint::PrintIsotonicScanParameters(FILE* fp) const {
-  try {
-    if (gParameters.GetRiskType() == MONOTONERISK) {
-      fprintf(fp, "\nIsotonic Scan\n-------------\n");
-      fprintf(fp, "  Isotonic Scan      : Yes\n");
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintIsotonicScanParameters()","ParametersPrint");
-    throw;
+/** Prints 'Multiple Coordinates Per Location' tab parameters to file stream. */
+void ParametersPrint::PrintMultipleCoordinatesParameters(FILE* fp) const {
+  if (gParameters.GetIsPurelyTemporalAnalysis())
+    return;
+
+  fprintf(fp, "\nMultiple Coordinates Per Location\n---------------------------------\n");
+  fprintf(fp, "  Multiple Coordinates Type : ");
+  switch (gParameters.GetMultipleCoordinatesType()) {
+    case ONEPERLOCATION : fprintf(fp, "Allow only one coordinate per location.\n"); break;
+    case ATLEASTONELOCATION : fprintf(fp, "Include location in the scanning window if at least one coordinate is in the circle.\n"); break;
+    case ALLLOCATIONS : fprintf(fp, "Include location in the scanning window if all coordinates are in the circle.\n"); break;
+    default : ZdException::Generate("Unknown multiple coordinates type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetMultipleCoordinatesType());
   }
 }
 
@@ -801,15 +802,9 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
                         break;
         default : ZdException::Generate("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
-
-      fprintf(fp, "  Multiple Coordinates Type             : ");
-      switch (gParameters.GetMultipleCoordinatesType()) {
-        case ONEPERLOCATION : fprintf(fp, "Allow only one coordinate per location.\n"); break;
-        case ATLEASTONELOCATION : fprintf(fp, "Include location in the scanning window if at least one coordinate is in the circle.\n"); break;
-        case ALLLOCATIONS : fprintf(fp, "Include location in the scanning window if all coordinates are in the circle.\n"); break;
-        default : ZdException::Generate("Unknown multiple coordinates type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetMultipleCoordinatesType());
-      }
     }
+    if (gParameters.GetAnalysisType() == PURELYSPATIAL)
+      fprintf(fp, "  Isotonic Scan                         : %s\n", (gParameters.GetRiskType() == MONOTONERISK ? "Yes" : "No"));
   }
   catch (ZdException &x) {
     x.AddCallpath("PrintSpatialWindowParameters()","ParametersPrint");
@@ -835,7 +830,7 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
   std::string sBuffer;
 
   try {
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL)
+    if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       return;
 
     fprintf(fp, "\nTemporal Window\n---------------\n");

@@ -20,6 +20,7 @@ class ParametersPrint {
     void                PrintInferenceParameters(FILE* fp) const;
     void                PrintInputParameters(FILE* fp) const;
     void                PrintIsotonicScanParameters(FILE* fp) const;
+    void                PrintMultipleCoordinatesParameters(FILE* fp) const;
     void                PrintMultipleDataSetParameters(FILE* fp) const;
     void                PrintNeighborsFileParameters(FILE* fp) const;
     void                PrintOutputParameters(FILE* fp) const;
