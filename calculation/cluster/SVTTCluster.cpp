@@ -459,5 +459,6 @@ void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataSetInterface & Inte
 
 void CSVTTCluster::SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
   gClusterData->getInsideTrend()->SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
+  gClusterData->getOutsideTrend()->SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
 }
 
