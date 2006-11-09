@@ -1,28 +1,32 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __SVTTCLUSTER_H
 #define __SVTTCLUSTER_H
-//*****************************************************************************
+//******************************************************************************
 #include "cluster.h"
 #include "TimeTrend.h"
 
-class ClusterSetData {
-  private:
-    void                                Init() {gTotalCases=0;gTotalMeasure=0;}
+/** Abstract interface for spatial variation of temporal trend cluster data. */
+class AbtractSVTTClusterData : public AbstractClusterData {
+   protected:
+     EvaluationAssistDataStatus geEvaluationAssistDataStatus;
+   
+   public:
+     AbtractSVTTClusterData() : geEvaluationAssistDataStatus(Allocated) {}
 
-  public:
-    ClusterSetData() {Init(); InitializeData();}
-    virtual ~ClusterSetData() {}
-
-    count_t                             gCases;
-    measure_t                           gMeasure;
-
-    count_t                             gTotalCases;
-    measure_t                           gTotalMeasure;
-
-    virtual void        InitializeData() {gCases=0;gMeasure=0;}
+     virtual AbtractSVTTClusterData * CloneSVTT() const = 0;
+     virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0) = 0;
+     virtual double              CalculateSVTTLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator, const AbstractDataSetGateway& DataGateway) = 0;
+     virtual void                InitializeSVTTData(const DataSetInterface & Interface) = 0;
+     virtual void                InitializeSVTTData(const AbstractDataSetGateway& DataGateway) = 0;
+     virtual void                InitializeData(){/* nop */}
+     virtual CTimeTrend        * getInsideTrend(size_t tSetIndex=0) = 0;
+     virtual CTimeTrend        * getOutsideTrend(size_t tSetIndex=0) = 0;
+     virtual const CTimeTrend  * getInsideTrend(size_t tSetIndex=0) const = 0;
+     virtual const CTimeTrend  * getOutsideTrend(size_t tSetIndex=0) const = 0;
 };
 
-class SVTTClusterSetData : public ClusterSetData {
+/** Spatial variation of temporal trend cluster data. */
+class SVTTClusterData : public AbtractSVTTClusterData {
   private:
      int                        giAllocationSize;
 
@@ -30,12 +34,13 @@ class SVTTClusterSetData : public ClusterSetData {
      void                       Setup();
 
   public:
-    SVTTClusterSetData(int unsigned iAllocationSize);
-    SVTTClusterSetData(const SVTTClusterSetData& rhs);
-    virtual ~SVTTClusterSetData();
+    SVTTClusterData(const AbstractDataSetGateway& DataGateway);
+    SVTTClusterData(const DataSetInterface& Interface);
+    SVTTClusterData(const SVTTClusterData& rhs);
+    virtual ~SVTTClusterData();
 
-    SVTTClusterSetData     * Clone() const;
-    SVTTClusterSetData     & operator=(const SVTTClusterSetData& rhs);
+    SVTTClusterData           * Clone() const;
+    SVTTClusterData           & operator=(const SVTTClusterData& rhs);
 
     count_t                   * gpCasesInsideCluster;           /** cases inside the cluster */
     count_t                     gtTotalCasesInsideCluster;      /** total cases inside the cluster */
@@ -47,39 +52,75 @@ class SVTTClusterSetData : public ClusterSetData {
     CTimeTrend                  gTimeTrendInside;               /** time trend for defined cluster */
     CTimeTrend                  gTimeTrendOutside;              /** Time trend for area outside cluster */
 
+    virtual SVTTClusterData * CloneSVTT() const {return new SVTTClusterData(*this);}
+
     virtual void                InitializeSVTTData(const DataSetInterface & Interface);
+    virtual void                InitializeSVTTData(const AbstractDataSetGateway& DataGateway);
+
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual double              CalculateSVTTLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator, const AbstractDataSetGateway& DataGateway);
+    virtual void                CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual void                DeallocateEvaluationAssistClassMembers();
+    virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual CTimeTrend        * getInsideTrend(size_t tSetIndex=0) {return &gTimeTrendInside;}
+    virtual CTimeTrend        * getOutsideTrend(size_t tSetIndex=0) {return &gTimeTrendOutside;}
+    virtual const CTimeTrend  * getInsideTrend(size_t tSetIndex=0) const {return &gTimeTrendInside;}
+    virtual const CTimeTrend  * getOutsideTrend(size_t tSetIndex=0) const {return &gTimeTrendOutside;}
+    virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
 };
 
-  //std::deque<SVTTClusterSetData> gSetData; pass each strea data to poisson calcuclate SVTT
+/** Class representing accumulated data of spatial variation of temporal trend in multiple data sets.
+    NOTE: Multi-set svtt cluster data is a work in progress. Large */
+class MultiSetSVTTClusterData : public AbtractSVTTClusterData {
+  protected:
+    ZdPointerVector<SVTTClusterData>           gvSetClusterData;
+
+  public:
+    MultiSetSVTTClusterData(const AbstractDataSetGateway& DataGateway);
+    virtual ~MultiSetSVTTClusterData();
+
+    virtual MultiSetSVTTClusterData * CloneSVTT() const {return new MultiSetSVTTClusterData(*this);}
+
+    virtual void                InitializeSVTTData(const DataSetInterface & Interface);
+    virtual void                InitializeSVTTData(const AbstractDataSetGateway& DataGateway);
+
+    virtual void                AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual double              CalculateSVTTLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator, const AbstractDataSetGateway& DataGateway);    
+    virtual void                CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual void                DeallocateEvaluationAssistClassMembers();
+    virtual MultiSetSVTTClusterData * Clone() const;
+    virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual CTimeTrend        * getInsideTrend(size_t tSetIndex=0);
+    virtual CTimeTrend        * getOutsideTrend(size_t tSetIndex=0);
+    virtual const CTimeTrend  * getInsideTrend(size_t tSetIndex=0) const;
+    virtual const CTimeTrend  * getOutsideTrend(size_t tSetIndex=0) const;
+    virtual void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
+                                                                  AbstractLikelihoodCalculator& Calculator,
+                                                                  std::vector<unsigned int>& vDataSetIndexes) const;
+    virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
+};
 
 /** cluster class for spatial variation and temporal trends analysis */
 class CSVTTCluster : public CCluster  {
-  typedef std::vector<SVTTClusterSetData>           SetDataContainer_t;
-  typedef std::vector<SVTTClusterSetData>::iterator SetDataContainerIterator_t;
-
-  private:
-    void                        Init();
-    void                        Setup(const AbstractDataSetGateway & DataGateway, int iNumTimeIntervals);
-    void                        Setup(const DataSetInterface & Interface, int iNumTimeIntervals);
-    void                        Setup(const CSVTTCluster & rhs);
+  public:
+    std::auto_ptr<AbtractSVTTClusterData> gClusterData;
 
   public:
-    int                         giTotalIntervals;
-    SetDataContainer_t          gvSetData;
-    double                      m_nLogLikelihood;     // Log Likelihood
-
-  public:
-    CSVTTCluster(const AbstractDataSetGateway & DataGateway, int iNumTimeIntervals);
-    CSVTTCluster(const DataSetInterface & Interface, int iNumTimeIntervals);
+    CSVTTCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway);
     CSVTTCluster(const CSVTTCluster & rhs);
-    ~CSVTTCluster();
+    virtual ~CSVTTCluster();
 
     CSVTTCluster              & operator=(const CSVTTCluster& rhs);
     virtual void                CopyEssentialClassMembers(const CCluster& rhs) {*this = (CSVTTCluster&)rhs;}
 
 
     void                        AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway & DataGateway);
-    void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface, size_t tSetIndex);    
+//    void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface);
+    void                        CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
+                                                                           const CentroidNeighbors& CentroidDef,
+                                                                           CSVTTCluster& TopCluster,
+                                                                           AbstractLikelihoodCalculator& Calculator);
+
     virtual CSVTTCluster      * Clone() const;
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
@@ -87,16 +128,17 @@ class CSVTTCluster : public CCluster  {
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return SPATIALVARTEMPTRENDCLUSTER;}
-    SVTTClusterSetData        & GetDataSet(size_t tSetIndex) {return gvSetData[tSetIndex];}
     virtual std::string       & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t           GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t           GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gvSetData[tSetIndex].gtTotalCasesInsideCluster;}
+    void                        GetFormattedTimeTrend(std::string& buffer, const CTimeTrend& Trend) const;
+    virtual count_t             GetObservedCount(size_t tSetIndex=0) const {return gClusterData->GetCaseCount(tSetIndex);}
     virtual count_t             GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual std::string       & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual void                InitializeSVTT(tract_t nCenter, const AbstractDataSetGateway & DataGateway);
     virtual void                InitializeSVTT(tract_t nCenter, const DataSetInterface & Interface);
     void                        SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);
 };
-
+//******************************************************************************
 #endif
+
