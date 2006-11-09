@@ -15,12 +15,16 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * LOC_MEAN_FIELD;
       static const char       * LOC_OBS_DIV_EXP_FIELD;
       static const char       * LOC_REL_RISK_FIELD;
+      static const char       * LOC_TIME_TREND_FIELD;
       static const char       * CLU_OBS_FIELD;
       static const char       * CLU_EXP_FIELD;
       static const char       * CLU_OBS_DIV_EXP_FIELD;
       static const char       * CLU_REL_RISK_FIELD;
       static const char       * CLU_MEAN_IN_FIELD;
       static const char       * CLU_MEAN_OUT_FIELD;
+      static const char       * CLU_TIME_TREND_IN_FIELD;
+      static const char       * CLU_TIME_TREND_OUT_FIELD;
+      static const char       * CLU_TIME_TREND_DIFF_FIELD;
       bool                      gbExcludePValueField;
 
       void                      DefineFields(const CSaTScanData& DataHub);

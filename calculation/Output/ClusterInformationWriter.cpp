@@ -8,6 +8,7 @@
 #include "CategoricalClusterData.h"
 #include "AbstractAnalysis.h"
 #include "NormalClusterData.h"
+#include "SVTTCluster.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
 const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	  = ".cci";
@@ -27,6 +28,9 @@ const char * ClusterInformationWriter::COORD_Z_FIELD              = "Z";
 const char * ClusterInformationWriter::OBS_FIELD_PART  	          = "OBS";
 const char * ClusterInformationWriter::EXP_FIELD_PART             = "EXP";
 const char * ClusterInformationWriter::OBS_DIV_EXP_FIELD          = "ODE";
+const char * ClusterInformationWriter::TIME_TREND_IN_FIELD        = "TREND_IN";
+const char * ClusterInformationWriter::TIME_TREND_OUT_FIELD       = "TREND_OUT";
+const char * ClusterInformationWriter::TIME_TREND_DIFF_FIELD      = "TREND_DIFF";
 
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -117,6 +121,11 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       }  
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
         CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        CreateField(vFieldDefinitions, TIME_TREND_IN_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, TIME_TREND_OUT_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, TIME_TREND_DIFF_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      }
     }
   }
   catch (ZdException &x) {
@@ -153,6 +162,11 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
         gParameters.GetProbabilityModelType() == BERNOULLI ||
         gParameters.GetProbabilityModelType() == ORDINAL)
       CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+      CreateField(vDataFieldDefinitions, TIME_TREND_IN_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vDataFieldDefinitions, TIME_TREND_OUT_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vDataFieldDefinitions, TIME_TREND_DIFF_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("DefineFields()","ClusterInformationWriter");
@@ -267,6 +281,23 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub)) != -1)
           Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        const AbtractSVTTClusterData * pClusterData=0;
+        if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
+          ZdGenerateException("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
+        switch (pClusterData->getInsideTrend()->GetStatus()) {
+          case CTimeTrend::TREND_CONVERGED :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend()->GetAnnualTimeTrend(); break;
+          case CTimeTrend::TREND_INF_BEGIN :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = -100; break;
+        }    
+        switch (pClusterData->getOutsideTrend()->GetStatus()) {
+          case CTimeTrend::TREND_CONVERGED :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend()->GetAnnualTimeTrend(); break;
+          case CTimeTrend::TREND_INF_BEGIN :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = -100; break;
+        }
+      }
     }
     if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
     if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
@@ -336,7 +367,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
   const DataSetHandler                        & Handler = gDataHub.GetDataSetHandler();
 
-  if (theCluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || theCluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
+  if (theCluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
     vComprisedDataSetIndexes.push_back(0);
   else
     theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), *Calculator.get(), vComprisedDataSetIndexes);
@@ -373,6 +404,23 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
       if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
           (dRelativeRisk = theCluster.GetRelativeRisk(gDataHub, iSetIndex)) != -1)
          Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = dRelativeRisk;
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+        const AbtractSVTTClusterData * pClusterData=0;
+        if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
+          ZdGenerateException("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
+        switch (pClusterData->getInsideTrend()->GetStatus()) {
+          case CTimeTrend::TREND_CONVERGED :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend()->GetAnnualTimeTrend(); break;
+          case CTimeTrend::TREND_INF_BEGIN :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = -100; break;
+        }    
+        switch (pClusterData->getOutsideTrend()->GetStatus()) {
+          case CTimeTrend::TREND_CONVERGED :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend()->GetAnnualTimeTrend(); break;
+          case CTimeTrend::TREND_INF_BEGIN :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = -100; break;
+        }
+      }
     }
     if (gpASCIIFileDataWriter) gpASCIIFileDataWriter->WriteRecord(Record);
     if (gpDBaseFileDataWriter) gpDBaseFileDataWriter->WriteRecord(Record);
