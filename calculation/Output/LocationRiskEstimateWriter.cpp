@@ -242,9 +242,10 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
           }
           TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
-          //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                              
-          TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-          Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend();
+          if (TractTimeTrend.GetStatus() == CTimeTrend::TREND_CONVERGED) {
+            TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+            Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
+          }  
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
        }
