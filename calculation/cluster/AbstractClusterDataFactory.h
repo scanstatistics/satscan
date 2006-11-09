@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "AbstractClusterData.h"
 
+class AbtractSVTTClusterData;
+
 /** Class that defines base interface for cluster factories from which cluster
     objects will request new cluster data objects. */
 class AbstractClusterDataFactory {
@@ -14,6 +16,10 @@ class AbstractClusterDataFactory {
    //spatial cluster data
    virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const DataSetInterface& Interface) const = 0;
    virtual AbstractSpatialClusterData  * GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const = 0;
+
+   //svtt cluster data
+   virtual AbtractSVTTClusterData      * GetNewSVTTClusterData(const DataSetInterface& Interface) const;
+   virtual AbtractSVTTClusterData      * GetNewSVTTClusterData(const AbstractDataSetGateway& DataGateway) const;
 
    //prospective spatial cluster data
    virtual AbstractTemporalClusterData * GetNewProspectiveSpatialClusterData(const CSaTScanData& Data, const DataSetInterface & Interface) const = 0;

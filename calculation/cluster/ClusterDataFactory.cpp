@@ -6,6 +6,7 @@
 #include "ClusterData.h"
 #include "MultiSetClusterData.h"
 #include "CategoricalClusterData.h"
+#include "SVTTCluster.h"
 
 /** class constructor*/
 ClusterDataFactory::ClusterDataFactory() : AbstractClusterDataFactory() {}
@@ -23,6 +24,18 @@ AbstractSpatialClusterData * ClusterDataFactory::GetNewSpatialClusterData(const 
     pointer. Caller is responsible for object destruction. */
 AbstractSpatialClusterData * ClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new SpatialData(DataGateway);
+}
+
+/** Returns newly created SVTTClusterData object as AbtractSVTTClusterData
+    pointer. Caller is responsible for object destruction. */
+AbtractSVTTClusterData * ClusterDataFactory::GetNewSVTTClusterData(const DataSetInterface& Interface) const {
+  return new SVTTClusterData(Interface);
+}
+
+/** Returns newly created SVTTClusterData object as AbtractSVTTClusterData
+    pointer. Caller is responsible for object destruction. */
+AbtractSVTTClusterData * ClusterDataFactory::GetNewSVTTClusterData(const AbstractDataSetGateway& DataGateway) const {
+  return new SVTTClusterData(DataGateway);
 }
 
 /** Returns newly created ProspectiveSpatialData object as AbstractTemporalClusterData
@@ -87,6 +100,19 @@ AbstractSpatialClusterData * MultiSetClusterDataFactory::GetNewSpatialClusterDat
     pointer. Caller is responsible for object destruction.*/
 AbstractSpatialClusterData * MultiSetClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const {
   return new MultiSetSpatialData(gClusterDataFactory, DataGateway);
+}
+
+/** Returns newly created SVTTClusterData object as AbtractSVTTClusterData
+    pointer. Caller is responsible for object destruction. */
+AbtractSVTTClusterData * MultiSetClusterDataFactory::GetNewSVTTClusterData(const DataSetInterface& Interface) const {
+  ZdGenerateException("GetNewSVTTClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
+  return 0;
+}
+
+/** Returns newly created SVTTClusterData object as AbtractSVTTClusterData
+    pointer. Caller is responsible for object destruction. */
+AbtractSVTTClusterData * MultiSetClusterDataFactory::GetNewSVTTClusterData(const AbstractDataSetGateway& DataGateway) const {
+  return new MultiSetSVTTClusterData(DataGateway);
 }
 
 /** Not implemented. Throws ZdException. */
