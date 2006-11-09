@@ -82,7 +82,7 @@ class CSaTScanData {
     measure_t                                   DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const;
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
-    void                                        RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex);
+    virtual void                                RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex);
     virtual void                                SetIntervalCut();
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
@@ -145,7 +145,7 @@ class CSaTScanData {
     double                                      GetTotalPopulationCount() const {return gtTotalPopulation;}
     virtual void                                RandomizeData(RandomizerContainer_t& RandomizerContainer, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual void                                ReadDataFromFiles();
-    void                                        RemoveClusterSignificance(const CCluster& ClusterObj);
+    virtual void                                RemoveClusterSignificance(const CCluster& ClusterObj);
     void                                        SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType);
     virtual void                                ValidateObservedToExpectedCases(const DataSet& Set) const;
 

@@ -594,7 +594,8 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     while (tTractIndex != tStopTract) {
        tTractIndex = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? tTractIndex + 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), ++iNeighborIndex));
        // Previous iterations of iterative scan could have had this location as part of the most likely cluster.
-       if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && GetIsNullifiedLocation(tTractIndex))
+       if ((Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER || Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
+           && GetIsNullifiedLocation(tTractIndex))
          continue;
        if (tTractIndex < m_nTracts)
          RemoveTractSignificance(Cluster, tTractIndex);
@@ -772,9 +773,10 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
          gvMaxCirclePopulation[tTractIndex] = 0;
        }
        // Add location to collection of nullified locations - note that we're just removing locations' data, not the location.
-       if (Cluster.GetClusterType() == PURELYSPATIALCLUSTER || Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
+       if ((Cluster.GetClusterType() == SPATIALVARTEMPTRENDCLUSTER ||
+            Cluster.GetClusterType() == PURELYSPATIALCLUSTER ||
+            Cluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER) && !GetIsNullifiedLocation(tTractIndex))
          gvNullifiedLocations.push_back(tTractIndex);
-
 }
 
 /** Set neighbor array pointer requested type. */
