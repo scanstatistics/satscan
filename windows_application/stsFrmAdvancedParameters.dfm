@@ -5,7 +5,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
   BorderIcons = []
   BorderStyle = bsDialog
   Caption = 'Advanced Features'
-  ClientHeight = 393
+  ClientHeight = 314
   ClientWidth = 534
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -23,7 +23,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 450
     Top = 0
     Width = 84
-    Height = 393
+    Height = 314
     Align = alRight
     BevelOuter = bvNone
     TabOrder = 1
@@ -62,7 +62,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Left = 0
     Top = 0
     Width = 450
-    Height = 393
+    Height = 314
     ActivePage = tsDataSets
     Align = alClient
     TabOrder = 0
@@ -76,7 +76,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Height = 233
         Caption = 'Additional Input Data Sets'
         TabOrder = 0
-        object Label3: TLabel
+        object lblCaseFile: TLabel
           Left = 112
           Top = 18
           Width = 46
@@ -86,28 +86,28 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           ParentShowHint = False
           ShowHint = False
         end
-        object Label1: TLabel
+        object lblControlFile: TLabel
           Left = 112
           Top = 60
           Width = 55
           Height = 13
           Caption = 'Control File:'
         end
-        object Label2: TLabel
+        object lblPopulationFile: TLabel
           Left = 112
           Top = 102
           Width = 72
           Height = 13
           Caption = 'Population File:'
         end
-        object Label4: TLabel
+        object lblBernoulli: TLabel
           Left = 218
           Top = 60
           Width = 78
           Height = 13
           Caption = '(Bernoulli Model)'
         end
-        object Label5: TLabel
+        object lblPoisson: TLabel
           Left = 218
           Top = 102
           Width = 75
@@ -510,6 +510,65 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         end
       end
     end
+    object tabMultipleCoordinates: TTabSheet
+      Caption = 'Multiple Coordinates Per Location'
+      ImageIndex = 8
+      object gpMultipleCoordinates: TGroupBox
+        Left = 8
+        Top = 8
+        Width = 425
+        Height = 106
+        Caption = 'Multiple Coordinate Locations per Location ID'
+        TabOrder = 0
+        object rdoOnePerLocationId: TRadioButton
+          Left = 8
+          Top = 18
+          Width = 409
+          Height = 17
+          Caption = 'Allow only one coordinate location per location ID.'
+          TabOrder = 0
+          OnClick = OnMultipleCoordinatesClick
+        end
+        object rdoAllLocations: TRadioButton
+          Left = 8
+          Top = 70
+          Width = 409
+          Height = 17
+          Caption = 
+            'Include location in the scanning window if all coordinate locati' +
+            'ons are in '
+          TabOrder = 1
+          OnClick = OnMultipleCoordinatesClick
+        end
+        object rdoAtLeastOne: TRadioButton
+          Left = 8
+          Top = 36
+          Width = 409
+          Height = 17
+          Caption = 
+            'Include location in the scanning window if at least one coordina' +
+            'te location '
+          TabOrder = 2
+          OnClick = OnMultipleCoordinatesClick
+        end
+        object stAtLeastOne: TStaticText
+          Left = 23
+          Top = 52
+          Width = 74
+          Height = 17
+          Caption = ' is in the circle.'
+          TabOrder = 3
+        end
+        object stAllLocations: TStaticText
+          Left = 26
+          Top = 87
+          Width = 50
+          Height = 17
+          Caption = 'the circle.'
+          TabOrder = 4
+        end
+      end
+    end
     object tbSpatial: TTabSheet
       Caption = 'Spatial Window'
       ImageIndex = 3
@@ -717,60 +776,15 @@ object frmAdvancedParameters: TfrmAdvancedParameters
             'Strong')
         end
       end
-      object gpMultipleCoordinates: TGroupBox
+      object chkPerformIsotonicScan: TCheckBox
         Left = 8
-        Top = 251
+        Top = 255
         Width = 425
-        Height = 106
-        Caption = 'Multiple Coordinate Locations per Location ID'
+        Height = 17
+        Caption = 'Use Isotonic Spatial Scan'
+        Enabled = False
         TabOrder = 3
-        object rdoOnePerLocationId: TRadioButton
-          Left = 8
-          Top = 18
-          Width = 409
-          Height = 17
-          Caption = 'Allow only one coordinate location per location ID.'
-          TabOrder = 0
-          OnClick = OnMultipleCoordinatesClick
-        end
-        object rdoAllLocations: TRadioButton
-          Left = 8
-          Top = 70
-          Width = 409
-          Height = 17
-          Caption = 
-            'Include location in the scanning window if all coordinate locati' +
-            'ons are in '
-          TabOrder = 1
-          OnClick = OnMultipleCoordinatesClick
-        end
-        object rdoAtLeastOne: TRadioButton
-          Left = 8
-          Top = 36
-          Width = 409
-          Height = 17
-          Caption = 
-            'Include location in the scanning window if at least one coordina' +
-            'te location '
-          TabOrder = 2
-          OnClick = OnMultipleCoordinatesClick
-        end
-        object stAtLeastOne: TStaticText
-          Left = 23
-          Top = 52
-          Width = 74
-          Height = 17
-          Caption = ' is in the circle.'
-          TabOrder = 3
-        end
-        object stAllLocations: TStaticText
-          Left = 26
-          Top = 87
-          Width = 50
-          Height = 17
-          Caption = 'the circle.'
-          TabOrder = 4
-        end
+        OnClick = chkPerformIsotonicScanClick
       end
     end
     object tsTemporal: TTabSheet

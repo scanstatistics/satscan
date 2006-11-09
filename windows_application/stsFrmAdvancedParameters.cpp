@@ -199,10 +199,10 @@ void __fastcall TfrmAdvancedParameters::btnImportMaxCirclePopFileClick(TObject *
 void __fastcall TfrmAdvancedParameters::btnNewClick(TObject *Sender) {
    try {
      // add new name to list box
-     EnableDataSetList(true);
-     EnableDataSetPurposeControls(true);
      lstInputDataSets->Items->Add("Data Set " + IntToStr(giDataSetNum++));
      lstInputDataSets->ItemIndex = (lstInputDataSets->Items->Count-1);
+     EnableDataSetList(true);
+     EnableDataSetPurposeControls(true);
 
      // enable and clear the edit boxes
      EnableInputFileEdits(true);
@@ -540,6 +540,22 @@ void __fastcall TfrmAdvancedParameters::edtStartRangeStartDateExit(TObject *Send
   DoControlExit();
 }
 //---------------------------------------------------------------------------
+void TfrmAdvancedParameters::EnableAdditionalDataSetsGroup(bool bEnable) {
+  grpDataSets->Enabled = bEnable;
+  grpDataSets->Enabled &= (chkPerformIsotonicScan->Enabled ? !chkPerformIsotonicScan->Checked : true);
+  
+  EnableDataSetList(grpDataSets->Enabled);
+  EnableNewButton();
+  EnableRemoveButton();
+  EnableInputFileEdits(grpDataSets->Enabled);
+  lblCaseFile->Enabled = grpDataSets->Enabled;
+  lblControlFile->Enabled = grpDataSets->Enabled;
+  lblBernoulli->Enabled = grpDataSets->Enabled;
+  lblPopulationFile->Enabled = grpDataSets->Enabled;
+  lblPoisson->Enabled = grpDataSets->Enabled;
+  EnableDataSetPurposeControls(grpDataSets->Enabled);
+}
+//---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableAdjustmentForSpatialOptionsGroup(bool bEnable, bool bEnableStratified) {
   rdgSpatialAdjustments->Enabled = bEnable;
   bEnableStratified &= bEnable;
@@ -596,12 +612,15 @@ void TfrmAdvancedParameters::EnableCoordinatesCheckGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 /** Enables/disables TListBox that list defined data sets */
 void TfrmAdvancedParameters::EnableDataSetList(bool bEnable) {
+  bEnable &= grpDataSets->Enabled;
+  bEnable &= lstInputDataSets->Items->Count > 0;
   lstInputDataSets->Enabled = bEnable;
   lstInputDataSets->Color = lstInputDataSets->Enabled ? clWindow : clInactiveBorder;
 }
 //---------------------------------------------------------------------------
 /** Enables/disables controls that indicate purpose of additional data sets. */
 void TfrmAdvancedParameters::EnableDataSetPurposeControls(bool bEnable) {
+  bEnable &= grpDataSets->Enabled;
   lblMultipleDataSetPurpose->Enabled = bEnable;
   rdoMultivariate->Enabled = bEnable;
   rdoAdjustmentByDataSets->Enabled = bEnable;
@@ -668,6 +687,8 @@ void TfrmAdvancedParameters::EnableDatesByTimePrecisionUnits() {
 //---------------------------------------------------------------------------
 /** enables input tab case/control/pop files edit boxes */
 void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
+   bEnable &= grpDataSets->Enabled;
+   bEnable &= lstInputDataSets->Items->Count > 0;
    edtCaseFileName->Enabled = bEnable;
    edtCaseFileName->Color = edtCaseFileName->Enabled ? clWindow : clInactiveBorder;
    btnCaseBrowse->Enabled = bEnable;
@@ -680,6 +701,11 @@ void TfrmAdvancedParameters::EnableInputFileEdits(bool bEnable) {
    edtPopFileName->Color = edtPopFileName->Enabled ? clWindow : clInactiveBorder;
    btnPopBrowse->Enabled = bEnable;
    btnPopImport->Enabled = bEnable;
+}
+
+/** Enables isotonic scan feature controls. */
+void TfrmAdvancedParameters::EnableIsotonicScan(bool bEnable) {
+  chkPerformIsotonicScan->Enabled = bEnable;
 }
 
 /** Enables neighbors file group. */
@@ -698,7 +724,7 @@ void TfrmAdvancedParameters::EnableNeighborsFileGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableNewButton() {
-  btnNewDataSet->Enabled = (lstInputDataSets->Items->Count < MAXIMUM_ADDITIONAL_SETS) ? true: false;
+  btnNewDataSet->Enabled = grpDataSets->Enabled && (lstInputDataSets->Items->Count < MAXIMUM_ADDITIONAL_SETS) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables adjustment options controls */
@@ -754,7 +780,7 @@ void TfrmAdvancedParameters::EnableProspectiveSurveillanceGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 //** enables or disables the New button on the Input tab
 void TfrmAdvancedParameters::EnableRemoveButton() {
-  btnRemoveDataSet->Enabled = (lstInputDataSets->Items->Count > 0) ? true: false;
+  btnRemoveDataSet->Enabled = grpDataSets->Enabled && (lstInputDataSets->Items->Count > 0) ? true: false;
 }
 //---------------------------------------------------------------------------
 /** enables or disables the spatial options group control */
@@ -793,6 +819,7 @@ void TfrmAdvancedParameters::EnableIterativeScanOptionsGroup(bool bEnable) {
 //---------------------------------------------------------------------------
 void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
   bool  bPoisson(gAnalysisSettings.GetModelControlType() == POISSON),
+        bBernoulli(gAnalysisSettings.GetModelControlType() == BERNOULLI),
         bSpaceTimePermutation(gAnalysisSettings.GetModelControlType() == SPACETIMEPERMUTATION);
 
   try {
@@ -801,7 +828,6 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
         EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(true, false);
-        EnableWindowShapeGroup(true);
         EnableTemporalOptionsGroup(false, false, false);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
@@ -809,12 +835,14 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableCoordinatesCheckGroup(true);
         EnableIterativeScanOptionsGroup(true);
         EnableMultipleLocationsGroup(true);
+        EnableAdditionalDataSetsGroup(true);
+        EnableIsotonicScan(bPoisson || bBernoulli);
+        EnableWindowShapeGroup(true);
         break;
       case PURELYTEMPORAL            :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(false, false);
-        EnableWindowShapeGroup(false);
         EnableTemporalOptionsGroup(true, false, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(false);
@@ -822,6 +850,9 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableCoordinatesCheckGroup(false);
         EnableIterativeScanOptionsGroup(true);
         EnableMultipleLocationsGroup(false);
+        EnableAdditionalDataSetsGroup(true);
+        EnableIsotonicScan(false);
+        EnableWindowShapeGroup(false);
         break;
       case SPACETIME                 :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -829,7 +860,6 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
                                                  bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(bPoisson, GetAdjustmentTimeTrendControlType() != STRATIFIED_RANDOMIZATION);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
-        EnableWindowShapeGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
         EnableProspectiveSurveillanceGroup(false);
         EnableOutputOptions(true);
@@ -837,6 +867,9 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableCoordinatesCheckGroup(true);
         EnableIterativeScanOptionsGroup(false);
         EnableMultipleLocationsGroup(true);
+        EnableAdditionalDataSetsGroup(true);
+        EnableIsotonicScan(false);
+        EnableWindowShapeGroup(true);
         break;
       case PROSPECTIVESPACETIME      :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson,
@@ -844,7 +877,6 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
                                                  bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(bPoisson, GetAdjustmentTimeTrendControlType() != STRATIFIED_RANDOMIZATION);
         EnableSpatialOptionsGroup(true, !bSpaceTimePermutation);
-        EnableWindowShapeGroup(true);
         EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(true);
@@ -852,12 +884,14 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableCoordinatesCheckGroup(true);
         EnableIterativeScanOptionsGroup(false);
         EnableMultipleLocationsGroup(true);
+        EnableAdditionalDataSetsGroup(true);
+        EnableIsotonicScan(false);
+        EnableWindowShapeGroup(true);
         break;
       case PROSPECTIVEPURELYTEMPORAL :
         EnableAdjustmentForTimeTrendOptionsGroup(bPoisson, false, bPoisson, bPoisson);
         EnableAdjustmentForSpatialOptionsGroup(false, false);
         EnableSpatialOptionsGroup(false, false);
-        EnableWindowShapeGroup(false);
         EnableTemporalOptionsGroup(true, false, false);
         EnableProspectiveSurveillanceGroup(true);
         EnableOutputOptions(false);
@@ -865,6 +899,24 @@ void TfrmAdvancedParameters::EnableSettingsForAnalysisModelCombination() {
         EnableCoordinatesCheckGroup(false);
         EnableIterativeScanOptionsGroup(true);
         EnableMultipleLocationsGroup(false);
+        EnableAdditionalDataSetsGroup(true);
+        EnableIsotonicScan(false);
+        EnableWindowShapeGroup(false);
+        break;
+      case SPATIALVARTEMPTREND       :
+        EnableAdjustmentForTimeTrendOptionsGroup(false, false, false, false);
+        EnableAdjustmentForSpatialOptionsGroup(false, false);
+        EnableSpatialOptionsGroup(true, false);
+        EnableTemporalOptionsGroup(false, false, false);
+        EnableProspectiveSurveillanceGroup(false);
+        EnableOutputOptions(true);
+        EnableNeighborsFileGroup(true);
+        EnableCoordinatesCheckGroup(true);
+        EnableIterativeScanOptionsGroup(true);
+        EnableMultipleLocationsGroup(true);
+        EnableAdditionalDataSetsGroup(false);
+        EnableIsotonicScan(false);
+        EnableWindowShapeGroup(true);
         break;
       default :
         ZdGenerateException("Unknown analysis type '%d'.",
@@ -940,10 +992,12 @@ void TfrmAdvancedParameters::EnableTemporalOptionsGroup(bool bEnable, bool bEnab
 /** enables or disables the window shape options group control */
 void TfrmAdvancedParameters::EnableWindowShapeGroup(bool bEnable) {
    bEnable &= !chkSpecifiyNeighborsFile->Checked;
-   
+
    grpWindowShape->Enabled = bEnable;
    rdoCircular->Enabled = bEnable;
    rdoElliptic->Enabled = bEnable && (CoordinatesType)gAnalysisSettings.rgpCoordinates->ItemIndex == CARTESIAN;
+   if (chkPerformIsotonicScan->Enabled)
+     rdoElliptic->Enabled &= !chkPerformIsotonicScan->Checked;
    stNonCompactnessPenalty->Enabled = rdoElliptic->Enabled && rdoElliptic->Checked;
    cmbNonCompactnessPenalty->Enabled = rdoElliptic->Enabled && rdoElliptic->Checked;
    cmbNonCompactnessPenalty->Color = cmbNonCompactnessPenalty->Enabled ? clWindow : clInactiveBorder;
@@ -1052,6 +1106,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForAnalysisOptions() {
    bReturn &= (rdoCircular->Checked == true);
    bReturn &= (cmbNonCompactnessPenalty->ItemIndex == 1);
    bReturn &= (rdoOnePerLocationId->Checked == true);
+   bReturn &= (chkPerformIsotonicScan->Checked == false);
 
    // Temporal tab
    bReturn &= (GetMaxTemporalClusterSizeControlType()==PERCENTAGETYPE);
@@ -1096,6 +1151,7 @@ bool TfrmAdvancedParameters::GetDefaultsSetForInputOptions() {
    bReturn &= (chkSpecifiyNeighborsFile->Checked == false);
    bReturn &= (edtNeighborsFile->Text == "");
    bReturn &= (chkSpecifiyMetaLocationsFile->Checked == false);
+   bReturn &= (edtMetaLocationsFile->Text == "");
    bReturn &= (edtMetaLocationsFile->Text == "");
 
    return bReturn;
@@ -1365,6 +1421,7 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
   ZdString      sString;
 
   try {
+    ref.SetRiskType(chkPerformIsotonicScan->Enabled && chkPerformIsotonicScan->Checked ? MONOTONERISK :  STANDARDRISK);
     ref.UseLocationNeighborsFile(chkSpecifiyNeighborsFile->Checked);
     ref.SetLocationNeighborsFileName(edtNeighborsFile->Text.c_str());
     ref.UseMetaLocationsFile(chkSpecifiyMetaLocationsFile->Checked);
@@ -1418,13 +1475,17 @@ void TfrmAdvancedParameters::SaveParameterSettings() {
     ref.SetCriteriaForReportingSecondaryClusters((CriteriaSecondaryClustersType)rdgCriteriaSecClusters->ItemIndex);
 
     // save the input files on Input tab
-    ref.SetNumDataSets(lstInputDataSets->Items->Count + 1);
-    if (lstInputDataSets->Items->Count) {
-       for (int i = 0; i < lstInputDataSets->Items->Count; i++) {
-          ref.SetCaseFileName((gvCaseFiles.at(i)).c_str(), false, i+2);
-          ref.SetControlFileName((gvControlFiles.at(i)).c_str(), false, i+2);
-          ref.SetPopulationFileName((gvPopFiles.at(i)).c_str(), false, i+2);
-       }
+    if (gAnalysisSettings.GetAnalysisControlType() == SPATIALVARTEMPTREND || (chkPerformIsotonicScan->Enabled && chkPerformIsotonicScan->Checked))
+      ref.SetNumDataSets(1);
+    else {
+      ref.SetNumDataSets(lstInputDataSets->Items->Count + 1);
+      if (lstInputDataSets->Items->Count) {
+         for (int i = 0; i < lstInputDataSets->Items->Count; i++) {
+            ref.SetCaseFileName((gvCaseFiles.at(i)).c_str(), false, i+2);
+            ref.SetControlFileName((gvControlFiles.at(i)).c_str(), false, i+2);
+            ref.SetPopulationFileName((gvPopFiles.at(i)).c_str(), false, i+2);
+         }
+      }
     }
     ref.SetMultipleDataSetPurposeType(rdoAdjustmentByDataSets->Checked ? ADJUSTMENT: MULTIVARIATE);
     ref.SetSpatialWindowType(rdoCircular->Checked ? CIRCULAR : ELLIPTIC);
@@ -1492,6 +1553,7 @@ void TfrmAdvancedParameters::SetDefaultsForAnalysisTabs() {
    cmbNonCompactnessPenalty->ItemIndex = 1;
    rdoOnePerLocationId->Checked = true;
    SetSpatialDistanceCaption();
+   chkPerformIsotonicScan->Checked = false;
 
    // Temporal tab
    SetMaxTemporalClusterSizeTypeControl(PERCENTAGETYPE);
@@ -1710,6 +1772,7 @@ void TfrmAdvancedParameters::Setup() {
       cmbNonCompactnessPenalty->ItemIndex = ref.GetNonCompactnessPenaltyType();
       SetSpatialDistanceCaption();
       SetMultipleCoordinatesType(ref.GetMultipleCoordinatesType());
+      chkPerformIsotonicScan->Checked = ref.GetRiskType() == MONOTONERISK;
 
       // Temporal tab
       SetMaxTemporalClusterSizeTypeControl(ref.GetMaximumTemporalClusterSizeType());
@@ -1752,6 +1815,7 @@ void TfrmAdvancedParameters::Setup() {
       chkReportedSpatialDistance->Checked = ref.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true);
       
       // Input tab
+      EnableAdditionalDataSetsGroup(false);
       EnableInputFileEdits(false);
       for (unsigned int i = 1; i < ref.GetNumDataSets(); i++) { // multiple data sets
          lstInputDataSets->Items->Add("Data Set " + IntToStr(i+1));
@@ -1797,7 +1861,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         PageControl->Pages[0]->TabVisible=true;
         PageControl->Pages[1]->TabVisible=true;
         PageControl->Pages[2]->TabVisible=true;
-        for (i=3; i < PageControl->PageCount; i++)
+        PageControl->Pages[3]->TabVisible=true;
+        for (i=4; i < PageControl->PageCount; i++)
            PageControl->Pages[i]->TabVisible=false;
         // give control to list box if it contains items but none are selected
         if (lstInputDataSets->Items->Count && lstInputDataSets->ItemIndex == -1) {
@@ -1812,7 +1877,8 @@ void TfrmAdvancedParameters::ShowDialog(TWinControl * pFocusControl, int iCatego
         PageControl->Pages[0]->TabVisible=false;
         PageControl->Pages[1]->TabVisible=false;
         PageControl->Pages[2]->TabVisible=false;
-        for (i=3; i < PageControl->PageCount-1; i++)
+        PageControl->Pages[3]->TabVisible=false;
+        for (i=4; i < PageControl->PageCount-1; i++)
            PageControl->Pages[i]->TabVisible=true;
         PageControl->Pages[PageControl->PageCount-1]->TabVisible=false;
         break;
@@ -1885,7 +1951,7 @@ void TfrmAdvancedParameters::ValidateAdjustmentSettings() {
          GenerateAFException("Spatial adjustments can not performed in conjunction\n"
                              " with the inclusion of purely spatial clusters.",
                              "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
-      if (rdgTemporalTrendAdj->Enabled && GetAdjustmentTimeTrendControlType() == NOTADJUSTED)
+      if (rdgTemporalTrendAdj->Enabled && GetAdjustmentTimeTrendControlType() == STRATIFIED_RANDOMIZATION)
          GenerateAFException("Spatial adjustments can not performed in conjunction\n"
                              "with the nonparametric temporal adjustment.",
                              "ValidateAdjustmentSettings()", *rdgSpatialAdjustments, ANALYSIS_TABS);
@@ -1921,6 +1987,8 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
   bool bFirstDataSetHasPopulationFile = !gAnalysisSettings.edtPopFileName->Text.IsEmpty();
 
   try {
+    if (!grpDataSets->Enabled) return;
+
     for (unsigned int i=0; i < gvCaseFiles.size(); i++){
        //Ensure that controls have this dataset display, should we need to
        //show window regarding an error with settings.
@@ -2276,6 +2344,12 @@ void GenerateAFException(const char * sMessage, const char * sSourceModule, TWin
   va_end(varArgs);
 
   throw theException;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfrmAdvancedParameters::chkPerformIsotonicScanClick(TObject *Sender) {
+  DoControlExit();
+  EnableSettingsForAnalysisModelCombination();
 }
 //---------------------------------------------------------------------------
 

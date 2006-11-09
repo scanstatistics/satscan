@@ -83,11 +83,11 @@ __published:	// IDE-managed Components
    TButton *btnSetDefaults;
    TTabSheet *tsDataSets;
    TGroupBox *grpDataSets;
-   TLabel *Label3;
-   TLabel *Label1;
-   TLabel *Label2;
-   TLabel *Label4;
-   TLabel *Label5;
+   TLabel *lblCaseFile;
+   TLabel *lblControlFile;
+   TLabel *lblPopulationFile;
+   TLabel *lblBernoulli;
+   TLabel *lblPoisson;
    TBitBtn *btnPopImport;
    TBitBtn *btnControlImport;
    TBitBtn *btnCaseImport;
@@ -147,15 +147,17 @@ __published:	// IDE-managed Components
    TEdit *edtNeighborsFile;
    TButton *btnBrowseForNeighborsFile;
    TCheckBox *chkSpecifiyNeighborsFile;
+   TCheckBox *chkSpecifiyMetaLocationsFile;
+   TEdit *edtMetaLocationsFile;
+   TButton *btnBrowseForMetaLocationsFile;
+   TTabSheet *tabMultipleCoordinates;
    TGroupBox *gpMultipleCoordinates;
    TRadioButton *rdoOnePerLocationId;
    TRadioButton *rdoAllLocations;
    TRadioButton *rdoAtLeastOne;
    TStaticText *stAtLeastOne;
    TStaticText *stAllLocations;
-   TCheckBox *chkSpecifiyMetaLocationsFile;
-   TEdit *edtMetaLocationsFile;
-   TButton *btnBrowseForMetaLocationsFile;
+   TCheckBox *chkPerformIsotonicScan;
 
    void __fastcall btnNewClick(TObject *Sender) ;
    void __fastcall btnBrowseAdjustmentsFileClick(TObject *Sender);
@@ -221,6 +223,7 @@ __published:	// IDE-managed Components
    void __fastcall edtMetaLocationsFileChange(TObject *Sender);
    void __fastcall btnBrowseForMetaLocationsFileClick(TObject *Sender);
    void __fastcall OnMultipleCoordinatesClick(TObject *Sender);
+   void __fastcall chkPerformIsotonicScanClick(TObject *Sender);
 
  private:
    const TfrmAnalysis     & gAnalysisSettings;
@@ -234,6 +237,7 @@ __published:	// IDE-managed Components
    static const int         MAXIMUM_ADDITIONAL_SETS;         /* maximum number of additional input sets */
 
    void                     DoControlExit();
+   void                     EnableAdditionalDataSetsGroup(bool bEnable);
    void                     EnableAdjustmentsGroup(bool bEnable);
    void                     EnableAdjustmentForSpatialOptionsGroup(bool bEnable, bool bEnableStratified);
    void                     EnableAdjustmentForTimeTrendOptionsGroup(bool bEnable, bool bTimeStratified, bool bLogYearPercentage, bool bCalculatedLog);
@@ -244,6 +248,7 @@ __published:	// IDE-managed Components
    void                     EnableNewButton();
    void                     EnableRemoveButton();
    void                     EnableInputFileEdits(bool bEnable);
+   void                     EnableIsotonicScan(bool bEnable);
    void                     EnableOutputOptions(bool bEnable);
    void                     EnableProspectiveStartDate();
    void                     EnableProspectiveSurveillanceGroup(bool bEnable);
