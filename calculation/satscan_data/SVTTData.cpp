@@ -7,6 +7,7 @@
 #include "BernoulliModel.h"
 #include "SpaceTimePermutationModel.h"
 #include "LocationRiskEstimateWriter.h"
+#include "SSException.h"
 
 /** class constructor */
 CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -22,14 +23,6 @@ CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
 
 /** class destructor */
 CSVTTData::~CSVTTData() {}
-
-void CSVTTData::CalculateMeasure(RealDataSet& DataSet) {
-  CSaTScanData::CalculateMeasure(DataSet);
-  //calculate time trend for dataset data set
-  //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                                
-  DataSet.getTimeTrend().CalculateAndSet(DataSet.getCaseData_PT_NC(), DataSet.getMeasureData_PT_NC(),
-                                            m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
-}
 
 /** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
@@ -135,13 +128,12 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
     std::for_each(SimDataContainer.begin(), SimDataContainer.end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
     for (size_t t=0; t < SimDataContainer.size(); ++t) {
        //calculate time trend for entire randomized data set
-       //**SVTT::TODO** We need to define behavior when time trend is anything but converged. **SVTT::TODO**                              
-       SimDataContainer[t]->getTimeTrend().CalculateAndSet(gDataSets->GetDataSet(t).getCaseData_PT_NC(),
+       SimDataContainer[t]->getTimeTrend().CalculateAndSet(SimDataContainer[t]->getCaseData_PT_NC(),
                                                            gDataSets->GetDataSet(t).getMeasureData_PT_NC(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
-       //**SVTT::QUESTION** Should the purely temporal case array passed to CalculateAndSet() be from
-       //                   the simulated dataset? It doesn't seem to make sense otherwise.
+      if (SimDataContainer[t]->getTimeTrend().GetStatus() != CTimeTrend::TREND_CONVERGED)
+      ZdException::Generate("Randomized data set time trend does not converge.\n", "RandomizeData()");
     }
   }
   catch (ZdException &x) {
@@ -156,10 +148,52 @@ void CSVTTData::ReadDataFromFiles() {
     CSaTScanData::ReadDataFromFiles();
     std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_NC));
     std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_NC));
+    std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
+    for (RealDataContainer_t::iterator itr=gDataSets->getDataSets().begin(); itr != gDataSets->getDataSets().end(); ++itr) {
+      //calculate time trend for dataset data set
+      (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
+                                             m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
+       switch ((*itr)->getTimeTrend().GetStatus()) {
+          case CTimeTrend::TREND_UNDEF        :
+            GenerateResolvableException("Error: The number of cases in data set %d is less than 2.\n"
+                                        "       Time trend can not be calculated.", "ReadDataFromFiles()",
+                                        std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+          case CTimeTrend::TREND_INF_BEGIN    :
+          case CTimeTrend::TREND_INF_END      :
+            GenerateResolvableException("Error: All cases in data set %d are either in first or last time interval.\n"
+                                        "       Time trend can not be calculated.", "ReadDataFromFiles()",
+                                        std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+          case CTimeTrend::TREND_NOTCONVERGED :
+            GenerateResolvableException("Error: Time trend for data set %d does not converge.\n"
+                                        "       Spatial variation in temporal trends can not be\n"
+                                        "       performed on this data set.\n", "ReadDataFromFiles()",
+                                        std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+          case CTimeTrend::TREND_CONVERGED    :
+          default                             : break; 
+       }
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("ReadDataFromFiles()","CSVTTData");
     throw;
+  }
+}
+
+/** Removes all cases/controls/measure from data sets, geographically and temporally, for
+    location at tTractIndex in specified interval range. */
+void CSVTTData::RemoveClusterSignificance(const CCluster& Cluster) {
+  CSaTScanData::RemoveClusterSignificance(Cluster);
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_NC));
+  std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_NC));
+  for (RealDataContainer_t::iterator itr=gDataSets->getDataSets().begin(); itr != gDataSets->getDataSets().end(); ++itr) {
+     //calculate time trend for dataset data set
+    (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
+                                           m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
+    if ((*itr)->getTimeTrend().GetStatus() != CTimeTrend::TREND_CONVERGED)
+    ZdException::Generate("Data set time trend does not converge after removing cluster data.\n", "RemoveClusterSignificance()");
   }
 }
 
