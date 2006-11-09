@@ -165,6 +165,8 @@ USEUNIT("BasisVCL.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetWriter.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetReader.cpp");
 USEUNIT("..\calculation\satscan_data\MetaTractManager.cpp");
+USEUNIT("..\calculation\analysis\SVTTCentricAnalysis.cpp");
+USEUNIT("..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp");
 //---------------------------------------------------------------------------
 void __SaTScanInit() {
   BasisInit();

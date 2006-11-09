@@ -53,6 +53,7 @@ SRC         := Main.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelySpatialAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelyTemporalAnalysis.cpp \
 	             $(ANALYSIS)/SVTTAnalysis.cpp \
+	             $(ANALYSIS)/SVTTCentricAnalysis.cpp \
 	             $(ANALYSIS)/IntermediateClustersContainer.cpp \
 	             $(ANALYSIS)/AbstractAnalysis.cpp \
 	             $(ANALYSIS)/AbstractCentricAnalysis.cpp \
@@ -121,6 +122,7 @@ SRC         := Main.cpp \
 	             $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \
 	             $(LOGLIKELIHOOD)/NormalLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/PoissonLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/PoissonSVTTLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/OrdinalLikelihoodCalculation.cpp \
 	             $(SATDATA)/GridTractCoordinates.cpp \

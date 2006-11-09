@@ -139,7 +139,9 @@
       ..\calculation\satscan_data\DataSetReader.obj 
       ..\calculation\satscan_data\DataSetWriter.obj 
       ..\calculation\satscan_data\MetaTractManager.obj 
-      ..\calculation\IniSession.obj"/>
+      ..\calculation\IniSession.obj 
+      ..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.obj 
+      ..\calculation\analysis\SVTTCentricAnalysis.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>
