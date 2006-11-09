@@ -87,7 +87,7 @@ double AbstractLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotone
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t, CSVTTCluster*, const CTimeTrend&) const {
+double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t, SVTTClusterData&, const CTimeTrend&) const {
   ZdGenerateException("CalcSVTTLogLikelihood(size_t, CSVTTCluster*, const CTimeTrend&) not implementated.","AbstractLikelihoodCalculator");
   return 0;
 }
