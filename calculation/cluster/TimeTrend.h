@@ -8,9 +8,9 @@
 class CTimeTrend {
   public:
     enum Status                 {TREND_UNDEF=0,        /** trend undefined */
-                                 TREND_INF,            /** trend is infinite */
+                                 TREND_INF_BEGIN,       /** trend is infinite */
+                                 TREND_INF_END,        /** trend is infinite */
                                  TREND_NOTCONVERGED,   /** trend did not converge */
-                                 TREND_NEGATIVE,       /** negative beta calculated */
                                  TREND_CONVERGED       /** trend converged */
                                  };
 

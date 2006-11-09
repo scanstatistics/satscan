@@ -110,11 +110,15 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
 
   // Eliminates situations when the time trend is undefined.
   // *******************************************************
-  if (nSumCases == 0)
+  if (nSumCases < 2)
     return  (gStatus = TREND_UNDEF);
-  else if ((pCases[0] == nSumCases) || (pCases[nTimeIntervals-1] == nSumCases)) {
+  else if ((pCases[0] == nSumCases)) {
     gdBeta = 0; /* What if don't set Beta at all??? */
-    return (gStatus = TREND_INF);
+    return (gStatus = TREND_INF_BEGIN);
+  }
+  else if (pCases[nTimeIntervals-1] == nSumCases) {
+    gdBeta = 0; /* What if don't set Beta at all??? */
+    return (gStatus = TREND_INF_END);
   }
 
   // Calculates the start value of beta for the subsequent Newton-Raphson iterations.
@@ -211,7 +215,9 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
     gdAlpha = Alpha(nSumCases,nSumMsr_ExpBeta);
     gdBeta = nBetaNew;
     //Set status, a negative beta is not likely, but perform check regardless.
-    gStatus = (gdBeta < -1 ? TREND_NEGATIVE : TREND_CONVERGED);
+    if (gdBeta < -1)
+      ZdGenerateException("Beta calculated to less than -1. Beta = %g\n", "CalculateAndSet()", gdBeta);
+    gStatus = TREND_CONVERGED;
   }
   else
     gStatus = TREND_NOTCONVERGED;
@@ -253,30 +259,10 @@ double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double n
     default    : ZdGenerateException("SetAnnualTimeTrend() called with unknown date precision '%d'.",
                                      "SetAnnualTimeTrend()", eDatePrecision);
   }
-
-  //**SVTT::TODO**  In a previous revision of this file, we created a status enumeration
-  //                to reflect that 'gdBeta' was negative. When calculating loglikelihood,
-  //                we have not yet defined the behavior when this object's status is
-  //                anything other than TREND_CONVERGED. As a result, we can eventually
-  //                call SetAnnualTimeTrend() with a negative 'gdBeta' or some other state.
-  //                Until I can discuss this further with Martin, take that absolute value
-  //                when negative.
   if (gStatus == TREND_CONVERGED)
     gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
-  else if (gStatus == TREND_NEGATIVE) {
-    gdAnnualTimeTrend = (pow(1 + std::fabs(gdBeta), nUnits/nIntervalLen) - 1) * 100;
-    printf("Undefined behavior, calling SetAnnualTimeTrend() with negative beta.\n");
-  }
-  else if (gStatus == TREND_UNDEF)
-    printf("Undefined behavior, calling SetAnnualTimeTrend() with undefined trend.\n");
-  else if (gStatus == TREND_INF)
-    printf("Undefined behavior, calling SetAnnualTimeTrend() with infinite trend.\n");
-  else if (gStatus == TREND_NOTCONVERGED)
-    printf("Undefined behavior, calling SetAnnualTimeTrend() with not converged trend.\n");
-  else if (gStatus == TREND_NOTCONVERGED)
-    printf("Undefined behavior, calling SetAnnualTimeTrend() with not converged trend.\n");
   else
-    printf("Undefined behavior, calling SetAnnualTimeTrend() with unknown trend.\n");
+    ZdGenerateException("SetAnnualTimeTrend() called with time trend that is not in converged state.", "SetAnnualTimeTrend()");
 
   return gdAnnualTimeTrend;
 }
