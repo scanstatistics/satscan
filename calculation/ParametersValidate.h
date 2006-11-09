@@ -26,6 +26,7 @@ class ParametersValidate {
     bool                ValidateSpatialParameters(BasePrint & PrintDirection) const;
     bool                ValidateStudyPeriodEndDate(BasePrint& PrintDirection) const;
     bool                ValidateStudyPeriodStartDate(BasePrint& PrintDirection) const;
+    bool                ValidateSVTTAnalysisSettings(BasePrint& PrintDirection) const;
     bool                ValidateTemporalParameters(BasePrint & PrintDirection) const;
     bool                ValidateTimeAggregationUnits(BasePrint & PrintDirection) const;
 

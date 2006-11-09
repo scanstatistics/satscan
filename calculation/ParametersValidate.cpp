@@ -29,6 +29,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
       const_cast<CParameters&>(gParameters).SetReportCriticalValues(true);
     if (!ValidateMonotoneRisk(PrintDirection))
       bValid = false;
+    if (!ValidateSVTTAnalysisSettings(PrintDirection))
+      bValid = false;
     if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -222,7 +224,6 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
     }
     if (gParameters.GetExecutionType() == CENTRICALLY &&
         (gParameters.GetIsPurelyTemporalAnalysis() ||
-         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
          (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -483,8 +484,9 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
         PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature can not be combined with the feature to write simulation data to file.\n", BasePrint::P_PARAMERROR);
         return false;
       }
-      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetIsPurelyTemporalAnalysis())) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for purely spatial and purely temporal analyses only.\n", BasePrint::P_PARAMERROR);
+      if (!(gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND || gParameters.GetIsPurelyTemporalAnalysis())) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan option is not implemented for the %s analysis.\n",
+                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
         return false;
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
@@ -611,6 +613,10 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI)) {
         bReturn = false;
         PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is implemented for only the Poisson and Bernoulli models.\n", BasePrint::P_PARAMERROR);
+      }
+      if (!gParameters.UseMetaLocationsFile() && gParameters.GetSpatialWindowType() == ELLIPTIC) {
+        bReturn = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is not implemented for elliptic shaped windows.\n", BasePrint::P_PARAMERROR);
       }
     }
   }
@@ -1027,7 +1033,8 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       }
       else if (!gParameters.GetPermitsPurelySpatialCluster()) {
         bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nA purely spatial cluster can only be included for spatial based analyses.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nA purely spatial cluster can not be included in %s analyses.\n",
+                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
       }
     }
     if (gParameters.GetSpatialAdjustmentType() == SPATIALLY_STRATIFIED_RANDOMIZATION) {
@@ -1176,6 +1183,30 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
   return true;
 }
 
+/** Validates spatial variation in temporal trends analysis settings. */
+bool ParametersValidate::ValidateSVTTAnalysisSettings(BasePrint& PrintDirection) const {
+  bool          bValid=true;
+
+  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+    if (gParameters.GetNumDataSets() > 1) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Multiple data sets is not implemented with spatial variation in temporal trends.\n", BasePrint::P_PARAMERROR);
+    }
+    if (gParameters.GetProbabilityModelType() != POISSON) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Spatial variation in temporal trends is implemented only for the Poisson model.\n", BasePrint::P_PARAMERROR);
+    }
+    if (gParameters.GetTimeTrendConvergence() < 0.0) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nTime trend convergence value of '%2g' is less than zero.\n",
+                            BasePrint::P_PARAMERROR, gParameters.GetTimeTrendConvergence());
+    }
+  }
+  return bValid;
+}
+
 /** Validates optional parameters particular to temporal analyses
     (i.e. purely temporal, retrospective space-time and prospective space-time).
     Prints errors to print direction and returns whether values are vaild.*/
@@ -1245,13 +1276,17 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         }
         break;
       case POISSON             :
+        if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+          bValid = false;
+          PrintDirection.Printf("Invalid Parameter Setting:\nTemporal adjustments can not be performed for a spatial variation in "
+                                "temporal trends analysis.\n", BasePrint::P_PARAMERROR);
+        }
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)
             && gParameters.GetPopulationFileName().empty()) {
-           bValid = false; 
+          bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nTemporal adjustments can not be performed for a purely temporal analysis "
                                 "using the Poisson model, when no population file has been specfied.\n", BasePrint::P_PARAMERROR);
-    }
-
+        }
         if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC && (gParameters.GetAnalysisType() == PURELYTEMPORAL ||gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL)) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nInvalid parameter setting for time trend adjustment. "
@@ -1269,15 +1304,12 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
         }
         if (gParameters.GetTimeTrendAdjustmentType() == NOTADJUSTED) {
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
-          if (gParameters.GetAnalysisType() != SPATIALVARTEMPTREND)
-            const_cast<CParameters&>(gParameters).SetTimeTrendConvergence(0);
+          if (gParameters.GetAnalysisType() != SPATIALVARTEMPTREND) const_cast<CParameters&>(gParameters).SetTimeTrendConvergence(0);
         }
-        if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-          if (gParameters.GetTimeTrendConvergence() < 0.0) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nTime trend convergence value of '%2g' is less than zero.\n",
-                                  BasePrint::P_PARAMERROR, gParameters.GetTimeTrendConvergence());
-          }
+        if (gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC && gParameters.GetTimeTrendConvergence() < 0.0) {
+           bValid = false;
+           PrintDirection.Printf("Invalid Parameter Setting:\nTime trend convergence value of '%2g' is less than zero.\n",
+                                 BasePrint::P_PARAMERROR, gParameters.GetTimeTrendConvergence());
         }
         break;
       default : ZdException::Generate("Unknown model type '%d'.",
@@ -1292,7 +1324,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       }
       else if (!gParameters.GetPermitsPurelyTemporalCluster()) {
         bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nA purely temporal cluster can only be included for time based analyses.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nA purely temporal cluster can not be included with %s analyses.\n",
+                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
       }
     }
 
