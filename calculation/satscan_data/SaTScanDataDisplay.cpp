@@ -96,7 +96,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   if (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile()) {
     //print number locations scanned
     PrintFormat.PrintSectionLabel(fp, "Number of locations", false, false);
-    fprintf(fp, "%ld\n", (long)m_nTracts - GetNumNullifiedLocations());
+    fprintf(fp, "%ld\n", (long)m_nTracts + GetNumMetaTractsReferenced() - GetNumNullifiedLocations());
   }  
   //print total population per data set
   switch (gParameters.GetProbabilityModelType()) {
@@ -227,7 +227,6 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       buffer = "Annual increase";
     PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
     fprintf(fp, "%.3lf%%\n", nAnnualTT);
-    fprintf(fp, "\n");
   }
   PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
 }
