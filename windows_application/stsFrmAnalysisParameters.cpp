@@ -452,9 +452,6 @@ void TfrmAnalysis::CheckStudyPeriodDatesRange() {
 /** Resets parameters that are not present in interface to default value.
     Hidden features are to be used soley in command line version at this time. */
 void TfrmAnalysis::DefaultHiddenParameters() {
-  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-    gParameters.SetAnalysisType(PURELYSPATIAL);
-  gParameters.SetRiskType(STANDARDRISK);
   gParameters.SetPowerCalculation(false);
   //non-parametric removed from interface, replaced with time stratified
   if (gParameters.GetTimeTrendAdjustmentType() == NONPARAMETRIC)
@@ -620,11 +617,15 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
                                   rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
                                   rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
                                   rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
+                                  rdoSVTT->Enabled = eDatePrecisionType != NONE;
+                                  stSVTT->Enabled = rdoSVTT->Enabled;
                                   break;
       case SPACETIMEPERMUTATION : rdoRetrospectivePurelySpatial->Enabled = false;
                                   rdoRetrospectivePurelyTemporal->Enabled = false;
                                   rdoRetrospectiveSpaceTime->Enabled = true;
                                   rdoProspectivePurelyTemporal->Enabled = false;
+                                  rdoSVTT->Enabled = false;
+                                  stSVTT->Enabled = rdoSVTT->Enabled;
                                   rdoProspectiveSpaceTime->Enabled = true;
                                   if (!rdoRetrospectiveSpaceTime->Checked && !rdoProspectiveSpaceTime->Checked)
                                     rdoRetrospectiveSpaceTime->Checked = true;
@@ -662,15 +663,34 @@ void TfrmAnalysis::EnableModelControlForAnalysisType() {
     switch (GetAnalysisControlType()) {
       case PURELYSPATIAL             :
       case PURELYTEMPORAL            :
-      case PROSPECTIVEPURELYTEMPORAL : rdoSpaceTimePermutationModel->Enabled = false;
+      case PROSPECTIVEPURELYTEMPORAL : rdoBernoulliModel->Enabled = true;
+                                       rdoSpaceTimePermutationModel->Enabled = true;
+                                       rdoOrdinalModel->Enabled = true;
+                                       rdoExponentialModel->Enabled = true;
+                                       rdoNormalModel->Enabled = true;
+                                       rdoSpaceTimePermutationModel->Enabled = false;
                                        if (rdoSpaceTimePermutationModel->Checked)
                                           rdoPoissonModel->Checked = true;
                                        break;
       case SPACETIME                 :
-      case PROSPECTIVESPACETIME      : rdoSpaceTimePermutationModel->Enabled = true; break;
+      case PROSPECTIVESPACETIME      : rdoBernoulliModel->Enabled = true;
+                                       rdoSpaceTimePermutationModel->Enabled = true;
+                                       rdoOrdinalModel->Enabled = true;
+                                       rdoExponentialModel->Enabled = true;
+                                       rdoNormalModel->Enabled = true;
+                                       rdoSpaceTimePermutationModel->Enabled = true;
+                                       break;
+      case SPATIALVARTEMPTREND       : rdoBernoulliModel->Enabled = false;
+                                       rdoSpaceTimePermutationModel->Enabled = false;
+                                       rdoOrdinalModel->Enabled = false;
+                                       rdoExponentialModel->Enabled = false;
+                                       rdoNormalModel->Enabled = false;
+                                       if (!rdoPoissonModel->Checked) rdoPoissonModel->Checked = true;
+                                       break;
       default : ZdGenerateException("Unknown analysis type '%d'.", "EnableModelControlForAnalysisType()", GetAnalysisControlType());
     }
     EnableSettingsForAnalysisModelCombination();
+    SetAreaScanRateControlText(GetModelControlType());
   }
   catch (ZdException &x) {
     x.AddCallpath("EnableModelControlForAnalysisType()","TfrmAnalysis");
@@ -813,6 +833,8 @@ AnalysisType TfrmAnalysis::GetAnalysisControlType() const {
     eReturn = PROSPECTIVEPURELYTEMPORAL;
   else if (rdoProspectiveSpaceTime->Checked)
     eReturn = PROSPECTIVESPACETIME;
+  else if (rdoSVTT->Checked)
+    eReturn = SPATIALVARTEMPTREND;
   else
     ZdGenerateException("Analysis type not selected.","GetAnalysisControlType()");
 
@@ -1029,6 +1051,7 @@ void TfrmAnalysis::OnPrecisionTimesClick() {
     rdoRetrospectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
     rdoProspectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
     rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
+    rdoSVTT->Enabled = eDatePrecisionType != NONE;
 
     // switch analysis type to purely spatial if no dates in input data
     if (eDatePrecisionType == NONE && GetAnalysisControlType() != PURELYSPATIAL)
@@ -1284,7 +1307,7 @@ void TfrmAnalysis::SetAnalysisControl(AnalysisType eAnalysisType) {
     case SPACETIME                      : if (rdoRetrospectiveSpaceTime->Enabled && eDatePrecisionType != NONE) {rdoRetrospectiveSpaceTime->Checked = true; break;}
     case PROSPECTIVEPURELYTEMPORAL      : if (rdoProspectivePurelyTemporal->Enabled && eDatePrecisionType != NONE) {rdoProspectivePurelyTemporal->Checked = true; break;}
     case PROSPECTIVESPACETIME           : if (rdoProspectiveSpaceTime->Enabled && eDatePrecisionType != NONE) {rdoProspectiveSpaceTime->Checked = true; break;}
-    case SPATIALVARTEMPTREND            :
+    case SPATIALVARTEMPTREND            : if (rdoSVTT->Enabled && eDatePrecisionType != NONE) {rdoSVTT->Checked = true; break;}
     case PURELYSPATIAL                  :
     default                             : rdoRetrospectivePurelySpatial->Checked = true;
   }
@@ -1305,20 +1328,29 @@ void TfrmAnalysis::SetAreaScanRateControl(AreaRateType eAreaRateType) {
 /** Sets captions of TRadioButton controls of 'Scan for Areas with:' group based upon selected probablility model. */
 void TfrmAnalysis::SetAreaScanRateControlText(ProbabilityModelType eProbabilityModelType) {
     switch (GetModelControlType()) {
-      case POISSON   		:
+      case POISSON   		: if (GetAnalysisControlType() == SPATIALVARTEMPTREND) {
+                                    rdoLowRates->Caption = "Decreasing Rates";
+                                    rdoHighRates->Caption = "Increasing Rates";
+                                    rdoHighLowRates->Caption = "Increasing or";
+                                    stScanAreaRates->Visible = true;
+                                    break;
+                                  }
       case BERNOULLI            :
       case SPACETIMEPERMUTATION : rdoLowRates->Caption = "Low Rates";
                                   rdoHighRates->Caption = "High Rates";
                                   rdoHighLowRates->Caption = "High or Low Rates";
+                                  stScanAreaRates->Visible = false;
                                   break;
       case ORDINAL              :
       case NORMAL               : rdoLowRates->Caption = "Low Values";
                                   rdoHighRates->Caption = "High Values";
                                   rdoHighLowRates->Caption = "High or Low Values";
+                                  stScanAreaRates->Visible = false;
                                   break;
       case EXPONENTIAL          : rdoLowRates->Caption = "Long Survival";
                                   rdoHighRates->Caption = "Short Survival";
                                   rdoHighLowRates->Caption = "Short or Long Survival";
+                                  stScanAreaRates->Visible = false;
                                   break;
       default : ZdGenerateException("Unknown probability model '%d'.", "SetAreaScanRateControlText()", GetModelControlType());
     }
@@ -1660,7 +1692,6 @@ void TfrmAnalysis::ValidateInputFiles() {
     throw;
   }
 }
-
 //---------------------------------------------------------------------------
 /** This function is used right before a job is submitted.  Verifies that
     all the input files exist and can be read.  Also checks each tab to see
@@ -1688,7 +1719,6 @@ bool TfrmAnalysis::ValidateParams() {
   }
   return bReturn;
 }
-
 //---------------------------------------------------------------------------
 /** Writes the session information to disk */
 bool TfrmAnalysis::WriteSession(const char * sParameterFilename) {
@@ -1714,6 +1744,20 @@ bool TfrmAnalysis::WriteSession(const char * sParameterFilename) {
     throw;
   }
   return bSaved;
+}
+//---------------------------------------------------------------------------
+/** Event triggered when the static text control that accompanies SVTT radio
+    button is clicked -- causing the radio button to be selected and focused. */
+void __fastcall TfrmAnalysis::stSVTTClick(TObject *Sender) {
+  rdoSVTT->Checked = true;
+  rdoSVTT->SetFocus();
+}
+//---------------------------------------------------------------------------
+/** Event triggered when the static text control that accompanies the high/low radio
+    button is clicked -- causing the radio button to be selected and focused. */
+void __fastcall TfrmAnalysis::stScanAreaRatesClick(TObject *Sender) {
+  rdoHighLowRates->Checked = true;
+  rdoHighLowRates->SetFocus();
 }
 //---------------------------------------------------------------------------
 

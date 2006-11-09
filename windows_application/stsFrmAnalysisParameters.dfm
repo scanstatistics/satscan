@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 0
     Width = 507
     Height = 382
-    ActivePage = tbInputFiles
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -729,7 +729,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object stProspectiveAnalyses: TStaticText
           Left = 10
-          Top = 159
+          Top = 169
           Width = 108
           Height = 17
           Caption = 'Prospective Analyses:'
@@ -737,7 +737,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoRetrospectivePurelySpatial: TRadioButton
           Left = 14
-          Top = 50
+          Top = 46
           Width = 113
           Height = 17
           Caption = 'Purely Spatial'
@@ -748,7 +748,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoRetrospectivePurelyTemporal: TRadioButton
           Left = 14
-          Top = 85
+          Top = 73
           Width = 113
           Height = 17
           Caption = 'Purely Temporal'
@@ -757,7 +757,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoRetrospectiveSpaceTime: TRadioButton
           Left = 14
-          Top = 120
+          Top = 102
           Width = 113
           Height = 17
           Caption = 'Space-Time'
@@ -766,7 +766,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoProspectivePurelyTemporal: TRadioButton
           Left = 14
-          Top = 184
+          Top = 194
           Width = 113
           Height = 17
           Caption = 'Purely Temporal'
@@ -781,6 +781,24 @@ object frmAnalysis: TfrmAnalysis
           Caption = 'Space-Time'
           TabOrder = 6
           OnClick = rdoAnalysisTypeClick
+        end
+        object rdoSVTT: TRadioButton
+          Left = 13
+          Top = 130
+          Width = 113
+          Height = 17
+          Caption = 'Spatial Variation'
+          TabOrder = 7
+          OnClick = rdoAnalysisTypeClick
+        end
+        object stSVTT: TStaticText
+          Left = 32
+          Top = 147
+          Width = 96
+          Height = 17
+          Caption = 'of Temporal Trends'
+          TabOrder = 8
+          OnClick = stSVTTClick
         end
       end
       object rgpScanAreas: TGroupBox
@@ -802,7 +820,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoLowRates: TRadioButton
           Left = 13
-          Top = 55
+          Top = 49
           Width = 148
           Height = 17
           Caption = 'Low Rates'
@@ -810,11 +828,20 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoHighLowRates: TRadioButton
           Left = 13
-          Top = 85
+          Top = 75
           Width = 148
           Height = 17
           Caption = 'High or Low Rates'
           TabOrder = 2
+        end
+        object stScanAreaRates: TStaticText
+          Left = 32
+          Top = 93
+          Width = 89
+          Height = 17
+          Caption = 'Decreasing Rates'
+          TabOrder = 3
+          OnClick = stScanAreaRatesClick
         end
       end
       object rgpTimeAggregationUnits: TGroupBox

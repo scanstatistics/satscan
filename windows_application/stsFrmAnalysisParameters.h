@@ -129,6 +129,9 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TCheckBox *chkClusterCaseInColumnFormatAscii;
    TCheckBox *chkClusterCaseInColumnFormatDBase;
    TRadioButton *rdoNormalModel;
+   TRadioButton *rdoSVTT;
+   TStaticText *stSVTT;
+   TStaticText *stScanAreaRates;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);
@@ -164,6 +167,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    void __fastcall edtResultFileChange(TObject *Sender);
    void __fastcall FormActivate(TObject *Sender);
    void __fastcall btnAdvancedParametersClick(TObject *Sender);
+   void __fastcall stSVTTClick(TObject *Sender);
+   void __fastcall stScanAreaRatesClick(TObject *Sender);
 
   private:
     PrintNull                   gNullPrint;
