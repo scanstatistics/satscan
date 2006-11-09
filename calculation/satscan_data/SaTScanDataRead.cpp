@@ -740,8 +740,9 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
 
 /** Opens meta locations file data source and parses meta location definitions. */
 bool SaTScanDataReader::ReadMetaLocationsFile() {
-  bool                  bValid=true, bEmpty=true;
-  std::string           sIdentifier;
+  bool                  bValid=true, bEmpty=true, bStructuredMetaData;
+  std::string           sIdentifier, sLocations;
+  long                  uLocation0ffset;
 
   try {
     if (!gParameters.UseMetaLocationsFile()) {
@@ -750,7 +751,14 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
     }
     gPrint.Printf("Reading the meta locations file\n", BasePrint::P_STDOUT);
     gPrint.SetImpliedInputFileType(BasePrint::META_LOCATIONS_FILE);
-    AsciiFileDataSource Source(gParameters.getMetaLocationsFilename().c_str(), gPrint, '=');
+    //determine format of file, either:
+    // meta1=loc1,loc2, loc3
+    // meta1 loc1 loc2 loc3
+    std::ifstream SourceFile(gParameters.getMetaLocationsFilename().c_str());
+    std::getline(SourceFile, sIdentifier);
+    bStructuredMetaData = (sIdentifier.find("=") == sIdentifier.npos ? false : true);
+    SourceFile.close();
+    AsciiFileDataSource Source(gParameters.getMetaLocationsFilename().c_str(), gPrint, (bStructuredMetaData ? '=' : ' '));
 
     //first pass on neighbors file to determine all location identifiers referenced
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
@@ -763,7 +771,18 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
         bValid = false;
         continue;
       }
-      if(!gTractHandler.getMetaLocations().getMetaLocationPool().addMetaLocation(sIdentifier, Source.GetValueAt(1))) {
+      if (bStructuredMetaData)
+        sLocations = Source.GetValueAt(1);
+      else {
+        uLocation0ffset=1;
+        sLocations.clear();
+        while (Source.GetValueAt(uLocation0ffset)) {
+           if (uLocation0ffset > 1) sLocations += ",";
+           sLocations += Source.GetValueAt(uLocation0ffset);
+           ++uLocation0ffset;
+        }
+      }
+      if(!gTractHandler.getMetaLocations().getMetaLocationPool().addMetaLocation(sIdentifier, sLocations)) {
         gPrint.Printf("Error: Incorrectly defined meta location at record %d of the %s.\n",
                       BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         bValid = false;
