@@ -9,6 +9,7 @@
 #include "CategoricalClusterDataFactory.h"
 #include "LikelihoodCalculation.h"
 #include "PoissonLikelihoodCalculation.h"
+#include "PoissonSVTTLikelihoodCalculation.h"
 #include "BernoulliLikelihoodCalculation.h"
 #include "WilcoxonLikelihoodCalculation.h"
 #include "NormalLikelihoodCalculation.h"
@@ -43,7 +44,8 @@ AbstractAnalysis::~AbstractAnalysis() {
 AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(const CSaTScanData& DataHub) {
   //create likelihood calculator
   switch (DataHub.GetParameters().GetProbabilityModelType()) {
-    case POISSON              :
+    case POISSON              : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND)
+                                  return new PoissonSVTTLikelihoodCalculator(DataHub);
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
     case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
@@ -114,7 +116,10 @@ void AbstractAnalysis::Setup() {
     }
     else {
       gpClusterDataFactory = new ClusterDataFactory();
-      geReplicationsProcessType = MeasureListEvaluation;
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+        geReplicationsProcessType = ClusterEvaluation;
+      else
+        geReplicationsProcessType = MeasureListEvaluation;
     }
     //create likelihood calculator
     gpLikelihoodCalculator = GetNewLikelihoodCalculator(gDataHub);
