@@ -404,7 +404,7 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
 }
 
 bool CParameters::GetPermitsCentricExecution() const {
- return  !(GetIsPurelyTemporalAnalysis() || GetAnalysisType() == SPATIALVARTEMPTREND ||
+ return  !(GetIsPurelyTemporalAnalysis() ||
           (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
           (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||
            GetTerminateSimulationsEarly() || UseLocationNeighborsFile());
