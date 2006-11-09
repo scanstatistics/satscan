@@ -32,6 +32,7 @@
 #include "SpaceTimeIncludePureCentricAnalysis.h"
 #include "ParametersPrint.h"
 #include "SSException.h" 
+#include "SVTTCentricAnalysis.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -509,7 +510,7 @@ AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const Abst
           else
             return new SpaceTimeCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
       case SPATIALVARTEMPTREND :
-            ZdGenerateException("No implementation for svtt analysis for centric evaluation.\n", "GetNewCentricAnalysisObject()");
+            return new SpatialVarTempTrendCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
       default :
         ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
     };
@@ -604,7 +605,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(),  gpDataHub->GetNumMetaTracts(), j + 1));
+            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(),  gpDataHub->GetNumMetaTractsReferenced(), j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -776,7 +777,7 @@ void AnalysisRunner::PerformCentric_Serial() {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), gpDataHub->GetNumMetaTracts(), j + 1));
+            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), gpDataHub->GetNumMetaTractsReferenced(), j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -1333,6 +1334,13 @@ bool AnalysisRunner::RepeatAnalysis() {
       //now we need to modify the data sets - removing data of locations in top cluster
       gpDataHub->RemoveClusterSignificance(gTopClustersContainer.GetTopRankedCluster());
 
+      //for SVTT analyses, are data set global time trends converging?
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+         for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
+            if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != CTimeTrend::TREND_CONVERGED)
+              return false;   
+      }
+
       //does the minimum number of cases remain in all data sets?
       unsigned int iSetWithMinimumCases=0;
       for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
@@ -1341,7 +1349,7 @@ bool AnalysisRunner::RepeatAnalysis() {
          return false;
 
       //are there locations left?
-      if (!gParameters.GetIsPurelyTemporalAnalysis() && ((size_t)gpDataHub->GetNumTracts() - gpDataHub->GetNumNullifiedLocations()) < 2)
+      if (!gParameters.GetIsPurelyTemporalAnalysis() && ((size_t)gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTractsReferenced() - gpDataHub->GetNumNullifiedLocations()) < 2)
          return false;
       //is the minimum number of cases per data data set remaining as required by probability model?
       if (gParameters.GetProbabilityModelType() == ORDINAL) {

@@ -63,7 +63,7 @@ const double CCluster::ConvertAngleToDegrees(double dAngle) const {
 /** Calls class cluster data object, deallocating any class members that were used to
     iterate through data during evaluation process. */
 void CCluster::DeallocateEvaluationAssistClassMembers() {
-  if (!(GetClusterType() == PURELYSPATIALMONOTONECLUSTER || GetClusterType() == SPATIALVARTEMPTRENDCLUSTER))
+  if (GetClusterType() != PURELYSPATIALMONOTONECLUSTER)
     GetClusterData()->DeallocateEvaluationAssistClassMembers();
 }
 
@@ -367,7 +367,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
 
   DisplayPopulation(fp, DataHub, PrintFormat);
 
-  if (GetClusterType() == PURELYSPATIALMONOTONECLUSTER || GetClusterType() == SPATIALVARTEMPTRENDCLUSTER)
+  if (GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
     vComprisedDataSetIndexes.push_back(0);
   else
     GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);

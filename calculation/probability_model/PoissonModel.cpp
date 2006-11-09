@@ -121,14 +121,12 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
     case CTimeTrend::TREND_UNDEF :
       GenerateResolvableException("Note: The time trend is undefined and the temporal adjustment could not be performed.\n"
                                   "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
-    case CTimeTrend::TREND_INF :
+    case CTimeTrend::TREND_INF_BEGIN :
+    case CTimeTrend::TREND_INF_END :
       GenerateResolvableException("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
                                   "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_NOTCONVERGED :
       GenerateResolvableException("Note: The time trend calculation did not converge and the temporal adjustment could not be performed.\n"
-                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
-    case CTimeTrend::TREND_NEGATIVE :
-      GenerateResolvableException("Note: Temporal adjustment could not be performed. The calculated time trend is negative.\n"
                                   "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_CONVERGED : break;
     default :
@@ -197,12 +195,9 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
     Set.setMeasureDataToCumulative(); // now we can make the measure data cummulative
     if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.0001) // bug check total cases == total measure
       ZdGenerateException("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
-
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      Set.setMeasureData_NC();
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
-        gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
-        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC)
+    if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
+        gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
+        gParameters.GetAnalysisType() != SPATIALVARTEMPTREND/* SVTTData invokes this method as well */)
       Set.setMeasureData_PT_NC();
   }
   catch (ZdException &x) {
