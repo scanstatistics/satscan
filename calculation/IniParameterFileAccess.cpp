@@ -155,6 +155,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteMultipleDataSetsSettings(WriteFile);
     WriteDataCheckingSettings(WriteFile);
     WriteNeighborsFileSettings(WriteFile);
+    WriteMultipleCoordinatesSettings(WriteFile);
     WriteSpatialWindowSettings(WriteFile);
     WriteTemporalWindowSettings(WriteFile);
     WriteSpaceAndTimeAdjustmentSettings(WriteFile);
@@ -163,7 +164,6 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     
     //write settings as provided only through user mofication of parameter file and batch executable
     WriteEllipticScanSettings(WriteFile);
-    WriteIsotonicScanSettings(WriteFile);
     WritePowerSimulationsSettings(WriteFile);
     WriteRunOptionSettings(WriteFile);
     WriteSystemSettings(WriteFile);
@@ -291,19 +291,6 @@ void IniParameterFileAccess::WriteIniParameterAsKey(ZdIniFile& WriteFile, const 
   }
 }
 
-/** Writes parameter settings grouped under '[Isotonic Scan]'. */
-void IniParameterFileAccess::WriteIsotonicScanSettings(ZdIniFile& WriteFile) {
-  std::string s;
-
-  try {
-    WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s).c_str(), GetParameterComment(RISKFUNCTION));
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteIsotonicScanSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
 /** Writes parameter settings grouped under 'Input'. */
 void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
   std::string  s;
@@ -322,6 +309,19 @@ void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteInputSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
+/** Writes parameter settings grouped under 'Multiple Coordinates Per Location'. */
+void IniParameterFileAccess::WriteMultipleCoordinatesSettings(ZdIniFile& WriteFile) {
+  std::string s;
+
+  try {
+    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
+  }
+  catch (ZdException &x) {
+    x.AddCallpath("WriteMultipleCoordinatesSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -476,7 +476,7 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, MAXCIRCLEPOPFILE, GetParameterString(MAXCIRCLEPOPFILE, s).c_str(), GetParameterComment(MAXCIRCLEPOPFILE));
     WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s).c_str(), GetParameterComment(WINDOW_SHAPE));
     WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s).c_str(), GetParameterComment(NON_COMPACTNESS_PENALTY));
-    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
+    WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s).c_str(), GetParameterComment(RISKFUNCTION));
   }
   catch (ZdException &x) {
     x.AddCallpath("WriteSpatialWindowSettings()","IniParameterFileAccess");

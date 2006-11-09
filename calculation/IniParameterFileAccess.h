@@ -24,8 +24,8 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteInferenceSettings(ZdIniFile& WriteFile);
     void                                WriteIniParameter(ZdIniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
     void                                WriteIniParameterAsKey(ZdIniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
-    void                                WriteIsotonicScanSettings(ZdIniFile& WriteFile);
     void                                WriteInputSettings(ZdIniFile& WriteFile);
+    void                                WriteMultipleCoordinatesSettings(ZdIniFile& WriteFile);
     void                                WriteMultipleDataSetsSettings(ZdIniFile& WriteFile);
     void                                WriteNeighborsFileSettings(ZdIniFile& WriteFile);
     void                                WriteOutputSettings(ZdIniFile& WriteFile);

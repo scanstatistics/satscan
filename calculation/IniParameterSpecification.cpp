@@ -10,6 +10,7 @@ const char * IniParameterSpecification::Input                   = "[Input]";
 const char * IniParameterSpecification::MultipleDataSets        = "[Multiple Data Sets]";
 const char * IniParameterSpecification::DataChecking            = "[Data Checking]";
 const char * IniParameterSpecification::NeighborsFile           = "[Non-Eucledian Neighbors]";
+const char * IniParameterSpecification::MultipleCoordinates     = "[Multiple Coordinates Per Location]";
 const char * IniParameterSpecification::Analysis                = "[Analysis]";
 const char * IniParameterSpecification::SpatialWindow           = "[Spatial Window]";
 const char * IniParameterSpecification::TemporalWindow          = "[Temporal Window]";
@@ -328,9 +329,11 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 void IniParameterSpecification::Build_8_0_x_ParameterList() {
   Build_7_0_x_ParameterList();
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"RandomlyGenerateSeed"));
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"MultipleCoordinatesType"));
+  gvParameterInfo.push_back(std::make_pair(MultipleCoordinates, (const char*)"MultipleCoordinatesType"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"MetaLocationsFilename"));
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseMetaLocationsFile"));
+  //risk/isotonic scan moved to spatial window tab
+  gvParameterInfo[RISKFUNCTION - 1] = std::make_pair(SpatialWindow, (const char*)"IsotonicScan");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

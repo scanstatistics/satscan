@@ -16,6 +16,7 @@ class IniParameterSpecification {
     static const char         * MultipleDataSets;
     static const char         * DataChecking;
     static const char         * NeighborsFile;
+    static const char         * MultipleCoordinates;
     static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
