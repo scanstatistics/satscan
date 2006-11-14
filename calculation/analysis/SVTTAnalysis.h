@@ -1,7 +1,7 @@
-//*****************************************************************************
+//******************************************************************************
 #ifndef __SVTTANALYSIS_H
 #define __SVTTANALYSIS_H
-//*****************************************************************************
+//******************************************************************************
 #include "Analysis.h"
 #include "SaTScanData.h"
 #include "SVTTCluster.h"
@@ -11,6 +11,8 @@
 class CSpatialVarTempTrendAnalysis : public CAnalysis {
   private:
     IntermediateClustersContainer<CSVTTCluster>  gTopClusters;
+    std::auto_ptr<CSVTTCluster>                  gClusterComparator;   /** cluster object utilized to find top cluster */
+    std::auto_ptr<SVTTClusterData>               gClusterData;
 
   protected:
     virtual void                AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway);
@@ -24,5 +26,6 @@ class CSpatialVarTempTrendAnalysis : public CAnalysis {
     virtual double              MonteCarlo(const DataSetInterface & Interface);
     virtual double              MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 };
-
+//******************************************************************************
 #endif
+

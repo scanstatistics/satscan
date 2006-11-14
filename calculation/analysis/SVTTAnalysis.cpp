@@ -1,12 +1,13 @@
-//***************************************************************************
+//******************************************************************************
 #include "SaTScan.h"
 #pragma hdrstop
-//***************************************************************************
+//******************************************************************************
 #include "SVTTAnalysis.h"
 
 /** constructor */
 CSpatialVarTempTrendAnalysis::CSpatialVarTempTrendAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                             :CAnalysis(Parameters, DataHub, PrintDirection), gTopClusters(DataHub) {}
+                             :CAnalysis(Parameters, DataHub, PrintDirection), gTopClusters(DataHub) {
+}
 
 /** destructor */
 CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {}
@@ -16,6 +17,7 @@ CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {}
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           simulation process. This function is only a shell.                     */
 void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
+  gClusterData.reset(new SVTTClusterData(gDataHub.GetNumTimeIntervals()));
 }
 
 /** Allocates objects used during calculation of most likely clusters, instead
@@ -24,9 +26,8 @@ void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbstractDataS
           process of finding most likely clusters. */
 void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) {
   try {
-    CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
-    thisCluster.InitializeSVTT(0, DataGateway);
-    gTopClusters.SetTopClusters(thisCluster);
+    gClusterComparator.reset(new CSVTTCluster(gpClusterDataFactory, DataGateway));
+    gTopClusters.SetTopClusters(*gClusterComparator);
   }
   catch (ZdException &x) {
     x.AddCallpath("AllocateTopClustersObjects()","CSpatialVarTempTrendAnalysis");
@@ -36,80 +37,74 @@ void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractData
 
 /** calculates most likely cluster about central location 'tCenter' */
 const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
-  int                   k;
-  tract_t               i, iNumNeighbors;
-
   try {
-    gTopClusters.Reset(tCenter);
+    gClusterComparator->InitializeSVTT(0, DataGateway);
+    gTopClusters.SetTopClusters(*gClusterComparator);
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-       CSVTTCluster thisCluster(DataGateway, gDataHub.GetNumTimeIntervals());
-       thisCluster.SetCenter(tCenter);
-//$       thisCluster.SetRate(gParameters.GetExecuteScanRateType());
-       thisCluster.SetEllipseOffset(k, gDataHub);
-      // CSVTTCluster & TopShapeCluster = (CSVTTCluster&)(gpTopShapeClusters->GetTopCluster(k));
-       iNumNeighbors = gDataHub.GetNeighborCountArray()[k][tCenter];
-       for (i=1; i <= iNumNeighbors; ++i) {
-          thisCluster.AddNeighbor(gDataHub.GetNeighbor(k, tCenter, i), DataGateway);
-          //TODO: -- Calculate loglikelihood ratio for all datasets.
-          thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(DataGateway.GetDataSetInterface(0).GetTimeTrend()));
-          if (thisCluster.m_nRatio > gTopClusters.GetTopCluster(k).m_nRatio)
-           gTopClusters.GetTopCluster(k) = thisCluster;
-       }
+    for (int k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+       CentroidNeighbors CentroidDef(k, gDataHub);
+       CentroidDef.Set(tCenter);
+       gClusterComparator->InitializeSVTT(tCenter, DataGateway);
+       gClusterComparator->SetEllipseOffset(k, gDataHub);
+       gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef,
+                                                                      gTopClusters.GetTopCluster(k),
+                                                                      *gpLikelihoodCalculator);
     }
-
-    // the ratio needs to be calculated for each circle/cylinder, instead of here !!!!
-    CSVTTCluster& Cluster = gTopClusters.GetTopCluster();
-    Cluster.m_nRatio -= gpLikelihoodCalculator->GetLogLikelihoodForTotal();
-    Cluster.SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+    CSVTTCluster& TopCluster = gTopClusters.GetTopCluster();
+    if (gTopClusters.GetTopCluster().ClusterDefined())
+      TopCluster.SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+    return TopCluster;
   }
   catch (ZdException &x) {
     x.AddCallpath("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");
     throw;
   }
-  return gTopClusters.GetTopCluster();
 }
 
 /** calculates loglikelihood ratio for simulated data pointed to by DataSetInterface
     in a retrospective manner */
-double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataSetInterface & Interface) {
-  int           k;
-  tract_t       i, j, iNumNeighbors;
-  double        dMaximumLogLikelihoodRatio;
+double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataSetInterface& Interface) {
+  ZdGenerateException("MonteCarlo(const DataSetInterface&) not implemented.","CSpatialVarTempTrendAnalysis");
+  return 0;
+}
+
+/** Returns calculates log likelihood ratio about centroid. Currently this function calls CalculateTopCluster()
+    but will likely be updated in the future when this analysis type is made public. */
+double CSpatialVarTempTrendAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
+  double                        dMaximumLogLikelihoodRatio;
+  tract_t                       t, tNumNeighbors, * pIntegerArray;
+  unsigned short              * pUnsignedShortArray;
+  double                        dMaximizingValue;
+  std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, 0);
+  std::vector<double>::iterator itr, itr_end;
 
   try {
-    gTopClusters.SetTopClusters(CSVTTCluster(Interface, gDataHub.GetNumTimeIntervals()));
-  
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-    for (k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
-       CSVTTCluster thisCluster(Interface, gDataHub.GetNumTimeIntervals());
-//$       thisCluster.SetRate(gParameters.GetExecuteScanRateType());
-       thisCluster.SetEllipseOffset(k, gDataHub);
-       for (i=0; i < gDataHub.m_nGridTracts; ++i) {
-          thisCluster.InitializeSVTT(i, Interface);
-          iNumNeighbors = gDataHub.GetNeighborCountArray()[k][i];	
-          for (j=1; j <= iNumNeighbors; j++) {
-             thisCluster.AddNeighbor(gDataHub.GetNeighbor(k, i, j), Interface, 0);
-             thisCluster.m_nRatio = gpLikelihoodCalculator->CalcSVTTLogLikelihood(0, &thisCluster, *(Interface.GetTimeTrend()));
-             if (thisCluster.m_nRatio > gTopClusters.GetTopCluster(k).m_nRatio)
-               gTopClusters.GetTopCluster(k) = thisCluster;
-          }
+    for (int k=0; k <= gParameters.GetNumTotalEllipses(); k++) {
+       double& dShapeMaxValue = vMaximizingValues[k];
+       CentroidNeighbors CentroidDef(k, gDataHub);
+       CentroidDef.Set(tCenter);
+       tNumNeighbors = CentroidDef.GetNumNeighbors();
+       pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+       pIntegerArray = CentroidDef.GetRawIntegerArray();
+       gClusterData->InitializeSVTTData(DataGateway);
+       for (tract_t j=0; j < tNumNeighbors; j++) {
+          gClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[j] : pIntegerArray[j]), DataGateway);
+          dShapeMaxValue = std::max(dShapeMaxValue , gClusterData->CalculateSVTTLoglikelihoodRatio(*gpLikelihoodCalculator, DataGateway));
        }
     }
-    //get copy of best cluster over all iterations
-    dMaximumLogLikelihoodRatio = gTopClusters.GetTopCluster().m_nRatio;
-    dMaximumLogLikelihoodRatio -= gpLikelihoodCalculator->GetLogLikelihoodForTotal();
+    //determine which ratio/test statistic is the greatest, be sure to apply compactness correction
+    double dPenalty = gDataHub.GetParameters().GetNonCompactnessPenaltyPower();
+    dMaximumLogLikelihoodRatio = vMaximizingValues.front() * CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(0), dPenalty);
+    for (t=1,itr=vMaximizingValues.begin()+1,itr_end=vMaximizingValues.end(); itr != itr_end; ++itr, ++t) {
+       *itr *= CalculateNonCompactnessPenalty(gDataHub.GetEllipseShape(t), dPenalty);
+       dMaximumLogLikelihoodRatio = std::max(*itr, dMaximumLogLikelihoodRatio);
+    }
   }
   catch (ZdException &x) {
     x.AddCallpath("MonteCarlo()","CSpatialVarTempTrendAnalysis");
     throw;
   }
   return dMaximumLogLikelihoodRatio;
-}
-
-/** Returns calculates log likelihood ratio about centroid. Currently this function calls CalculateTopCluster()
-    but will likely be updated in the future when this analysis type is made public. */
-double CSpatialVarTempTrendAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
-  return CalculateTopCluster(tCenter, DataGateway).m_nRatio;
 }
 
