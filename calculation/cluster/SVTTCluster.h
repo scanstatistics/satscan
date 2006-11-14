@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "cluster.h"
 #include "TimeTrend.h"
+#include "ptr_vector.h"
 
 /** Abstract interface for spatial variation of temporal trend cluster data. */
 class AbtractSVTTClusterData : public AbstractClusterData {
@@ -73,7 +74,7 @@ class SVTTClusterData : public AbtractSVTTClusterData {
     NOTE: Multi-set svtt cluster data is a work in progress. Large */
 class MultiSetSVTTClusterData : public AbtractSVTTClusterData {
   protected:
-    ZdPointerVector<SVTTClusterData>           gvSetClusterData;
+    ptr_vector<SVTTClusterData>           gvSetClusterData;
 
   public:
     MultiSetSVTTClusterData(const AbstractDataSetGateway& DataGateway);

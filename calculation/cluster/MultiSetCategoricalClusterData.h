@@ -3,6 +3,7 @@
 #define __MultiSetCategoricalClusterData_H
 //******************************************************************************
 #include "CategoricalClusterData.h"
+#include "ptr_vector.h"
 
 class CategoricalClusterDataFactory; /* forward class declaration. */
 class AbstractLikelihoodCalculator;
@@ -11,7 +12,7 @@ class AbstractLikelihoodCalculator;
     sets for case data which is partitioned by category. */
 class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public AbstractCategoricalClusterData {
   protected:
-    ZdPointerVector<CategoricalSpatialData>             gvSetClusterData;
+    ptr_vector<CategoricalSpatialData>             gvSetClusterData;
 
   public:
     MultiSetCategoricalSpatialData(const CategoricalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
@@ -43,7 +44,7 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
     AbstractMultiSetCategoricalTemporalData() {}
     virtual ~AbstractMultiSetCategoricalTemporalData() {}
 
-    ZdPointerVector<CategoricalTemporalData>   gvSetClusterData; /* Note 'Public' member for speed reasons.*/
+    ptr_vector<CategoricalTemporalData>   gvSetClusterData; /* Note 'Public' member for speed reasons.*/
 
     virtual void        CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;

@@ -25,7 +25,7 @@ void MultiSetSpatialData::AddMeasureList(CMeasureList*, tract_t, const DataSetIn
     'tNeighborIndex' is a valid index. */
 void MultiSetSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway & DataGateway, size_t) {
   unsigned int                           i=0;
-  ZdPointerVector<SpatialData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<SpatialData>::iterator itr=gvSetClusterData.begin();
   for (; itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -40,7 +40,7 @@ void MultiSetSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     each data set and adds together. */
 double MultiSetSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   unsigned int                           i=0;
-  ZdPointerVector<SpatialData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<SpatialData>::iterator itr=gvSetClusterData.begin();
   AbstractLoglikelihoodRatioUnifier    & Unifier = Calculator.GetUnifier();
 
   Unifier.Reset();
@@ -131,7 +131,7 @@ measure_t MultiSetSpatialData::GetMeasure(unsigned int tSetIndex) const {
 
 /** Initializes cluster data in each data set. */
 void MultiSetSpatialData::InitializeData() {
-  ZdPointerVector<SpatialData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<SpatialData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
@@ -236,19 +236,19 @@ MultiSetTemporalData * MultiSetTemporalData::Clone() const {
 
 /** Initializes cluster data in each data set. */
 void MultiSetTemporalData::InitializeData() {
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers. */
 void MultiSetTemporalData::Reassociate(const DataSetInterface& Interface) {
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(Interface);
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
 void MultiSetTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (; itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(DataGateway);
 }
 
@@ -267,7 +267,7 @@ MultiSetProspectiveSpatialData::MultiSetProspectiveSpatialData(const ClusterData
 void MultiSetProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int                            i=0;
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -278,7 +278,7 @@ double MultiSetProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikel
   unsigned int                            t, iWindowEnd, iAllocationSize;
   double                                  dMaxLoglikelihoodRatio=0;
   AbstractLoglikelihoodRatioUnifier     & Unifier = Calculator.GetUnifier();
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
 
   Unifier.Reset();
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
@@ -310,7 +310,7 @@ MultiSetProspectiveSpatialData * MultiSetProspectiveSpatialData::Clone() const {
     and an assertion will fail if called. */
 void MultiSetProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
   unsigned int                            i=0;
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
 }
@@ -318,7 +318,7 @@ void MultiSetProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
 /** Initializes cluster data in each data set. */
 void MultiSetProspectiveSpatialData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
@@ -341,7 +341,7 @@ MultiSetSpaceTimeData::MultiSetSpaceTimeData(const ClusterDataFactory& DataFacto
 void MultiSetSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int                            i=0;
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -356,7 +356,7 @@ MultiSetSpaceTimeData * MultiSetSpaceTimeData::Clone() const {
     and an assertion will fail if called. */
 void MultiSetSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
   unsigned int                            i=0;
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr)
      (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
@@ -365,7 +365,7 @@ void MultiSetSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
 /** Initializes cluster data in each data set. */
 void MultiSetSpaceTimeData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
-  ZdPointerVector<TemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<TemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 

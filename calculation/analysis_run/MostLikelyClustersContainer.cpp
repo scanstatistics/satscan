@@ -54,7 +54,7 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
 
 /** Removes all cluster objects from list. */
 void MostLikelyClustersContainer::Empty() {
-  gvTopClusterList.DeleteAllElements();
+  gvTopClusterList.killAll();
 }
 
 /** Returns reference to cluster object at passed index. Throws exception if index
@@ -270,7 +270,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
     orientation.   */
 void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection) {
    unsigned int                         uClustersToKeepEachPass;
-   ZdPointerVector<CCluster>::iterator  itrCurr, itrEnd;
+   ptr_vector<CCluster>::iterator       itrCurr, itrEnd;
    CriteriaSecondaryClustersType        eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
 
    try {
@@ -308,7 +308,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
             *itrCurr = 0;
           }
        }
-       gvTopClusterList.DeleteAllElements();
+       gvTopClusterList.killAll();
        gvTopClusterList.resize(vRetainedClusters.size());
        std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
      }
@@ -459,8 +459,8 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
 /** Updates rank of top clusters by comparing simulated loglikelihood ratio(LLR)
     with each remaining clusters LLR.  */
 void MostLikelyClustersContainer::UpdateTopClustersRank(double r) {
-  ZdPointerVector<CCluster>::reverse_iterator rev(gvTopClusterList.end());
-  ZdPointerVector<CCluster>::reverse_iterator rev_end(gvTopClusterList.begin());
+  ptr_vector<CCluster>::reverse_iterator rev(gvTopClusterList.end());
+  ptr_vector<CCluster>::reverse_iterator rev_end(gvTopClusterList.begin());
 
   for (; rev != rev_end; rev++) {
      if (std::fabs((*rev)->GetRatio() - r) > DBL_CMP_TOLERANCE && (*rev)->GetRatio() > r)
@@ -468,4 +468,6 @@ void MostLikelyClustersContainer::UpdateTopClustersRank(double r) {
      (*rev)->IncrementRank();
    }
 }
+
+
 

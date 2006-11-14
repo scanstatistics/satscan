@@ -48,7 +48,7 @@ stsCentricAlgoFunctor::result_type stsCentricAlgoFunctor::operator() (param_type
  ,AbstractCentricAnalysis & rCentricAnalysis
  ,CentroidNeighborCalculator & rCentroidCalculator
  ,AbstractDataSetGateway const & rDataSetGateway
- ,ZdPointerVector<AbstractDataSetGateway> const & rSimDataGateways
+ ,ptr_vector<AbstractDataSetGateway> const & rSimDataGateways
 )
  : grContractor(rContractor)
  , grJobSource(rJobSource)

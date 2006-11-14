@@ -19,7 +19,7 @@ MultiSetNormalSpatialData::MultiSetNormalSpatialData(const NormalClusterDataFact
     'tNeighborIndex' is a valid index. */
 void MultiSetNormalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   unsigned int                                        i=0;
-  ZdPointerVector<NormalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<NormalSpatialData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -33,7 +33,7 @@ void MultiSetNormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
 /** Calculates loglikelihood ratio given current accumulated cluster data in
     each data set and adds together. */
 double MultiSetNormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  ZdPointerVector<NormalSpatialData>::iterator  itr=gvSetClusterData.begin();
+  ptr_vector<NormalSpatialData>::iterator  itr=gvSetClusterData.begin();
   AbstractLoglikelihoodRatioUnifier           & Unifier = Calculator.GetUnifier();
 
   Unifier.Reset();
@@ -127,7 +127,7 @@ measure_t MultiSetNormalSpatialData::GetMeasureSq(unsigned int tSetIndex) const 
 
 /** Initializes cluster data in each data set. */
 void MultiSetNormalSpatialData::InitializeData() {
-  ZdPointerVector<NormalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<NormalSpatialData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
@@ -237,19 +237,19 @@ MultiSetNormalTemporalData * MultiSetNormalTemporalData::Clone() const {
 
 /** Initializes cluster data in each data set. */
 void MultiSetNormalTemporalData::InitializeData() {
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers. */
 void MultiSetNormalTemporalData::Reassociate(const DataSetInterface& Interface) {
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(Interface);
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
 void MultiSetNormalTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (; itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(DataGateway);
 }
 
@@ -269,7 +269,7 @@ MultiSetNormalProspectiveSpatialData::MultiSetNormalProspectiveSpatialData(const
 void MultiSetNormalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int                            i=0;
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -280,7 +280,7 @@ double MultiSetNormalProspectiveSpatialData::CalculateLoglikelihoodRatio(Abstrac
   unsigned int                            t, iWindowEnd, iAllocationSize;
   double                                  dMaxLoglikelihoodRatio=0;
   AbstractLoglikelihoodRatioUnifier     & Unifier = Calculator.GetUnifier();
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
 
   Unifier.Reset();
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
@@ -313,7 +313,7 @@ MultiSetNormalProspectiveSpatialData * MultiSetNormalProspectiveSpatialData::Clo
     and an assertion will fail if called. */
 void MultiSetNormalProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
   unsigned int                            i=0;
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
 }
@@ -327,7 +327,7 @@ double MultiSetNormalProspectiveSpatialData::GetMaximizingValue(AbstractLikeliho
 /** Initializes cluster data in each data set. */
 void MultiSetNormalProspectiveSpatialData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
@@ -345,7 +345,7 @@ MultiSetNormalSpaceTimeData::MultiSetNormalSpaceTimeData(const NormalClusterData
 void MultiSetNormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int                            i=0;
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -360,7 +360,7 @@ MultiSetNormalSpaceTimeData * MultiSetNormalSpaceTimeData::Clone() const {
     and an assertion will fail if called. */
 void MultiSetNormalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
   unsigned int                            i=0;
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr)
      (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
@@ -369,7 +369,7 @@ void MultiSetNormalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
 /** Initializes cluster data in each data set. */
 void MultiSetNormalSpaceTimeData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
-  ZdPointerVector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
+  ptr_vector<NormalTemporalData>::iterator itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 

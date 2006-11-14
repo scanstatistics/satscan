@@ -8,6 +8,7 @@
 #include "contractor.h"
 #include "stsCentricAlgoJobSource.h"
 #include "AsynchronouslyAccessible.h"
+#include "ptr_vector.h"
 
 //runs jobs for the "centric" algorithm
 class stsCentricAlgoFunctor
@@ -20,14 +21,14 @@ private:
   AbstractCentricAnalysis & grCentricAnalysis;
   CentroidNeighborCalculator & grCentroidCalculator;
   AbstractDataSetGateway const & grDataSetGateway;
-  ZdPointerVector<AbstractDataSetGateway> const & grSimDataGateways;
+  ptr_vector<AbstractDataSetGateway> const & grSimDataGateways;
 
 public:
   stsCentricAlgoFunctor(
     AbstractCentricAnalysis & rCentricAnalysis
    ,CentroidNeighborCalculator & rCentroidCalculator
    ,AbstractDataSetGateway const & rDataSetGateway
-   ,ZdPointerVector<AbstractDataSetGateway> const & rSimDataGateways
+   ,ptr_vector<AbstractDataSetGateway> const & rSimDataGateways
   )
    : grCentricAnalysis(rCentricAnalysis)
    , grCentroidCalculator(rCentroidCalculator)
@@ -64,7 +65,7 @@ class stsPurelyTemporal_Plus_CentricAlgoThreadFunctor
   AsynchronouslyAccessible<PrintQueue> & grPrintDirection;
   AbstractCentricAnalysis & grCentricAnalysis;
   AbstractDataSetGateway const & grDataSetGateway;
-  ZdPointerVector<AbstractDataSetGateway> const & grSimDataGateways;
+  ptr_vector<AbstractDataSetGateway> const & grSimDataGateways;
   subcontractor<contractor_type,stsCentricAlgoFunctor> gRegularSubcontractor;
 
 public:
@@ -76,7 +77,7 @@ public:
    ,AbstractCentricAnalysis & rCentricAnalysis
    ,CentroidNeighborCalculator & rCentroidCalculator
    ,AbstractDataSetGateway const & rDataSetGateway
-   ,ZdPointerVector<AbstractDataSetGateway> const & rSimDataGateways
+   ,ptr_vector<AbstractDataSetGateway> const & rSimDataGateways
   );
 
   void operator() ();

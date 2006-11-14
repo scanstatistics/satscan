@@ -3,13 +3,14 @@
 #define __MultiSetClusterData_H
 //******************************************************************************
 #include "ClusterData.h"
+#include "ptr_vector.h"
 
 class ClusterDataFactory; /** forward class declaration */
 
 /** Class representing accumulated data of spatial clustering in multiple data sets. */
 class MultiSetSpatialData : public AbstractSpatialClusterData {
   protected:
-    ZdPointerVector<SpatialData>           gvSetClusterData;
+    ptr_vector<SpatialData>           gvSetClusterData;
 
   public:
     MultiSetSpatialData(const ClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
@@ -36,7 +37,7 @@ class AbstractMultiSetTemporalData : public AbstractTemporalClusterData {
     AbstractMultiSetTemporalData() : AbstractTemporalClusterData() {}
     virtual ~AbstractMultiSetTemporalData() {}
 
-    ZdPointerVector<TemporalData> gvSetClusterData;
+    ptr_vector<TemporalData> gvSetClusterData;
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);

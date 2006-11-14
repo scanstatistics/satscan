@@ -3,6 +3,7 @@
 #define __MultiSetNormalClusterData_H
 //******************************************************************************
 #include "NormalClusterData.h"
+#include "ptr_vector.h"
 
 class NormalClusterDataFactory; /* forward class declaration. */
 class AbstractLikelihoodCalculator;
@@ -11,7 +12,7 @@ class AbstractLikelihoodCalculator;
     sets for case data which is partitioned by category. */
 class MultiSetNormalSpatialData : public AbstractSpatialClusterData, public AbstractNormalClusterData {
   protected:
-    ZdPointerVector<NormalSpatialData>             gvSetClusterData;
+    ptr_vector<NormalSpatialData>             gvSetClusterData;
 
   public:
     MultiSetNormalSpatialData(const NormalClusterDataFactory& DataFactory, const AbstractDataSetGateway& DataGateway);
@@ -39,7 +40,7 @@ class AbstractMultiSetNormalTemporalData : public AbstractTemporalClusterData, p
     AbstractMultiSetNormalTemporalData() : AbstractTemporalClusterData() {}
     virtual ~AbstractMultiSetNormalTemporalData() {}
 
-    ZdPointerVector<NormalTemporalData> gvSetClusterData;
+    ptr_vector<NormalTemporalData> gvSetClusterData;
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);

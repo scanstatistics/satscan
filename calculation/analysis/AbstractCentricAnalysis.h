@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "AbstractAnalysis.h"
 #include "boost/shared_ptr.hpp"
+#include "ptr_vector.h"
 
 /** forward class declarations */
 class AbstractDataSetGateway;
@@ -16,10 +17,10 @@ class MostLikelyClustersContainer;
     centroid separate than other centroids. */
 class AbstractCentricAnalysis : public AbstractAnalysis {
   public:
-    typedef ZdPointerVector<CMeasureList>               MeasureListContainer_t;
+    typedef ptr_vector<CMeasureList>                    MeasureListContainer_t;
     typedef boost::shared_ptr<std::vector<double> >     CalculatedRatioContainer_t;
-    typedef ZdPointerVector<AbstractDataSetGateway>      DataSetGatewayContainer_t;
-    typedef ZdPointerVector<CCluster>                   ClustersContainer_t;
+    typedef ptr_vector<AbstractDataSetGateway>          DataSetGatewayContainer_t;
+    typedef ptr_vector<CCluster>                        ClustersContainer_t;
 
   protected:
     MeasureListContainer_t      gvMeasureLists;    /** collection of CMeasurelist objects, one for each replication */

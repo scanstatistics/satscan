@@ -20,7 +20,7 @@ MultiSetCategoricalSpatialData::MultiSetCategoricalSpatialData(const Categorical
     'tNeighborIndex' is a valid index. */
 void MultiSetCategoricalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   unsigned int                                        i=0;
-  ZdPointerVector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -35,7 +35,7 @@ void MultiSetCategoricalSpatialData::Assign(const AbstractSpatialClusterData& rh
     each data set and adds together. */
 double MultiSetCategoricalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
   unsigned int                                        i=0;
-  ZdPointerVector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
   AbstractLoglikelihoodRatioUnifier                 & Unifier = Calculator.GetUnifier();
 
  Unifier.Reset();
@@ -141,7 +141,7 @@ void MultiSetCategoricalSpatialData::GetOrdinalCombinedCategories(const OrdinalL
 
 /** Initializes cluster data in each data set. */
 void MultiSetCategoricalSpatialData::InitializeData() {
-  ZdPointerVector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalSpatialData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
@@ -230,7 +230,7 @@ void AbstractMultiSetCategoricalTemporalData::GetOrdinalCombinedCategories(const
 
 /** Initializes cluster data in each data set. */
 void AbstractMultiSetCategoricalTemporalData::InitializeData() {
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->InitializeData();
 }
 
@@ -269,7 +269,7 @@ void MultiSetCategoricalTemporalData::Reassociate(const DataSetInterface& Interf
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
 void MultiSetCategoricalTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++itr) (*itr)->Reassociate(DataGateway);
 }
 //************* class MultiSetCategoricalProspectiveSpatialData ****************
@@ -286,7 +286,7 @@ MultiSetCategoricalProspectiveSpatialData::MultiSetCategoricalProspectiveSpatial
 void MultiSetCategoricalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int                                         i=0;
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -310,7 +310,7 @@ double MultiSetCategoricalProspectiveSpatialData::CalculateLoglikelihoodRatio(Ab
   unsigned int                                         i=0, iWindowEnd, iAllocationSize;
   double                                               dMaxLoglikelihoodRatio=0;
   AbstractLoglikelihoodRatioUnifier                  & Unifier = Calculator.GetUnifier();
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
 
   Unifier.Reset();
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
@@ -345,7 +345,7 @@ double MultiSetCategoricalProspectiveSpatialData::GetMaximizingValue(AbstractLik
     and an assertion will fail if called. */
 void MultiSetCategoricalProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
   unsigned int                                         i=0;
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
 }
@@ -365,7 +365,7 @@ MultiSetCategoricalSpaceTimeData::MultiSetCategoricalSpaceTimeData(const Categor
 void MultiSetCategoricalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t) {
   assert(geEvaluationAssistDataStatus == Allocated);
   unsigned int                                         i=0;
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->AddNeighborData(tNeighborIndex, DataGateway, i);
 }
 
@@ -387,7 +387,7 @@ MultiSetCategoricalSpaceTimeData * MultiSetCategoricalSpaceTimeData::Clone() con
     and an assertion will fail if called. */
 void MultiSetCategoricalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
   unsigned int                                         i=0;
-  ZdPointerVector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
+  ptr_vector<CategoricalTemporalData>::iterator   itr=gvSetClusterData.begin();
   for (;itr != gvSetClusterData.end(); ++i, ++itr) (*itr)->DeallocateEvaluationAssistClassMembers();
   geEvaluationAssistDataStatus = Deallocated;
 }

@@ -98,7 +98,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
 
     //calculate simulated ratios
     if (gParameters.GetNumReplicationsRequested()) {
-      ZdPointerVector<AbstractDataSetGateway>::const_iterator  itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
+      ptr_vector<AbstractDataSetGateway>::const_iterator  itrGateway=vSimDataGateways.begin(), itrGatewayEnd=vSimDataGateways.end();
       std::auto_ptr<AbstractTemporalClusterData>              PTClusterData;
 
       PTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
@@ -179,7 +179,7 @@ void SpaceTimeCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGatew
     if (gParameters.GetNumReplicationsRequested()) {
       DataSetGatewayContainer_t::const_iterator  itr=vSimDataGateways.begin(), itr_end=vSimDataGateways.end();
 
-      gvMeasureLists.DeleteAllElements();
+      gvMeasureLists.killAll();
       //create simulation objects based upon which process used to perform simulations
       if (geReplicationsProcessType == MeasureListEvaluation) {
          //create a measure list object for each requested replication - we do this inorder
@@ -206,7 +206,7 @@ void SpaceTimeCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGatew
   }
   catch (ZdException &x) {
     gClusterComparator.reset(0); gClusterData.reset(0); gAbstractClusterData.reset(0);
-    gvMeasureLists.DeleteAllElements(); gCalculatedRatios.reset();
+    gvMeasureLists.killAll(); gCalculatedRatios.reset();
     x.AddCallpath("Setup()","SpaceTimeCentricAnalysis");
     throw;
   }

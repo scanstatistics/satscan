@@ -25,7 +25,7 @@ class AbstractRandomizer {
     virtual void	         RandomizeData(const RealDataSet& thisRealSet, DataSet& thisSimSet, unsigned int iSimulation) = 0;
 };
 
-typedef ZdPointerVector<AbstractRandomizer>     RandomizerContainer_t;
+typedef ptr_vector<AbstractRandomizer>     RandomizerContainer_t;
 
 /** Reads simulation data from file.
     NOTE: This unit has note been thoughly tested, especially with multiple datasets. */

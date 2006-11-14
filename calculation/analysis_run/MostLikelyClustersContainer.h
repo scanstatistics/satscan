@@ -3,6 +3,7 @@
 #define __MostLikelyClustersContainer_H
 //***************************************************************************
 #include "cluster.h"
+#include "ptr_vector.h"
 
 class stsClusterCentroidGeometry
 {
@@ -82,7 +83,7 @@ class MostLikelyClustersContainer {
                                 }
     };
 
-    ZdPointerVector<CCluster>   gvTopClusterList;
+    ptr_vector<CCluster>        gvTopClusterList;
     static unsigned long        MAX_RANKED_CLUSTERS;
 
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);

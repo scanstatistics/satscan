@@ -10,7 +10,7 @@
 class SpaceTimeIncludePureCentricAnalysis : public SpaceTimeIncludePurelySpatialCentricAnalysis {
   public:
     SpaceTimeIncludePureCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,
-                             const AbstractDataSetGateway& RealDataGateway, const ZdPointerVector<AbstractDataSetGateway>& vSimDataGateways);
+                             const AbstractDataSetGateway& RealDataGateway, const ptr_vector<AbstractDataSetGateway>& vSimDataGateways);
     virtual ~SpaceTimeIncludePureCentricAnalysis();
 };
 //******************************************************************************

@@ -8,6 +8,7 @@
 #include "Analysis.h"
 #include "MostLikelyClustersContainer.h"
 #include "AbstractCentricAnalysis.h"
+#include "ptr_vector.h"
 
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
@@ -70,7 +71,7 @@ class AnalysisRunner {
     bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios;}
     CAnalysis                         * GetNewAnalysisObject() const;
     AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
-                                                                    const ZdPointerVector<AbstractDataSetGateway>& vSimDataGateways) const;
+                                                                    const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;
     unsigned short                      GetNumSignificantAt005() const {return guwSignificantAt005;}
     unsigned int                        GetNumSimulationsExecuted() const {return giNumSimsExecuted;}
     double                              GetSimRatio01() const;

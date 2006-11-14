@@ -488,7 +488,7 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
 
 /** returns new AbstractCentricAnalysis object */
 AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
-                                                                      const ZdPointerVector<AbstractDataSetGateway>& vSimDataGateways) const {
+                                                                      const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const {
   try {
     switch (gParameters.GetAnalysisType()) {
       case PURELYSPATIAL :
@@ -582,7 +582,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //allocate a simulation data set for each requested replication
       std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
       //allocate a data gateway for each requested replication
-      ZdPointerVector<AbstractDataSetGateway>      vSimDataGateways(gParameters.GetNumReplicationsRequested());
+      ptr_vector<AbstractDataSetGateway>          vSimDataGateways(gParameters.GetNumReplicationsRequested());
       //allocate an array to contain simulation llr values
       AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
       //data gateway object for real data
@@ -680,7 +680,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       vRandomizedDataSets.clear();
       seqCentricAnalyses.clear();
       seqCentroidCalculators.clear();
-      vSimDataGateways.DeleteAllElements();
+      vSimDataGateways.killAll();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
@@ -748,7 +748,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       //allocate a simulation data set for each requested replication
       std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
       //allocate a data gateway for each requested replication
-      ZdPointerVector<AbstractDataSetGateway>      vSimDataGateways(gParameters.GetNumReplicationsRequested());
+      ptr_vector<AbstractDataSetGateway>          vSimDataGateways(gParameters.GetNumReplicationsRequested());
       //allocate an array to contain simulation llr values
       AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
       //data gateway object for real data
@@ -827,7 +827,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       // - we might need the memory for recalculating neighbors in geographical overlap code
       vRandomizedDataSets.clear();
       CentricAnalysis.reset(0);
-      vSimDataGateways.DeleteAllElements();
+      vSimDataGateways.killAll();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
