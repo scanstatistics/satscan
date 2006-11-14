@@ -18,7 +18,6 @@ template <class T>
 class IntermediateClustersContainer {
   private:
     const CSaTScanData                & gData;
- //   ZdPointerVector<CCluster>           gvTopShapeClusters;
     std::vector<T>                      gvClusters;
 
   public:
