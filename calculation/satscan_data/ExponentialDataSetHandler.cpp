@@ -326,7 +326,7 @@ void ExponentialDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataCo
     for the Exponential model: null hypothesis and  purely temporal optimized null hypothesis. */
 void ExponentialDataSetHandler::SetRandomizers() {
   try {
-    gvDataSetRandomizers.DeleteAllElements();
+    gvDataSetRandomizers.killAll();
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :

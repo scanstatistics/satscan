@@ -317,7 +317,7 @@ void OrdinalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContai
     possible randomizers: OrdinalDenominatorDataRandomizer and FileSourceRandomizer */
 void OrdinalDataSetHandler::SetRandomizers() {
   try {
-    gvDataSetRandomizers.DeleteAllElements();
+    gvDataSetRandomizers.killAll();
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :

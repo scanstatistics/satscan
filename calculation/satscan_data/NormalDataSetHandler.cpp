@@ -328,7 +328,7 @@ void NormalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContain
     for the Rank model: null hypothesis and purely temporal optimized null hypothesis. */
 void NormalDataSetHandler::SetRandomizers() {
   try {
-    gvDataSetRandomizers.DeleteAllElements();
+    gvDataSetRandomizers.killAll();
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :

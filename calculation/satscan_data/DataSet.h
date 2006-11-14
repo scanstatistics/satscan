@@ -7,13 +7,14 @@
 #include "MultipleDimensionArrayHandler.h"
 #include "PopulationData.h"
 #include "TimeTrend.h"
+#include "ptr_vector.h"
 
 //typedefs for multiple dimension arrays
 typedef TwoDimensionArrayHandler<count_t>      TwoDimCountArray_t;
 typedef ThreeDimensionArrayHandler<count_t>    ThreeDimCountArray_t;
 typedef TwoDimensionArrayHandler<measure_t>    TwoDimMeasureArray_t;
 typedef ThreeDimensionArrayHandler<measure_t>  ThreeDimMeasureArray_t;
-typedef ZdPointerVector<TwoDimCountArray_t>    CasesByCategory_t;
+typedef ptr_vector<TwoDimCountArray_t>         CasesByCategory_t;
 
 class CSaTScanData; /** forward class declaration */
 class DataSetHandler; /** forward class declaration */

@@ -68,7 +68,7 @@ TwoDimCountArray_t & DataSet::allocateCaseData() {
     array to zero. */
 CasesByCategory_t & DataSet::allocateCaseData_Cat(unsigned int iNumCategories) {
   try {
-    gvCaseData_Cat.DeleteAllElements();
+    gvCaseData_Cat.killAll();
     for (unsigned int i=0; i < iNumCategories; ++i)
        gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
   }

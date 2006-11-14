@@ -73,7 +73,7 @@ class CSaTScanData {
     int                                         m_nFlexibleWindowEndRangeStartIndex;
     int                                         m_nFlexibleWindowEndRangeEndIndex;
     std::vector<tract_t>                        gvNullifiedLocations;
-    mutable ZdPointerVector<CentroidNeighbors>  gvCentroidNeighborStore;
+    mutable ptr_vector<CentroidNeighbors>       gvCentroidNeighborStore;
 
     bool                                        AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
     measure_t                                   CalcMeasureForTimeInterval(const PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) const;

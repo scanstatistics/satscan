@@ -184,7 +184,7 @@ bool BernoulliDataSetHandler::ReadData() {
     file source. */
 void BernoulliDataSetHandler::SetRandomizers() {
   try {
-    gvDataSetRandomizers.DeleteAllElements();
+    gvDataSetRandomizers.killAll();
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :

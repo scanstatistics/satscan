@@ -7,6 +7,7 @@
 #include "Parameters.h"
 #include "MultipleDimensionArrayHandler.h"
 #include "MetaTractManager.h"
+#include "ptr_vector.h"
 
 /**********************************************************************
  file: Tracts.h
@@ -90,8 +91,8 @@ class TractHandler {
          }
     };
 
-    typedef ZdPointerVector<Coordinates> CoordinatesContainer_t;
-    typedef ZdPointerVector<Location>    LocationsContainer_t;
+    typedef ptr_vector<Coordinates>      CoordinatesContainer_t;
+    typedef ptr_vector<Location>         LocationsContainer_t;
     enum addition_status_t               {Accepting=0, Closed};
 
   private:

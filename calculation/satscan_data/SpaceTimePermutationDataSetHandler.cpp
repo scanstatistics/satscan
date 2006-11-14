@@ -216,7 +216,7 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
    opted to read randomization data from file. */
 void SpaceTimePermutationDataSetHandler::SetRandomizers() {
   try {
-    gvDataSetRandomizers.DeleteAllElements();
+    gvDataSetRandomizers.killAll();
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :

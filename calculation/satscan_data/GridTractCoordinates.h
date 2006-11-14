@@ -18,7 +18,7 @@ class GInfo {
 class CentroidHandler : public GInfo {
    public:
      typedef TractHandler::Coordinates Point_t;
-     typedef ZdPointerVector<Point_t>  PointsContainer_t;
+     typedef ptr_vector<Point_t>       PointsContainer_t;
      enum addition_status_t            {Accepting=0, Closed};
 
    private:

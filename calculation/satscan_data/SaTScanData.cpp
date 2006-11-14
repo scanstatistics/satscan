@@ -134,7 +134,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
       //Re-calculate neighboring locations about each centroid.
       CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
     }
-    gvCentroidNeighborStore.DeleteAllElements();
+    gvCentroidNeighborStore.killAll();
   }
   catch (ZdException &x) {
     x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");

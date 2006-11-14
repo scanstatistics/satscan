@@ -114,7 +114,7 @@ void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
     which already exist. Returns tract identifers relative index into internal structure. */
 void TractHandler::addLocation(const char *sIdentifier) {
   assert(gAdditionStatus == Accepting);
-  ZdPointerVector<Location>::iterator itr;
+  ptr_vector<Location>::iterator itr;
 
   try {
     if (gbAggregatingTracts) return;//when aggregating locations, insertion process always succeeds
@@ -148,13 +148,13 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
     std::auto_ptr<Coordinates> pCoordinates(new Coordinates(vCoordinates, gvCoordinates.size()));
-    ZdPointerVector<Coordinates>::iterator itrCoordinates;
+    ptr_vector<Coordinates>::iterator itrCoordinates;
     itrCoordinates = std::lower_bound(gvCoordinates.begin(), gvCoordinates.end(), pCoordinates.get(), CompareCoordinates());
     if (itrCoordinates == gvCoordinates.end() || *(pCoordinates.get()) != *(*itrCoordinates))
       itrCoordinates = gvCoordinates.insert(itrCoordinates, pCoordinates.release());
 
     //insert into location identifier structure - ordered by indentifer name
-    ZdPointerVector<Location>::iterator itrIdentifiers;
+    ptr_vector<Location>::iterator itrIdentifiers;
     std::auto_ptr<Location> identifier(new Location(sIdentifier, *(*itrCoordinates)));
     itrIdentifiers = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
     if (itrIdentifiers != gvLocations.end() && !strcmp((*itrIdentifiers)->getIndentifier(), sIdentifier))
@@ -207,7 +207,7 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
       return itrm->second;
 
     //search for tract identifier in vector
-    ZdPointerVector<Location>::const_iterator   itr;
+    ptr_vector<Location>::const_iterator   itr;
     std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
     itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
     if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier))
@@ -226,7 +226,7 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
     file that had identical coordinates and where combined into one location
     for internal usage. */
 void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
-  ZdPointerVector<Location>::const_iterator   itr;
+  ptr_vector<Location>::const_iterator        itr;
   AsciiPrintFormat                            PrintFormat;
   bool                                        bPrinted=false;
 

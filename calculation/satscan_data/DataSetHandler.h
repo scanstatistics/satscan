@@ -9,8 +9,8 @@
 class CSaTScanData; /** forward class definition */
 class DataSource;   /** forward class definition */
 
-typedef ZdPointerVector<DataSet>     SimulationDataContainer_t;
-typedef ZdPointerVector<RealDataSet> RealDataContainer_t;
+typedef ptr_vector<DataSet>     SimulationDataContainer_t;
+typedef ptr_vector<RealDataSet> RealDataContainer_t;
 
 /** Manages all data sets. */
 class DataSetHandler {

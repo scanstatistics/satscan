@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SaTScan.h"
 #include "MultipleDimensionArrayHandler.h"
+#include "ptr_vector.h"
 
 class TractHandler; // forward declaration
 
@@ -74,8 +75,8 @@ class compareIdentifiers {
 /** Maintains collection of meta location definitions. */
 class MetaLocationPool {
   public:
-    typedef ZdPointerVector<MetaLocation>       MetaLocationsContainer_t;
-    typedef ZdPointerVector<AtomicMetaLocation> AtomicLocationsContainer_t;
+    typedef ptr_vector<MetaLocation>            MetaLocationsContainer_t;
+    typedef ptr_vector<AtomicMetaLocation>      AtomicLocationsContainer_t;
     enum addition_status_t                      {Accepting=0, Closed};
 
   private:
