@@ -167,6 +167,7 @@ SRC         := Main.cpp \
 	             $(UTILITY)/stsCentricAlgoJobSource.cpp \
 	             $(UTILITY)/DateStringParser.cpp \
 	             $(UTILITY)/stsMCSimJobSource.cpp \
+	             $(UTILITY)/FileName.cpp \
 	             $(CALCULATION)/Parameters.cpp \
 	             $(CALCULATION)/ParametersPrint.cpp \
 	             $(CALCULATION)/ParametersValidate.cpp \
