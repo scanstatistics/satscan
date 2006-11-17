@@ -15,6 +15,7 @@
 #include "NormalLikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "MeasureList.h"
+#include "SSException.h"
 
 /** constructor */
 AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -23,8 +24,8 @@ AbstractAnalysis::AbstractAnalysis(const CParameters& Parameters, const CSaTScan
   try {
     Setup();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","AbstractAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","AbstractAnalysis");
     throw;
   }
 }
@@ -40,7 +41,7 @@ AbstractAnalysis::~AbstractAnalysis() {
 
 /** Returns newly allocated log likelihood ratio calculator based upon requested
     probability model. Caller is responsible for object deletion.
-    - throws ZdException if model type is not known */
+    - throws prg_error if model type is not known */
 AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(const CSaTScanData& DataHub) {
   //create likelihood calculator
   switch (DataHub.GetParameters().GetProbabilityModelType()) {
@@ -53,23 +54,21 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
     case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
     case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
     default                   :
-     ZdGenerateException("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()",
-                         DataHub.GetParameters().GetProbabilityModelType());
+     throw prg_error("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()",
+                      DataHub.GetParameters().GetProbabilityModelType());
   };
-  return 0;
 }
 
 /** Returns newly allocated CMeasureList object - caller is responsible for deletion.
-    - throws ZdException if type is not known */
+    - throws prg_error if type is not known */
 CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
   switch (gParameters.GetExecuteScanRateType()) {
     case HIGH       : return new CMinMeasureList(gDataHub, *gpLikelihoodCalculator);
     case LOW        : return new CMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
     case HIGHANDLOW : return new CMinMaxMeasureList(gDataHub, *gpLikelihoodCalculator);
-    default         : ZdGenerateException("Unknown incidence rate specifier \"%d\".","GetNewMeasureListObject()",
-                                          gParameters.GetExecuteScanRateType());
+    default         : throw prg_error("Unknown incidence rate specifier \"%d\".","GetNewMeasureListObject()",
+                                      gParameters.GetExecuteScanRateType());
   }
-  return 0;
 }
 
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
@@ -124,10 +123,10 @@ void AbstractAnalysis::Setup() {
     //create likelihood calculator
     gpLikelihoodCalculator = GetNewLikelihoodCalculator(gDataHub);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterDataFactory;
     delete gpLikelihoodCalculator;
-    x.AddCallpath("Setup()","AbstractAnalysis");
+    x.addTrace("Setup()","AbstractAnalysis");
     throw;
   }
 }

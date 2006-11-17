@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "SpaceTimeIncludePurelySpatialAnalysis.h"
 #include "ClusterData.h"
+#include "SSException.h"
 
 /** Constructor */
 C_ST_PS_Analysis::C_ST_PS_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -24,8 +25,8 @@ void C_ST_PS_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & 
     else
       gAbstractPSClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(DataGateway));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationObjects()","C_ST_PS_Analysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateSimulationObjects()","C_ST_PS_Analysis");
     throw;
   }
 }
@@ -40,8 +41,8 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway &
     gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, DataGateway));
     gPSTopShapeClusters.SetTopClusters(*gPSClusterComparator);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateTopClustersObjects()","C_ST_PS_Analysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateTopClustersObjects()","C_ST_PS_Analysis");
     throw;
   }
 }
@@ -89,8 +90,8 @@ const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
     else
       return STCluster;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetTopCalculatedCluster()","C_ST_PS_Analysis");
+  catch (prg_exception& x) {
+    x.addTrace("GetTopCalculatedCluster()","C_ST_PS_Analysis");
     throw;
   }
 }

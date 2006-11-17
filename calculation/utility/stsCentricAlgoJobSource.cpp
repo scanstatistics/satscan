@@ -40,37 +40,34 @@ void stsCentricAlgoJobSource::Assert_NoExceptionsCaught() const
   typedef std::pair<job_id_type,std::pair<param_type,result_type> > exception_type;
   typedef std::deque<exception_type> exception_sequence_type;
   static const char * szExceptionIntroFormatString = "An exception was thrown from task #%d.";
-  //static const char * szExceptionTypeTitle = "\nException type: ";
   static const char * szExceptionMessageTitle = "\nException message: ";
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
 
   if (GetExceptionCount() > 0) {
-    //scan collection of exceptions for ZdMemory exception type, this type trumps all others -- take first found
+    //scan collection of exceptions for memory_exception type, this type trumps all others -- take first found
     std::deque<exception_type>::const_iterator itr = gvExceptions.begin();
     for (; itr != gvExceptions.end(); ++itr) {
-       if (itr->second.second.eException_type == job_result::zdmemory) {
+       if (itr->second.second.eException_type == job_result::memory) {
          std::string sTemp;
          printString(sTemp, szExceptionIntroFormatString, itr->first);
-
-         ZdMemoryException MemoryException(sTemp.c_str());
-         MemoryException.AddMessage(sTemp.c_str(), false);
-         MemoryException.AddMessage(szExceptionMessageTitle, false);
-         MemoryException.AddMessage(itr->second.second.Exception.GetErrorMessage(), false);
-         MemoryException.AddMessage(szExceptionCallPathTitle, false);
-         MemoryException.AddMessage(itr->second.second.Exception.GetCallpath(), false);
+         sTemp += szExceptionMessageTitle;
+         sTemp += itr->second.second.Exception.what();
+         sTemp += szExceptionCallPathTitle;
+         sTemp += itr->second.second.Exception.trace();
+         memory_exception MemoryException(sTemp.c_str());
          throw MemoryException;
        }
     }
 
-    ZdCarrierException<exception_sequence_type> lclException(gvExceptions, "", "stsCentricAlgoJobSource");
+    CarrierException<exception_sequence_type> lclException(gvExceptions, "", "stsCentricAlgoJobSource");
     exception_type const & rFirstException(lclException->front());
     std::string sTemp;
     printString(sTemp, szExceptionIntroFormatString, rFirstException.first);
-    lclException.AddMessage(sTemp.c_str(), false);
-    lclException.AddMessage(szExceptionMessageTitle, false);
-    lclException.AddMessage(rFirstException.second.second.Exception.GetErrorMessage(), false);
-    lclException.AddMessage(szExceptionCallPathTitle, false);
-    lclException.AddMessage(rFirstException.second.second.Exception.GetCallpath(), false);
+    lclException.addWhat(sTemp.c_str());
+    lclException.addWhat(szExceptionMessageTitle);
+    lclException.addWhat(rFirstException.second.second.Exception.what());
+    lclException.addWhat(szExceptionCallPathTitle);
+    lclException.addWhat(rFirstException.second.second.Exception.trace());
 
     throw lclException;
   }
@@ -152,9 +149,9 @@ void stsCentricAlgoJobSource::register_result(job_id_type const & job_id, param_
       guiUnregisteredJobLowerBound += ulN;
     }
   }
-  catch (ZdException & e)
+  catch (prg_exception & e)
   {
-    e.AddCallpath("register_result()", "stsCentricAlgoJobSource");
+    e.addTrace("register_result()", "stsCentricAlgoJobSource");
     throw;
   }
 }
@@ -167,9 +164,9 @@ void stsCentricAlgoJobSource::RegisterResult_CancelConditionExists(job_id_type c
 //  try
 //  {
 //  }
-//  catch (ZdException & e)
+//  catch (prg_exception & e)
 //  {
-//    e.AddCallpath("RegisterResult_CancelConditionExists()", "stsCentricAlgoJobSource");
+//    e.addTrace("RegisterResult_CancelConditionExists()", "stsCentricAlgoJobSource");
 //    throw;
 //  }
 }
@@ -182,9 +179,9 @@ void stsCentricAlgoJobSource::RegisterResult_ExceptionConditionExists(job_id_typ
     if (!rResult.bExceptional)
       gvExceptions.push_back(std::make_pair(rJobID, std::make_pair(rParam,rResult)));
   }
-  catch (ZdException & e)
+  catch (prg_exception & e)
   {
-    e.AddCallpath("RegisterResult_ExceptionConditionExists()", "stsCentricAlgoJobSource");
+    e.addTrace("RegisterResult_ExceptionConditionExists()", "stsCentricAlgoJobSource");
     throw;
   }
 }
@@ -221,9 +218,9 @@ void stsCentricAlgoJobSource::RegisterResult_Simple(job_id_type const & rJobID, 
       rPrintQueue.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
     }
   }
-  catch (ZdException & e)
+  catch (prg_exception & e)
   {
-    e.AddCallpath("RegisterResult_Simple()", "stsCentricAlgoJobSource");
+    e.addTrace("RegisterResult_Simple()", "stsCentricAlgoJobSource");
     throw;
   }
 }

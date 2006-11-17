@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "SpaceTimeIncludePurelySpatialCentricAnalysis.h"
+#include "SSException.h"
 
 /** constructor */
 SpaceTimeIncludePurelySpatialCentricAnalysis::SpaceTimeIncludePurelySpatialCentricAnalysis(const CParameters& Parameters,
@@ -14,8 +15,8 @@ SpaceTimeIncludePurelySpatialCentricAnalysis::SpaceTimeIncludePurelySpatialCentr
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","SpaceTimeIncludePurelySpatialCentricAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","SpaceTimeIncludePurelySpatialCentricAnalysis");
     throw;
   }
 }
@@ -176,9 +177,9 @@ void SpaceTimeIncludePurelySpatialCentricAnalysis::Setup(const AbstractDataSetGa
       }
     }
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     gPSClusterComparator.reset(0); gPSPClusterData.reset(0); gPSClusterData.reset(0); gPSAbstractClusterData.reset(0);
-    x.AddCallpath("Setup()","SpaceTimeIncludePurelySpatialCentricAnalysis");
+    x.addTrace("Setup()","SpaceTimeIncludePurelySpatialCentricAnalysis");
     throw;
   }
 }

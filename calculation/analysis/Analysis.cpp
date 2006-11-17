@@ -48,8 +48,8 @@ void CAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostL
          ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, i+1, &gPrintDirection);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("FindTopClusters()","CAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("FindTopClusters()","CAnalysis");
     throw;
   }
 }

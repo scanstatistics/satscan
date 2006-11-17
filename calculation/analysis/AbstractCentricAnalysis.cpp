@@ -8,6 +8,7 @@
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
 #include "Toolkit.h"
+#include "SSException.h"
 
 /** constructor */
 AbstractCentricAnalysis::AbstractCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection)
@@ -46,8 +47,8 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
     gRetainedClusters.push_back(GetTopCalculatedCluster().Clone());
     gRetainedClusters.back()->DeallocateEvaluationAssistClassMembers();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ExecuteAboutCentroid()","AbstractCentricAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("ExecuteAboutCentroid()","AbstractCentricAnalysis");
     throw;
   }
 }

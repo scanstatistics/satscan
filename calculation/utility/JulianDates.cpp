@@ -44,7 +44,7 @@ double CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrec
                    break;
       case DAY   :
       case NONE  :
-      default    : ZdGenerateException("Number of time intervals calculated has balance of %lf days for type '%d'.\n",
+      default    : throw prg_error("Number of time intervals calculated has balance of %lf days for type '%d'.\n",
                                        "CalculateNumberOfTimeIntervals()", dDiffDays, eUnits);
     };
   }
@@ -207,15 +207,15 @@ void PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFil
 
   try {
     if ((pFile = fopen(sFilename, "w")) == NULL)
-      GenerateResolvableException("Unable to open file.", "PrintJulianDates()");
+      throw resolvable_error("Unable to open file.");
 
     for (size_t t=0; t < vJulianDates.size(); ++t)
        fprintf(pFile, "Date %u: %s\n", t + 1, JulianToString(sBuffer, vJulianDates[t]).c_str());
     fclose(pFile); pFile=0;
    }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     fclose(pFile);
-    x.AddCallpath("PrintJulianDates()","JulianDate.cpp");
+    x.addTrace("PrintJulianDates()","JulianDate.cpp");
     throw;
   }
 }
@@ -304,7 +304,7 @@ Julian DecrementableEndDate::Decrement(unsigned long ulLength) {
         DecrementedDate = MDYToJulian(nMon1, std::min(nDay1, DaysThisMonth(nYear1 - ulLength, nMon1)), nYear1 - ulLength);
       break;
     default    :
-      ZdGenerateException("Unknown date precision '%d'.","DecrementDate()", geDecrementUnits);
+      throw prg_error("Unknown date precision '%d'.","DecrementDate()", geDecrementUnits);
   }
 
   gCurrentDate = DecrementedDate;

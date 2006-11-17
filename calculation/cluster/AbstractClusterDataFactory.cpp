@@ -3,16 +3,15 @@
 #pragma hdrstop
 //******************************************************************************
 #include "AbstractClusterDataFactory.h"
+#include "SSException.h"
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 AbtractSVTTClusterData * AbstractClusterDataFactory::GetNewSVTTClusterData(const DataSetInterface&) const {
-  ZdGenerateException("GetNewSVTTClusterData(const DataSetInterface&) not implemented.","AbstractClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewSVTTClusterData(const DataSetInterface&) not implemented.","AbstractClusterDataFactory");
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 AbtractSVTTClusterData * AbstractClusterDataFactory::GetNewSVTTClusterData(const AbstractDataSetGateway&) const {
-  ZdGenerateException("GetNewSVTTClusterData(const AbstractDataSetGateway&) not implemented.","AbstractClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewSVTTClusterData(const AbstractDataSetGateway&) not implemented.","AbstractClusterDataFactory");
 }
 

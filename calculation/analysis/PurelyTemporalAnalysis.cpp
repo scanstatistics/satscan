@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "PurelyTemporalAnalysis.h"
 #include "MostLikelyClustersContainer.h"
+#include "SSException.h"
 
 /** Constructor */
 CPurelyTemporalAnalysis::CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -25,15 +26,14 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbstractDataSetGat
       gMeasureList.reset(GetNewMeasureListObject());
     gClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(DataGateway));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationObjects()","CPurelyTemporalAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateSimulationObjects()","CPurelyTemporalAnalysis");
     throw;
   }
 }
 
 const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t, const AbstractDataSetGateway&) {
-  ZdGenerateException("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
-  return dynamic_cast<const CCluster&>(*this);
+  throw prg_error("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
 }
 
 /** Calculate most likely, purely temporal, cluster and adds clone of top cluster
@@ -56,8 +56,8 @@ void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& Data
     if (TopCluster.ClusterDefined())
       TopClustersContainer.Add(TopCluster);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("FindTopClusters()","CPurelyTemporalAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("FindTopClusters()","CPurelyTemporalAnalysis");
     throw;
   }
 }

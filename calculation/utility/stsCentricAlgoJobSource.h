@@ -17,20 +17,21 @@
 #include "LoglikelihoodRatioWriter.h"
 #include "AsynchronouslyAccessible.h"
 #include "PrintQueue.h"
+#include "SSException.h"
 
 class stsCentricAlgoJobSource
 {
 public://types/enums
   struct job_result {
-    enum                        exception_type {unknown=0, std, zd, zdmemory};
+    enum                        exception_type {unknown=0, std, prg, memory};
 
     bool                        bExceptional;
     exception_type              eException_type;
-    ZdException                 Exception;
+    prg_exception               Exception;
   };
 
   typedef unsigned int param_type;
-//  typedef std::pair<bool, ZdException> result_type;
+//  typedef std::pair<bool, prg_exception> result_type;
   typedef job_result result_type;
   typedef unsigned long job_id_type;
   typedef std::pair<job_id_type, param_type> job_info_type;

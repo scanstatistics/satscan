@@ -6,6 +6,7 @@
 #include "ClusterDataFactory.h"
 #include "NormalClusterDataFactory.h"
 #include "CategoricalClusterDataFactory.h"
+#include "SSException.h"
 
 /** constructor */
 PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Parameters,
@@ -17,8 +18,8 @@ PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Pa
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","PurelySpatialCentricAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","PurelySpatialCentricAnalysis");
     throw;
   }
 }
@@ -136,10 +137,10 @@ void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataG
       }
     }  
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     gClusterComparator.reset(0); gClusterData.reset(0); gAbstractClusterData.reset(0);
     gvMeasureLists.killAll(); gCalculatedRatios.reset();
-    x.AddCallpath("Setup()","PurelySpatialCentricAnalysis");
+    x.addTrace("Setup()","PurelySpatialCentricAnalysis");
     throw;
   }
 }

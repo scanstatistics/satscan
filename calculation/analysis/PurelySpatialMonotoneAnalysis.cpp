@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "PurelySpatialMonotoneAnalysis.h"
+#include "SSException.h"
 
 /** constructor */
 CPSMonotoneAnalysis::CPSMonotoneAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -72,13 +73,13 @@ const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const
       gpMaxCluster->DefineTopCluster(gDataHub, *gpLikelihoodCalculator, ppCases);
     }
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete C_High; C_High=0;
     delete C_Low; C_Low=0;
     //MaxCluster could be C_High or C_Low or neither...
     //so set high and low to zero after deletion...  just in case.
     delete gpMaxCluster; gpMaxCluster=0;
-    x.AddCallpath("CalculateTopCluster()","CPSMonotoneAnalysis");
+    x.addTrace("CalculateTopCluster()","CPSMonotoneAnalysis");
     throw;
   }
   return *gpMaxCluster;
@@ -135,9 +136,9 @@ double CPSMonotoneAnalysis::MonteCarlo(const DataSetInterface& Interface) {
           }
         }
       }
-   catch (ZdException &x)
+   catch (prg_exception& x)
       {
-      x.AddCallpath("MonteCarlo()", "CPSMonotoneAnalysis");
+      x.addTrace("MonteCarlo()", "CPSMonotoneAnalysis");
       throw;
       }
    return (MaxCluster.GetRatio());

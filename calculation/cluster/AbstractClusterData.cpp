@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "AbstractClusterData.h"
 #include "LoglikelihoodRatioUnifier.h"
+#include "SSException.h"
 
 /** class constructor */
 AbstractClusterData::AbstractClusterData() {}
@@ -11,16 +12,14 @@ AbstractClusterData::AbstractClusterData() {}
 /** class destructor */
 AbstractClusterData::~AbstractClusterData() {}
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 double AbstractClusterData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  ZdGenerateException("CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator&) not implemented.","AbstractClusterData");
-  return 0;
+  throw prg_error("CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator&) not implemented.","AbstractClusterData");
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 count_t AbstractClusterData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex) const {
-  ZdGenerateException("GetCategoryCaseCount(unsigned int,unsigned int) not implemented.","AbstractClusterData");
-  return 0;
+  throw prg_error("GetCategoryCaseCount(unsigned int,unsigned int) not implemented.","AbstractClusterData");
 }
 
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
@@ -50,12 +49,12 @@ AbstractTemporalClusterData::~AbstractTemporalClusterData() {}
 /** Reassociates internal data with passed DataSetInterface pointers.
     Not implemented - throws exception */
 void AbstractTemporalClusterData::Reassociate(const DataSetInterface& Interface) {
-  ZdGenerateException("Reassociate(const DataSetInterface&) not implemented.","AbstractTemporalClusterData");
+  throw prg_error("Reassociate(const DataSetInterface&) not implemented.","AbstractTemporalClusterData");
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway.
     Not implemented - throws exception */
 void AbstractTemporalClusterData::Reassociate(const AbstractDataSetGateway& DataGateway) {
-  ZdGenerateException("Reassociate(const AbstractDataSetGateway&) not implemented.","AbstractTemporalClusterData");
+  throw prg_error("Reassociate(const AbstractDataSetGateway&) not implemented.","AbstractTemporalClusterData");
 }
 

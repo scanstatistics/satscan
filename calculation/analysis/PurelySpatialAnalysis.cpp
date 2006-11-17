@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "PurelySpatialAnalysis.h"
 #include "ClusterData.h"
+#include "SSException.h"
 
 /** Constructor */
 CPurelySpatialAnalysis::CPurelySpatialAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -21,8 +22,8 @@ void CPurelySpatialAnalysis::AllocateSimulationObjects(const AbstractDataSetGate
       gMeasureList.reset(GetNewMeasureListObject());
     gAbstractClusterData.reset(gpClusterDataFactory->GetNewSpatialClusterData(DataGateway));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationObjects()","CPurelySpatialAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateSimulationObjects()","CPurelySpatialAnalysis");
     throw;
   }
 }
@@ -34,8 +35,8 @@ void CPurelySpatialAnalysis::AllocateTopClustersObjects(const AbstractDataSetGat
     gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, DataGateway));
     gTopShapeClusters.SetTopClusters(*gClusterComparator);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateTopClustersObjects()","CPurelySpatialAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateTopClustersObjects()","CPurelySpatialAnalysis");
     throw;
   }
 }

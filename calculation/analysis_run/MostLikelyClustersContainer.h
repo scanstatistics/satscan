@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "cluster.h"
 #include "ptr_vector.h"
+#include "SSException.h"
 
 class stsClusterCentroidGeometry
 {
@@ -39,7 +40,7 @@ public:
 
   double DistanceTo(stsClusterCentroidGeometry const & other) const {
     if (GetDimensionCount() != other.GetDimensionCount())
-      ZdException::Generate("Cannot calculate distance between cluster of %d dimensions and cluster of %d dimensions.", "stsClusterCentroid", GetDimensionCount(), other.GetDimensionCount());
+      throw prg_error("Cannot calculate distance between cluster of %d dimensions and cluster of %d dimensions.", "stsClusterCentroid", GetDimensionCount(), other.GetDimensionCount());
     double dSum = 0.0;
     std::vector<double>::const_iterator itrCurr(gvCoordinates.begin());
     std::vector<double>::const_iterator itrOtherCurr(other.gvCoordinates.begin());

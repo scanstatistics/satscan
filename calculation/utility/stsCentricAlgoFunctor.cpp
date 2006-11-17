@@ -12,30 +12,30 @@ stsCentricAlgoFunctor::result_type stsCentricAlgoFunctor::operator() (param_type
   {
     grCentricAnalysis.ExecuteAboutCentroid(param-1, grCentroidCalculator, grDataSetGateway, grSimDataGateways);
   }
-  catch (ZdMemoryException & e)
+  catch (memory_exception & e)
   {
-    temp_result.eException_type = stsCentricAlgoJobSource::result_type::zdmemory;
-    temp_result.Exception = e;
+    temp_result.eException_type = stsCentricAlgoJobSource::result_type::memory;
+    temp_result.Exception = prg_exception(e.what(), "stsCentricAlgoFunctor");
     temp_result.bExceptional = true;
   }
-  catch (ZdException & e)
+  catch (prg_exception & e)
   {
-    temp_result.eException_type = stsCentricAlgoJobSource::result_type::zd;
+    temp_result.eException_type = stsCentricAlgoJobSource::result_type::prg;
     temp_result.Exception = e;
     temp_result.bExceptional = true;
   }
   catch (std::exception & e) {
     temp_result.eException_type = stsCentricAlgoJobSource::result_type::std;
-    temp_result.Exception = ZdException(e, "", "stsCentricAlgoFunctor");
+    temp_result.Exception = prg_exception(e.what(), "stsCentricAlgoFunctor");
     temp_result.bExceptional = true;
   }
   catch (...) {
     temp_result.eException_type = stsCentricAlgoJobSource::result_type::unknown;
-    temp_result.Exception = ZdException("(...) -- unknown error", "stsCentricAlgoFunctor", ZdException::Normal);
+    temp_result.Exception = prg_exception("(...) -- unknown error", "stsCentricAlgoFunctor");
     temp_result.bExceptional = true;
   }
   if (temp_result.bExceptional) {
-    temp_result.Exception.AddCallpath("operator()", "stsCentricAlgoFunctor");
+    temp_result.Exception.addTrace("operator()", "stsCentricAlgoFunctor");
   }
   return temp_result;
 }
@@ -68,30 +68,30 @@ void stsPurelyTemporal_Plus_CentricAlgoThreadFunctor::operator() ()
     grPrintDirection.Locked().Value().Printf("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
     grCentricAnalysis.ExecuteAboutPurelyTemporalCluster(grDataSetGateway, grSimDataGateways);
   }
-  catch (ZdMemoryException & e)
+  catch (memory_exception & e)
   {
-    grPurelyTemporalExecutionResult.eException_type = stsCentricAlgoJobSource::result_type::zdmemory;
-    grPurelyTemporalExecutionResult.Exception = e;
+    grPurelyTemporalExecutionResult.eException_type = stsCentricAlgoJobSource::result_type::memory;
+    grPurelyTemporalExecutionResult.Exception = prg_exception(e.what(), "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
     grPurelyTemporalExecutionResult.bExceptional = true;
   }
-  catch (ZdException & e) {
-    grPurelyTemporalExecutionResult.eException_type = stsCentricAlgoJobSource::result_type::zd;
+  catch (prg_exception & e) {
+    grPurelyTemporalExecutionResult.eException_type = stsCentricAlgoJobSource::result_type::prg;
     grPurelyTemporalExecutionResult.Exception = e;
     grPurelyTemporalExecutionResult.bExceptional = true;
   }
   catch (std::exception & e) {
     grPurelyTemporalExecutionResult.eException_type = stsCentricAlgoJobSource::result_type::std;
-    grPurelyTemporalExecutionResult.Exception = ZdException(e, "", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
+    grPurelyTemporalExecutionResult.Exception = prg_exception(e.what(), "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
     grPurelyTemporalExecutionResult.bExceptional = true;
   }
   catch (...) {
     grPurelyTemporalExecutionResult.eException_type = stsCentricAlgoJobSource::result_type::unknown;
-    grPurelyTemporalExecutionResult.Exception = ZdException("(...) -- unknown error", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor", ZdException::Normal);
+    grPurelyTemporalExecutionResult.Exception = prg_exception("(...) -- unknown error", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
     grPurelyTemporalExecutionResult.bExceptional = true;
   }
   if (grPurelyTemporalExecutionResult.bExceptional) {
     grJobSource.Exhaust();
-    grPurelyTemporalExecutionResult.Exception.AddCallpath("operator()", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
+    grPurelyTemporalExecutionResult.Exception.addTrace("operator()", "stsPurelyTemporal_Plus_CentricAlgoThreadFunctor");
   }
   else {
     gRegularSubcontractor();

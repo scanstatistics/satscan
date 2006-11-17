@@ -5,6 +5,7 @@
 #include "SpaceTimeCentricAnalysis.h"
 #include "PurelyTemporalCluster.h"
 #include "MostLikelyClustersContainer.h"
+#include "SSException.h"
 
 /** constructor */
 SpaceTimeCentricAnalysis::SpaceTimeCentricAnalysis(const CParameters& Parameters,
@@ -16,8 +17,8 @@ SpaceTimeCentricAnalysis::SpaceTimeCentricAnalysis(const CParameters& Parameters
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","SpaceTimeCentricAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","SpaceTimeCentricAnalysis");
     throw;
   }
 }
@@ -123,8 +124,8 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ExecuteAboutPurelyTemporalCluster()","SpaceTimeCentricAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("ExecuteAboutPurelyTemporalCluster()","SpaceTimeCentricAnalysis");
     throw;
   }
 }
@@ -204,10 +205,10 @@ void SpaceTimeCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataGatew
       gTimeIntervals_S.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType, CENTRICALLY));
     }  
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     gClusterComparator.reset(0); gClusterData.reset(0); gAbstractClusterData.reset(0);
     gvMeasureLists.killAll(); gCalculatedRatios.reset();
-    x.AddCallpath("Setup()","SpaceTimeCentricAnalysis");
+    x.addTrace("Setup()","SpaceTimeCentricAnalysis");
     throw;
   }
 }

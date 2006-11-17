@@ -8,6 +8,7 @@
 #include "CategoricalClusterData.h"
 #include "NormalClusterData.h"
 #include "AbstractAnalysis.h"
+#include "SSException.h"
 #include <iostream>
 #include <fstream>
 
@@ -94,8 +95,8 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     DisplayNullOccurrence(fp, DataHub, iNumSimsCompleted, PrintFormat);
     DisplayTimeTrend(fp, PrintFormat);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Display()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("Display()","CCluster");
     throw;
   }
 }
@@ -118,8 +119,8 @@ void CCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const Asc
     PrintFormat.PrintSectionLabel(fp, "Location IDs included", false, false);  
     DisplayCensusTractsInStep(fp, Data, 1, m_nTracts, PrintFormat);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayCensusTracts()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayCensusTracts()","CCluster");
     throw;
   }
 }
@@ -146,12 +147,12 @@ void CCluster::DisplayCensusTractsInStep(FILE* fp, const CSaTScanData& DataHub, 
     }
     // There should be at least one location printed, else there is likely a bug in the iterative scan code.
     if (!locations.size())
-      ZdGenerateException("Attempting to print cluster with no location identifiers.","DisplayCensusTractsInStep()");
+      throw prg_error("Attempting to print cluster with no location identifiers.","DisplayCensusTractsInStep()");
 
     PrintFormat.PrintAlignedMarginsDataString(fp, locations);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayCensusTractsInStep()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayCensusTractsInStep()","CCluster");
     throw;
   }
 }
@@ -207,8 +208,8 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
   measure_t                                     tExpected;
 
   if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(GetClusterData())) == 0)
-    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n",
-                        "DisplayClusterDataNormal()");
+    throw prg_error("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n",
+                    "DisplayClusterDataNormal()");
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
   GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
@@ -263,8 +264,8 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
   std::vector<unsigned int>::iterator                   itr_Index;
 
   if ((pClusterData = dynamic_cast<const AbstractCategoricalClusterData*>(GetClusterData())) == 0)
-    ZdGenerateException("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n",
-                        "DisplayClusterDataOrdinal()");
+    throw prg_error("Cluster data object could not be dynamically casted to AbstractCategoricalClusterData type.\n",
+                    "DisplayClusterDataOrdinal()");
   GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, Calculator, vComprisedDataSetIndexes);
 
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
@@ -437,8 +438,8 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
       fprintf(fp, "%-g\n", Data.GetEllipseShape(m_iEllipseOffset));
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayCoordinates()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayCoordinates()","CCluster");
     throw;
   }
 }
@@ -457,8 +458,8 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
     PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
     fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest, GetLatLongRadius());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayLatLongCoords()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayLatLongCoords()","CCluster");
     throw;
   }
 }
@@ -528,15 +529,15 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
                       else /*Having both zero day and year should never happen.*/
                         printString(buffer, "%.0f year%s %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
                       break;
-        default     : ZdGenerateException("Invalid time interval index \"%d\" for prospective analysis.",
-                                          "DisplayNullOccurrence()", Data.GetParameters().GetTimeAggregationUnitsType());
+        default     : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.",
+                                      "DisplayNullOccurrence()", Data.GetParameters().GetTimeAggregationUnitsType());
       }
       //print data to file stream
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("DisplayNullOccurrence()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayNullOccurrence()","CCluster");
     throw;
   }
 }
@@ -639,7 +640,7 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
 /** Returns index of most central location. */
 tract_t CCluster::GetMostCentralLocationIndex() const {
   if (m_MostCentralLocation == -1)
-    ZdGenerateException("Most central location of cluster not calculated.","GetMostCentralLocationIndex()");
+    throw prg_error("Most central location of cluster not calculated.","GetMostCentralLocationIndex()");
   return m_MostCentralLocation;
 }
 
@@ -743,13 +744,12 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
     Note: This is a debug function and can be helpful when used with Excel to get
     visual of cluster using scatter plotting. */
 void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
-  unsigned int                  k;
   tract_t                       i, tTract;
   std::ofstream                 outfilestream(sFilename.c_str(), ios::ate);
 
   try {
     if (!outfilestream)
-      ZdGenerateException("Error: Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
+      throw prg_error("Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
 
     outfilestream.setf(std::ios_base::fixed, std::ios_base::floatfield);
 
@@ -776,8 +776,8 @@ void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const st
     }
     outfilestream << std::endl;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintClusterLocationsToFile()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("PrintClusterLocationsToFile()","CCluster");
     throw;
   }
 }
@@ -867,8 +867,8 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
        LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
     }   
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Write()","CCluster");
+  catch (prg_exception& x) {
+    x.addTrace("Write()","CCluster");
     throw;
   }
 }

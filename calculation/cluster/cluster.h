@@ -118,7 +118,7 @@ class CCluster {
 };
 
 /** Attempts to dynamically cast AbstractClusterData object to class type T.
-    Throws ZdException if cast fails, otherwise returns reference to casted type.
+    Throws prg_error if cast fails, otherwise returns reference to casted type.
     Note that use of this function in the CTimeIntervals object appears to have
     a significant effect on runtime - therefore it is only useful during development
     in the CTimeIntervals classes. */
@@ -127,7 +127,7 @@ T & GetClusterDataAsType(AbstractClusterData& DataObject) {
   T * t;
 
   if ( (t = dynamic_cast<T*>( &DataObject ) ) == 0 )
-    ZdGenerateException("Unable to dynamically cast to type.","GetClusterDataAsType()");
+    throw prg_error("Unable to dynamically cast to type.","GetClusterDataAsType()");
 
   return *t;
 }

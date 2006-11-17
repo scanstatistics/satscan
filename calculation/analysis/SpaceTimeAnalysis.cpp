@@ -5,6 +5,7 @@
 #include "SpaceTimeAnalysis.h"
 #include "MakeNeighbors.h"
 #include "ClusterData.h"
+#include "SSException.h"
 
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -28,8 +29,8 @@ void CSpaceTimeAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway&
       gMeasureList.reset(GetNewMeasureListObject());
     gAbstractClusterData.reset(gpClusterDataFactory->GetNewSpaceTimeClusterData(DataGateway));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationObjects()","CSpaceTimeAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateSimulationObjects()","CSpaceTimeAnalysis");
     throw;
   }
 }
@@ -48,8 +49,8 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
     //initialize list of top circle/ellipse clusters
     gTopShapeClusters.SetTopClusters(*gClusterComparator);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateTopClustersObjects()","CSpaceTimeAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateTopClustersObjects()","CSpaceTimeAnalysis");
     throw;
   }
 }

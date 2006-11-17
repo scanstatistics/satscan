@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "MeasureList.h"
 #include "Toolkit.h"
+#include "SSException.h"
 
 /** Constructor */
 CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)
@@ -100,8 +101,8 @@ CMinMeasureList::CMinMeasureList(const CSaTScanData & SaTScanData, AbstractLikel
     Init();
     Setup();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("constructor()", "CMinMeasureList");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()", "CMinMeasureList");
     throw;
   }
 }
@@ -230,8 +231,8 @@ void CMinMeasureList::Setup() {
     gpMinMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() + 1];
     SetMeasures();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("CMinMeasureList()", "CMinMeasureList");
+  catch (prg_exception& x) {
+    x.addTrace("CMinMeasureList()", "CMinMeasureList");
     throw;
   }
 }
@@ -243,8 +244,8 @@ CMaxMeasureList::CMaxMeasureList(const CSaTScanData & SaTScanData, AbstractLikel
     Init();
     Setup();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("constructor()", "CMaxMeasureList");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()", "CMaxMeasureList");
     throw;
   }
 }
@@ -340,8 +341,8 @@ void CMaxMeasureList::Setup() {
     gpMaxMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() + 1];
     SetMeasures();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("CMaxMeasureList()", "CMaxMeasureList");
+  catch (prg_exception& x) {
+    x.addTrace("CMaxMeasureList()", "CMaxMeasureList");
     throw;
   }
 }
@@ -353,8 +354,8 @@ CMinMaxMeasureList::CMinMaxMeasureList(const CSaTScanData & SaTScanData, Abstrac
     Init();
     Setup();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("constructor()", "CMinMaxMeasureList");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()", "CMinMaxMeasureList");
     throw;
   }
 }
@@ -512,8 +513,8 @@ void CMinMaxMeasureList::Setup() {
     gpMaxMeasures = new measure_t [gSaTScanData.GetDataSetHandler().GetDataSet().getTotalCases() + 1];
     SetMeasures();
   }
-  catch (ZdException & x) {
-    x.AddCallpath("Setup()", "CMinMaxMeasureList");
+  catch (prg_exception& x) {
+    x.addTrace("Setup()", "CMinMaxMeasureList");
     delete gpMinMeasures;
     delete gpMaxMeasures;
     throw;

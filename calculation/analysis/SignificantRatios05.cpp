@@ -3,14 +3,15 @@
 #pragma hdrstop
 //***************************************************************************
 #include "SignificantRatios05.h"
+#include "SSException.h"
 
 /** constructor */
 CSignificantRatios05::CSignificantRatios05(unsigned int iNumReplications) {
   try {
     gvRatiosList.resize(static_cast<unsigned int>(ceil((iNumReplications+1)*0.05)), 0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CSignificantRatios05");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CSignificantRatios05");
     throw;
   }
 }

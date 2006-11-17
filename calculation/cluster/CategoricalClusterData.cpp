@@ -5,6 +5,7 @@
 #include "CategoricalClusterData.h"
 #include "TimeIntervals.h"
 #include "OrdinalLikelihoodCalculation.h"
+#include "SSException.h"
 
 /** class constructor */
 CategoricalSpatialData::CategoricalSpatialData(const DataSetInterface& Interface)
@@ -59,10 +60,9 @@ void CategoricalSpatialData::CopyEssentialClassMembers(const AbstractClusterData
   gvCasesPerCategory = ((const CategoricalSpatialData&)rhs).gvCasesPerCategory;
 }
 
-/** No implemented - throws ZdException. */
+/** No implemented - throws prg_error. */
 count_t CategoricalSpatialData::GetCaseCount(unsigned int) const {
-  ZdGenerateException("'GetCaseCount(unsigned int)' not implemeneted.","CategoricalSpatialData");
-  return 0;
+  throw prg_error("'GetCaseCount(unsigned int)' not implemeneted.","CategoricalSpatialData");
 }
 
 /** Returns number of accumulated cases for category index. */
@@ -83,10 +83,9 @@ double CategoricalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& 
   return Calculator.CalculateMaximizingValueOrdinal(gvCasesPerCategory);
 }
 
-/** No implemented - throws ZdException. */
+/** No implemented - throws prg_error. */
 measure_t CategoricalSpatialData::GetMeasure(unsigned int) const {
-  ZdGenerateException("'GetMeasure(unsigned int)' not implemeneted.","CategoricalSpatialData");
-  return 0;
+  throw prg_error("'GetMeasure(unsigned int)' not implemeneted.","CategoricalSpatialData");
 }
 
 //***************** class CategoricalTemporalData ******************************
@@ -110,9 +109,9 @@ CategoricalTemporalData::CategoricalTemporalData(const AbstractDataSetGateway& D
 /** destructor */
 CategoricalTemporalData::~CategoricalTemporalData() {}
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 void CategoricalTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighborData(tract_t,const AbstractDataSetGateway&, size_t) not implemeneted.","CategoricalTemporalData");
+  throw prg_error("AddNeighborData(tract_t,const AbstractDataSetGateway&, size_t) not implemeneted.","CategoricalTemporalData");
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
@@ -130,16 +129,14 @@ CategoricalTemporalData * CategoricalTemporalData::Clone() const {
   return new CategoricalTemporalData(*this);
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 unsigned int CategoricalTemporalData::GetAllocationSize() const {
-  ZdGenerateException("GetAllocationSize() not implemeneted.","CategoricalTemporalData");
-  return 0;
+  throw prg_error("GetAllocationSize() not implemeneted.","CategoricalTemporalData");
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 count_t CategoricalTemporalData::GetCaseCount(unsigned int) const {
-  ZdGenerateException("GetCaseCount(unsigned int) not implemeneted.","CategoricalTemporalData");
-  return 0;
+  throw prg_error("GetCaseCount(unsigned int) not implemeneted.","CategoricalTemporalData");
 }
 
 /** Returns number of accumulated cases for category. */
@@ -155,10 +152,9 @@ void CategoricalTemporalData::GetOrdinalCombinedCategories(const OrdinalLikeliho
   Calculator.CalculateOrdinalCombinedCategories(gvCasesPerCategory, vCategoryContainer);
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 measure_t CategoricalTemporalData::GetMeasure(unsigned int) const {
-  ZdGenerateException("GetMeasure(unsigned int) not implemeneted.","CategoricalTemporalData");
-  return 0;
+  throw prg_error("GetMeasure(unsigned int) not implemeneted.","CategoricalTemporalData");
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers. */
@@ -178,8 +174,8 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
   try {
     Setup(Data, Interface);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const CSaTScanData&, const DataSetInterface&)","CategoricalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const CSaTScanData&, const DataSetInterface&)","CategoricalProspectiveSpatialData");
     throw;
   }
 }
@@ -190,8 +186,8 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const CSaTS
   try {
     Setup(Data, DataGateway.GetDataSetInterface());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const CSaTScanData&, const AbstractDataSetGateway&)","CategoricalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const CSaTScanData&, const AbstractDataSetGateway&)","CategoricalProspectiveSpatialData");
     throw;
   }
 }
@@ -202,8 +198,8 @@ CategoricalProspectiveSpatialData::CategoricalProspectiveSpatialData(const Categ
   try {
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const CategoricalProspectiveSpatialData&)","CategoricalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const CategoricalProspectiveSpatialData&)","CategoricalProspectiveSpatialData");
     throw;
   }
 }
@@ -316,8 +312,8 @@ void CategoricalProspectiveSpatialData::Setup(const CSaTScanData& Data, const Da
     gppCategoryCases = gCategoryCasesHandler->GetArray();
     gvCasesPerCategory.resize(Interface.GetNumOrdinalCategories(), 0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup(const CSaTScanData&, const DataSetInterface&)","CategoricalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("Setup(const CSaTScanData&, const DataSetInterface&)","CategoricalProspectiveSpatialData");
     throw;
   }
 }
@@ -330,8 +326,8 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const DataSetInterface& Inter
   try {
     Setup(Interface);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const DataSetInterface&)","CategoricalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const DataSetInterface&)","CategoricalSpaceTimeData");
     throw;
   }
 }
@@ -342,8 +338,8 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const AbstractDataSetGateway&
   try {
     Setup(DataGateway.GetDataSetInterface());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const AbstractDataSetGateway&)","CategoricalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const AbstractDataSetGateway&)","CategoricalSpaceTimeData");
     throw;
   }
 }
@@ -354,8 +350,8 @@ CategoricalSpaceTimeData::CategoricalSpaceTimeData(const CategoricalSpaceTimeDat
   try {
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const CategoricalSpaceTimeData&)","CategoricalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const CategoricalSpaceTimeData&)","CategoricalSpaceTimeData");
     throw;
   }
 }
@@ -419,8 +415,8 @@ void CategoricalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     gCategoryCasesHandler.reset(new TwoDimensionArrayHandler<count_t>(Interface.GetNumOrdinalCategories(), Interface.GetNumTimeIntervals() + 1, 0));
     gppCategoryCases = gCategoryCasesHandler->GetArray();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup(const DataSetInterface&)","CategoricalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("Setup(const DataSetInterface&)","CategoricalSpaceTimeData");
     throw;
   }
 }

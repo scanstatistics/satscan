@@ -17,6 +17,7 @@
 #include "AnalysisRun.h"
 #include "LoglikelihoodRatioWriter.h"
 #include "PrintQueue.h"
+#include "SSException.h"
 
 class stsMCSimJobSource
 {
@@ -24,11 +25,11 @@ public://types/enums
   typedef double successful_result_type;
 
   struct job_result {
-    enum                        exception_type {unknown=0, std, zd, zdmemory};
+    enum                        exception_type {unknown=0, std, prg, memory};
 
     bool                        bUnExceptional;
     exception_type              eException_type;
-    ZdException                 Exception;
+    prg_exception               Exception;
     successful_result_type      dSuccessfulResult;
   };
 

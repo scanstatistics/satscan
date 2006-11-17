@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "SVTTCentricAnalysis.h"
+#include "SSException.h"
 
 /** constructor */
 SpatialVarTempTrendCentricAnalysis::SpatialVarTempTrendCentricAnalysis(const CParameters& Parameters,
@@ -14,8 +15,8 @@ SpatialVarTempTrendCentricAnalysis::SpatialVarTempTrendCentricAnalysis(const CPa
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","SpatialVarTempTrendCentricAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","SpatialVarTempTrendCentricAnalysis");
     throw;
   }
 }
@@ -87,7 +88,7 @@ const CCluster& SpatialVarTempTrendCentricAnalysis::GetTopCalculatedCluster() {
     2) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data
     3) RetrieveLoglikelihoodRatios() has not been called yet */
 void SpatialVarTempTrendCentricAnalysis::MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways) {
-  ZdGenerateException("MonteCarloAboutCentroidDefinition(const CentroidNeighbors&,const DataSetGatewayContainer_t&) not implementated.","SpatialVarTempTrendCentricAnalysis");
+  throw prg_error("MonteCarloAboutCentroidDefinition(const CentroidNeighbors&,const DataSetGatewayContainer_t&) not implementated.","SpatialVarTempTrendCentricAnalysis");
 }
 
 /** Internal function which allocates appropriate objects for evaulate real and simulated data. */
@@ -106,9 +107,9 @@ void SpatialVarTempTrendCentricAnalysis::Setup(const AbstractDataSetGateway& Rea
       gClusterData.reset(new SVTTClusterData(gDataHub.GetNumTimeIntervals()));
     }
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     gClusterComparator.reset(0); gClusterData.reset(0);
-    x.AddCallpath("Setup()","SpatialVarTempTrendCentricAnalysis");
+    x.addTrace("Setup()","SpatialVarTempTrendCentricAnalysis");
     throw;
   }
 }

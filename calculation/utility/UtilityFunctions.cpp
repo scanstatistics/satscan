@@ -28,15 +28,15 @@ void ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& 
 }
 
 /** Converts passed coordinates in Cartesian system to latitude/longitude system.
-    Returns pair of doubles <latitude, longtitude>. Throws ZdException if number of
+    Returns pair of doubles <latitude, longtitude>. Throws prg_error if number of
     coordinates in passed vector is not 3. */
 std::pair<double, double> ConvertToLatLong(const std::vector<double>& vCoordinates) {
   std::pair<double, double>     prLatitudeLongitude;
   double RADIUS = 6367; // Constant; radius of earth in km)
 
   if (vCoordinates.size() != 3)
-    ZdGenerateException("Conversion to latitude/longitude requires a vector of 3 elements.\n"
-                        "Passed vector contains %u elements.","ConvertToLatLong()", vCoordinates.size());
+    throw prg_error("Conversion to latitude/longitude requires a vector of 3 elements.\n"
+                    "Passed vector contains %u elements.","ConvertToLatLong()", vCoordinates.size());
 
   if (vCoordinates[0] != 0) {
     prLatitudeLongitude.second = atan(vCoordinates[1] / vCoordinates[0]) * 180.0 / (double)PI;

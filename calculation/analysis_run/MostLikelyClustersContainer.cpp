@@ -45,8 +45,8 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
 //----------------------------------double_stuff
 //    bResult = theSphereCentroid.DistanceTo(theCentroid) <= dSphereRadius;
   }
-  catch (ZdException &x) {
-     x.AddCallpath("CentroidLiesWithinSphereRegion()","MostLikelyClustersContainer");
+  catch (prg_exception& x) {
+     x.addTrace("CentroidLiesWithinSphereRegion()","MostLikelyClustersContainer");
      throw;
   }
   return bResult;
@@ -62,10 +62,10 @@ void MostLikelyClustersContainer::Empty() {
 const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) const {
   try {
     if (tClusterIndex < 0 || (unsigned int)tClusterIndex > gvTopClusterList.size() - 1)
-      ZdGenerateException("Index %d out of range [size=%u].","GetCluster()", tClusterIndex, gvTopClusterList.size());
+      throw prg_error("Index %d out of range [size=%u].","GetCluster()", tClusterIndex, gvTopClusterList.size());
   }
-  catch (ZdException &x) {
-     x.AddCallpath("GetCluster()","MostLikelyClustersContainer");
+  catch (prg_exception& x) {
+     x.addTrace("GetCluster()","MostLikelyClustersContainer");
      throw;
   }
   return *gvTopClusterList[tClusterIndex];
@@ -89,8 +89,8 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
       dResult = std::sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, NeighborCoords));
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetClusterRadius()","MostLikelyClustersContainer");
+  catch (prg_exception& x) {
+    x.addTrace("GetClusterRadius()","MostLikelyClustersContainer");
     throw;
   }
   return dResult;
@@ -101,10 +101,10 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
 const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
   try {
     if (gvTopClusterList.size() == 0)
-      ZdGenerateException("No clusters in container.","GetTopRankedCluster()");
+      throw prg_error("No clusters in container.","GetTopRankedCluster()");
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetTopRankedCluster()","MostLikelyClustersContainer");
+  catch (prg_exception& x) {
+    x.addTrace("GetTopRankedCluster()","MostLikelyClustersContainer");
     throw;
   }
   return *gvTopClusterList[0];
@@ -218,8 +218,8 @@ bool MostLikelyClustersContainer::PointLiesWithinEllipseArea(double dXPoint, dou
 //----------------------------------double_stuff
 //    bResult = (dDistance1 + dDistance2) <= (2 * dEllipseRadius * dEllipseShape);
   }
-  catch (ZdException &x) {
-     x.AddCallpath("PointLiesWithinEllipseArea()","MostLikelyClustersContainer");
+  catch (prg_exception& x) {
+     x.addTrace("PointLiesWithinEllipseArea()","MostLikelyClustersContainer");
      throw;
   }
   return bResult;
@@ -231,7 +231,7 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
 
    try {
       if ((pFile = fopen(sFilename, "w")) == NULL)
-        GenerateResolvableException("  Error: Unable to open top clusters file.\n", "PrintTopClusters()");
+        throw resolvable_error("Error: Unable to open top clusters file.\n");
       else {
         for (size_t i=0; i < gvTopClusterList.size(); ++i) {
           fprintf(pFile, "GridTract:  %i\n", i);
@@ -248,9 +248,9 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
       }
       fclose(pFile);
    }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     fclose(pFile);
-    x.AddCallpath("PrintTopClusters()","MostLikelyClustersContainer");
+    x.addTrace("PrintTopClusters()","MostLikelyClustersContainer");
     throw;
   }
 }
@@ -289,7 +289,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
 
      if (DataHub.GetTInfo()->getCoordinateDimensions() < 2 && !(eClusterInclusionCriterion == NORESTRICTIONS || eClusterInclusionCriterion == NOGEOOVERLAP))
-       ZdException::Generate("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
+       throw prg_error("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
 
      if (eClusterInclusionCriterion != NORESTRICTIONS)
        gPrintDirection.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
@@ -313,8 +313,8 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
        std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
      }
    }
-   catch (ZdException & x) {
-     x.AddCallpath("RankTopClusters()", "MostLikelyClustersContainer");
+   catch (prg_exception& x) {
+     x.addTrace("RankTopClusters()", "MostLikelyClustersContainer");
      throw;
    }
 }
@@ -361,10 +361,10 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         case NOCENTROIDSINLESSLIKE: //no cluster centroids in less likely clusters
         case NOPAIRSINEACHOTHERS: //no pairs of centroids in each others clusters
           if ((CandidateCluster.GetEllipseOffset() > 0) && (CandidateCenter.GetDimensionCount() > 2))
-            ZdException::Generate("For ellipses, cannot have more than 2 dimensions (got %d).", "MostLikelyClustersContainer", CandidateCenter.GetDimensionCount());
+            throw prg_error("For ellipses, cannot have more than 2 dimensions (got %d).", "MostLikelyClustersContainer", CandidateCenter.GetDimensionCount());
         break;
         case NOGEOOVERLAP: break; //no geographical overlap
-        default:  ZdGenerateException("Unknown Criteria for Reporting Secondary Clusters, '%d'.","MostLikelyClustersContainer", eCriterion);
+        default:  throw prg_error("Unknown Criteria for Reporting Secondary Clusters, '%d'.","MostLikelyClustersContainer", eCriterion);
       }
 
       dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
@@ -444,13 +444,13 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
             }
           }
           break;
-          default:  ZdGenerateException("Unknown Criteria for Reporting Secondary Clusters '%d'.","MostLikelyClustersContainer", eCriterion);
+          default:  throw prg_error("Unknown Criteria for Reporting Secondary Clusters '%d'.","MostLikelyClustersContainer", eCriterion);
         }
       }
     }
   }
-  catch (ZdException & e) {
-     e.AddCallpath("ShouldRetainCandidateCluster()", "MostLikelyClustersContainer");
+  catch (prg_exception& x) {
+     x.addTrace("ShouldRetainCandidateCluster()", "MostLikelyClustersContainer");
      throw;
   }
   return bResult;

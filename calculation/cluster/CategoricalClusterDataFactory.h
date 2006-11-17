@@ -36,7 +36,7 @@ class CategoricalClusterDataFactory : public AbstractClusterDataFactory {
     MultiSetCategoricalProspectiveSpatialData, and  MultiSetCategoricalSpaceTimeData.
     Note: All of the public functions to get new cluster data objects with
           'const DataSetInterface&' parameter are not implemented and will
-          throw an ZdException. Having multiple datasets imposes requirement
+          throw an prg_error. Having multiple datasets imposes requirement
           to perform simulations through same process as that of real data and
           thus only the functions with 'const AbstractDataSetGateway&' are of
           us at this time.  */
