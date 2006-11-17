@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "DataSource.h"
 #include "SSException.h"
+#include "FileName.h"
 
 /** Static method which returns newly allocated DataSource object. */
 DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII) {
@@ -11,18 +12,18 @@ DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilena
    bool             bFoundFile=false;
    vecZdFileTypes * pFileTypeArray = ZdGetFileTypeArray();
    ZdFileType     * pFileType = 0;
-   ZdFileName       theFile(sSourceFilename.c_str());
+   FileName         theFile(sSourceFilename.c_str());
 
    if (!bAssumeASCII) {
      while (!bFoundFile && (lIndex < (long)pFileTypeArray->size())) {
            pFileType = (*pFileTypeArray)[lIndex];
-           if (!stricmp(theFile.GetExtension(), pFileType->GetFileTypeExtension()))
+           if (!stricmp(theFile.getExtension().c_str(), pFileType->GetFileTypeExtension()))
               bFoundFile = true;
            lIndex++;
      }
    }  
 
-    if (bFoundFile && !stricmp(theFile.GetExtension(), ".dbf"))
+    if (bFoundFile && !stricmp(theFile.getExtension().c_str(), ".dbf"))
       //Though ZdFile hierarchy has other files types, most are not formats used outside IMS.
       //There are 3 that could be used: dBase, comma separated, and scanf.
       //The scanf version could possibly replace AsciiFileDataSource but is likely slower.
@@ -110,9 +111,9 @@ bool AsciiFileDataSource::StringParser::SetString(std::string& sParseLine) {
 }
 
 void AsciiFileDataSource::StringParser::ThrowAsciiException() {
-  GenerateResolvableException("Error: The %s contains data that is not ASCII formatted.\n"
-                              "       Please see 'ASCII Input File Format' in the user guide for help.\n",
-                              "ThrowAsciiException()", gPrint.GetImpliedFileTypeString().c_str());
+  throw resolvable_error("Error: The %s contains data that is not ASCII formatted.\n"
+                         "       Please see 'ASCII Input File Format' in the user guide for help.\n",
+                         gPrint.GetImpliedFileTypeString().c_str());
 }
 
 /** constructor */
@@ -121,10 +122,10 @@ AsciiFileDataSource::AsciiFileDataSource(const std::string& sSourceFilename, Bas
   try {
     gSourceFile.open(sSourceFilename.c_str());
     if (!gSourceFile)
-      GenerateResolvableException("Error: Could not open file:\n'%s'.\n", "AsciiFileDataSource()", sSourceFilename.c_str());
+      throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("constructor()","AsciiFileDataSource");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","AsciiFileDataSource");
     throw;
   }
 }
@@ -162,9 +163,9 @@ bool AsciiFileDataSource::ReadRecord() {
 }
 
 void AsciiFileDataSource::ThrowUnicodeException() {
-  GenerateResolvableException("Error: The %s contains data that is Unicode formatted.\n"
-                              "       Please see 'ASCII Input File Format' in the user guide for help.\n",
-                              "ThrowUnicodeException()", gPrint.GetImpliedFileTypeString().c_str());
+  throw resolvable_error("Error: The %s contains data that is Unicode formatted.\n"
+                         "       Please see 'ASCII Input File Format' in the user guide for help.\n",
+                         gPrint.GetImpliedFileTypeString().c_str());
 }
 
 //******************* class ZdFileDataSource ***********************************
@@ -181,7 +182,7 @@ ZdFileDataSource::ZdFileDataSource(const std::string& sSourceFilename, ZdFileTyp
          gSourceFile->GetFieldInfo(w)->SetFormat(ZdField::Filtered, "", new ZdDateFilter("%y/%m/%d"));
   }
   catch (ZdException & x) {
-    GenerateResolvableException("Error: Could not open file:\n'%s'.\n", "ZdFileDataSource()", sSourceFilename.c_str());
+    throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
   }
 }
 
