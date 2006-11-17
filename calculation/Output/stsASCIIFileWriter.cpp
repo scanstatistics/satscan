@@ -96,15 +96,15 @@ void ASCIIDataFileWriter::WriteRecord(const RecordBuffer& Record) {
 
 /** internal setup - opens file stream for writing */
 void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const ZdString& sFileExtension, bool bAppend) {
-   ZdString sExt(sFileExtension);
+   std::string  buffer, ext(sFileExtension);
 
   try {
-    sExt << ASCII_FILE_EXT;
-    gsFileName.SetFullPath(Parameters.GetOutputFileName().c_str());
-    gsFileName.SetExtension(sExt.GetCString());
+    ext += ASCII_FILE_EXT;
+    gsFileName.setFullPath(Parameters.GetOutputFileName().c_str());
+    gsFileName.setExtension(ext.c_str());
 
-    if ((gpFile = fopen(gsFileName.GetFullPath(), (bAppend ? "a" : "w"))) == NULL)
-      ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName.GetFullPath());
+    if ((gpFile = fopen(gsFileName.getFullPath(buffer).c_str(), (bAppend ? "a" : "w"))) == NULL)
+      ZdGenerateException("Unable to open/create file %s", "Error!", gsFileName.getFullPath(buffer).c_str());
   }
   catch (ZdException &x) {
     x.AddCallpath("Setup()","ASCIIDataFileWriter");

@@ -3,6 +3,7 @@
 #define ASCIIFileWriter_H
 //***************************************************************************
 #include "Parameters.h"
+#include "FileName.h"
 
 class RecordBuffer;  /** forward class declaration */
 
@@ -14,7 +15,7 @@ class ASCIIDataFileWriter {
    protected :
      FILE                     * gpFile;   
      static const char        * ASCII_FILE_EXT;
-     ZdFileName                 gsFileName;        /** output filename */
+     FileName                   gsFileName;        /** output filename */
 
      void                       CreateBlankString(ZdString& sFormatString, const ZdField& FieldDef);
      void                       CreateFormatString(ZdString& sValue, const ZdField& FieldDef, const ZdFieldValue& fv);

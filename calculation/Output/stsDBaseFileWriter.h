@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "Parameters.h"
 #include <DBFFile.h>
+#include "FileName.h"
 
 class RecordBuffer;  /** forward class declaration */
 
@@ -17,7 +18,7 @@ class DBaseDataFileWriter {
       DBFRecord         * gpFileRecord;
       ZdTransaction     * gpTransaction;
       static const char * DBASE_FILE_EXT;
-      ZdFileName          gsFileName;        /** output filename */
+      FileName            gsFileName;        /** output filename */
 
    public :
       DBaseDataFileWriter(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension, bool bAppend = false);

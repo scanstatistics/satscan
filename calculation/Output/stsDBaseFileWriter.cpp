@@ -31,21 +31,21 @@ DBaseDataFileWriter::~DBaseDataFileWriter() {
 
 /** internal setup - opens file stream */
 void DBaseDataFileWriter::Setup(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension, bool bAppend) {
-  ZdString sExt(sFileExtension);
+  std::string   buffer, ext(sFileExtension);
 
   try {
-    sExt << DBASE_FILE_EXT;
-    gsFileName.SetFullPath(Parameters.GetOutputFileName().c_str());
-    gsFileName.SetExtension(sExt.GetCString());
+    ext += DBASE_FILE_EXT;
+    gsFileName.setFullPath(Parameters.GetOutputFileName().c_str());
+    gsFileName.setExtension(ext.c_str());
 
     // open file stream for writing
-    if ((bAppend && !ZdIO::Exists(gsFileName.GetFullPath())) || !bAppend) {
-      ZdIO::Delete(gsFileName.GetFullPath());
+    if ((bAppend && !ZdIO::Exists(gsFileName.getFullPath(buffer).c_str())) || !bAppend) {
+      ZdIO::Delete(gsFileName.getFullPath(buffer).c_str());
       gFile.PackFields(vFieldDefs);
-      gFile.Create(gsFileName.GetFullPath(), vFieldDefs);
+      gFile.Create(gsFileName.getFullPath(buffer).c_str(), vFieldDefs);
     }
     if (!gFile.GetIsOpen())
-      gFile.Open(gsFileName.GetFullPath(), (bAppend ? ZDIO_OPEN_APPEND : ZDIO_OPEN_TRUNC));
+      gFile.Open(gsFileName.getFullPath(buffer).c_str(), (bAppend ? ZDIO_OPEN_APPEND : ZDIO_OPEN_TRUNC));
 
     //open transaction pointer
     gpTransaction = gFile.BeginTransaction();
