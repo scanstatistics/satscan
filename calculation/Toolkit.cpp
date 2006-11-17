@@ -5,6 +5,7 @@
 #include "Toolkit.h"
 #include "DBFFile.h"
 #include "UtilityFunctions.h"
+#include "FileName.h"
 
 /** system filename */
 const char * AppToolkit::gsSystemIniFileName = "system.ini";
@@ -65,10 +66,10 @@ AppToolkit::AppToolkit(const char * sApplicationFullPath) {
 /** destructor */
 AppToolkit::~AppToolkit() {
   try {
-    ZdString  theDrive, theDirectory;
-    ZdFileName::GetCurDrive(theDrive);
-    theDrive << ZdFileName::GetCurDirectory(theDirectory);
-    SetLastDirectory(theDrive.GetCString());
+    std::string theDrive, theDirectory;
+    FileName::getCurDrive(theDrive);
+    theDrive += FileName::getCurDirectory(theDirectory);
+    SetLastDirectory(theDrive.c_str());
   }
   catch (...){}
 }
@@ -152,17 +153,18 @@ const char * AppToolkit::GetWebSite() const {
 
 /** Insures last directory path section in ZdIniSession. */
 bool AppToolkit::InsureLastDirectoryPath() {
-  ZdFileName            FileName;
+  FileName              app(gsApplicationFullPath.c_str());
+  std::string           buffer;
   std::stringstream     sDefaultPath;
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
 
   try {
-    sDefaultPath << ZdFileName(gsApplicationFullPath.c_str()).GetLocation() << "sample data" << ZDFILENAME_SLASH;
+    sDefaultPath << app.getLocation(buffer) << "sample data" << FileName::SLASH;
     if (access(sDefaultPath.str().c_str(), 00) < 0) {
       sDefaultPath.clear();
-      sDefaultPath << ZdFileName(gsApplicationFullPath.c_str()).GetLocation();
+      sDefaultPath << app.getLocation(buffer);
     }
 
     //run history filename property
@@ -179,13 +181,13 @@ bool AppToolkit::InsureLastDirectoryPath() {
         bUpdatedSection = true;
       }
       else {
-        FileName.SetFullPath(pProperty->GetValue());
-        if (strlen(FileName.GetFileName()) || strlen(FileName.GetExtension())) {
+        app.setFullPath(pProperty->GetValue());
+        if (strlen(app.getFileName().c_str()) || strlen(app.getExtension().c_str())) {
           pProperty->SetValue(sDefaultPath.str().c_str());
           bUpdatedSection = true;
         }
         //validate path
-        else if (access(FileName.GetLocation(), 00) < 0) {
+        else if (access(app.getLocation(buffer).c_str(), 00) < 0) {
           pProperty->SetValue(sDefaultPath.str().c_str());        
           bUpdatedSection = true;
         }
@@ -201,8 +203,8 @@ bool AppToolkit::InsureLastDirectoryPath() {
 
 /** Insures last imported directory path section in ZdIniSession. */
 bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
-  ZdFileName            FileName;
-  std::string           sDefaultPath;
+  FileName              path;
+  std::string           sDefaultPath, buffer;
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
@@ -222,9 +224,9 @@ bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
         bUpdatedSection = true;
       }
       else {
-        FileName.SetFullPath(pProperty->GetValue());
+        path.setFullPath(pProperty->GetValue());
         //validate path
-        if (access(FileName.GetLocation(), 00) < 0) {
+        if (access(path.getLocation(buffer).c_str(), 00) < 0) {
           pProperty->SetValue(sDefaultPath.c_str());        
           bUpdatedSection = true;
         }
@@ -240,14 +242,15 @@ bool AppToolkit::InsureLastImportDestinationDirectoryPath() {
 
 /** Insures run history filename section in ZdIniSession. */
 bool AppToolkit::InsureRunHistoryFileName() {
-  ZdFileName            FileName;
+  FileName              app(gsApplicationFullPath.c_str());
+  std::string           buffer;
   std::stringstream     sDefaultHistoryFileName;
   long                  lPosition;
   BSessionProperty    * pProperty;
   bool                  bUpdatedSection=false;
 
   try {
-    sDefaultHistoryFileName << ZdFileName(gsApplicationFullPath.c_str()).GetLocation() << gsDefaultRunHistoryFileName;
+    sDefaultHistoryFileName << app.getLocation(buffer) << gsDefaultRunHistoryFileName;
     sDefaultHistoryFileName << DBFFileType::GetDefaultInstance().GetFileTypeExtension();
 
     //run history filename property
@@ -264,21 +267,21 @@ bool AppToolkit::InsureRunHistoryFileName() {
         bUpdatedSection = true;
       }
       else {
-        FileName.SetFullPath(pProperty->GetValue());
+        app.setFullPath(pProperty->GetValue());
         //validate extension
-        if (strcmp(FileName.GetExtension(), DBFFileType::GetDefaultInstance().GetFileTypeExtension())) {
-          FileName.SetExtension(DBFFileType::GetDefaultInstance().GetFileTypeExtension());
-          pProperty->SetValue(FileName.GetFullPath());
+        if (strcmp(app.getExtension().c_str(), DBFFileType::GetDefaultInstance().GetFileTypeExtension())) {
+          app.setExtension(DBFFileType::GetDefaultInstance().GetFileTypeExtension());
+          pProperty->SetValue(app.getFullPath(buffer).c_str());
           bUpdatedSection = true;
         }
         //validate filename
-        if (!strlen(FileName.GetFileName())) {
-          FileName.SetFileName(gsDefaultRunHistoryFileName);
-          pProperty->SetValue(FileName.GetFullPath());
+        if (!strlen(app.getFileName().c_str())) {
+          app.setFileName(gsDefaultRunHistoryFileName);
+          pProperty->SetValue(app.getFullPath(buffer).c_str());
           bUpdatedSection = true;
         }
         //validate path
-        if (access(FileName.GetLocation(), 00) < 0) {
+        if (access(app.getLocation(buffer).c_str(), 00) < 0) {
           pProperty->SetValue(sDefaultHistoryFileName.str().c_str());
           bUpdatedSection = true;
         }
@@ -401,7 +404,8 @@ void AppToolkit::Setup(const char * sApplicationFullPath) {
     //set application full path
     gsApplicationFullPath = sApplicationFullPath;
     //Set system ini located at same directory as executable.
-    gsSystemFileName = ZdFileName(gsApplicationFullPath.c_str()).GetLocation();
+    std::string buffer;
+    gsSystemFileName = FileName(gsApplicationFullPath.c_str()).getLocation(buffer);
     gsSystemFileName += gsSystemIniFileName;
     try {
       //Open or create system ini file.
