@@ -47,7 +47,7 @@ const char * RunTimeComponentManager::GetLabel(FocusRunTimeComponent::Type eComp
 
 /** Returns formated string which indicates total run time. */
 std::string & RunTimeComponentManager::GetTimeString(double dTimeInSeconds, std::string& sTimeString) const {
-  short                 uwDays, uwHours, uwMinutes;
+//  short                 uwDays, uwHours, uwMinutes;
   std::string           buffer;
 
   sTimeString = "";
