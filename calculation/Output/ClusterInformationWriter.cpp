@@ -137,8 +137,6 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
 /** Defines fields of ocluster case information utput file. */
 void ClusterInformationWriter::DefineClusterCaseInformationFields() {
   unsigned short uwOffset=0;
-  unsigned int   i;
-  ZdString       sBuffer;
 
   try {
     //define fields for secondary cluster data file
@@ -207,10 +205,6 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
 }
 
 void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber) {
-  ZdString          sBuffer;
-  RecordBuffer      Record(vFieldDefinitions);
-  double            dRelativeRisk;
-
   try {
     //now write to secondary cluster information file
     if (gParameters.GetProbabilityModelType() == ORDINAL)
