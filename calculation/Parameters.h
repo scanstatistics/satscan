@@ -5,6 +5,7 @@
 #include "SaTScan.h"
 #include "JulianDates.h"
 #include "UtilityFunctions.h"
+#include "FileName.h"
 
 /** parameter types
     - parameters that are read from file with the exception of: DIMENSION, EXACTTIMES, and RUN_HISTORY_FILENAME */
@@ -188,7 +189,7 @@ class CParameters {
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
-    const char                        * GetRelativeToParameterName(const ZdFileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
+    const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
 
   public:
     CParameters();

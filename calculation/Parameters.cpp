@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "Parameters.h"
 #include "Randomizer.h"
+#include "SSException.h"
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
@@ -25,13 +26,7 @@ CParameters::~CParameters() {}
 
 /** Overload assignment operator */
 CParameters &CParameters::operator=(const CParameters &rhs) {
-  try {
-    if (this != &rhs) Copy(rhs);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("operator=()","CParameters");
-    throw;
-  }
+  if (this != &rhs) Copy(rhs);
   return (*this);
 }
 
@@ -162,155 +157,130 @@ void CParameters::AddEllipsoidShape(double dShape, bool bEmptyFirst) {
     location and sample parameter files run immediately without having to edit
     input file paths. */
 void CParameters::ConvertRelativePath(std::string & sInputFilename) {
-  ZdFileName    fParameterFilename;
-  ZdFileName    fFilename;
-  std::string   sFile;
+  FileName      fParameterFilename, fFilename;
+  std::string   buffer;
 
-  try {
-    if (! sInputFilename.empty()) {
-      //Assume that if slashes exist, then this is a complete file path, so
-      //we'll make no attempts to determine what path might be otherwise.
-      if (sInputFilename.find(ZDFILENAME_SLASH) == sInputFilename.npos) {
-        //If no slashes, then this file is assumed to be in same directory as parameters file.
-        fParameterFilename.SetFullPath(GetSourceFileName().c_str());
-        fFilename.SetFullPath(sInputFilename.c_str());
-        fFilename.SetLocation(fParameterFilename.GetLocation());
-        sInputFilename = fFilename.GetFullPath();
-      }
+  if (! sInputFilename.empty()) {
+    //Assume that if slashes exist, then this is a complete file path, so
+    //we'll make no attempts to determine what path might be otherwise.
+    if (sInputFilename.find(FileName::SLASH) == sInputFilename.npos) {
+      //If no slashes, then this file is assumed to be in same directory as parameters file.
+      fParameterFilename.setFullPath(GetSourceFileName().c_str());
+      fFilename.setFullPath(sInputFilename.c_str());
+      fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
+      fFilename.getFullPath(sInputFilename);
     }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ConvertRelativePath()", "CParameters");
-    throw;
   }
 }
 
 /** Copies all class variables from the given CParameters object (rhs) into this one */
 void CParameters::Copy(const CParameters &rhs) {
-  try {
-    geSpatialWindowType                    = rhs.geSpatialWindowType;
-    gvEllipseShapes                        = rhs.gvEllipseShapes;
-    gvEllipseRotations                     = rhs.gvEllipseRotations;
-    geNonCompactnessPenaltyType            = rhs.geNonCompactnessPenaltyType;
-    glTotalNumEllipses                     = rhs.glTotalNumEllipses;
-    geAnalysisType                         = rhs.geAnalysisType;
-    geAreaScanRate                         = rhs.geAreaScanRate;
-    geProbabilityModelType                 = rhs.geProbabilityModelType;
-    geRiskFunctionType                     = rhs.geRiskFunctionType;
-    giReplications                         = rhs.giReplications;
-    gbPowerCalculation                     = rhs.gbPowerCalculation;
-    gdPower_X                              = rhs.gdPower_X;
-    gdPower_Y                              = rhs.gdPower_Y;
-    gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
-    gsStudyPeriodEndDate                   = rhs.gsStudyPeriodEndDate;
-    gdMaxTemporalClusterSize               = rhs.gdMaxTemporalClusterSize;
-    geIncludeClustersType                  = rhs.geIncludeClustersType;
-    geTimeAggregationUnitsType             = rhs.geTimeAggregationUnitsType;
-    glTimeAggregationLength                = rhs.glTimeAggregationLength;
-    geTimeTrendAdjustType                  = rhs.geTimeTrendAdjustType;
-    gdTimeTrendAdjustPercentage            = rhs.gdTimeTrendAdjustPercentage;
-    gbIncludePurelySpatialClusters         = rhs.gbIncludePurelySpatialClusters;
-    gbIncludePurelyTemporalClusters        = rhs.gbIncludePurelyTemporalClusters;
-    gvCaseFilenames                        = rhs.gvCaseFilenames;
-    gvControlFilenames                     = rhs.gvControlFilenames;
-    gvPopulationFilenames                  = rhs.gvPopulationFilenames;
-    gsCoordinatesFileName                  = rhs.gsCoordinatesFileName;
-    gsSpecialGridFileName                  = rhs.gsSpecialGridFileName;
-    gbUseSpecialGridFile                   = rhs.gbUseSpecialGridFile;
-    gsMaxCirclePopulationFileName          = rhs.gsMaxCirclePopulationFileName;
-    gePrecisionOfTimesType                 = rhs.gePrecisionOfTimesType;
-    geCoordinatesType                      = rhs.geCoordinatesType;
-    gsOutputFileName                       = rhs.gsOutputFileName;
-    gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
-    gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
-    gbIterativeRuns                        = rhs.gbIterativeRuns;
-    giNumIterativeRuns                     = rhs.giNumIterativeRuns;
-    gbIterativeCutOffPValue                = rhs.gbIterativeCutOffPValue;
-    gsProspectiveStartDate                 = rhs.gsProspectiveStartDate;
-    gbOutputAreaSpecificAscii              = rhs.gbOutputAreaSpecificAscii;
-    gbOutputClusterLevelAscii              = rhs.gbOutputClusterLevelAscii;
-    geCriteriaSecondClustersType           = rhs.geCriteriaSecondClustersType;
-    geMaxTemporalClusterSizeType           = rhs.geMaxTemporalClusterSizeType;
-    gbOutputClusterLevelDBase              = rhs.gbOutputClusterLevelDBase;
-    gbOutputAreaSpecificDBase              = rhs.gbOutputAreaSpecificDBase;
-    gbOutputRelativeRisksDBase             = rhs.gbOutputRelativeRisksDBase;
-    gbOutputSimLogLikeliRatiosDBase        = rhs.gbOutputSimLogLikeliRatiosDBase;
-    gsRunHistoryFilename                   = rhs.gsRunHistoryFilename;
-    gbLogRunHistory                        = rhs.gbLogRunHistory;
-    gsParametersSourceFileName             = rhs.gsParametersSourceFileName;
-    gsEndRangeStartDate                    = rhs.gsEndRangeStartDate;
-    gsEndRangeEndDate                      = rhs.gsEndRangeEndDate;
-    gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
-    gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
-    gdTimeTrendConverge			   = rhs.gdTimeTrendConverge;
-    gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
-    gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
-    geSimulationType                       = rhs.geSimulationType;
-    gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
-    gsAdjustmentsByRelativeRisksFileName   = rhs.gsAdjustmentsByRelativeRisksFileName;
-    gbOutputSimulationData                 = rhs.gbOutputSimulationData;
-    gsSimulationDataOutputFilename         = rhs.gsSimulationDataOutputFilename;
-    gbAdjustForEarlierAnalyses             = rhs.gbAdjustForEarlierAnalyses;
-    gbUseAdjustmentsForRRFile              = rhs.gbUseAdjustmentsForRRFile;
-    geSpatialAdjustmentType                = rhs.geSpatialAdjustmentType;
-    geMultipleSetPurposeType               = rhs.geMultipleSetPurposeType;
-    gCreationVersion                       = rhs.gCreationVersion;
-    gbUsePopulationFile                    = rhs.gbUsePopulationFile;
-    glRandomizationSeed                    = rhs.glRandomizationSeed;
-    gbReportCriticalValues                 = rhs.gbReportCriticalValues;
-    geExecutionType                        = rhs.geExecutionType;
-    giNumRequestedParallelProcesses        = rhs.giNumRequestedParallelProcesses;
-    gbSuppressWarnings                     = rhs.gbSuppressWarnings;
-    gbOutputClusterCaseAscii               = rhs.gbOutputClusterCaseAscii;
-    gbOutputClusterCaseDBase               = rhs.gbOutputClusterCaseDBase;
-    geStudyPeriodDataCheckingType          = rhs.geStudyPeriodDataCheckingType;
-    geCoordinatesDataCheckingType          = rhs.geCoordinatesDataCheckingType;
-    gdMaxSpatialSizeInPopulationAtRisk     = rhs.gdMaxSpatialSizeInPopulationAtRisk;
-    gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
-    gdMaxSpatialSizeInMaxCirclePopulationFile = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile;
-    gbRestrictMaxSpatialSizeThroughDistanceFromCenter = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
-    gdMaxSpatialSizeInMaxDistanceFromCenter = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter;
-    gdMaxSpatialSizeInPopulationAtRisk_Reported = rhs.gdMaxSpatialSizeInPopulationAtRisk_Reported;
-    gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported;
-    gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported;
-    gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported;
-    gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
-    gsLocationNeighborsFilename            = rhs.gsLocationNeighborsFilename;
-    gbUseLocationNeighborsFile             = rhs.gbUseLocationNeighborsFile;
-    gbRandomlyGenerateSeed                 = rhs.gbRandomlyGenerateSeed;
-    geMultipleCoordinatesType              = rhs.geMultipleCoordinatesType;
-    gsMetaLocationsFilename                = rhs.gsMetaLocationsFilename;
-    gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("Copy()", "CParameters");
-    throw;
-  }
+  geSpatialWindowType                    = rhs.geSpatialWindowType;
+  gvEllipseShapes                        = rhs.gvEllipseShapes;
+  gvEllipseRotations                     = rhs.gvEllipseRotations;
+  geNonCompactnessPenaltyType            = rhs.geNonCompactnessPenaltyType;
+  glTotalNumEllipses                     = rhs.glTotalNumEllipses;
+  geAnalysisType                         = rhs.geAnalysisType;
+  geAreaScanRate                         = rhs.geAreaScanRate;
+  geProbabilityModelType                 = rhs.geProbabilityModelType;
+  geRiskFunctionType                     = rhs.geRiskFunctionType;
+  giReplications                         = rhs.giReplications;
+  gbPowerCalculation                     = rhs.gbPowerCalculation;
+  gdPower_X                              = rhs.gdPower_X;
+  gdPower_Y                              = rhs.gdPower_Y;
+  gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
+  gsStudyPeriodEndDate                   = rhs.gsStudyPeriodEndDate;
+  gdMaxTemporalClusterSize               = rhs.gdMaxTemporalClusterSize;
+  geIncludeClustersType                  = rhs.geIncludeClustersType;
+  geTimeAggregationUnitsType             = rhs.geTimeAggregationUnitsType;
+  glTimeAggregationLength                = rhs.glTimeAggregationLength;
+  geTimeTrendAdjustType                  = rhs.geTimeTrendAdjustType;
+  gdTimeTrendAdjustPercentage            = rhs.gdTimeTrendAdjustPercentage;
+  gbIncludePurelySpatialClusters         = rhs.gbIncludePurelySpatialClusters;
+  gbIncludePurelyTemporalClusters        = rhs.gbIncludePurelyTemporalClusters;
+  gvCaseFilenames                        = rhs.gvCaseFilenames;
+  gvControlFilenames                     = rhs.gvControlFilenames;
+  gvPopulationFilenames                  = rhs.gvPopulationFilenames;
+  gsCoordinatesFileName                  = rhs.gsCoordinatesFileName;
+  gsSpecialGridFileName                  = rhs.gsSpecialGridFileName;
+  gbUseSpecialGridFile                   = rhs.gbUseSpecialGridFile;
+  gsMaxCirclePopulationFileName          = rhs.gsMaxCirclePopulationFileName;
+  gePrecisionOfTimesType                 = rhs.gePrecisionOfTimesType;
+  geCoordinatesType                      = rhs.geCoordinatesType;
+  gsOutputFileName                       = rhs.gsOutputFileName;
+  gbOutputSimLogLikeliRatiosAscii        = rhs.gbOutputSimLogLikeliRatiosAscii;
+  gbOutputRelativeRisksAscii             = rhs.gbOutputRelativeRisksAscii;
+  gbIterativeRuns                        = rhs.gbIterativeRuns;
+  giNumIterativeRuns                     = rhs.giNumIterativeRuns;
+  gbIterativeCutOffPValue                = rhs.gbIterativeCutOffPValue;
+  gsProspectiveStartDate                 = rhs.gsProspectiveStartDate;
+  gbOutputAreaSpecificAscii              = rhs.gbOutputAreaSpecificAscii;
+  gbOutputClusterLevelAscii              = rhs.gbOutputClusterLevelAscii;
+  geCriteriaSecondClustersType           = rhs.geCriteriaSecondClustersType;
+  geMaxTemporalClusterSizeType           = rhs.geMaxTemporalClusterSizeType;
+  gbOutputClusterLevelDBase              = rhs.gbOutputClusterLevelDBase;
+  gbOutputAreaSpecificDBase              = rhs.gbOutputAreaSpecificDBase;
+  gbOutputRelativeRisksDBase             = rhs.gbOutputRelativeRisksDBase;
+  gbOutputSimLogLikeliRatiosDBase        = rhs.gbOutputSimLogLikeliRatiosDBase;
+  gsRunHistoryFilename                   = rhs.gsRunHistoryFilename;
+  gbLogRunHistory                        = rhs.gbLogRunHistory;
+  gsParametersSourceFileName             = rhs.gsParametersSourceFileName;
+  gsEndRangeStartDate                    = rhs.gsEndRangeStartDate;
+  gsEndRangeEndDate                      = rhs.gsEndRangeEndDate;
+  gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
+  gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
+  gdTimeTrendConverge			 = rhs.gdTimeTrendConverge;
+  gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
+  gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
+  geSimulationType                       = rhs.geSimulationType;
+  gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
+  gsAdjustmentsByRelativeRisksFileName   = rhs.gsAdjustmentsByRelativeRisksFileName;
+  gbOutputSimulationData                 = rhs.gbOutputSimulationData;
+  gsSimulationDataOutputFilename         = rhs.gsSimulationDataOutputFilename;
+  gbAdjustForEarlierAnalyses             = rhs.gbAdjustForEarlierAnalyses;
+  gbUseAdjustmentsForRRFile              = rhs.gbUseAdjustmentsForRRFile;
+  geSpatialAdjustmentType                = rhs.geSpatialAdjustmentType;
+  geMultipleSetPurposeType               = rhs.geMultipleSetPurposeType;
+  gCreationVersion                       = rhs.gCreationVersion;
+  gbUsePopulationFile                    = rhs.gbUsePopulationFile;
+  glRandomizationSeed                    = rhs.glRandomizationSeed;
+  gbReportCriticalValues                 = rhs.gbReportCriticalValues;
+  geExecutionType                        = rhs.geExecutionType;
+  giNumRequestedParallelProcesses        = rhs.giNumRequestedParallelProcesses;
+  gbSuppressWarnings                     = rhs.gbSuppressWarnings;
+  gbOutputClusterCaseAscii               = rhs.gbOutputClusterCaseAscii;
+  gbOutputClusterCaseDBase               = rhs.gbOutputClusterCaseDBase;
+  geStudyPeriodDataCheckingType          = rhs.geStudyPeriodDataCheckingType;
+  geCoordinatesDataCheckingType          = rhs.geCoordinatesDataCheckingType;
+  gdMaxSpatialSizeInPopulationAtRisk     = rhs.gdMaxSpatialSizeInPopulationAtRisk;
+  gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
+  gdMaxSpatialSizeInMaxCirclePopulationFile = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile;
+  gbRestrictMaxSpatialSizeThroughDistanceFromCenter = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
+  gdMaxSpatialSizeInMaxDistanceFromCenter = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter;
+  gdMaxSpatialSizeInPopulationAtRisk_Reported = rhs.gdMaxSpatialSizeInPopulationAtRisk_Reported;
+  gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported;
+  gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported;
+  gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported;
+  gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported;
+  gsLocationNeighborsFilename            = rhs.gsLocationNeighborsFilename;
+  gbUseLocationNeighborsFile             = rhs.gbUseLocationNeighborsFile;
+  gbRandomlyGenerateSeed                 = rhs.gbRandomlyGenerateSeed;
+  geMultipleCoordinatesType              = rhs.geMultipleCoordinatesType;
+  gsMetaLocationsFilename                = rhs.gsMetaLocationsFilename;
+  gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
-  try {
-    if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
-      ZdGenerateException("Index %d out of range [%d,%d].","GetCaseFileName()", iSetIndex,
-                          (gvCaseFilenames.size() ? 1 : -1), (gvCaseFilenames.size() ? (int)gvCaseFilenames.size() : -1));
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetCaseFileName()","CParameters");
-    throw;
-  }
+  if (!iSetIndex || iSetIndex > gvCaseFilenames.size())
+    throw prg_error("Index %d out of range [%d,%d].","GetCaseFileName()", iSetIndex,
+                    (gvCaseFilenames.size() ? 1 : -1), (gvCaseFilenames.size() ? (int)gvCaseFilenames.size() : -1));
   return gvCaseFilenames[iSetIndex - 1];
 }
 
 const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
-  try {
-    if (!iSetIndex || iSetIndex > gvControlFilenames.size())
-      ZdGenerateException("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
-                          (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? (int)gvControlFilenames.size() : -1));
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetControlFileName()","CParameters");
-    throw;
-  }
+  if (!iSetIndex || iSetIndex > gvControlFilenames.size())
+    throw prg_error("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
+                    (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? (int)gvControlFilenames.size() : -1));
   return gvControlFilenames[iSetIndex - 1];
 }
 
@@ -352,9 +322,8 @@ double CParameters::GetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, b
     case PERCENTOFPOPULATION    : return bReported ? gdMaxSpatialSizeInPopulationAtRisk_Reported : gdMaxSpatialSizeInPopulationAtRisk;
     case MAXDISTANCE            : return bReported ? gdMaxSpatialSizeInMaxDistanceFromCenter_Reported : gdMaxSpatialSizeInMaxDistanceFromCenter;
     case PERCENTOFMAXCIRCLEFILE : return bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported : gdMaxSpatialSizeInMaxCirclePopulationFile;
-    default : ZdException::Generate("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
+    default : throw prg_error("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
   };
-  return 0;
 }
 
 /** Returns number of parallel processes to run. */
@@ -433,27 +402,22 @@ bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelTyp
 }
 
 const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
-  try {
-    if (!iSetIndex || iSetIndex > gvPopulationFilenames.size())
-      ZdGenerateException("Index %d out of range [%d,%d].","GetPopulationFileName()", iSetIndex,
-                          (gvPopulationFilenames.size() ? 1 : -1), (gvPopulationFilenames.size() ? (int)gvPopulationFilenames.size() : -1));
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("GetPopulationFileName()","CParameters");
-    throw;
-  }
+  if (!iSetIndex || iSetIndex > gvPopulationFilenames.size())
+    throw prg_error("Index %d out of range [%d,%d].","GetPopulationFileName()", iSetIndex,
+                    (gvPopulationFilenames.size() ? 1 : -1), (gvPopulationFilenames.size() ? (int)gvPopulationFilenames.size() : -1));
   return gvPopulationFilenames[iSetIndex - 1];
 }
 
 /** If passed filename has same path as passed parameter filename, returns
     'name.extension' else returns filename. */
-const char * CParameters::GetRelativeToParameterName(const ZdFileName& fParameterName,
+const char * CParameters::GetRelativeToParameterName(const FileName& fParameterName,
                                                      const std::string& sFilename,
                                                      std::string& sValue) const {
-  ZdFileName fInputFilename(sFilename.c_str());
+  FileName      fInputFilename(sFilename.c_str());
+  std::string   buffer, buffer2;
 
-  if (!stricmp(fInputFilename.GetLocation(), fParameterName.GetLocation()))
-    sValue = fInputFilename.GetCompleteFileName();
+  if (!stricmp(fInputFilename.getLocation(buffer).c_str(), fParameterName.getLocation(buffer2).c_str()))
+    sValue = fInputFilename.getFileName() + fInputFilename.getExtension();
   else
     sValue = sFilename.c_str();
   return sValue.c_str();
@@ -465,9 +429,8 @@ bool CParameters::GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeT
     case PERCENTOFPOPULATION    : return true;
     case MAXDISTANCE            : return bReported ? gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported : gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
     case PERCENTOFMAXCIRCLEFILE : return bReported ? gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
-    default : ZdException::Generate("Unknown type '%d'.\n", "GetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
+    default : throw prg_error("Unknown type '%d'.\n", "GetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
   };
-  return false;
 }
 
 /** Sets maximum spatial cluster size given type and whether value is for real or simulations. */
@@ -476,7 +439,7 @@ void CParameters::SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, dou
     case PERCENTOFPOPULATION    : bReported ? gdMaxSpatialSizeInPopulationAtRisk_Reported = d : gdMaxSpatialSizeInPopulationAtRisk = d; break;
     case MAXDISTANCE            : bReported ? gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = d : gdMaxSpatialSizeInMaxDistanceFromCenter = d; break;
     case PERCENTOFMAXCIRCLEFILE : bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = d : gdMaxSpatialSizeInMaxCirclePopulationFile = d; break;
-    default : ZdException::Generate("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
+    default : throw prg_error("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
   };
 }
 
@@ -502,169 +465,94 @@ void CParameters::SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeT
     case PERCENTOFPOPULATION    : break;
     case MAXDISTANCE            : bReported ? gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = b : gbRestrictMaxSpatialSizeThroughDistanceFromCenter = b; break;
     case PERCENTOFMAXCIRCLEFILE : bReported ? gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = b : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = b; break;
-    default : ZdException::Generate("Unknown type '%d'.\n", "SetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
+    default : throw prg_error("Unknown type '%d'.\n", "SetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
   };
 }
 
 /** Sets start range start date. Throws exception. */
 void CParameters::SetStartRangeStartDate(const char * sStartRangeStartDate) {
-  try {
-    if (!sStartRangeStartDate)
-      ZdException::Generate("Null pointer.","SetStartRangeStartDate()");
-
-    gsStartRangeStartDate = sStartRangeStartDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetStartRangeStartDate()","CParameters");
-    throw;
-  }
+  gsStartRangeStartDate = sStartRangeStartDate;
 }
 
 /** Sets start range start date. Throws exception. */
 void CParameters::SetStartRangeEndDate(const char * sStartRangeEndDate) {
-  try {
-    if (!sStartRangeEndDate)
-      ZdException::Generate("Null pointer.","SetStartRangeEndDate()");
-
-    gsStartRangeEndDate = sStartRangeEndDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetStartRangeEndDate()","CParameters");
-    throw;
-  }
+  gsStartRangeEndDate = sStartRangeEndDate;
 }
 
 /** Sets analysis type. Throws exception if out of range. */
 void CParameters::SetAnalysisType(AnalysisType eAnalysisType) {
-  try {
-    if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PROSPECTIVEPURELYTEMPORAL)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
-    geAnalysisType = eAnalysisType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetAnalysisType()","CParameters");
-    throw;
-  }
+  if (eAnalysisType < PURELYSPATIAL || eAnalysisType > PROSPECTIVEPURELYTEMPORAL)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eAnalysisType, PURELYSPATIAL, PROSPECTIVEPURELYTEMPORAL);
+  geAnalysisType = eAnalysisType;
 }
 
 /** Sets area rate for areas scanned type. Throws exception if out of range. */
 void CParameters::SetAreaRateType(AreaRateType eAreaRateType) {
-  try {
-    if (eAreaRateType < HIGH || eAreaRateType > HIGHANDLOW)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAreaRateType()", eAreaRateType, HIGH, HIGHANDLOW);
-    geAreaScanRate = eAreaRateType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetAreaRateType()","CParameters");
-    throw;
-  }
+  if (eAreaRateType < HIGH || eAreaRateType > HIGHANDLOW)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAreaRateType()", eAreaRateType, HIGH, HIGHANDLOW);
+  geAreaScanRate = eAreaRateType;
 }
 
 /** Sets case data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath, size_t iSetIndex) {
-  try {
-    if (! sCaseFileName)
-      ZdGenerateException("Null pointer.", "SetCaseFileName()");
+  if (!iSetIndex)
+    throw prg_error("Index %d out of range [1,].", "SetCaseFileName()", iSetIndex);
 
-    if (!iSetIndex)
-      ZdGenerateException("Index %d out of range [1,].", "SetCaseFileName()", iSetIndex);
+  if (iSetIndex > gvCaseFilenames.size())
+    gvCaseFilenames.resize(iSetIndex);
 
-    if (iSetIndex > gvCaseFilenames.size())
-      gvCaseFilenames.resize(iSetIndex);
-
-    gvCaseFilenames[iSetIndex - 1] = sCaseFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gvCaseFilenames[iSetIndex - 1]);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetCaseFileName()", "CParameters");
-    throw;
-  }
+  gvCaseFilenames[iSetIndex - 1] = sCaseFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gvCaseFilenames[iSetIndex - 1]);
 }
 
 /** Sets control data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath, size_t iSetIndex) {
-  try {
-    if (! sControlFileName)
-      ZdGenerateException("Null pointer.", "SetControlFileName()");
+  if (!iSetIndex)
+    throw prg_error("Index %d out of range [1,].", "SetControlFileName()", iSetIndex);
 
-    if (!iSetIndex)
-      ZdGenerateException("Index %d out of range [1,].", "SetControlFileName()", iSetIndex);
+  if (iSetIndex > gvControlFilenames.size())
+    gvControlFilenames.resize(iSetIndex);
 
-    if (iSetIndex > gvControlFilenames.size())
-      gvControlFilenames.resize(iSetIndex);
-
-    gvControlFilenames[iSetIndex - 1] = sControlFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gvControlFilenames[iSetIndex - 1]);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetControlFileName()", "CParameters");
-    throw;
-  }
+  gvControlFilenames[iSetIndex - 1] = sControlFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gvControlFilenames[iSetIndex - 1]);
 }
 
 /** Sets geographical coordinates data checking type. Throws exception if out of range. */
 void CParameters::SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCoordinatesDataCheckingType) {
-  try {
-    if (eCoordinatesDataCheckingType < STRICTCOORDINATES || eCoordinatesDataCheckingType > RELAXEDCOORDINATES)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCoordinatesDataCheckingType()",
-                            eCoordinatesDataCheckingType, STRICTCOORDINATES, RELAXEDCOORDINATES);
-    geCoordinatesDataCheckingType = eCoordinatesDataCheckingType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetCoordinatesDataCheckingType()","CParameters");
-    throw;
-  }
+  if (eCoordinatesDataCheckingType < STRICTCOORDINATES || eCoordinatesDataCheckingType > RELAXEDCOORDINATES)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetCoordinatesDataCheckingType()",
+                    eCoordinatesDataCheckingType, STRICTCOORDINATES, RELAXEDCOORDINATES);
+  geCoordinatesDataCheckingType = eCoordinatesDataCheckingType;
 }
 
 /** Sets coordinates data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sCoordinatesFileName)
-      ZdGenerateException("Null pointer.", "SetCoordinatesFileName()");
-
-    gsCoordinatesFileName = sCoordinatesFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsCoordinatesFileName);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetCoordinatesFileName()", "CParameters");
-    throw;
-  }
+  gsCoordinatesFileName = sCoordinatesFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsCoordinatesFileName);
 }
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetCoordinatesType(CoordinatesType eCoordinatesType) {
-  try {
-    if (eCoordinatesType < CARTESIAN || eCoordinatesType > LATLON)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCoordinatesType()", eCoordinatesType, CARTESIAN, LATLON);
-    geCoordinatesType = eCoordinatesType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetCoordinatesType()","CParameters");
-    throw;
-  }
+  if (eCoordinatesType < CARTESIAN || eCoordinatesType > LATLON)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetCoordinatesType()", eCoordinatesType, CARTESIAN, LATLON);
+  geCoordinatesType = eCoordinatesType;
 }
 
 /** Sets criteria for reporting secondary clusters. Throws exception if out of range. */
 void CParameters::SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType) {
-  try {
-    if (eCriteriaSecondaryClustersType < NOGEOOVERLAP || eCriteriaSecondaryClustersType > NORESTRICTIONS)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetCriteriaForReportingSecondaryClusters()",
-                            eCriteriaSecondaryClustersType, NOGEOOVERLAP, NORESTRICTIONS);
-    geCriteriaSecondClustersType = eCriteriaSecondaryClustersType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetCriteriaForReportingSecondaryClusters()","CParameters");
-    throw;
-  }
+  if (eCriteriaSecondaryClustersType < NOGEOOVERLAP || eCriteriaSecondaryClustersType > NORESTRICTIONS)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetCriteriaForReportingSecondaryClusters()",
+                    eCriteriaSecondaryClustersType, NOGEOOVERLAP, NORESTRICTIONS);
+  geCriteriaSecondClustersType = eCriteriaSecondaryClustersType;
 }
 
 /** initializes global variables to default values */
@@ -780,75 +668,39 @@ void CParameters::SetAsDefaulted() {
 
 /** Sets start range start date. Throws exception. */
 void CParameters::SetEndRangeEndDate(const char * sEndRangeEndDate) {
-  try {
-    if (!sEndRangeEndDate)
-      ZdException::Generate("Null pointer.","SetEndRangeEndDate()");
-    gsEndRangeEndDate = sEndRangeEndDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetEndRangeEndDate()","CParameters");
-    throw;
-  }
+  gsEndRangeEndDate = sEndRangeEndDate;
 }
 
 /** Sets end range start date. Throws exception. */
 void CParameters::SetEndRangeStartDate(const char * sEndRangeStartDate) {
-  try {
-    if (!sEndRangeStartDate)
-      ZdException::Generate("Null pointer.","SetEndRangeStartDate()");
-    gsEndRangeStartDate = sEndRangeStartDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetEndRangeStartDate()","CParameters");
-    throw;
-  }
+  gsEndRangeStartDate = sEndRangeStartDate;
 }
 
 /** Sets analysis execution type. Throws exception if out of range. */
 void CParameters::SetExecutionType(ExecutionType eExecutionType) {
-  try {
-    if (AUTOMATIC > eExecutionType || CENTRICALLY < eExecutionType)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetExecutionType()", eExecutionType, AUTOMATIC, CENTRICALLY);
-    geExecutionType = eExecutionType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetExecutionType()","CParameters");
-    throw;
-  }
+  if (AUTOMATIC > eExecutionType || CENTRICALLY < eExecutionType)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetExecutionType()", eExecutionType, AUTOMATIC, CENTRICALLY);
+  geExecutionType = eExecutionType;
 }
 
 /** Sets clusters to include type. Throws exception if out of range. */
 void CParameters::SetIncludeClustersType(IncludeClustersType eIncludeClustersType) {
-  try {
-    if (ALLCLUSTERS > eIncludeClustersType || CLUSTERSINRANGE < eIncludeClustersType)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetIncludeClustersType()", eIncludeClustersType, ALLCLUSTERS, CLUSTERSINRANGE);
-    geIncludeClustersType = eIncludeClustersType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetIncludeClustersType()","CParameters");
-    throw;
-  }
+  if (ALLCLUSTERS > eIncludeClustersType || CLUSTERSINRANGE < eIncludeClustersType)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetIncludeClustersType()", eIncludeClustersType, ALLCLUSTERS, CLUSTERSINRANGE);
+  geIncludeClustersType = eIncludeClustersType;
 }
 
 /** Sets maximum temporal cluster size. */
 void CParameters::SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
   gdMaxTemporalClusterSize = dMaxTemporalClusterSize;
 }
 
 /** Sets maximum temporal cluster size type. Throws exception if out of range. */
 void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSizeType) {
-  try {
-    if (PERCENTAGETYPE > eTemporalSizeType || TIMETYPE < eTemporalSizeType)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].","SetMaximumTemporalClusterSizeType()",
-                            eTemporalSizeType, PERCENTAGETYPE, TIMETYPE);
-    geMaxTemporalClusterSizeType = eTemporalSizeType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMaximumTemporalClusterSizeType()","CParameters");
-    throw;
-  }
+  if (PERCENTAGETYPE > eTemporalSizeType || TIMETYPE < eTemporalSizeType)
+    throw prg_error("Enumeration %d out of range [%d,%d].","SetMaximumTemporalClusterSizeType()",
+                    eTemporalSizeType, PERCENTAGETYPE, TIMETYPE);
+  geMaxTemporalClusterSizeType = eTemporalSizeType;
 }
 
 /** Sets meta locations data file name.
@@ -856,60 +708,36 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
     to path relative to executable. This is only attempted if current file
     does not exist. */
 void CParameters::setMetaLocationsFilename(const char * sMetaLocationsFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sMetaLocationsFileName)
-      ZdGenerateException("Null pointer.", "setMetaLocationsFileName()");
-
-    gsMetaLocationsFilename = sMetaLocationsFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsMetaLocationsFilename);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("setMetaLocationsFileName()", "CParameters");
-    throw;
-  }
+  gsMetaLocationsFilename = sMetaLocationsFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsMetaLocationsFilename);
 }
 
 /** Set ellipse non-compactness penalty type. */
 void CParameters::SetNonCompactnessPenalty(NonCompactnessPenaltyType eType) {
-  try {
-    if (eType < NOPENALTY || eType > STRONGPENALTY)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetNonCompactnessPenalty()", eType, NOPENALTY, STRONGPENALTY);
-    geNonCompactnessPenaltyType = eType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetNonCompactnessPenalty()","CParameters");
-    throw;
-  }
+  if (eType < NOPENALTY || eType > STRONGPENALTY)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetNonCompactnessPenalty()", eType, NOPENALTY, STRONGPENALTY);
+  geNonCompactnessPenaltyType = eType;
 }
 
 /** Adjusts the number of data sets. */
 void CParameters::SetNumDataSets(size_t iNumDataSets) {
-  try {
-    if (iNumDataSets == 0)
-      ZdException::Generate("Number of data sets can not be zero.\n", "SetNumDataSets()");
+  if (iNumDataSets == 0)
+    throw prg_error("Number of data sets can not be zero.\n", "SetNumDataSets()");
 
-    //adjust the number of filenames for case, control, and population
-    gvCaseFilenames.resize(iNumDataSets);
-    gvControlFilenames.resize(iNumDataSets);
-    gvPopulationFilenames.resize(iNumDataSets);
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("SetNumDataSets()","CParameters");
-    throw;
-  }
+  //adjust the number of filenames for case, control, and population
+  gvCaseFilenames.resize(iNumDataSets);
+  gvControlFilenames.resize(iNumDataSets);
+  gvPopulationFilenames.resize(iNumDataSets);
 }
 
 /** Sets number of Monte Carlo replications to run. */
 void CParameters::SetNumberMonteCarloReplications(unsigned int iReplications) {
-  //Validity of setting is checked in ValidateParameters().
   giReplications = iReplications;
 }
 
 /** Sets number of iterative scans to run. */
 void CParameters::SetNumIterativeScans(int iNumIterativeScans) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
   giNumIterativeRuns = iNumIterativeScans;
 }
 
@@ -918,55 +746,33 @@ void CParameters::SetNumIterativeScans(int iNumIterativeScans) {
     to path relative to executable. This is only attempted if current file
     does not exist. */
 void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sOutPutFileName)
-      ZdGenerateException("Null pointer.", "SetOutputFileName()");
-
-    gsOutputFileName = sOutPutFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsOutputFileName);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetOutputFileName()", "CParameters");
-    throw;
-  }
+  gsOutputFileName = sOutPutFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsOutputFileName);
 }
 
 /** Sets population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool bCorrectForRelativePath, size_t tSetIndex) {
-  try {
-    if (!sPopulationFileName)
-      ZdGenerateException("Null pointer.", "SetPopulationFileName()");
+  if (!tSetIndex)
+    throw prg_error("Index %s out of range [1,].", "SetPopulationFileName()", tSetIndex);
 
-    if (!tSetIndex)
-      ZdGenerateException("Index %s out of range [1,].", "SetPopulationFileName()", tSetIndex);
+  if (tSetIndex > gvPopulationFilenames.size())
+    gvPopulationFilenames.resize(tSetIndex);
 
-    if (tSetIndex > gvPopulationFilenames.size())
-      gvPopulationFilenames.resize(tSetIndex);
-
-    gvPopulationFilenames[tSetIndex - 1] = sPopulationFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gvPopulationFilenames[tSetIndex - 1]);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPopulationFileName()", "CParameters");
-    throw;
-  }
+  gvPopulationFilenames[tSetIndex - 1] = sPopulationFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gvPopulationFilenames[tSetIndex - 1]);
 }
 
 /** Sets X variable for power calculation. Throws exception if out of range. */
 void CParameters::SetPowerCalculationX(double dPowerX) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
   gdPower_X = dPowerX;
 }
 
 /** Sets Y variable for power calculation. Throws exception if out of range. */
 void CParameters::SetPowerCalculationY(double dPowerY) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
   gdPower_Y = dPowerY;
 }
 
@@ -974,352 +780,188 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sFileName)
-      ZdGenerateException("Null pointer.", "SetAdjustmentsByRelativeRisksFilename()");
-
-    gsAdjustmentsByRelativeRisksFileName = sFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsAdjustmentsByRelativeRisksFileName);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetAdjustmentsByRelativeRisksFilename()", "CParameters");
-    throw;
-  }
+  gsAdjustmentsByRelativeRisksFileName = sFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsAdjustmentsByRelativeRisksFileName);
 }
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) {
-  try {
-    if (eDatePrecisionType < NONE || eDatePrecisionType > DAY)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, DAY);
-    gePrecisionOfTimesType = eDatePrecisionType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPrecisionOfTimesType()","CParameters");
-    throw;
-  }
+  if (eDatePrecisionType < NONE || eDatePrecisionType > DAY)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, DAY);
+  gePrecisionOfTimesType = eDatePrecisionType;
 }
 
 /** Sets probability model type. Throws exception if out of range. */
 void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModelType) {
-  try {
-    if (eProbabilityModelType < POISSON || eProbabilityModelType > RANK)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
-
-    geProbabilityModelType = eProbabilityModelType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProbabilityModelType()","CParameters");
-    throw;
-  }
+  if (eProbabilityModelType < POISSON || eProbabilityModelType > RANK)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetAnalysisType()", eProbabilityModelType, POISSON, RANK);
+  geProbabilityModelType = eProbabilityModelType;
 }
 
 /** Sets prospective start date. Throws exception if out of range. */
 void CParameters::SetProspectiveStartDate(const char * sProspectiveStartDate) {
-  try {
-    if (!sProspectiveStartDate)
-      ZdException::Generate("Null pointer.","SetProspectiveStartDate()");
-
-    gsProspectiveStartDate = sProspectiveStartDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProspectiveStartDate()","CParameters");
-    throw;
-  }
+  gsProspectiveStartDate = sProspectiveStartDate;
 }
 
 /** Set seed used by randomization process. */
 void CParameters::SetRandomizationSeed(long lSeed) {
-  //Validity of setting is checked in ValidateParameters().
   glRandomizationSeed = lSeed;
 }
 
 /** Sets risk type. Throws exception if out of range. */
 void CParameters::SetRiskType(RiskType eRiskType) {
-  try {
-    if (eRiskType < STANDARDRISK || eRiskType > MONOTONERISK)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetRiskType()", eRiskType, STANDARDRISK, MONOTONERISK);
-    geRiskFunctionType = eRiskType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetRiskType()","CParameters");
-    throw;
-  }
+  if (eRiskType < STANDARDRISK || eRiskType > MONOTONERISK)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetRiskType()", eRiskType, STANDARDRISK, MONOTONERISK);
+  geRiskFunctionType = eRiskType;
 }
 
 /** sets simulation procedure type */
 void CParameters::SetSimulationType(SimulationType eSimulationType) {
-  try {
-    if (eSimulationType < STANDARD || eSimulationType > FILESOURCE)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSimulationType()", eSimulationType, STANDARD, FILESOURCE);
-    geSimulationType = eSimulationType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSimulationType()","CParameters");
-    throw;
-  }
+  if (eSimulationType < STANDARD || eSimulationType > FILESOURCE)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSimulationType()", eSimulationType, STANDARD, FILESOURCE);
+  geSimulationType = eSimulationType;
 }
 
 /** Sets simulation data output file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sSourceFileName)
-      ZdGenerateException("Null pointer.", "SetSimulationDataOutputFileName()");
-
-    gsSimulationDataOutputFilename = sSourceFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsSimulationDataOutputFilename);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSimulationDataOutputFileName()", "CParameters");
-    throw;
-  }
+  gsSimulationDataOutputFilename = sSourceFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsSimulationDataOutputFilename);
 }
 
 /** Sets simulation data source file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sSourceFileName)
-      ZdGenerateException("Null pointer.", "SetSimulationDataSourceFileName()");
-
-    gsSimulationDataSourceFileName = sSourceFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsSimulationDataSourceFileName);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSimulationDataSourceFileName()", "CParameters");
-    throw;
-  }
+  gsSimulationDataSourceFileName = sSourceFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsSimulationDataSourceFileName);
 }
 
 /** Set spatial adjustment type. Throws exception if out of range. */
 void CParameters::SetSpatialAdjustmentType(SpatialAdjustmentType eSpatialAdjustmentType) {
-  try {
-    if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
-    geSpatialAdjustmentType = eSpatialAdjustmentType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSpatialAdjustmentType()","CParameters");
-    throw;
-  }
+  if (eSpatialAdjustmentType < NO_SPATIAL_ADJUSTMENT || eSpatialAdjustmentType > SPATIALLY_STRATIFIED_RANDOMIZATION)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSpatialAdjustmentType()", eSpatialAdjustmentType, NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION);
+  geSpatialAdjustmentType = eSpatialAdjustmentType;
 }
 
 /** Set spatial window shape type. Throws exception if out of range. */
 void  CParameters::SetSpatialWindowType(SpatialWindowType eSpatialWindowType) {
-  try {
-    if (eSpatialWindowType < CIRCULAR || eSpatialWindowType > ELLIPTIC)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetSpatialWindowType()", eSpatialWindowType, CIRCULAR, ELLIPTIC);
-    geSpatialWindowType = eSpatialWindowType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSpatialWindowType()","CParameters");
-    throw;
-  }
+  if (eSpatialWindowType < CIRCULAR || eSpatialWindowType > ELLIPTIC)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetSpatialWindowType()", eSpatialWindowType, CIRCULAR, ELLIPTIC);
+  geSpatialWindowType = eSpatialWindowType;
 }
 
 /** Set p-value that is cut-off for Iterative scans. */
 void CParameters::SetIterativeCutOffPValue(double dPValue) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
   gbIterativeCutOffPValue = dPValue;
 }
 
 /** Sets filename of file used to load parameters. */
 void CParameters::SetSourceFileName(const char * sParametersSourceFileName) {
-  try {
-    if (! sParametersSourceFileName)
-      ZdGenerateException("Null pointer.", "SetSourceFileName()");
-    //Use ZdFileName class to ensure that a relative path is expanded to absolute path.  
-    gsParametersSourceFileName = ZdFileName(sParametersSourceFileName).GetFullPath();
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSourceFileName()", "CParameters");
-    throw;
-  }
+  //Use FileName class to ensure that a relative path is expanded to absolute path.
+  std::string buffer;
+  gsParametersSourceFileName = FileName(sParametersSourceFileName).getFullPath(buffer);
 }
 
 /** Sets special grid data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
-  try {
-    if (! sSpecialGridFileName)
-      ZdGenerateException("Null pointer.", "SetSpecialGridFileName()");
+  gsSpecialGridFileName = sSpecialGridFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsSpecialGridFileName);
 
-    gsSpecialGridFileName = sSpecialGridFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsSpecialGridFileName);
-
-    if (gsSpecialGridFileName.empty())
-      gbUseSpecialGridFile = false; //If empty, then definately not using special grid.
-    else if (bSetUsingFlag)
-      gbUseSpecialGridFile = true;  //Permits setting special grid filename in GUI interface
+  if (gsSpecialGridFileName.empty())
+    gbUseSpecialGridFile = false; //If empty, then definately not using special grid.
+  else if (bSetUsingFlag)
+    gbUseSpecialGridFile = true;  //Permits setting special grid filename in GUI interface
                                   //where obviously the use of special grid file is the desire.
-    //else gbUseSpecialGridFile is as set from parameters read. This permits the situation
-    //where user has modified the paramters file manually so that there is a named
-    //special grid file but they turned off option to use it. 
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSpecialGridFileName()", "CParameters");
-    throw;
-  }
+  //else gbUseSpecialGridFile is as set from parameters read. This permits the situation
+  //where user has modified the paramters file manually so that there is a named
+  //special grid file but they turned off option to use it.
 }
 
 /** Sets maximum circle population data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sMaxCirclePopulationFileName)
-      ZdGenerateException("Null pointer.", "SetMaxCirclePopulationFileName()");
-
-    gsMaxCirclePopulationFileName = sMaxCirclePopulationFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsMaxCirclePopulationFileName);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMaxCirclePopulationFileName()", "CParameters");
-    throw;
-  }
+  gsMaxCirclePopulationFileName = sMaxCirclePopulationFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsMaxCirclePopulationFileName);
 }
 
 /** Set multiple dataset purpose type. Throws exception if out of range. */
 void CParameters::SetMultipleDataSetPurposeType(MultipleDataSetPurposeType eType) {
-  try {
-    if (eType < MULTIVARIATE || eType > ADJUSTMENT)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMultipleDataSetPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
-    geMultipleSetPurposeType = eType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMultipleDataSetPurposeType()","CParameters");
-    throw;
-  }
+  if (eType < MULTIVARIATE || eType > ADJUSTMENT)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetMultipleDataSetPurposeType()", eType, MULTIVARIATE, ADJUSTMENT);
+  geMultipleSetPurposeType = eType;
 }
 
 /** Set multiple coordinates type. Throws exception if out of range. */
 void CParameters::SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCoordinatesType) {
-  try {
-    if (eMultipleCoordinatesType < ONEPERLOCATION || eMultipleCoordinatesType > ALLLOCATIONS)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetMultipleCoordinatesType()", eMultipleCoordinatesType, ONEPERLOCATION, ALLLOCATIONS);
-    geMultipleCoordinatesType = eMultipleCoordinatesType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetMultipleCoordinatesType()","CParameters");
-    throw;
-  }
+  if (eMultipleCoordinatesType < ONEPERLOCATION || eMultipleCoordinatesType > ALLLOCATIONS)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetMultipleCoordinatesType()", eMultipleCoordinatesType, ONEPERLOCATION, ALLLOCATIONS);
+  geMultipleCoordinatesType = eMultipleCoordinatesType;
 }
 
 /** Sets neighbor array data file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
 void CParameters::SetLocationNeighborsFileName(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath) {
-  try {
-    if (! sLocationNeighborsFileName)
-      ZdGenerateException("Null pointer.", "SetLocationNeighborsFileName()");
-
-    gsLocationNeighborsFilename = sLocationNeighborsFileName;
-    if (bCorrectForRelativePath)
-      ConvertRelativePath(gsLocationNeighborsFilename);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetLocationNeighborsFileName()", "CParameters");
-    throw;
-  }
+  gsLocationNeighborsFilename = sLocationNeighborsFileName;
+  if (bCorrectForRelativePath)
+    ConvertRelativePath(gsLocationNeighborsFilename);
 }
 
 /** Sets study period data checking type. Throws exception if out of range. */
 void CParameters::SetStudyPeriodDataCheckingType(StudyPeriodDataCheckingType eStudyPeriodDataCheckingType) {
-  try {
-    if (eStudyPeriodDataCheckingType < STRICTBOUNDS || eStudyPeriodDataCheckingType > RELAXEDBOUNDS)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].","SetStudyPeriodDataCheckingType()", eStudyPeriodDataCheckingType, STRICTBOUNDS, RELAXEDBOUNDS);
-    geStudyPeriodDataCheckingType = eStudyPeriodDataCheckingType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetStudyPeriodDataCheckingType()","CParameters");
-    throw;
-  }
+  if (eStudyPeriodDataCheckingType < STRICTBOUNDS || eStudyPeriodDataCheckingType > RELAXEDBOUNDS)
+    throw prg_error("Enumeration %d out of range [%d,%d].","SetStudyPeriodDataCheckingType()", eStudyPeriodDataCheckingType, STRICTBOUNDS, RELAXEDBOUNDS);
+  geStudyPeriodDataCheckingType = eStudyPeriodDataCheckingType;
 }
 
 /** Sets study period start date. Throws exception if out of range. */
 void CParameters::SetStudyPeriodEndDate(const char * sStudyPeriodEndDate) {
-  try {
-    if (!sStudyPeriodEndDate)
-      ZdException::Generate("Null pointer.","SetStudyPeriodEndDate()");
-
-    gsStudyPeriodEndDate = sStudyPeriodEndDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetStudyPeriodEndDate()","CParameters");
-    throw;
-  }
+  gsStudyPeriodEndDate = sStudyPeriodEndDate;
 }
 
 /** Sets study period start date. Throws exception if out of range. */
 void CParameters::SetStudyPeriodStartDate(const char * sStudyPeriodStartDate) {
-  try {
-    if (!sStudyPeriodStartDate)
-      ZdException::Generate("Null pointer.","SetStudyPeriodStartDate()");
-
-    gsStudyPeriodStartDate = sStudyPeriodStartDate;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetStudyPeriodStartDate()","CParameters");
-    throw;
-  }
+  gsStudyPeriodStartDate = sStudyPeriodStartDate;
 }
 
 /** Sets time aggregation length. Throws exception if out of range. */
 void CParameters::SetTimeAggregationLength(long lTimeAggregationLength) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
   glTimeAggregationLength = lTimeAggregationLength;
 }
 
 /** Sets precision of time interval units type. Throws exception if out of range. */
 void CParameters::SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits) {
-  try {
-    if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > DAY)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, DAY);
-    geTimeAggregationUnitsType = eTimeAggregationUnits;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTimeAggregationUnitsType()","CParameters");
-    throw;
-  }
+  if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > DAY)
+    throw prg_error("Enumeration %d out of range [%d,%d].","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, DAY);
+  geTimeAggregationUnitsType = eTimeAggregationUnits;
 }
 
 /** Sets time trend adjustment percentage. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
    gdTimeTrendAdjustPercentage = dPercentage;
 }
 
 /** Sets time rend adjustment type. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
-  try {
-    if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > STRATIFIED_RANDOMIZATION)
-      ZdException::Generate("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
-                            eTimeTrendAdjustmentType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
-    geTimeTrendAdjustType = eTimeTrendAdjustmentType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTimeTrendAdjustmentType()","CParameters");
-    throw;
-  }
+  if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > STRATIFIED_RANDOMIZATION)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
+                    eTimeTrendAdjustmentType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
+  geTimeTrendAdjustType = eTimeTrendAdjustmentType;
 }
 
 /** Sets time trend convergence variable. */
 void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
-  //Validity of setting is checked in ValidateParameters() since this setting
-  //might not be pertinent in calculation.
-   gdTimeTrendConverge = dTimeTrendConvergence;
+  gdTimeTrendConverge = dTimeTrendConvergence;
 }
 
 /** Set version number that indicates what version of SaTScan created these parameters. */
@@ -1329,12 +971,10 @@ void CParameters::SetVersion(const CreationVersion& vVersion) {
 
 /** Returns indication of whether current parameter settings indicate that the max circle file should be read. */
 bool CParameters::UseMaxCirclePopulationFile() const {
-  bool  bRequiredForProspective, bAskForByUser;
+  bool  bAskForByUser;
 
   bAskForByUser = (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile || gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported) &&
                   !GetIsPurelyTemporalAnalysis();
-//  bRequiredForProspective = GetAnalysisType() == PROSPECTIVESPACETIME && GetAdjustForEarlierAnalyses() &&
-//                            (!gbRestrictMaxSpatialSizeThroughDistanceFromCenter || !gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported);
-  return bAskForByUser;// || bRequiredForProspective;
+  return bAskForByUser;
 }
 

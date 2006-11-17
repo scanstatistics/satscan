@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "ParametersPrint.h"
 #include "DataSetHandler.h"
+#include "SSException.h"
 
 /** constructor*/
 ParametersPrint::ParametersPrint(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -23,11 +24,11 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
       case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
       case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation of Temporal Trends"; break;
       case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
-      default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
+      default : throw prg_error("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetAnalysisTypeAsString()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("GetAnalysisTypeAsString()","ParametersPrint");
     throw;
   }
   return sAnalysisType;
@@ -42,9 +43,8 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
                            case HIGH       : return "Increasing Rates";
                            case LOW        : return "Decreasing Rates";
                            case HIGHANDLOW : return "Increasing or Decreasing Rates";
-                           default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+                           default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
                          }
-                         break;
                       }
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
@@ -52,34 +52,30 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
             case HIGH       : return "High Rates";
             case LOW        : return "Low Rates";
             case HIGHANDLOW : return "High or Low Rates";
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
          }
-         break;
       case ORDINAL :
       case NORMAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : return "High Values";
             case LOW        : return "Low Values";
             case HIGHANDLOW : return "High or Low Values";
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
          }
-         break;
       case EXPONENTIAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : return "Short Survival";
             case LOW        : return "Long Survival";
             case HIGHANDLOW : return "Short or Long Survival";
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
          }
-         break;
-      default : ZdGenerateException("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", gParameters.GetProbabilityModelType());
+      default : throw prg_error("Unknown probability model '%d'.", "GetAreaScanRateTypeAsString()", gParameters.GetProbabilityModelType());
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetAreaScanRateTypeAsString()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("GetAreaScanRateTypeAsString()","ParametersPrint");
     throw;
   }
-  return "?";
 }
 
 /** Returns probability model type as a character array. */
@@ -95,11 +91,11 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
       case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
       case NORMAL               : sProbabilityModel = "Normal"; break;
       case RANK                 : sProbabilityModel = "Rank"; break;
-      default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
+      default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetProbabilityModelTypeAsString()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("GetProbabilityModelTypeAsString()","ParametersPrint");
     throw;
   }
   return sProbabilityModel;
@@ -144,8 +140,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintSystemParameters(fp);
     AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Print()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("Print()","ParametersPrint");
     throw;
   }
 }
@@ -174,8 +170,8 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
       case STRATIFIED_RANDOMIZATION  :
         buffer = "Adjusted for time by stratified randomization."; break;
       default :
-        ZdException::Generate("Unknown time trend adjustment type '%d'\n.",
-                              "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'\n.",
+                        "PrintAdjustments()", gParameters.GetTimeTrendAdjustmentType());
     }
     if (buffer.size())
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -187,8 +183,8 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
         buffer = "Adjusted for purely spatial clusters by stratified randomization.";
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer); break;
       default :
-        ZdException::Generate("Unknown time trend adjustment type '%d'\n.",
-                              "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
+        throw prg_error("Unknown time trend adjustment type '%d'\n.",
+                        "PrintAdjustments()", gParameters.GetSpatialAdjustmentType());
     }
     //display space-time adjustments
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
@@ -196,8 +192,8 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }    
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintAdjustments()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintAdjustments()","ParametersPrint");
     throw;
   }
 }
@@ -217,15 +213,15 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
         case YEAR  : fprintf(fp, "Year\n"); break;
         case MONTH : fprintf(fp, "Month\n"); break;
         case DAY   : fprintf(fp, "Day\n"); break;
-        default : ZdException::Generate("Unknown date precision type '%d'.\n",
-                                        "PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
+        default : throw prg_error("Unknown date precision type '%d'.\n",
+                                  "PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
       }
       fprintf(fp, "  Time Aggregation Length  : %i\n", gParameters.GetTimeAggregationLength());
     }
     fprintf(fp, "\n  Number of Replications   : %u\n", gParameters.GetNumReplicationsRequested());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintAnalysisParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintAnalysisParameters()","ParametersPrint");
     throw;
   }
 }
@@ -240,8 +236,8 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
       case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
       case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal analysis\n"); break;
-      default : ZdException::Generate("Unknown analysis type '%d'.\n",
-                                      "PrintAnalysisSummary()", gParameters.GetAnalysisType());
+      default : throw prg_error("Unknown analysis type '%d'.\n",
+                                "PrintAnalysisSummary()", gParameters.GetAnalysisType());
     }
     fprintf(fp, "scanning for ");
     if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
@@ -257,8 +253,8 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
-      default : ZdException::Generate("Unknown probability model type '%d'.\n",
-                                      "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
+      default : throw prg_error("Unknown probability model type '%d'.\n",
+                                "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
     }
 
     if (gParameters.GetIsSpaceTimeAnalysis()) {
@@ -274,15 +270,15 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       switch (gParameters.GetMultipleDataSetPurposeType()) {
         case MULTIVARIATE : fprintf(fp, "Multivariate scan using %u data sets.\n", gParameters.GetNumDataSets()); break;
         case ADJUSTMENT   : fprintf(fp, "Adjusted using %u data sets.\n", gParameters.GetNumDataSets()); break;
-        default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n",
-                                        "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
+        default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n",
+                                  "PrintAnalysisSummary()", gParameters.GetMultipleDataSetPurposeType());
       }
     }
     if (gParameters.GetIsIterativeScanning())
       fprintf(fp, "Iterative analysis performed.\n");
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintAnalysisSummary()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintAnalysisSummary()","ParametersPrint");
     throw;
   }
 }
@@ -375,8 +371,8 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
          case NOCENTROIDSINLESSLIKE : fprintf(fp, "No Cluster Centroids in Less Likely Clusters\n"); break;
          case NOPAIRSINEACHOTHERS   : fprintf(fp, "No Pairs of Centroids Both in Each Others Clusters\n"); break;
          case NORESTRICTIONS        : fprintf(fp, "No Restrictions = Most Likely Cluster for Each Centroid\n"); break;
-         default : ZdException::Generate("Unknown secondary clusters type '%d'.\n",
-                                         "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
+         default : throw prg_error("Unknown secondary clusters type '%d'.\n",
+                                   "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
       }
       if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
         if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()))
@@ -389,8 +385,8 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
      }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintClustersReportedParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintClustersReportedParameters()","ParametersPrint");
     throw;
   }
 }
@@ -402,7 +398,7 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
   switch (gParameters.GetStudyPeriodDataCheckingType()) {
     case STRICTBOUNDS     : fprintf(fp, "Check to ensure that cases and controls are within the Study Period.\n"); break;
     case RELAXEDBOUNDS    : fprintf(fp, "Ignore cases and controls that are outside the Study Period.\n"); break;
-    default : ZdException::Generate("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
+    default : throw prg_error("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
   }
   if (!gParameters.GetIsPurelyTemporalAnalysis()) {
     fprintf(fp, "  Geographical Coordinates Check : ");
@@ -413,7 +409,7 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
       case RELAXEDCOORDINATES : fprintf(fp, "Ignore data in the case, control and population files that \n"
                                             "                                   do not correspond to a location ID listed in the %s file.\n",
                                             (gParameters.UseLocationNeighborsFile() ? "neighbors" : "coordinates")); break;
-      default : ZdException::Generate("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
+      default : throw prg_error("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
     }
   }  
 }
@@ -471,8 +467,8 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       case EXPONENTIAL          :
       case NORMAL               :
       case RANK                 : break;
-      default : ZdException::Generate("Unknown probability model type '%d'.\n",
-                                      "PrintInputParameters()", gParameters.GetProbabilityModelType());
+      default : throw prg_error("Unknown probability model type '%d'.\n",
+                                "PrintInputParameters()", gParameters.GetProbabilityModelType());
     }
     if (gParameters.UseCoordinatesFile())
       fprintf(fp, "  Coordinates File  %s : %s\n", sBlankDataSetLabel, gParameters.GetCoordinatesFileName().c_str());
@@ -501,13 +497,13 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       switch (gParameters.GetCoordinatesType()) {
         case CARTESIAN : fprintf(fp, "Cartesian\n"); break;
         case LATLON    : fprintf(fp, "Latitude/Longitude\n"); break;
-        default : ZdException::Generate("Unknown coordinated type '%d'.\n",
-                                        "PrintInputParameters()", gParameters.GetCoordinatesType());
+        default : throw prg_error("Unknown coordinated type '%d'.\n",
+                                  "PrintInputParameters()", gParameters.GetCoordinatesType());
       }
     }  
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintInputParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintInputParameters()","ParametersPrint");
     throw;
   }
 }
@@ -523,7 +519,7 @@ void ParametersPrint::PrintMultipleCoordinatesParameters(FILE* fp) const {
     case ONEPERLOCATION : fprintf(fp, "Allow only one coordinate per location.\n"); break;
     case ATLEASTONELOCATION : fprintf(fp, "Include location in the scanning window if at least one coordinate is in the circle.\n"); break;
     case ALLLOCATIONS : fprintf(fp, "Include location in the scanning window if all coordinates are in the circle.\n"); break;
-    default : ZdException::Generate("Unknown multiple coordinates type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetMultipleCoordinatesType());
+    default : throw prg_error("Unknown multiple coordinates type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetMultipleCoordinatesType());
   }
 }
 
@@ -548,20 +544,20 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
          case NORMAL               :
          case RANK                 : break;
          default :
-           ZdException::Generate("Unknown probability model type '%d'.\n",
-                                 "PrintMultipleDataSetParameters()", gParameters.GetProbabilityModelType());
+           throw prg_error("Unknown probability model type '%d'.\n",
+                           "PrintMultipleDataSetParameters()", gParameters.GetProbabilityModelType());
        }
     }
     fprintf(fp, "\n  Purpose of Multiple Data Sets : ");
     switch (gParameters.GetMultipleDataSetPurposeType()) {
       case MULTIVARIATE : fprintf(fp, "Multivariate Analysis\n"); break;
       case ADJUSTMENT    : fprintf(fp, "Adjustment\n"); break;
-      default : ZdException::Generate("Unknown purpose for multiple data sets type '%d'.\n",
-                                      "PrintMultipleDataSetParameters()", gParameters.GetMultipleDataSetPurposeType());
+      default : throw prg_error("Unknown purpose for multiple data sets type '%d'.\n",
+                                "PrintMultipleDataSetParameters()", gParameters.GetMultipleDataSetPurposeType());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintMultipleDataSetParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintMultipleDataSetParameters()","ParametersPrint");
     throw;
   }
 }
@@ -579,68 +575,63 @@ void ParametersPrint::PrintNeighborsFileParameters(FILE* fp) const {
     if (gParameters.UseMetaLocationsFile())
       fprintf(fp, "  Meta Locations File     : %s\n", gParameters.getMetaLocationsFilename().c_str());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintRunOptionsParameters()","ParametersPrint");
     throw;
   }
 }
 
 /** Prints 'Output' tab parameters to file stream. */
 void ParametersPrint::PrintOutputParameters(FILE* fp) const {
-  ZdFileName            AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
-  
-  try {
-    fprintf(fp, "\nOutput\n------\n");
-    fprintf(fp, "  Results File          : %s\n", gParameters.GetOutputFileName().c_str());
-    // cluster information files
-    if (gParameters.GetOutputClusterLevelAscii()) {
-      AdditionalOutputFile.SetExtension(".col.txt");
-      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gParameters.GetOutputClusterLevelDBase()) {
-      AdditionalOutputFile.SetExtension(".col.dbf");
-      fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // cluster case information files
-    if (gParameters.GetOutputClusterCaseAscii()) {
-      AdditionalOutputFile.SetExtension(".cci.txt");
-      fprintf(fp, "  Cluster Case File     : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gParameters.GetOutputClusterCaseDBase()) {
-      AdditionalOutputFile.SetExtension(".cci.dbf");
-      fprintf(fp, "  Cluster Case File     : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // area specific files
-    if (gParameters.GetOutputAreaSpecificAscii()) {
-      AdditionalOutputFile.SetExtension(".gis.txt");
-      fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gParameters.GetOutputAreaSpecificDBase()) {
-      AdditionalOutputFile.SetExtension(".gis.dbf");
-      fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // relative risk files
-    if (gParameters.GetOutputRelativeRisksAscii()) {
-      AdditionalOutputFile.SetExtension(".rr.txt");
-      fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gParameters.GetOutputRelativeRisksDBase()) {
-      AdditionalOutputFile.SetExtension(".rr.dbf");
-      fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    // loglikelihood ratio files
-    if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
-      AdditionalOutputFile.SetExtension(".llr.txt");
-      fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
-    if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
-      AdditionalOutputFile.SetExtension(".llr.dbf");
-      fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.GetFullPath());
-    }
+  FileName      AdditionalOutputFile(gParameters.GetOutputFileName().c_str());
+  std::string   buffer;
+
+  fprintf(fp, "\nOutput\n------\n");
+  fprintf(fp, "  Results File          : %s\n", gParameters.GetOutputFileName().c_str());
+  // cluster information files
+  if (gParameters.GetOutputClusterLevelAscii()) {
+    AdditionalOutputFile.setExtension(".col.txt");
+    fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintOutputParameters()","ParametersPrint");
-    throw;
+  if (gParameters.GetOutputClusterLevelDBase()) {
+    AdditionalOutputFile.setExtension(".col.dbf");
+    fprintf(fp, "  Cluster File          : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  // cluster case information files
+  if (gParameters.GetOutputClusterCaseAscii()) {
+    AdditionalOutputFile.setExtension(".cci.txt");
+    fprintf(fp, "  Cluster Case File     : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  if (gParameters.GetOutputClusterCaseDBase()) {
+    AdditionalOutputFile.setExtension(".cci.dbf");
+    fprintf(fp, "  Cluster Case File     : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  // area specific files
+  if (gParameters.GetOutputAreaSpecificAscii()) {
+    AdditionalOutputFile.setExtension(".gis.txt");
+    fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  if (gParameters.GetOutputAreaSpecificDBase()) {
+    AdditionalOutputFile.setExtension(".gis.dbf");
+    fprintf(fp, "  Location File         : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  // relative risk files
+  if (gParameters.GetOutputRelativeRisksAscii()) {
+    AdditionalOutputFile.setExtension(".rr.txt");
+    fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  if (gParameters.GetOutputRelativeRisksDBase()) {
+    AdditionalOutputFile.setExtension(".rr.dbf");
+    fprintf(fp, "  Relative Risks File   : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  // loglikelihood ratio files
+  if (gParameters.GetOutputSimLoglikeliRatiosAscii()) {
+    AdditionalOutputFile.setExtension(".llr.txt");
+    fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
+  }
+  if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
+    AdditionalOutputFile.setExtension(".llr.dbf");
+    fprintf(fp, "  Simulated LLRs File   : %s\n", AdditionalOutputFile.getFullPath(buffer).c_str());
   }
 }
 
@@ -667,8 +658,8 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
                                   fprintf(fp, "  Simulation Data Source     : %s\n",
                                           gParameters.GetSimulationDataSourceFilename().c_str());
                                   break;
-          default : ZdException::Generate("Unknown simulation type '%d'.\n",
-                                          "PrintPowerSimulationsParameters()", gParameters.GetSimulationType());
+          default : throw prg_error("Unknown simulation type '%d'.\n",
+                                    "PrintPowerSimulationsParameters()", gParameters.GetSimulationType());
         };
       }
       if (bPrintingSimulationData) {
@@ -677,8 +668,8 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintPowerSimulationsParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintPowerSimulationsParameters()","ParametersPrint");
     throw;
   }
 }
@@ -702,15 +693,15 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
         case AUTOMATIC    : fprintf(fp, "Automatic Determination\n"); break;
         case SUCCESSIVELY : fprintf(fp, "Successively\n"); break;
         case CENTRICALLY  : fprintf(fp, "Centrically\n"); break;
-        default : ZdException::Generate("Unknown execution type '%d'.\n",
-                                        "PrintRunOptionsParameters()", gParameters.GetExecutionType());
+        default : throw prg_error("Unknown execution type '%d'.\n",
+                                  "PrintRunOptionsParameters()", gParameters.GetExecutionType());
       };
     }
     fprintf(fp, "  Logging Analysis    : %s\n", (gParameters.GetIsLoggingHistory() ? "Yes" : "No"));
     fprintf(fp, "  Suppress Warnings   : %s\n", (gParameters.GetSuppressingWarnings() ? "Yes" : "No"));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintRunOptionsParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintRunOptionsParameters()","ParametersPrint");
     throw;
   }
 }
@@ -746,8 +737,8 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
         case LOGLINEAR_PERC            : fprintf(fp, "Log linear with %g%% per year\n", gParameters.GetTimeTrendAdjustmentPercentage()); break;
         case CALCULATED_LOGLINEAR_PERC : fprintf(fp, "Log linear with automatically calculated trend\n"); break;
         case STRATIFIED_RANDOMIZATION  : fprintf(fp, "Nonparametric, with time stratified randomization\n"); break;
-        default : ZdException::Generate("Unknown time trend adjustment type '%d'.\n",
-                                        "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
+        default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
+                                  "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
       }
     }
     if (bPrintingSpatialAdjustment) {
@@ -755,13 +746,13 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
       switch (gParameters.GetSpatialAdjustmentType()) {
         case NO_SPATIAL_ADJUSTMENT              : fprintf(fp, "None\n"); break;
         case SPATIALLY_STRATIFIED_RANDOMIZATION : fprintf(fp, "Spatial adjustment by stratified randomization\n"); break;
-        default : ZdException::Generate("Unknown spatial adjustment type '%d'.\n",
-                                        "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
+        default : throw prg_error("Unknown spatial adjustment type '%d'.\n",
+                                  "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintSpaceAndTimeAdjustmentsParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintSpaceAndTimeAdjustmentsParameters()","ParametersPrint");
     throw;
   }
 }
@@ -796,18 +787,18 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
                           case NOPENALTY     : fprintf(fp, "None\n"); break;
                           case MEDIUMPENALTY : fprintf(fp, "Meduim\n"); break;
                           case STRONGPENALTY : fprintf(fp, "Strong\n"); break;
-                          default : ZdException::Generate("Unknown non-compactness penalty type '%d'.\n",
-                                                           "PrintSpatialWindowParameters()", gParameters.GetNonCompactnessPenaltyType());
+                          default : throw prg_error("Unknown non-compactness penalty type '%d'.\n",
+                                                     "PrintSpatialWindowParameters()", gParameters.GetNonCompactnessPenaltyType());
                         }
                         break;
-        default : ZdException::Generate("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
+        default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
     }
     if (gParameters.GetAnalysisType() == PURELYSPATIAL)
       fprintf(fp, "  Isotonic Scan                         : %s\n", (gParameters.GetRiskType() == MONOTONERISK ? "Yes" : "No"));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintSpatialWindowParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintSpatialWindowParameters()","ParametersPrint");
     throw;
   }
 }
@@ -839,8 +830,8 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
       case PERCENTAGETYPE : fprintf(fp, "%% of study period\n"); break;
       case TIMETYPE       : fprintf(fp, " %s\n",
                             GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sBuffer, gParameters.GetMaximumTemporalClusterSize() != 1, true)); break;
-      default : ZdException::Generate("Unknown maximum temporal cluster size type '%d'.\n",
-                                      "PrintTemporalWindowParameters()", gParameters.GetMaximumTemporalClusterSizeType());
+      default : throw prg_error("Unknown maximum temporal cluster size type '%d'.\n",
+                                "PrintTemporalWindowParameters()", gParameters.GetMaximumTemporalClusterSizeType());
     }
     if (gParameters.GetProbabilityModelType() != SPACETIMEPERMUTATION && gParameters.GetIsSpaceTimeAnalysis()) {
       fprintf(fp, "  Include Purely Spatial Clusters       : ");
@@ -858,13 +849,13 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
                                         gParameters.GetStartRangeEndDate().c_str());
                                 fprintf(fp, "                                          End time from %s to %s.\n",
                                         gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str()); break;
-         default : ZdException::Generate("Unknown inclusion cluster type '%d'.\n",
-                                         "PrintTemporalWindowParameters()", gParameters.GetIncludeClustersType());
+         default : throw prg_error("Unknown inclusion cluster type '%d'.\n",
+                                   "PrintTemporalWindowParameters()", gParameters.GetIncludeClustersType());
       };
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintTemporalWindowParameters()","ParametersPrint");
+  catch (prg_exception& x) {
+    x.addTrace("PrintTemporalWindowParameters()","ParametersPrint");
     throw;
   }
 }
