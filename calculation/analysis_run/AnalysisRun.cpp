@@ -44,8 +44,8 @@ AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, 
     Setup();
     Execute();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","AnalysisRunner");
     throw;
   }
 }
@@ -85,10 +85,10 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
       PrintTopClusterLogLikelihood();
     }
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete pDataSetGateway;
     delete pAnalysis;
-    x.AddCallpath("CalculateMostLikelyClusters()","AnalysisRunner");
+    x.addTrace("CalculateMostLikelyClusters()","AnalysisRunner");
     throw;
   }
 }
@@ -140,8 +140,8 @@ void AnalysisRunner::CreateRelativeRiskFile() {
       gpDataHub->DisplayRelativeRisksForEachTract();
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CreateRelativeRiskFile()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("CreateRelativeRiskFile()","AnalysisRunner");
     throw;
   }
 
@@ -165,9 +165,9 @@ void AnalysisRunner::CreateReport() {
     gpDataHub->DisplaySummary(fp, "SUMMARY OF DATA", true);
     fclose(fp);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     fclose(fp);
-    x.AddCallpath("CreateReport()","AnalysisRunner");
+    x.addTrace("CreateReport()","AnalysisRunner");
     throw;
   }
 
@@ -183,7 +183,7 @@ void AnalysisRunner::Execute() {
     //validate that data set contains cases
     for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
        if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
-         GenerateResolvableException("Error: No cases found in data set %u.\n","Execute()", i);
+         throw resolvable_error("Error: No cases found in data set %u.\n", i);
     macroRunTimeStopSerial();
     //calculation approxiate amount of memory required to run analysis
     std::pair<double, double> prMemory = GetMemoryApproxiation();
@@ -205,14 +205,14 @@ void AnalysisRunner::Execute() {
       };
     }
     catch (ZdMemoryException &x) {
-      GenerateResolvableException("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
-                                  "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
-                                  "Note that memory needs are on the order of %.0lf MB.\n", "Execute()",
-                                  (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second));
+      throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
+                             "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                             "Note that memory needs are on the order of %.0lf MB.\n",
+                             (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second));
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Execute()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("Execute()","AnalysisRunner");
     throw;
   }
 }
@@ -267,8 +267,8 @@ void AnalysisRunner::ExecuteSuccessively() {
     //finish report
     FinalizeReport();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ExecuteSuccessively()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("ExecuteSuccessively()","AnalysisRunner");
     throw;
   }
 }
@@ -281,8 +281,8 @@ void AnalysisRunner::ExecuteCentrically() {
       else
         PerformCentric_Parallel();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ExecuteCentrically()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("ExecuteCentrically()","AnalysisRunner");
     throw;
   }
 }
@@ -320,10 +320,8 @@ void AnalysisRunner::FinalizeReport() {
                "no p-values are reported.";
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
-
     if (gParameters.GetProbabilityModelType() == POISSON)
       gpDataHub->GetDataSetHandler().ReportZeroPops(*gpDataHub, fp, &gPrintDirection);
-
     gpDataHub->GetTInfo()->reportCombinedLocations(fp);
     ParametersPrint(gParameters).Print(fp);
     macroRunTimeManagerPrint(fp);
@@ -352,9 +350,9 @@ void AnalysisRunner::FinalizeReport() {
 
     fclose(fp);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     fclose(fp);
-    x.AddCallpath("FinalizeReport()","AnalysisRunner");
+    x.addTrace("FinalizeReport()","AnalysisRunner");
     throw;
   }
 }
@@ -410,7 +408,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
     case ORDINAL: b = sizeof(count_t); break;
     case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
-    default : ZdGenerateException("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
+    default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the number of categories in the ordinal model (CAT=1 for other models)
   double CAT = (gParameters.GetProbabilityModelType() == ORDINAL ? 0 : 1);
@@ -425,7 +423,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
     case NORMAL: EXP = 4; break; //cases, measure and measure squared
-    default : ZdGenerateException("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
+    default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the total number of cases (for the ordinal model or multiple data sets, C=0)
   double C = (gParameters.GetProbabilityModelType() == ORDINAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).getTotalCases());
@@ -476,14 +474,13 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
       case SPATIALVARTEMPTREND :
           return new CSpatialVarTempTrendAnalysis(gParameters, *gpDataHub, gPrintDirection);
       default :
-        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
+        throw prg_error("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
     };
    }
-  catch (ZdException &x) {
-    x.AddCallpath("GetNewAnalysisObject()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("GetNewAnalysisObject()","AnalysisRunner");
     throw;
   }
-  return 0;
 }
 
 /** returns new AbstractCentricAnalysis object */
@@ -495,10 +492,10 @@ AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const Abst
           if (gParameters.GetRiskType() == STANDARDRISK)
             return new PurelySpatialCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
           else
-            ZdGenerateException("No implementation for purely spatial analysis with isotonic scan for centric evaluation.\n", "GetNewCentricAnalysisObject()");
+            throw prg_error("No implementation for purely spatial analysis with isotonic scan for centric evaluation.\n", "GetNewCentricAnalysisObject()");
       case PURELYTEMPORAL :
       case PROSPECTIVEPURELYTEMPORAL :
-            ZdGenerateException("No implementation for purely temporal analysis for centric evaluation.\n", "GetNewCentricAnalysisObject()");
+            throw prg_error("No implementation for purely temporal analysis for centric evaluation.\n", "GetNewCentricAnalysisObject()");
       case SPACETIME :
       case PROSPECTIVESPACETIME :
           if (gParameters.GetIncludePurelySpatialClusters() && gParameters.GetIncludePurelyTemporalClusters())
@@ -512,14 +509,13 @@ AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const Abst
       case SPATIALVARTEMPTREND :
             return new SpatialVarTempTrendCentricAnalysis(gParameters, *gpDataHub, gPrintDirection, RealDataGateway, vSimDataGateways);
       default :
-        ZdException::Generate("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
+        throw prg_error("Unknown analysis type '%d'.\n", "GetNewCentricAnalysisObject()", gParameters.GetAnalysisType());
     };
    }
-  catch (ZdException &x) {
-    x.AddCallpath("GetNewCentricAnalysisObject()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("GetNewCentricAnalysisObject()","AnalysisRunner");
     throw;
   }
-  return 0;
 }
 
 double AnalysisRunner::GetSimRatio01() const {
@@ -547,15 +543,13 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
   try {
     if ((fp = fopen(gParameters.GetOutputFileName().c_str(), (bOpenAppend ? "a" : "w"))) == NULL) {
       if (!bOpenAppend)
-        ResolvableException::Generate("Error: Results file '%s' could not be created.\n",
-                                      "OpenReportFile()", gParameters.GetOutputFileName().c_str());
+        throw resolvable_error("Error: Results file '%s' could not be created.\n", gParameters.GetOutputFileName().c_str());
       else if (bOpenAppend)
-        ResolvableException::Generate("Error: Results file '%s' could not be opened.\n",
-                                      "OpenReportFile()", gParameters.GetOutputFileName().c_str());
+        throw resolvable_error("Error: Results file '%s' could not be opened.\n", gParameters.GetOutputFileName().c_str());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("OpenReportFile()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("OpenReportFile()","AnalysisRunner");
     throw;
   }
 }
@@ -661,13 +655,13 @@ void AnalysisRunner::PerformCentric_Parallel() {
         giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
         //propagate exceptions if needed:
         if (gParameters.GetIncludePurelyTemporalClusters() && purelyTemporalExecutionExceptionStatus.bExceptional) {
-          if (purelyTemporalExecutionExceptionStatus.eException_type == stsCentricAlgoJobSource::result_type::zdmemory)
-            throw ZdMemoryException(purelyTemporalExecutionExceptionStatus.Exception.GetErrorMessage());
+          if (purelyTemporalExecutionExceptionStatus.eException_type == stsCentricAlgoJobSource::result_type::memory)
+            throw memory_exception(purelyTemporalExecutionExceptionStatus.Exception.what());
           throw purelyTemporalExecutionExceptionStatus.Exception;
         }  
         jobSource.Assert_NoExceptionsCaught();
         if (jobSource.GetUnregisteredJobCount() > 0)
-          ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
+          throw prg_error("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
       }
       if (gPrintDirection.GetIsCanceled()) return;
       //retrieve top clusters and simulated loglikelihood ratios from analysis object
@@ -721,8 +715,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
     //finish report
     FinalizeReport();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PerformCentric_Parallel()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("PerformCentric_Parallel()","AnalysisRunner");
     throw;
   }
 }
@@ -868,8 +862,8 @@ void AnalysisRunner::PerformCentric_Serial() {
     //finish report
     FinalizeReport();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PerformCentric_Serial()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("PerformCentric_Serial()","AnalysisRunner");
     throw;
   }
 }
@@ -919,11 +913,11 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
       //propagate exceptions if needed:
       jobSource.Assert_NoExceptionsCaught();
       if (jobSource.GetUnregisteredJobCount() > 0)
-        ZdException::Generate("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
+        throw prg_error("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PerformSuccessiveSimulations_Parallel()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("PerformSuccessiveSimulations_Parallel()","AnalysisRunner");
     throw;
   }
 }
@@ -1020,10 +1014,10 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     delete pDataGateway; pDataGateway=0;
     delete pAnalysis; pAnalysis=0;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete pDataGateway;
     delete pAnalysis;
-    x.AddCallpath("PerformSuccessiveSimulations_Serial()","AnalysisRunner");
+    x.addTrace("PerformSuccessiveSimulations_Serial()","AnalysisRunner");
     throw;
   }
 }
@@ -1041,8 +1035,8 @@ void AnalysisRunner::PerformSuccessiveSimulations() {
         PerformSuccessiveSimulations_Parallel();
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PerformSuccessiveSimulations()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("PerformSuccessiveSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -1126,7 +1120,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or fewer number of cases than expected."; break;
             case LOW        : buffer = "All areas scanned had either only one case or an equal or greater number of cases than expected."; break;
             case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal cases to expected."; break;
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       case ORDINAL :
@@ -1134,7 +1128,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut-off."; break;
             case LOW        : buffer = "All areas scanned had either only one case or an equal or higher number of low value cases than expected for any cut-off."; break;
             case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       case NORMAL :
@@ -1142,7 +1136,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;
             case LOW        : buffer = "All areas scanned had either only one case or an equal or higher mean than outside the area."; break;
             case HIGHANDLOW : buffer = "All areas scanned had either only one case or an equal mean to outside the area."; break;
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
       case EXPONENTIAL :
@@ -1150,10 +1144,10 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             case HIGH       : buffer = "All areas scanned had either only one case or equal or longer survival than outside the area."; break;
             case LOW        : buffer = "All areas scanned had either only one case or equal or shorter survival than outside the area."; break;
             case HIGHANDLOW : buffer = "All areas scanned had either only one case or equal survival to outside the area."; break;
-            default : ZdException::Generate("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
+            default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
-      default : ZdGenerateException("Unknown probability model '%d'.", "PrintRetainedClustersStatus()", gParameters.GetProbabilityModelType());
+      default : throw prg_error("Unknown probability model '%d'.", "PrintRetainedClustersStatus()", gParameters.GetProbabilityModelType());
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
@@ -1231,9 +1225,9 @@ void AnalysisRunner::PrintTopClusters() {
     PrintEarlyTerminationStatus(fp);
     fclose(fp); fp=0;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     fclose(fp);
-    x.AddCallpath("PrintTopClusters()","AnalysisRunner");
+    x.addTrace("PrintTopClusters()","AnalysisRunner");
     throw;
   }
 }
@@ -1300,9 +1294,9 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
     PrintEarlyTerminationStatus(fp);
     fclose(fp); fp=0;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     fclose(fp);
-    x.AddCallpath("PrintTopIterativeScanCluster()","AnalysisRunner");
+    x.addTrace("PrintTopIterativeScanCluster()","AnalysisRunner");
     throw;
   }
 }
@@ -1368,8 +1362,8 @@ bool AnalysisRunner::RepeatAnalysis() {
       //clear top clusters container
       gTopClustersContainer.Empty();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RepeatAnalysis()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("RepeatAnalysis()","AnalysisRunner");
     throw;
   }
   return true;
@@ -1386,15 +1380,15 @@ void AnalysisRunner::Setup() {
       case SPACETIME                 :
       case PROSPECTIVESPACETIME      : gpDataHub = new CSpaceTimeData(gParameters, gPrintDirection);break;
       case SPATIALVARTEMPTREND       : gpDataHub = new CSVTTData(gParameters, gPrintDirection); break;
-      default : ZdGenerateException("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
+      default : throw prg_error("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
     };
     if (gParameters.GetReportCriticalValues() && gParameters.GetNumReplicationsRequested() >= 19)
       gpSignificantRatios = new CSignificantRatios05(gParameters.GetNumReplicationsRequested());
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpSignificantRatios; gpSignificantRatios=0;
     delete gpDataHub; gpDataHub=0;
-    x.AddCallpath("Setup()","AnalysisRunner");
+    x.addTrace("Setup()","AnalysisRunner");
     throw;
   }
 }
@@ -1424,8 +1418,8 @@ void AnalysisRunner::UpdateReport() {
     else
       PrintTopClusters();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("UpdateReport()","AnalysisRunner");
+  catch (prg_exception& x) {
+    x.addTrace("UpdateReport()","AnalysisRunner");
     throw;
   }
 

@@ -5,6 +5,7 @@
 #include "SpaceTimeIncludePurelyTemporalAnalysis.h"
 #include "ClusterData.h"
 #include "MostLikelyClustersContainer.h"
+#include "SSException.h"
 
 /** Constructor */
 C_ST_PT_Analysis::C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -17,17 +18,14 @@ C_ST_PT_Analysis::~C_ST_PT_Analysis() {}
     for each simulation. Which objects that are allocated depends on whether
     the simluations process uses same process as real data or uses measure list. */
 void C_ST_PT_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
-  IncludeClustersType           eIncludeClustersType;
-
   try {
     //allocate objects for space-time part of simulations
     CSpaceTimeAnalysis::AllocateSimulationObjects(DataGateway);
-    eIncludeClustersType = (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALLCLUSTERS : gParameters.GetIncludeClustersType());
     //create simulation objects based upon which process used to perform simulations
     gAbstractPTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(DataGateway));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSimulationObjects()","C_ST_PT_Analysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateSimulationObjects()","C_ST_PT_Analysis");
     throw;
   }
 }
@@ -53,8 +51,8 @@ void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGatewa
     gTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     TopClustersContainer.Add(TopCluster);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("FindTopClusters()","C_ST_PT_Analysis");
+  catch (prg_exception& x) {
+    x.addTrace("FindTopClusters()","C_ST_PT_Analysis");
     throw;
   }
 }

@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "SVTTAnalysis.h"
+#include "SSException.h"
 
 /** constructor */
 CSpatialVarTempTrendAnalysis::CSpatialVarTempTrendAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
@@ -29,8 +30,8 @@ void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractData
     gClusterComparator.reset(new CSVTTCluster(gpClusterDataFactory, DataGateway));
     gTopClusters.SetTopClusters(*gClusterComparator);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateTopClustersObjects()","CSpatialVarTempTrendAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateTopClustersObjects()","CSpatialVarTempTrendAnalysis");
     throw;
   }
 }
@@ -55,8 +56,8 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
       TopCluster.SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
     return TopCluster;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");
     throw;
   }
 }
@@ -64,8 +65,7 @@ const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCent
 /** calculates loglikelihood ratio for simulated data pointed to by DataSetInterface
     in a retrospective manner */
 double CSpatialVarTempTrendAnalysis::MonteCarlo(const DataSetInterface& Interface) {
-  ZdGenerateException("MonteCarlo(const DataSetInterface&) not implemented.","CSpatialVarTempTrendAnalysis");
-  return 0;
+  throw prg_error("MonteCarlo(const DataSetInterface&) not implemented.","CSpatialVarTempTrendAnalysis");
 }
 
 /** Returns calculates log likelihood ratio about centroid. Currently this function calls CalculateTopCluster()
@@ -74,7 +74,6 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(tract_t tCenter, const AbstractD
   double                        dMaximumLogLikelihoodRatio;
   tract_t                       t, tNumNeighbors, * pIntegerArray;
   unsigned short              * pUnsignedShortArray;
-  double                        dMaximizingValue;
   std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, 0);
   std::vector<double>::iterator itr, itr_end;
 
@@ -101,8 +100,8 @@ double CSpatialVarTempTrendAnalysis::MonteCarlo(tract_t tCenter, const AbstractD
        dMaximumLogLikelihoodRatio = std::max(*itr, dMaximumLogLikelihoodRatio);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("MonteCarlo()","CSpatialVarTempTrendAnalysis");
+  catch (prg_exception& x) {
+    x.addTrace("MonteCarlo()","CSpatialVarTempTrendAnalysis");
     throw;
   }
   return dMaximumLogLikelihoodRatio;
