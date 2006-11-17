@@ -34,9 +34,9 @@ SimulationDataContainer_t & OrdinalDataSetHandler::AllocateSimulationData(Simula
        }
        break;
     case SPATIALVARTEMPTREND       :
-       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+       throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
     default                        :
-       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+       throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -75,15 +75,15 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
             Interface.SetPTCategoryCaseArray(DataSet.getCaseData_PT_Cat().GetArray());
           break;
        case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetDataGateway()","OrdinalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetDataGateway()","OrdinalDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -118,15 +118,15 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(Abstrac
             Interface.SetPTCategoryCaseArray(S_DataSet.getCaseData_PT_Cat().GetArray());
          break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSimulationDataGateway()","OrdinalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetSimulationDataGateway()","OrdinalDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -183,8 +183,8 @@ DataSetHandler::RecordStatusType OrdinalDataSetHandler::RetrieveCaseRecordData(D
        return DataSetHandler::Rejected;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RetrieveCaseRecordData()","OrdinalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("RetrieveCaseRecordData()","OrdinalDataSetHandler");
     throw;
   }
   return DataSetHandler::Accepted;
@@ -226,8 +226,8 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
                tTotalCases += tCount;
                //check that addition did not exceed data type limitations
                if (tTotalCases < 0)
-                 GenerateResolvableException("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n",
-                                             "ReadCounts()", std::numeric_limits<count_t>::max());
+                 throw resolvable_error("Error: The total cases in dataset is greater than the maximum allowed of %ld.\n",
+                                        std::numeric_limits<count_t>::max());
                //record count and get category's 2-D array pointer
                ppCategoryCounts = DataSet.addOrdinalCategoryCaseCount(tOrdinalVariable, tCount).GetArray();
                //update location case counts such that 'tCount' is reprented cumulatively through
@@ -279,8 +279,8 @@ bool OrdinalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source)
       DataSet.setTotalPopulation(tTotalCases);
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCounts()","OrdinalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCounts()","OrdinalDataSetHandler");
     throw;
   }
   return bReadSuccessful;
@@ -301,8 +301,8 @@ bool OrdinalDataSetHandler::ReadData() {
          return false;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadData()","OrdinalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadData()","OrdinalDataSetHandler");
     throw;
   }
   return true;
@@ -331,14 +331,14 @@ void OrdinalDataSetHandler::SetRandomizers() {
           break;
       case HA_RANDOMIZATION :
       default :
-          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+          throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
        gvDataSetRandomizers[t] = gvDataSetRandomizers[0]->Clone();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetRandomizers()","OrdinalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("SetRandomizers()","OrdinalDataSetHandler");
     throw;
   }
 }

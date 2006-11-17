@@ -51,43 +51,37 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize() {
   const DataSetHandler  & DataSetHandler = gDataHub.GetDataSetHandler();
   SecondaryCalcPair_t   * pNextToSet = &gPrimaryReportedNeighbors;
 
-  try {
-    if (!Parameters.GetRestrictingMaximumReportedGeoClusterSize()) return;
+  if (!Parameters.GetRestrictingMaximumReportedGeoClusterSize()) return;
 
-    if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
-      //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
-      //      as a percentage of the total population in all data sets.
-      for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-         if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
-           tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
-         else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
-           tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
-         else
-           tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
-         if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
-           GenerateResolvableException("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
-                                       "CalculateMaximumReportedSpatialClusterSize()", std::numeric_limits<measure_t>::max());
-         tTotalPopulation += tPopulation;
-      }
-      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
-      pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0) * tTotalPopulation;
-      pNextToSet = &gSecondaryReportedNeighbors;
+  if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
+    //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
+    //      as a percentage of the total population in all data sets.
+    for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
+       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
+         tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
+       else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
+         tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
+       else
+         tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
+       if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
+         throw resolvable_error("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
+                                std::numeric_limits<measure_t>::max());
+       tTotalPopulation += tPopulation;
     }
-    if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
-      //set maximum circle size based upon percentage of population defined in maximum circle size file
-      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-      pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
-      pNextToSet = pNextToSet == &gPrimaryReportedNeighbors ? &gSecondaryReportedNeighbors : &gTertiaryReportedNeighbors;
-    }
-    //set maximum circle size based upon a distance
-    if (Parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
-      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-      pNextToSet->second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
-    }
+    pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
+    pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0) * tTotalPopulation;
+    pNextToSet = &gSecondaryReportedNeighbors;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMaximumReportedSpatialClusterSize()","CentroidNeighborCalculator");
-    throw;
+  if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
+    //set maximum circle size based upon percentage of population defined in maximum circle size file
+    pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
+    pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
+    pNextToSet = pNextToSet == &gPrimaryReportedNeighbors ? &gSecondaryReportedNeighbors : &gTertiaryReportedNeighbors;
+  }
+  //set maximum circle size based upon a distance
+  if (Parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
+    pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
+    pNextToSet->second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
   }
 }
 
@@ -98,54 +92,48 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
   const DataSetHandler  & DataSetHandler = gDataHub.GetDataSetHandler();
   SecondaryCalcPair_t   * pNextToSet = &gSecondaryNeighbors;
 
-  try {
-    if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
-      //set maximum circle size based upon percentage of defined population
-      //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
-      //      as a percentage of the total population in all data sets.
-      for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-         if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
-           tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
-         else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
-           tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
-         else
-           tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
-         if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
-           GenerateResolvableException("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
-                                       "CalculateMaximumSpatialClusterSize()", std::numeric_limits<measure_t>::max());
-         tTotalPopulation += tPopulation;
-      }
-      gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
-      gPrimaryNeighbors.second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false) / 100.0) * tTotalPopulation;
+  if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
+    //set maximum circle size based upon percentage of defined population
+    //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
+    //      as a percentage of the total population in all data sets.
+    for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
+       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
+         tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
+       else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
+         tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
+       else
+         tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
+       if (tPopulation > std::numeric_limits<measure_t>::max() - tTotalPopulation)
+         throw resolvable_error("Error: The total population, summed over of all data sets, exceeds the maximum value allowed of %lf.\n",
+                                std::numeric_limits<measure_t>::max());
+       tTotalPopulation += tPopulation;
     }
-    //set maximum circle size based upon percentage of population defined in maximum circle size file
-    if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
-      if (!gPrimaryNeighbors.first) {
-        gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-        gPrimaryNeighbors.second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
-        pNextToSet = &gSecondaryNeighbors;
-      }
-      else {
-        pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-        pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
-        pNextToSet = &gTertiaryNeighbors;
-      }
-    }  
-    //set maximum circle size based upon a distance
-    if (Parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
-      if (!gPrimaryNeighbors.first) {
-        gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-        gPrimaryNeighbors.second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
-      }
-      else {
-        pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-        pNextToSet->second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
-      }
+    gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
+    gPrimaryNeighbors.second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false) / 100.0) * tTotalPopulation;
+  }
+  //set maximum circle size based upon percentage of population defined in maximum circle size file
+  if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
+    if (!gPrimaryNeighbors.first) {
+      gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
+      gPrimaryNeighbors.second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
+      pNextToSet = &gSecondaryNeighbors;
+    }
+    else {
+      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
+      pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
+      pNextToSet = &gTertiaryNeighbors;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMaximumSpatialClusterSize()","CentroidNeighborCalculator");
-    throw;
+  //set maximum circle size based upon a distance
+  if (Parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+    if (!gPrimaryNeighbors.first) {
+      gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
+      gPrimaryNeighbors.second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
+    }
+    else {
+      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
+      pNextToSet->second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
+    }
   }
 }
 
@@ -174,8 +162,8 @@ void CentroidNeighborCalculator::CalculateNeighbors() {
       CalculateNeighborsByEllipses();
     }  
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateNeighbors()", "CentroidNeighborCalculator");
+  catch (prg_exception& x) {
+    x.addTrace("CalculateNeighbors()", "CentroidNeighborCalculator");
     throw;
   }
 }
@@ -209,7 +197,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
           if (itr == gvCentroidToLocationDistances.begin()) break;
       }
     } break;
-    default : ZdException::Generate("Unknown multiple coordinate type '%d'.", "CalculateNeighborsAboutCentroid", gDataHub.GetParameters().GetMultipleCoordinatesType());
+    default : throw prg_error("Unknown multiple coordinate type '%d'.", "CalculateNeighborsAboutCentroid", gDataHub.GetParameters().GetMultipleCoordinatesType());
   }
 }
 
@@ -284,7 +272,7 @@ void CentroidNeighborCalculator::getTractCoordinates(const CSaTScanData& DataHub
          if (!pTarget || dCurrent < dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
        }
        else
-         ZdGenerateException("Unknown multiple coordinates type '%d'.", "getTractCoordinates()", DataHub.GetParameters().GetMultipleCoordinatesType());
+         throw prg_error("Unknown multiple coordinates type '%d'.", "getTractCoordinates()", DataHub.GetParameters().GetMultipleCoordinatesType());
     }
     pTarget->retrieve(Coordinates);
   }
@@ -294,7 +282,6 @@ void CentroidNeighborCalculator::getTractCoordinates(const CSaTScanData& DataHub
     storing results in sorted array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-  int                   iNumReportedNeighbors, iNumNeighbors;
   std::pair<int, int>   prNeighborsCount;
 
   gPrintDirection.Printf("Constructing the circles\n", BasePrint::P_STDOUT);
@@ -311,7 +298,6 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
     results in multiple dimension arrays contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-  int                   iNumReportedNeighbors, iNumNeighbors;
   std::pair<int, int>   prNeighborsCount;
 
   //only perform calculation if ellipses requested
@@ -490,7 +476,6 @@ void CentroidNeighborCalculator::setMetaLocations(std::vector<measure_t>& popMea
 void CentroidNeighborCalculator::SetupPopulationArrays() {
   count_t                    ** ppCases;
   const ExponentialRandomizer * pRandomizer;
-  measure_t                     tPopulation, tTotalPopulation=0;
   const CParameters           & Parameters = gDataHub.GetParameters();
   const DataSetHandler        & DataSetHandler = gDataHub.GetDataSetHandler();
 
@@ -522,7 +507,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         gvCalculatedPopulations.assign(gDataHub.GetNumTracts(), 0);
         //Population is calculated from first data set - even when multiple data sets are defined.
         pRandomizer = dynamic_cast<const ExponentialRandomizer*>(DataSetHandler.GetRandomizer(0));
-        if (!pRandomizer) ZdGenerateException("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
+        if (!pRandomizer) throw prg_error("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
           pRandomizer->CalculateMaxCirclePopulationArray(gvCalculatedPopulations);
          setMetaLocations(gvCalculatedPopulations);
          gpPopulation = &gvCalculatedPopulations[0]; break;

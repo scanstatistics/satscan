@@ -4,6 +4,7 @@
 //---------------------------------------------------------------------------
 #include "MaxWindowLengthIndicator.h"
 #include "SaTScanData.h"
+#include "SSException.h"
 
 /** constructor */
 FixedMaxWindowLengthIndicator::FixedMaxWindowLengthIndicator(const CSaTScanData & Data)
@@ -20,8 +21,8 @@ ProspectiveMaxWindowLengthIndicator::ProspectiveMaxWindowLengthIndicator(const C
                                    itr_end = Data.GetProspectiveIntervalCuts().end();
 
   if (Data.GetParameters().GetMaximumTemporalClusterSizeType() == TIMETYPE)
-    ZdGenerateException("For a maximum special cluster size defined as a fixed distance\n"
-                        "you should use FixedMaxWindowLengthIndicator.","constructor()");
+    throw prg_error("For a maximum special cluster size defined as a fixed distance\n"
+                    "you should use FixedMaxWindowLengthIndicator.","constructor()");
 
   // First value in vector is a place holder so that we can call method GetNextWindowLength()
   // to retrieve window length and increment vector iterator in one statement.

@@ -29,9 +29,9 @@ SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(Si
                                      }
                                      break;
     case SPATIALVARTEMPTREND       :
-       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+       throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
     default                        :
-       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+       throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -78,15 +78,15 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
           }
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetDataGateway()","ExponentialDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetDataGateway()","ExponentialDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -126,15 +126,15 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(Abs
           }
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSimulationDataGateway()","ExponentialDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetSimulationDataGateway()","ExponentialDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -167,7 +167,7 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
     // if randomization data created by reading from file, we'll need to use temporary randomizer to create real data set
     pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1));
     if (!pRandomizer)
-      ZdGenerateException("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
+      throw prg_error("Data set randomizer not AbstractExponentialRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            eRecordStatus = RetrieveCaseRecordData(Source, tTractIndex, tPatients, Date, tContinuousVariable, tCensorAttribute);
@@ -177,12 +177,12 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
              tTotalCases += tPatients * (tCensorAttribute ? 0 : 1);
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
-               GenerateResolvableException("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
-                                           "ReadCounts()", std::numeric_limits<count_t>::max());
+               throw resolvable_error("Error: The total number of non-censored cases in dataset is greater than the maximum allowed of %ld.\n",
+                                      std::numeric_limits<count_t>::max());
              //check numeric limits of data type will not be exceeded
              if (tContinuousVariable * tPatients > std::numeric_limits<measure_t>::max() - tTotalMeasure)
-               GenerateResolvableException("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n",
-                                           "ReadCounts()", std::numeric_limits<measure_t>::max());
+               throw resolvable_error("Error: The total summation of survival times exceeds the maximum value allowed of %lf.\n",
+                                      std::numeric_limits<measure_t>::max());
              tTotalMeasure += tContinuousVariable * tPatients;
            }
            else if (eRecordStatus == DataSetHandler::Ignored)
@@ -208,8 +208,8 @@ bool ExponentialDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Sou
     else
       pRandomizer->AssignFromAttributes(DataSet);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCounts()","ExponentialDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCounts()","ExponentialDataSetHandler");
     throw;
   }
   return bReadSuccessful;
@@ -228,8 +228,8 @@ bool ExponentialDataSetHandler::ReadData() {
          return false;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadData()","ExponentialDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadData()","ExponentialDataSetHandler");
     throw;
   }
   return true;
@@ -309,8 +309,8 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
       //censored attribute optional - default to not censored
       tCensorAttribute = 0;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RetrieveCaseRecordData()","ExponentialDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("RetrieveCaseRecordData()","ExponentialDataSetHandler");
     throw;
   }
   return DataSetHandler::Accepted;
@@ -337,14 +337,14 @@ void ExponentialDataSetHandler::SetRandomizers() {
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :
-      default : ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+      default : throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetRandomizers()","ExponentialDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("SetRandomizers()","ExponentialDataSetHandler");
     throw;
   }
 }

@@ -3,6 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "GridTractCoordinates.h"
+#include "SSException.h"
 
 /** Prints coordinates to file stream. */
 void GInfo::displayGridPoints(FILE* pDisplay) {
@@ -19,11 +20,11 @@ void GInfo::displayGridPoints(FILE* pDisplay) {
 void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates) {
   try {
     if (gAdditionStatus == Closed)
-      ZdGenerateException("This TractHandler object is closed to insertions.", "addGridPoint()");
+      throw prg_error("This TractHandler object is closed to insertions.", "addGridPoint()");
 
     //validate that passed coordinates have same dimensions as class has defined
     if (vCoordinates.size() != (unsigned int)giPointDimensions)
-      ZdGenerateException("Passed coordinates have %u dimensions, wanted %i.", "addGridPoint()", vCoordinates.size(), giPointDimensions);
+      throw prg_error("Passed coordinates have %u dimensions, wanted %i.", "addGridPoint()", vCoordinates.size(), giPointDimensions);
 
     std::auto_ptr<Point_t> pPoint(new Point_t(vCoordinates, gvPoints.size()));
     //keeping coordinates in sorted order accomplishes two things:
@@ -34,8 +35,8 @@ void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates) {
     if (itrPoint == gvPoints.end() ||  *(pPoint.get()) != *(*itrPoint))
       gvPoints.insert(itrPoint, pPoint.release());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("addGridPoint()", "CentroidHandler");
+  catch (prg_exception& x) {
+    x.addTrace("addGridPoint()", "CentroidHandler");
     throw;
   }
 }
@@ -43,7 +44,7 @@ void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates) {
 /** sets dimensions expected for points added to this object. */
 void CentroidHandler::setDimensions(unsigned int iPointDimensions) {
   if (gvPoints.size())
-    ZdGenerateException("Changing the coordinate dimensions is not permited once points have been defined.","setDimensions()");
+    throw prg_error("Changing the coordinate dimensions is not permited once points have been defined.","setDimensions()");
   giPointDimensions = iPointDimensions;
 }
 

@@ -28,9 +28,9 @@ SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(Simulat
                                      }
                                      break;
     case SPATIALVARTEMPTREND       :
-       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+       throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
     default                        :
-       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+       throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -83,15 +83,15 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
           }
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetDataGateway()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetDataGateway()","NormalDataSetHandler");
     throw;
   }  
   return DataGatway;
@@ -137,15 +137,15 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
           }
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSimulationDataGateway()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetSimulationDataGateway()","NormalDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -177,7 +177,7 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) 
 
   try {
     if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
-      ZdGenerateException("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
+      throw prg_error("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
            eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
@@ -187,18 +187,18 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) 
              tTotalCases += Count;
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
-               GenerateResolvableException("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n",
-                                           "ReadCounts()", std::numeric_limits<count_t>::max());
+               throw resolvable_error("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n",
+                                      std::numeric_limits<count_t>::max());
              for (count_t t=0; t < Count; ++t) {
                //check numeric limits of data type will not be exceeded
                if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
-                 GenerateResolvableException("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
-                                             "ReadCounts()", std::numeric_limits<measure_t>::max());
+                 throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
+                                        std::numeric_limits<measure_t>::max());
                tTotalMeasure += tContinuousVariable;
                //check numeric limits of data type will not be exceeded
                if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalSqMeasure)
-                 GenerateResolvableException("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
-                                             "ReadCounts()", std::numeric_limits<measure_t>::max());
+                 throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
+                                        std::numeric_limits<measure_t>::max());
                tTotalSqMeasure += std::pow(tContinuousVariable, 2);
 
              }
@@ -220,8 +220,8 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) 
     else
       pRandomizer->AssignFromAttributes(DataSet);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCounts()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCounts()","NormalDataSetHandler");
     throw;
   }
   return bValid;
@@ -240,8 +240,8 @@ bool NormalDataSetHandler::ReadData() {
          return false;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadData()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadData()","NormalDataSetHandler");
     throw;
   }
   return true;
@@ -300,8 +300,8 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
        return DataSetHandler::Rejected;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RetrieveCaseRecordData()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("RetrieveCaseRecordData()","NormalDataSetHandler");
     throw;
   }
   return DataSetHandler::Accepted;
@@ -312,8 +312,8 @@ void NormalDataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
     DataSet.setMeasureData_PT();
     DataSet.setMeasureData_PT_Sq();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalMeasureData()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("SetPurelyTemporalMeasureData()","NormalDataSetHandler");
     throw;
   }
 }
@@ -339,14 +339,14 @@ void NormalDataSetHandler::SetRandomizers() {
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :
-      default : ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+      default : throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetRandomizers()","NormalDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("SetRandomizers()","NormalDataSetHandler");
     throw;
   }
 }

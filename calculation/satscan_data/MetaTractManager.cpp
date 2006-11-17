@@ -61,11 +61,11 @@ void MetaLocation::addLocation(const AtomicMetaLocation * pLocation) {
 }
 
 /** Adds meta location object to this objects collection of AbstractMetaLocation locations.
-    Throw ZdExeption if 'this' object is contained is passed object. */
+    Throw resolvable_error if 'this' object is contained is passed object. */
 void MetaLocation::addLocation(const MetaLocation * pLocation) {
   if (pLocation->contains(*this))
-    GenerateResolvableException("Error: Circular definition between meta locations '%s' and '%s'.",
-                                "addMetaLocation()", getIndentifier(), pLocation->getIndentifier());
+    throw resolvable_error("Error: Circular definition between meta locations '%s' and '%s'.",
+                           getIndentifier(), pLocation->getIndentifier());
   gLocations.add(pLocation, false);
 }
 
@@ -120,7 +120,7 @@ bool MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const
      trimString(token);
      if (token.size() == 0) return false;
      if (token == sMetaIdentifier)
-       GenerateResolvableException("Error: Meta location ID '%s' defines itself as a member.", "addMetaLocation()", sMetaIdentifier.c_str());
+       throw resolvable_error("Error: Meta location ID '%s' defines itself as a member.", sMetaIdentifier.c_str());
      else if ((tIndex = getMetaLocationIndex(token)) != -1)
        pMetaLocation->addLocation(gvMetaLocations[tIndex]);
      else {
@@ -136,7 +136,7 @@ bool MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const
   MetaLocationsContainer_t::iterator itr=std::lower_bound(gvMetaLocations.begin(), gvMetaLocations.end(), pMetaLocation.get(), compareIdentifiers());
   if (itr != gvMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str())) {
     if (*(*itr) == *pMetaLocation) return true; // duplicate record
-    GenerateResolvableException("Error: Meta location ID '%s' is defined multiple times.", "addMetaLocation()", sMetaIdentifier.c_str());
+    throw resolvable_error("Error: Meta location ID '%s' is defined multiple times.", sMetaIdentifier.c_str());
   }
   gvMetaLocations.insert(itr, pMetaLocation.release());
   return true;

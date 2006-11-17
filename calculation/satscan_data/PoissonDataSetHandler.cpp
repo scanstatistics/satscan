@@ -6,6 +6,7 @@
 #include "SaTScanData.h"
 #include "DateStringParser.h"
 #include "DataSource.h"
+#include "SSException.h"
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
@@ -25,7 +26,7 @@ SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(Simulat
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_NC));
                                      std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT_NC));
                                      break;
-    default : ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+    default : throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -70,8 +71,8 @@ bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateStri
         bValidDate = false;                           
     };
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ConvertPopulationDateToJulian()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ConvertPopulationDateToJulian()","PoissonDataSetHandler");
     throw;
   }
   return bValidDate;
@@ -99,8 +100,8 @@ bool PoissonDataSetHandler::CreatePopulationData(RealDataSet& DataSet) {
     for (t=0; t < tNumTracts; ++t)
       DataSet.getPopulationData().AddCovariateCategoryPopulation(t, iCategoryIndex, vprPopulationDates.back(), fPopulation);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CreatePopulationData()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("CreatePopulationData()","PoissonDataSetHandler");
     throw;
   }
   return true;
@@ -151,13 +152,13 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetDataGateway(AbstractDataSetGa
           Interface.SetTimeTrend(&DataSet.getTimeTrend());
           break;
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetDataGateway()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetDataGateway()","PoissonDataSetHandler");
     throw;
   }  
   return DataGatway;
@@ -209,13 +210,13 @@ AbstractDataSetGateway & PoissonDataSetHandler::GetSimulationDataGateway(Abstrac
           Interface.SetTimeTrend(&S_DataSet.getTimeTrend());
           break;
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSimulationDataGateway()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetSimulationDataGateway()","PoissonDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -252,8 +253,8 @@ bool PoissonDataSetHandler::ReadData() {
        if (gParameters.UsePopulationFile()) GetDataSet(t).checkPopulationDataCases(gDataHub);
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadData()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadData()","PoissonDataSetHandler");
     throw;
   }
   return true;
@@ -375,8 +376,8 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
     if (!DataSet.getPopulationData().CheckZeroPopulations(stderr, gPrint))
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadPopulationFile()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadPopulationFile()","PoissonDataSetHandler");
     throw;
   }
   return bValid;
@@ -408,14 +409,14 @@ void PoissonDataSetHandler::SetRandomizers() {
           gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       default :
-          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+          throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetRandomizers()","PoissonDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("SetRandomizers()","PoissonDataSetHandler");
     throw;
   }
 }
