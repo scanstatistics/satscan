@@ -21,16 +21,16 @@
 /** Validates arguments of argument list. Throws UsageException if invalid.
     Returns whether options suppress execution of analysis. */
 bool validateCommandLineArguments(int argc, char *argv[]) {
-  if (argc < 2) GenerateUsageException(argv[0]);
+  if (argc < 2) throw usage_error(argv[0]);
   for (int i=2; i < argc; ++i) {
     if (!stricmp(argv[i], "-o")) {
-      if (argc < i + 2) GenerateUsageException(argv[0]);
+      if (argc < i + 2) throw usage_error(argv[0]);
       ++i; //next parameter is assumed to be filename
       continue;
     }
     if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c") &&
         stricmp(argv[i], "-one-cpu") && stricmp(argv[i], "-centric") && stricmp(argv[i], "-all-out"))
-      GenerateUsageException(argv[0]);
+      throw usage_error(argv[0]);
   }
   for (int i=2; i < argc; ++i)
      if (!stricmp(argv[i], "-p") || !stricmp(argv[i], "-c")) return true;
@@ -46,6 +46,8 @@ int getCommandLineArgumentIndex(int argc, char *argv[], const char * arg) {
 
 void __SaTScanInit(const char * sApplicationFullPath) {
   ZdInit();
+  reserve_memory_cache();
+  std::set_new_handler(prg_new_handler);
   AppToolkit::ToolKitCreate(sApplicationFullPath);
   ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
 }
@@ -69,8 +71,8 @@ int main(int argc, char *argv[]) {
     bExecuting = !validateCommandLineArguments(argc, argv);
     time(&RunTime); //get start time
     if (!ParameterAccessCoordinator(Parameters).Read(argv[1], Console))
-      GenerateResolvableException("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
-                                  "Please review above message(s) and modify parameter settings accordingly.", "main(int,char*)");
+      throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+                             "Please review above message(s) and modify parameter settings accordingly.");
     if ((i = getCommandLineArgumentIndex(argc, argv, "-o")) != 0)
       Parameters.SetOutputFileName(argv[++i]); // overide parameter filename, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-one-cpu"))
@@ -79,8 +81,8 @@ int main(int argc, char *argv[]) {
     Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     //validate parameters - print errors to console
     if (!ParametersValidate(Parameters).Validate(Console))
-      GenerateResolvableException("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
-                                  "Please review above message(s) and modify parameter settings accordingly.", "main(int,char*)");
+      throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+                             "Please review above message(s) and modify parameter settings accordingly.");
     if (getCommandLineArgumentIndex(argc, argv, "-centric") && Parameters.GetPermitsCentricExecution())
       Parameters.SetExecutionType(CENTRICALLY); // overide execution type, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-all-out"))
@@ -98,26 +100,26 @@ int main(int argc, char *argv[]) {
     }
     __SaTScanExit();
   }
-  catch (ResolvableException & x) {
-    Console.Printf("%s\n\nJob cancelled.", BasePrint::P_ERROR, x.GetErrorMessage());
+  catch (resolvable_error & x) {
+    Console.Printf("%s\n\nJob cancelled.", BasePrint::P_ERROR, x.what());
     __SaTScanExit();
     return 1;
   }
-  catch (UsageException & x) {
-    Console.Printf(x.GetErrorMessage(), BasePrint::P_ERROR);
+  catch (usage_error & x) {
+    Console.Printf(x.what(), BasePrint::P_ERROR);
     __SaTScanExit();
     return 1;
   }
-  catch (ZdMemoryException &x) {
-    Console.Printf("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
-                   "Please see 'Memory Requirements' in user guide for suggested solutions.\n", BasePrint::P_ERROR);
-    __SaTScanExit();
-    return 1;
-  }
-  catch (ZdException & x) {
+  catch (prg_exception& x) {
     Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
                    "Please contact technical support with the following information:\n"
-                   "%s\n%s\n", BasePrint::P_ERROR, x.GetErrorMessage(), x.GetCallpath());
+                   "%s\n%s\n", BasePrint::P_ERROR, x.what(), x.trace());
+    __SaTScanExit();
+    return 1;
+  }
+  catch (std::bad_alloc &x) {
+    Console.Printf("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
+                   "Please see 'Memory Requirements' in user guide for suggested solutions.\n", BasePrint::P_ERROR);
     __SaTScanExit();
     return 1;
   }
@@ -125,6 +127,13 @@ int main(int argc, char *argv[]) {
     Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
                    "Please contact technical support with the following information:\n"
                    "%s\n%s\n", BasePrint::P_ERROR, x.what(), "Callpath not available.");
+    __SaTScanExit();
+    return 1;
+  }
+  catch (ZdException & x) {
+    Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
+                   "Please contact technical support with the following information:\n"
+                   "%s\n%s\n", BasePrint::P_ERROR, x.GetErrorMessage(), x.GetCallpath());
     __SaTScanExit();
     return 1;
   }
