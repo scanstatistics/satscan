@@ -6,6 +6,7 @@
 #include "LoglikelihoodRatioUnifier.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "MultiSetCategoricalClusterData.h"
+#include "SSException.h"
 
 //***************** class MultiSetCategoricalSpatialData ***********************
 
@@ -56,10 +57,9 @@ void MultiSetCategoricalSpatialData::CopyEssentialClassMembers(const AbstractClu
     gvSetClusterData[t]->CopyEssentialClassMembers(*((const MultiSetCategoricalSpatialData&)rhs).gvSetClusterData[t]);
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 count_t MultiSetCategoricalSpatialData::GetCaseCount(unsigned int) const {
-  ZdGenerateException("GetCaseCount(unsigned int) not implemented.","MultiSetCategoricalSpatialData");
-  return 0;
+  throw prg_error("GetCaseCount(unsigned int) not implemented.","MultiSetCategoricalSpatialData");
 }
 
 /** Returns number of cases in accumulated cluster data for data set and category.
@@ -106,7 +106,7 @@ void MultiSetCategoricalSpatialData::GetDataSetIndexesComprisedInRatio(double dT
       else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = false;
       else
-        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetCategoricalSpatialData",
+        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetCategoricalSpatialData",
                             dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
     for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
@@ -125,10 +125,9 @@ double MultiSetCategoricalSpatialData::GetMaximizingValue(AbstractLikelihoodCalc
   return CalculateLoglikelihoodRatio(Calculator);
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 measure_t MultiSetCategoricalSpatialData::GetMeasure(unsigned int) const {
-  ZdGenerateException("GetMeasure(unsigned int) not implemented.","MultiSetCategoricalSpatialData");
-  return 0;
+  throw prg_error("GetMeasure(unsigned int) not implemented.","MultiSetCategoricalSpatialData");
 }
 
 /** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood
@@ -152,10 +151,9 @@ void AbstractMultiSetCategoricalTemporalData::CopyEssentialClassMembers(const Ab
     gvSetClusterData[t]->CopyEssentialClassMembers(*((const AbstractMultiSetCategoricalTemporalData&)rhs).gvSetClusterData[t]);
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 count_t AbstractMultiSetCategoricalTemporalData::GetCaseCount(unsigned int) const {
-  ZdGenerateException("GetCaseCount(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
-  return 0;
+  throw prg_error("GetCaseCount(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
 }
 
 /** Returns number of cases in accumulated cluster data for data set and category.
@@ -201,7 +199,7 @@ void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(
       else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = false;
       else
-        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetCategoricalTemporalData",
+        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetCategoricalTemporalData",
                             dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
      }
     for (itr_pair=vHighLowRatios.begin(); itr_pair != vHighLowRatios.end(); ++itr_pair)
@@ -214,10 +212,9 @@ void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(
   }
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 measure_t AbstractMultiSetCategoricalTemporalData::GetMeasure(unsigned int) const {
-  ZdGenerateException("GetCaseCount(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
-  return 0;
+  throw prg_error("GetCaseCount(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
 }
 
 /** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood
@@ -243,9 +240,9 @@ MultiSetCategoricalTemporalData::MultiSetCategoricalTemporalData(const Categoric
      gvSetClusterData.push_back(dynamic_cast<CategoricalTemporalData*>(DataFactory.GetNewTemporalClusterData(DataGateway.GetDataSetInterface(t))));
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 void MultiSetCategoricalTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighbor(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","MultiSetCategoricalTemporalData");
+  throw prg_error("AddNeighbor(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","MultiSetCategoricalTemporalData");
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
@@ -264,7 +261,7 @@ MultiSetCategoricalTemporalData * MultiSetCategoricalTemporalData::Clone() const
 /** Reassociates internal data with passed DataSetInterface pointers.
     Not implemented - throws exception */
 void MultiSetCategoricalTemporalData::Reassociate(const DataSetInterface& Interface) {
-  ZdGenerateException("Reassociate(const DataSetInterface&) not implemented.","MultiSetCategoricalTemporalData");
+  throw prg_error("Reassociate(const DataSetInterface&) not implemented.","MultiSetCategoricalTemporalData");
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */

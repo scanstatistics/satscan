@@ -3,13 +3,13 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "TimeTrend.h"
+#include "SSException.h"
 
 static unsigned int iLessThanOne=0;
 static unsigned int iLessThanFive=0;
 static unsigned int iLessThanTen=0;
 static unsigned int iLessThanFifteen=0;
 static unsigned int iLessThanTwenty=0;
-static unsigned int iLessThanFifty=0;
 static unsigned int iRemainder=0;
 
 /** constructor */
@@ -67,9 +67,9 @@ double CTimeTrend::safe_exp(double dValue) const {
 
    double d = exp(dValue);
    if (d == HUGE_VAL)
-     ZdGenerateException("exp(%lf) overflow", "safe_exp()", dValue);
+     throw prg_error("exp(%lf) overflow", "safe_exp()", dValue);
    if (d == 0)
-     ZdGenerateException("exp(%lf) underflow", "safe_exp()", dValue);
+     throw prg_error("exp(%lf) underflow", "safe_exp()", dValue);
    return d;
 }
 
@@ -216,7 +216,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
     gdBeta = nBetaNew;
     //Set status, a negative beta is not likely, but perform check regardless.
     if (gdBeta < -1)
-      ZdGenerateException("Beta calculated to less than -1. Beta = %g\n", "CalculateAndSet()", gdBeta);
+      throw prg_error("Beta calculated to less than -1. Beta = %g\n", "CalculateAndSet()", gdBeta);
     gStatus = TREND_CONVERGED;
   }
   else
@@ -256,14 +256,16 @@ double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double n
     case YEAR  : nUnits = 1; break;
     case MONTH : nUnits = 12; break;
     case DAY   : nUnits = 365.25; break;
-    default    : ZdGenerateException("SetAnnualTimeTrend() called with unknown date precision '%d'.",
-                                     "SetAnnualTimeTrend()", eDatePrecision);
+    default    : throw prg_error("SetAnnualTimeTrend() called with unknown date precision '%d'.",
+                                 "SetAnnualTimeTrend()", eDatePrecision);
   }
   if (gStatus == TREND_CONVERGED)
     gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
   else
-    ZdGenerateException("SetAnnualTimeTrend() called with time trend that is not in converged state.", "SetAnnualTimeTrend()");
+    throw prg_error("SetAnnualTimeTrend() called with time trend that is not in converged state.", "SetAnnualTimeTrend()");
 
   return gdAnnualTimeTrend;
 }
+
+
 

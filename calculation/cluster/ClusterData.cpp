@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "ClusterData.h"
 #include "TimeIntervals.h"
+#include "SSException.h"
 
 //**************** class SpatialData *******************************************
 
@@ -98,7 +99,7 @@ TemporalData::TemporalData(const AbstractDataSetGateway& DataGateway): AbstractT
 
 /** Not implemented - throws exception. */
 void TemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","TemporalData");
+  throw prg_error("AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","TemporalData");
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
@@ -122,8 +123,7 @@ void TemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
 
 /** Not implemented - throws exception. */
 unsigned int TemporalData::GetAllocationSize() const {
-  ZdGenerateException("GetAllocationSize() not implemeneted.","TemporalData");
-  return 0;
+  throw prg_error("GetAllocationSize() not implemeneted.","TemporalData");
 }
 
 /** Returns number of cases in accumulated cluster data. */
@@ -166,8 +166,8 @@ ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const D
     Init();
     Setup(Data, Interface);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const CSaTScanData&a, const DataSetInterface&)","ProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const CSaTScanData&a, const DataSetInterface&)","ProspectiveSpatialData");
     throw;
   }
 }
@@ -179,8 +179,8 @@ ProspectiveSpatialData::ProspectiveSpatialData(const CSaTScanData& Data, const A
     Init();
     Setup(Data, DataGateway.GetDataSetInterface());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const CSaTScanData&, const AbstractDataSetGateway&)","ProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const CSaTScanData&, const AbstractDataSetGateway&)","ProspectiveSpatialData");
     throw;
   }
 }
@@ -192,8 +192,8 @@ ProspectiveSpatialData::ProspectiveSpatialData(const ProspectiveSpatialData& rhs
     Init();
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const ProspectiveSpatialData&)","ProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const ProspectiveSpatialData&)","ProspectiveSpatialData");
     throw;
   }
 }
@@ -361,10 +361,10 @@ void ProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSetInterf
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    x.AddCallpath("Setup(const CSaTScanData&, const DataSetInterface&)","ProspectiveSpatialData");
+    x.addTrace("Setup(const CSaTScanData&, const DataSetInterface&)","ProspectiveSpatialData");
     throw;
   }
 }
@@ -378,8 +378,8 @@ SpaceTimeData::SpaceTimeData(const DataSetInterface& Interface)
     Init();
     Setup(Interface);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const DataSetInterface&)","SpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const DataSetInterface&)","SpaceTimeData");
     throw;
   }
 }
@@ -391,8 +391,8 @@ SpaceTimeData::SpaceTimeData(const AbstractDataSetGateway& DataGateway)
     Init();
     Setup(DataGateway.GetDataSetInterface());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const AbstractDataSetGateway&)","SpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const AbstractDataSetGateway&)","SpaceTimeData");
     throw;
   }
 }
@@ -404,8 +404,8 @@ SpaceTimeData::SpaceTimeData(const SpaceTimeData& rhs)
     Init();
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const SpaceTimeData&)","SpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const SpaceTimeData&)","SpaceTimeData");
     throw;
   }
 }
@@ -517,10 +517,10 @@ void SpaceTimeData::Setup(const DataSetInterface& Interface) {
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    x.AddCallpath("Setup(const DataSetInterface&)","SpaceTimeData");
+    x.addTrace("Setup(const DataSetInterface&)","SpaceTimeData");
     throw;
   }
 }

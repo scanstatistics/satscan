@@ -5,6 +5,7 @@
 #include "LoglikelihoodRatioUnifier.h"
 #include "LikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
+#include "SSException.h"
 
 /** class constructor */
 MultivariateUnifier::MultivariateUnifier(AreaRateType eScanningArea)
@@ -127,7 +128,7 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
 }
 
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {
-  ZdGenerateException("AdjoinRatio() not implementated yet for Adjustment option!","AdjustmentUnifier");
+  throw prg_error("AdjoinRatio() not implementated yet for Adjustment option!","AdjustmentUnifier");
   //gdRatio += Calculator.CalcLogLikelihoodRatioOrdinal(vOrdinalCases, tSetIndex);
 }
 

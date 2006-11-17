@@ -16,7 +16,7 @@ DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsign
 
 /** copy constructor */
 DataSet::DataSet(const DataSet& thisSet) {
-  ZdGenerateException("copy constructor not implemented.","DataSet");
+  throw prg_error("copy constructor not implemented.","DataSet");
 }
 
 /** destructor */
@@ -38,14 +38,12 @@ DataSet::~DataSet() {
 }
 
 DataSet * DataSet::Clone() const {
-  ZdGenerateException("Clone() not implemented.","DataSet");
-  return 0;
+  throw prg_error("Clone() not implemented.","DataSet");
 }
 
 /** overloaded assignment operator */
 DataSet & DataSet::operator=(const DataSet& rhs) {
-  ZdGenerateException("operator=() not implemented.","DataSet");
-  return *this;
+  throw prg_error("operator=() not implemented.","DataSet");
 }
 
 /** Allocates two dimensional array which will represent cumulative case data,
@@ -56,8 +54,8 @@ TwoDimCountArray_t & DataSet::allocateCaseData() {
       gpCaseData = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpCaseData->Set(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateCaseData()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateCaseData()","DataSet");
     throw;
   }
   return *gpCaseData;
@@ -72,8 +70,8 @@ CasesByCategory_t & DataSet::allocateCaseData_Cat(unsigned int iNumCategories) {
     for (unsigned int i=0; i < iNumCategories; ++i)
        gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateCaseData_Cat()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateCaseData_Cat()","DataSet");
     throw;
   }
   return gvCaseData_Cat;
@@ -87,8 +85,8 @@ TwoDimCountArray_t & DataSet::allocateCaseData_NC() {
       gpCaseData_NC = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpCaseData_NC->Set(0);
   }
-  catch(ZdException &x) {
-    x.AddCallpath("allocateCaseData_NC()","DataSet");
+  catch(prg_exception& x) {
+    x.addTrace("allocateCaseData_NC()","DataSet");
     throw;
   }
   return *gpCaseData_NC;
@@ -105,8 +103,8 @@ count_t * DataSet::allocateCaseData_PT() {
       gpCaseData_PT = new count_t[giIntervalsDimensions+1];
     memset(gpCaseData_PT, 0, (giIntervalsDimensions+1) * sizeof(count_t));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateCaseData_PT()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateCaseData_PT()","DataSet");
     throw;
   }
   return gpCaseData_PT;
@@ -123,8 +121,8 @@ TwoDimCountArray_t & DataSet::allocateCaseData_PT_Cat(unsigned int iNumCategorie
       gpCaseData_PT_Cat = new TwoDimensionArrayHandler<count_t>(iNumCategories, giIntervalsDimensions+1);
     gpCaseData_PT_Cat->Set(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateCaseData_PT_Cat()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateCaseData_PT_Cat()","DataSet");
     throw;
   }
   return *gpCaseData_PT_Cat;
@@ -133,9 +131,6 @@ TwoDimCountArray_t & DataSet::allocateCaseData_PT_Cat(unsigned int iNumCategorie
 /** Allocates one dimensional array which will represent not cumulative case data,
     time only. Initializes all elements of array to zero. */
 count_t * DataSet::allocateCaseData_PT_NC() {
-  int             i, j;
-  count_t      ** ppCases(gpCaseData->GetArray());
-
   try {
     if (!gpCaseData_PT_NC)
       //allocate to # time intervals plus one -- a pointer to this array will be
@@ -144,8 +139,8 @@ count_t * DataSet::allocateCaseData_PT_NC() {
       gpCaseData_PT_NC = new count_t[giIntervalsDimensions];
     memset(gpCaseData_PT_NC, 0, giIntervalsDimensions * sizeof(count_t));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateCaseData_PT_NC()","RealDataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateCaseData_PT_NC()","RealDataSet");
     throw;
   }
   return gpCaseData_PT_NC;
@@ -159,8 +154,8 @@ TwoDimMeasureArray_t & DataSet::allocateMeasureData() {
       gpMeasureData = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpMeasureData->Set(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateMeasureData()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateMeasureData()","DataSet");
     throw;
   }
   return *gpMeasureData;
@@ -174,8 +169,8 @@ TwoDimMeasureArray_t & DataSet::allocateMeasureData_NC() {
       gpMeasureData_NC = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpMeasureData_NC->Set(0);
   }
-  catch(ZdException &x) {
-    x.AddCallpath("allocateMeasureData_NC()","DataSet");
+  catch(prg_exception& x) {
+    x.addTrace("allocateMeasureData_NC()","DataSet");
     throw;
   }
   return *gpMeasureData_NC;
@@ -192,8 +187,8 @@ measure_t * DataSet::allocateMeasureData_PT() {
       gpMeasureData_PT = new measure_t[giIntervalsDimensions+1];
     memset(gpMeasureData_PT, 0, (giIntervalsDimensions+1) * sizeof(measure_t));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateMeasureData_PT()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateMeasureData_PT()","DataSet");
     throw;
   }
   return gpMeasureData_PT;
@@ -210,8 +205,8 @@ measure_t * DataSet::allocateMeasureData_PT_NC() {
       gpMeasureData_PT_NC = new measure_t[giIntervalsDimensions+1];
     memset(gpMeasureData_PT_NC, 0, (giIntervalsDimensions+1) * sizeof(measure_t));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateMeasureData_PT_NC()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateMeasureData_PT_NC()","DataSet");
     throw;
   }
   return gpMeasureData_PT_NC;
@@ -228,8 +223,8 @@ measure_t * DataSet::allocateMeasureData_PT_Sq() {
       gpMeasureData_PT_Sq = new measure_t[giIntervalsDimensions+1];
     memset(gpMeasureData_PT_Sq, 0, (giIntervalsDimensions+1) * sizeof(measure_t));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateMeasureData_PT_Sq()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateMeasureData_PT_Sq()","DataSet");
     throw;
   }
   return gpMeasureData_PT_Sq;
@@ -243,87 +238,87 @@ TwoDimMeasureArray_t & DataSet::allocateMeasureData_Sq() {
       gpMeasureData_Sq = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpMeasureData_Sq->Set(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateMeasureData_Sq()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateMeasureData_Sq()","DataSet");
     throw;
   }
   return *gpMeasureData_Sq;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    cumulative case data, time by space. Throws ZdException if not allocated. */
+    cumulative case data, time by space. Throws prg_error if not allocated. */
 TwoDimCountArray_t & DataSet::getCaseData() const {
-  if (!gpCaseData) ZdGenerateException("gpCaseData not allocated.","getCaseData()");
+  if (!gpCaseData) throw prg_error("gpCaseData not allocated.","getCaseData()");
   return *gpCaseData;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    not cumulative case data, time by space. Throws ZdException if not allocated. */
+    not cumulative case data, time by space. Throws prg_error if not allocated. */
 TwoDimCountArray_t & DataSet::getCaseData_NC() const {
-  if (!gpCaseData_NC) ZdGenerateException("gpCaseData_NC not allocated.","getCaseData_NC()");
+  if (!gpCaseData_NC) throw prg_error("gpCaseData_NC not allocated.","getCaseData_NC()");
   return *gpCaseData_NC;
 }
 
 /** Returns pointer to allocated array that represents cumulative case data, time
-    only. Throws ZdException if not allocated. */
+    only. Throws prg_error if not allocated. */
 count_t * DataSet::getCaseData_PT() const {
-  if (!gpCaseData_PT) ZdGenerateException("gpCaseData_PT not allocated.","getCaseData_PT()");
+  if (!gpCaseData_PT) throw prg_error("gpCaseData_PT not allocated.","getCaseData_PT()");
   return gpCaseData_PT;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    cumulative case data, category by time. Throws ZdException if not allocated. */
+    cumulative case data, category by time. Throws prg_error if not allocated. */
 TwoDimCountArray_t & DataSet::getCaseData_PT_Cat() const {
-  if (!gpCaseData_PT_Cat) ZdGenerateException("gpCaseData_PT_Cat not allocated.","getCaseData_PT_Cat()");
+  if (!gpCaseData_PT_Cat) throw prg_error("gpCaseData_PT_Cat not allocated.","getCaseData_PT_Cat()");
   return *gpCaseData_PT_Cat;
 }
 
 /** Returns pointer to allocated array that represents not cumulative case data,
-    time only. Throws ZdException if not allocated. */
+    time only. Throws prg_error if not allocated. */
 count_t * DataSet::getCaseData_PT_NC() const {
-  if (!gpCaseData_PT_NC) ZdGenerateException("gpCaseData_PT_NC not allocated.","getCaseData_PT_NC()");
+  if (!gpCaseData_PT_NC) throw prg_error("gpCaseData_PT_NC not allocated.","getCaseData_PT_NC()");
   return gpCaseData_PT_NC;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    cumulative measure data, time by space. Throws ZdException if not allocated. */
+    cumulative measure data, time by space. Throws prg_error if not allocated. */
 TwoDimMeasureArray_t & DataSet::getMeasureData() const {
-  if (!gpMeasureData) ZdGenerateException("gpMeasureData not allocated.","getMeasureData()");
+  if (!gpMeasureData) throw prg_error("gpMeasureData not allocated.","getMeasureData()");
   return *gpMeasureData;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    not cumulative measure data, time by space. Throws ZdException if not allocated. */
+    not cumulative measure data, time by space. Throws prg_error if not allocated. */
 TwoDimMeasureArray_t & DataSet::getMeasureData_NC() const {
-  if (!gpMeasureData_NC) ZdGenerateException("gpMeasureData_NC not allocated.","getMeasureData_NC()");
+  if (!gpMeasureData_NC) throw prg_error("gpMeasureData_NC not allocated.","getMeasureData_NC()");
   return *gpMeasureData_NC;
 }
 
 /** Returns pointer to allocated array that represents cumulative measure data,
-    time only. Throws ZdException if not allocated. */
+    time only. Throws prg_error if not allocated. */
 measure_t * DataSet::getMeasureData_PT() const {
-  if (!gpMeasureData_PT) ZdGenerateException("gpMeasureData_PT not allocated.","getMeasureData_PT()");
+  if (!gpMeasureData_PT) throw prg_error("gpMeasureData_PT not allocated.","getMeasureData_PT()");
   return gpMeasureData_PT;
 }
 
 /** Returns pointer to allocated array that represents not cumulative measure data,
-    time only. Throws ZdException if not allocated. */
+    time only. Throws prg_error if not allocated. */
 measure_t * DataSet::getMeasureData_PT_NC() const {
-  if (!gpMeasureData_PT_NC) ZdGenerateException("gpMeasureData_PT_NC not allocated.","getMeasureData_PT_NC()");
+  if (!gpMeasureData_PT_NC) throw prg_error("gpMeasureData_PT_NC not allocated.","getMeasureData_PT_NC()");
   return gpMeasureData_PT_NC;
 }
 
 /** Returns pointer to allocated array that represents cumulative measure data
-    squared, time only. Throws ZdException if not allocated. */
+    squared, time only. Throws prg_error if not allocated. */
 measure_t * DataSet::getMeasureData_PT_Sq() const {
-  if (!gpMeasureData_PT_Sq) ZdGenerateException("gpMeasureData_PT_Sq not allocated.","getMeasureData_PT_Sq()");
+  if (!gpMeasureData_PT_Sq) throw prg_error("gpMeasureData_PT_Sq not allocated.","getMeasureData_PT_Sq()");
   return gpMeasureData_PT_Sq;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    cumulative measure data squared, time by space. Throws ZdException if not allocated. */
+    cumulative measure data squared, time by space. Throws prg_error if not allocated. */
 TwoDimMeasureArray_t & DataSet::getMeasureData_Sq() const {
-  if (!gpMeasureData_Sq) ZdGenerateException("gpMeasureData_Sq not allocated.","getMeasureData_Sq()");
+  if (!gpMeasureData_Sq) throw prg_error("gpMeasureData_Sq not allocated.","getMeasureData_Sq()");
   return *gpMeasureData_Sq;
 }
 
@@ -412,8 +407,8 @@ void DataSet::setCaseData_NC() {
         ppCases_NC[i][t] = ppCases[i][t] - ppCases[i+1][t];
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setCaseData_NC()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setCaseData_NC()","DataSet");
     throw;
   }
 }
@@ -428,8 +423,8 @@ void DataSet::setCaseData_PT() {
        for (t=0, gpCaseData_PT[i]=0; t < giLocationDimensions; ++t)
           gpCaseData_PT[i] += ppCases[i][t];
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setCaseData_PT()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setCaseData_PT()","DataSet");
     throw;
   }
 }
@@ -447,8 +442,8 @@ void DataSet::setCaseData_PT_Cat() {
              pPTCategoryCases[i] += ppCases[i][t];
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setCaseData_PT_Cat()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setCaseData_PT_Cat()","DataSet");
     throw;
   }
 }
@@ -465,8 +460,8 @@ void DataSet::setCaseData_PT_NC() {
         gpCaseData_PT_NC[i] += ppCases[i][t] - ppCases[i+1][t];
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setCaseData_PT_NC()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setCaseData_PT_NC()","DataSet");
     throw;
   }
 }
@@ -483,8 +478,8 @@ void DataSet::setMeasureData_NC() {
         ppMeasureNC[i][t] = ppMeasure[i][t] - ppMeasure[i+1][t];
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setMeasureData_NC()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setMeasureData_NC()","DataSet");
     throw;
   }
 }
@@ -499,8 +494,8 @@ void DataSet::setMeasureData_PT() {
        for (unsigned int t=0; t < giLocationDimensions; ++t)
           gpMeasureData_PT[i] += ppMeasure[i][t];
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setMeasureData_PT()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setMeasureData_PT()","DataSet");
     throw;
   }
 }
@@ -517,8 +512,8 @@ void DataSet::setMeasureData_PT_NC() {
         gpMeasureData_PT_NC[i] += ppMeasure[i][t] - ppMeasure[i+1][t];
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setMeasureData_PT_NC()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setMeasureData_PT_NC()","DataSet");
     throw;
   }
 }
@@ -533,8 +528,8 @@ void DataSet::setMeasureData_PT_Sq() {
        for (unsigned int t=0; t < giLocationDimensions; ++t)
           gpMeasureData_PT_Sq[i] += ppMeasure[i][t];
   }
-  catch (ZdException &x) {
-    x.AddCallpath("setMeasureData_PT_Sq()","DataSet");
+  catch (prg_exception& x) {
+    x.addTrace("setMeasureData_PT_Sq()","DataSet");
     throw;
   }
 }
@@ -586,8 +581,8 @@ TwoDimCountArray_t & RealDataSet::allocateCaseData_Censored() {
       gpCaseData_Censored = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpCaseData_Censored->Set(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateCaseData_Censored()","RealDataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateCaseData_Censored()","RealDataSet");
     throw;
   }
   return *gpCaseData_Censored;
@@ -601,8 +596,8 @@ TwoDimCountArray_t & RealDataSet::allocateControlData() {
       gpControlData = new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
     gpControlData->Set(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("allocateControlData()","RealDataSet");
+  catch (prg_exception& x) {
+    x.addTrace("allocateControlData()","RealDataSet");
     throw;
   }
   return *gpControlData;
@@ -628,8 +623,8 @@ void RealDataSet::checkPopulationDataCases(CSaTScanData& Data) {
   try {
     gPopulation.CheckCasesHavePopulations(gpCaseData->GetArray()[0], Data);
   }
-  catch(ZdException &x) {
-    x.AddCallpath("checkPopulationDataCases()","RealDataSet");
+  catch(prg_exception& x) {
+    x.addTrace("checkPopulationDataCases()","RealDataSet");
     throw;
   }
 }
@@ -643,11 +638,11 @@ TwoDimCountArray_t & RealDataSet::getCategoryCaseData(unsigned int iCategoryInde
 /** Returns reference to object which manages a two dimensional array that represents
     cumulative case data, time by space, for category at 'iCategoryIndex'.
     If category does not exist and 'bCreateable' is true, creates new two dimensional
-    array for category and returns referance. Otherwise throws ZdException.*/
+    array for category and returns referance. Otherwise throws prg_error.*/
 TwoDimCountArray_t & RealDataSet::getCategoryCaseData(unsigned int iCategoryIndex, bool bCreateable) {
   if (!gvCaseData_Cat.size() || iCategoryIndex + 1 > gvCaseData_Cat.size()) {
     if (!bCreateable)
-      ZdGenerateException("Index %u out of range [size=%u].","GetCategoryCaseArray()", iCategoryIndex, gvCaseData_Cat.size());
+      throw prg_error("Index %u out of range [size=%u].","GetCategoryCaseArray()", iCategoryIndex, gvCaseData_Cat.size());
     size_t tNumAllocate = iCategoryIndex + 1 - gvCaseData_Cat.size();
     for (size_t t=0; t < tNumAllocate; ++t)
       gvCaseData_Cat.push_back(new TwoDimensionArrayHandler<count_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations, 0));
@@ -659,14 +654,14 @@ TwoDimCountArray_t & RealDataSet::getCategoryCaseData(unsigned int iCategoryInde
 /** Returns reference to object which manages a two dimensional array that represents
     cumulative censored case data, time by space. */
 TwoDimCountArray_t & RealDataSet::getCaseData_Censored() const {
-  if (!gpCaseData_Censored) ZdGenerateException("gpCaseData_Censored not allocated.","getCaseData_Censored()");
+  if (!gpCaseData_Censored) throw prg_error("gpCaseData_Censored not allocated.","getCaseData_Censored()");
   return *gpCaseData_Censored;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
     cumulative control data, time by space. */
 TwoDimCountArray_t & RealDataSet::getControlData() const {
-  if (!gpControlData) ZdGenerateException("gpControlData not allocated.","getControlData()");
+  if (!gpControlData) throw prg_error("gpControlData not allocated.","getControlData()");
   return *gpControlData;
 }
 

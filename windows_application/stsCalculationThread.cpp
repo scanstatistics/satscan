@@ -69,7 +69,7 @@ void __fastcall CalcThread::Execute() {
     time(&RunTime);         // Pass to analysis to include in report
 
     if (!ParametersValidate(*gpParameters).Validate(*gpPrintWindow))
-       GenerateResolvableException("\nInvalid parameter(s) encountered. Job cancelled.", "Execute()");
+       throw resolvable_error("\nInvalid parameter(s) encountered. Job cancelled.");
 
     //create analysis runner object and execute analysis
     AnalysisRunner(*gpParameters, RunTime, *gpPrintWindow);
@@ -90,23 +90,39 @@ void __fastcall CalcThread::Execute() {
       // with it(i.e. we won't we accessing gpFormStatus anymore).
       Synchronize((TThreadMethod)&ProcessAcknowledgesCancellation);
   }
-  catch (ResolvableException &x) {
+  catch (resolvable_error &x) {
     //handle exceptions that occured from user or data errors
-    x.AddCallpath("Execute()", "CalcThread");
-    gpPrintWindow->Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.GetErrorMessage());
+    x.addTrace("Execute()", "CalcThread");
+    gpPrintWindow->Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
     CancellJob();
   }
-  catch (ZdMemoryException &x) {
-    //handle memory exceptions
-    x.AddCallpath("Execute()", "CalcThread");
-    gsProgramErrorCallPath = x.GetCallpath();
+  catch (prg_exception& x) {
+    //handle exceptions that occured from unexcepted program error
+    x.addTrace("Execute()", "CalcThread");
+    gsProgramErrorCallPath = x.trace();
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
+    gpPrintWindow->Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    Synchronize((TThreadMethod)&ResetProgressCloseButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
+    Synchronize((TThreadMethod)&EnableProgressEmailButton);
+    CancellJob();
+  }
+  catch (std::bad_alloc &x) {
+    //handle memory exceptions
     gpPrintWindow->Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
                           "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
                           "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    Synchronize((TThreadMethod)&ResetProgressCloseButton);
+    Synchronize((TThreadMethod)&EnableProgressPrintAction);
+    Synchronize((TThreadMethod)&EnableProgressEmailButton);
+    CancellJob();
+  }
+  catch (std::exception& x) {
+    //handle exceptions that occured from unexcepted program error
+    gpPrintWindow->Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);
@@ -118,14 +134,6 @@ void __fastcall CalcThread::Execute() {
     gsProgramErrorCallPath = x.GetCallpath();
     Synchronize((TThreadMethod)&SetProgramErrorCallPath);
     gpPrintWindow->Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.GetErrorMessage());
-    Synchronize((TThreadMethod)&ResetProgressCloseButton);
-    Synchronize((TThreadMethod)&EnableProgressPrintAction);
-    Synchronize((TThreadMethod)&EnableProgressEmailButton);
-    CancellJob();
-  }
-  catch (std::exception& x) {
-    //handle exceptions that occured from unexcepted program error
-    gpPrintWindow->Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
     Synchronize((TThreadMethod)&ResetProgressCloseButton);
     Synchronize((TThreadMethod)&EnableProgressPrintAction);
     Synchronize((TThreadMethod)&EnableProgressEmailButton);

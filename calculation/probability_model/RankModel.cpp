@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "RankModel.h"
 #include "SaTScanData.h"
+#include "SSException.h"
 
 /** constructor */
 CRankModel::CRankModel() : CModel() {}
@@ -16,7 +17,6 @@ void CRankModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */
 double CRankModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, const CSaTScanData&) const {
-  ZdGenerateException("GetPopulation() not implementated.","CRankModel");
-  return 0;
+  throw prg_error("GetPopulation() not implementated.","CRankModel");
 }
  

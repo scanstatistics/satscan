@@ -13,6 +13,7 @@
 #include "MultiSetCategoricalClusterData.h"
 #include "LoglikelihoodRatioUnifier.h"
 #include "MultiSetNormalClusterData.h"
+#include "SSException.h"
 
 /** constructor */
 TemporalDataEvaluator::TemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator & Calculator,
@@ -168,9 +169,9 @@ void MultiSetTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster
   }
 }
 
-/** Not implemented - throws ZdException */
+/** Not implemented - throws prg_error */
 void MultiSetTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetTemporalDataEvaluator");
+  throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
@@ -256,9 +257,9 @@ void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster &
   }
 }
 
-/** Not implemented - throws ZdException */
+/** Not implemented - throws prg_error */
 void NormalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","NormalTemporalDataEvaluator");
+  throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","NormalTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
@@ -337,9 +338,9 @@ void MultiSetNormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CC
   }
 }
 
-/** Not implemented - throws ZdException */
+/** Not implemented - throws prg_error */
 void MultiSetNormalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetNormalTemporalDataEvaluator");
+  throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetNormalTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
@@ -422,9 +423,9 @@ void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CClust
   }
 }
 
-/** Not implemented - throws ZdException */
+/** Not implemented - throws prg_error */
 void CategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","CategoricalTemporalDataEvaluator");
+  throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","CategoricalTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.
@@ -498,9 +499,9 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running
   }
 }
 
-/** Not implemented - throws ZdException */
+/** Not implemented - throws prg_error */
 void MultiSetCategoricalTemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) {
-  ZdGenerateException("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetCategoricalTemporalDataEvaluator");
+  throw prg_error("CompareMeasures(AbstractTemporalClusterData&, CMeasureList&) not implemented.","MultiSetCategoricalTemporalDataEvaluator");
 }
 
 /** Iterates through defined temporal window for accumulated cluster data.

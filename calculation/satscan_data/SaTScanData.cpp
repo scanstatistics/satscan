@@ -17,14 +17,8 @@ CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirect
              : gParameters(Parameters), gPrint(PrintDirection),
                m_nStartDate(CharToJulian(Parameters.GetStudyPeriodStartDate().c_str())),
                m_nEndDate(CharToJulian(Parameters.GetStudyPeriodEndDate().c_str())) {
-  try {
-    Init();
-    Setup();
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("constructor", "CSaTScanData");
-    throw;
-  }
+  Init();
+  Setup();
 }
 
 /** class destructor */
@@ -101,23 +95,21 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_
      measure_t MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, gvTimeIntervalStartTimes[interval+1]);
      //validate that data overflow will not occur
      if (MeasureDuring && (dRelativeRisk > (std::numeric_limits<measure_t>::max() - MeasurePre - MeasurePost) / MeasureDuring))
-       GenerateResolvableException("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                                   "       The specified relative risk %lf in the adjustment file\n"
-                                   "       is too large.\n", "AssignMeasure()", dRelativeRisk);
+       throw resolvable_error("Error: Data overflow occurs when adjusting expected number of cases.\n"
+                              "       The specified relative risk %lf in the adjustment file\n"
+                              "       is too large.\n", dRelativeRisk);
      //assign adjusted measure                      
      pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
      //if measure has been adjusted to zero, check that cases adjusted interval are also zero
      if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(ppCases, interval, Tract)) {
        std::string  sStart, sEnd;
-       GenerateResolvableException("Error: For locationID '%s', you have adjusted the expected number\n"
-                                   "       of cases in the period %s to %s to be zero, but there\n"
-                                   "       are cases in that interval.\n"
-                                   "       If the expected is zero, the number of cases must also be zero.\n",
-                                   "AdjustMeasure()",
-                                   (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier()),
-                                   JulianToString(sStart, StartDate).c_str(),
-                                   JulianToString(sEnd, EndDate).c_str());
-       return false;
+       throw resolvable_error("Error: For locationID '%s', you have adjusted the expected number\n"
+                              "       of cases in the period %s to %s to be zero, but there\n"
+                              "       are cases in that interval.\n"
+                              "       If the expected is zero, the number of cases must also be zero.\n",
+                              (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier()),
+                              JulianToString(sStart, StartDate).c_str(),
+                              JulianToString(sEnd, EndDate).c_str());
      }
   }
   return true;
@@ -136,8 +128,8 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     }
     gvCentroidNeighborStore.killAll();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AdjustNeighborCounts()", "CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("AdjustNeighborCounts()", "CSaTScanData");
     throw;
   }
 }
@@ -176,12 +168,12 @@ void CSaTScanData::AllocateSortedArray() {
     //default neighbor reference type to MAXIMUM, if not set
     SetActiveNeighborReferenceType(geActiveNeighborReferenceType == NOT_SET ? MAXIMUM : geActiveNeighborReferenceType);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpSortedUShortHandler; gpSortedUShortHandler=0;
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     delete gpReportedNeighborCountHandler; gpReportedNeighborCountHandler=0;
-    x.AddCallpath("AllocateSortedArray()","CSaTScanData");
+    x.addTrace("AllocateSortedArray()","CSaTScanData");
     throw;
   }
 }
@@ -191,7 +183,7 @@ void CSaTScanData::AllocateSortedArray() {
 void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
   //update neighbor array(s) for number of calculated neighbors
   if (!gpNeighborCountHandler)
-    ZdGenerateException("Neighbor array not allocated.","setNeighborCounts()");
+    throw prg_error("Neighbor array not allocated.","setNeighborCounts()");
 
   if (gpReportedNeighborCountHandler)
     gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumReportedNeighbors;
@@ -221,13 +213,13 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
          gpSortedIntHandler->GetArray()[iEllipseIndex][iCentroidIndex][j] = vOrderLocations[j].GetTractNumber();
     }
     else
-      ZdGenerateException("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
+      throw prg_error("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
 
     //update neighbor array(s) for number of calculated neighbors
     setNeighborCounts(iEllipseIndex, iCentroidIndex, iNumReportedNeighbors, iNumMaximumNeighbors);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
+  catch (prg_exception &x) {
+    x.addTrace("AllocateSortedArrayNeighbors()","CSaTScanData");
     throw;
   }
 }
@@ -253,13 +245,13 @@ void CSaTScanData::AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const st
          gpSortedIntHandler->GetArray()[0][iCentroidIndex][j] = vLocations[j];
     }
     else
-      ZdGenerateException("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
+      throw prg_error("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
 
     //update neighbor array(s) for number of calculated neighbors
     setNeighborCounts(0, iCentroidIndex, 0, vLocations.size());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateSortedArrayNeighbors()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateSortedArrayNeighbors()","CSaTScanData");
     throw;
   }
 }
@@ -324,8 +316,8 @@ void CSaTScanData::CalculateMeasure(RealDataSet& DataSet) {
     DataSet.setTotalCasesAtStart(DataSet.getTotalCases());
     DataSet.setTotalMeasureAtStart(DataSet.getTotalMeasure());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("CalculateMeasure()","CSaTScanData");
     throw;
   }
 }
@@ -427,8 +419,8 @@ void CSaTScanData::FindNeighbors() {
   try {
     CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("FindNeighbors()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("FindNeighbors()","CSaTScanData");
     throw;
   }
 }
@@ -553,8 +545,8 @@ void CSaTScanData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
   try {
     gDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeData()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("RandomizeData()","CSaTScanData");
     throw;
   }
 }
@@ -575,8 +567,8 @@ void CSaTScanData::ReadDataFromFiles() {
     if (gParameters.UseMetaLocationsFile())
       gDataSets->assignMetaLocationData(gDataSets->getDataSets());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadDataFromFiles()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("ReadDataFromFiles()","CSaTScanData");
     throw;
   }
 }
@@ -588,7 +580,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
 
   try {
     if (Cluster.GetClusterType() == SPACETIMECLUSTER)
-      ZdGenerateException("RemoveClusterSignificance() not implemented for cluster type %d.", "RemoveClusterSignificance()", Cluster.GetClusterType());
+      throw prg_error("RemoveClusterSignificance() not implemented for cluster type %d.", "RemoveClusterSignificance()", Cluster.GetClusterType());
 
     tStopTract = (Cluster.GetClusterType() == PURELYTEMPORALCLUSTER ? m_nTracts - 1 : GetNeighbor(Cluster.GetEllipseOffset(), Cluster.GetCentroidIndex(), Cluster.GetNumTractsInCluster()));
     while (tTractIndex != tStopTract) {
@@ -633,7 +625,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
          RealDataSet& DataSet = gDataSets->GetDataSet(t);
          if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-           ZdGenerateException("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
+           throw prg_error("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
          pRandomizer->AssignFromAttributes(DataSet);
          gtTotalCases += DataSet.getTotalCases();
          gtTotalMeasure += DataSet.getTotalMeasure();
@@ -647,7 +639,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
         RealDataSet& DataSet = gDataSets->GetDataSet(t);
         if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-          ZdGenerateException("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+          throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
         pRandomizer->AssignFromAttributes(DataSet);
         //update class variables that defines totals across all data sets
         gtTotalCases += DataSet.getTotalCases();
@@ -664,15 +656,15 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        case POISSON     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
                           std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
        case ORDINAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
-       default : ZdGenerateException("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
+       default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
       }
     }
     //now recalculate meta data as needed
     if (gParameters.UseMetaLocationsFile())
       gDataSets->assignMetaLocationData(gDataSets->getDataSets());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("RemoveClusterSignificance()", "CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("RemoveClusterSignificance()", "CSaTScanData");
     throw;
   }
 }
@@ -681,7 +673,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     location at tTractIndex in specified interval range. */
 void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex) {
   count_t       tCasesInInterval, ** ppCases;
-  measure_t     tCalibration, tAdjustedTotalMeasure, tMeasureInInterval, ** ppMeasure , ** ppSqMeasure, tSqMeasureInInterval;
+  measure_t     tMeasureInInterval, ** ppMeasure;
 
        if (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI) {
          gtTotalCases = 0;
@@ -747,7 +739,7 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
          AbstractNormalRandomizer *pRandomizer;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-             ZdGenerateException("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+             throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
            //zero out cases/measure in clusters defined spatial/temporal window
            for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
              pRandomizer->RemoveCase(i, tTractIndex);
@@ -756,17 +748,16 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
        else if (gParameters.GetProbabilityModelType() == EXPONENTIAL) {
          AbstractExponentialRandomizer *pRandomizer;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-           RealDataSet& DataSet = gDataSets->GetDataSet(t);
            if ((pRandomizer = dynamic_cast<AbstractExponentialRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-             ZdGenerateException("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
+             throw prg_error("Randomizer could not be dynamically casted to AbstractExponentialRandomizer type.\n", "RemoveClusterSignificance()");
            //zero out cases/measure in clusters defined spatial/temporal window
            for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
              pRandomizer->RemoveCase(i, tTractIndex);
          }
        }
        else
-         ZdGenerateException("RemoveClusterSignificance() not implemented for %s model.",
-                               "RemoveClusterSignificance()", ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+         throw prg_error("RemoveClusterSignificance() not implemented for %s model.",
+                         "RemoveClusterSignificance()", ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
        // Remove location population data as specified in maximum circle population file
        if (gvMaxCirclePopulation.size()) {
          m_nTotalMaxCirclePopulation -= gvMaxCirclePopulation[tTractIndex];
@@ -781,29 +772,21 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
 
 /** Set neighbor array pointer requested type. */
 void CSaTScanData::SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType) {
-  try {
-    if (gParameters.GetIsPurelyTemporalAnalysis())
-      return;
-
-    switch (eType) {
-      case REPORTED : if (gpReportedNeighborCountHandler) {
-                        gppActiveNeighborArray = gpReportedNeighborCountHandler->GetArray();
-                        break;
-                      }
-      case MAXIMUM  : if (!gpNeighborCountHandler)
-                        ZdGenerateException("Neighbor array not allocated.","SetActiveNeighborReferenceType()");
-                      gppActiveNeighborArray = gpNeighborCountHandler->GetArray();
+  if (gParameters.GetIsPurelyTemporalAnalysis())
+    return;
+  switch (eType) {
+    case REPORTED : if (gpReportedNeighborCountHandler) {
+                      gppActiveNeighborArray = gpReportedNeighborCountHandler->GetArray();
                       break;
-      case NOT_SET  : gppActiveNeighborArray=0; break;                
-      default       :
-        ZdGenerateException("Unknown active neighbor type '%d'.", "SetActiveNeighborReferenceType()", eType);
-    };
-    geActiveNeighborReferenceType = eType;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetActiveNeighborReferenceType()","CSaTScanData");
-    throw;
-  }
+                    }
+    case MAXIMUM  : if (!gpNeighborCountHandler)
+                      throw prg_error("Neighbor array not allocated.","SetActiveNeighborReferenceType()");
+                    gppActiveNeighborArray = gpNeighborCountHandler->GetArray();
+                    break;
+    case NOT_SET  : gppActiveNeighborArray=0; break;
+    default : throw prg_error("Unknown active neighbor type '%d'.", "SetActiveNeighborReferenceType()", eType);
+  };
+  geActiveNeighborReferenceType = eType;
 }
 
 /* Calculates the number of time aggregation units to include in potential clusters
@@ -827,10 +810,10 @@ void CSaTScanData::SetIntervalCut() {
       //Validation in CParameters should have produced error before this body of code.
       //Only a program error or user selecting not to validate parameters should cause
       //this error to occur.
-      ZdException::Generate("The calculated number of time aggregations units in potential clusters is zero.","SetIntervalCut()");
+      throw prg_error("The calculated number of time aggregations units in potential clusters is zero.","SetIntervalCut()");
    }
-  catch (ZdException &x) {
-    x.AddCallpath("SetIntervalCut()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("SetIntervalCut()","CSaTScanData");
     throw;
   }
 }
@@ -865,9 +848,9 @@ void CSaTScanData::SetIntervalStartTimes() {
 
   if (m_nTimeIntervals <= 1)
     //This error should be catch in the CParameters validation process.
-    ZdException::Generate("The number of time intervals was calculated as one. Temporal\n"
-                          "and space-time analyses can not be performed on less than one\n"
-                          "time interval.\n", "SetIntervalStartTimes()");
+    throw prg_error("The number of time intervals was calculated as one. Temporal\n"
+                    "and space-time analyses can not be performed on less than one\n"
+                    "time interval.\n", "SetIntervalStartTimes()");
 }
 
 /* Calculates which time interval the prospective surveillance start date is in.*/
@@ -879,17 +862,15 @@ int CSaTScanData::CalculateProspectiveIntervalStart() const {
       iDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
 
       if (iDateIndex < 0)
-        GenerateResolvableException("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
-                                    "SetProspectiveIntervalStart()", gParameters.GetProspectiveStartDate().c_str(),
-                                    gParameters.GetStudyPeriodStartDate().c_str());
+        throw resolvable_error("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
+                               gParameters.GetProspectiveStartDate().c_str(), gParameters.GetStudyPeriodStartDate().c_str());
       if (iDateIndex > m_nTimeIntervals)
-        GenerateResolvableException("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
-                                    "SetProspectiveIntervalStart", gParameters.GetProspectiveStartDate().c_str(),
-                                    gParameters.GetStudyPeriodEndDate().c_str());
+        throw resolvable_error("Error: The start date for prospective analyses '%s' occurs after the study period end date '%s'.\n",
+                               gParameters.GetProspectiveStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
     }                                
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateProspectiveIntervalStart()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("CalculateProspectiveIntervalStart()","CSaTScanData");
     throw;
   }
   return iDateIndex;
@@ -907,8 +888,8 @@ void CSaTScanData::SetPurelyTemporalCases() {
       for (t=0; t < gDataSets->GetNumDataSets(); ++t)
         gDataSets->GetDataSet(t).setCaseData_PT();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetPurelyTemporalCases()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("SetPurelyTemporalCases()","CSaTScanData");
     throw;
   }
 }
@@ -932,16 +913,16 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToString(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
       JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
-      GenerateResolvableException("Error: No clusters will be evaluated.\n"
-                                  "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
-                                  "       the temporal window scanned has a start time of %s (end range\n"
-                                  "       ending time minus %i %s) and a maximum window end time of %s\n"
-                                  "       (start range ending time plus %i %s), which results in no windows scanned.",
-                                  "Setup()", m_nIntervalCut * gParameters.GetTimeAggregationLength(),
-                                  sTimeIntervalType.c_str(), sDateWST.c_str(),
-                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(),
-                                  sTimeIntervalType.c_str(), sDateMaxWET.c_str(),
-                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
+      throw resolvable_error("Error: No clusters will be evaluated.\n"
+                             "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
+                             "       the temporal window scanned has a start time of %s (end range\n"
+                             "       ending time minus %i %s) and a maximum window end time of %s\n"
+                             "       (start range ending time plus %i %s), which results in no windows scanned.",
+                             m_nIntervalCut * gParameters.GetTimeAggregationLength(),
+                             sTimeIntervalType.c_str(), sDateWST.c_str(),
+                             m_nIntervalCut * gParameters.GetTimeAggregationLength(),
+                             sTimeIntervalType.c_str(), sDateMaxWET.c_str(),
+                             m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
     }
     //The parameter validation checked already whether the end range dates conflicted,
     //but the maxium temporal cluster size may actually cause the range dates to be
@@ -949,12 +930,12 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     if (m_nFlexibleWindowEndRangeStartIndex > iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
       JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
-      GenerateResolvableException("Error: No clusters will be evaluated.\n"
-                                  "       With the incorporation of a maximum temporal cluster size of %i %s\n"
-                                  "       the maximum window end time becomes %s (start range ending\n"
-                                  "       time plus %i %s), which does not intersect with scanning window end range.\n","Setup()",
-                                  m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str(),
-                                  sDateMaxWET.c_str(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
+      throw resolvable_error("Error: No clusters will be evaluated.\n"
+                             "       With the incorporation of a maximum temporal cluster size of %i %s\n"
+                             "       the maximum window end time becomes %s (start range ending\n"
+                             "       time plus %i %s), which does not intersect with scanning window end range.\n",
+                             m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str(),
+                             sDateMaxWET.c_str(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
     }
 
     // Collapse unused time intervals at end of study period, if possible.
@@ -1015,16 +996,15 @@ void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
     for (i=0; i < m_nTimeIntervals; ++i)
        for (t=0; t < m_nTracts; ++t)
           if (!ppNonCumulativeMeasure[i][t] && GetCaseCount(ppCumulativeCases, i, t))
-            GenerateResolvableException("Error: For locationID '%s' in time interval %s - %s,\n"
-                                        "       the expected number of cases is zero but there were cases observed.\n"
-                                        "       Please review the correctness of population and case files.",
-                                        "ValidateObservedToExpectedCases()",
-                                        gTractHandler->getLocations().at(t)->getIndentifier(),
-                                        JulianToString(sStart, gvTimeIntervalStartTimes[i]).c_str(),
-                                        JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).c_str());
+            throw resolvable_error("Error: For locationID '%s' in time interval %s - %s,\n"
+                                   "       the expected number of cases is zero but there were cases observed.\n"
+                                   "       Please review the correctness of population and case files.",
+                                   gTractHandler->getLocations().at(t)->getIndentifier(),
+                                   JulianToString(sStart, gvTimeIntervalStartTimes[i]).c_str(),
+                                   JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).c_str());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateObservedToExpectedCases()","CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateObservedToExpectedCases()","CSaTScanData");
     throw;
   }
 }

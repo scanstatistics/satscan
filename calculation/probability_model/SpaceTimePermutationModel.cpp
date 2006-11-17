@@ -28,8 +28,8 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataSet& DataSet) {
           tTotalCases += ppCases[0][j];
           // Check to see if total case values have wrapped
           if (tTotalCases < 0)
-            GenerateResolvableException("Error: The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
-                                        "CalculateMeasure()", DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
+            throw resolvable_error("Error: The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
+                                   DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
        }
     }
 
@@ -60,17 +60,17 @@ void CSpaceTimePermutationModel::CalculateMeasure(RealDataSet& DataSet) {
 
     // Ensure that TotalCases=TotalMeasure
     if (fabs(tTotalCases - tTotalMeasure) > 0.0001)
-      ZdGenerateException("Error: The total measure is not equal to the total number of cases.\n"
-                          "       Total Cases = %i, Total Measure = %.2lf.\n",
-                          "CalculateMeasure()", tTotalCases, tTotalMeasure);
+      throw prg_error("Error: The total measure is not equal to the total number of cases.\n"
+                      "       Total Cases = %i, Total Measure = %.2lf.\n",
+                      "CalculateMeasure()", tTotalCases, tTotalMeasure);
 
     DataSet.setTotalCases(tTotalCases);
     DataSet.setTotalControls(0);
     DataSet.setTotalMeasure(tTotalMeasure);
     DataSet.setTotalPopulation(0);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()","CSpaceTimePermutationModel");
+  catch (prg_exception &x) {
+    x.addTrace("CalculateMeasure()","CSpaceTimePermutationModel");
     throw;
   }
 }

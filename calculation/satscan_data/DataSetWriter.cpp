@@ -14,12 +14,11 @@ AbstractDataSetWriter * AbstractDataSetWriter::getNewDataSetWriter(const CParame
     case ORDINAL              : return new OrdinalDataSetWriter();
     case EXPONENTIAL          : return new ExponentialDataSetWriter();
     case NORMAL               :
-       ZdGenerateException("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
+       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
     case RANK                 :
-       ZdGenerateException("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
-    default : ZdGenerateException("Unknown model type '%d'.","getNewDataSetReader()", Parameters.GetProbabilityModelType());
+       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
+    default : throw prg_error("Unknown model type '%d'.","getNewDataSetReader()", Parameters.GetProbabilityModelType());
   }
-  return 0;
 }
 
 /** Writes case data to file stream based upon analysis type. */
@@ -28,8 +27,8 @@ void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
 
   //open output file
   stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate);
-  if (!stream) GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "write()",
-                                           Parameters.GetSimulationDataOutputFilename().c_str());
+  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n",
+                                      Parameters.GetSimulationDataOutputFilename().c_str());
 
   switch (Parameters.GetAnalysisType()) {
     case PURELYSPATIAL             :
@@ -58,7 +57,7 @@ void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
       }
      }
      break;
-    default : ZdGenerateException("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
+    default : throw prg_error("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
   }
   stream.close();
 }
@@ -69,8 +68,8 @@ void OrdinalDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
 
   //open output file
   stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate);
-  if (!stream) GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "write()",
-                                                Parameters.GetSimulationDataOutputFilename().c_str());
+  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n",
+                                      Parameters.GetSimulationDataOutputFilename().c_str());
   switch (Parameters.GetAnalysisType()) {
     case PURELYSPATIAL             :
      {for (CasesByCategory_t::const_iterator itr=Set.getCaseData_Cat().begin(); itr != Set.getCaseData_Cat().end(); ++itr) {
@@ -104,7 +103,7 @@ void OrdinalDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
       }
      }
      break;
-    default : ZdGenerateException("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
+    default : throw prg_error("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
   }
   stream.close();
 }
@@ -115,8 +114,8 @@ void ExponentialDataSetWriter::write(const DataSet& Set, const CParameters& Para
 
   //open output file
   stream.open(Parameters.GetSimulationDataOutputFilename().c_str(), std::ios::ate);
-  if (!stream) GenerateResolvableException("Error: Could not open the simulated data output file '%s'.\n", "write()",
-                                           Parameters.GetSimulationDataOutputFilename().c_str());
+  if (!stream) throw resolvable_error("Error: Could not open the simulated data output file '%s'.\n",
+                                      Parameters.GetSimulationDataOutputFilename().c_str());
 
   switch (Parameters.GetAnalysisType()) {
     case PURELYSPATIAL             :
@@ -161,7 +160,7 @@ void ExponentialDataSetWriter::write(const DataSet& Set, const CParameters& Para
       }
      } 
      break;
-    default : ZdGenerateException("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
+    default : throw prg_error("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
   }
   stream.close();
 }

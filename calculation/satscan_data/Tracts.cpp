@@ -51,7 +51,7 @@ void TractHandler::Location::addCoordinates(const Coordinates& aCoordinates, Mul
   //add coordinates in sorted order -- this is needed for consistancy reasons, should we need to break ties in neighbors calculation
   bool bExists = gvCoordinatesContainer.exists(&aCoordinates);
   if (eMultipleCoordinatesType == ONEPERLOCATION && !bExists && gvCoordinatesContainer.size())
-    GenerateResolvableException("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", "addCoordinateIndex()", gsIndentifier);
+    throw resolvable_error("Error: The coordinates for location ID '%s' are defined multiple times in the coordinates file.", gsIndentifier);
   if (!bExists)
      gvCoordinatesContainer.add(&aCoordinates, true);
 }
@@ -130,8 +130,8 @@ void TractHandler::addLocation(const char *sIdentifier) {
     if (itr == gvLocations.end() || strcmp((*itr)->getIndentifier(), sIdentifier))
       gvLocations.insert(itr, identifier.release());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("addLocation()", "TractHandler");
+  catch (prg_exception& x) {
+    x.addTrace("addLocation()", "TractHandler");
     throw;
   }
 }
@@ -143,7 +143,7 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
     if (gbAggregatingTracts) return; //when aggregating locations, insertion process always succeeds
 
     if (vCoordinates.size() != giCoordinateDimensions)
-      ZdGenerateException("Coordinate dimension is %u, expected %d.", "addLocation()", vCoordinates.size(), giCoordinateDimensions);
+      throw prg_error("Coordinate dimension is %u, expected %d.", "addLocation()", vCoordinates.size(), giCoordinateDimensions);
 
     giMaxIdentifierLength = std::max(strlen(sIdentifier), giMaxIdentifierLength);
     //insert unique coordinates into collection - ordered by first coordinate, then second coordinate, etc.
@@ -164,8 +164,8 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
       //otherwise this is a new identifier
       gvLocations.insert(itrIdentifiers, identifier.release());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("addLocation()", "TractHandler");
+  catch (prg_exception& x) {
+    x.addTrace("addLocation()", "TractHandler");
     throw;
   }
 }
@@ -175,7 +175,7 @@ double TractHandler::getDistanceSquared(const std::vector<double>& vFirstPoint, 
   double        dDistanceSquared=0;
 
   if (vFirstPoint.size() != vSecondPoint.size())
-    ZdGenerateException("First point has %u coordinates and second point has %u.", "getDistanceSquared()", vFirstPoint.size(), vSecondPoint.size());
+    throw prg_error("First point has %u coordinates and second point has %u.", "getDistanceSquared()", vFirstPoint.size(), vSecondPoint.size());
 
   for (size_t i=0; i < vFirstPoint.size(); ++i)
      dDistanceSquared += (vFirstPoint[i] - vSecondPoint[i]) * (vFirstPoint[i] - vSecondPoint[i]);
@@ -215,8 +215,8 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
     else
       tPosReturn = -1;
   }
-  catch (ZdException & x)  {
-    x.AddCallpath("getLocationIndex()", "TractHandler");
+  catch (prg_exception& x)  {
+    x.addTrace("getLocationIndex()", "TractHandler");
     throw;
   }
   return tPosReturn;
@@ -230,32 +230,26 @@ void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
   AsciiPrintFormat                            PrintFormat;
   bool                                        bPrinted=false;
 
-  try {
-    for (itr=gvLocations.begin(); itr != gvLocations.end(); ++itr) {
-       if ((*itr)->getSecondaryIdentifiers().size()) {
-         if (!bPrinted) {
-           PrintFormat.SetMarginsAsOverviewSection();
-           std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
-                                "coordinates that where combined into one location. In the "
-                                "optional output files, combined locations are represented by a "
-                                "single location ID as follows:";
-           PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
-           PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
-           bPrinted=true;
-         }
-         //First retrieved location ID is the location that represents all others.
-         std::string buffer;
-         printString(buffer, "%s : %s", (*itr)->getIndentifier(), (*itr)->getSecondaryIdentifiers()[0].c_str());
-         for (unsigned int i=1; i < (*itr)->getSecondaryIdentifiers().size(); ++i) {
-            buffer += ", "; buffer += (*itr)->getSecondaryIdentifiers()[i].c_str();
-         }   
+  for (itr=gvLocations.begin(); itr != gvLocations.end(); ++itr) {
+     if ((*itr)->getSecondaryIdentifiers().size()) {
+       if (!bPrinted) {
+         PrintFormat.SetMarginsAsOverviewSection();
+         std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
+                              "coordinates that where combined into one location. In the "
+                              "optional output files, combined locations are represented by a "
+                              "single location ID as follows:";
          PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
+         PrintFormat.PrintSectionSeparatorString(fDisplay, 0, 1, '-');
+         bPrinted=true;
        }
-    }
-  }
-  catch (ZdException & x)  {
-    x.AddCallpath("reportCombinedLocations()", "TractHandler");
-    throw;
+       //First retrieved location ID is the location that represents all others.
+       std::string buffer;
+       printString(buffer, "%s : %s", (*itr)->getIndentifier(), (*itr)->getSecondaryIdentifiers()[0].c_str());
+       for (unsigned int i=1; i < (*itr)->getSecondaryIdentifiers().size(); ++i) {
+          buffer += ", "; buffer += (*itr)->getSecondaryIdentifiers()[i].c_str();
+       }
+       PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
+     }
   }
 }
 
@@ -277,7 +271,7 @@ void TractHandler::setCoordinateDimensions(size_t iDimensions) {
   if (gbAggregatingTracts) return; //ignore this when aggregating locations
 
   if (gvCoordinates.size())
-    ZdGenerateException("Changing the coordinate dimensions is not permited once locations have been defined.","setCoordinateDimensions()");
+    throw prg_error("Changing the coordinate dimensions is not permited once locations have been defined.","setCoordinateDimensions()");
 
   giCoordinateDimensions = iDimensions;
 }

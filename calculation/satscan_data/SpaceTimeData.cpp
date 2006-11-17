@@ -10,6 +10,7 @@
 #include "ExponentialModel.h"
 #include "RankModel.h"
 #include "OrdinalModel.h"
+#include "SSException.h"
 
 /** class constructor */
 CSpaceTimeData::CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -17,8 +18,8 @@ CSpaceTimeData::CSpaceTimeData(const CParameters& Parameters, BasePrint& PrintDi
   try {
     SetProbabilityModel();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CSpaceTimeData");
     throw;
   }
 }
@@ -35,8 +36,8 @@ void CSpaceTimeData::CalculateMeasure(RealDataSet& DataSet) {
     if (gParameters.GetIncludePurelyTemporalClusters() && gParameters.GetProbabilityModelType() != ORDINAL)
       gDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()","CSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("CalculateMeasure()","CSpaceTimeData");
     throw;
   }
 }
@@ -50,8 +51,8 @@ void CSpaceTimeData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
     if (gParameters.GetIncludePurelyTemporalClusters())
       gDataSets->SetPurelyTemporalSimulationData(SimDataContainer);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeData()","CSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("RandomizeData()","CSpaceTimeData");
     throw;
   }
 }
@@ -65,8 +66,8 @@ void CSpaceTimeData::ReadDataFromFiles() {
     if (gParameters.GetIncludePurelyTemporalClusters())
       SetPurelyTemporalCases();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadDataFromFiles()","CSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("ReadDataFromFiles()","CSpaceTimeData");
     throw;
   }
 }
@@ -84,30 +85,24 @@ void CSpaceTimeData::SetIntervalCut() {
       //to the number of time interval slices. I'm not sure if the latter is possible.
       m_nIntervalCut--;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetIntervalCut()","CSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("SetIntervalCut()","CSpaceTimeData");
     throw;
   }
 }
 
 /** Allocates probability model object.  */
 void CSpaceTimeData::SetProbabilityModel() {
-  try {
-    switch (gParameters.GetProbabilityModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*this);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
-       case ORDINAL              : m_pModel = new OrdinalModel(); break;
-       case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
-       case NORMAL               : m_pModel = new CNormalModel(); break;
-       case RANK                 : m_pModel = new CRankModel(); break;
-       case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(); break;
-       default : ZdException::Generate("Unknown probability model type: '%d'.\n",
-                                       "SetProbabilityModel()", gParameters.GetProbabilityModelType());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProbabilityModel()","CSpaceTimeData");
-    throw;
+  switch (gParameters.GetProbabilityModelType()) {
+     case POISSON              : m_pModel = new CPoissonModel(*this);   break;
+     case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
+     case ORDINAL              : m_pModel = new OrdinalModel(); break;
+     case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
+     case NORMAL               : m_pModel = new CNormalModel(); break;
+     case RANK                 : m_pModel = new CRankModel(); break;
+     case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(); break;
+     default : throw prg_error("Unknown probability model type: '%d'.\n",
+                               "SetProbabilityModel()", gParameters.GetProbabilityModelType());
   }
 }
 

@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "CentroidNeighbors.h"
 #include "SaTScanData.h"
+#include "SSException.h"
 
 /** Comparison function for LocationDistance objects. */
 bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
@@ -25,7 +26,7 @@ bool CompareLocationDistance::operator() (const LocationDistance& lhs, const Loc
        if (llhs[i] != rrhs[i])
          return *(llhs[i]) != *(rrhs[i]);
     }
-    if (llhs.size() == rrhs.size()) ZdGenerateException("Dulpicate coordinates encountered.", "operator()");
+    if (llhs.size() == rrhs.size()) throw prg_error("Dulpicate coordinates encountered.", "operator()");
     return llhs.size() < rrhs.size();
   }
   //distances not equal, compare as normal

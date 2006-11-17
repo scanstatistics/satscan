@@ -16,114 +16,107 @@ ScanLineParameterFileAccess::~ScanLineParameterFileAccess() {}
 
 /** Returns a string which describes the parameter (for error reporting on read). */
 const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParameterType) const {
-  try {
-    switch (eParameterType) {
-      case ANALYSISTYPE              : return "Analysis Type (line 1)";
-      case SCANAREAS                 : return "Scan Areas Type (line 2)";  
-      case CASEFILE                  : return "Case Filename (line 3)";  
-      case POPFILE                   : return "Population Filename (line 4)";  
-      case COORDFILE                 : return "Coordinate Filename (line 5)";  
-      case OUTPUTFILE                : return "Results Filename (line 6)";  
-      case PRECISION                 : return "Time Precision of Case File Dates (line 7)";  
-      case DIMENSION                 : return "*Not Used* (line 8)";  
-      case SPECIALGRID               : return "Use Grid File? (line 9)";  
-      case GRIDFILE                  : return "Grid Filename (line 10)";  
-      case GEOSIZE                   : return "Max Spatial Cluster Size (line 11)";  
-      case STARTDATE                 : return "Study Period Start Date (line 12)";  
-      case ENDDATE                   : return "Study Period End Date (line 13)";  
-      case CLUSTERS                  : return "Include Clusters Type (line 14)";  
-      case EXACTTIMES                : return "*Not Used* (line 15)";  
-      case TIME_AGGREGATION_UNITS    : return "Time Aggregation Units (line 16)";  
-      case TIME_AGGREGATION          : return "Time Aggregation Length (line 17)";  
-      case PURESPATIAL               : return "Include Purely Spatial Cluster (line 18)";  
-      case TIMESIZE                  : return "Max Temporal Cluster Size (line 19)";  
-      case REPLICAS                  : return "Num Monte Carlo Replications (line 20)";  
-      case MODEL                     : return "Probability Model Type (line 21)";  
-      case RISKFUNCTION              : return "Isotonic Scan (line 22)";  
-      case POWERCALC                 : return "Perform Power Calculations? (line 23)";  
-      case POWERX                    : return "Power Calculation LLR #1 (line 24)";  
-      case POWERY                    : return "Power Calculation LLR #2 (line 25)";  
-      case TIMETREND                 : return "Temporal Trend Adjustment Type (line 26)";  
-      case TIMETRENDPERC             : return "Temporal Trend Percentage (line 27)";  
-      case PURETEMPORAL              : return "Include Purely Temporal Cluster (line 28)";  
-      case CONTROLFILE               : return "Control Filename (line 29)";  
-      case COORDTYPE                 : return "Coordinates Type (line 30)";  
-      case OUTPUT_SIM_LLR_ASCII      : return "Output Simulation LLR - ASCII? (line 31)";  
-      case ITERATIVE                 : return "Perform Iterative Scan? (line 32)";
-      case ITERATIVE_NUM             : return "Num Iterative Scan Iterations (line 33)";
-      case ITERATIVE_PVAL            : return "Iterative Scan P-Value Cutoff (line 34)";
-      case VALIDATE                  : return "Validate Settings (line 35)";  
-      case OUTPUT_RR_ASCII           : return "Output Relative Risks - ASCII? (line 36)";  
-      case WINDOW_SHAPE              : return "Spatial Window Shape (line 37)";  
-      case ESHAPES                   : return "Ellipse Shapes (line 38)";  
-      case ENUMBERS                  : return "Ellipse Angles (line 39)";  
-      case START_PROSP_SURV          : return "Prospective Surveillance Start Date (line 40)";  
-      case OUTPUT_AREAS_ASCII        : return "Output Location Information - ASCII? (line 41)";  
-      case OUTPUT_MLC_ASCII          : return "Output Cluster Information - ASCII? (line 42)";  
-      case CRITERIA_SECOND_CLUSTERS  : return "Criteria Secondary Clusters Type (line 43)";  
-      case MAX_TEMPORAL_TYPE         : return "Max Temporal Cluster Size Type (line 44)";  
-      case MAX_SPATIAL_TYPE          : return "Max Spatial Cluster Size Type (line 45)";
-      case RUN_HISTORY_FILENAME      : return "*Not Used* (line 46)";  
-      case OUTPUT_MLC_DBASE          : return "Output Cluster Information - dBase? (line 47)";  
-      case OUTPUT_AREAS_DBASE        : return "Output Location Information - dBase? (line 48)";  
-      case OUTPUT_RR_DBASE           : return "Output Relative Risks - dBase? (line 49)";  
-      case OUTPUT_SIM_LLR_DBASE      : return "Output Simulation LLR - dBase? (line 50)";  
-      case NON_COMPACTNESS_PENALTY   : return "Ellipsoid Non-Compactness Penalty? (line 51)";  
-      case INTERVAL_STARTRANGE       : return "Flexiable Window Start Range (line 52)";  
-      case INTERVAL_ENDRANGE         : return "Flexiable Window End Range (line 53)";  
-      case TIMETRENDCONVRG           : return "Time Trend Convergence Value (line 54)";  
-      case MAXCIRCLEPOPFILE          : return "Max Circle Size Filename (line 55)";;  
-      case EARLY_SIM_TERMINATION     : return "Early Termination of Simulations? (line 56)";  
-      case REPORTED_GEOSIZE          : return "Max Size of Reported Spatial Cluster (line 57)";  
-      case USE_REPORTED_GEOSIZE      : return "Use Max Reported Spatial Cluster? (line 58)";  
-      case SIMULATION_TYPE           : return "Simulation Method Type (line 59)";  
-      case SIMULATION_SOURCEFILE     : return "Simulation Data Import Filename (line 60)";  
-      case ADJ_BY_RR_FILE            : return "Known Relative Risks Filename (line 61)";  
-      case OUTPUT_SIMULATION_DATA    : return "Print Simulation Data - ASCII? (line 62)";  
-      case SIMULATION_DATA_OUTFILE   : return "Simulation Data Output Filename (line 63)";  
-      case ADJ_FOR_EALIER_ANALYSES   : return "Adjust for Earlier Analyses (line 64)";  
-      case USE_ADJ_BY_RR_FILE        : return "Use Known Relative Risks? (line 65)";  
-      case SPATIAL_ADJ_TYPE          : return "Spatial Adjustments Type (line 66)";  
-      //NOTE: The next parameter involves multiple datasets - this inidicates where the line based version
-      //      of the parameter file can no longer be maintained like the ini version unless the settings
-      //      only specify one data set.
-      case MULTI_DATASET_PURPOSE_TYPE: return "Multiple Data Set Purpose Type (line 67)";  
-      case CREATION_VERSION          : return "Sotware Version Created (line 68)";  
-      case RANDOMIZATION_SEED        : return "Randomization Seed (line 69)";
-      case REPORT_CRITICAL_VALUES    : return "Report Critical Value (line 70)";
-      case EXECUTION_TYPE            : return "Analysis Execution Type (line 71)";
-      case NUM_PROCESSES             : return "Number Parallel Processes (line 72)";
-      case LOG_HISTORY               : return "Log Run to History File (line 73)";
-      case SUPPRESS_WARNINGS         : return "Suppress Warnings (line 74)";
-      case MAX_REPORTED_SPATIAL_TYPE : return "Max Spatial Cluster Size Type - Reported Clusters (line 75)";
-      case OUTPUT_MLC_CASE_ASCII     : return "Output Cluster Case Information - ASCII? (line 76)";
-      case OUTPUT_MLC_CASE_DBASE     : return "Output Cluster Case Information - dBase? (line 77)";
-      case STUDYPERIOD_DATACHECK     : return "Study Period Data Checking type (line 78)";
-      case COORDINATES_DATACHECK     : return "Geographical Coordinates Data Checking type (line 79)";
-      case MAXGEOPOPATRISK           : return "Maximum spatial size in population at risk (line 80)";
-      case MAXGEOPOPFILE             : return "Maximum spatial size in max circle population file (line 81)";
-      case MAXGEODISTANCE            : return "Maximum spatial size in distance from center (line 82)";
-      case USE_MAXGEOPOPFILE         : return "Restrict maximum spatial size - max circle file (line 83)";
-      case USE_MAXGEODISTANCE        : return "Restrict maximum spatial size - distance (line 84)";
-      case MAXGEOPOPATRISK_REPORTED  : return "Maximum reported spatial size in population at risk (line 85)";
-      case MAXGEOPOPFILE_REPORTED    : return "Maximum reported spatial size in max circle population file (line 86)";
-      case MAXGEODISTANCE_REPORTED   : return "Maximum reported spatial size in distance from center (line 87)";
-      case USE_MAXGEOPOPFILE_REPORTED: return "Restrict maximum reported spatial size - max circle file (line 88)";
-      case USE_MAXGEODISTANCE_REPORTED : return "Restrict maximum reported spatial size - distance (line 89)";
-      case LOCATION_NEIGHBORS_FILE   : return "Location neighbors filename (line 90)";
-      case USE_LOCATION_NEIGHBORS_FILE : return "Use location neighbors file (line 91)";
-      case RANDOMLY_GENERATE_SEED    : return "Randomly generate seed (line 92)";
-      case MULTIPLE_COORDINATES_TYPE : return "Multiple Coordinates Type (line 93)";
-      case META_LOCATIONS_FILE       : return "Meta locations filename (line 94)";
-      case USE_META_LOCATIONS_FILE   : return "Use meta locations file (line 95)";
-      default : ZdException::Generate("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
-    };
-  }
-  catch (ZdException& x) {
-    x.AddCallpath("GetParameterLabel()","ScanLineParameterFileAccess");
-    throw;
-  }
-  return 0;
+  switch (eParameterType) {
+    case ANALYSISTYPE              : return "Analysis Type (line 1)";
+    case SCANAREAS                 : return "Scan Areas Type (line 2)";  
+    case CASEFILE                  : return "Case Filename (line 3)";  
+    case POPFILE                   : return "Population Filename (line 4)";  
+    case COORDFILE                 : return "Coordinate Filename (line 5)";  
+    case OUTPUTFILE                : return "Results Filename (line 6)";  
+    case PRECISION                 : return "Time Precision of Case File Dates (line 7)";  
+    case DIMENSION                 : return "*Not Used* (line 8)";  
+    case SPECIALGRID               : return "Use Grid File? (line 9)";  
+    case GRIDFILE                  : return "Grid Filename (line 10)";  
+    case GEOSIZE                   : return "Max Spatial Cluster Size (line 11)";  
+    case STARTDATE                 : return "Study Period Start Date (line 12)";  
+    case ENDDATE                   : return "Study Period End Date (line 13)";  
+    case CLUSTERS                  : return "Include Clusters Type (line 14)";  
+    case EXACTTIMES                : return "*Not Used* (line 15)";  
+    case TIME_AGGREGATION_UNITS    : return "Time Aggregation Units (line 16)";  
+    case TIME_AGGREGATION          : return "Time Aggregation Length (line 17)";  
+    case PURESPATIAL               : return "Include Purely Spatial Cluster (line 18)";  
+    case TIMESIZE                  : return "Max Temporal Cluster Size (line 19)";  
+    case REPLICAS                  : return "Num Monte Carlo Replications (line 20)";  
+    case MODEL                     : return "Probability Model Type (line 21)";  
+    case RISKFUNCTION              : return "Isotonic Scan (line 22)";  
+    case POWERCALC                 : return "Perform Power Calculations? (line 23)";  
+    case POWERX                    : return "Power Calculation LLR #1 (line 24)";  
+    case POWERY                    : return "Power Calculation LLR #2 (line 25)";  
+    case TIMETREND                 : return "Temporal Trend Adjustment Type (line 26)";  
+    case TIMETRENDPERC             : return "Temporal Trend Percentage (line 27)";  
+    case PURETEMPORAL              : return "Include Purely Temporal Cluster (line 28)";  
+    case CONTROLFILE               : return "Control Filename (line 29)";  
+    case COORDTYPE                 : return "Coordinates Type (line 30)";  
+    case OUTPUT_SIM_LLR_ASCII      : return "Output Simulation LLR - ASCII? (line 31)";  
+    case ITERATIVE                 : return "Perform Iterative Scan? (line 32)";
+    case ITERATIVE_NUM             : return "Num Iterative Scan Iterations (line 33)";
+    case ITERATIVE_PVAL            : return "Iterative Scan P-Value Cutoff (line 34)";
+    case VALIDATE                  : return "Validate Settings (line 35)";  
+    case OUTPUT_RR_ASCII           : return "Output Relative Risks - ASCII? (line 36)";  
+    case WINDOW_SHAPE              : return "Spatial Window Shape (line 37)";  
+    case ESHAPES                   : return "Ellipse Shapes (line 38)";  
+    case ENUMBERS                  : return "Ellipse Angles (line 39)";  
+    case START_PROSP_SURV          : return "Prospective Surveillance Start Date (line 40)";  
+    case OUTPUT_AREAS_ASCII        : return "Output Location Information - ASCII? (line 41)";  
+    case OUTPUT_MLC_ASCII          : return "Output Cluster Information - ASCII? (line 42)";  
+    case CRITERIA_SECOND_CLUSTERS  : return "Criteria Secondary Clusters Type (line 43)";  
+    case MAX_TEMPORAL_TYPE         : return "Max Temporal Cluster Size Type (line 44)";  
+    case MAX_SPATIAL_TYPE          : return "Max Spatial Cluster Size Type (line 45)";
+    case RUN_HISTORY_FILENAME      : return "*Not Used* (line 46)";  
+    case OUTPUT_MLC_DBASE          : return "Output Cluster Information - dBase? (line 47)";  
+    case OUTPUT_AREAS_DBASE        : return "Output Location Information - dBase? (line 48)";  
+    case OUTPUT_RR_DBASE           : return "Output Relative Risks - dBase? (line 49)";  
+    case OUTPUT_SIM_LLR_DBASE      : return "Output Simulation LLR - dBase? (line 50)";  
+    case NON_COMPACTNESS_PENALTY   : return "Ellipsoid Non-Compactness Penalty? (line 51)";  
+    case INTERVAL_STARTRANGE       : return "Flexiable Window Start Range (line 52)";  
+    case INTERVAL_ENDRANGE         : return "Flexiable Window End Range (line 53)";  
+    case TIMETRENDCONVRG           : return "Time Trend Convergence Value (line 54)";  
+    case MAXCIRCLEPOPFILE          : return "Max Circle Size Filename (line 55)";;  
+    case EARLY_SIM_TERMINATION     : return "Early Termination of Simulations? (line 56)";  
+    case REPORTED_GEOSIZE          : return "Max Size of Reported Spatial Cluster (line 57)";  
+    case USE_REPORTED_GEOSIZE      : return "Use Max Reported Spatial Cluster? (line 58)";  
+    case SIMULATION_TYPE           : return "Simulation Method Type (line 59)";  
+    case SIMULATION_SOURCEFILE     : return "Simulation Data Import Filename (line 60)";  
+    case ADJ_BY_RR_FILE            : return "Known Relative Risks Filename (line 61)";  
+    case OUTPUT_SIMULATION_DATA    : return "Print Simulation Data - ASCII? (line 62)";  
+    case SIMULATION_DATA_OUTFILE   : return "Simulation Data Output Filename (line 63)";  
+    case ADJ_FOR_EALIER_ANALYSES   : return "Adjust for Earlier Analyses (line 64)";  
+    case USE_ADJ_BY_RR_FILE        : return "Use Known Relative Risks? (line 65)";  
+    case SPATIAL_ADJ_TYPE          : return "Spatial Adjustments Type (line 66)";  
+    //NOTE: The next parameter involves multiple datasets - this inidicates where the line based version
+    //      of the parameter file can no longer be maintained like the ini version unless the settings
+    //      only specify one data set.
+    case MULTI_DATASET_PURPOSE_TYPE: return "Multiple Data Set Purpose Type (line 67)";  
+    case CREATION_VERSION          : return "Sotware Version Created (line 68)";  
+    case RANDOMIZATION_SEED        : return "Randomization Seed (line 69)";
+    case REPORT_CRITICAL_VALUES    : return "Report Critical Value (line 70)";
+    case EXECUTION_TYPE            : return "Analysis Execution Type (line 71)";
+    case NUM_PROCESSES             : return "Number Parallel Processes (line 72)";
+    case LOG_HISTORY               : return "Log Run to History File (line 73)";
+    case SUPPRESS_WARNINGS         : return "Suppress Warnings (line 74)";
+    case MAX_REPORTED_SPATIAL_TYPE : return "Max Spatial Cluster Size Type - Reported Clusters (line 75)";
+    case OUTPUT_MLC_CASE_ASCII     : return "Output Cluster Case Information - ASCII? (line 76)";
+    case OUTPUT_MLC_CASE_DBASE     : return "Output Cluster Case Information - dBase? (line 77)";
+    case STUDYPERIOD_DATACHECK     : return "Study Period Data Checking type (line 78)";
+    case COORDINATES_DATACHECK     : return "Geographical Coordinates Data Checking type (line 79)";
+    case MAXGEOPOPATRISK           : return "Maximum spatial size in population at risk (line 80)";
+    case MAXGEOPOPFILE             : return "Maximum spatial size in max circle population file (line 81)";
+    case MAXGEODISTANCE            : return "Maximum spatial size in distance from center (line 82)";
+    case USE_MAXGEOPOPFILE         : return "Restrict maximum spatial size - max circle file (line 83)";
+    case USE_MAXGEODISTANCE        : return "Restrict maximum spatial size - distance (line 84)";
+    case MAXGEOPOPATRISK_REPORTED  : return "Maximum reported spatial size in population at risk (line 85)";
+    case MAXGEOPOPFILE_REPORTED    : return "Maximum reported spatial size in max circle population file (line 86)";
+    case MAXGEODISTANCE_REPORTED   : return "Maximum reported spatial size in distance from center (line 87)";
+    case USE_MAXGEOPOPFILE_REPORTED: return "Restrict maximum reported spatial size - max circle file (line 88)";
+    case USE_MAXGEODISTANCE_REPORTED : return "Restrict maximum reported spatial size - distance (line 89)";
+    case LOCATION_NEIGHBORS_FILE   : return "Location neighbors filename (line 90)";
+    case USE_LOCATION_NEIGHBORS_FILE : return "Use location neighbors file (line 91)";
+    case RANDOMLY_GENERATE_SEED    : return "Randomly generate seed (line 92)";
+    case MULTIPLE_COORDINATES_TYPE : return "Multiple Coordinates Type (line 93)";
+    case META_LOCATIONS_FILE       : return "Meta locations filename (line 94)";
+    case USE_META_LOCATIONS_FILE   : return "Use meta locations file (line 95)";
+    default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
+  };
 }
 
 /** Read scanning line version of parameter file. */
@@ -139,7 +132,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
 
     SourceFile.open(sFileName);
     if (!SourceFile)
-      GenerateResolvableException("Error: Could not open file:\n'%s'.\n", "Read()", sFileName);
+      throw resolvable_error("Error: Could not open file:\n'%s'.\n", sFileName);
 
     gParameters.SetSourceFileName(sFileName);
     gParameters.SetAsDefaulted();
@@ -204,8 +197,8 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
    //   while (++iLinesRead <= gParameters.GetNumReadParameters())
    //       MarkAsMissingDefaulted((ParameterType)iLinesRead, gPrintDirection);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("Read()", "ScanLineParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("Read()", "ScanLineParameterFileAccess");
     throw;
   }
   return !gbReadStatusError;
@@ -219,12 +212,12 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
 
   try {
     if (gParameters.GetNumDataSets() > 1)
-      GenerateResolvableException("Error: Lined based parameter file can not write with multiple data sets.\n", "Write()");
+      throw resolvable_error("Error: Lined based parameter file can not write with multiple data sets.\n");
 
     //open output file
     parameters.open(sFilename, std::ios::trunc);
     if (!parameters)
-      GenerateResolvableException("Error: Could not open parameter file '%s' for write.\n", "Write()", sFilename);
+      throw resolvable_error("Error: Could not open parameter file '%s' for write.\n", sFilename);
 
     for (int eParameterType=ANALYSISTYPE; eParameterType <= gParameters.giNumParameters; ++eParameterType) {
        parameters << GetParameterString((ParameterType)eParameterType, s).c_str();
@@ -247,8 +240,8 @@ void ScanLineParameterFileAccess::Write(const char * sFilename) {
     }
     parameters.close();
   }
-  catch (ZdException& x) {
-    x.AddCallpath("Write()","ScanLineParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("Write()","ScanLineParameterFileAccess");
     throw;
   }
 }

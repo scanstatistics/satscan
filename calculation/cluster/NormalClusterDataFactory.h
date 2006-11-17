@@ -9,7 +9,7 @@
     to the second measure variable.
     Note: All of the public functions to get new cluster data objects with
           'const DataSetInterface&' parameter are not implemented and will
-          throw an ZdException. This probability model type is required to
+          throw an prg_error. This probability model type is required to
           perform simulations through same process as that of real data and
           thus only the functions with 'const AbstractDataSetGateway&' are of
           us at this time.                                                    */
@@ -42,7 +42,7 @@ class NormalClusterDataFactory : public AbstractClusterDataFactory {
           code modification is requested.
     Note: All of the public functions to get new cluster data objects with
           'const DataSetInterface&' parameter are not implemented and will
-          throw an ZdException. Having multiple datasets imposes requirement
+          throw an prg_error. Having multiple datasets imposes requirement
           to perform simulations through same process as that of real data and
           thus only the functions with 'const AbstractDataSetGateway&' are of
           us at this time.  */

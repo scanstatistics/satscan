@@ -13,14 +13,13 @@ AbstractDataSetReader * AbstractDataSetReader::getNewDataSetReader(const CParame
     case SPACETIMEPERMUTATION : return new DefaultDataSetReader();
     case ORDINAL              : return new OrdinalDataSetReader();
     case EXPONENTIAL          :
-       ZdGenerateException("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
+       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
     case NORMAL               :
-       ZdGenerateException("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
+       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
     case RANK                 :
-       ZdGenerateException("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
-    default : ZdGenerateException("Unknown model type '%d'.","getNewDataSetReader()", Parameters.GetProbabilityModelType());
+       throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
+    default : throw prg_error("Unknown model type '%d'.","getNewDataSetReader()", Parameters.GetProbabilityModelType());
   }
-  return 0;
 }
 
 /** Reads case data from file stream based upon analysis type. */
@@ -29,8 +28,8 @@ void DefaultDataSetReader::read(DataSet& Set, const CParameters& Parameters, uns
 
   //open file stream
   if (!stream.is_open()) stream.open(Parameters.GetSimulationDataSourceFilename().c_str());
-  if (!stream) GenerateResolvableException("Error: Could not open file '%s' to read the simulated data.\n",
-                                           "read()", Parameters.GetSimulationDataSourceFilename().c_str());
+  if (!stream) throw resolvable_error("Error: Could not open file '%s' to read the simulated data.\n",
+                                      Parameters.GetSimulationDataSourceFilename().c_str());
 
   //seek line offset for reading iSimulation'th simulation data
   unsigned int t = iSimulation - 1;
@@ -57,7 +56,7 @@ void DefaultDataSetReader::read(DataSet& Set, const CParameters& Parameters, uns
          stream >> pSimCases[i];
       }
       break;
-    default : ZdGenerateException("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
+    default : throw prg_error("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
   }
 
   stream.close();
@@ -69,8 +68,8 @@ void OrdinalDataSetReader::read(DataSet& Set, const CParameters& Parameters, uns
 
   //open file stream
   if (!stream.is_open()) stream.open(Parameters.GetSimulationDataSourceFilename().c_str());
-  if (!stream) GenerateResolvableException("Error: Could not open file '%s' to read the simulated data.\n",
-                                           "read()", Parameters.GetSimulationDataSourceFilename().c_str());
+  if (!stream) throw resolvable_error("Error: Could not open file '%s' to read the simulated data.\n",
+                                      Parameters.GetSimulationDataSourceFilename().c_str());
 
   //seek line offset for reading iSimulation'th simulation data
   unsigned int t = iSimulation - 1;
@@ -102,7 +101,7 @@ void OrdinalDataSetReader::read(DataSet& Set, const CParameters& Parameters, uns
       }
      }
      break;
-    default : ZdGenerateException("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
+    default : throw prg_error("Unknown analysis type '%d'.","write()", Parameters.GetAnalysisType());
   }
   stream.close();
 }

@@ -5,6 +5,7 @@
 #include "MultiSetClusterData.h"
 #include "ClusterDataFactory.h"
 #include "LoglikelihoodRatioUnifier.h"
+#include "SSException.h"
 
 //******************* class MultiSetSpatialData ***********************
 
@@ -16,9 +17,9 @@ MultiSetSpatialData::MultiSetSpatialData(const ClusterDataFactory& DataFactory, 
      gvSetClusterData.push_back(dynamic_cast<SpatialData*>(DataFactory.GetNewSpatialClusterData(DataGateway.GetDataSetInterface(t))));
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 void MultiSetSpatialData::AddMeasureList(CMeasureList*, tract_t, const DataSetInterface&) {
-  ZdGenerateException("AddMeasureList(CMeasureList*, tract_t, const DataSetInterface&) not implemented.","MultiSetSpatialData");
+  throw prg_error("AddMeasureList(CMeasureList*, tract_t, const DataSetInterface&) not implemented.","MultiSetSpatialData");
 }
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
@@ -102,8 +103,8 @@ void MultiSetSpatialData::GetDataSetIndexesComprisedInRatio(double dTargetLoglik
       else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = false;
       else
-        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetSpatialData",
-                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
+        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","MultiSetSpatialData",
+                        dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
 
     std::vector<std::pair<double, double> >::iterator   itr_pair;
@@ -192,8 +193,8 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
       else if (std::fabs(dLowRatios - dTargetLoglikelihoodRatio) < 0.00000001)
         bHighRatios = false;
       else
-        ZdGenerateException("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetTemporalData",
-                            dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
+        throw prg_error("Target ratio %lf not found (low=%lf, high=%lf).","AbstractMultiSetTemporalData",
+                        dTargetLoglikelihoodRatio, dLowRatios, dHighRatios);
     }
 
     std::vector<std::pair<double, double> >::iterator   itr_pair;
@@ -223,9 +224,9 @@ MultiSetTemporalData::MultiSetTemporalData(const ClusterDataFactory& DataFactory
      gvSetClusterData.push_back(dynamic_cast<TemporalData*>(DataFactory.GetNewTemporalClusterData(DataGateway.GetDataSetInterface(t))));
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 void MultiSetTemporalData::AddNeighborData(tract_t, const AbstractDataSetGateway&, size_t) {
-  ZdGenerateException("AddNeighbor(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","MultiSetTemporalData");
+  throw prg_error("AddNeighbor(tract_t, const AbstractDataSetGateway&, size_t) not implemeneted.","MultiSetTemporalData");
 }
 
 /** Returns newly cloned MultiSetTemporalData object. Caller responsible for

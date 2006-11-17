@@ -5,6 +5,7 @@
 #include "SaTScanData.h"
 #include "BernoulliDataSetHandler.h"
 #include "DataSource.h"
+#include "SSException.h"
 
 /** For each element in SimulationDataContainer_t, allocates appropriate data structures
     as needed by data set handler (probability model). */
@@ -21,9 +22,9 @@ SimulationDataContainer_t& BernoulliDataSetHandler::AllocateSimulationData(Simul
                                        std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData_PT));
                                      break;
     case SPATIALVARTEMPTREND       :
-       ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+       throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
     default                        :
-       ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+       throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -69,15 +70,15 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetDataGateway(AbstractDataSet
           }
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for purely spatial monotone analysis.","GetDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetDataGateway()","BernoulliDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetDataGateway()","BernoulliDataSetHandler");
     throw;
   }  
   return DataGatway;
@@ -117,15 +118,15 @@ AbstractDataSetGateway & BernoulliDataSetHandler::GetSimulationDataGateway(Abstr
           }
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for purely spatial monotone analysis.","GetSimulationDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSimulationDataGateway()","BernoulliDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetSimulationDataGateway()","BernoulliDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -146,8 +147,8 @@ bool BernoulliDataSetHandler::ReadControlFile(RealDataSet& DataSet) {
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetControlFileName(DataSet.getSetIndex()), gPrint));
     return ReadCounts(DataSet, *Source);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadControlFile()","BernoulliDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadControlFile()","BernoulliDataSetHandler");
     throw;
   }
 }
@@ -172,8 +173,8 @@ bool BernoulliDataSetHandler::ReadData() {
          return false;
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadData()","BernoulliDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadData()","BernoulliDataSetHandler");
     throw;
   }
   return true;
@@ -198,14 +199,14 @@ void BernoulliDataSetHandler::SetRandomizers() {
           break;
       case HA_RANDOMIZATION :
       default :
-          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+          throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetRandomizers()","BernoulliDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("SetRandomizers()","BernoulliDataSetHandler");
     throw;
   }
 }

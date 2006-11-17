@@ -5,6 +5,7 @@
 #include "SaTScanData.h"
 #include "LocationRiskEstimateWriter.h"
 #include "AsciiPrintFormat.h"
+#include "SSException.h"
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;
@@ -238,8 +239,8 @@ void CSaTScanData::DisplayRelativeRisksForEachTract() const {
   try {
     LocationRiskEstimateWriter(*this).Write(*this);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayRelativeRisksForEachTract()", "CSaTScanData");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayRelativeRisksForEachTract()", "CSaTScanData");
     throw;
   }
 }

@@ -15,8 +15,8 @@ CSVTTData::CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection)
   try {
     SetProbabilityModel();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CSVTTData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CSVTTData");
     throw;
   }
 }
@@ -100,8 +100,8 @@ void CSVTTData::DisplayRelativeRisksForEachTract() const {
   try {
     LocationRiskEstimateWriter(*this).Write(*this);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayRelativeRisksForEachTract()","CSVTTData");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayRelativeRisksForEachTract()","CSVTTData");
     throw;
   }
 }
@@ -133,11 +133,11 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
       if (SimDataContainer[t]->getTimeTrend().GetStatus() != CTimeTrend::TREND_CONVERGED)
-      ZdException::Generate("Randomized data set time trend does not converge.\n", "RandomizeData()");
+      throw prg_error("Randomized data set time trend does not converge.\n", "RandomizeData()");
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeData()","CSVTTData");
+  catch (prg_exception& x) {
+    x.addTrace("RandomizeData()","CSVTTData");
     throw;
   }
 }
@@ -156,26 +156,26 @@ void CSVTTData::ReadDataFromFiles() {
                                              m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
        switch ((*itr)->getTimeTrend().GetStatus()) {
           case CTimeTrend::TREND_UNDEF        :
-            GenerateResolvableException("Error: The number of cases in data set %d is less than 2.\n"
-                                        "       Time trend can not be calculated.", "ReadDataFromFiles()",
-                                        std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+            throw resolvable_error("Error: The number of cases in data set %d is less than 2.\n"
+                                   "       Time trend can not be calculated.", 
+                                   std::distance(gDataSets->getDataSets().begin(), itr) + 1);
           case CTimeTrend::TREND_INF_BEGIN    :
           case CTimeTrend::TREND_INF_END      :
-            GenerateResolvableException("Error: All cases in data set %d are either in first or last time interval.\n"
-                                        "       Time trend can not be calculated.", "ReadDataFromFiles()",
-                                        std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+            throw resolvable_error("Error: All cases in data set %d are either in first or last time interval.\n"
+                                   "       Time trend can not be calculated.", 
+                                   std::distance(gDataSets->getDataSets().begin(), itr) + 1);
           case CTimeTrend::TREND_NOTCONVERGED :
-            GenerateResolvableException("Error: Time trend for data set %d does not converge.\n"
-                                        "       Spatial variation in temporal trends can not be\n"
-                                        "       performed on this data set.\n", "ReadDataFromFiles()",
-                                        std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+            throw resolvable_error("Error: Time trend for data set %d does not converge.\n"
+                                   "       Spatial variation in temporal trends can not be\n"
+                                   "       performed on this data set.\n", 
+                                   std::distance(gDataSets->getDataSets().begin(), itr) + 1);
           case CTimeTrend::TREND_CONVERGED    :
           default                             : break; 
        }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadDataFromFiles()","CSVTTData");
+  catch (prg_exception& x) {
+    x.addTrace("ReadDataFromFiles()","CSVTTData");
     throw;
   }
 }
@@ -193,34 +193,34 @@ void CSVTTData::RemoveClusterSignificance(const CCluster& Cluster) {
     (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
                                            m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
     if ((*itr)->getTimeTrend().GetStatus() != CTimeTrend::TREND_CONVERGED)
-    ZdException::Generate("Data set time trend does not converge after removing cluster data.\n", "RemoveClusterSignificance()");
+    throw prg_error("Data set time trend does not converge after removing cluster data.\n", "RemoveClusterSignificance()");
   }
 }
 
-/** Allocates probability model obect. Throws ZdException for all probability
+/** Allocates probability model obect. Throws prg_error for all probability
     model type except Poisson. */
 void CSVTTData::SetProbabilityModel() {
   try {
     switch (gParameters.GetProbabilityModelType()) {
        case POISSON              : m_pModel = new CPoissonModel(*this);   break;
-       case BERNOULLI            : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Bernoulli model.\n",
-                                                         "SetProbabilityModel()");
-       case SPACETIMEPERMUTATION : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Space-Time Permutation model.\n",
-                                                         "SetProbabilityModel()");
-       case ORDINAL              : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Ordinal model.\n",
-                                                         "SetProbabilityModel()");
-       case EXPONENTIAL          : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Exponential model.\n",
-                                                         "SetProbabilityModel()");
-       case NORMAL               : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Normal model.\n",
-                                                         "SetProbabilityModel()");
-       case RANK                 : ZdException::Generate("Spatial Variation of Temporal Trends not implemented for Rank model.\n",
-                                                         "SetProbabilityModel()");
-       default : ZdException::Generate("Unknown probability model type: '%d'.\n",
+       case BERNOULLI            : throw prg_error("Spatial Variation of Temporal Trends not implemented for Bernoulli model.\n",
+                                                   "SetProbabilityModel()");
+       case SPACETIMEPERMUTATION : throw prg_error("Spatial Variation of Temporal Trends not implemented for Space-Time Permutation model.\n",
+                                                   "SetProbabilityModel()");
+       case ORDINAL              : throw prg_error("Spatial Variation of Temporal Trends not implemented for Ordinal model.\n",
+                                                   "SetProbabilityModel()");
+       case EXPONENTIAL          : throw prg_error("Spatial Variation of Temporal Trends not implemented for Exponential model.\n",
+                                                   "SetProbabilityModel()");
+       case NORMAL               : throw prg_error("Spatial Variation of Temporal Trends not implemented for Normal model.\n",
+                                                   "SetProbabilityModel()");
+       case RANK                 : throw prg_error("Spatial Variation of Temporal Trends not implemented for Rank model.\n",
+                                                   "SetProbabilityModel()");
+       default : throw prg_error("Unknown probability model type: '%d'.\n",
                                        "SetProbabilityModel()", gParameters.GetProbabilityModelType());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProbabilityModel()","CSVTTData");
+  catch (prg_exception& x) {
+    x.addTrace("SetProbabilityModel()","CSVTTData");
     throw;
   }
 }

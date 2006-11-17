@@ -10,6 +10,7 @@
 #include "ExponentialModel.h"
 #include "RankModel.h"
 #include "OrdinalModel.h"
+#include "SSException.h"
 
 /** class constructor */
 CPurelySpatialData::CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -17,8 +18,8 @@ CPurelySpatialData::CPurelySpatialData(const CParameters& Parameters, BasePrint&
   try {
     SetProbabilityModel();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelySpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CPurelySpatialData");
     throw;
   }
 }
@@ -35,25 +36,19 @@ void CPurelySpatialData::SetIntervalStartTimes() {
   m_nTimeIntervals = 1;
 }
 
-/** Allocates probability model object. Throws ZdException if probability model
+/** Allocates probability model object. Throws prg_error if probability model
     type is space-time permutation. */
 void CPurelySpatialData::SetProbabilityModel() {
-  try {
-    switch (gParameters.GetProbabilityModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*this);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
-       case ORDINAL              : m_pModel = new OrdinalModel(); break;
-       case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
-       case NORMAL               : m_pModel = new CNormalModel(); break;
-       case RANK                 : m_pModel = new CRankModel(); break;
-       case SPACETIMEPERMUTATION : ZdException::Generate("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
-                                                         "SetProbabilityModel()");
-       default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                                       gParameters.GetProbabilityModelType());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProbabilityModel()","CPurelySpatialData");
-    throw;
+  switch (gParameters.GetProbabilityModelType()) {
+     case POISSON              : m_pModel = new CPoissonModel(*this);   break;
+     case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
+     case ORDINAL              : m_pModel = new OrdinalModel(); break;
+     case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
+     case NORMAL               : m_pModel = new CNormalModel(); break;
+     case RANK                 : m_pModel = new CRankModel(); break;
+     case SPACETIMEPERMUTATION : throw prg_error("Purely Spatial analysis not implemented for Space-Time Permutation model.\n",
+                                                 "SetProbabilityModel()");
+     default : throw prg_error("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
+                               gParameters.GetProbabilityModelType());
   }
 }

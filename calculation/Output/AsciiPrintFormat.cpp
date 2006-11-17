@@ -5,6 +5,7 @@
 #include "AsciiPrintFormat.h"
 #include "Toolkit.h"
 #include "UtilityFunctions.h"
+#include "SSException.h"
 
 /** width of label with one dataset for cluster section */
 const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
@@ -102,8 +103,8 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
     iStringLength += fprintf(fp, " %s", gsPerDataSetText);
   //check that created label isn't greater than defined maximum width of label
   if (iStringLength > (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth))
-    ZdGenerateException("Label text has length of %u, but defined max length is %u.\n", "PrintSectionLabel()",
-                        iStringLength, (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth));
+    throw prg_error("Label text has length of %u, but defined max length is %u.\n", "PrintSectionLabel()",
+                    iStringLength, (bPadLeftMargin ? giLabelWidth + giLeftMargin : giLabelWidth));
   //calculate fill length
   iFillLength = (bPadLeftMargin ? giLeftMargin + giLabelWidth : giLabelWidth);
   //fill remaining label space with '.'
@@ -126,7 +127,7 @@ void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText
   iStringLength += fprintf(fp, sText);
   //check that created label fits in data section
   if (iStringLength > giRightMargin)
-    ZdGenerateException("Label text extended beyond defined max length is %u.\n", "PrintSectionLabelAtDataColumn()", giRightMargin);
+    throw prg_error("Label text extended beyond defined max length is %u.\n", "PrintSectionLabelAtDataColumn()", giRightMargin);
   //append newlines as requested
   while (iPostNewlines-- > 0)
      putc('\n', fp);

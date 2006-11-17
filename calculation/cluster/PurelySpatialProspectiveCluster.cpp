@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "PurelySpatialProspectiveCluster.h"
 #include "MeasureList.h"
+#include "SSException.h"
 
 /** Purely spatial cluster to be used in simulations of prospective analysis.*/
 
@@ -16,8 +17,8 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const Abstrac
     Init();
     Setup(pClusterFactory, DataGateway, Data);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelySpatialProspectiveCluster");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CPurelySpatialProspectiveCluster");
     throw;
   }
 }
@@ -30,9 +31,9 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CPurely
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData;
-    x.AddCallpath("copy constructor()","CPurelySpatialProspectiveCluster");
+    x.addTrace("copy constructor()","CPurelySpatialProspectiveCluster");
     throw;
   }
 }
@@ -88,14 +89,12 @@ std::string& CPurelySpatialProspectiveCluster::GetEndDate(std::string& sDateStri
 
 /** Returns the measure for tract as defined by cluster - not implemented - throws exception. */
 measure_t CPurelySpatialProspectiveCluster::GetExpectedCountForTract(tract_t, const CSaTScanData&, size_t) const {
-  ZdGenerateException("GetExpectedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
-  return 0;
+  throw prg_error("GetExpectedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
 }
 
 /** Returns the number of case for tract as defined by cluster - not implemented - throws exception. */
 count_t CPurelySpatialProspectiveCluster::GetObservedCountForTract(tract_t, const CSaTScanData&, size_t) const {
-  ZdGenerateException("GetObservedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
-  return 0;
+  throw prg_error("GetObservedCountForTract() not implemented.","CPurelySpatialProspectiveCluster");
 }
 
 /** returns start date of defined cluster as formated string */
@@ -135,9 +134,9 @@ void CPurelySpatialProspectiveCluster::Setup(const AbstractClusterDataFactory * 
   try {
     gpClusterData = pClusterFactory->GetNewProspectiveSpatialClusterData(Data, DataGateway);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData;
-    x.AddCallpath("Setup()","CPurelySpatialProspectiveCluster");
+    x.addTrace("Setup()","CPurelySpatialProspectiveCluster");
     throw;
   }
 }

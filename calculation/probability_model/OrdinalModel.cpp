@@ -5,6 +5,7 @@
 #include "OrdinalModel.h"
 #include "SaTScanData.h"
 #include "cluster.h"
+#include "SSException.h"
 
 /** constructor */
 OrdinalModel::OrdinalModel() : CModel() {}
@@ -55,12 +56,11 @@ double OrdinalModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, co
      case PURELYSPATIALMONOTONECLUSTER     :
      case SPATIALVARTEMPTRENDCLUSTER       :
      case PURELYSPATIALPROSPECTIVECLUSTER  :
-     default                               :
-       ZdException::GenerateNotification("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
+     default : throw prg_error("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetPopulation()","OrdinalModel");
+  catch (prg_exception& x) {
+    x.addTrace("GetPopulation()","OrdinalModel");
     throw;
   }
   

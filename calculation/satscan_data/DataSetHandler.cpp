@@ -20,8 +20,8 @@ DataSetHandler::DataSetHandler(CSaTScanData& DataHub, BasePrint& Print)
   try {
     Setup();
   }
-  catch(ZdException &x) {
-    x.AddCallpath("constructor()","DataSetHandler");
+  catch(prg_exception& x) {
+    x.addTrace("constructor()","DataSetHandler");
     throw;
   }
 }
@@ -55,8 +55,8 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
   try {
     Container = gvDataSetRandomizers;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRandomizerContainer()","DataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetRandomizerContainer()","DataSetHandler");
     throw;
   }
   return Container;
@@ -84,8 +84,8 @@ bool DataSetHandler::ReadCaseFile(RealDataSet& DataSet) {
     std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gPrint));
     return ReadCounts(DataSet, *Source);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCaseFile()","DataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCaseFile()","DataSetHandler");
     throw;
   }
 }
@@ -113,8 +113,8 @@ bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
              //cumulatively add count to time by location structure
              ppCounts[0][TractIndex] += Count;
              if (ppCounts[0][TractIndex] < 0)
-               GenerateResolvableException("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                           (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
+               throw resolvable_error("Error: The total %s, in dataset %u, is greater than the maximum allowed of %ld.\n",
+                                      (bCaseFile ? "cases" : "controls"), DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
              for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                ppCounts[i][TractIndex] += Count;
              //record count as a case or control
@@ -138,8 +138,8 @@ bool DataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
       bValid = false;
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCounts()","DataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCounts()","DataSetHandler");
     throw;
   }
   return bValid;
@@ -276,8 +276,8 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(Populati
     iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;
     if (!RetrieveCovariatesIndex(thePopulation, iCategoryIndex, iCategoryOffSet, Source)) return DataSetHandler::Rejected;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RetrieveCaseRecordData()","DataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("RetrieveCaseRecordData()","DataSetHandler");
     throw;
   }
   return DataSetHandler::Accepted;
@@ -336,10 +336,10 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
           return false;
     }
     else
-      ZdGenerateException("Unknown probability model type '%d'.","RetrieveCovariatesIndex()", gParameters.GetProbabilityModelType());
+      throw prg_error("Unknown probability model type '%d'.","RetrieveCovariatesIndex()", gParameters.GetProbabilityModelType());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RetrieveCovariatesIndex()","DataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("RetrieveCovariatesIndex()","DataSetHandler");
     throw;
   }
   return true;
@@ -387,8 +387,8 @@ void DataSetHandler::Setup() {
     for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
       gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), i + 1));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","DataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("Setup()","DataSetHandler");
     throw;
   }
 }

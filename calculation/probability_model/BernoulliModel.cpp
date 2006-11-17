@@ -31,23 +31,23 @@ void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
 
        // Check to see if total case or control values have wrapped
         if (tTotalCases < 0)
-          GenerateResolvableException("Error: : The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
-                                      "CBernoulliModel", DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
+          throw resolvable_error("Error: : The total number of cases in dataset %u is greater than the maximum allowed of %ld.\n",
+                                  DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
         if (tTotalControls < 0)
-          GenerateResolvableException("Error: The total number of controls in dataset %u is greater than the maximum allowed of %ld.\n",
-                                      "CBernoulliModel", DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
+          throw resolvable_error("Error: The total number of controls in dataset %u is greater than the maximum allowed of %ld.\n",
+                                  DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
     }
 
     if (tTotalControls == 0)
-      GenerateResolvableException("Error: No controls found in data set %u.\n", "CBernoulliModel", DataSet.getSetIndex());
+      throw resolvable_error("Error: No controls found in data set %u.\n", DataSet.getSetIndex());
 
     DataSet.setTotalCases(tTotalCases);
     DataSet.setTotalControls(tTotalControls);
     DataSet.setTotalMeasure(tTotalMeasure);
     DataSet.setTotalPopulation(tTotalMeasure);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()","CBernoulliModel");
+  catch (prg_exception &x) {
+    x.addTrace("CalculateMeasure()","CBernoulliModel");
     throw;
   }
 }
@@ -84,11 +84,11 @@ double CBernoulliModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster,
      case SPATIALVARTEMPTRENDCLUSTER       :
      case PURELYSPATIALPROSPECTIVECLUSTER  :
      default                               :
-       ZdException::GenerateNotification("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
+       throw prg_error("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetPopulation()","CBernoulliModel");
+  catch (prg_exception &x) {
+    x.addTrace("GetPopulation()","CBernoulliModel");
     throw;
   }
 

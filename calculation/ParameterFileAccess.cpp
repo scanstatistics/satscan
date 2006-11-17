@@ -20,7 +20,7 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
   bool  bSuccess=false;
   try {
     if (access(sFilename, 04) == -1)
-      GenerateResolvableException("Unable to open parameter file '%s'.\n", "Read()", sFilename);
+      throw resolvable_error("Unable to open parameter file '%s'.\n", sFilename);
 
     if (ZdIniFile(sFilename, true, false).GetNumSections())
       bSuccess = IniParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
@@ -28,7 +28,7 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
       bSuccess = ScanLineParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
   }
   catch (ZdException &x) {
-    GenerateResolvableException("Unable to read parameters from file '%s'.\n", "Read()", sFilename);
+    throw resolvable_error("Unable to read parameters from file '%s'.\n", sFilename);
   }
   return bSuccess;
 }
@@ -39,8 +39,8 @@ void ParameterAccessCoordinator::Write(const char * sFilename, BasePrint& PrintD
    IniParameterFileAccess(gParameters, PrintDirection).Write(sFilename);
    //ScanLineParameterFileAccess(gParameters, PrintDirection).Write(sFilename);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Write()","ParameterAccessCoordinator");
+  catch (prg_exception& x) {
+    x.addTrace("Write()","ParameterAccessCoordinator");
     throw;
   }
 }
@@ -153,14 +153,13 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MULTIPLE_COORDINATES_TYPE: return " multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)";
       case META_LOCATIONS_FILE      : return " meta locations file";
       case USE_META_LOCATIONS_FILE  : return " use meta locations file (y/n)";
-      default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
+      default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetParameterComment()","AbtractParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("GetParameterComment()","AbtractParameterFileAccess");
     throw;
  }
- return 0;
 }
 
 /** Assigns string representation to passed string class for parameter. */
@@ -276,14 +275,13 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case MULTIPLE_COORDINATES_TYPE: return AsString(s, gParameters.GetMultipleCoordinatesType());
       case META_LOCATIONS_FILE      : s = gParameters.getMetaLocationsFilename(); return s;
       case USE_META_LOCATIONS_FILE  : return AsString(s, gParameters.UseMetaLocationsFile());
-      default : ZdGenerateException("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
+      default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetParameterString()","AbtractParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("GetParameterComment()","AbtractParameterFileAccess");
     throw;
  }
- return s;
 }
 
 /** Prints message to print direction that parameter was missing when read from
@@ -391,7 +389,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case MULTIPLE_COORDINATES_TYPE: AsString(default_value, gParameters.GetMultipleCoordinatesType()); break;
       case META_LOCATIONS_FILE      : default_value = "<blank>"; break;
       case USE_META_LOCATIONS_FILE  : default_value = (gParameters.UseMetaLocationsFile() ? "y" : "n"); break;
-      default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","MarkAsMissingDefaulted()", eParameterType);
+      default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
     if (default_value.size()) {
@@ -401,135 +399,103 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
                             GetParameterLabel(eParameterType), default_value.c_str());
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("MarkAsMissingDefaulted()","AbtractParameterFileAccess");
+  catch (prg_exception & x) {
+    x.addTrace("MarkAsMissingDefaulted()","AbtractParameterFileAccess");
     throw;
  }
 }
 
-/** Attempts to interpret passed string as a boolean value. Throws InvalidParameterException. */
+/** Attempts to interpret passed string as a boolean value. Throws parameter_error. */
 bool AbtractParameterFileAccess::ReadBoolean(const std::string& sValue, ParameterType eParameterType) const {
   bool          bReadResult;
 
-  try {
-    if (sValue.size() == 0) {
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadBoolean()", GetParameterLabel(eParameterType));
-    }
-    else if (!(!stricmp(sValue.c_str(),"y")   || !stricmp(sValue.c_str(),"n") ||
-               !strcmp(sValue.c_str(),"1")    || !strcmp(sValue.c_str(),"0")   ||
-               !stricmp(sValue.c_str(),"yes")  || !stricmp(sValue.c_str(),"no"))) {
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
-                                          "ReadBoolean()", GetParameterLabel(eParameterType), sValue.c_str());
-    }
-    else
-      bReadResult = (!stricmp(sValue.c_str(),"y") || !stricmp(sValue.c_str(),"yes") || !strcmp(sValue.c_str(),"1"));
+  if (sValue.size() == 0) {
+    throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(eParameterType));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadBoolean()","AbtractParameterFileAccess");
-    throw;
+  else if (!(!stricmp(sValue.c_str(),"y")   || !stricmp(sValue.c_str(),"n") ||
+             !strcmp(sValue.c_str(),"1")    || !strcmp(sValue.c_str(),"0")   ||
+             !stricmp(sValue.c_str(),"yes")  || !stricmp(sValue.c_str(),"no"))) {
+    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is invalid. Valid values are 'y' or 'n'.\n",
+                          GetParameterLabel(eParameterType), sValue.c_str());
   }
+  else
+    bReadResult = (!stricmp(sValue.c_str(),"y") || !stricmp(sValue.c_str(),"yes") || !strcmp(sValue.c_str(),"1"));
   return bReadResult;
 }
 
 
 /** Set date parameter with passed string using appropriate set function. */
 void AbtractParameterFileAccess::ReadDate(const std::string& sValue, ParameterType eParameterType) const {
- try {
-   switch (eParameterType) {
-     case START_PROSP_SURV      : //As a legacy of the old parameters code,
-                                  //we need to check that the length of the
-                                  //string is not one. The prospective start
-                                  //date took the line position of an extra
-                                  //parameter as seen in old file
-                                  //"0                     // Extra Parameter #4".
-                                  //We don't want to produce an error for
-                                  //an invalid parameter that the user didn't
-                                  //miss set. So, treat a value of "0" as blank.
-                                  if (sValue == "0")
-                                    gParameters.SetProspectiveStartDate("");
-                                  else
-                                    gParameters.SetProspectiveStartDate(sValue.c_str());
-                                  break;
-     case STARTDATE             : gParameters.SetStudyPeriodStartDate(sValue.c_str()); break;
-     case ENDDATE               : gParameters.SetStudyPeriodEndDate(sValue.c_str()); break;
-     default : ZdException::Generate("Parameter enumeration '%d' is not listed for date read.\n","ReadDate()", eParameterType);
-   };
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadDate()","AbtractParameterFileAccess");
-    throw;
-  }
+  switch (eParameterType) {
+    case START_PROSP_SURV      : //As a legacy of the old parameters code,
+                                 //we need to check that the length of the
+                                 //string is not one. The prospective start
+                                 //date took the line position of an extra
+                                 //parameter as seen in old file
+                                 //"0                     // Extra Parameter #4".
+                                 //We don't want to produce an error for
+                                 //an invalid parameter that the user didn't
+                                 //miss set. So, treat a value of "0" as blank.
+                                 if (sValue == "0")
+                                   gParameters.SetProspectiveStartDate("");
+                                 else
+                                   gParameters.SetProspectiveStartDate(sValue.c_str());
+                                 break;
+    case STARTDATE             : gParameters.SetStudyPeriodStartDate(sValue.c_str()); break;
+    case ENDDATE               : gParameters.SetStudyPeriodEndDate(sValue.c_str()); break;
+    default : throw prg_error("Parameter enumeration '%d' is not listed for date read.\n","ReadDate()", eParameterType);
+  };
 }
 
-/** Attempts to interpret passed string as comma separated string of dates. Throws InvalidParameterException. */
+/** Attempts to interpret passed string as comma separated string of dates. Throws parameter_error. */
 void AbtractParameterFileAccess::ReadDateRange(const std::string& sValue, ParameterType eParameterType, DateRange_t& Range) const {
   int   iNumTokens=0;
 
-  try {
-    if (sValue.size()) {
-      boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sValue);
-      for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
-        if (iNumTokens == 0) Range.first = *itr;
-        else if (iNumTokens == 1) Range.second = *itr;
-        ++iNumTokens;
-      }
-
-      if (iNumTokens != 2)
-        InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', %d values specified but should have 2.\n",
-                                            "ReadDateRange()", GetParameterLabel(eParameterType), iNumTokens);
+  if (sValue.size()) {
+    boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sValue);
+    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+      if (iNumTokens == 0) Range.first = *itr;
+      else if (iNumTokens == 1) Range.second = *itr;
+      ++iNumTokens;
     }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadDateRange()","AbtractParameterFileAccess");
-    throw;
+     if (iNumTokens != 2)
+       throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', %d values specified but should have 2.\n",
+                             GetParameterLabel(eParameterType), iNumTokens);
   }
 }
 
-/** Attempts to interpret passed string as a double value. Throws InvalidParameterException. */
+/** Attempts to interpret passed string as a double value. Throws parameter_error. */
 double AbtractParameterFileAccess::ReadDouble(const std::string & sValue, ParameterType eParameterType) const {
   double        dReadResult;
 
-  try {
-    if (sValue.size() == 0) {
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadDouble()",
-                                          GetParameterLabel(eParameterType));
-    }
-    if (sscanf(sValue.c_str(), "%lf", &dReadResult) != 1) {
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid real number.\n", "ReadDouble()",
-                                          GetParameterLabel(eParameterType), sValue.c_str());
-    }
+  if (sValue.size() == 0) {
+    throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(eParameterType));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadDouble()","AbtractParameterFileAccess");
-    throw;
+  if (sscanf(sValue.c_str(), "%lf", &dReadResult) != 1) {
+    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid real number.\n",
+                          GetParameterLabel(eParameterType), sValue.c_str());
   }
   return dReadResult;
 }
 
 /** Attempts to interpret passed string as a space/comma delimited string of integers that represent
     the number of rotations ellipse will make. No attempt to convert is made if no
-    ellipses defined.  Throws InvalidParameterException. */
+    ellipses defined.  Throws parameter_error. */
 void AbtractParameterFileAccess::ReadEllipseRotations(const std::string& sParameter) const {
   int   iNumTokens=0, iReadRotations;
 
-  try {
-    if (sParameter.size()) {
-      boost::escaped_list_separator<char> separator('\\', (sParameter.find(',') == sParameter.npos ? ' ' : ','), '\"');
-      boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sParameter, separator);
-      for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
-         if (sscanf((*itr).c_str(), "%i", &iReadRotations)) {
-           gParameters.AddEllipsoidRotations(iReadRotations, (iNumTokens == 0));
-           ++iNumTokens;
-         }
-         else
-           InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an integer.\n", "ReadEllipseRotations()",
-                                               GetParameterLabel(ENUMBERS), (*itr).c_str());
-      }
+  if (sParameter.size()) {
+    boost::escaped_list_separator<char> separator('\\', (sParameter.find(',') == sParameter.npos ? ' ' : ','), '\"');
+    boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sParameter, separator);
+    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+       if (sscanf((*itr).c_str(), "%i", &iReadRotations)) {
+         gParameters.AddEllipsoidRotations(iReadRotations, (iNumTokens == 0));
+         ++iNumTokens;
+       }
+       else
+         throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an integer.\n", "ReadEllipseRotations()",
+                               GetParameterLabel(ENUMBERS), (*itr).c_str());
     }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadEllipseRotations()","AbtractParameterFileAccess");
-    throw;
   }
 }
 
@@ -540,38 +506,26 @@ void AbtractParameterFileAccess::ReadEllipseShapes(const std::string& sParameter
   int           iNumTokens=0;
   double        dReadShape;
 
-  try {
-    if (sParameter.size()) {
-      boost::escaped_list_separator<char> separator('\\', (sParameter.find(',') == sParameter.npos ? ' ' : ','), '\"');
-      boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sParameter, separator);
-      for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
-         if (sscanf((*itr).c_str(), "%lf", &dReadShape)) {
-           gParameters.AddEllipsoidShape(dReadShape, (iNumTokens == 0));
-           ++iNumTokens;
-         }
-         else
-           InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an decimal number.\n",
-                                               "ReadEllipseShapes()", GetParameterLabel(ESHAPES), (*itr).c_str());
-      }
+  if (sParameter.size()) {
+    boost::escaped_list_separator<char> separator('\\', (sParameter.find(',') == sParameter.npos ? ' ' : ','), '\"');
+    boost::tokenizer<boost::escaped_list_separator<char> > identifiers(sParameter, separator);
+    for (boost::tokenizer<boost::escaped_list_separator<char> >::const_iterator itr=identifiers.begin(); itr != identifiers.end(); ++itr) {
+       if (sscanf((*itr).c_str(), "%lf", &dReadShape)) {
+         gParameters.AddEllipsoidShape(dReadShape, (iNumTokens == 0));
+         ++iNumTokens;
+       }
+       else
+         throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an decimal number.\n",
+                               GetParameterLabel(ESHAPES), (*itr).c_str());
     }
-  }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadEllipseShapes()","AbtractParameterFileAccess");
-    throw;
   }
 }
 
 /** Attempts to validate integer as enumeration within specified range. Throws InvalidParameterException. */
 int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const {
-  try {
-    if (iValue < iLow || iValue > iHigh)
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%d' is out of range [%d,%d].\n", "SetCoordinatesType()",
-                                          GetParameterLabel(eParameterType), iValue, iLow, iHigh);
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadEnumeration()","AbtractParameterFileAccess");
-    throw;
-  }
+  if (iValue < iLow || iValue > iHigh)
+    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%d' is out of range [%d,%d].\n",
+                          GetParameterLabel(eParameterType), iValue, iLow, iHigh);
   return iValue;
 }
 
@@ -579,19 +533,12 @@ int AbtractParameterFileAccess::ReadEnumeration(int iValue, ParameterType eParam
 int AbtractParameterFileAccess::ReadInt(const std::string& sValue, ParameterType eParameterType) const {
   int           iReadResult;
 
-  try {
-    if (sValue.size() == 0) {
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n",
-                                          "ReadInt()", GetParameterLabel(eParameterType));
-    }
-    else if (sscanf(sValue.c_str(), "%i", &iReadResult) != 1) {
-      InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid integer.\n",
-                                         "ReadInt()", GetParameterLabel(eParameterType), sValue.c_str());
-    }
+  if (sValue.size() == 0) {
+    throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(eParameterType));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadInt()","AbtractParameterFileAccess");
-    throw;
+  else if (sscanf(sValue.c_str(), "%i", &iReadResult) != 1) {
+    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid integer.\n",
+                          GetParameterLabel(eParameterType), sValue.c_str());
   }
   return iReadResult;
 }
@@ -600,23 +547,16 @@ int AbtractParameterFileAccess::ReadInt(const std::string& sValue, ParameterType
 int AbtractParameterFileAccess::ReadUnsignedInt(const std::string& sValue, ParameterType eParameterType) const {
   int           iReadResult;
 
-  try {
-   if (sValue.size() == 0) {
-     InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n",
-                                         "ReadUnsignedInt()", GetParameterLabel(eParameterType));
-   }
-   else if (sscanf(sValue.c_str(), "%u", &iReadResult) != 1) {
-     InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid integer.\n",
-                                         "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.c_str());
-   }
-   else if (iReadResult < 0) {
-     InvalidParameterException::Generate("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a positive integer.\n",
-                                         "ReadUnsignedInt()", GetParameterLabel(eParameterType), sValue.c_str());
-   }
+  if (sValue.size() == 0) {
+    throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(eParameterType));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadUnsignedInt()","AbtractParameterFileAccess");
-    throw;
+  else if (sscanf(sValue.c_str(), "%u", &iReadResult) != 1) {
+    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a valid integer.\n",
+                          GetParameterLabel(eParameterType), sValue.c_str());
+  }
+  else if (iReadResult < 0) {
+    throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not a positive integer.\n",
+                          GetParameterLabel(eParameterType), sValue.c_str());
   }
   return iReadResult;
 }
@@ -626,9 +566,9 @@ void AbtractParameterFileAccess::ReadVersion(const std::string& sValue) const {
   CParameters::CreationVersion       vVersion;
 
    if (sValue.size() == 0)
-     InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
+     throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(CREATION_VERSION));
    else if (sscanf(sValue.c_str(), "%u.%u.%u", &vVersion.iMajor, &vVersion.iMinor, &vVersion.iRelease) < 3)
-    InvalidParameterException::Generate("Invalid Parameter Setting:\nParameter '%s' is not set.\n", "ReadVersion()", GetParameterLabel(CREATION_VERSION));
+     throw parameter_error("Invalid Parameter Setting:\nParameter '%s' is not set.\n", GetParameterLabel(CREATION_VERSION));
   gParameters.SetVersion(vVersion);
 }
 
@@ -784,30 +724,23 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetMultipleCoordinatesType((MultipleCoordinatesType)ReadInt(sParameter, eParameterType)); break;
       case META_LOCATIONS_FILE       : gParameters.setMetaLocationsFilename(sParameter.c_str(), true); break;
       case USE_META_LOCATIONS_FILE   : gParameters.UseMetaLocationsFile(ReadBoolean(sParameter, eParameterType)); break;
-      default : InvalidParameterException::Generate("Unknown parameter enumeration %d.","SetParameter()", eParameterType);
+      default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }
-  catch (InvalidParameterException &x) {
+  catch (parameter_error &x) {
     gbReadStatusError = true;
-    PrintDirection.Printf(x.GetErrorMessage(), BasePrint::P_PARAMERROR);
+    PrintDirection.Printf(x.what(), BasePrint::P_PARAMERROR);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetParameter()","AbtractParameterFileAccess");
+  catch (prg_exception &x) {
+    x.addTrace("SetParameter()","AbtractParameterFileAccess");
     throw;
   }
 }
 
-//var_arg constructor
-InvalidParameterException::InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel)
-                          :ResolvableException(varArgs, sMessage, sSourceModule, iLevel){}
-
-//static generation function:
-void InvalidParameterException::Generate(const char *sMessage, const char *sSourceModule, ...) {
-   va_list varArgs;
-   va_start(varArgs, sSourceModule);
-
-   InvalidParameterException theException(varArgs, sMessage, sSourceModule, Normal);
-   va_end(varArgs);
-   throw theException;
+parameter_error::parameter_error(const char * format, ...) : resolvable_error() {
+  va_list varArgs;
+  va_start (varArgs, format);
+  printStringArgs(__what, varArgs, format);
+  va_end(varArgs);
 }
 

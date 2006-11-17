@@ -3,6 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "PurelyTemporalCluster.h"
+#include "SSException.h"
 
 /** constructor */
 CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory * pClusterFactory,
@@ -14,8 +15,8 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(const AbstractClusterDataFactory 
     Init();
     Setup(pClusterFactory, DataGateway, eIncludeClustersType, Data);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelyTemporalCluster");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CPurelyTemporalCluster");
     throw;
   }
 }
@@ -28,9 +29,9 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData; gpClusterData=0;
-    x.AddCallpath("copy constructor()","CPurelyTemporalCluster");
+    x.addTrace("copy constructor()","CPurelyTemporalCluster");
     throw;
   }
 }
@@ -92,8 +93,7 @@ measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, 
 
 /** Returns index of most central location. */
 tract_t CPurelyTemporalCluster::GetMostCentralLocationIndex() const {
-  ZdGenerateException("GetMostCentralLocationIndex() not implemented for CPurelyTemporalCluster.","GetMostCentralLocationIndex()");
-  return 0;
+  throw prg_error("GetMostCentralLocationIndex() not implemented for CPurelyTemporalCluster.","GetMostCentralLocationIndex()");
 }
 
 /** returns the number of cases for tract as defined by cluster */
@@ -120,9 +120,9 @@ void CPurelyTemporalCluster::Setup(const AbstractClusterDataFactory * pClusterFa
   try {
     gpClusterData = pClusterFactory->GetNewTemporalClusterData(DataGateway);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData;
-    x.AddCallpath("Setup()","CPurelyTemporalCluster");
+    x.addTrace("Setup()","CPurelyTemporalCluster");
     throw;
   }
 }

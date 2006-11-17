@@ -87,9 +87,8 @@ void CPoissonModel::AdjustForLLPercentage(RealDataSet& DataSet, double nPercenta
     for (t=0; t < DataSet.getLocationDimension(); ++t) {
       ppNonCumulativeMeasure[i][t] = ppNonCumulativeMeasure[i][t]*(pow(p,i*k)) /* * c */ ;
       if (nAdjustedMeasure > std::numeric_limits<measure_t>::max() - ppNonCumulativeMeasure[i][t])
-        GenerateResolvableException("Error: Data overflow occurs when performing the time trend adjustment in data set %u.\n"
-                                    "       Please run analysis without the time trend adjustment.\n",
-                                    "AdjustForLLPercentage()", DataSet.getSetIndex());
+        throw resolvable_error("Error: Data overflow occurs when performing the time trend adjustment in data set %u.\n"
+                               "       Please run analysis without the time trend adjustment.\n", DataSet.getSetIndex());
       nAdjustedMeasure += ppNonCumulativeMeasure[i][t];
     }
 
@@ -119,18 +118,17 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
   //Cancel analysis execution if calculation of time trend fails for various reasons.
   switch (TimeTrend.GetStatus()) {
     case CTimeTrend::TREND_UNDEF :
-      GenerateResolvableException("Note: The time trend is undefined and the temporal adjustment could not be performed.\n"
-                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      throw resolvable_error("Note: The time trend is undefined and the temporal adjustment could not be performed.\n"
+                             "      Please run analysis without automatic adjustment of time trends.");
     case CTimeTrend::TREND_INF_BEGIN :
     case CTimeTrend::TREND_INF_END :
-      GenerateResolvableException("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
-                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      throw resolvable_error("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
+                             "      Please run analysis without automatic adjustment of time trends.");
     case CTimeTrend::TREND_NOTCONVERGED :
-      GenerateResolvableException("Note: The time trend calculation did not converge and the temporal adjustment could not be performed.\n"
-                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
+      throw resolvable_error("Note: The time trend calculation did not converge and the temporal adjustment could not be performed.\n"
+                             "      Please run analysis without automatic adjustment of time trends.");
     case CTimeTrend::TREND_CONVERGED : break;
-    default :
-      ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
+    default : throw prg_error("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
   };
 
   TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
@@ -157,27 +155,27 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
         case LOGLINEAR_PERC            : AdjustForLLPercentage(DataSet, gParameters.GetTimeTrendAdjustmentPercentage()); break;
         case CALCULATED_LOGLINEAR_PERC : AdjustForLogLinear(DataSet); break;
         case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(DataSet); break;//this adjustment occurs during randomization also
-        default : ZdGenerateException("Unknown time trend adjustment type: '%d'.",
-                                      "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
+        default : throw prg_error("Unknown time trend adjustment type: '%d'.",
+                                  "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
     }
     //adjust measure spatially
     switch (gParameters.GetSpatialAdjustmentType()) {
       case NO_SPATIAL_ADJUSTMENT : break;
       case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(DataSet); break;
-      default : ZdGenerateException("Unknown spatial adjustment type: '%d'.",
-                                    "AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
+      default : throw prg_error("Unknown spatial adjustment type: '%d'.",
+                                "AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
     }
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
     for (AdjustedTotalMeasure_t=0, i=0; i < DataSet.getIntervalDimension(); ++i)
        for (t=0; t < DataSet.getLocationDimension(); ++t)
           AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
     if (fabs(AdjustedTotalMeasure_t - DataSet.getTotalMeasure()) > 0.0001)
-      ZdGenerateException("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
-                          "AdjustMeasure()", AdjustedTotalMeasure_t, DataSet.getTotalMeasure());
+      throw prg_error("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
+                      "AdjustMeasure()", AdjustedTotalMeasure_t, DataSet.getTotalMeasure());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AdjustMeasure()","CPoissonModel");
+  catch (prg_exception &x) {
+    x.addTrace("AdjustMeasure()","CPoissonModel");
     throw;
   }
 }
@@ -189,19 +187,19 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
     CalcMeasure(Set, *pPopMeasure, gDataHub.GetTimeIntervalStartTimes(), gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodEndDate());
     measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
     for (unsigned int t=0; t < Set.getLocationDimension(); ++t) for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
-      if (ppM[i][t] < 0) ZdGenerateException("Negative measure = %g, location %d, interval %d.", "CalculateMeasure()", ppM[i][t], t, i);
+      if (ppM[i][t] < 0) throw prg_error("Negative measure = %g, location %d, interval %d.", "CalculateMeasure()", ppM[i][t], t, i);
     gDataHub.ValidateObservedToExpectedCases(Set); //validate that observed and expected agree
     AdjustMeasure(Set, *pPopMeasure); // apply adjustments
     Set.setMeasureDataToCumulative(); // now we can make the measure data cummulative
     if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.0001) // bug check total cases == total measure
-      ZdGenerateException("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
+      throw prg_error("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
     if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
         gParameters.GetAnalysisType() != SPATIALVARTEMPTREND/* SVTTData invokes this method as well */)
       Set.setMeasureData_PT_NC();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()","CPoissonModel");
+  catch (prg_exception &x) {
+    x.addTrace("CalculateMeasure()","CPoissonModel");
     throw;
   }
 }
@@ -230,8 +228,8 @@ double CPoissonModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster, c
        }
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("GetPopulation()", "CPoissonModel");
+  catch (prg_exception & x) {
+    x.addTrace("GetPopulation()", "CPoissonModel");
     throw;
   }
   return nPopulation;

@@ -10,8 +10,8 @@ RelativeRiskAdjustment::RelativeRiskAdjustment(measure_t dRelativeRisk, Julian S
     SetStartDate(StartDate);
     SetEndDate(EndDate);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()", "RelativeRiskAdjustment");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()", "RelativeRiskAdjustment");
     throw;
   }
 }
@@ -22,14 +22,14 @@ RelativeRiskAdjustment::~RelativeRiskAdjustment() {}
 void RelativeRiskAdjustment::MultiplyRisk(measure_t dRisk) {
   try {
     if (dRisk > std::numeric_limits<measure_t>::max()/gdRelativeRisk)
-      GenerateResolvableException("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                                  "       The combined relative risk %lf and %lf in the adjustment file\n"
-                                  "       is too large.\n", "AssignMeasure()", gdRelativeRisk, dRisk);
+      throw resolvable_error("Error: Data overflow occurs when adjusting expected number of cases.\n"
+                             "       The combined relative risk %lf and %lf in the adjustment file\n"
+                             "       is too large.\n", gdRelativeRisk, dRisk);
 
     gdRelativeRisk *= dRisk;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("MultiplyRisk()", "RelativeRiskAdjustment");
+  catch (prg_exception& x) {
+    x.addTrace("MultiplyRisk()", "RelativeRiskAdjustment");
     throw;
   }
 }
@@ -133,8 +133,8 @@ void RelativeRiskAdjustmentHandler::AddAdjustmentData(tract_t tTractIndex, measu
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AddAdjustmentData()", "RelativeRiskAdjustmentHandler");
+  catch (prg_exception& x) {
+    x.addTrace("AddAdjustmentData()", "RelativeRiskAdjustmentHandler");
     throw;
   }
 }
@@ -163,7 +163,7 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
   FILE                                * pFile;
 
   if ((pFile = fopen("c:\\Adustments.txt", "w")) == NULL)
-    ZdGenerateException("Unable to create adjustments outpt file.","PrintAdjustments()");
+    throw prg_error("Unable to create adjustments outpt file.","PrintAdjustments()");
 
   for (itr=gTractAdjustments.begin(); itr != gTractAdjustments.end(); ++itr) {
      const TractContainer_t & tract_deque = itr->second;

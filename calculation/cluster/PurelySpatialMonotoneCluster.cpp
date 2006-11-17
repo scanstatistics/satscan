@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "PurelySpatialMonotoneCluster.h"
 #include "ClusterLocationsWriter.h"
+#include "SSException.h"
 
 /** class constructor - const AbstractDataSetGateway */
 CPSMonotoneCluster::CPSMonotoneCluster(const AbstractClusterDataFactory * pClusterFactory,
@@ -57,8 +58,8 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs)
     gvFirstNeighborList   = rhs.gvFirstNeighborList;
     gvLastNeighborList    = rhs.gvLastNeighborList;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("operator=","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("operator=","CPSMonotoneCluster");
     throw;
   }
   return *this;
@@ -97,8 +98,8 @@ void CPSMonotoneCluster::AllocateForMaxCircles(tract_t nCircles) {
     gvFirstNeighborList.resize(m_nMaxCircles);
     gvLastNeighborList.resize(m_nMaxCircles);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("AllocateForMaxCircles()","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("AllocateForMaxCircles()","CPSMonotoneCluster");
     throw;
   }
 }
@@ -162,8 +163,8 @@ void CPSMonotoneCluster::DefineTopCluster(const CSaTScanData& Data, AbstractLike
       SetCasesAndMeasures();
       SetTotalTracts();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DefineTopCluster()","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DefineTopCluster()","CPSMonotoneCluster");
     throw;
   }
 }
@@ -181,8 +182,8 @@ void CPSMonotoneCluster::DisplayCensusTracts(FILE* fp, const CSaTScanData& Data,
        DisplayCensusTractsInStep(fp, Data, gvFirstNeighborList.at(i), gvLastNeighborList.at(i), PrintFormat);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayCensusTracts()","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayCensusTracts()","CPSMonotoneCluster");
     throw;
   }
 }
@@ -213,15 +214,15 @@ void CPSMonotoneCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, 
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayCoordinates()","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayCoordinates()","CPSMonotoneCluster");
     throw;
   }
 }
 
 /** Prints latitude/longitude coordinates of cluster to file pointer in ACSII format. */
 void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
-  double                        dRadius, * pCoords2=0;
+  double                        dRadius;
   std::vector<double>           ClusterCenter, vCoodinatesOfStep;
   std::pair<double, double>     prLatitudeLongitude;
   char                          cNorthSouth, cEastWest;
@@ -243,8 +244,8 @@ void CPSMonotoneCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayLatLongCoords()", "CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayLatLongCoords()", "CPSMonotoneCluster");
     throw;
   }
 }
@@ -261,22 +262,20 @@ void CPSMonotoneCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iData
     printString(buffer, "%.3f", GetRelativeRisk(iDataSetIndex, DataHub));
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DisplayObservedDivExpected()","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("DisplayObservedDivExpected()","CPSMonotoneCluster");
     throw;
   }
 }
 
 /** Returns pointer cluster data object - not implemented, throws exception. */
 AbstractClusterData * CPSMonotoneCluster::GetClusterData() {
- ZdGenerateException("GetClusterData() not implemented.","CPSMonotoneCluster");
- return 0;
+ throw prg_error("GetClusterData() not implemented.","CPSMonotoneCluster");
 }
 
 /** Returns pointer cluster data object - not implemented, throws exception. */
 const AbstractClusterData * CPSMonotoneCluster::GetClusterData() const {
- ZdGenerateException("GetClusterData() not implemented.","CPSMonotoneCluster");
- return 0;
+ throw prg_error("GetClusterData() not implemented.","CPSMonotoneCluster");
 }
 
 /** returns end date of defined cluster as formated string */
@@ -337,13 +336,12 @@ void CPSMonotoneCluster::Initialize(tract_t nCenter) {
     Note: This is a debug function and can be helpful when used with Excel to get
     visual of cluster using scatter plotting. */
 void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
-  unsigned int                  k;
   tract_t                       i, tTract;
   std::ofstream                 outfilestream(sFilename.c_str(), ios::ate);
 
   try {
     if (!outfilestream)
-      ZdGenerateException("Error: Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
+      throw prg_error("Error: Could not open file for write:'%s'.\n", "PrintClusterLocationsToFile()", sFilename.c_str());
 
     outfilestream.setf(std::ios_base::fixed, std::ios_base::floatfield);
 
@@ -371,8 +369,8 @@ void CPSMonotoneCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub
     }
     outfilestream << std::endl;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("PrintClusterLocationsToFile()","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("PrintClusterLocationsToFile()","CPSMonotoneCluster");
     throw;
   }
 }
@@ -452,8 +450,8 @@ void CPSMonotoneCluster::Write(LocationInformationWriter& LocationWriter, const 
        }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Write(stsAreaSpecificData*)","CPSMonotoneCluster");
+  catch (prg_exception& x) {
+    x.addTrace("Write(stsAreaSpecificData*)","CPSMonotoneCluster");
     throw;
   }
 }

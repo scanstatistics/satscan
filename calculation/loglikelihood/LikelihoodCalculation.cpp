@@ -5,6 +5,7 @@
 #include "LikelihoodCalculation.h"
 #include "SaTScanData.h"
 #include "LoglikelihoodRatioUnifier.h"
+#include "SSException.h"
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub)
@@ -29,7 +30,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         case ADJUSTMENT :
           gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
         default :
-          ZdGenerateException("Unknown purpose for multiple data sets '%d'.","constructor()",
+          throw prg_error("Unknown purpose for multiple data sets '%d'.","constructor()",
                               gDataHub.GetParameters().GetMultipleDataSetPurposeType());
       }
     }
@@ -41,12 +42,12 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
       case RANK                 :
       case EXPONENTIAL          : gtMinLowRateCases = 0; gtMinHighRateCases = 2; break;
       case NORMAL               : gtMinLowRateCases = 2; gtMinHighRateCases = 2; break;
-      default : ZdGenerateException("Unknown data model type '%d'.","constructor()", gDataHub.GetParameters().GetProbabilityModelType());
+      default : throw prg_error("Unknown data model type '%d'.","constructor()", gDataHub.GetParameters().GetProbabilityModelType());
     };
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpUnifier;
-    x.AddCallpath("constructor()","AbstractLikelihoodCalculator");
+    x.addTrace("constructor()","AbstractLikelihoodCalculator");
     throw;
   }
 }
@@ -58,75 +59,64 @@ AbstractLikelihoodCalculator::~AbstractLikelihoodCalculator() {
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihood(count_t, measure_t) const {
-  ZdGenerateException("CalcLogLikelihood(count_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalcLogLikelihood(count_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodRatio(count_t, measure_t,size_t) const {
-  ZdGenerateException("CalcLogLikelihoodRatio(count_t,measure_t.size_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalcLogLikelihoodRatio(count_t,measure_t.size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
-  ZdGenerateException("CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>&,const std::vector<count_t>&) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>&,const std::vector<count_t>&) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex) const {
-  ZdGenerateException("CalcLogLikelihoodRatioNormal(count_t,measure_t,measure_t,count_t,measure_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalcLogLikelihoodRatioNormal(count_t,measure_t,measure_t,count_t,measure_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster&) const {
-  ZdGenerateException("CalcMonotoneLogLikelihood(const CPSMonotoneCluster&) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalcMonotoneLogLikelihood(const CPSMonotoneCluster&) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t, SVTTClusterData&, const CTimeTrend&) const {
-  ZdGenerateException("CalcSVTTLogLikelihood(size_t, CSVTTCluster*, const CTimeTrend&) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalcSVTTLogLikelihood(size_t, CSVTTCluster*, const CTimeTrend&) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex) const {
-  ZdGenerateException("CalculateFullStatistic(double_t,size_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalculateFullStatistic(double_t,size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex) const {
-  ZdGenerateException("CalculateMaximizingValue(count_t,measure_t,size_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalculateMaximizingValue(count_t,measure_t,size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalculateMaximizingValueNormal(count_t n, measure_t u, measure_t u2, size_t tDataSetIndex) const {
-  ZdGenerateException("CalculateMaximizingValueNormal(count_t,measure_t,measure_t,size_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalculateMaximizingValueNormal(count_t,measure_t,measure_t,size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
-  ZdGenerateException("CalculateMaximizingValueOrdinal(const std::vector<count_t>&,size_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("CalculateMaximizingValueOrdinal(const std::vector<count_t>&,size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** returns log likelihood for total - not implemented - throws exception. */
 double AbstractLikelihoodCalculator::GetLogLikelihoodForTotal(size_t) const {
-  ZdGenerateException("GetLogLikelihoodForTotal(size_t) not implementated.","AbstractLikelihoodCalculator");
-  return 0;
+  throw prg_error("GetLogLikelihoodForTotal(size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Returns reference to AbstractLoglikelihoodRatioUnifier object. Throw exception
     if object not allocated. */
 AbstractLoglikelihoodRatioUnifier & AbstractLikelihoodCalculator::GetUnifier() const {
   if (!gpUnifier)
-    ZdGenerateException("Log likelihood unifier not allocated.","GetUnifier()");
+    throw prg_error("Log likelihood unifier not allocated.","GetUnifier()");
   return *gpUnifier;
 }
 

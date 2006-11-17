@@ -3,6 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "PurelySpatialCluster.h"
+#include "SSException.h"
 
 /** constructor */
 CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * pClusterFactory,
@@ -15,9 +16,9 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
     //for a space-time analysis, the index would be dependent on # of intervals requested.
     m_nLastInterval = DataGateway.GetDataSetInterface().GetNumTimeIntervals();
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData;
-    x.AddCallpath("constructor()","CPurelySpatialCluster");
+    x.addTrace("constructor()","CPurelySpatialCluster");
     throw;
   }
 }
@@ -29,9 +30,9 @@ CPurelySpatialCluster::CPurelySpatialCluster(const CPurelySpatialCluster& rhs)
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData; gpClusterData=0;
-    x.AddCallpath("constructor()","CPurelySpatialCluster");
+    x.addTrace("constructor()","CPurelySpatialCluster");
     throw;
   }
 }

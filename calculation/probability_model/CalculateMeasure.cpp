@@ -42,8 +42,8 @@ std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, con
       tTotalCases += nCaseCount;
        // Check to see if total case or control values have wrapped
        if (tTotalCases < 0)
-         GenerateResolvableException("Error: The total number of cases in data set %u is greater than the maximum allowed of %ld.\n",
-                                     "CalcRisk()", Set.getSetIndex(), std::numeric_limits<count_t>::max());
+         throw resolvable_error("Error: The total number of cases in data set %u is greater than the maximum allowed of %ld.\n",
+                                Set.getSetIndex(), std::numeric_limits<count_t>::max());
 
       dTotalPopulation += nPop;
     }
@@ -54,8 +54,8 @@ std::vector<double>& CalcRisk(RealDataSet& Set, const Julian StudyStartDate, con
     Set.setTotalCases(tTotalCases);
     Set.setTotalPopulation(dTotalPopulation);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("CalcRisk()", "CalculateMeasure.cpp");
+  catch (prg_exception & x) {
+    x.addTrace("CalcRisk()", "CalculateMeasure.cpp");
     throw;
   }
   return vRisk;
@@ -94,8 +94,8 @@ boost::shared_ptr<TwoDimMeasureArray_t> Calcm(RealDataSet& Set, const Julian Stu
     fprintf(pMResult, "\n");
 #endif
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Calcm()","CalculateMeasure.cpp");
+  catch (prg_exception &x) {
+    x.addTrace("Calcm()","CalculateMeasure.cpp");
     throw;
   }
   return pPopMeasure;
@@ -178,8 +178,8 @@ void CalcMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, c
       fprintf(pMResult, "Total Measure = %f\n\n", *pTotalMeasure); 
 #endif
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalcMeasure()", "CalculateMeasure.cpp");
+  catch (prg_exception &x) {
+    x.addTrace("CalcMeasure()", "CalculateMeasure.cpp");
     throw;
   }
   DataSet.setTotalMeasure(tTotalMeasure);
@@ -245,9 +245,9 @@ int AdjustForDiscreteTimeTrend(measure_t*** pMeasure,
       k++;
       } /* for i<AdjustIntervals */
       }
-   catch (ZdException & x)
+   catch (prg_exception & x)
       {
-      x.AddCallpath("AdjustForDiscreteTimeTrend()", "CalculateMeasure.cpp");
+      x.addTrace("AdjustForDiscreteTimeTrend()", "CalculateMeasure.cpp");
       throw;
       }
   return(1);
@@ -262,7 +262,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
                                   tract_t      nTracts,
                                   measure_t*   pTotalMeasure,
                                   measure_t*** pMeasure,
-                                  BasePrint *pPrintDirection)
+                                  BasePrint *)
 {
    int    i,t;
    double c;
@@ -285,7 +285,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
           nAdjustedMeasure += (*pMeasure)[i][t];
     
           if (nAdjustedMeasure > DBL_MAX)
-            GenerateResolvableException("Error: Data overflow due to the time trend adjustment.\n", "AdjustForPercentageTimeTrend");
+            throw prg_error("Error: Data overflow due to the time trend adjustment.\n", "AdjustForPercentageTimeTrend()");
         }
     
 
@@ -310,9 +310,9 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
       fprintf(pMResult, "\nAdjusted Measure Total = %0.2f.\n", nAdjustedMeasure);
       #endif  
       }
-   catch (ZdException & x)
+   catch (prg_exception & x)
       {
-      x.AddCallpath("AdjustForPercentageTimeTrend()", "CalculateMeasure.cpp");
+      x.addTrace("AdjustForPercentageTimeTrend()", "CalculateMeasure.cpp");
       throw;
       }
 }
@@ -406,12 +406,12 @@ bool ValidateMeasures(const TractHandler *pTInfo,
     	 sprintf(sTemp, "  cluster size needs to be increased to at least %i%%.\n\n", nMinGeoSize);
          strcat(sMessage, sTemp);
     	 fprintf(stderr, sMessage);
-         GenerateResolvableException(sMessage, "ValidateMeasures()");
+         throw resolvable_error(sMessage);
       }
       }
-   catch (ZdException & x)
+   catch (prg_exception & x)
       {
-      x.AddCallpath("ValidateMeasures()", "CalculateMeasure.cpp");
+      x.addTrace("ValidateMeasures()", "CalculateMeasure.cpp");
       throw;
       }
   return(!bError);
@@ -484,11 +484,11 @@ bool ValidateAllCountsArePossitive(tract_t   nTracts,
          }
     
       if (nSumCount != nTotalCount)
-        GenerateResolvableException("Error: Totals do not match.\n", "ValidateAllCountsArePossitive");
+        throw resolvable_error("Error: Totals do not match.\n");
       }
-   catch (ZdException & x)
+   catch (prg_exception & x)
       {
-      x.AddCallpath("ValidateAllCountsArePossitive()", "CalculateMeasure.cpp");
+      x.addTrace("ValidateAllCountsArePossitive()", "CalculateMeasure.cpp");
       throw;
       }
   return(true);
@@ -514,13 +514,13 @@ bool ValidateAllPTCountsArePossitive(tract_t  nTracts,
             }
          nSumCount += Counts[i];
          }
-    
+
       if (nSumCount != nTotalCount)
-        GenerateResolvableException("Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
+        throw prg_error("Error: Totals do not match.\n", "ValidateAllPTCountsArePossitive");
       }
-   catch (ZdException & x)
+   catch (prg_exception & x)
       {
-      x.AddCallpath("ValidateAllPTCountsArePossitive()", "CalculateMeasure.cpp");
+      x.addTrace("ValidateAllPTCountsArePossitive()", "CalculateMeasure.cpp");
       throw;
       }
   return(true);

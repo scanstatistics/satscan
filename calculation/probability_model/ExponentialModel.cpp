@@ -5,6 +5,7 @@
 #include "ExponentialModel.h"
 #include "SaTScanData.h"
 #include "cluster.h"
+#include "SSException.h"
 
 /** constructor */
 ExponentialModel::ExponentialModel() : CModel() {}
@@ -50,12 +51,11 @@ double ExponentialModel::GetPopulation(size_t tSetIndex, const CCluster& Cluster
      case PURELYSPATIALMONOTONECLUSTER     :
      case SPATIALVARTEMPTRENDCLUSTER       :
      case PURELYSPATIALPROSPECTIVECLUSTER  :
-     default                               :
-       ZdException::GenerateNotification("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
+     default : throw prg_error("Unknown cluster type '%d'.","GetPopulation()", Cluster.GetClusterType());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetPopulation()","ExponentialModel");
+  catch (prg_exception& x) {
+    x.addTrace("GetPopulation()","ExponentialModel");
     throw;
   }
 

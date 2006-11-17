@@ -97,13 +97,13 @@ void SaTScanDataReader::Read() {
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       default :
-        ZdGenerateException("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
+        throw prg_error("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
     };
     if (!bReadSuccess)
-      GenerateResolvableException("\nProblem encountered when reading the data from the input files.", "ReadDataFromFiles");
+      throw resolvable_error("\nProblem encountered when reading the data from the input files.");
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadDataFromFiles()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadDataFromFiles()","SaTScanDataReader");
     throw;
   }
 }
@@ -133,12 +133,11 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
         if (!stricmp(Source->GetValueAt(uLocationIndex),"all"))
           TractIndex = -1;
         else if (bRestrictedLocations) {
-          GenerateResolvableException("Error: When adjusting for known relative risks using the purely temporal analysis\n"
-                                      "       without defining a coordinates file, it is not possible to adjust for known\n"
-                                      "       relative risks at the location level. In order to adjust for known relative\n"
-                                      "       risks at the location level, you must define a coordinates file. Alternatively,\n"
-                                      "       you may want to define known relative risks that apply to all locations.",
-                                      "ReadAdjustmentsByRelativeRisksFile()");
+          throw resolvable_error("Error: When adjusting for known relative risks using the purely temporal analysis\n"
+                                 "       without defining a coordinates file, it is not possible to adjust for known\n"
+                                 "       relative risks at the location level. In order to adjust for known relative\n"
+                                 "       risks at the location level, you must define a coordinates file. Alternatively,\n"
+                                 "       you may want to define known relative risks that apply to all locations.");
         }
         else {
           //Validate that tract identifer is one of those defined in the coordinates file.
@@ -221,8 +220,8 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
       bValid = false;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadAdjustmentsByRelativeRisksFile()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadAdjustmentsByRelativeRisksFile()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -242,8 +241,8 @@ bool SaTScanDataReader::ReadBernoulliData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadBernoulliData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadBernoulliData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -300,12 +299,12 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
       switch (gParameters.GetCoordinatesType()) {
         case CARTESIAN : bReturn = ReadCoordinatesFileAsCartesian(*Source); break;
         case LATLON    : bReturn = ReadCoordinatesFileAsLatitudeLongitude(*Source); break;
-        default : ZdException::Generate("Unknown coordinate type '%d'.","ReadCoordinatesFile()",gParameters.GetCoordinatesType());
+        default : throw prg_error("Unknown coordinate type '%d'.","ReadCoordinatesFile()",gParameters.GetCoordinatesType());
       };
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFile()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCoordinatesFile()","SaTScanDataReader");
     throw;
   }
   return bReturn;
@@ -392,8 +391,8 @@ bool SaTScanDataReader::ReadCoordinatesFileAsCartesian(DataSource& Source) {
     //record number of centroids read
     gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFileAsCartesian()", "SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCoordinatesFileAsCartesian()", "SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -442,8 +441,8 @@ bool SaTScanDataReader::ReadCoordinatesFileAsLatitudeLongitude(DataSource& Sourc
     //record number of centroids read
     gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadCoordinatesFileAsLatitudeLongitude()", "SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCoordinatesFileAsLatitudeLongitude()", "SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -462,8 +461,8 @@ bool SaTScanDataReader::ReadExponentialData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadExponentialData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadExponentialData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -480,11 +479,11 @@ bool SaTScanDataReader::ReadGridFile() {
     switch (gParameters.GetCoordinatesType()) {
       case CARTESIAN : bReturn = ReadGridFileAsCartiesian(*Source); break;
       case LATLON    : bReturn = ReadGridFileAsLatitudeLongitude(*Source); break;
-      default : ZdException::Generate("Unknown coordinate type '%d'.","ReadGrid()",gParameters.GetCoordinatesType());
+      default : throw prg_error("Unknown coordinate type '%d'.","ReadGrid()",gParameters.GetCoordinatesType());
     };
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadGridFile()", "SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadGridFile()", "SaTScanDataReader");
     throw;
   }
   return bReturn;
@@ -502,7 +501,7 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
 
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
-      ZdGenerateException("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
+      throw prg_error("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
     pGridPoints->setDimensions(gTractHandler.getCoordinateDimensions());
     vCoordinates.resize(gTractHandler.getCoordinateDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
@@ -537,8 +536,8 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
     //record number of centroids read
     gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadGridFileAsCartiesian()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadGridFileAsCartiesian()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -555,7 +554,7 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
 
   try {
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
-      ZdGenerateException("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
+      throw prg_error("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
     pGridPoints->setDimensions(gTractHandler.getCoordinateDimensions());
     vCoordinates.resize(gTractHandler.getCoordinateDimensions(), 0);
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
@@ -580,13 +579,8 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
     //record number of centroids read
     gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
   }
-  catch (ZdFileOpenFailedException &x) {
-    gPrint.Printf("Error: The grid file '%s' could not be opened.\n",
-                  BasePrint::P_ERROR, gParameters.GetSpecialGridFileName().c_str());
-    return false;
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadGridFileAsLatitudeLongitude()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadGridFileAsLatitudeLongitude()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -659,7 +653,7 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
   bool          bValid=true, bEmpty=true;
   tract_t       TractIdentifierIndex;
   float         fPopulation;
-  const long    uLocationIndex=0, uPopulationIndex=1;
+  const long    uPopulationIndex=1;
 
   try {
     gPrint.SetImpliedInputFileType(BasePrint::MAXCIRCLEPOPFILE);
@@ -731,8 +725,8 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
          gDataHub.gvMaxCirclePopulation[(size_t)gDataHub.m_nTracts + t] += gDataHub.gvMaxCirclePopulation[atomicIndexes[a]];
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadMaxCirclePopulationFile()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadMaxCirclePopulationFile()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -800,8 +794,8 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
     }
     gTractHandler.getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadMetaLocationsFile()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadMetaLocationsFile()","SaTScanDataReader");
     throw;
   }
   return bValid;
@@ -820,8 +814,8 @@ bool SaTScanDataReader::ReadNormalData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadNormalData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadNormalData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -840,8 +834,8 @@ bool SaTScanDataReader::ReadOrdinalData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadOrdinalData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadOrdinalData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -864,8 +858,8 @@ bool SaTScanDataReader::ReadPoissonData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadPoissonData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadPoissonData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -884,8 +878,8 @@ bool SaTScanDataReader::ReadRankData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadRankData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadRankData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -904,8 +898,8 @@ bool SaTScanDataReader::ReadSpaceTimePermutationData() {
     if (gParameters.UseSpecialGrid() && !ReadGridFile())
       return false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadSpaceTimePermutationData()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadSpaceTimePermutationData()","SaTScanDataReader");
     throw;
   }
   return true;
@@ -997,8 +991,8 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
       bValid = false;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadUserSpecifiedNeighbors()","SaTScanDataReader");
+  catch (prg_exception& x) {
+    x.addTrace("ReadUserSpecifiedNeighbors()","SaTScanDataReader");
     throw;
   }
   return bValid;

@@ -65,12 +65,9 @@ class AbtractParameterFileAccess {
 };
 
 /** Execption class of invalid parameters */
-class InvalidParameterException : public ResolvableException {
+class parameter_error : public resolvable_error {
   public:
-   InvalidParameterException(va_list varArgs, const char *sMessage, const char *sSourceModule, ZdException::Level iLevel);
-   virtual ~InvalidParameterException() {}
-
-   static void Generate (const char *sMessage, const char *sSourceModule,  ... );
+   parameter_error(const char * format, ...);
 };
 //***************************************************************************
 #endif

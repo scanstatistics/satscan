@@ -7,6 +7,7 @@
 #include "MultiSetClusterData.h"
 #include "CategoricalClusterData.h"
 #include "SVTTCluster.h"
+#include "SSException.h"
 
 /** class constructor*/
 ClusterDataFactory::ClusterDataFactory() : AbstractClusterDataFactory() {}
@@ -81,8 +82,8 @@ MultiSetClusterDataFactory::MultiSetClusterDataFactory(const CParameters& Parame
   try {
     Setup(Parameters);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","MultiSetClusterDataFactory");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","MultiSetClusterDataFactory");
     throw;
   }
 }
@@ -90,10 +91,9 @@ MultiSetClusterDataFactory::MultiSetClusterDataFactory(const CParameters& Parame
 /** class destructor */
 MultiSetClusterDataFactory::~MultiSetClusterDataFactory() {}
 
-/** Not implemented. Throws ZdException. */
+/** Not implemented. Throws prg_error. */
 AbstractSpatialClusterData * MultiSetClusterDataFactory::GetNewSpatialClusterData(const DataSetInterface&) const {
-  ZdGenerateException("GetNewSpatialClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewSpatialClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
 }
 
 /** Returns newly created MultiSetSpatialData object as AbstractSpatialClusterData
@@ -105,8 +105,7 @@ AbstractSpatialClusterData * MultiSetClusterDataFactory::GetNewSpatialClusterDat
 /** Returns newly created SVTTClusterData object as AbtractSVTTClusterData
     pointer. Caller is responsible for object destruction. */
 AbtractSVTTClusterData * MultiSetClusterDataFactory::GetNewSVTTClusterData(const DataSetInterface& Interface) const {
-  ZdGenerateException("GetNewSVTTClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewSVTTClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
 }
 
 /** Returns newly created SVTTClusterData object as AbtractSVTTClusterData
@@ -115,10 +114,9 @@ AbtractSVTTClusterData * MultiSetClusterDataFactory::GetNewSVTTClusterData(const
   return new MultiSetSVTTClusterData(DataGateway);
 }
 
-/** Not implemented. Throws ZdException. */
+/** Not implemented. Throws prg_error. */
 AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewProspectiveSpatialClusterData(const CSaTScanData&, const DataSetInterface&) const {
-  ZdGenerateException("GetNewProspectiveSpatialClusterData(const CSaTScanData&, const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewProspectiveSpatialClusterData(const CSaTScanData&, const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
 }
 
 /** Returns newly created MultiSetProspectiveSpatialData object as
@@ -127,10 +125,9 @@ AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewProspectiveSpati
   return new MultiSetProspectiveSpatialData(gClusterDataFactory, Data, DataGateway);
 }
 
-/** Not implemented. Throws ZdException. */
+/** Not implemented. Throws prg_error. */
 AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewTemporalClusterData(const DataSetInterface&) const {
-  ZdGenerateException("GetNewTemporalClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewTemporalClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
 }
 
 /** Returns newly created MultiSetTemporalData object as AbstractTemporalClusterData
@@ -139,10 +136,9 @@ AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewTemporalClusterD
   return new MultiSetTemporalData(gClusterDataFactory, DataGateway);
 }
 
-/** Not implemented. Throws ZdException. */
+/** Not implemented. Throws prg_error. */
 AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewSpaceTimeClusterData(const DataSetInterface&) const {
-  ZdGenerateException("GetNewSpaceTimeClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
-  return 0;
+  throw prg_error("GetNewSpaceTimeClusterData(const DataSetInterface&) not implemented.","MultiSetClusterDataFactory");
 }
 
 /** Returns newly created MultiSetSpaceTimeData object as AbstractTemporalClusterData
@@ -155,11 +151,11 @@ AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewSpaceTimeCluster
 void MultiSetClusterDataFactory::Setup(const CParameters& Parameters) {
   try {
     if (Parameters.GetProbabilityModelType() == NORMAL)
-      ZdGenerateException("This class does not implement a multiple dataset factory\n"
+      throw prg_error("This class does not implement a multiple dataset factory\n"
                           "interface for the Normal probability model.\n","Setup()");
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","MultiSetClusterDataFactory");
+  catch (prg_exception& x) {
+    x.addTrace("Setup()","MultiSetClusterDataFactory");
     throw;
   }
 }

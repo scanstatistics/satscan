@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "SVTTCluster.h"
+#include "SSException.h"
 
 ///////////////////////////// SVTTClusterData //////////////////////////////////
 
@@ -12,8 +13,8 @@ SVTTClusterData::SVTTClusterData(const AbstractDataSetGateway& DataGateway) : gi
     Init();
     Setup();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","SVTTClusterData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","SVTTClusterData");
     throw;
   }
 }
@@ -24,8 +25,8 @@ SVTTClusterData::SVTTClusterData(const DataSetInterface & Interface) : giAllocat
     Init();
     Setup();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","SVTTClusterData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","SVTTClusterData");
     throw;
   }
 }
@@ -36,8 +37,8 @@ SVTTClusterData::SVTTClusterData(const SVTTClusterData& rhs) {
     Init();
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","SVTTClusterData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","SVTTClusterData");
     throw;
   }
 }
@@ -178,12 +179,12 @@ void SVTTClusterData::Setup() {
     gpMeasureInsideCluster = new measure_t[giAllocationSize];
     gpMeasureOutsideCluster = new measure_t[giAllocationSize];
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete[] gpCasesInsideCluster;
     delete[] gpCasesOutsideCluster;
     delete[] gpMeasureInsideCluster;
     delete[] gpMeasureOutsideCluster;
-    x.AddCallpath("Setup()","SVTTClusterData");
+    x.addTrace("Setup()","SVTTClusterData");
     throw;
   }
 }
@@ -280,7 +281,7 @@ void MultiSetSVTTClusterData::InitializeSVTTData(const AbstractDataSetGateway& D
 
 /** re-intialize data */
 void MultiSetSVTTClusterData::InitializeSVTTData(const DataSetInterface & Interface) {
-  ZdGenerateException("InitializeSVTTData(const DataSetInterface&) not implemented.","MultiSetSVTTClusterData");
+  throw prg_error("InitializeSVTTData(const DataSetInterface&) not implemented.","MultiSetSVTTClusterData");
 }
 
 ///////////////////////////// CSVTTCluster /////////////////////////////////////
@@ -293,8 +294,8 @@ CSVTTCluster::CSVTTCluster(const AbstractClusterDataFactory * pClusterFactory, c
     InitializeSVTT(0, DataGateway);
     m_nLastInterval = DataGateway.GetDataSetInterface().GetNumTimeIntervals();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CSVTTCluster");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CSVTTCluster");
     throw;
   }
 }
@@ -305,8 +306,8 @@ CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster() {
     gClusterData.reset(rhs.gClusterData->CloneSVTT());
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("copy constructor()","CSVTTCluster");
+  catch (prg_exception& x) {
+    x.addTrace("copy constructor()","CSVTTCluster");
     throw;
   }
 }
@@ -417,13 +418,13 @@ void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const CTimeTrend& 
      case CTimeTrend::TREND_UNDEF        : buffer = "undefined"; break;
      case CTimeTrend::TREND_INF_BEGIN    : buffer = "-100"; break;
      case CTimeTrend::TREND_INF_END      : buffer = "infinity"; break;
-     case CTimeTrend::TREND_NOTCONVERGED : ZdGenerateException("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
+     case CTimeTrend::TREND_NOTCONVERGED : throw prg_error("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
      case CTimeTrend::TREND_CONVERGED    : printString(buffer, "%f  (%.3f%% %s", Trend.GetBeta(), Trend.GetAnnualTimeTrend(),
                                                        (Trend.IsNegative() ? "annual decrease)" : "annual increase)"));
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFormattedTimeTrend()","CSVTTCluster");
+  catch (prg_exception& x) {
+    x.addTrace("GetFormattedTimeTrend()","CSVTTCluster");
     throw;
   }
 }

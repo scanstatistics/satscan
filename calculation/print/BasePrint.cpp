@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "BasePrint.h"
+#include "SSException.h"
 
 /** constructor */
 BasePrint::BasePrint(bool bSuppressWarnings) : gbSuppressWarnings(bSuppressWarnings), giMaximumReadErrors(75) {
@@ -112,7 +113,7 @@ void BasePrint::SetImpliedInputFileType(eInputFileType eType) {
     case ADJ_BY_RR_FILE          : gsInputFileString = "adjustments file"; break;
     case LOCATION_NEIGHBORS_FILE : gsInputFileString = "location neighbors file"; break;
     case META_LOCATIONS_FILE     : gsInputFileString = "meta locations file"; break;
-    default : ZdException::GenerateNotification("Invalid input file type warning message!", "SetImpliedInputFileType()");
+    default : throw prg_error("Invalid input file type warning message!", "SetImpliedInputFileType()");
   }
 }
 

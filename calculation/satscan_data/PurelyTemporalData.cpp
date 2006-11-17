@@ -10,6 +10,7 @@
 #include "ExponentialModel.h"
 #include "RankModel.h"
 #include "OrdinalModel.h"
+#include "SSException.h"
 
 /** class constructor */
 CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -17,8 +18,8 @@ CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrin
   try {
     SetProbabilityModel();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CPurelyTemporalData");
+  catch (prg_exception &x) {
+    x.addTrace("constructor()","CPurelyTemporalData");
     throw;
   }
 }
@@ -26,9 +27,9 @@ CPurelyTemporalData::CPurelyTemporalData(const CParameters& Parameters, BasePrin
 /** class destructor */
 CPurelyTemporalData::~CPurelyTemporalData() {}
 
-/** Not implemented throws ZdException. */
+/** Not implemented throws prg_error. */
 void CPurelyTemporalData::AdjustNeighborCounts(ExecutionType geExecutingType) {
-  ZdGenerateException("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
+  throw prg_error("AdjustNeighborCounts() not implemented for CPurelyTemporalData.","AdjustNeighborCounts()");
 }
 
 /** Calls base class CSaTScanData::CalculateMeasure(). Sets dataset object's
@@ -40,8 +41,8 @@ void CPurelyTemporalData::CalculateMeasure(RealDataSet& DataSet) {
     if (gParameters.GetProbabilityModelType() != ORDINAL)
       gDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CalculateMeasure()","CPurelyTemporalData");
+  catch (prg_exception &x) {
+    x.addTrace("CalculateMeasure()","CPurelyTemporalData");
     throw;
   }
 }
@@ -89,10 +90,9 @@ void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
 //  }
 }
 
-/** Not implemented - throws ZdException. */
+/** Not implemented - throws prg_error. */
 tract_t CPurelyTemporalData::GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dMaxRadius) const {
-  ZdGenerateException("GetNeighbor() not implemented for CPurelyTemporalData.","GetNeighbor()");
-  return 0;
+  throw prg_error("GetNeighbor() not implemented for CPurelyTemporalData.","GetNeighbor()");
 }
 
 /** Randomizes collection of simulation data in concert with passed collection of randomizers. */
@@ -102,8 +102,8 @@ void CPurelyTemporalData::RandomizeData(RandomizerContainer_t& RandomizerContain
   try {
     gDataSets->RandomizeData(RandomizerContainer, SimDataContainer, iSimulationNumber);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RandomizeData()","CPurelyTemporalData");
+  catch (prg_exception& x) {
+    x.addTrace("RandomizeData()","CPurelyTemporalData");
     throw;
   }
 }
@@ -115,32 +115,26 @@ void CPurelyTemporalData::ReadDataFromFiles() {
     CSaTScanData::ReadDataFromFiles();
     SetPurelyTemporalCases();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadDataFromFiles()","CPurelyTemporalData");
+  catch (prg_exception& x) {
+    x.addTrace("ReadDataFromFiles()","CPurelyTemporalData");
     throw;
   }
 }
 
-/** Allocates probability model object. Throws ZdException if probability model
+/** Allocates probability model object. Throws prg_error if probability model
     type is space-time permutation. */
 void CPurelyTemporalData::SetProbabilityModel() {
-  try {
-    switch (gParameters.GetProbabilityModelType()) {
-       case POISSON              : m_pModel = new CPoissonModel(*this);   break;
-       case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
-       case ORDINAL              : m_pModel = new OrdinalModel(); break;
-       case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
-       case NORMAL               : m_pModel = new CNormalModel(); break;
-       case RANK                 : m_pModel = new CRankModel(); break;
-       case SPACETIMEPERMUTATION : ZdException::Generate("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
-                                                         "SetProbabilityModel()");
-       default : ZdException::Generate("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
-                                       gParameters.GetProbabilityModelType());
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("SetProbabilityModel()","CPurelyTemporalData");
-    throw;
+  switch (gParameters.GetProbabilityModelType()) {
+     case POISSON              : m_pModel = new CPoissonModel(*this);   break;
+     case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
+     case ORDINAL              : m_pModel = new OrdinalModel(); break;
+     case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
+     case NORMAL               : m_pModel = new CNormalModel(); break;
+     case RANK                 : m_pModel = new CRankModel(); break;
+     case SPACETIMEPERMUTATION : throw prg_error("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
+                                                 "SetProbabilityModel()");
+     default : throw prg_error("Unknown probability model type: '%d'.\n", "SetProbabilityModel()",
+                               gParameters.GetProbabilityModelType());
   }
 }
 

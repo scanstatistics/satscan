@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "TimeIntervals.h"
+#include "SSException.h"
 
 CTimeIntervals::CTimeIntervals(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType)
                :gDataHub(DataHub), gLikelihoodCalculator(Calculator), gpMaxWindowLengthIndicator(0) {
@@ -56,14 +57,14 @@ void CTimeIntervals::Setup(IncludeClustersType eIncludeClustersType) {
                                giEndRange_Start = gDataHub.GetFlexibleWindowEndRangeStartIndex();
                                giEndRange_End = gDataHub.GetFlexibleWindowEndRangeEndIndex(); break;
         default :
-          ZdGenerateException("Unknown cluster inclusion type: '%d'.", "Setup()", gDataHub.GetParameters().GetIncludeClustersType());
+          throw prg_error("Unknown cluster inclusion type: '%d'.", "Setup()", gDataHub.GetParameters().GetIncludeClustersType());
       };
       gpMaxWindowLengthIndicator = new FixedMaxWindowLengthIndicator(gDataHub);
     }
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
-    x.AddCallpath("setup()","CTimeIntervals");
+    x.addTrace("setup()","CTimeIntervals");
     throw;
   }
 }

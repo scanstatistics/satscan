@@ -20,18 +20,18 @@ SpaceTimePermutationDataSetHandler::~SpaceTimePermutationDataSetHandler() {}
 SimulationDataContainer_t& SpaceTimePermutationDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL :
-        ZdGenerateException("AllocateSimulationData() not implemented for purely spatial analysis.","AllocateSimulationData()");
+        throw prg_error("AllocateSimulationData() not implemented for purely spatial analysis.","AllocateSimulationData()");
     case PURELYTEMPORAL :
     case PROSPECTIVEPURELYTEMPORAL :
-        ZdGenerateException("AllocateSimulationData() not implemented for purely temporal analysis.","AllocateSimulationData()");
+        throw prg_error("AllocateSimulationData() not implemented for purely temporal analysis.","AllocateSimulationData()");
     case SPACETIME :
     case PROSPECTIVESPACETIME :
         std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateCaseData));
         break;
     case SPATIALVARTEMPTREND :
-        ZdGenerateException("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
+        throw prg_error("AllocateSimulationData() not implemented for spatial variation and temporal trends analysis.","AllocateSimulationData()");
     default :
-        ZdGenerateException("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
+        throw prg_error("Unknown analysis type '%d'.","AllocateSimulationData()", gParameters.GetAnalysisType());
   };
   return Container;
 }
@@ -60,25 +60,25 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetDataGateway(Abst
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          ZdGenerateException("GetDataGateway() not implemented for purely spatial analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for purely spatial analysis.","GetDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          ZdGenerateException("GetDataGateway() not implemented for purely temporal analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for purely temporal analysis.","GetDataGateway()");
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCaseArray(DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetDataGateway() not implemented for spatial variation and temporal trends analysis.","GetDataGateway()");
+          throw prg_error("GetDataGateway() not implemented for spatial variation and temporal trends analysis.","GetDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetDataGateway()","SpaceTimePermutationDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetDataGateway()","SpaceTimePermutationDataSetHandler");
     throw;
   }  
   return DataGatway;
@@ -102,25 +102,25 @@ AbstractDataSetGateway & SpaceTimePermutationDataSetHandler::GetSimulationDataGa
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for purely spatial analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for purely spatial analysis.","GetSimulationDataGateway()");
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for purely temporal analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for purely temporal analysis.","GetSimulationDataGateway()");
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCaseArray(S_DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(R_DataSet.getMeasureData().GetArray());
           break;
         case SPATIALVARTEMPTREND        :
-          ZdGenerateException("GetSimulationDataGateway() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataGateway()");
+          throw prg_error("GetSimulationDataGateway() not implemented for spatial variation and temporal trends analysis.","GetSimulationDataGateway()");
         default :
-          ZdGenerateException("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
+          throw prg_error("Unknown analysis type '%d'.","GetSimulationDataGateway()",gParameters.GetAnalysisType());
       };
       DataGatway.AddDataSetInterface(Interface);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSimulationDataGateway()","SpaceTimePermutationDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("GetSimulationDataGateway()","SpaceTimePermutationDataSetHandler");
     throw;
   }
   return DataGatway;
@@ -155,8 +155,8 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSo
               //cumulatively add count to time by location structure
               ppCounts[0][TractIndex] += Count;
               if (ppCounts[0][TractIndex] < 0)
-                GenerateResolvableException("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n", "ReadCounts()",
-                                            DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
+                throw resolvable_error("Error: The total number of cases, in data set %u, is greater than the maximum allowed of %ld.\n",
+                                       DataSet.getSetIndex(), std::numeric_limits<count_t>::max());
               for (i=1; Date >= gDataHub.GetTimeIntervalStartTimes()[i]; ++i)
                 ppCounts[i][TractIndex] += Count;
               //record count as a case
@@ -185,8 +185,8 @@ bool SpaceTimePermutationDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSo
     if (bReadSuccess && gParameters.GetSimulationType() != FILESOURCE)
       ((SpaceTimeRandomizer*)gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))->CreateRandomizationData(DataSet);
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadCounts()","SpaceTimePermutationDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadCounts()","SpaceTimePermutationDataSetHandler");
     throw;
   }
   return bReadSuccess;
@@ -205,8 +205,8 @@ bool SpaceTimePermutationDataSetHandler::ReadData() {
          return false;
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ReadData()","SpaceTimePermutationDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("ReadData()","SpaceTimePermutationDataSetHandler");
     throw;
   }
   return true;
@@ -227,14 +227,14 @@ void SpaceTimePermutationDataSetHandler::SetRandomizers() {
           gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
       default :
-          ZdGenerateException("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
+          throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };
     //create more if needed
     for (size_t t=1; t < gParameters.GetNumDataSets(); ++t)
        gvDataSetRandomizers.at(t) = gvDataSetRandomizers.at(0)->Clone();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","SpaceTimePermutationDataSetHandler");
+  catch (prg_exception& x) {
+    x.addTrace("Setup()","SpaceTimePermutationDataSetHandler");
     throw;
   }
 }

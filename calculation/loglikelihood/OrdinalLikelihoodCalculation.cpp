@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "OrdinalLikelihoodCalculation.h"
 #include "SaTScanData.h"
+#include "SSException.h"
 
 /////////////////////////////////////////
 /////// OrdinalCombinedCategory /////////
@@ -27,10 +28,10 @@ void OrdinalCombinedCategory::Combine(int iCategoryIndex) {
 int OrdinalCombinedCategory::GetCategoryIndex(size_t tCatgoryPositionIndex) const {
   try {
     if (!gvCatorgiesIndexes.size() || tCatgoryPositionIndex > gvCatorgiesIndexes.size() - 1)
-      ZdGenerateException("Index %u out of range [size=%u].","GetCategoryIndex()", tCatgoryPositionIndex, gvCatorgiesIndexes.size());
+      throw prg_error("Index %u out of range [size=%u].","GetCategoryIndex()", tCatgoryPositionIndex, gvCatorgiesIndexes.size());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetCategoryIndex()","OrdinalCombinedCategory");
+  catch (prg_exception& x) {
+    x.addTrace("GetCategoryIndex()","OrdinalCombinedCategory");
     throw;
   }
   return gvCatorgiesIndexes[tCatgoryPositionIndex];
@@ -275,12 +276,12 @@ bool OrdinalLikelihoodCalculator::CalculateProbabilitiesInsideAndOutsideOfCluste
 //  for (size_t t=0; t < vOrdinalCases.size(); ++t)
 //     Sp += gvP[t];
 //  if (abs(1 - Sp) > .0001)
-//    ZdGenerateException("%lf difference with Ps.", "CalculateProbabilitiesInsideAndOutsideOfCluster()", 1 - Sp);
+//    throw prg_error("%lf difference with Ps.", "CalculateProbabilitiesInsideAndOutsideOfCluster()", 1 - Sp);
 // double Sq=0;
 //  for (size_t t=0; t < vOrdinalCases.size(); ++t)
 //     Sq += gvQ[t];
 //  if (abs(1 - Sq) > .0001)
-//    ZdGenerateException("%lf difference with Qs.", "CalculateProbabilitiesInsideAndOutsideOfCluster()", 1 - Sq);
+//    throw prg_error("%lf difference with Qs.", "CalculateProbabilitiesInsideAndOutsideOfCluster()", 1 - Sq);
 // -- bug test --
 
   return true;

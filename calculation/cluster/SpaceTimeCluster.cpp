@@ -3,6 +3,7 @@
 #pragma hdrstop
 //*****************************************************************************
 #include "SpaceTimeCluster.h"
+#include "SSException.h"
 
 /** constructor */
 CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway)
@@ -11,8 +12,8 @@ CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pCluster
     Init();
     Setup(pClusterFactory, DataGateway);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","CSpaceTimeCluster");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","CSpaceTimeCluster");
     throw;
   }
 }
@@ -26,9 +27,9 @@ CSpaceTimeCluster::CSpaceTimeCluster(const CSpaceTimeCluster& rhs)
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData;
-    x.AddCallpath("copy constructor()","CSpaceTimeCluster");
+    x.addTrace("copy constructor()","CSpaceTimeCluster");
     throw;
   }
 }
@@ -134,9 +135,9 @@ void CSpaceTimeCluster::Setup(const AbstractClusterDataFactory * pClusterFactory
   try {
     gpClusterData = pClusterFactory->GetNewSpaceTimeClusterData(DataGateway);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpClusterData;
-    x.AddCallpath("Setup()","CSpaceTimeCluster");
+    x.addTrace("Setup()","CSpaceTimeCluster");
     throw;
   }
 }

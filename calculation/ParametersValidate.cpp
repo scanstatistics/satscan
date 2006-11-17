@@ -6,6 +6,7 @@
 #include "RandomNumberGenerator.h"
 #include "Randomizer.h"
 #include "ParametersPrint.h"
+#include "SSException.h"
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_int.hpp>
 
@@ -98,8 +99,8 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (! ValidateRandomizationSeed(PrintDirection))
       bValid = false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -148,8 +149,8 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateDateParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateDateParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -204,8 +205,8 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
                             "with the centric analysis execution.\n", BasePrint::P_PARAMERROR);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateEllipseParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateEllipseParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -237,8 +238,8 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
                             "Centric analysis execution is not implemented with the special neighbors file.\n", BasePrint::P_PARAMERROR);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateExecutionTypeParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateExecutionTypeParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -462,8 +463,8 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                             BasePrint::P_PARAMERROR, gParameters.GetOutputFileName().c_str());
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateFileParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateFileParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -507,8 +508,8 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateIterativeScanParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateIterativeScanParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -587,11 +588,11 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
       }
     }
     else
-      ZdException::GenerateNotification("Unknown temporal percentage type: %d.",
-                                        "ValidateMaximumTemporalClusterSize()", gParameters.GetMaximumTemporalClusterSizeType());
+      throw prg_error("Unknown temporal percentage type: %d.",
+                      "ValidateMaximumTemporalClusterSize()", gParameters.GetMaximumTemporalClusterSizeType());
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ValidateMaximumTemporalClusterSize()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateMaximumTemporalClusterSize()","ParametersValidate");
     throw;
   }
   return true;
@@ -620,8 +621,8 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
       }
     }
   }
-  catch (ZdException & x) {
-    x.AddCallpath("ValidateMonotoneRisk()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateMonotoneRisk()","ParametersValidate");
     throw;
   }
   return bReturn;
@@ -652,8 +653,8 @@ bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDire
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidatePowerCalculationParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidatePowerCalculationParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -683,8 +684,8 @@ bool ParametersValidate::ValidateProspectiveDate(BasePrint& PrintDirection) cons
       bReturnValue = false;
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateProspectiveDate()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateProspectiveDate()","ParametersValidate");
     throw;
   }
   return bReturnValue;
@@ -882,8 +883,8 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateRangeParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateRangeParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -949,11 +950,11 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
                                 BasePrint::P_PARAMERROR, gParameters.GetSimulationDataSourceFilename().c_str());
         }
         break;
-      default : ZdGenerateException("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", gParameters.GetSimulationType());
+      default : throw prg_error("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", gParameters.GetSimulationType());
     };
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateSimulationDataParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateSimulationDataParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -1055,8 +1056,8 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateSpatialParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateSpatialParameters()","ParametersValidate");
     throw;
   }
   return bValid;
@@ -1116,8 +1117,8 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
       case NONE  : break;
     };
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateEndDate()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateEndDate()","ParametersValidate");
     throw;
   }
   return true;
@@ -1176,8 +1177,8 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
       case NONE  : break;
     };
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateStartDate()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateStartDate()","ParametersValidate");
     throw;
   }
   return true;
@@ -1312,8 +1313,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
                                  BasePrint::P_PARAMERROR, gParameters.GetTimeTrendConvergence());
         }
         break;
-      default : ZdException::Generate("Unknown model type '%d'.",
-                                      "ValidateTemporalParameters()", gParameters.GetProbabilityModelType());
+      default : throw prg_error("Unknown model type '%d'.", "ValidateTemporalParameters()", gParameters.GetProbabilityModelType());
     }
     //validate including purely temporal clusters
     if (gParameters.GetIncludePurelyTemporalClusters()) {
@@ -1335,8 +1335,8 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
     if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ValidateTemporalParameters()","ParametersValidate");
+  catch (prg_exception& x) {
+    x.addTrace("ValidateTemporalParameters()","ParametersValidate");
     throw;
   }
   return bValid;

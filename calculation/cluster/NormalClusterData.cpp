@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "NormalClusterData.h"
+#include "SSException.h"
 
 //************** class NormalSpatialData ***************************************
 
@@ -22,9 +23,9 @@ void NormalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDa
   gtSqMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSSqMeasureArray()[tNeighborIndex];
 }
 
-/** Not implemeneted - throws ZdException. */
+/** Not implemeneted - throws prg_error. */
 void NormalSpatialData::AddMeasureList(const DataSetInterface&, CMeasureList*, const CSaTScanData*) {
-   ZdGenerateException("AddMeasureList(const DataSetInterface&, CMeasureList*, const CSaTScanData*) not implemented.","NormalSpatialData");
+   throw prg_error("AddMeasureList(const DataSetInterface&, CMeasureList*, const CSaTScanData*) not implemented.","NormalSpatialData");
 }
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
@@ -103,7 +104,7 @@ void NormalTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rh
 /** Reassociates internal data with passed DataSetInterface pointers.
     Not implemented - throws exception */
 void NormalTemporalData::Reassociate(const DataSetInterface& Interface) {
-  ZdGenerateException("Reassociate(const DataSetInterface&) not implemented.","NormalTemporalData");
+  throw prg_error("Reassociate(const DataSetInterface&) not implemented.","NormalTemporalData");
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
@@ -120,8 +121,8 @@ NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& D
     Init();
     Setup(Data, Interface);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","NormalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","NormalProspectiveSpatialData");
     throw;
   }
 }
@@ -133,8 +134,8 @@ NormalProspectiveSpatialData::NormalProspectiveSpatialData(const CSaTScanData& D
     Init();
     Setup(Data, DataGateway.GetDataSetInterface());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","NormalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","NormalProspectiveSpatialData");
     throw;
   }
 }
@@ -146,8 +147,8 @@ NormalProspectiveSpatialData::NormalProspectiveSpatialData(const NormalProspecti
     Init();
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("copy constructor()","NormalProspectiveSpatialData");
+  catch (prg_exception& x) {
+    x.addTrace("copy constructor()","NormalProspectiveSpatialData");
     throw;
   }
 }
@@ -306,11 +307,11 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSet
     gpSqMeasure = new measure_t[giAllocationSize];
     memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete[] gpCases;
     delete[] gpMeasure;
     delete[] gpSqMeasure;
-    x.AddCallpath("Setup(const CSaTScanData&, const DataSetInterface&)","NormalProspectiveSpatialData");
+    x.addTrace("Setup(const CSaTScanData&, const DataSetInterface&)","NormalProspectiveSpatialData");
     throw;
   }
 }
@@ -323,8 +324,8 @@ NormalSpaceTimeData::NormalSpaceTimeData(const DataSetInterface& Interface)
   try {
     Setup(Interface);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const DataSetInterface&)","NormalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const DataSetInterface&)","NormalSpaceTimeData");
     throw;
   }
 }
@@ -335,8 +336,8 @@ NormalSpaceTimeData::NormalSpaceTimeData(const AbstractDataSetGateway& DataGatew
   try {
     Setup(DataGateway.GetDataSetInterface());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const AbstractDataSetGateway&)","NormalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const AbstractDataSetGateway&)","NormalSpaceTimeData");
     throw;
   }
 }
@@ -347,8 +348,8 @@ NormalSpaceTimeData::NormalSpaceTimeData(const NormalSpaceTimeData& rhs)
   try {
     *this = rhs;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor(const NormalSpaceTimeData&)","NormalSpaceTimeData");
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const NormalSpaceTimeData&)","NormalSpaceTimeData");
     throw;
   }
 }
@@ -452,11 +453,11 @@ void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     gpSqMeasure = new measure_t[giAllocationSize];
     memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete[] gpCases;
     delete[] gpMeasure;
     delete[] gpSqMeasure;
-    x.AddCallpath("Setup(const DataSetInterface&)","NormalSpaceTimeData");
+    x.addTrace("Setup(const DataSetInterface&)","NormalSpaceTimeData");
     throw;
   }
 }
