@@ -36,15 +36,7 @@ PrintQueue::PrintQueue(BasePrint & Target, bool bSuppressWarnings)
  , gpThresholdPolicy(new default_threshold_policy())
  , glThreshold(0)
 {
-   try
-   {
-      SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnConstruction());
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("constructor(BasePrint&)", "PrintQueue");
-      throw;
-   }
+   SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnConstruction());
 }
 
 //constructor
@@ -56,15 +48,7 @@ PrintQueue::PrintQueue(BasePrint & Target, threshold_policy_i const & ThresholdP
  , gpThresholdPolicy(ThresholdPolicy.Clone())
  , glThreshold(0)
 {
-   try
-   {
-      SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnConstruction());
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("constructor(BasePrint&, threshold_policy_i const &)", "PrintQueue");
-      throw;
-   }
+   SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnConstruction());
 }
 
 //destructor
@@ -74,12 +58,6 @@ PrintQueue::~PrintQueue()
    try
    {
       SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue_OnDestruction(glThreshold, gOutputLines.size()));
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("destructor", "PrintQueue");
-      //log that an exception was thrown.
-      //do not rethrow exception from this destructor.
    }
    catch (...)
    {
@@ -92,141 +70,77 @@ PrintQueue::~PrintQueue()
 //forward lines to 'target' until 'lNewThreshold' lines remain queued.
 void PrintQueue::SetThreshold(long lNewThreshold)
 {
-   try
+   if (lNewThreshold < 0)//make threshold "virtually infinite"
+     lNewThreshold = std::numeric_limits<long>::max();
+
+   while (gOutputLines.size() > static_cast<unsigned>(lNewThreshold))
    {
-      if (lNewThreshold < 0)//make threshold "virtually infinite"
-        lNewThreshold = std::numeric_limits<long>::max();
-        
-      while (gOutputLines.size() > static_cast<unsigned>(lNewThreshold))
-      {
-         PrintWarningQualifiedLineToTarget(gOutputLines.front().first, gOutputLines.front().second.c_str());
-         gOutputLines.pop_front();
-      }
-      glThreshold = lNewThreshold;
+      PrintWarningQualifiedLineToTarget(gOutputLines.front().first, gOutputLines.front().second.c_str());
+      gOutputLines.pop_front();
    }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("SetThreshold(long)", "PrintQueue");
-      throw;
-   }
+   glThreshold = lNewThreshold;
 }
 
 //Print a (non-warning) line.
 void PrintQueue::PrintStandard(const char * sMessage)
 {
-   try
-   {
-      UpdateThreshold();
-      PrintWarningQualifiedLine(BasePrint::P_STDOUT, sMessage);
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("PrintLine(char *)", "PrintQueue");
-      throw;
-   }
+   UpdateThreshold();
+   PrintWarningQualifiedLine(BasePrint::P_STDOUT, sMessage);
 }
 
 //Print a "error" line.
 void PrintQueue::PrintError(const char * sMessage) {
-   try
-   {
-      UpdateThreshold();
-      PrintWarningQualifiedLine(BasePrint::P_ERROR, sMessage);
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("PrintError(const char*)", "PrintQueue");
-      throw;
-   }
+   UpdateThreshold();
+   PrintWarningQualifiedLine(BasePrint::P_ERROR, sMessage);
 }
 
 //Print a "notice" line.
 void PrintQueue::PrintNotice(const char * sMessage) {
-   try
-   {
-      UpdateThreshold();
-      PrintWarningQualifiedLine(BasePrint::P_NOTICE, sMessage);
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("PrintError(const char*)", "PrintQueue");
-      throw;
-   }
+   UpdateThreshold();
+   PrintWarningQualifiedLine(BasePrint::P_NOTICE, sMessage);
 }
 
 //Print a "warning" line.
 void PrintQueue::PrintWarning(const char * sMessage) {
-   try
-   {
-      UpdateThreshold();
-      PrintWarningQualifiedLine(BasePrint::P_WARNING, sMessage);
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("PrintWarning(const char*)", "PrintQueue");
-      throw;
-   }
+   UpdateThreshold();
+   PrintWarningQualifiedLine(BasePrint::P_WARNING, sMessage);
 }
 
 //Print a line. 'ePrintType' indicates type of message being printed.
 void PrintQueue::PrintWarningQualifiedLine(BasePrint::PrintType ePrintType, const char * s)
 {
    std::pair<BasePrint::PrintType, std::string> arg_line(ePrintType, std::string(s));
-   try
+   if ((gOutputLines.size() < static_cast<unsigned>(GetThreshold())) || (GetThreshold() < 0))
    {
-      if ((gOutputLines.size() < static_cast<unsigned>(GetThreshold())) || (GetThreshold() < 0))
+      gOutputLines.push_back(arg_line);
+   }
+   else
+   {
+      if (gOutputLines.size() > 0)
       {
+         std::pair<BasePrint::PrintType, std::string> dequeued_line(gOutputLines.front());
          gOutputLines.push_back(arg_line);
+         try{ PrintWarningQualifiedLineToTarget(dequeued_line.first, dequeued_line.second.c_str());
+         }catch(...){ gOutputLines.pop_back(); throw; }
+         gOutputLines.pop_front();
       }
       else
       {
-         if (gOutputLines.size() > 0)
-         {
-            std::pair<BasePrint::PrintType, std::string> dequeued_line(gOutputLines.front());
-            gOutputLines.push_back(arg_line);
-            try{ PrintWarningQualifiedLineToTarget(dequeued_line.first, dequeued_line.second.c_str());
-            }catch(...){ gOutputLines.pop_back(); throw; }
-            gOutputLines.pop_front();
-         }
-         else
-         {
-            PrintWarningQualifiedLineToTarget(arg_line.first, arg_line.second.c_str());
-         }
+         PrintWarningQualifiedLineToTarget(arg_line.first, arg_line.second.c_str());
       }
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("PrintWarningQualifiedLine(bool, const char *)", "PrintQueue");
-      throw;
    }
 }
 
 //Send a line to gTarget. 'ePrintType' indicates type of message being printed.
 void PrintQueue::PrintWarningQualifiedLineToTarget(BasePrint::PrintType ePrintType, const char * s)
 {
-   try
-   {
-     gTarget.Printf(s, ePrintType);
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("PrintWarningQualifiedLineToTarget(bool, const char *)", "PrintQueue");
-      throw;
-   }
+   gTarget.Printf(s, ePrintType);
 }
 
 //Set the threshold to the value recommended by the threshold policy.
 void PrintQueue::UpdateThreshold()
 {
-   try
-   {
-      SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue(glThreshold, gOutputLines.size()));
-   }
-   catch (ZdException & e)
-   {
-      e.AddCallpath("UpdateThreshold()", "PrintQueue");
-      throw;
-   }
+   SetThreshold(gpThresholdPolicy->GetRecommendedThresholdValue(glThreshold, gOutputLines.size()));
 }
 
 
@@ -261,7 +175,7 @@ long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue(long lCurrentThre
    }
 }
 
-long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnDestruction(long lCurrentThreshold, long lCurrentSize)
+long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnDestruction(long, long)
 {
    ZdTimestamp CurrentTime;
    CurrentTime.Now(false);
