@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "ExponentialRandomizer.h"
+#include "SSException.h"
 
 /** Adds new randomization attributes with passed values. */
 void AbstractExponentialRandomizer::AddPatients(count_t tNumPatients, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, count_t tCensored) {
@@ -38,7 +39,7 @@ void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
     }
     //validate that calibration worked
     if (fabs((measure_t)tTotalCases - tCalibratedMeasure) > 0.0001)
-      ZdGenerateException("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n", "CalibrateAndAssign()", tCalibratedMeasure, tTotalCases);
+      throw prg_error("The total measure '%8.6lf' is not equal to the total number of cases '%ld'.\n", "CalibrateAndAssign()", tCalibratedMeasure, tTotalCases);
     //assign totals for observed and expected in this data set
     RealSet.setTotalCases(tTotalCases);
     RealSet.setTotalMeasure(tCalibratedMeasure);
@@ -62,8 +63,8 @@ void AbstractExponentialRandomizer::AssignFromAttributes(RealDataSet& RealSet) {
           ppCensoredCases[i][tTract] = ppCensoredCases[i+1][tTract] + ppCensoredCases[i][tTract];
        }
   }
-  catch (ZdException& x) {
-    x.AddCallpath("CalibrateAndAssign()","AbstractExponentialRandomizer");
+  catch (prg_exception& x) {
+    x.addTrace("CalibrateAndAssign()","AbstractExponentialRandomizer");
     throw;
   }
 }
@@ -124,7 +125,7 @@ std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(st
 void ExponentialPurelyTemporalRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& SimSet) {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
   PermutedContainer_t::const_iterator   itr_permuted=gvPermutedAttribute.begin();
-  int                                   i, tTract, iNumTracts = SimSet.getLocationDimension(), iNumTimeIntervals = SimSet.getIntervalDimension();
+  int                                   i, iNumTimeIntervals = SimSet.getIntervalDimension();
   count_t                             * pCases = SimSet.getCaseData_PT();
   measure_t                           * pMeasure = SimSet.getMeasureData_PT();
 

@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "Randomizer.h"
+#include "SSException.h"
 
 const long AbstractRandomizer::glDataSetSeedOffSet        = 1000000;
 
@@ -29,13 +30,13 @@ void AbstractRandomizer::SetSeed(unsigned int iSimulationIndex, unsigned int iDa
     ulSeed = gRandomNumberGenerator.GetInitialSeed() + iSimulationIndex +  ((iDataSetIndex - 1) * glDataSetSeedOffSet);
     //compare to max seed(declared as positive signed long)
     if (ulSeed >= static_cast<unsigned long>(gRandomNumberGenerator.GetMaxSeed()))
-      ZdGenerateException("Calculated seed for simulation %u, data set %u, exceeds defined limit of %i.",
-                          "SetSeed()", iSimulationIndex, iDataSetIndex, gRandomNumberGenerator.GetMaxSeed());
+      throw prg_error("Calculated seed for simulation %u, data set %u, exceeds defined limit of %i.",
+                      "SetSeed()", iSimulationIndex, iDataSetIndex, gRandomNumberGenerator.GetMaxSeed());
 
     gRandomNumberGenerator.SetSeed(static_cast<long>(ulSeed));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetSeed()","AbstractRandomizer");
+  catch (prg_exception& x) {
+    x.addTrace("SetSeed()","AbstractRandomizer");
     throw;
   }
 }
