@@ -4,13 +4,25 @@
 //******************************************************************************
 #include <list>
 #include "RunTimeComponents.h"
+#include "Ini.h"
+               
+/** Class for managing structure of IniFile object in the context of the toolkit. */               
+class IniSession {
+  protected:
+    IniFile     gIniFile;
 
-#ifdef __BATCH_COMPILE
-  #include "IniSession.h"
-#else
-  #include <Basis540Unix.h>
-#endif
+  public:
+    IniSession() {}
+    virtual ~IniSession() {}
 
+    bool                exists(const char * sSectionName, const char * sKeyName) const;
+    const char        * get(const char * sSectionName, const char * sKeyName) const;
+    void                read(const std::string& file);
+    void                set(const char * sSectionName, const char * sKeyName, const char * sValue);
+    void                write(const std::string& file) const;
+};
+
+/** Application global toolkit. */
 class AppToolkit {
   public:
     typedef std::vector<std::string> ParameterHistory_t;
@@ -20,10 +32,13 @@ class AppToolkit {
 
     // system file
     static const char         * gsSystemIniFileName;
+    static const char         * gsRunHistory;
     static const char         * gsHistoryFileNameProperty;
+    static const char         * gsParameterHistory;
     static const char         * gsParameterNameProperty;
     static const size_t         giMaximumParameterHistoryItems;
-    static const char         * gsLastDirectoryProperty;
+    static const char         * gsLastDirectory;
+    static const char         * gsLastDirectoryPathProperty;
     static const char         * gsLastImportDestinationDirectoryProperty;
 
     // default defines
@@ -39,12 +54,11 @@ class AppToolkit {
     std::string                 gsUpdateArchiveFilename;
     std::string                 gsVersion;
     RunTimeComponentManager     gRunTimeComponentManager;
-    BZdIniSession               gSession;
+    IniSession                  gSession;
 
     bool                        InsureLastDirectoryPath();
     bool                        InsureLastImportDestinationDirectoryPath();
     bool                        InsureRunHistoryFileName();
-    bool                        InsureSessionProperty(const char * sSessionProperty, const char * sDefaultValue);
     void                        InsureSessionStructure();
     void                        ReadParametersHistory();
     void                        SetLastDirectory(const char * sLastDirectory);

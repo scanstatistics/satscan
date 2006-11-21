@@ -142,10 +142,10 @@ USEUNIT("..\calculation\cluster\TimeIntervals.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetReader.cpp");
 USEUNIT("..\calculation\satscan_data\DataSetWriter.cpp");
 USEUNIT("..\calculation\satscan_data\MetaTractManager.cpp");
-USEUNIT("..\calculation\IniSession.cpp");
 USEUNIT("..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\analysis\SVTTCentricAnalysis.cpp");
 USEUNIT("..\calculation\utility\FileName.cpp");
+USEUNIT("..\calculation\utility\Ini.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
