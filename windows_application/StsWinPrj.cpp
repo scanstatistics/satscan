@@ -168,6 +168,7 @@ USEUNIT("..\calculation\satscan_data\MetaTractManager.cpp");
 USEUNIT("..\calculation\analysis\SVTTCentricAnalysis.cpp");
 USEUNIT("..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\utility\FileName.cpp");
+USEUNIT("..\calculation\utility\Ini.cpp");
 //---------------------------------------------------------------------------
 void __SaTScanInit() {
   BasisInit();
