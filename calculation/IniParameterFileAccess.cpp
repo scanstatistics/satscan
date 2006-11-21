@@ -29,10 +29,10 @@ const char * IniParameterFileAccess::GetParameterLabel(ParameterType eParameterT
 const IniParameterSpecification & IniParameterFileAccess::GetSpecifications() const {
   try {
     if (!gpSpecifications)
-      ZdGenerateException("Specifications object not allocated.", "GetSpecifications()");
+      throw prg_error("Specifications object not allocated.", "GetSpecifications()");
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetSpecifications()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("GetSpecifications()","IniParameterFileAccess");
     throw;
   }
   return *gpSpecifications;
@@ -46,15 +46,16 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     gParameters.SetAsDefaulted();
     gParameters.SetSourceFileName(sFilename);
 
-    ZdIniFile SourceFile(sFilename, true, false, ZDIO_OPEN_READ|ZDIO_SREAD);
+    IniFile SourceFile;
+    SourceFile.Read(sFilename);
     gpSpecifications = new IniParameterSpecification(SourceFile, gParameters);
 
     for (ParameterType eType=ANALYSISTYPE; eType <= gParameters.giNumParameters; eType = ParameterType(eType + 1))
        ReadIniParameter(SourceFile, eType);
     ReadMultipleDataSetsSettings(SourceFile);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Read()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("Read()","IniParameterFileAccess");
     throw;
   }
   return !gbReadStatusError;
@@ -62,14 +63,14 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
 
 /** Reads parameter from ini file and sets in CParameter object. If parameter specification not
     found or ini section/key not found in file, marks as defaulted. */
-void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType) {
+void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType) {
   long          lSectionIndex, lKeyIndex=-1;
   const char  * sSectionName, * sKey;
 
   try {
     if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
       if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
-        const ZdIniSection  * pSection = SourceFile.GetSection(lSectionIndex);
+        const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
         if ((lKeyIndex = pSection->FindKey(sKey)) > -1)
           SetParameter(eParameterType, std::string(pSection->GetLine(lKeyIndex)->GetValue()), gPrintDirection);
       }
@@ -77,8 +78,8 @@ void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, Param
     //if (lKeyIndex == -1)
     //  MarkAsMissingDefaulted(eParameterType, gPrintDirection);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadIniParameter()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("ReadIniParameter()","IniParameterFileAccess");
     throw;
   }
 }
@@ -86,7 +87,7 @@ void IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, Param
 /** Reads parameter from ini file and returns all found key values in vector for
     those parameters that have optional additional keys, such as files with
     multiple datasets. */
-std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const {
+std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const {
   long                  lSectionIndex, lKeyIndex;
   std::string           sNextKey;
   const char          * sSectionName, * sKey;
@@ -96,7 +97,7 @@ std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const ZdIniFi
   if (GetSpecifications().GetMultipleParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
     //read possibly other dataset case source
     if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
-      const ZdIniSection  * pSection = SourceFile.GetSection(lSectionIndex);
+      const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
       printString(sNextKey, "%s%i", sKey, iDataSets);
       while ((lKeyIndex = pSection->FindKey(sNextKey.c_str())) > -1) {
            vParameters.push_back(std::string(pSection->GetLine(lKeyIndex)->GetValue()));
@@ -109,7 +110,7 @@ std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const ZdIniFi
 }
 
 /** Reads parameter settings grouped under 'Mutliple Data Sets'. */
-void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile) {
+void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceFile) {
   std::vector<std::string>      vFilenames;
   size_t                        t, iMostDataSets=1;
 
@@ -132,8 +133,8 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
     //as when there was only one dataset.
     gParameters.SetNumDataSets(iMostDataSets);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("ReadMultipleDataSetsSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("ReadMultipleDataSetsSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -142,8 +143,7 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const ZdIniFile& Sourc
     format specification. */
 void IniParameterFileAccess::Write(const char* sFilename) {
   try {
-    ZdIniFile WriteFile(sFilename);
-    WriteFile.Clear();
+    IniFile WriteFile;
     gParameters.SetSourceFileName(sFilename);
     gpSpecifications = new IniParameterSpecification();
 
@@ -168,16 +168,16 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteRunOptionSettings(WriteFile);
     WriteSystemSettings(WriteFile);
 
-    WriteFile.Write();
+    WriteFile.Write(sFilename);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Write()", "IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("Write()", "IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Analysis'. */
-void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
@@ -188,14 +188,14 @@ void IniParameterFileAccess::WriteAnalysisSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, TIME_AGGREGATION, GetParameterString(TIME_AGGREGATION, s).c_str(), GetParameterComment(TIME_AGGREGATION));
     WriteIniParameter(WriteFile, REPLICAS, GetParameterString(REPLICAS, s).c_str(), GetParameterComment(REPLICAS));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteAnalysisSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteAnalysisSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Clusters Reported'. */
-void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
@@ -207,42 +207,42 @@ void IniParameterFileAccess::WriteClustersReportedSettings(ZdIniFile& WriteFile)
     WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE_REPORTED, GetParameterString(USE_MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE_REPORTED));
     WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteClustersReportedSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteClustersReportedSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Data Checking'. */
-void IniParameterFileAccess::WriteDataCheckingSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteDataCheckingSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
     WriteIniParameter(WriteFile, STUDYPERIOD_DATACHECK, GetParameterString(STUDYPERIOD_DATACHECK, s).c_str(), GetParameterComment(STUDYPERIOD_DATACHECK));
     WriteIniParameter(WriteFile, COORDINATES_DATACHECK, GetParameterString(COORDINATES_DATACHECK, s).c_str(), GetParameterComment(COORDINATES_DATACHECK));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteDataCheckingSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteDataCheckingSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under '[Elliptic Scan]'. */
-void IniParameterFileAccess::WriteEllipticScanSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteEllipticScanSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
     WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s).c_str(), GetParameterComment(ESHAPES));
     WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s).c_str(), GetParameterComment(ENUMBERS));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteEllipticScanSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteEllipticScanSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Inference'. */
-void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
@@ -254,45 +254,45 @@ void IniParameterFileAccess::WriteInferenceSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s).c_str(), GetParameterComment(ITERATIVE_NUM));
     WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s).c_str(), GetParameterComment(ITERATIVE_PVAL));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes specified comment and value to file for parameter type. */
-void IniParameterFileAccess::WriteIniParameter(ZdIniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment) {
+void IniParameterFileAccess::WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment) {
   const char  * sSectionName, * sKey;
 
   try {
     if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
-      ZdIniSection *  pSection = WriteFile.GetSection(sSectionName);
+      IniSection *  pSection = WriteFile.GetSection(sSectionName);
       if (sComment) pSection->AddComment(sComment);
       pSection->AddLine(sKey, sValue);
     }
-    else ZdException::Generate("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
+    else throw prg_error("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteIniParameters()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteIniParameters()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes specified comment and value to file as specified section/key names. */
-void IniParameterFileAccess::WriteIniParameterAsKey(ZdIniFile& WriteFile, const char* sSectionName, const char * sKey, const char* sValue, const char* sComment) {
+void IniParameterFileAccess::WriteIniParameterAsKey(IniFile& WriteFile, const char* sSectionName, const char * sKey, const char* sValue, const char* sComment) {
   try {
-    ZdIniSection *  pSection = WriteFile.GetSection(sSectionName);
+    IniSection *  pSection = WriteFile.GetSection(sSectionName);
     if (sComment) pSection->AddComment(sComment);
     pSection->AddLine(sKey, sValue);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteIniParameterAsKey()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteIniParameterAsKey()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Input'. */
-void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
@@ -307,27 +307,27 @@ void IniParameterFileAccess::WriteInputSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s).c_str(), GetParameterComment(STARTDATE));
     WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s).c_str(), GetParameterComment(ENDDATE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteInputSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteInputSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Multiple Coordinates Per Location'. */
-void IniParameterFileAccess::WriteMultipleCoordinatesSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteMultipleCoordinatesSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
     WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteMultipleCoordinatesSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteMultipleCoordinatesSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Multiple Data Sets'. */
-void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
   std::string   s, sComment;
   const char  * sSectionName, * sBaseKey;
 
@@ -357,14 +357,14 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(ZdIniFile& WriteFile)
       }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteMultipleDataSetsSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteMultipleDataSetsSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Neighbors File'. */
-void IniParameterFileAccess::WriteNeighborsFileSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteNeighborsFileSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
@@ -373,14 +373,14 @@ void IniParameterFileAccess::WriteNeighborsFileSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, META_LOCATIONS_FILE, GetParameterString(META_LOCATIONS_FILE, s).c_str(), GetParameterComment(META_LOCATIONS_FILE));
     WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteNeighborsFileSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteNeighborsFileSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Output'. */
-void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
@@ -396,14 +396,14 @@ void IniParameterFileAccess::WriteOutputSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteOutputSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under '[Power Simulations]'. */
-void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
@@ -415,14 +415,14 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(ZdIniFile& WriteFile)
     WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s).c_str(), GetParameterComment(OUTPUT_SIMULATION_DATA));
     WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, GetParameterString(SIMULATION_DATA_OUTFILE, s).c_str(), GetParameterComment(SIMULATION_DATA_OUTFILE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under '[Run Options]'. */
-void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteRunOptionSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
@@ -439,14 +439,14 @@ void IniParameterFileAccess::WriteRunOptionSettings(ZdIniFile& WriteFile) {
     if (gParameters.GetIsRandomlyGeneratingSeed())
       WriteIniParameter(WriteFile, RANDOMLY_GENERATE_SEED, GetParameterString(RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(RANDOMLY_GENERATE_SEED));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteRunOptionSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteRunOptionSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Spatial Window'. */
-void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
@@ -456,14 +456,14 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& Writ
     WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(USE_ADJ_BY_RR_FILE));
     WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Spatial Window'. */
-void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
@@ -478,27 +478,27 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s).c_str(), GetParameterComment(NON_COMPACTNESS_PENALTY));
     WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s).c_str(), GetParameterComment(RISKFUNCTION));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteSpatialWindowSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteSpatialWindowSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under '[System]'. */
-void IniParameterFileAccess::WriteSystemSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteSystemSettings(IniFile& WriteFile) {
   std::string s;
 
   try {
     WriteIniParameter(WriteFile, CREATION_VERSION, GetParameterString(CREATION_VERSION, s).c_str(), GetParameterComment(CREATION_VERSION));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteSystemSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteSystemSettings()","IniParameterFileAccess");
     throw;
   }
 }
 
 /** Writes parameter settings grouped under 'Spatial Window'. */
-void IniParameterFileAccess::WriteTemporalWindowSettings(ZdIniFile& WriteFile) {
+void IniParameterFileAccess::WriteTemporalWindowSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
@@ -509,8 +509,8 @@ void IniParameterFileAccess::WriteTemporalWindowSettings(ZdIniFile& WriteFile) {
     WriteIniParameter(WriteFile, INTERVAL_STARTRANGE, GetParameterString(INTERVAL_STARTRANGE, s).c_str(), GetParameterComment(INTERVAL_STARTRANGE));
     WriteIniParameter(WriteFile, INTERVAL_ENDRANGE, GetParameterString(INTERVAL_ENDRANGE, s).c_str(), GetParameterComment(INTERVAL_ENDRANGE));
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteTemporalWindowSettings()","IniParameterFileAccess");
+  catch (prg_exception& x) {
+    x.addTrace("WriteTemporalWindowSettings()","IniParameterFileAccess");
     throw;
   }
 }

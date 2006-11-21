@@ -3,6 +3,7 @@
 #define __IniParameterSpecification_H
 //***************************************************************************
 #include "Parameters.h"
+#include "Ini.h"
 
 /** Defines interface for retrieving ini section and key name for parameters. */
 class IniParameterSpecification {
@@ -53,7 +54,7 @@ class IniParameterSpecification {
 
    public:
      IniParameterSpecification();
-     IniParameterSpecification(const ZdIniFile& SourceFile, CParameters& Parameters);
+     IniParameterSpecification(const IniFile& SourceFile, CParameters& Parameters);
      virtual ~IniParameterSpecification();
 
     bool                GetParameterIniInfo(ParameterType eParameterType, const char ** sSectionName, const char ** sKey) const;

@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "ParameterFileAccess.h"
 #include "IniParameterSpecification.h"
+#include "Ini.h"
 
 /** Implements class that reading/writing parameter settings of an INI file,
     where each parameter is maintained in a key/value pair of a section. */
@@ -13,28 +14,28 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
 
     virtual const char                * GetParameterLabel(ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
-    void                                ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType);
-    std::vector<std::string>          & ReadIniParameter(const ZdIniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const;
-    void                                ReadMultipleDataSetsSettings(const ZdIniFile& SourceFile);
+    void                                ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType);
+    std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const;
+    void                                ReadMultipleDataSetsSettings(const IniFile& SourceFile);
 
-    void                                WriteAnalysisSettings(ZdIniFile& WriteFile);
-    void                                WriteClustersReportedSettings(ZdIniFile& WriteFile);
-    void                                WriteDataCheckingSettings(ZdIniFile& WriteFile);
-    void                                WriteEllipticScanSettings(ZdIniFile& WriteFile);
-    void                                WriteInferenceSettings(ZdIniFile& WriteFile);
-    void                                WriteIniParameter(ZdIniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
-    void                                WriteIniParameterAsKey(ZdIniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
-    void                                WriteInputSettings(ZdIniFile& WriteFile);
-    void                                WriteMultipleCoordinatesSettings(ZdIniFile& WriteFile);
-    void                                WriteMultipleDataSetsSettings(ZdIniFile& WriteFile);
-    void                                WriteNeighborsFileSettings(ZdIniFile& WriteFile);
-    void                                WriteOutputSettings(ZdIniFile& WriteFile);
-    void                                WritePowerSimulationsSettings(ZdIniFile& WriteFile);
-    void                                WriteRunOptionSettings(ZdIniFile& WriteFile);
-    void                                WriteSpaceAndTimeAdjustmentSettings(ZdIniFile& WriteFile);
-    void                                WriteSpatialWindowSettings(ZdIniFile& WriteFile);
-    void                                WriteSystemSettings(ZdIniFile& WriteFile);
-    void                                WriteTemporalWindowSettings(ZdIniFile& WriteFile);
+    void                                WriteAnalysisSettings(IniFile& WriteFile);
+    void                                WriteClustersReportedSettings(IniFile& WriteFile);
+    void                                WriteDataCheckingSettings(IniFile& WriteFile);
+    void                                WriteEllipticScanSettings(IniFile& WriteFile);
+    void                                WriteInferenceSettings(IniFile& WriteFile);
+    void                                WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
+    void                                WriteIniParameterAsKey(IniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
+    void                                WriteInputSettings(IniFile& WriteFile);
+    void                                WriteMultipleCoordinatesSettings(IniFile& WriteFile);
+    void                                WriteMultipleDataSetsSettings(IniFile& WriteFile);
+    void                                WriteNeighborsFileSettings(IniFile& WriteFile);
+    void                                WriteOutputSettings(IniFile& WriteFile);
+    void                                WritePowerSimulationsSettings(IniFile& WriteFile);
+    void                                WriteRunOptionSettings(IniFile& WriteFile);
+    void                                WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteFile);
+    void                                WriteSpatialWindowSettings(IniFile& WriteFile);
+    void                                WriteSystemSettings(IniFile& WriteFile);
+    void                                WriteTemporalWindowSettings(IniFile& WriteFile);
 
   public:
      IniParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection);

@@ -39,13 +39,13 @@ IniParameterSpecification::IniParameterSpecification() {
 }
 
 /** constructor -- builds specification for read process */
-IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile, CParameters& Parameters) {
+IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, CParameters& Parameters) {
   long                          lSectionIndex, lKeyIndex;
   CParameters::CreationVersion  Version = {3, 1, 2};
   bool                          bHasVersionKey=false;
 
   if ((lSectionIndex = SourceFile.GetSectionIndex(System)) > -1) {
-    const ZdIniSection * pSection = SourceFile.GetSection(lSectionIndex);
+    const IniSection * pSection = SourceFile.GetSection(lSectionIndex);
     if ((lKeyIndex = pSection->FindKey("Version")) > -1) {
       sscanf(pSection->GetLine(lKeyIndex)->GetValue(), "%u.%u.%u", &Version.iMajor, &Version.iMinor, &Version.iRelease);
       bHasVersionKey = true;
@@ -60,7 +60,7 @@ IniParameterSpecification::IniParameterSpecification(const ZdIniFile& SourceFile
     //early termination of simulations feature was added in version 4.0.0; we'll
     //use this knowledge to help determine which.
     if ((lSectionIndex = SourceFile.GetSectionIndex(AdvancedFeatures)) > -1) {
-      const ZdIniSection * pSection = SourceFile.GetSection(lSectionIndex);
+      const IniSection * pSection = SourceFile.GetSection(lSectionIndex);
       if ((lKeyIndex = pSection->FindKey("EarlySimulationTermination")) > -1)
         {Version.iMajor = 4; Version.iMinor = 0; Version.iRelease = 3;}
     }
