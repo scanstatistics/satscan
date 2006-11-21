@@ -204,7 +204,7 @@ void AnalysisRunner::Execute() {
                             ExecuteSuccessively(); break;
       };
     }
-    catch (ZdMemoryException &x) {
+    catch (std::bad_alloc &x) {
       throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
                              "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
                              "Note that memory needs are on the order of %.0lf MB.\n",
