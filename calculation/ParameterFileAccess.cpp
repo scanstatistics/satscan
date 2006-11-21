@@ -27,7 +27,7 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
     else
       bSuccess = ScanLineParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
   }
-  catch (ZdException &x) {
+  catch (prg_exception &x) {
     throw resolvable_error("Unable to read parameters from file '%s'.\n", sFilename);
   }
   return bSuccess;
