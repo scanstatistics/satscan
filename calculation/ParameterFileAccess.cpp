@@ -22,7 +22,8 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
     if (access(sFilename, 04) == -1)
       throw resolvable_error("Unable to open parameter file '%s'.\n", sFilename);
 
-    if (ZdIniFile(sFilename, true, false).GetNumSections())
+    IniFile ini; ini.Read(sFilename);
+    if (ini.GetNumSections())
       bSuccess = IniParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
     else
       bSuccess = ScanLineParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
