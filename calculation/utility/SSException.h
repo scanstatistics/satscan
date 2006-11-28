@@ -2,6 +2,8 @@
 #ifndef  __EXCEPTIONCLASS_H
 #define  __EXCEPTIONCLASS_H
 //*****************************************************************************
+#include <exception>
+#include <string>
 
 /** Base exception class for SaTScan application. */
 class prg_exception : public std::exception {
@@ -88,6 +90,7 @@ inline CarrierException<TYPE>::CarrierException(TYPE &copyMe, const char * sMess
 /** memory cache should system run out of memory, released when prg_new_handler() is invoked. */
 extern char * out_of_memory_cache;
 extern void reserve_memory_cache();
+extern void release_memory_cache();
 /** std::set_handler_new() replacement */
 extern void prg_new_handler();
 //*****************************************************************************

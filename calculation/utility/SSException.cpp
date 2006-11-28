@@ -101,8 +101,12 @@ void reserve_memory_cache() {
   if (!out_of_memory_cache) out_of_memory_cache = new char[32000];
 }
 
-void prg_new_handler() {
+void release_memory_cache() {
    delete [] out_of_memory_cache; out_of_memory_cache=0;
+}
+
+void prg_new_handler() {
+   release_memory_cache();
    throw std::bad_alloc();
 }
 
