@@ -447,7 +447,7 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
     frmUpdateCheck = new TfrmUpdateCheck(this);
     frmUpdateCheck->ConnectToServerForUpdateCheck();
     if (frmUpdateCheck->HasUpdates()) {
-      sMessage.printf("SaTScan v%s is available. Do you want to install now?", frmUpdateCheck->GetUpdateVersion().GetCString());
+      sMessage.printf("SaTScan v%s is available. Do you want to install now?", frmUpdateCheck->GetUpdateVersion().c_str());
       if (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES) {
         if (GetAnalysesRunning()) {
             TBMessageBox::Response(this, "Error", "SaTScan can not update will analyses are executing.\n"
@@ -459,7 +459,7 @@ void __fastcall TfrmMainForm::UpdateActionExecute(TObject *Sender) {
         frmDownloadProgress->Add(frmUpdateCheck->GetUpdateArchiveInfo());
         frmDownloadProgress->DownloadFiles();
         if (frmDownloadProgress->GetDownloadCompleted()) {
-          AppToolkit::getToolkit().SetUpdateArchiveFilename(frmUpdateCheck->GetUpdateArchiveInfo().first.GetCString());
+          AppToolkit::getToolkit().SetUpdateArchiveFilename(frmUpdateCheck->GetUpdateArchiveInfo().first.c_str());
           AppToolkit::getToolkit().SetRunUpdateOnTerminate(true);
           Close();
         }
