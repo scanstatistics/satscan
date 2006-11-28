@@ -745,7 +745,7 @@ std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData
     visual of cluster using scatter plotting. */
 void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const {
   tract_t                       i, tTract;
-  std::ofstream                 outfilestream(sFilename.c_str(), ios::ate);
+  std::ofstream                 outfilestream(sFilename.c_str(), std::ios::ate);
 
   try {
     if (!outfilestream)
