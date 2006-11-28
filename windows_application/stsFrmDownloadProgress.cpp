@@ -11,31 +11,31 @@ __fastcall TfrmDownloadProgress::TfrmDownloadProgress(TComponent* Owner) : TForm
 }
 
 /** adds file info to download list */
-void TfrmDownloadProgress::Add(std::pair<ZdString, ZdString>& FileInfo) {
+void TfrmDownloadProgress::Add(std::pair<std::string, std::string>& FileInfo) {
   gvDownloads.push_back(FileInfo);
 }
 
 /** downloads files */
 void TfrmDownloadProgress::DownloadFiles() {
-  ZdFileName    fDownloadFile;
-  ZdString      s;
+  FileName         fDownloadFile;
+  std::string      s, buffer;
 
   try {                                  
     Show();
     // Download the new files
     for (giCurrentDownload=0; giCurrentDownload < gvDownloads.size(); ++giCurrentDownload) {
        GetFullPath(gvDownloads[giCurrentDownload].first, fDownloadFile);
-       ZdIOInterface::Delete(fDownloadFile.GetFullPath());
-       NMWebDownload->Body = fDownloadFile.GetFullPath();
+       ZdIOInterface::Delete(fDownloadFile.getFullPath(buffer).c_str());
+       NMWebDownload->Body = fDownloadFile.getFullPath(buffer).c_str();
        gbUpdateProgressCaption = true;
        try {
-         NMWebDownload->Get(gvDownloads[giCurrentDownload].second.GetCString());
+         NMWebDownload->Get(gvDownloads[giCurrentDownload].second.c_str());
        }
        catch (EAbortError &x) {
          try {
            for (int t=giCurrentDownload; t >= 0; --t) {
               GetFullPath(gvDownloads[t].first, fDownloadFile);
-              ZdIOInterface::Delete(fDownloadFile.GetFullPath());
+              ZdIOInterface::Delete(fDownloadFile.getFullPath(buffer).c_str());
            }
          }
          catch (...){}
@@ -58,9 +58,9 @@ void TfrmDownloadProgress::DownloadFiles() {
 }
 
 /** returns full path of download file */
-ZdFileName& TfrmDownloadProgress::GetFullPath(const ZdString& sFileName, ZdFileName& Filename) {
-  Filename.SetFullPath(sFileName.GetCString());
-  Filename.SetLocation(ExtractFilePath(Application->ExeName).c_str());
+FileName& TfrmDownloadProgress::GetFullPath(const std::string& sFileName, FileName& Filename) {
+  Filename.setFullPath(sFileName.c_str());
+  Filename.setLocation(ExtractFilePath(Application->ExeName).c_str());
   return Filename;
 }
 

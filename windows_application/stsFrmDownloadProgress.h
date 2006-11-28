@@ -10,7 +10,9 @@
 #include <StdCtrls.hpp>
 #include <vector>
 #include <string>
-#include "SaTScan.h"
+
+#include "FileName.h"
+
 extern const char *   	UPDATE_FILE_NAME;
 //---------------------------------------------------------------------------
 class TfrmDownloadProgress : public TForm {
@@ -29,14 +31,14 @@ __published:	// IDE-managed Components
     size_t                                      giCurrentDownload;
     bool                                        gbCompleted;
     bool                                        gbUpdateProgressCaption;
-    std::vector<std::pair<ZdString,ZdString> >  gvDownloads;
+    std::vector<std::pair<std::string,std::string> >  gvDownloads;
 
-    ZdFileName                                & GetFullPath(const ZdString& sFileName, ZdFileName& Filename);
+    FileName                                  & GetFullPath(const std::string& sFileName, FileName& Filename);
 
   public:		// User declarations
     __fastcall TfrmDownloadProgress(TComponent* Owner);
 
-    void                                        Add(std::pair<ZdString, ZdString>& FileInfo);
+    void                                        Add(std::pair<std::string, std::string>& FileInfo);
     void                                        DownloadFiles();
     bool                                        GetDownloadCompleted() const {return gbCompleted;}
 };
