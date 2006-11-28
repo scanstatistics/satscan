@@ -1,4 +1,6 @@
 
+#include "SSException.h"
+
 template<class T>
 TwoDimensionArrayHandler<T>::TwoDimensionArrayHandler(unsigned int FirstDimension, unsigned int SecondDimension)
                             :MultipleDimesionArrayHandler<T>(), g1stDimension(FirstDimension), g2ndDimension(SecondDimension) {
@@ -6,8 +8,8 @@ TwoDimensionArrayHandler<T>::TwoDimensionArrayHandler(unsigned int FirstDimensio
     Init();
     Allocate();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","TwoDimensionArrayHandler");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","TwoDimensionArrayHandler");
     throw;
   }
 }
@@ -20,8 +22,8 @@ TwoDimensionArrayHandler<T>::TwoDimensionArrayHandler(unsigned int FirstDimensio
     Allocate();
     Set(t);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","TwoDimensionArrayHandler");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","TwoDimensionArrayHandler");
     throw;
   }
 }
@@ -40,18 +42,18 @@ TwoDimensionArrayHandler<T> & TwoDimensionArrayHandler<T>::operator=(const TwoDi
 
   try {
     if (g1stDimension != rhs.g1stDimension)
-      ZdGenerateException("First dimension of arrays are: %i  and %i. Assigment can not be performed.",
+      throw prg_error("First dimension of arrays are: %i  and %i. Assigment can not be performed.",
                           "operator=()", g1stDimension, rhs.g1stDimension);
     if (g2ndDimension != rhs.g2ndDimension)
-      ZdGenerateException("Second dimension of arrays are: %i  and %i. Assigment can not be performed.",
+      throw prg_error("Second dimension of arrays are: %i  and %i. Assigment can not be performed.",
                           "operator=()", g2ndDimension, rhs.g2ndDimension);
 
     for (i=0; i < g1stDimension; ++i)
        for (j=0; j < g2ndDimension; ++j)
           gppData[i][j] = rhs.gppData[i][j];
   }
-  catch (ZdException &x) {
-    x.AddCallpath("operator=()","TwoDimensionArrayHandler");
+  catch (prg_exception& x) {
+    x.addTrace("operator=()","TwoDimensionArrayHandler");
     throw;
   }
   return *this;
@@ -67,7 +69,7 @@ void TwoDimensionArrayHandler<T>::Allocate() {
     for (i=0; i < g1stDimension; ++i)
        gppData[i] = new T[g2ndDimension];
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
      Deallocate();
      throw;
    }
@@ -110,7 +112,7 @@ void TwoDimensionArrayHandler<T>::ResizeSecondDimension(unsigned int uiSize, con
     }
     g2ndDimension = uiSize;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     throw;
   }
 }
@@ -124,7 +126,7 @@ void TwoDimensionArrayHandler<T>::Set(const T& t) {
        for (j=0; j < g2ndDimension; ++j)
           gppData[i][j] = t;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     Deallocate();
     throw;
   }
@@ -145,8 +147,8 @@ ThreeDimensionArrayHandler<T>::ThreeDimensionArrayHandler(unsigned int FirstDime
     Init();
     Allocate();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","ThreeDimensionArrayHandler");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","ThreeDimensionArrayHandler");
     throw;
   }
 }
@@ -159,8 +161,8 @@ ThreeDimensionArrayHandler<T>::ThreeDimensionArrayHandler(unsigned int FirstDime
     Allocate();
     Set(t);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","ThreeDimensionArrayHandler");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","ThreeDimensionArrayHandler");
     throw;
   }
 }
@@ -179,14 +181,14 @@ ThreeDimensionArrayHandler<T> & ThreeDimensionArrayHandler<T>::operator=(const T
 
   try {
     if (g1stDimension != rhs.g1stDimension)
-      ZdGenerateException("First dimension of arrays are: %i  and %i. Assigment can not be performed.",
+      throw prg_error("First dimension of arrays are: %i  and %i. Assigment can not be performed.",
                           "operator=()", g1stDimension, rhs.g1stDimension);
     if (g2ndDimension != rhs.g2ndDimension)
-      ZdGenerateException("Second dimension of arrays are: %i  and %i. Assigment can not be performed.",
+      throw prg_error("Second dimension of arrays are: %i  and %i. Assigment can not be performed.",
                           "operator=()", g2ndDimension, rhs.g2ndDimension);
 
     if (g3rdDimension != rhs.g3rdDimension)
-      ZdGenerateException("Third dimension of arrays are: %i  and %i. Assigment can not be performed.",
+      throw prg_error("Third dimension of arrays are: %i  and %i. Assigment can not be performed.",
                           "operator=()", g3rdDimension, rhs.g3rdDimension);
 
     for (i=0; i < g1stDimension; ++i)
@@ -194,8 +196,8 @@ ThreeDimensionArrayHandler<T> & ThreeDimensionArrayHandler<T>::operator=(const T
           for (k=0; k < g3rdDimension; ++k)
              gpppData[i][j][k] = rhs.gpppData[i][j][k];
   }
-  catch (ZdException &x) {
-    x.AddCallpath("operator=()","ThreeDimensionArrayHandler");
+  catch (prg_exception& x) {
+    x.addTrace("operator=()","ThreeDimensionArrayHandler");
     throw;
   }
   return *this;
@@ -221,7 +223,7 @@ void ThreeDimensionArrayHandler<T>::Allocate() {
 
     }
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     Deallocate();
     throw;
   }
@@ -284,7 +286,7 @@ void ThreeDimensionArrayHandler<T>::ResizeThirdDimension(unsigned int uiSize, co
       }
     g3rdDimension = uiSize;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     throw;
   }
 }
@@ -299,7 +301,7 @@ void ThreeDimensionArrayHandler<T>::Set(const T& t) {
           for (k=0; k < g3rdDimension; ++k)
              gpppData[i][j][k] = t;
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     Deallocate();
     throw;
   }

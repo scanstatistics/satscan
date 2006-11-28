@@ -1,5 +1,6 @@
 
 #include "SaTScanData.h"
+#include "SSException.h"
 
 /** constructor */
 template <class T>
@@ -82,8 +83,8 @@ void IntermediateClustersContainer<T>::SetTopClusters(const T& Cluster) {
     for (i=0; i < iNumTopClusters; i++)
        gvClusters.push_back(Cluster);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetTopClusters()","IntermediateClustersContainer");
+  catch (prg_exception& x) {
+    x.addTrace("SetTopClusters()","IntermediateClustersContainer");
     throw;
   }
 }
