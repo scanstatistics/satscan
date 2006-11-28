@@ -59,7 +59,7 @@ class IniSection {
     IniLine                   * GetLine(long lIndex) const;
     const char                * GetName() const;
     long                        GetNumLines() const;
-    const char                * GetString(std::string& buffer, const char *sKeyName, const char *sDefault = mgsBlank ) const;
+    const char                * GetString(std::string& buffer, const char *sKeyName, const char *sDefault = "") const;
     void                        Read(std::ifstream& readstream);
     bool                        RemoveLine( const char *sKeyName, const char *sEntry = 0 );
     void                        RemoveLine( long lIndex );
