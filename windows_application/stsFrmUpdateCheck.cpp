@@ -69,8 +69,8 @@ void TfrmUpdateCheck::ConnectToServerForUpdateCheck() {
       gUpdateApplication.second = sHTTP_Body.GetToken(giUpdateAppUrlIndex);
       gUpdateArchive.first = sHTTP_Body.GetToken(giUpdateDataNameIndex);
       gUpdateArchive.second = sHTTP_Body.GetToken(giUpdateDataUrlIndex);
-      if (gUpdateArchive.second.EndsWith('\n'))
-        gUpdateArchive.second.Truncate(gUpdateArchive.second.GetLength() - 1);
+      if (gUpdateArchive.second.find('\n') == gUpdateArchive.second.size() - 1)
+        gUpdateArchive.second.resize(gUpdateArchive.second.size() - 1);
     }
     Close();
   }
@@ -87,7 +87,7 @@ bool TfrmUpdateCheck::DisplayDownloadOption(const ZdString& sFilename) {
   bool          bReturn=false;
 
   try {
-    sMessage.printf("SaTScan v%s is available. Do you want to install now?", gsUpdateVersion.GetCString());
+    sMessage.printf("SaTScan v%s is available. Do you want to install now?", gsUpdateVersion.c_str());
     bReturn = (TBMessageBox::Response(this, "SaTScan Update Available", sMessage.GetCString(), MB_YESNO) == IDYES);
   }
   catch (ZdException &x) {

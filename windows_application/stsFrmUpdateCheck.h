@@ -31,9 +31,9 @@ class TfrmUpdateCheck : public TForm {
     static const int                            giUpdateDataUrlIndex;
 
   private:
-    std::pair<ZdString,ZdString>                gUpdateApplication;
-    std::pair<ZdString,ZdString>                gUpdateArchive;
-    ZdString                                    gsUpdateVersion;
+    std::pair<std::string,std::string>          gUpdateApplication;
+    std::pair<std::string,std::string>          gUpdateArchive;
+    std::string                                 gsUpdateVersion;
     bool                                        gbHasUpdates;
 
     bool                                        DisplayDownloadOption(const ZdString& sFilename);
@@ -44,8 +44,8 @@ class TfrmUpdateCheck : public TForm {
 
       void                                      ConnectToServerForUpdateCheck();
       bool                                      HasUpdates() const;
-      std::pair<ZdString,ZdString>            & GetUpdateApplicationInfo() {return gUpdateApplication;}
-      std::pair<ZdString,ZdString>            & GetUpdateArchiveInfo() {return gUpdateArchive;}
-      const ZdString                          & GetUpdateVersion() const {return gsUpdateVersion;}
+      std::pair<std::string,std::string>      & GetUpdateApplicationInfo() {return gUpdateApplication;}
+      std::pair<std::string,std::string>      & GetUpdateArchiveInfo() {return gUpdateArchive;}
+      const std::string                       & GetUpdateVersion() const {return gsUpdateVersion;}
 };
 #endif
