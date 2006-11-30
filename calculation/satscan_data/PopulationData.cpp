@@ -102,7 +102,7 @@ void CovariateCategory::SetPopulationListSize(int iPopulationListSize) {
   try {
     if (gpPopulationList) {delete [] gpPopulationList; gpPopulationList=0;}
     gpPopulationList = new float[iPopulationListSize];
-    memset(gpPopulationList, 0, iPopulationListSize * sizeof(long));
+    memset(gpPopulationList, 0, iPopulationListSize * sizeof(*gpPopulationList));
   }
   catch (prg_exception& x) {
     x.addTrace("SetPopulationListSize()","CovariateCategory");
