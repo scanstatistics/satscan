@@ -2,6 +2,7 @@
 #ifndef __MULTIDIMARRAYHANDLER_H
 #define __MULTIDIMARRAYHANDLER_H
 //---------------------------------------------------------------------------
+#include <vector>
 
 //specialized templated C array class -- used instead of standard template library containers
 //Reasoning: Standard library containers do not provide a public means for which to define growth,
@@ -15,6 +16,10 @@ class MinimalGrowthArray {
      unsigned int    giSize;
 
    public:
+     MinimalGrowthArray(const std::vector<T>& v) : giSize(v.size()) {
+                       gpArray = new T[giSize];
+                       for (unsigned int i=0; i < giSize; ++i) gpArray[i] = v[i];
+     }
      MinimalGrowthArray() : giSize(0), gpArray(0) {}
      ~MinimalGrowthArray() {try {delete[] gpArray;}catch(...){}}
 

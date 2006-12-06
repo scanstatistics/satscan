@@ -100,6 +100,7 @@ void TwoDimensionArrayHandler<T>::ResizeSecondDimension(unsigned int uiSize, con
   T                      * p=0;
 
   try {
+    if (uiSize == g2ndDimension) return;
     uiNumCopy = std::min(g2ndDimension, uiSize);
     for (i=0; i < g1stDimension; ++i) {
        p = new T[uiSize];
