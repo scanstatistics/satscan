@@ -262,6 +262,9 @@ void IniSection::Read(std::ifstream& readstream) {
 
   while (!bDoneSection && std::getline(readstream, buffer)) {
        trimString(buffer);
+#ifndef _WINDOWS_
+       trimString(buffer, "\r"); //std::getline is leaving carriage return on DOS text files
+#endif
        if (buffer.size() == 0) {
          filePos = readstream.tellg();
          continue;
@@ -575,6 +578,9 @@ bool IniFile::SeekToNextSection(std::ifstream& readstream) const {
 
   while (std::getline(readstream, buffer)) {
        trimString(buffer);
+#ifndef _WINDOWS_
+       trimString(buffer, "\r"); //std::getline is leaving carriage return on DOS text files
+#endif
        if (buffer.size() && buffer[0] == '[' && buffer[buffer.size()-1] == ']') {
          readstream.clear();
          readstream.seekg(Pos, std::ios::beg);
@@ -596,6 +602,9 @@ void IniFile::Read(const std::string& file) {
   while (SeekToNextSection(readstream)) {
       std::getline(readstream, buffer);
       trimString(buffer);
+#ifndef _WINDOWS_
+      trimString(buffer, "\r"); //std::getline is leaving carriage return on DOS text files
+#endif
       std::auto_ptr<IniSection> pIniSection(new IniSection(buffer.c_str()));
       pIniSection->Read(readstream);
       gaSections.push_back(pIniSection.release());
