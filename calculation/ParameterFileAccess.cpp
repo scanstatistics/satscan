@@ -739,9 +739,18 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
 }
 
 parameter_error::parameter_error(const char * format, ...) : resolvable_error() {
-  va_list varArgs;
-  va_start (varArgs, format);
-  printStringArgs(__what, varArgs, format);
-  va_end(varArgs);
+  try {
+    std::vector<char> temp(1);
+    va_list varArgs;
+    va_start(varArgs, format);
+    size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, varArgs);
+    va_end(varArgs);
+    temp.resize(iStringLength + 1);
+    va_start(varArgs, format);
+    vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
+    va_end(varArgs);
+    _what = &temp[0];
+  }
+  catch (...) {}
 }
 

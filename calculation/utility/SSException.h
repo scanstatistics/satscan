@@ -8,22 +8,21 @@
 /** Base exception class for SaTScan application. */
 class prg_exception : public std::exception {
    protected:
-     std::string                __what;
-     std::string                __trace;
+     std::string                _what;
+     std::string                _trace;
 
    public:
      prg_exception();
      prg_exception(const std::string& what_arg);
      prg_exception(const char * format, const char * method, ...);
-     prg_exception(va_list varArgs, const char * format, const char * method);
      virtual ~prg_exception() throw() {}
 
      void                       addWhat(const char * message);
      void                       addTrace(const char * method);
      void                       addTrace(const char * method, const char * clazz);
      void                       addTrace(const char * file, int line);
-     virtual const char       * trace() const throw() {return __trace.c_str();}
-     virtual const char       * what() const throw() {return __what.c_str();}
+     virtual const char       * trace() const throw() {return _trace.c_str();}
+     virtual const char       * what() const throw() {return _what.c_str();}
 };
 
 /** Exception type to throw when a program error is detected. */
@@ -36,7 +35,7 @@ class prg_error : public prg_exception {
 /** Exception type to throw when a program error is detected. */
 class memory_exception : public std::bad_alloc {
   protected:
-     std::string                __what;
+     std::string                _what;
 
   public:
      memory_exception(const char * message);
@@ -84,7 +83,7 @@ inline CarrierException<TYPE>::CarrierException(const TYPE &copyMe, const char *
 
 // Constructor. Makes a copy of copyMe to be carried with the exception.
 template <typename TYPE>
-inline CarrierException<TYPE>::CarrierException(TYPE &copyMe, const char * sMessage, const char * method)
+inline CarrierException<TYPE>::CarrierException(TYPE &copyMe, const char * message, const char * method)
                               :prg_exception(message, method), gCarried(copyMe) {};
 
 /** memory cache should system run out of memory, released when prg_new_handler() is invoked. */
