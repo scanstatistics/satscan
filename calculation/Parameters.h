@@ -397,6 +397,7 @@ class CParameters {
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
     bool                                UseCoordinatesFile() const {return !GetIsPurelyTemporalAnalysis() && !UseLocationNeighborsFile();}
+    bool                                UsingMultipleCoordinatesMetaLocations() const {return !GetIsPurelyTemporalAnalysis() && !UseLocationNeighborsFile() && geMultipleCoordinatesType != ONEPERLOCATION;}
     bool                                UseMetaLocationsFile() const {return !GetIsPurelyTemporalAnalysis() && UseLocationNeighborsFile() && gbUseMetaLocationsFile;}
     bool                                UseLocationNeighborsFile() const {return !GetIsPurelyTemporalAnalysis() && gbUseLocationNeighborsFile;}
     bool                                UsePopulationFile() const {return gbUsePopulationFile;}
