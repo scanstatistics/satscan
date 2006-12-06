@@ -998,7 +998,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
         if (giNumSimsExecuted==1) {
           //***** time to complete approximate will need modified with incorporation of thread code ******
           ReportTimeEstimate(StartTime, gParameters.GetNumReplicationsRequested(), iSimulationNumber, &SimulationPrintDirection);
-          ZdTimestamp tsReleaseTime;
+          Timestamp tsReleaseTime;
           tsReleaseTime.Now();
           tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
           SimulationPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));

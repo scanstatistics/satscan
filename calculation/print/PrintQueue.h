@@ -4,7 +4,7 @@
 //*****************************************************************************
 #include "BasePrint.h"
 #include <deque>
-
+#include "TimeStamp.h"
 
 class PrintQueue : public BasePrint
 {
@@ -62,7 +62,7 @@ public:
 
 
 //ClassDesc TimedReleaseThresholdPolicy
-// On construction, a ZdTimestamp, release_time, is passed.
+// On construction, a Timestamp, release_time, is passed.
 // Until systemtime >= release_time, the recommended threshold value is
 // the maximum (virtually infinite).  Thereafter is is 0 (i.e. the queue is
 // released.
@@ -72,13 +72,13 @@ public:
 class TimedReleaseThresholdPolicy : public PrintQueue::threshold_policy_i
 {
 private:
-   ZdTimestamp gtsReleaseTime;//the time after which the RecommendedThresholdValue goes to 0.
+   Timestamp gtsReleaseTime;//the time after which the RecommendedThresholdValue goes to 0.
 
 public:
-   TimedReleaseThresholdPolicy(ZdTimestamp tsReleaseTime) : gtsReleaseTime(tsReleaseTime) {  }
+   TimedReleaseThresholdPolicy(Timestamp tsReleaseTime) : gtsReleaseTime(tsReleaseTime) {  }
    virtual ~TimedReleaseThresholdPolicy() {}
 
-   void SetFinalizationTime(ZdTimestamp tsNewTime) { gtsReleaseTime = tsNewTime; }
+   void SetFinalizationTime(Timestamp tsNewTime) { gtsReleaseTime = tsNewTime; }
 
    virtual TimedReleaseThresholdPolicy * Clone() const { return new TimedReleaseThresholdPolicy(*this); }
    virtual long GetRecommendedThresholdValue_OnConstruction();

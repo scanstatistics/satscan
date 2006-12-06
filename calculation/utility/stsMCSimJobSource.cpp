@@ -347,7 +347,7 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
     grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, uiJobsProcessedCount, guiJobCount, rResult.dSuccessfulResult);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
-      ZdTimestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
+      Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
       grPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
     }
   }

@@ -214,7 +214,7 @@ void stsCentricAlgoJobSource::RegisterResult_Simple(job_id_type const & rJobID, 
     rPrintQueue.Printf("Evaluating centroid %i of %i\n", BasePrint::P_STDOUT, uiJobsProcessedCount, guiJobCount);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &rPrintQueue);
-      ZdTimestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
+      Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
       rPrintQueue.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
     }
   }
