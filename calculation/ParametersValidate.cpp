@@ -237,6 +237,11 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
       PrintDirection.Printf("Invalid Parameter Setting:\n"
                             "Centric analysis execution is not implemented with the special neighbors file.\n", BasePrint::P_PARAMERROR);
     }
+    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "Centric analysis execution is not implemented with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR);
+    }
   }
   catch (prg_exception& x) {
     x.addTrace("ValidateExecutionTypeParameters()","ParametersValidate");
