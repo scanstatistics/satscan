@@ -4,7 +4,7 @@
 #include "PrintQueue.h"
 
 //for _sleep():
-#if defined(__BORLANDC__)
+#if defined(_WINDOWS_)
 #include <dos.h>
 #else
 #include <unistd.h>
@@ -185,7 +185,7 @@ long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnDestruction(lon
       //how many seconds to sleep?  round to the nearest:
       unsigned u((ulTimeDifference + 500) / 1000);
       //sleep...
-      #if defined(__BORLANDC__)
+      #if defined(_WINDOWS_)
       _sleep(u);
       #else
       sleep(u);
