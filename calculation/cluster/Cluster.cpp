@@ -862,9 +862,18 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
   int           i;
 
   try {
-    for (i=1; i <= m_nTracts; i++) {
+    for (i=1; i <= m_nTracts; ++i) {
        tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-       LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
+       if (tTract >= DataHub.GetNumTracts() && DataHub.GetTInfo()->getMetaNeighborManager().size()) {
+         //When the location index exceeds number of tracts and the meta neighbors manager contains
+         //entries, we need to resolve meta location into it's real location indexes.
+         std::vector<tract_t> indexes;
+         DataHub.GetTInfo()->getMetaNeighborManager().getIndexes(tTract - DataHub.GetNumTracts(), indexes);
+         for (size_t t=0; t < indexes.size(); ++t)
+            LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], iNumSimsCompleted);
+       }
+       else
+         LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
     }   
   }
   catch (prg_exception& x) {
