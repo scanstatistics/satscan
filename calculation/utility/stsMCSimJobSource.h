@@ -5,15 +5,19 @@
 
 #include <utility>
 #include <deque>
+#ifdef __BORLANDC__
 #pragma warn -8012
 #pragma warn -8008
 #pragma warn -8066
 #pragma warn -8055
+#endif
 #include "boost/dynamic_bitset.hpp"
+#ifdef __BORLANDC__
 #pragma warn +8012
 #pragma warn +8008
 #pragma warn +8066
 #pragma warn +8055
+#endif
 #include "AnalysisRun.h"
 #include "LoglikelihoodRatioWriter.h"
 #include "PrintQueue.h"
