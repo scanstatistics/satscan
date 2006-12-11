@@ -169,7 +169,7 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
              return true;
            }
          }
-         else if (DataHub.GetTInfo()->getMetaLocations().intersectsTract(tInner - DataHub.GetNumTracts(), tOuter))
+         else if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(tInner - DataHub.GetNumTracts(), tOuter))
            return true; //inner is meta location, outer is atomic
        }
      }
@@ -177,10 +177,10 @@ bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub,
        for (tract_t v=1; v <= tOneNumTracts; ++v) {
          tract_t tInner = DataHub.GetNeighbor(iOneOffset, tOneCentroid, v, ClusterOne.GetCartesianRadius());
          if (tInner < DataHub.GetNumTracts()) {//inner is atomic location, outer is meta location
-           if (DataHub.GetTInfo()->getMetaLocations().intersectsTract(tOuter - DataHub.GetNumTracts(), tInner))
+           if (DataHub.GetTInfo()->getMetaManagerProxy().intersectsTract(tOuter - DataHub.GetNumTracts(), tInner))
              return true;
          }    
-         else if (DataHub.GetTInfo()->getMetaLocations().intersects(tInner - DataHub.GetNumTracts(), tOuter - DataHub.GetNumTracts()))
+         else if (DataHub.GetTInfo()->getMetaManagerProxy().intersects(tInner - DataHub.GetNumTracts(), tOuter - DataHub.GetNumTracts()))
            return true; //inner and outer are meta locations
        }
      }
