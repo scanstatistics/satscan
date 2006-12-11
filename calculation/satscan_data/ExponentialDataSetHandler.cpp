@@ -39,15 +39,15 @@ SimulationDataContainer_t & ExponentialDataSetHandler::AllocateSimulationData(Si
 /** For each data set, assigns data at meta location indexes. */
 void ExponentialDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-    (*itr)->setCaseData_Censored_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setCaseData_Censored_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
   }
 }
 
 /** returns new data gateway for real data */
 AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
+  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {
     DataGatway.Clear();
@@ -94,7 +94,7 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetDataGateway(AbstractDataS
 
 /** returns new data gateway for simulation data */
 AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
+  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {
     DataGatway.Clear();
@@ -143,10 +143,10 @@ AbstractDataSetGateway & ExponentialDataSetHandler::GetSimulationDataGateway(Abs
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
 void ExponentialDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
-  if (gParameters.UseMetaLocationsFile()) {
+  if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
-      (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+      (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
     }  
   }
 }

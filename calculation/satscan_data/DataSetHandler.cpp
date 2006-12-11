@@ -66,7 +66,7 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTractsReferenced(), t + 1));
+    Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(), t + 1));
   return AllocateSimulationData(Container);
 }
 

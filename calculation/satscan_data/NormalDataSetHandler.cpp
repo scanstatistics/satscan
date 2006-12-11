@@ -38,16 +38,16 @@ SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(Simulat
 /** For each data set, assigns data at meta location indexes. */
 void NormalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
-    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-    (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
+    (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
   }
 }
 
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in internal data set collection. */
 AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGateway& DataGatway) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
+  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {
     DataGatway.Clear();
@@ -100,7 +100,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in passed simulation data collection. */
 AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
-  DataSetInterface      Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetNumMetaTractsReferenced());
+  DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {
     DataGatway.Clear();
@@ -154,11 +154,11 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
 /** Randomizes data and assigns data at meta location indexes (if using meta locations file)*/
 void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const {
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
-  if (gParameters.UseMetaLocationsFile()) {
+  if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
-      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-      (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaLocations());
-    }  
+      (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    }
   }
 }
 
