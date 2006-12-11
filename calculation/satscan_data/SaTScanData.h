@@ -21,9 +21,10 @@
     input files. Defines public interface for reading and accessing contained data. */
 class CSaTScanData {
   friend class SaTScanDataReader;
-  friend void  CentroidNeighborCalculator::CalculateNeighbors();
-  friend void  CentroidNeighborCalculator::CalculateNeighborsByCircles();
-  friend void  CentroidNeighborCalculator::CalculateNeighborsByEllipses();
+  friend class  CentroidNeighborCalculator;
+//  friend void  CentroidNeighborCalculator::CalculateNeighbors();
+//  friend void  CentroidNeighborCalculator::CalculateNeighborsByCircles();
+//  friend void  CentroidNeighborCalculator::CalculateNeighborsByEllipses();
 
   public:
     enum           ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
