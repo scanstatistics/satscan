@@ -10,24 +10,21 @@
 bool CompareLocationDistance::operator() (const LocationDistance& lhs, const LocationDistance& rhs) {
   //first check whether distances are equal - we may need to break a tie
   if (lhs.GetDistance() == rhs.GetDistance()) {
-    // if lhs and rhs reference same location - just return false
-    if (lhs.GetTractNumber() == rhs.GetTractNumber())
-      return false;
     // break ties in a controlled scheme:
-    //   - compare coordinates starting at first dimension and
-    //       continue until last dimension(if needed)
     //   - lesser coordinate breaks tie, not for any particular reason
     //     that was the decision made by Martin
     //   - if all coordinates are equal, then continue on to next set of associated coordinates
     //   - finally compare number of associated coordinates
+
     const TractHandler::Location::CoordsContainer_t& llhs = gTractInformation.getLocations()[lhs.GetTractNumber()]->getCoordinates();
     const TractHandler::Location::CoordsContainer_t& rrhs = gTractInformation.getLocations()[rhs.GetTractNumber()]->getCoordinates();
-    for (unsigned int i=0, iMax=std::min(llhs.size(), rrhs.size()); i < iMax; ++i) {
-       if (llhs[i] != rrhs[i])
-         return *(llhs[i]) != *(rrhs[i]);
-    }
-    if (llhs.size() == rrhs.size()) throw prg_error("Dulpicate coordinates encountered.", "operator()");
-    return llhs.size() < rrhs.size();
+    if (llhs[lhs.GetRelativeCoordinateIndex()] == rrhs[rhs.GetRelativeCoordinateIndex()])
+      return false; //equalness is resulting from same coordinates
+    else
+      // else compare using TractHandler::Coordinates::operator<(const Coordinates& rhs) const
+      // this results in first lesser coordinate breaking tie, decision made by Martin
+      // not for any particular reason
+      return *(llhs[lhs.GetRelativeCoordinateIndex()]) < *(rrhs[rhs.GetRelativeCoordinateIndex()]);
   }
   //distances not equal, compare as normal
   else
