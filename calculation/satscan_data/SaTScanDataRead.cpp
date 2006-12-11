@@ -750,6 +750,9 @@ bool SaTScanDataReader::ReadMetaLocationsFile() {
     // meta1 loc1 loc2 loc3
     std::ifstream SourceFile(gParameters.getMetaLocationsFilename().c_str());
     std::getline(SourceFile, sIdentifier);
+#ifndef _WINDOWS_
+    trimString(sIdentifier, "\r"); //std::getline is leaving carriage return on DOS text files
+#endif
     bStructuredMetaData = (sIdentifier.find("=") == sIdentifier.npos ? false : true);
     SourceFile.close();
     AsciiFileDataSource Source(gParameters.getMetaLocationsFilename().c_str(), gPrint, (bStructuredMetaData ? '=' : ' '));
