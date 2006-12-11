@@ -5,6 +5,7 @@
 #include "MetaTractManager.h"
 #include "Tracts.h"
 #include "SSException.h"
+#include "SaTScanData.h"
 #include<boost/tokenizer.hpp>
 
 ////////////////// AbstractMetaLocation////////////////////
@@ -100,7 +101,7 @@ bool MetaLocation::intersects(const AbstractMetaLocation& pLocation) const {
 /////////////////////////// MetaLocationPool ///////////////////////////////////
 
 /** Adds meta-location with */
-bool MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const std::string& sLocationIndentifiers) {
+bool MetaLocationManager::MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const std::string& sLocationIndentifiers) {
   assert(gAdditionStatus == Accepting);
 
   if (sMetaIdentifier.size() == 0) return false;
@@ -144,7 +145,7 @@ bool MetaLocationPool::addMetaLocation(const std::string& sMetaIdentifier, const
 
 /** Closes object to further additions of meta location definitions. Adds all accumulated
     atomic locations to TractHandler object. */
-void MetaLocationPool::additionsCompleted(TractHandler& TInfo) {
+void MetaLocationManager::MetaLocationPool::additionsCompleted(TractHandler& TInfo) {
   assert(gAdditionStatus == Accepting);
   gAdditionStatus = Closed;
   AtomicLocationsContainer_t::const_iterator itr=gvAtomicLocations.begin(), itr_end=gvAtomicLocations.end();
@@ -154,7 +155,7 @@ void MetaLocationPool::additionsCompleted(TractHandler& TInfo) {
 }
 
 /** Assigns atomic indexes to each atomic location, as gotten from TractHandler object. */
-void MetaLocationPool::assignAtomicIndexes(TractHandler& TInfo) {
+void MetaLocationManager::MetaLocationPool::assignAtomicIndexes(TractHandler& TInfo) {
   assert(gAdditionStatus == Closed);
   assert(TInfo.getAddStatus() == TractHandler::Closed);
   AtomicLocationsContainer_t::const_iterator itr=gvAtomicLocations.begin(), itr_end=gvAtomicLocations.end();
@@ -163,7 +164,7 @@ void MetaLocationPool::assignAtomicIndexes(TractHandler& TInfo) {
 }
 
 /** Returns index of location in internal collection atomic locations. Returns negative one if not found. */
-tract_t MetaLocationPool::getAtomicLocationIndex(const std::string& sIdentifier) const {
+tract_t MetaLocationManager::MetaLocationPool::getAtomicLocationIndex(const std::string& sIdentifier) const {
   std::auto_ptr<AtomicMetaLocation> search(new AtomicMetaLocation(sIdentifier.c_str()));
   AtomicLocationsContainer_t::const_iterator itr=std::lower_bound(gvAtomicLocations.begin(), gvAtomicLocations.end(), search.get(), compareIdentifiers());
   if (itr != gvAtomicLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier.c_str()))
@@ -173,7 +174,7 @@ tract_t MetaLocationPool::getAtomicLocationIndex(const std::string& sIdentifier)
 }
 
 /** Returns index of location in internal collection meta locations. Returns negative one if not found. */
-tract_t MetaLocationPool::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
+tract_t MetaLocationManager::MetaLocationPool::getMetaLocationIndex(const std::string& sMetaIdentifier) const {
   std::auto_ptr<MetaLocation> search(new MetaLocation(sMetaIdentifier.c_str()));
   MetaLocationsContainer_t::const_iterator itr=std::lower_bound(gvMetaLocations.begin(), gvMetaLocations.end(), search.get(), compareIdentifiers());
   if (itr != gvMetaLocations.end() && !strcmp((*itr)->getIndentifier(), sMetaIdentifier.c_str()))
@@ -183,7 +184,7 @@ tract_t MetaLocationPool::getMetaLocationIndex(const std::string& sMetaIdentifie
 }
 
 /** Prints defined meta locations to file stream. */
-void MetaLocationPool::print(TractHandler& TInfo, FILE * stream) const {
+void MetaLocationManager::MetaLocationPool::print(TractHandler& TInfo, FILE * stream) const {
   FILE * fp=0;
   if (!stream) {
     if ((fp = fopen("MetaLocationPool.print", "w")) == NULL) return;
@@ -244,7 +245,7 @@ tract_t MetaLocationManager::getMetaLocationIndex(const std::string& sMetaIdenti
 }
 
 /** Returns reference to meta locations pool. */
-MetaLocationPool & MetaLocationManager::getMetaLocationPool() {
+MetaLocationManager::MetaLocationPool & MetaLocationManager::getMetaLocationPool() {
   assert(geState == accepting);
   return gMetaLocationPool;
 }
@@ -277,5 +278,96 @@ void MetaLocationManager::setStateFixed(bool bIncludePoolRemainders) {
     }
   }
   geState = closed;
+}
+
+///////////////////////////// MetaNeighborManager //////////////////////////////
+
+unsigned int MetaNeighborManager::add(std::vector<tract_t>& unified) {
+  if (unified.size() == 0)
+    throw prg_error("Can not add vector with size zero.","location_index_unifier::add()");
+  //first sort vector
+  std::sort(unified.begin(), unified.end());
+  //now determine whether this collection has already been defined
+  UnifiedCollection_t::iterator itr=gvUnifiedIndexesCollection.begin(), itr_end=gvUnifiedIndexesCollection.end();
+  for (; itr != itr_end; ++itr) {
+     if (equal(unified, **itr)) return std::distance(gvUnifiedIndexesCollection.begin(), itr);
+  }
+  gvUnifiedIndexesCollection.push_back(new MinimalGrowthArray<tract_t>(unified));
+  return gvUnifiedIndexesCollection.size() - 1;
+}
+
+/** Returns whether passed vector and array contain idential values, in the same order. */
+bool MetaNeighborManager::equal(const std::vector<tract_t>& v, const MinimalGrowthArray<tract_t>& a) const {
+  if (v.size() != a.size()) return false;
+  for (size_t t=0; t < v.size(); ++t)
+     if (v[t] != a[t]) return false;
+  return true;
+}
+
+/** Returns first tract index defined for meta location at index 'iCollectionIndex'. */
+tract_t MetaNeighborManager::getFirst(unsigned int iCollectionIndex) const {
+  return gvUnifiedIndexesCollection.at(iCollectionIndex)->operator[](0);
+}
+
+/** Returns tract indexes defined for meta location at index 'iCollectionIndex'. */
+std::vector<tract_t> & MetaNeighborManager::getIndexes(unsigned int iCollectionIndex, std::vector<tract_t>& v) const {
+   MinimalGrowthArray<tract_t>& indexes = *gvUnifiedIndexesCollection.at(iCollectionIndex);
+   v.resize(indexes.size());
+   std::copy(&indexes[0], &indexes[0] + indexes.size(), v.begin());
+   return v;
+}
+
+/** Returns whether tract 'tTractIndex' intersects with any tracts defined by meta location at 'tMetaLocation'. */
+bool MetaNeighborManager::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
+  const MinimalGrowthArray<tract_t>&  a = *gvUnifiedIndexesCollection.at(tMetaLocation);
+  for (unsigned int t=0; t < a.size(); ++t)
+     if (tTractIndex == a[t]) return true;
+  return false;
+}
+
+/** Returns whether any tracts defined by meta location at 'tMetaLocationL' intersects with any tracts
+    defined by meta location 'tMetaLocationR'. */
+bool MetaNeighborManager::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
+  const MinimalGrowthArray<tract_t>&  a = *gvUnifiedIndexesCollection.at(tMetaLocationL);
+  for (unsigned int t=0; t < a.size(); ++t)
+     if (intersectsTract(tMetaLocationR, a[t])) return true;
+  return false;
+}
+
+///////////////////////////// MetaManagerProxy /////////////////////////////////
+
+/** constructor */
+MetaManagerProxy::MetaManagerProxy(const MetaLocationManager& LocationManager, const MetaNeighborManager& NeighborManager)
+                 :gpMetaLocationManager(&LocationManager), gpMetaNeighborManager(&NeighborManager) {}
+
+/** Returns tract indexes defined by meta location at 'tMetaLocation'. */
+std::vector<tract_t> & MetaManagerProxy::getIndexes(unsigned int tMetaLocation, std::vector<tract_t>& Indexes) const {
+  if (tMetaLocation < gpMetaLocationManager->getLocations().size())
+    gpMetaLocationManager->getAtomicIndexes(tMetaLocation, Indexes);
+  else
+    gpMetaNeighborManager->getIndexes(tMetaLocation, Indexes);
+  return Indexes;
+}
+
+/** Returns number of defined meta locations. */
+unsigned int MetaManagerProxy::getNumMetaLocations() const {
+  return gpMetaLocationManager->getNumReferencedLocations() + gpMetaNeighborManager->size();
+}
+
+/** Returns whether tract 'tTractIndex' intersects with any tracts defined by meta location at 'tMetaLocation'. */
+bool MetaManagerProxy::intersectsTract(unsigned int tMetaLocation, tract_t tTractIndex) const {
+  if (tMetaLocation < gpMetaLocationManager->getNumReferencedLocations())
+    return gpMetaLocationManager->intersectsTract(tMetaLocation, tTractIndex);
+  else
+    return gpMetaNeighborManager->intersectsTract(tMetaLocation, tTractIndex);
+}
+
+/** Returns whether any tracts defined by meta location at 'tMetaLocationL' intersects with any tracts
+    defined by meta location 'tMetaLocationR'. */
+bool MetaManagerProxy::intersects(unsigned int tMetaLocationL, unsigned int tMetaLocationR) const {
+  if (tMetaLocationL < gpMetaLocationManager->getNumReferencedLocations())
+    return gpMetaLocationManager->intersects(tMetaLocationL, tMetaLocationR);
+  else
+    return gpMetaNeighborManager->intersects(tMetaLocationL, tMetaLocationR);
 }
 
