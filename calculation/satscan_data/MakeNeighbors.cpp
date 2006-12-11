@@ -25,6 +25,17 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
 /** destructor */
 CentroidNeighborCalculator::~CentroidNeighborCalculator() {}
 
+/** Adjusts neighbor counts such that elements at prNeigborsCount.first and prNeigborsCount.second do
+    not reference the same coordinates as the element after them. Doing this ensures that all locations
+    that reference the same coordinate are either included or excluded in spatial window. */
+void CentroidNeighborCalculator::AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, int>& prNeigborsCount) {
+  if (gDataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
+    bool bCalcSecond = prNeigborsCount.first != prNeigborsCount.second;
+    prNeigborsCount.first = getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.first);
+    prNeigborsCount.second = (bCalcSecond ? getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.second) : prNeigborsCount.first);
+  }
+}
+
 /** Transforms the x and y coordinates for each location so that circles
     in the transformed space represent ellipsoids in the original space.
     Stores transformed coordinates in internal array. */
@@ -150,7 +161,7 @@ void CentroidNeighborCalculator::CalculateNeighbors() {
          gvCentroidToLocationDistances.resize(gDataHub.GetNeighborCountArray()[0][t]);
          //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
          for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
-           gvCentroidToLocationDistances[c].Set(gDataHub.GetNeighbor(0, t, c+1), 0);
+           gvCentroidToLocationDistances[c].Set(gDataHub.GetNeighbor(0, t, c+1), 0, 0);
          CalculateNeighborsForCurrentState(prNeighborsCount);
          const_cast<CSaTScanData&>(gDataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
          if (t == 9) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
@@ -208,6 +219,8 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
 
   CalculateNeighborsAboutCentroid(tEllipseOffsetIndex, tCentroidIndex);
   CalculateNeighborsForCurrentState(prNeighborsCount);
+  AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
+  CoupleLocationsAtSameCoordinates(prNeighborsCount);
   Centroid.Set(tEllipseOffsetIndex, tCentroidIndex, prNeighborsCount.first, prNeighborsCount.second, gvCentroidToLocationDistances);
 }
 
@@ -242,42 +255,6 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
   Centroid.gtEllipseOffset = tEllipseOffsetIndex;
 }
 
-/** Returns the coordinates of tract given centroid of passed cluster object.
-    This process takes into account the MultipleCoordinatesType. */
-void CentroidNeighborCalculator::getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& Coordinates) {
-  if (DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION ||
-      DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates().size() == 1) {
-    DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(Coordinates);
-  }
-  else {//we'll have to determine which coordinate matches specified MultipleCoordinatesType.
-    double                              dCurrent, dDistance,
-                                        dAngle=DataHub.GetEllipseAngle(Cluster.GetEllipseOffset()),
-                                        dShape=DataHub.GetEllipseShape(Cluster.GetEllipseOffset());
-    std::vector<double>                 ClusterCenter, TractCoords;
-    const TractHandler::Coordinates   * pCoordinates, * pTarget=0;
-
-    DataHub.GetGInfo()->retrieveCoordinates(Cluster.GetCentroidIndex(), ClusterCenter);
-    if (Cluster.GetEllipseOffset() > 0)
-      Transform(ClusterCenter[0], ClusterCenter[1], dAngle, dShape, &ClusterCenter[0], &ClusterCenter[1]);
-    for (unsigned int i=0; i < DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates().size(); ++i) {
-       pCoordinates = DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[i];
-       pCoordinates->retrieve(TractCoords);
-       if (Cluster.GetEllipseOffset() > 0)
-         Transform(TractCoords[0], TractCoords[1], dAngle, dShape, &TractCoords[0], &TractCoords[1]);
-       dDistance = std::sqrt(TractHandler::getDistanceSquared(ClusterCenter, TractCoords));
-       if (DataHub.GetParameters().GetMultipleCoordinatesType() == ATLEASTONELOCATION) {
-         if (!pTarget || dCurrent > dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
-       }
-       else if (DataHub.GetParameters().GetMultipleCoordinatesType() == ALLLOCATIONS) {
-         if (!pTarget || dCurrent < dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
-       }
-       else
-         throw prg_error("Unknown multiple coordinates type '%d'.", "getTractCoordinates()", DataHub.GetParameters().GetMultipleCoordinatesType());
-    }
-    pTarget->retrieve(Coordinates);
-  }
-}
-
 /** Calculates neighboring locations about each centroid through expanding circle;
     storing results in sorted array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
@@ -289,6 +266,8 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
   for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
      CalculateNeighborsAboutCentroid(0, t);
      CalculateNeighborsForCurrentState(prNeighborsCount);
+     AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
+     CoupleLocationsAtSameCoordinates(prNeighborsCount);
      const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
      if (t == 9) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
   }
@@ -310,6 +289,8 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
      for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
         CalculateNeighborsAboutCentroid(i, t);
         CalculateNeighborsForCurrentState(prNeighborsCount);
+        AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
+        CoupleLocationsAtSameCoordinates(prNeighborsCount);
         const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, prNeighborsCount.second, prNeighborsCount.first);
         if (t == 9 && i == 1) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
      }
@@ -435,7 +416,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
     for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
        for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
          (*itr)->getCoordinates()[c]->retrieve(vLocationCoordinates);
-         gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)));
+         gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
          ++i;
        }
     }
@@ -452,11 +433,141 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
           unsigned int iPosition = (*itr)->getCoordinates()[c]->getInsertionOrdinal();
           vLocationCoordinates[0] = gvLocationEllipticCoordinates[iPosition].first;
           vLocationCoordinates[1] = gvLocationEllipticCoordinates[iPosition].second;
-          gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)));
+          gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
           ++i;
        }
     }
   }
+}
+
+/** Scans gvCentroidToLocationDistances for adjacent locations that reference the same coordinates.
+    These will have to grouped into a 'meta-location' to ensure that these neighbors are evaluated
+    at the same time, as one location. This method relies on gvCentroidToLocationDistances being
+    sorted by distance from target ellipse/centroid and that locations referencing the same coordinates
+    are adjacent to each other. */
+void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int, int>& prNeighborsCount) {
+  if (gDataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) return;
+  std::vector<LocationDistance>::iterator tGroupStart=gvCentroidToLocationDistances.begin(), tGroupEnd=gvCentroidToLocationDistances.end();
+  for (int tCurrent=0; tCurrent < prNeighborsCount.first; ++tCurrent) {
+    LocationDistance& curr = gvCentroidToLocationDistances[tCurrent];
+    const TractHandler::Coordinates * currCoords = gLocationInfo.getLocations()[curr.GetTractNumber()]->getCoordinates()[curr.GetRelativeCoordinateIndex()];
+    LocationDistance& next = gvCentroidToLocationDistances[tCurrent+1];
+    const TractHandler::Coordinates * nextCoords = gLocationInfo.getLocations()[next.GetTractNumber()]->getCoordinates()[next.GetRelativeCoordinateIndex()];
+    if (currCoords == nextCoords)
+      tGroupEnd = gvCentroidToLocationDistances.begin() + (tCurrent + 1);
+    else if (tGroupEnd != gvCentroidToLocationDistances.end()) {
+      //create meta location that is locations from tGroupStart to tGroupEnd
+      std::vector<int> indexes;
+      for (std::vector<LocationDistance>::iterator itr=tGroupStart; itr != tGroupEnd+1; ++itr)
+         indexes.push_back(itr->GetTractNumber());
+      LocationDistance meta_location(gDataHub.GetNumTracts() + const_cast<TractHandler*>(gDataHub.gTractHandler.get())->getMetaNeighborManager().add(indexes), tGroupStart->GetDistance());
+      //replace tGroupStart to tGroupEnd with new LocationDistance that is the meta location
+      tGroupStart = gvCentroidToLocationDistances.erase(tGroupStart, tGroupEnd + 1);
+      tGroupStart = gvCentroidToLocationDistances.insert(tGroupStart, meta_location) + 1;
+      tCurrent = std::distance(gvCentroidToLocationDistances.begin(), tGroupStart) - 1;
+      tGroupEnd = gvCentroidToLocationDistances.end();
+      //adjust actual neighbor count to account for grouped locations
+      prNeighborsCount.first -= indexes.size() - 1;
+      //adjust reported neighbor count for grouped locations if insertion point overlapped with reported neighbors
+      if (tCurrent < prNeighborsCount.second) //tCurrent is pointing to inserted meta location
+        prNeighborsCount.second -= std::min((size_t)prNeighborsCount.second, indexes.size() - 1);
+    }
+    else {
+      ++tGroupStart;//advance group start
+    }
+  }
+}
+
+/** Calculates the adjusted number of neighbors for current state of gvCentroidToLocationDistances object,
+    ensuring that either all locations that reference the same coordinate are included or excluded.
+    This method relies on gvCentroidToLocationDistances being sorted such that locations referencing the
+    same coordinates are adjacent to each other. */
+int CentroidNeighborCalculator::getAdjustedNeighborCountsForMultipleCoordinates(int iNeigborsCount) {
+  if (iNeigborsCount != 0 && (size_t)iNeigborsCount != gvCentroidToLocationDistances.size()) {
+    //get coordinates of current farthest neighbor
+    LocationDistance& currMax = gvCentroidToLocationDistances[iNeigborsCount-1];
+    const TractHandler::Coordinates * currMaxCoords = gLocationInfo.getLocations()[currMax.GetTractNumber()]->getCoordinates()[currMax.GetRelativeCoordinateIndex()];
+    //get coordinates of neighbor after current farthest
+    LocationDistance& beyondMax = gvCentroidToLocationDistances[iNeigborsCount];
+    const TractHandler::Coordinates * beyondMaxCoords = gLocationInfo.getLocations()[beyondMax.GetTractNumber()]->getCoordinates()[beyondMax.GetRelativeCoordinateIndex()];
+    while (currMaxCoords == beyondMaxCoords) {
+         if (--iNeigborsCount < 1) break;
+         LocationDistance& currMax = gvCentroidToLocationDistances[iNeigborsCount-1];
+         currMaxCoords = gLocationInfo.getLocations()[currMax.GetTractNumber()]->getCoordinates()[currMax.GetRelativeCoordinateIndex()];
+    }
+  }
+  return iNeigborsCount;
+}
+
+/** Returns the coordinates of tract given centroid of passed cluster object.
+    This process takes into account the MultipleCoordinatesType. */
+void CentroidNeighborCalculator::getTractCoordinates(const CSaTScanData& DataHub, const CCluster& Cluster, tract_t tTract, std::vector<double>& Coordinates) {
+  if (DataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION ||
+      (tTract < DataHub.GetNumTracts() &&  DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates().size() == 1)) {
+    DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[0]->retrieve(Coordinates);
+  }
+  else {//we'll have to determine which coordinate matches specified MultipleCoordinatesType
+    double                              dCurrent, dDistance,
+                                        dAngle=DataHub.GetEllipseAngle(Cluster.GetEllipseOffset()),
+                                        dShape=DataHub.GetEllipseShape(Cluster.GetEllipseOffset());
+    std::vector<double>                 ClusterCenter, TractCoords;
+    const TractHandler::Coordinates   * pCoordinates, * pTarget=0;
+
+    DataHub.GetGInfo()->retrieveCoordinates(Cluster.GetCentroidIndex(), ClusterCenter);
+    if (Cluster.GetEllipseOffset() > 0)
+      Transform(ClusterCenter[0], ClusterCenter[1], dAngle, dShape, &ClusterCenter[0], &ClusterCenter[1]);
+    //if tract index refers to a meta neighbor index, retrieve any of the indexes it maps to, then proceed
+    if (tTract >= DataHub.GetNumTracts())
+      tTract = DataHub.GetTInfo()->getMetaNeighborManager().getFirst(tTract - DataHub.GetNumTracts());
+    for (unsigned int i=0; i < DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates().size(); ++i) {
+       pCoordinates = DataHub.GetTInfo()->getLocations()[tTract]->getCoordinates()[i];
+       pCoordinates->retrieve(TractCoords);
+       if (Cluster.GetEllipseOffset() > 0)
+         Transform(TractCoords[0], TractCoords[1], dAngle, dShape, &TractCoords[0], &TractCoords[1]);
+       dDistance = std::sqrt(TractHandler::getDistanceSquared(ClusterCenter, TractCoords));
+       if (DataHub.GetParameters().GetMultipleCoordinatesType() == ATLEASTONELOCATION) {
+         //searching for the closest coordinate
+         if (!pTarget || dCurrent > dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
+       }
+       else if (DataHub.GetParameters().GetMultipleCoordinatesType() == ALLLOCATIONS) {
+         //searching for the farthest coordinate
+         if (!pTarget || dCurrent < dDistance) {pTarget = pCoordinates; dCurrent = dDistance;}
+       }
+       else
+         throw prg_error("Unknown multiple coordinates type '%d'.", "getTractCoordinates()", DataHub.GetParameters().GetMultipleCoordinatesType());
+    }
+    pTarget->retrieve(Coordinates);
+  }
+}
+
+/** Debug function. Prints elements of gvCentroidToLocationDistances object to FILE stream in formatted ASCII text. */
+void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToPrint, FILE * stream) {
+  FILE * fp=0;
+  if (!stream) {
+    if ((fp = fopen("CentroidToLocationDistances.print", "a+")) == NULL) return;
+    stream = fp;
+  }
+  std::vector<LocationDistance>::const_iterator itr=gvCentroidToLocationDistances.begin(), itr_end;
+  itr_end = (tMaxToPrint >= gvCentroidToLocationDistances.size() ? gvCentroidToLocationDistances.end() : gvCentroidToLocationDistances.begin() + tMaxToPrint);
+  fprintf(stream, "\nCentroidToLocationDistances (size=%d):\n", std::distance(itr, itr_end));
+  for (; itr != itr_end; ++itr) {
+    if (itr->GetTractNumber() >= gDataHub.GetNumTracts()) {
+      std::vector<tract_t> indexes;
+      gDataHub.gTractHandler.get()->getMetaNeighborManager().getIndexes(itr->GetTractNumber() - gDataHub.GetNumTracts(), indexes);
+      fprintf(stream, "distance=%.6lf\t\tindexes=", itr->GetDistance());
+      for (size_t i=0; i < indexes.size(); ++i)
+        fprintf(stream, "%s%d", (i == 0 ? "" : ","), indexes.at(i));
+      fprintf(stream, "\n");
+    }
+    else {
+      const TractHandler::Location* pcurr = gLocationInfo.getLocations()[itr->GetTractNumber()];
+      const TractHandler::Coordinates * pCoords = pcurr->getCoordinates()[itr->GetRelativeCoordinateIndex()];
+      for (size_t t=0; t < pCoords->getSize(); ++t)
+        fprintf(stream, "%s%g", (t == 0 ? "coordinates=": ","), pCoords->getCoordinates()[t]);
+      fprintf(stream, "\t\tdistance=%.6lf\t\tname='%s'\t\tindex=%d\n", itr->GetDistance(), pcurr->getIndentifier(), itr->GetTractNumber());
+    }
+  }
+  fclose(fp);
 }
 
 /** Resizes passed vector to #of tracts plus # of meta locations. Assigns meta location data. */

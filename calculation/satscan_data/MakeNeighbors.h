@@ -37,6 +37,7 @@ class CentroidNeighborCalculator {
     std::vector<LocationDistance> gvCentroidToLocationDistances;
     std::vector<std::pair<double, double> > gvLocationEllipticCoordinates;
 
+    void                        AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, int>& prNeighborsCount);
     void                        CalculateEllipticCoordinates(tract_t tEllipseOffset);
     void                        CalculateMaximumSpatialClusterSize();
     void                        CalculateMaximumReportedSpatialClusterSize();
@@ -51,6 +52,9 @@ class CentroidNeighborCalculator {
     tract_t                     CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize) const;
     tract_t                     CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
     void                        CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
+    void                        CoupleLocationsAtSameCoordinates(std::pair<int, int>& prNeighborsCount);
+    int                         getAdjustedNeighborCountsForMultipleCoordinates(int iNeigborsCount);
+    void                        printCentroidToLocationDistances(size_t tMaxToPrint, FILE * stream=stdout);
     void                        setMetaLocations(std::vector<measure_t>& popMeasure);
     void                        SetupPopulationArrays();
 
