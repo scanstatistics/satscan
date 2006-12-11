@@ -510,7 +510,7 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
 
 /** Prints 'Multiple Coordinates Per Location' tab parameters to file stream. */
 void ParametersPrint::PrintMultipleCoordinatesParameters(FILE* fp) const {
-  if (gParameters.GetIsPurelyTemporalAnalysis())
+  if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
     return;
 
   fprintf(fp, "\nMultiple Coordinates Per Location\n---------------------------------\n");
@@ -766,7 +766,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     fprintf(fp, "\nSpatial Window\n--------------\n");
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
       fprintf(fp, "  Max Circle Size File                  : %s\n", gParameters.GetMaxCirclePopulationFileName().c_str());
-    if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && !gParameters.UseLocationNeighborsFile())
+    if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()))
       fprintf(fp, "  Maximum Spatial Cluster Size          : %g%% of population at risk\n", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false))
       fprintf(fp, "  Maximum Spatial Cluster Size          : %g%% of population defined in max circle file\n", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
