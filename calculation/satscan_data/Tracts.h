@@ -114,6 +114,8 @@ class TractHandler {
     size_t                              giMaxIdentifierLength;
     size_t                              giNumLocationCoordinates;
     MetaLocationManager                 gMetaLocationsManager;
+    MetaNeighborManager                 gMetaNeighborManager;
+    std::auto_ptr<MetaManagerProxy>     gMetaManagerProxy;
 
   public:
     TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType);
@@ -132,6 +134,9 @@ class TractHandler {
     size_t                              getMaxIdentifierLength() const {return giMaxIdentifierLength;}
     MetaLocationManager               & getMetaLocations() {return gMetaLocationsManager;}
     const MetaLocationManager         & getMetaLocations() const {return gMetaLocationsManager;}
+    const MetaNeighborManager         & getMetaNeighborManager() const {return gMetaNeighborManager;}
+    MetaNeighborManager               & getMetaNeighborManager() {return gMetaNeighborManager;}
+    const MetaManagerProxy            & getMetaManagerProxy() const {return *gMetaManagerProxy;}
     size_t                              getNumLocationCoordinates() const {return giNumLocationCoordinates;}
     void                                reportCombinedLocations(FILE * fDisplay) const;
     Location::StringContainer_t       & retrieveAllIdentifiers(tract_t tIndex, Location::StringContainer_t& Identifiers) const;

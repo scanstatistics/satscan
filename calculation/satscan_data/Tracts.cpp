@@ -77,6 +77,7 @@ TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMul
              :giCoordinateDimensions(0), giMaxIdentifierLength(0), gAdditionStatus(Accepting), giNumLocationCoordinates(0),
               gbAggregatingTracts(bAggregatingTracts), geMultipleCoordinatesType(eMultipleCoordinatesType) {
   if (gbAggregatingTracts) gvLocations.push_back(new Location("All", Coordinates()));
+  gMetaManagerProxy.reset(new MetaManagerProxy(gMetaLocationsManager, gMetaNeighborManager));
 }
 
 /** This method should be called once all insertions are completed. Scans internal
@@ -188,7 +189,13 @@ double TractHandler::getDistanceSquared(const std::vector<double>& vFirstPoint, 
 const char * TractHandler::getIdentifier(tract_t tIndex) const {
   if ((size_t)tIndex < gvLocations.size())
     return gvLocations.at(tIndex)->getIndentifier();
-  return gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier();
+  else if (gMetaLocationsManager.getLocations().size())
+    return gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier();
+  else {
+    //### still not certain what should be the behavior in this situation ###
+    tract_t tFirst = gMetaNeighborManager.getFirst((size_t)tIndex - gvLocations.size());
+    return gvLocations.at(tFirst)->getIndentifier();
+  }
 }
 
 /** Searches for tract identifier and returns it's internal index, or -1 if not found.
@@ -258,9 +265,20 @@ void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
 TractHandler::Location::StringContainer_t & TractHandler::retrieveAllIdentifiers(tract_t tIndex, TractHandler::Location::StringContainer_t& Identifiers) const {
   if ((size_t)tIndex < gvLocations.size())
     gvLocations.at(tIndex)->retrieveAllIdentifiers(Identifiers);
-  else {
+  else if (gMetaLocationsManager.getLocations().size()) {
     Identifiers.clear();
     Identifiers.add(std::string(gMetaLocationsManager.getLocations().at((size_t)tIndex - gvLocations.size())->getIndentifier()), false);
+  }
+  else {
+    Identifiers.clear();
+    std::vector<tract_t> indexes;
+    gMetaNeighborManager.getIndexes((size_t)tIndex - gvLocations.size(), indexes);
+    for (size_t t=0; t < indexes.size(); ++t) {
+      TractHandler::Location::StringContainer_t tract_identifiers;
+       gvLocations.at(indexes[t])->retrieveAllIdentifiers(tract_identifiers);
+       for (size_t i=0; i < tract_identifiers.size(); ++i)
+          Identifiers.add(tract_identifiers[i], false);
+    }
   }
   return Identifiers;
 }
