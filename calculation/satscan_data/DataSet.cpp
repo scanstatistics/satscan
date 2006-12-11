@@ -322,13 +322,44 @@ TwoDimMeasureArray_t & DataSet::getMeasureData_Sq() const {
   return *gpMeasureData_Sq;
 }
 
+/** For each allocated data structure which could contain meta data, reallocates and
+    assigns meta data. */
+void DataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
+  giMetaLocations = MetaProxy.getNumMetaLocations();
+  if (gpCaseData) {
+    gpCaseData->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setCaseData_MetaLocations(MetaProxy);
+  }
+  if (gpCaseData_NC) {
+    gpCaseData_NC->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setCaseData_NC();
+  }
+  if (gvCaseData_Cat.size()) {
+    for (unsigned int c=0; c < gvCaseData_Cat.size(); ++c)
+       gvCaseData_Cat[c]->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setCaseData_Cat_MetaLocations(MetaProxy);
+  }
+  if (gpMeasureData) {
+    gpMeasureData->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setMeasureData_MetaLocations(MetaProxy);
+  }
+  if (gpMeasureData_NC) {
+    gpMeasureData_NC->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setMeasureData_NC();
+  }
+  if (gpMeasureData_Sq) {
+    gpMeasureData_Sq->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setMeasureData_Sq_MetaLocations(MetaProxy);
+  }
+}
+
 /** Sets case data at meta location indexes. */
-void DataSet::setCaseData_MetaLocations(const MetaLocationManager& MetaLocations) {
+void DataSet::setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;
   count_t ** ppCases = getCaseData().GetArray();
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
-     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     MetaProxy.getIndexes(m, AtomicIndexes);
      tract_t MetaIndex = m + giLocationDimensions;
      for (unsigned int i=0; i < giIntervalsDimensions; ++i)
         ppCases[i][MetaIndex] = 0;
@@ -341,11 +372,11 @@ void DataSet::setCaseData_MetaLocations(const MetaLocationManager& MetaLocations
 }
 
 /** Sets case category data at meta location indexes. */
-void DataSet::setCaseData_Cat_MetaLocations(const MetaLocationManager& MetaLocations) {
+void DataSet::setCaseData_Cat_MetaLocations(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
-     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     MetaProxy.getIndexes(m, AtomicIndexes);
      tract_t MetaIndex = m + giLocationDimensions;
      for (unsigned int c=0; c < getCaseData_Cat().size(); ++c) {
        count_t ** ppCases = getCaseData_Cat()[c]->GetArray();
@@ -361,12 +392,12 @@ void DataSet::setCaseData_Cat_MetaLocations(const MetaLocationManager& MetaLocat
 }
 
 /** Sets measure data at meta location indexes. */
-void DataSet::setMeasureData_MetaLocations(const MetaLocationManager& MetaLocations) {
+void DataSet::setMeasureData_MetaLocations(const MetaManagerProxy& MetaLocations) {
   std::vector<tract_t>  AtomicIndexes;
   measure_t ** ppMeasure = getMeasureData().GetArray();
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
-     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     MetaLocations.getIndexes(m, AtomicIndexes);
      tract_t MetaIndex = m + giLocationDimensions;
      for (unsigned int i=0; i < giIntervalsDimensions; ++i)
         ppMeasure[i][MetaIndex] = 0;
@@ -379,12 +410,12 @@ void DataSet::setMeasureData_MetaLocations(const MetaLocationManager& MetaLocati
 }
 
 /** Sets measure sqaure data at meta location indexes. */
-void DataSet::setMeasureData_Sq_MetaLocations(const MetaLocationManager& MetaLocations) {
+void DataSet::setMeasureData_Sq_MetaLocations(const MetaManagerProxy& MetaLocations) {
   std::vector<tract_t>  AtomicIndexes;
   measure_t ** ppMeasure = getMeasureData_Sq().GetArray();
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
-     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     MetaLocations.getIndexes(m, AtomicIndexes);
      tract_t MetaIndex = m + giLocationDimensions;
      for (unsigned int i=0; i < giIntervalsDimensions; ++i)
         ppMeasure[i][MetaIndex] = 0;
@@ -665,13 +696,27 @@ TwoDimCountArray_t & RealDataSet::getControlData() const {
   return *gpControlData;
 }
 
+/** For each allocated data structure which could contain meta data, reallocates and
+    assigns meta data. */
+void RealDataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
+  DataSet::reassignMetaLocationData(MetaProxy);
+  if (gpCaseData_Censored) {
+    gpCaseData_Censored->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setCaseData_Censored_MetaLocations(MetaProxy);
+  }
+  if (gpControlData) {
+    gpControlData->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setControlData_MetaLocations(MetaProxy);
+  }
+}
+
 /** Sets case data at meta location indexes. */
-void RealDataSet::setCaseData_Censored_MetaLocations(const MetaLocationManager& MetaLocations) {
+void RealDataSet::setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;
   count_t ** ppCases = getCaseData_Censored().GetArray();
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
-     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     MetaProxy.getIndexes(m, AtomicIndexes);
      tract_t MetaIndex = m + giLocationDimensions;
      for (unsigned int i=0; i < giIntervalsDimensions; ++i)
         ppCases[i][MetaIndex] = 0;
@@ -684,12 +729,12 @@ void RealDataSet::setCaseData_Censored_MetaLocations(const MetaLocationManager& 
 }
 
 /** Sets control data at meta location indexes. */
-void RealDataSet::setControlData_MetaLocations(const MetaLocationManager& MetaLocations) {
+void RealDataSet::setControlData_MetaLocations(const MetaManagerProxy& MetaProxy) {
   std::vector<tract_t>  AtomicIndexes;
   count_t ** ppControls = getControlData().GetArray();
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
-     MetaLocations.getAtomicIndexes(m, AtomicIndexes);
+     MetaProxy.getIndexes(m, AtomicIndexes);
      tract_t MetaIndex = m + giLocationDimensions;
      for (unsigned int i=0; i < giIntervalsDimensions; ++i)
         ppControls[i][MetaIndex] = 0;

@@ -18,7 +18,7 @@ typedef ptr_vector<TwoDimCountArray_t>         CasesByCategory_t;
 
 class CSaTScanData; /** forward class declaration */
 class DataSetHandler; /** forward class declaration */
-class MetaLocationManager;
+class MetaManagerProxy;
 
 /** Encapsulates data for each input data set. */
 class DataSet {
@@ -92,14 +92,15 @@ class DataSet {
     CTimeTrend                & getTimeTrend() {return gTimeTrend;}
     const CTimeTrend          & getTimeTrend() const {return gTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
-    void                        setCaseData_MetaLocations(const MetaLocationManager& MetaLocations);
-    void                        setCaseData_Cat_MetaLocations(const MetaLocationManager& MetaLocations);
+    virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
+    void                        setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy);
+    void                        setCaseData_Cat_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setCaseData_NC();
     void                        setCaseData_PT();
     void                        setCaseData_PT_Cat();
     void                        setCaseData_PT_NC();
-    void                        setMeasureData_MetaLocations(const MetaLocationManager& MetaLocations);
-    void                        setMeasureData_Sq_MetaLocations(const MetaLocationManager& MetaLocations);
+    void                        setMeasureData_MetaLocations(const MetaManagerProxy& MetaProxy);
+    void                        setMeasureData_Sq_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setMeasureData_NC();
     void                        setMeasureData_PT();
     void                        setMeasureData_PT_NC();
@@ -151,10 +152,11 @@ class RealDataSet : public DataSet {
     measure_t                   getTotalMeasureSq() const {return gtTotalMeasureSq;}
     measure_t                   getTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      getTotalPopulation() const {return gdTotalPop;}
+    virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
     void                        setAggregateCovariateCategories(bool b) {gPopulation.SetAggregateCovariateCategories(b);}
     void                        setCalculatedTimeTrendPercentage(double dTimeTrend) {gdCalculatedTimeTrendPercentage=dTimeTrend;}
-    void                        setCaseData_Censored_MetaLocations(const MetaLocationManager& MetaLocations);
-    void                        setControlData_MetaLocations(const MetaLocationManager& MetaLocations);
+    void                        setCaseData_Censored_MetaLocations(const MetaManagerProxy& MetaProxy);
+    void                        setControlData_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setTotalCases(count_t tTotalCases) {gtTotalCases = tTotalCases;}
     void                        setTotalCasesAtStart(count_t tTotalCases) {gtTotalCasesAtStart = tTotalCases;}
     void                        setTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
