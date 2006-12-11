@@ -125,6 +125,10 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     if (!bDistanceOnlyMax && !gParameters.UseLocationNeighborsFile() && geExecutingType != CENTRICALLY) {
       //Re-calculate neighboring locations about each centroid.
       CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
+      //possibly re-allocate and assign meta data contained in DataSet objects
+      if (gParameters.UsingMultipleCoordinatesMetaLocations())
+        for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
+           gDataSets->GetDataSet(t).reassignMetaLocationData(GetTInfo()->getMetaManagerProxy());
     }
     gvCentroidNeighborStore.killAll();
   }
@@ -144,7 +148,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     to zero. */
 void CSaTScanData::AllocateSortedArray() {
   try {
-    if (m_nTracts + (tract_t)(gTractHandler->getMetaLocations().getNumReferencedLocations()) < std::numeric_limits<unsigned short>::max()) {
+    if (!gParameters.UsingMultipleCoordinatesMetaLocations() && m_nTracts + (tract_t)(GetTInfo()->getMetaManagerProxy().getNumMetaLocations()) < std::numeric_limits<unsigned short>::max()) {
       if (!gpSortedUShortHandler)
         gpSortedUShortHandler = new ThreeDimensionArrayHandler<unsigned short>(gParameters.GetNumTotalEllipses()+1, m_nGridTracts, 0);
       else
@@ -418,6 +422,10 @@ measure_t CSaTScanData::DateMeasure(const PopulationData & Population, measure_t
 void CSaTScanData::FindNeighbors() {
   try {
     CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
+    //possibly re-allocate and assign meta data contained in DataSet objects
+    if (gParameters.UsingMultipleCoordinatesMetaLocations())
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
+         gDataSets->GetDataSet(t).reassignMetaLocationData(GetTInfo()->getMetaManagerProxy());
   }
   catch (prg_exception& x) {
     x.addTrace("FindNeighbors()","CSaTScanData");
@@ -592,7 +600,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        if (tTractIndex < m_nTracts)
          RemoveTractSignificance(Cluster, tTractIndex);
        else {//tract is a meta location
-         gTractHandler->getMetaLocations().getAtomicIndexes(tTractIndex - m_nTracts, atomicIndexes);
+         gTractHandler->getMetaManagerProxy().getIndexes(tTractIndex - m_nTracts, atomicIndexes);
          for (size_t a=0; a < atomicIndexes.size(); ++a) {
            if (!GetIsNullifiedLocation(atomicIndexes[a]))
              RemoveTractSignificance(Cluster, atomicIndexes[a]);
