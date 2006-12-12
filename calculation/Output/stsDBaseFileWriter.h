@@ -3,25 +3,27 @@
 #define DBaseFileWriter_H
 //******************************************************************************
 #include "Parameters.h"
-#include <DBFFile.h>
+//#include <DBFFile.h>
 #include "FileName.h"
+#include "dBaseFile.h"
+#include "FieldDef.h"
+#include "ptr_vector.h"
 
 class RecordBuffer;  /** forward class declaration */
 
 /** dBase data writer. */
 class DBaseDataFileWriter {
    private :
-      void	          Setup(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension,  bool bAppend);
+      void	          Setup(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension,  bool bAppend);
 
    protected:
-      DBFFile             gFile;
-      DBFRecord         * gpFileRecord;
-      ZdTransaction     * gpTransaction;
+      dBaseFile           gFile;
+      dBaseRecord       * gpFileRecord;
       static const char * DBASE_FILE_EXT;
       FileName            gsFileName;        /** output filename */
 
    public :
-      DBaseDataFileWriter(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension, bool bAppend = false);
+      DBaseDataFileWriter(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend = false);
       virtual ~DBaseDataFileWriter();
 
      virtual void	  WriteRecord(const RecordBuffer& Record);

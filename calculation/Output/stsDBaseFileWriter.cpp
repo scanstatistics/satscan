@@ -8,13 +8,13 @@
 const char * DBaseDataFileWriter::DBASE_FILE_EXT    = ".dbf";
 
 /** constructor */
-DBaseDataFileWriter::DBaseDataFileWriter(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension, bool bAppend)
-                    :gpTransaction(0), gpFileRecord(0) {
+DBaseDataFileWriter::DBaseDataFileWriter(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend)
+                    :gpFileRecord(0) {
   try {
     Setup(Parameters, vFieldDefs, sFileExtension, bAppend);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("constructor()","DBaseDataFileWriter");
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","DBaseDataFileWriter");
     throw;
   }
 }
@@ -22,15 +22,13 @@ DBaseDataFileWriter::DBaseDataFileWriter(const CParameters& Parameters, ZdPointe
 /** destructor */
 DBaseDataFileWriter::~DBaseDataFileWriter() {
   try {
-    delete gpFileRecord; gpFileRecord=0;
-    gFile.EndTransaction(gpTransaction); gpTransaction = 0;
     gFile.Close();
   }
   catch (...){}
 }
 
 /** internal setup - opens file stream */
-void DBaseDataFileWriter::Setup(const CParameters& Parameters, ZdPointerVector<ZdField>& vFieldDefs, const ZdString& sFileExtension, bool bAppend) {
+void DBaseDataFileWriter::Setup(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend) {
   std::string   buffer, ext(sFileExtension);
 
   try {
@@ -39,20 +37,18 @@ void DBaseDataFileWriter::Setup(const CParameters& Parameters, ZdPointerVector<Z
     gsFileName.setExtension(ext.c_str());
 
     // open file stream for writing
-    if ((bAppend && !ZdIO::Exists(gsFileName.getFullPath(buffer).c_str())) || !bAppend) {
-      ZdIO::Delete(gsFileName.getFullPath(buffer).c_str());
+    if ((bAppend && access(gsFileName.getFullPath(buffer).c_str(), 0)) || !bAppend) {
+      remove(gsFileName.getFullPath(buffer).c_str());
       gFile.PackFields(vFieldDefs);
       gFile.Create(gsFileName.getFullPath(buffer).c_str(), vFieldDefs);
     }
     if (!gFile.GetIsOpen())
-      gFile.Open(gsFileName.getFullPath(buffer).c_str(), (bAppend ? ZDIO_OPEN_APPEND : ZDIO_OPEN_TRUNC));
+      gFile.Open(gsFileName.getFullPath(buffer).c_str(), bAppend);
 
-    //open transaction pointer
-    gpTransaction = gFile.BeginTransaction();
     gpFileRecord = gFile.GetNewRecord();
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Setup()","DBaseDataFileWriter");
+  catch (prg_exception& x) {
+    x.addTrace("Setup()","DBaseDataFileWriter");
     throw;
   }
 }
@@ -68,10 +64,10 @@ void DBaseDataFileWriter::WriteRecord(const RecordBuffer& Record) {
        else
          gpFileRecord->PutBlank(j);
     }
-    gFile.AppendRecord(*gpTransaction, *gpFileRecord);
+    gFile.DataAppend(*gpFileRecord);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("WriteRecord()","DBaseDataFileWriter");
+  catch (prg_exception& x) {
+    x.addTrace("WriteRecord()","DBaseDataFileWriter");
     throw;
   }
 }
