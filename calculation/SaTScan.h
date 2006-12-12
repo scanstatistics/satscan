@@ -2,6 +2,9 @@
 #ifndef __SATSCAN_H
 #define __SATSCAN_H
 //*****************************************************************************
+#if defined(_MSC_VER) || defined(__BORLANDC__)
+#include <Windows.h>
+#endif
 #include <stdlib.h>
 #include <stdio.h>
 #include <string>
@@ -11,54 +14,35 @@
 #include <math.h>
 #include <time.h>
 #include <float.h>
-#ifdef __BORLANDC__
+#ifdef _WINDOWS_
   #include <io.h>
 #else
   #include <unistd.h>
 #endif
 
-//on linux, the library defines std::auto_ptr, so before zd gets included (and
-//declares a std::auto_ptr, we will #define so that zd ends up declaring a
-//"std::zd_auto_ptr" instead.
-#if defined(LINUX_BASED) && (__GNUC__ == 2) && ( __GNUC_MINOR__ <= 96)
-  #include <memory>//declare std::auto_ptr
-  #define auto_ptr zd_auto_ptr
-  #define auto_ptr_ref zd_auto_ptr_ref
-#endif
-
-#if (defined(__BORLANDC__) && defined(__BATCH_COMPILE))
-  #ifndef ZDLIB
-    #define ZDLIB "zd543.lib"
-  #endif
-  #pragma comment(lib, ZDLIB)
-  #pragma message(__FILE__ " : zd lib requested")
-#endif
-
-#ifndef ZDHEADER
-   #define ZDHEADER "zd543.h"
-#endif
-#include ZDHEADER
-
-#if defined(LINUX_BASED) && (__GNUC__ == 2) && ( __GNUC_MINOR__ <= 96)
-//now take away the defs so that the rest of the code references std::auto_ptr :
-  #undef auto_ptr
-  #undef auto_ptr_ref
+#ifndef _WINDOWS_
+   #define   stricmp strcasecmp
+   #define   strnicmp strncasecmp
 #endif
 
 #include <utility>
 #include <deque>
+#ifdef __BORLANDC__
 #pragma warn -8012
 #pragma warn -8008
 #pragma warn -8066
 #pragma warn -8055
+#endif
 #include "boost/dynamic_bitset.hpp"
 #define DATE_TIME_INLINE
 #include "boost/date_time/posix_time/ptime.hpp"
 #undef DATE_TIME_INLINE
+#ifdef __BORLANDC__
 #pragma warn +8012
 #pragma warn +8008
 #pragma warn +8066
 #pragma warn +8055
+#endif
 
 #include "BasePrint.h"
 
