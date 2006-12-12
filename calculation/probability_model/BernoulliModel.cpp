@@ -15,8 +15,8 @@ CBernoulliModel::~CBernoulliModel() {}
 void CBernoulliModel::CalculateMeasure(RealDataSet& DataSet) {
   unsigned int          i, j;
   count_t               tTotalCases(0), tTotalControls(0),
-                     ** ppCases(DataSet.getCaseData().GetArray()),
-                     ** ppControls(DataSet.getControlData().GetArray());
+                     ** ppCases = DataSet.getCaseData().GetArray(),
+                     ** ppControls = DataSet.getControlData().GetArray();
   measure_t          ** ppMeasure, tTotalMeasure(0);
 
   try {

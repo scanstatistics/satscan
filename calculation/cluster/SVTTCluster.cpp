@@ -84,8 +84,8 @@ SVTTClusterData * SVTTClusterData::Clone() const {
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void SVTTClusterData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   assert(geEvaluationAssistDataStatus == Allocated);
-  measure_t  ** ppMeasureNC(DataGateway.GetDataSetInterface().GetNCMeasureArray());
-  count_t    ** ppCasesNC(DataGateway.GetDataSetInterface().GetNCCaseArray());
+  measure_t  ** ppMeasureNC = DataGateway.GetDataSetInterface().GetNCMeasureArray();
+  count_t    ** ppCasesNC = DataGateway.GetDataSetInterface().GetNCCaseArray();
 
   for (unsigned int i=0; i < DataGateway.GetDataSetInterface().GetNumTimeIntervals(); ++i) {
     gpCasesInsideCluster[i] += ppCasesNC[i][tNeighborIndex];

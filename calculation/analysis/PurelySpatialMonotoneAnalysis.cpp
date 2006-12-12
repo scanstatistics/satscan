@@ -37,7 +37,7 @@ void CPSMonotoneAnalysis::AllocateTopClustersObjects(const AbstractDataSetGatewa
 const CCluster & CPSMonotoneAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
   CPSMonotoneCluster          * C_High = 0;
   CPSMonotoneCluster          * C_Low = 0;
-  count_t                    ** ppCases(DataGateway.GetDataSetInterface(0/*for now*/).GetCaseArray());
+  count_t                    ** ppCases = DataGateway.GetDataSetInterface(0/*for now*/).GetCaseArray();
 
   try {
     if (gParameters.GetExecuteScanRateType() == HIGHANDLOW) {
@@ -91,7 +91,7 @@ double CPSMonotoneAnalysis::MonteCarlo(const DataSetInterface& Interface) {
    CPSMonotoneCluster           C(gpClusterDataFactory, Interface, gParameters.GetExecuteScanRateType());
    CPSMonotoneCluster           C_High(gpClusterDataFactory, Interface, HIGH);
    CPSMonotoneCluster           C_Low(gpClusterDataFactory, Interface, LOW);
-   count_t                   ** ppSimCases(Interface.GetCaseArray());
+   count_t                   ** ppSimCases = Interface.GetCaseArray();
 
    try
       {
