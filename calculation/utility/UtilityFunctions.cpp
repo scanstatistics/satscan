@@ -65,14 +65,14 @@ double CalculateNonCompactnessPenalty(double dEllipseShape, double dPower) {
 }
 
 //What is the current time? (UTC | Coordinated Universal Time)
-#ifdef INTEL_BASED
+#ifdef _WINDOWS_
 boost::posix_time::ptime GetCurrentTime_HighResolution()
 {
   using namespace boost::posix_time;
   using namespace boost::gregorian;
   SYSTEMTIME stm;
   GetSystemTime(&stm);
-  time_duration::fractional_seconds_type frct_secs = stm.wMilliseconds * std::pow10(time_duration::num_fractional_digits()-3);
+  time_duration::fractional_seconds_type frct_secs = stm.wMilliseconds * pow(static_cast<double>(10), time_duration::num_fractional_digits()-3);
   return ptime(date(stm.wYear,stm.wMonth,stm.wDay), time_duration(stm.wHour,stm.wMinute,stm.wSecond,frct_secs));
 }
 #else
@@ -107,7 +107,7 @@ const char * GetDatePrecisionAsString(DatePrecisionType eType, std::string& sStr
 unsigned int GetNumSystemProcessors() {
   unsigned int iNumProcessors;
 
-#ifdef INTEL_BASED
+#ifdef _WINDOWS_
    SYSTEM_INFO siSysInfo;
    GetSystemInfo(&siSysInfo);
    iNumProcessors = siSysInfo.dwNumberOfProcessors;
