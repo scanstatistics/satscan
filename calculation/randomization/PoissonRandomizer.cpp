@@ -12,7 +12,7 @@ void PoissonNullHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, 
   unsigned int          t, tNumTracts = RealSet.getLocationDimension(),
                         i, tNumTimeIntervals = RealSet.getIntervalDimension();
   count_t               c, d, cumcases=0, tTotalCases = RealSet.getTotalCases(), ** ppSimCases = SimSet.getCaseData().GetArray();
-  measure_t             cummeasure=0, tTotalMeasure = RealSet.getTotalMeasure(), ** ppMeasure(RealSet.getMeasureData().GetArray());
+  measure_t             cummeasure=0, tTotalMeasure = RealSet.getTotalMeasure(), ** ppMeasure= RealSet.getMeasureData().GetArray();
 
   SetSeed(iSimulation, SimSet.getSetIndex());
   for (t=0; t < tNumTracts; ++t) {

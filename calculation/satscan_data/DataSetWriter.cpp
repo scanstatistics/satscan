@@ -49,7 +49,7 @@ void DefaultDataSetWriter::write(const DataSet& Set, const CParameters& Paramete
     case SPACETIME                 :
     case PROSPECTIVESPACETIME      :
     case SPATIALVARTEMPTREND       :
-     {count_t  ** ppSimCases(Set.getCaseData().GetArray());
+     {count_t  ** ppSimCases = Set.getCaseData().GetArray();
       for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
          for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
            stream << ppSimCases[i][t] << " ";
@@ -146,13 +146,13 @@ void ExponentialDataSetWriter::write(const DataSet& Set, const CParameters& Para
     case SPACETIME                 :
     case PROSPECTIVESPACETIME      :
     case SPATIALVARTEMPTREND       :
-     {count_t ** ppSimCases(Set.getCaseData().GetArray());
+     {count_t ** ppSimCases = Set.getCaseData().GetArray();
       for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
          for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
             stream << ppSimCases[i][t] << " ";
          stream << std::endl;
       }
-      measure_t ** ppSimMeasure(Set.getMeasureData().GetArray());
+      measure_t ** ppSimMeasure = Set.getMeasureData().GetArray();
       for (unsigned int t=0; t < Set.getLocationDimension(); ++t) {
         for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
            stream << ppSimMeasure[i][t] << " ";

@@ -9,7 +9,7 @@
 
 void CSaTScanData::DisplayCases(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppCases(gDataSets->GetDataSet(0/*for now*/).getCaseData().GetArray());
+  count_t            ** ppCases = gDataSets->GetDataSet(0/*for now*/).getCaseData().GetArray();
 
   fprintf(pFile, "Case counts (Cases Array)\n\n");
   for (i = 0; i < m_nTimeIntervals; ++i)
@@ -21,7 +21,7 @@ void CSaTScanData::DisplayCases(FILE* pFile) {
 
 void CSaTScanData::DisplayControls(FILE* pFile) {
   int                   i, j;
-  count_t            ** ppControls(gDataSets->GetDataSet(0/*for now*/).getControlData().GetArray());
+  count_t            ** ppControls = gDataSets->GetDataSet(0/*for now*/).getControlData().GetArray();
 
   fprintf(pFile, "Control counts (Controls Array)\n\n");
 
@@ -34,7 +34,7 @@ void CSaTScanData::DisplayControls(FILE* pFile) {
 
 void CSaTScanData::DisplaySimCases(FILE* pFile) {
 //  int                   i, j;
-//  count_t            ** ppSimCases(gDataSets->GetDataSet(0/*for now*/).GetSimCaseArray());
+//  count_t            ** ppSimCases = gDataSets->GetDataSet(0/*for now*/).GetSimCaseArray();
 //
 //  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
 //
@@ -47,7 +47,7 @@ void CSaTScanData::DisplaySimCases(FILE* pFile) {
 
 void CSaTScanData::DisplayMeasure(FILE* pFile) {
   int           i, j;
-  measure_t  ** ppMeasure(gDataSets->GetDataSet(0/*for now*/).getMeasureData().GetArray());
+  measure_t  ** ppMeasure = gDataSets->GetDataSet(0/*for now*/).getMeasureData().GetArray();
 
   fprintf(pFile, "Measures (Measure Array)\n\n");
 
@@ -60,9 +60,9 @@ void CSaTScanData::DisplayMeasure(FILE* pFile) {
 
 void CSaTScanData::DisplayNeighbors(FILE* pFile) {
   int                   i, j;
-  tract_t            ** ppNeighborCount(gpNeighborCountHandler->GetArray());
-  unsigned short    *** pppSortedUShort((gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0));
-  tract_t           *** pppSortedInt((gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0));
+  tract_t            ** ppNeighborCount = gpNeighborCountHandler->GetArray();
+  unsigned short    *** pppSortedUShort = (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0);
+  tract_t           *** pppSortedInt = (gpSortedIntHandler ? gpSortedIntHandler->GetArray() : 0);
 
   fprintf(pFile, "Neighbors (m_pSorted)   m_nGridTracts=%i\n\n", m_nGridTracts);
 
