@@ -3,7 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "Toolkit.h"
-#include "DBFFile.h"
+#include "dBaseFile.h"
 #include "UtilityFunctions.h"
 #include "FileName.h"
 #include "SSException.h"
@@ -284,7 +284,7 @@ bool AppToolkit::InsureRunHistoryFileName() {
 
   try {
     sDefaultHistoryFileName << app.getLocation(buffer) << gsDefaultRunHistoryFileName;
-    sDefaultHistoryFileName << DBFFileType::GetDefaultInstance().GetFileTypeExtension();
+    sDefaultHistoryFileName << dBaseFile::GetFileTypeExtension();
 
     //run history filename property
     if (!gSession.exists(gsRunHistory, gsHistoryFileNameProperty)) {
@@ -301,8 +301,8 @@ bool AppToolkit::InsureRunHistoryFileName() {
       else {
         app.setFullPath(value.c_str());
         //validate extension
-        if (strcmp(app.getExtension().c_str(), DBFFileType::GetDefaultInstance().GetFileTypeExtension())) {
-          app.setExtension(DBFFileType::GetDefaultInstance().GetFileTypeExtension());
+        if (strcmp(app.getExtension().c_str(), dBaseFile::GetFileTypeExtension())) {
+          app.setExtension(dBaseFile::GetFileTypeExtension());
           gSession.set(gsRunHistory, gsHistoryFileNameProperty, app.getFullPath(buffer).c_str());
           bUpdatedSection = true;
         }
