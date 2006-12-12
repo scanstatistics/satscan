@@ -361,7 +361,7 @@ void AnalysisRunner::FinalizeReport() {
 double AnalysisRunner::GetAvailablePhysicalMemory() const {
   double /*dTotalPhysicalMemory(0),*/ dAvailablePhysicalMemory(0);
 
-#ifdef INTEL_BASED
+#ifdef _WINDOWS_
   MEMORYSTATUS stat;
   GlobalMemoryStatus (&stat);
   //dTotalPhysicalMemory = stat.dwTotalPhys;
@@ -998,7 +998,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
         if (giNumSimsExecuted==1) {
           //***** time to complete approximate will need modified with incorporation of thread code ******
           ReportTimeEstimate(StartTime, gParameters.GetNumReplicationsRequested(), iSimulationNumber, &SimulationPrintDirection);
-          Timestamp tsReleaseTime;
+          SaTScan::Timestamp tsReleaseTime;
           tsReleaseTime.Now();
           tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
           SimulationPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
