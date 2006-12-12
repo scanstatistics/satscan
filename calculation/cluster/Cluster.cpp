@@ -494,7 +494,7 @@ void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigne
     if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 98) {
       PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
       fIntervals = Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1;
-      fAdjustedP_Value = 1 - pow(1 - GetPValue(iNumSimulations), 1/fIntervals);
+      fAdjustedP_Value = static_cast<float>(1 - pow(static_cast<double>(1 - GetPValue(iNumSimulations)), static_cast<int>(1/fIntervals)));
       fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
       switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
         case YEAR   : printString(buffer, "%.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
