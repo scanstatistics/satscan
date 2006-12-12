@@ -34,7 +34,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
       DBaseDataFileWriter     * gpDBaseFileDataWriter;
-      ZdPointerVector<ZdField>  vDataFieldDefinitions;
+      ptr_vector<FieldDef>      vDataFieldDefinitions;
 
       void                      DefineClusterInformationFields();
       void                      DefineClusterCaseInformationFields();

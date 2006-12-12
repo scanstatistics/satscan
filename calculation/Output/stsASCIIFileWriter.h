@@ -4,24 +4,25 @@
 //***************************************************************************
 #include "Parameters.h"
 #include "FileName.h"
+#include "FieldDef.h"
 
 class RecordBuffer;  /** forward class declaration */
 
 /** ASCII data writer. */
 class ASCIIDataFileWriter {
   private:
-     void                       Setup(const CParameters& Parameters, const ZdString& sFileExtension, bool bAppend);
+     void                       Setup(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend);
 
    protected :
      FILE                     * gpFile;   
      static const char        * ASCII_FILE_EXT;
      FileName                   gsFileName;        /** output filename */
 
-     void                       CreateBlankString(ZdString& sFormatString, const ZdField& FieldDef);
-     void                       CreateFormatString(ZdString& sValue, const ZdField& FieldDef, const ZdFieldValue& fv);
+     void                       CreateBlankString(std::string& sFormatString, const FieldDef& FieldDef);
+     void                       CreateFormatString(std::string& sValue, const FieldDef& FieldDef, const FieldValue& fv);
 
    public :
-      ASCIIDataFileWriter(const CParameters& Parameters, const ZdString& sFileExtension, bool bAppend=false);
+      ASCIIDataFileWriter(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend=false);
       virtual ~ASCIIDataFileWriter();
 
      virtual void	        WriteRecord(const RecordBuffer& Record);

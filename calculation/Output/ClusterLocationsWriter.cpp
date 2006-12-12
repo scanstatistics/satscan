@@ -5,6 +5,7 @@
 #include "ClusterLocationsWriter.h"
 #include "cluster.h"
 #include "SVTTCluster.h"
+#include "SSException.h"
 
 const char * LocationInformationWriter::AREA_SPECIFIC_FILE_EXT    = ".gis";
 const char * LocationInformationWriter::LOC_OBS_FIELD             = "LOC_OBS";
@@ -33,10 +34,10 @@ LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub
     if (gParameters.GetOutputAreaSpecificDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpASCIIFileWriter;
     delete gpDBaseFileWriter;
-    x.AddCallpath("constructor","LocationInformationWriter");
+    x.addTrace("constructor","LocationInformationWriter");
     throw;
   }
 }
@@ -44,56 +45,56 @@ LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub
 /** class destructor */
 LocationInformationWriter::~LocationInformationWriter() {}
 
-// sets up the vector of field structs so that the ZdField Vector can be created
+// sets up the vector of field structs so that the FieldDef Vector can be created
 void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
   unsigned short uwOffset = 0;
 
   try {
-    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
-    CreateField(vFieldDefinitions, CLUST_NUM_FIELD, ZD_NUMBER_FLD, 5, 0, uwOffset);
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
+    CreateField(vFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 5, 0, uwOffset);
 
     if (!gbExcludePValueField)
-      CreateField(vFieldDefinitions, P_VALUE_FLD, ZD_NUMBER_FLD, 19, 5, uwOffset);
+      CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 5, uwOffset);
 
     //defined cluster level fields to report -- none of these are reported
     // for multiple data sets nor the ordinal probability model
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
-      CreateField(vFieldDefinitions, CLU_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, CLU_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       if (gParameters.GetProbabilityModelType() == NORMAL) {
-        CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-        CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
       if (gParameters.GetProbabilityModelType() != NORMAL) {
-        CreateField(vFieldDefinitions, CLU_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, CLU_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        CreateField(vFieldDefinitions, CLU_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
-        CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-        CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-        CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-        CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
     }
     //defined location level fields to report -- none of these are reported
     // for multiple data sets nor the ordinal probability model
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
-      CreateField(vFieldDefinitions, LOC_OBS_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       if (gParameters.GetProbabilityModelType() == NORMAL)
-        CreateField(vFieldDefinitions, LOC_MEAN_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
+        CreateField(vFieldDefinitions, LOC_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       if (gParameters.GetProbabilityModelType() != NORMAL) {
-        CreateField(vFieldDefinitions, LOC_EXP_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, LOC_OBS_DIV_EXP_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, LOC_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        CreateField(vFieldDefinitions, LOC_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
-        CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-        CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DefineFields()","LocationInformationWriter");
+  catch (prg_exception& x) {
+    x.addTrace("DefineFields()","LocationInformationWriter");
     throw;
   }
 }
@@ -108,15 +109,14 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
   const DataSetHandler                        & Handler = DataHub.GetDataSetHandler();
 
   try {
-    //do not report locations for which iterative scan has nullified this locations data
+    //do not report locations for which iterative scan has nullified its data
     if (DataHub.GetIsNullifiedLocation(tTract)) return;
-
     DataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vIdentifiers);
     for (unsigned int i=0; i < vIdentifiers.size(); ++i) {
        Record.SetAllFieldsBlank(true);
-       Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = vIdentifiers[i].c_str();
-       if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
-         Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
+       Record.GetFieldValue(LOC_ID_FIELD).AsString() = vIdentifiers[i].c_str();
+       if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+         Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
        if (!gbExcludePValueField)
          Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
@@ -178,7 +178,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
            const AbtractSVTTClusterData * pClusterData=0;
            if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
-             ZdGenerateException("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
+             throw prg_error("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
            switch (pClusterData->getInsideTrend()->GetStatus()) {
              case CTimeTrend::TREND_CONVERGED :
                Record.GetFieldValue(CLU_TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend()->GetAnnualTimeTrend(); break;
@@ -198,8 +198,8 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Write()","LocationInformationWriter");
+  catch (prg_exception& x) {
+    x.addTrace("Write()","LocationInformationWriter");
     throw;
   }
 }

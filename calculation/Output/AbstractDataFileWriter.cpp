@@ -6,9 +6,9 @@
 #include "SaTScanData.h"
 
 /** class constructor */
-RecordBuffer::RecordBuffer(const ZdPointerVector<ZdField>& vFields) : vFieldDefinitions(vFields) {
+RecordBuffer::RecordBuffer(const ptr_vector<FieldDef>& vFields) : vFieldDefinitions(vFields) {
   for (size_t t=0; t < vFieldDefinitions.size(); ++t) {
-     gvFieldValues.push_back(ZdFieldValue(vFieldDefinitions[t]->GetType()));
+     gvFieldValues.push_back(FieldValue(vFieldDefinitions[t]->GetType()));
      gvBlankFields.push_back(true);
   }
 }
@@ -16,19 +16,19 @@ RecordBuffer::RecordBuffer(const ZdPointerVector<ZdField>& vFields) : vFieldDefi
 /** class destructor */
 RecordBuffer::~RecordBuffer() {}
 
-/** ZdField definition for field with name. */
-const ZdField & RecordBuffer::GetFieldDefinition(const ZdString& sFieldName) const {
+/** FieldDef definition for field with name. */
+const FieldDef & RecordBuffer::GetFieldDefinition(const std::string& sFieldName) const {
   return *vFieldDefinitions[GetFieldIndex(sFieldName)];
 }
 
-/** ZdField definition for field at index. */
-const ZdField & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const {
+/** FieldDef definition for field at index. */
+const FieldDef & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const {
   try {
     if (iFieldIndex >= vFieldDefinitions.size())
-      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldDefinition()", iFieldIndex, vFieldDefinitions.size());
+      throw prg_error("Index %u out of range [size=%u].", "GetFieldDefinition()", iFieldIndex, vFieldDefinitions.size());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFieldDefinition()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("GetFieldDefinition()","RecordBuffer");
     throw;
   }
   return *vFieldDefinitions[iFieldIndex];
@@ -40,72 +40,72 @@ const ZdField & RecordBuffer::GetFieldDefinition(unsigned int iFieldIndex) const
 bool RecordBuffer::GetFieldIsBlank(unsigned int iFieldNumber) const {
   try {
     if (iFieldNumber >= gvBlankFields.size())
-      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
+      throw prg_error("Index %u out of range [size=%u].", "GetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFieldIsBlank()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("GetFieldIsBlank()","RecordBuffer");
     throw;
   }
   return gvBlankFields[iFieldNumber];
 }
 
 /** Returns field index for named field. */
-unsigned int RecordBuffer::GetFieldIndex(const ZdString& sFieldName) const {
+unsigned int RecordBuffer::GetFieldIndex(const std::string& sFieldName) const {
   bool                 bFound(false);
   unsigned int         i, iPosition;
 
   try {
     for (i=0; i < vFieldDefinitions.size() && !bFound; ++i) {
-       bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName));
+       bFound = (!strcmp(vFieldDefinitions[i]->GetName(), sFieldName.c_str()));
        iPosition = i;
    }
    if (!bFound)
-     ZdException::GenerateNotification("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.GetCString());
+     throw prg_error("Field name %s not found in the field vector.", "GetFieldIndex()", sFieldName.c_str());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFieldIndex()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("GetFieldIndex()","RecordBuffer");
     throw;
   }
   return iPosition;
 }
 
 /** Returns reference to field value for named field, setting field 'blank' indicator to false. */
-ZdFieldValue& RecordBuffer::GetFieldValue(const ZdString& sFieldName) {
+FieldValue& RecordBuffer::GetFieldValue(const std::string& sFieldName) {
   try {
     unsigned int iFieldIndex = GetFieldIndex(sFieldName);
     gvBlankFields[iFieldIndex] = false;
     return gvFieldValues[iFieldIndex];
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFieldValue()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("GetFieldValue()","RecordBuffer");
     throw;
   }
 }
 
-/** Returns ZdFieldValue reference for field index. Throws ZdException if
-    iFieldIndex is greater than number of ZdFieldValues. */
-ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) {
+/** Returns FieldValue reference for field index. Throws prg_error if
+    iFieldIndex is greater than number of FieldValues. */
+FieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) {
   try {
     if (iFieldIndex >= gvFieldValues.size())
-      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
+      throw prg_error("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
     gvBlankFields[iFieldIndex] = false;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFieldValue()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("GetFieldValue()","RecordBuffer");
     throw;
   }
   return gvFieldValues[iFieldIndex];
 }
 
-/** Returns ZdFieldValue reference for field index. Throws ZdException if
-    iFieldIndex is greater than number of ZdFieldValues. */
-const ZdFieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) const {
+/** Returns FieldValue reference for field index. Throws prj_error if
+    iFieldIndex is greater than number of FieldValues. */
+const FieldValue& RecordBuffer::GetFieldValue(unsigned int iFieldIndex) const {
   try {
     if (iFieldIndex >= gvFieldValues.size())
-      ZdGenerateException("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
+      throw prg_error("Index %u out of range [size=%u].", "GetFieldValue()", iFieldIndex, gvFieldValues.size());
   }
-  catch (ZdException &x) {
-    x.AddCallpath("GetFieldValue()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("GetFieldValue()","RecordBuffer");
     throw;
   }
   return gvFieldValues[iFieldIndex];
@@ -117,12 +117,12 @@ void RecordBuffer::SetAllFieldsBlank(bool bBlank) {
 }
 
 /** Sets the field at fieldnumber to either be blank or non-blank. */
-void RecordBuffer::SetFieldIsBlank(const ZdString& sFieldName, bool bBlank) {
+void RecordBuffer::SetFieldIsBlank(const std::string& sFieldName, bool bBlank) {
   try {
     gvBlankFields[GetFieldIndex(sFieldName)] = bBlank;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetFieldIsBlank()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("SetFieldIsBlank()","RecordBuffer");
     throw;
   }
 }
@@ -131,11 +131,11 @@ void RecordBuffer::SetFieldIsBlank(const ZdString& sFieldName, bool bBlank) {
 void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
   try {
     if (iFieldNumber >= gvBlankFields.size())
-      ZdGenerateException("Index %u out of range [size=%u].", "SetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
+      throw prg_error("Index %u out of range [size=%u].", "SetFieldIsBlank()", iFieldNumber, gvBlankFields.size());
     gvBlankFields[iFieldNumber] = bBlank;
   }
-  catch (ZdException &x) {
-    x.AddCallpath("SetFieldIsBlank()","RecordBuffer");
+  catch (prg_exception& x) {
+    x.addTrace("SetFieldIsBlank()","RecordBuffer");
     throw;
   }
 }
@@ -173,20 +173,15 @@ AbstractDataFileWriter::~AbstractDataFileWriter() {
 }
 
 /** Defines field definition and assigns to accumulation. */
-void AbstractDataFileWriter::CreateField(ZdPointerVector<ZdField>& vFields, const std::string& sFieldName, char cType,
+void AbstractDataFileWriter::CreateField(ptr_vector<FieldDef>& vFields, const std::string& sFieldName, char cType,
                                          short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex) {
   try {
-    vFields.push_back(new ZdField);
-    vFields.back()->SetName(sFieldName.c_str());
-    vFields.back()->SetType(cType);
-    vFields.back()->SetLength(wLength);
-    vFields.back()->SetPrecision(wPrecision);
-    vFields.back()->SetOffset(uwOffset);
+    vFields.push_back(new FieldDef(sFieldName.c_str(), cType, wLength, wPrecision, uwOffset));
     uwOffset += wLength;
-    if (bCreateIndex) vFields.back()->SetIndexCount(1);
+    //if (bCreateIndex) vFields.back()->SetIndexCount(1);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("CreateField()","AbstractDataFileWriter");
+  catch (prg_exception& x) {
+    x.addTrace("CreateField()","AbstractDataFileWriter");
     throw;
   }
 }

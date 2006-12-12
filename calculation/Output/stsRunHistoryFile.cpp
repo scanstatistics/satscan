@@ -3,17 +3,13 @@
 #pragma hdrstop
 //*****************************************************************************
 
-// class stsRunHistoryFile
-// Adam J Vaughn
-// 9/4/2002
-
-// This class keeps a ZD file log for each run of the SaTScan program which includes information
+// This class keeps a file log for each run of the SaTScan program which includes information
 // specified by the client. For each instance of the class, a new, unnique run number will be
 // recorded in the file and the pertinent data will be updated once the analysis is complete.
 
+#include "AbstractDataFileWriter.h"
 #include "AnalysisRun.h"
 #include "stsRunHistoryFile.h"
-#include "DBFFile.h"
 #ifdef __BORLANDC__
   #include <syncobjs.hpp>
 #endif  
@@ -52,316 +48,216 @@ stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& P
                   :gpPrintDirection(&PrintDirection),
                    gbPrintPVal(Parameters.GetNumReplicationsRequested() > 98),
                    gbIterativeScan(Parameters.GetIsIterativeScanning()) {
-   try {
-      Init();
-      SetFileName(Parameters.GetRunHistoryFilename());
-      SetRunNumber();
-   }
-   catch (ZdException &x) {
-     x.AddCallpath("constructor()","stsRunHistoryFile");
-     throw;
-   }
+  SetFileName(Parameters.GetRunHistoryFilename());
+  unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
+  AbstractDataFileWriter::CreateField(gvFields, RUN_NUMBER_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, RUN_TIME_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, ANALYSIS_TYPE_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, PROB_MODEL_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, RATES_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, GRID_FILE_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, MAX_GEO_EXTENT_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, MAX_TIME_EXTENT_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, INTERVAL_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, ALIVE_ONLY_FIELD, FieldValue::ALPHA_FLD, 8, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, FieldValue::ALPHA_FLD, 20, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, COVARIATES_FIELD, FieldValue::NUMBER_FLD, 3, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, MONTE_CARLO_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, NUM_GEO_AREAS_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, COORD_TYPE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, START_DATE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, END_DATE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, PRECISION_TIMES_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, NUM_CASES_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, TOTAL_POP_FIELD, FieldValue::NUMBER_FLD, 16, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, P_VALUE_FIELD, FieldValue::NUMBER_FLD, 12, 5, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, NUM_SIGNIF_005_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, CUTOFF_001_FIELD, FieldValue::NUMBER_FLD, 8, 3, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, CUTOFF_005_FIELD, FieldValue::NUMBER_FLD, 8, 3, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, OUTPUT_FILE_FIELD, FieldValue::ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD, FieldValue::ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
+
+  // if we don't have one then create it
+  if (access(gsFilename.c_str(), 00))
+     CreateRunHistoryFile();
 }
 
 // destructor
-stsRunHistoryFile::~stsRunHistoryFile() {
-   try {
-      gvFields.DeleteAllElements();
-   }
-   catch (...) {/* munch munch */}
-}
+stsRunHistoryFile::~stsRunHistoryFile() {}
 
 // creates the run history file
 // pre: txd file doesn't not already exist
 // post: will create the txd file with the appropraite fields
 void stsRunHistoryFile::CreateRunHistoryFile() {
-   unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
-
-   try {
-      ::CreateNewField(gvFields, RUN_NUMBER_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset, true);
-      ::CreateNewField(gvFields, RUN_TIME_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-
-      ::CreateNewField(gvFields, ANALYSIS_TYPE_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, PROB_MODEL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset); 
-      ::CreateNewField(gvFields, RATES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, GRID_FILE_FIELD, ZD_BOOLEAN_FLD, 1, 0, uwOffset);
-      ::CreateNewField(gvFields, MAX_GEO_EXTENT_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, MAX_TIME_EXTENT_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, INTERVAL_FIELD, ZD_ALPHA_FLD, 32, 0, uwOffset);
-      ::CreateNewField(gvFields, ALIVE_ONLY_FIELD, ZD_ALPHA_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, ZD_ALPHA_FLD, 20, 0, uwOffset);
-      ::CreateNewField(gvFields, COVARIATES_FIELD, ZD_NUMBER_FLD, 3, 0, uwOffset);
-      ::CreateNewField(gvFields, MONTE_CARLO_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-
-      ::CreateNewField(gvFields, NUM_GEO_AREAS_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, COORD_TYPE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, START_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, END_DATE_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, PRECISION_TIMES_FIELD, ZD_ALPHA_FLD, 16, 0, uwOffset);
-      ::CreateNewField(gvFields, NUM_CASES_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, TOTAL_POP_FIELD, ZD_NUMBER_FLD, 16, 0, uwOffset);
-
-      ::CreateNewField(gvFields, P_VALUE_FIELD, ZD_NUMBER_FLD, 12, 5, uwOffset);
-      ::CreateNewField(gvFields, NUM_SIGNIF_005_FIELD, ZD_NUMBER_FLD, 8, 0, uwOffset);
-      ::CreateNewField(gvFields, CUTOFF_001_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-      ::CreateNewField(gvFields, CUTOFF_005_FIELD, ZD_NUMBER_FLD, 8, 3, uwOffset);
-      ::CreateNewField(gvFields, OUTPUT_FILE_FIELD, ZD_ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
-      ::CreateNewField(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD, ZD_ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
-
-      DBFFile File;
-      File.PackFields(gvFields);
-      File.Create(gsFilename, gvFields, 1);
-      File.Close();
-   }
-   catch (ZdException &x) {
-     x.AddCallpath("CreateRunHistoryFile()","stsRunHistoryFile");
-     throw;
-   }
+  dBaseFile File;
+  File.PackFields(gvFields);
+  File.Create(gsFilename.c_str(), gvFields);
+  File.Close();
 }
 
 // converter function to turn the iType into a legible string for printing
 // pre :  eAnalysisType is contained in (PURELYSPATIAL, PURELYTEMPORAL, SPACETIME, PROSPECTIVESPACETIME)
 // post : string will be assigned a formatted value based on iType
-void stsRunHistoryFile::GetAnalysisTypeString(ZdString& sTempValue, AnalysisType eAnalysisType) {
-  try {
-    switch(eAnalysisType) {
-      case PURELYSPATIAL             : sTempValue = "Purely Spatial"; break;
-      case PURELYTEMPORAL            : sTempValue = "Purely Temporal"; break;
-      case SPACETIME                 : sTempValue = "Space Time";  break;
-      case PROSPECTIVESPACETIME      : sTempValue = "Prospective Space Time"; break;
-      case SPATIALVARTEMPTREND       : sTempValue = "Spatial Variation/Temporal Trend"; break;
-      case PROSPECTIVEPURELYTEMPORAL : sTempValue = "Prospective Purely Temporal"; break;
-      default : ZdException::GenerateNotification("Invalid analysis type in the run history file.", "stsRunHistoryFile");
-    }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetAnalysisTypeString()", "stsRunHistoryFile");
-    throw;
+void stsRunHistoryFile::GetAnalysisTypeString(std::string& sTempValue, AnalysisType eAnalysisType) {
+  switch(eAnalysisType) {
+    case PURELYSPATIAL             : sTempValue = "Purely Spatial"; break;
+    case PURELYTEMPORAL            : sTempValue = "Purely Temporal"; break;
+    case SPACETIME                 : sTempValue = "Space Time";  break;
+    case PROSPECTIVESPACETIME      : sTempValue = "Prospective Space Time"; break;
+    case SPATIALVARTEMPTREND       : sTempValue = "Spatial Variation/Temporal Trend"; break;
+    case PROSPECTIVEPURELYTEMPORAL : sTempValue = "Prospective Purely Temporal"; break;
+    default : throw prg_error("Invalid analysis type in the run history file.", "stsRunHistoryFile");
   }
 }
 
 // converts the iPrecision into a legible string for printing
 // pre : 0 <= iPrecision <= 3
 // post : string is assigned a formatted value based on iPrecision
-void stsRunHistoryFile::GetCasePrecisionString(ZdString& sTempValue, int iPrecision) {
-   try {
-      switch (iPrecision) {
-         case 0:
-            sTempValue = "None"; break;
-         case 1:
-            sTempValue = "Year"; break;
-         case 2:
-            sTempValue = "Month"; break;
-         case 3:
-            sTempValue = "Day";  break;
-         default :
-            ZdException::GenerateNotification("Invalid case time precision in run history file.", "stsRunHistoryFile");   
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetCasePrecisionString()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::GetCasePrecisionString(std::string& sTempValue, int iPrecision) {
+  switch (iPrecision) {
+     case 0: sTempValue = "None"; break;
+     case 1: sTempValue = "Year"; break;
+     case 2: sTempValue = "Month"; break;
+     case 3: sTempValue = "Day";  break;
+     default : throw prg_error("Invalid case time precision in run history file.", "GetCasePrecisionString");
+  }
 }
 
 // formats include clusters type to string to be written to file
 // pre:  eAnalysisType type is an element of (PURELYSPATIAL, PURELYTEMPORAL, ...) enum defined in CParamaters
 // post: will return a "n/a" string if PurelySpatial or Prospective SpaceTime analysis, else will return
 //       "true" or "false" string
-void stsRunHistoryFile::GetIncludeClustersTypeString(ZdString& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType) {
-   try {
-      if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)
-         sTempValue = "n/a";
-      else
-         sTempValue = (eIncludeClustersType == ALIVECLUSTERS ? "true" : "false");
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetIncludeClustersTypeString()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::GetIncludeClustersTypeString(std::string& sTempValue, AnalysisType eAnalysisType, IncludeClustersType eIncludeClustersType) {
+  if (eAnalysisType == PURELYSPATIAL || eAnalysisType == PROSPECTIVESPACETIME || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)
+    sTempValue = "n/a";
+  else
+    sTempValue = (eIncludeClustersType == ALIVECLUSTERS ? "true" : "false");
 }
 
 // basically a converter function which converts the Interval units from the way we store
 // them as ints to a legible string to be printed in the file
 // pre : 0 <= iUnits <= 3, sTempValue has been allocated
 // post: will assign the appropraite value to the string so that it can be printed
-void stsRunHistoryFile::GetIntervalUnitsString(ZdString& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType) {
-   try {
-      if (eAnalysisType == PURELYSPATIAL)
-         sTempValue = "n/a";
-      else {
-         sTempValue << ZdString::reset << lLength << " ";
-
-         switch (iUnits) {
-            case 0:
-               sTempValue << "None"; break;
-            case 1:
-               sTempValue << "Year"; break;
-            case 2:
-               sTempValue << "Month"; break;
-            case 3:
-               sTempValue << "Day"; break;
-            default:
-               ZdException::GenerateNotification("Invalid interval units in run history file.", "GetIntervalUnitsString()");
-         }
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetIntervalUnitsString()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::GetIntervalUnitsString(std::string& sTempValue, int iUnits, long lLength, AnalysisType eAnalysisType) {
+  if (eAnalysisType == PURELYSPATIAL)
+    sTempValue = "n/a";
+  else {
+    printString(sTempValue, "%d", lLength);
+    switch (iUnits) {
+      case 0: sTempValue += "None"; break;
+      case 1: sTempValue += "Year"; break;
+      case 2: sTempValue += "Month"; break;
+      case 3: sTempValue += "Day"; break;
+       default: throw prg_error("Invalid interval units in run history file.", "GetIntervalUnitsString()");
+    }
+  }
 }
 
 // sets up the string to be outputted in max geo extent field
 // pre: none
 // post: sets sTempValue to the number and units of max geo extent
-void stsRunHistoryFile::GetMaxGeoExtentString(ZdString& sTempValue, const CParameters& params) {
-   try {
-      if(params.GetAnalysisType() == PURELYTEMPORAL || params.UseLocationNeighborsFile())
-         sTempValue = "n/a";
-      else {
-         if (params.GetAnalysisType() == PROSPECTIVESPACETIME && params.GetAdjustForEarlierAnalyses()) {
-           if (params.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false))
-             sTempValue.printf("%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
-           else
-             sTempValue.printf("%.2lf %s", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false),
-                               (params.GetCoordinatesType() == CARTESIAN ? "Cartesian Units" : "Kilometers"));
-         }
-         else
-           sTempValue.printf("%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetMaxGeoExtentString()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::GetMaxGeoExtentString(std::string& sTempValue, const CParameters& params) {
+  if (params.GetAnalysisType() == PURELYTEMPORAL || params.UseLocationNeighborsFile())
+     sTempValue = "n/a";
+  else {
+    if (params.GetAnalysisType() == PROSPECTIVESPACETIME && params.GetAdjustForEarlierAnalyses()) {
+      if (params.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false))
+        printString(sTempValue, "%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
+      else
+        printString(sTempValue, "%.2lf %s", params.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false),
+                    (params.GetCoordinatesType() == CARTESIAN ? "Cartesian Units" : "Kilometers"));
+    }
+    else
+      printString(sTempValue, "%.2lf%%", params.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
+  }
 }
 
 // sets up the string to be outputted in max temporal extent field
 // pre: none
 // post: sets sTempValue to the number and units of max temporal extent
-void stsRunHistoryFile::GetMaxTemporalExtentString(ZdString& sTempValue, const CParameters& params) {
-   try {
-      if (params.GetAnalysisType() == PURELYSPATIAL)
-         sTempValue = "n/a";
-      else {
-         sTempValue.printf("%.2f",  params.GetMaximumTemporalClusterSize());
-         sTempValue << " ";
-         if(params.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
-            sTempValue << "%";
-         else {
-            if(params.GetTimeAggregationUnitsType() == DAY)
-               sTempValue << "Days";
-            else if(params.GetTimeAggregationUnitsType() == MONTH)
-               sTempValue << "Months";
-            else
-               sTempValue << "Years";
-         }
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetMaxTemporalExtentString()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::GetMaxTemporalExtentString(std::string& sTempValue, const CParameters& params) {
+  if (params.GetAnalysisType() == PURELYSPATIAL)
+    sTempValue = "n/a";
+  else {
+    printString(sTempValue, "%.2f",  params.GetMaximumTemporalClusterSize());
+    sTempValue += " ";
+    if (params.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
+      sTempValue += "%";
+    else {
+      if (params.GetTimeAggregationUnitsType() == DAY)
+        sTempValue += "Days";
+      else if(params.GetTimeAggregationUnitsType() == MONTH)
+        sTempValue += "Months";
+      else
+       sTempValue += "Years";
+    }
+  }
 }
 
 // a converter function to convert the stored int into a legible string to be printed
 // pre: eProbabiltyModelType conatined in (POISSON, BERNOULLI, SPACETIMEPERMUTATION) and sTempValue allocated
 // post : string will contain the formatted value for printing
-void stsRunHistoryFile::GetProbabilityModelString(ZdString& sTempValue, ProbabilityModelType eProbabilityModelType) {
-   try {
-      switch(eProbabilityModelType) {
-         case POISSON :
-            sTempValue = "Poisson";  break;
-         case BERNOULLI :
-            sTempValue = "Bernoulli";  break;
-         case SPACETIMEPERMUTATION :
-            sTempValue = "Space Time Permutation"; break;
-         case NORMAL :
-            sTempValue = "Normal"; break;
-         case EXPONENTIAL :
-            sTempValue = "Exponential"; break;
-         case RANK :
-            sTempValue = "Rank"; break;
-         case ORDINAL :
-            sTempValue = "Ordinal"; break;
-         default :
-            ZdException::GenerateNotification("Invalid probability model in the run history file.", "stsRunHistoryFile");   
-      }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetProbabilityModelString()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, ProbabilityModelType eProbabilityModelType) {
+  switch(eProbabilityModelType) {
+    case POISSON : sTempValue = "Poisson";  break;
+    case BERNOULLI : sTempValue = "Bernoulli";  break;
+    case SPACETIMEPERMUTATION : sTempValue = "Space Time Permutation"; break;
+    case NORMAL : sTempValue = "Normal"; break;
+    case EXPONENTIAL : sTempValue = "Exponential"; break;
+    case RANK : sTempValue = "Rank"; break;
+    case ORDINAL : sTempValue = "Ordinal"; break;
+    default : throw prg_error("Invalid probability model in the run history file.", "stsRunHistoryFile");
+  }
 }
 
 // converter function to make a legible string for printing
 // pre : eAreaRateType conatined in (HIGH, LOW, HIGHANDLOW) and sTempValue allocated
 // post : will assign the appropraite formated value to sTempValue
-void stsRunHistoryFile::GetRatesString(ZdString& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType) {
-  try {
-    if (eAnalysisType == SPATIALVARTEMPTREND)
-      sTempValue = "n/a";
-    else {
-      switch (eAreaRateType) {
-        case HIGH       : sTempValue = "High"; break;
-        case LOW        : sTempValue = "Low"; break;
-        case HIGHANDLOW : sTempValue = "Both"; break;
-        default : ZdException::GenerateNotification("Invalid rate defined in run history file.", "stsRunHistoryFile");
-      }
+void stsRunHistoryFile::GetRatesString(std::string& sTempValue, AnalysisType eAnalysisType, AreaRateType eAreaRateType) {
+  if (eAnalysisType == SPATIALVARTEMPTREND)
+    sTempValue = "n/a";
+  else {
+    switch (eAreaRateType) {
+      case HIGH       : sTempValue = "High"; break;
+      case LOW        : sTempValue = "Low"; break;
+      case HIGHANDLOW : sTempValue = "Both"; break;
+      default : throw prg_error("Invalid rate defined in run history file.", "stsRunHistoryFile");
     }
-  }
-  catch (ZdException &x) {
-    x.AddCallpath("GetRatesString()", "stsRunHistoryFile");
-    throw;
   }
 }
 
 // converts the iType to a legible string for printing
 //  pre : iType is conatined in (NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC, CALCULATED_LOGLINEAR_PERC)
 // post : string will be assigned a formatted value based upon iType
-void stsRunHistoryFile::GetTimeAdjustmentString(ZdString& sTempValue, int iType, AnalysisType eAnalysisType,
+void stsRunHistoryFile::GetTimeAdjustmentString(std::string& sTempValue, int iType, AnalysisType eAnalysisType,
                                                 ProbabilityModelType eProbabilityModelType) {
-  try {
-    if (eProbabilityModelType == SPACETIMEPERMUTATION)
-      sTempValue = "n/a";
-    else if (eProbabilityModelType == POISSON && eAnalysisType == PURELYSPATIAL)
-      sTempValue = "n/a";
-    else if (eProbabilityModelType == BERNOULLI && eAnalysisType != SPATIALVARTEMPTREND)
-      sTempValue = "n/a";
-    else {
-      switch(iType) {
-        case NOTADJUSTED               : sTempValue = "None"; break;
-        case NONPARAMETRIC             : sTempValue = "Non-parametric"; break;
-        case LOGLINEAR_PERC            : sTempValue = "Linear"; break;
-        case CALCULATED_LOGLINEAR_PERC : sTempValue = "Log Linear"; break;
-        case STRATIFIED_RANDOMIZATION  : sTempValue = "Time Stratified"; break;
-        default : ZdException::GenerateNotification("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
-      }
+  if (eProbabilityModelType == SPACETIMEPERMUTATION)
+    sTempValue = "n/a";
+  else if (eProbabilityModelType == POISSON && eAnalysisType == PURELYSPATIAL)
+    sTempValue = "n/a";
+  else if (eProbabilityModelType == BERNOULLI && eAnalysisType != SPATIALVARTEMPTREND)
+    sTempValue = "n/a";
+  else {
+    switch(iType) {
+      case NOTADJUSTED               : sTempValue = "None"; break;
+      case NONPARAMETRIC             : sTempValue = "Non-parametric"; break;
+      case LOGLINEAR_PERC            : sTempValue = "Linear"; break;
+      case CALCULATED_LOGLINEAR_PERC : sTempValue = "Log Linear"; break;
+      case STRATIFIED_RANDOMIZATION  : sTempValue = "Time Stratified"; break;
+      default : throw prg_error("Invalid time trend adjuestment type in run history file.", "stsRunHistoryFile");
     }
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("GetTimeAdjustmentString()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
-// global initializations
-void stsRunHistoryFile::Init() {
-   glRunNumber = 0;
+  }
 }
 
 // although the name implies an oxymoron, this function will record a new run into the history file
 // pre: none
 // post: records the run history to the file
 void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
-   ZdTransaction	      * pTransaction=0;
-   ZdString                     sTempValue, sInterval;
-   std::auto_ptr<DBFFile>       pFile;
+   std::string                  sTempValue, sInterval;
+   std::auto_ptr<dBaseFile>     pFile;
    bool                         bFound(false);
    double                       dTopClusterRatio=0;
    
-   try {
 #if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
       std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
       pSection->Acquire();
@@ -374,15 +270,8 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       // 2) to present my assumptions about the output data in case any happen to be incorrect
       // , so bear with me - AJV 9/3/2002
 
-      pFile.reset(new DBFFile(gsFilename));
-      std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
-
-      for(unsigned long i=pFile->GetNumRecords(); i >= 1 && !bFound; --i) {
-         pFile->GotoRecord(i, pRecord.get());
-         bFound = (pRecord->GetLong(0) == glRunNumber);
-      }
-      if(!bFound)
-         ZdException::GenerateNotification("Error! Run number not found in the run history file.", "LogNewhistory()");
+      pFile.reset(new dBaseFile(gsFilename.c_str(),  true));
+      std::auto_ptr<dBaseRecord> pRecord(pFile->GetNewRecord());
 
       // NOTE : ordering in which the data is added does not matter here in this function due to the use of the
       // GetFieldNumber function which finds the appropraite field number for the SetField functions and inserts
@@ -390,7 +279,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       // fields are added to the vector in that function
 
       //  run number field
-      SetDoubleField(*pRecord, (double)glRunNumber, GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
+      SetDoubleField(*pRecord, (double)(pFile->GetNumRecords() + 1), GetFieldNumber(gvFields, RUN_NUMBER_FIELD));
 
       // run time and date field
       sTempValue = ctime(AnalysisRun.GetStartTime());
@@ -480,20 +369,12 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
          pRecord->PutBlank(GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));
       }
 
-      pTransaction = (pFile->BeginTransaction());
-      pFile->SaveRecord(*pTransaction, pFile->GetCurrentRecordNumber(),*pRecord);
-      pFile->EndTransaction(pTransaction); pTransaction = 0;
+      pFile->DataAppend(*pRecord);
       pFile->Close();
 
 #if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
       pSection->Release();
-#endif      
-   }
-   catch(ZdException &x) {
-     if (pTransaction) pFile->EndTransaction(pTransaction); pTransaction = 0;
-     x.AddCallpath("LogNewHistory()","stsRunHistoryFile");
-     throw;
-   }
+#endif
 }
 
 // small helper function for replacing the extension of a filename and appending it to the tempstring
@@ -501,153 +382,70 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
 // post : will replace the result output filename's extension with the replacement extension, if an extension
 //        doesn't exist on the original filename, then it will just tack on the extension THEN will append the output filename
 //        to the tempstring as long as it still fits within the fieldsize space
-void stsRunHistoryFile::ReplaceExtensionAndAppend(ZdString& sOutputFileNames, const ZdFileName& sSourceFileName, const ZdString& sReplacementExtension) {
-   try {
-      ZdString  sWorkString(sSourceFileName.GetCompleteFileName());
-      if(strlen(sSourceFileName.GetExtension()) > 0)
-         sWorkString.Replace(sSourceFileName.GetExtension(), sReplacementExtension);
-      else
-         sWorkString << sReplacementExtension;
+void stsRunHistoryFile::ReplaceExtensionAndAppend(std::string& sOutputFileNames, const FileName& sSourceFileName, const std::string& sReplacementExtension) {
+  std::string  sWorkString(sSourceFileName.getFileName() + sReplacementExtension);
 
-      // if the temp string plus the work string lengths are less than the field width then append the work string
-      // to temp string, else just print ',...'
-      if ((sOutputFileNames.GetLength() + sWorkString.GetLength()) < (OUTPUT_FILE_FIELD_LENGTH - 5))
-         sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? ", " : "") << sWorkString;
-      else if(!sOutputFileNames.EndsWith("..."))
-         sOutputFileNames << (sOutputFileNames.GetLength() > 0 ? "," : "") << "...";
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("ReplaceExtensionAndAppend()", "stsRunHistoryFile");
-      throw;
-   }
+  // if the temp string plus the work string lengths are less than the field width then append the work string
+  // to temp string, else just print ',...'
+  if ((sOutputFileNames.size() + sWorkString.size()) < (OUTPUT_FILE_FIELD_LENGTH - 5)) {
+     sOutputFileNames += (sOutputFileNames.size() > 0 ? ", " : "");
+     sOutputFileNames += sWorkString;
+  }
+  else if(sOutputFileNames.find("...") == sOutputFileNames.npos) {
+     sOutputFileNames += (sOutputFileNames.size() > 0 ? "," : "");
+     sOutputFileNames += "...";
+  }
 }
 
 // Creates the string to be outputed as the additional output filename string in the file
 // pre : none
 // post : sTempValue will contain the names of the additional output files
-void stsRunHistoryFile::SetAdditionalOutputFileNameString(ZdString& sOutputFileNames, const CParameters& params) {
-   ZdFileName   sResultFile(ZdFileName(params.GetOutputFileName().c_str()).GetCompleteFileName());
+void stsRunHistoryFile::SetAdditionalOutputFileNameString(std::string& sOutputFileNames, const CParameters& params) {
+   FileName   sResultFile(params.GetOutputFileName().c_str());
 
-   try {
-      sOutputFileNames.Clear();
+   sOutputFileNames.clear();
+   if (params.GetOutputSimLoglikeliRatiosAscii() && params.GetNumReplicationsRequested())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.txt");
+   if (params.GetOutputSimLoglikeliRatiosDBase() && params.GetNumReplicationsRequested())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.dbf");
 
-      if(params.GetOutputSimLoglikeliRatiosAscii() && params.GetNumReplicationsRequested())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.txt");
-      if (params.GetOutputSimLoglikeliRatiosDBase() && params.GetNumReplicationsRequested())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".llr.dbf");
+   if (params.GetOutputRelativeRisksAscii())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.txt");
+   if (params.GetOutputRelativeRisksDBase())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.dbf");
 
-      if(params.GetOutputRelativeRisksAscii())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.txt");
-      if(params.GetOutputRelativeRisksDBase())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".rr.dbf");
+   if (params.GetOutputAreaSpecificAscii())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.txt");
+   if (params.GetOutputAreaSpecificDBase())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.dbf");
 
-      if(params.GetOutputAreaSpecificAscii())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.txt");
-      if(params.GetOutputAreaSpecificDBase())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".gis.dbf");
+   if (params.GetOutputClusterLevelAscii())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.txt");
+   if (params.GetOutputClusterLevelDBase())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
 
-      if(params.GetOutputClusterLevelAscii())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.txt");
-      if(params.GetOutputClusterLevelDBase())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".col.dbf");
-
-      if(params.GetOutputClusterCaseAscii())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".cci.txt");
-      if(params.GetOutputClusterCaseDBase())
-         ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".cci.dbf");
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetAdditionalOutputFileNameString()", "stsRunHistoryFile");
-      throw;
-   }
+   if (params.GetOutputClusterCaseAscii())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".cci.txt");
+   if (params.GetOutputClusterCaseDBase())
+     ReplaceExtensionAndAppend(sOutputFileNames, sResultFile, ".cci.dbf");
 }
 
 // sets the global filename variable
 // pre: none
 // post: makes sure the filename has a .dbf extension - will modify the filename if it does not
-void stsRunHistoryFile::SetFileName(const ZdString& sFileName) {
-   try {
-      gsFilename = sFileName;
-      ZdString sExt(ZdFileName(sFileName).GetExtension());
-      if(sExt.GetIsEmpty())
-         gsFilename << ".dbf";
-      else if(sExt != ".dbf")
-         gsFilename.Replace(sExt, ".dbf");
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("SetFileName()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::SetFileName(const std::string& sFileName) {
+  FileName   File(sFileName.c_str());
+  if (File.getExtension().size() == 0 || stricmp(File.getExtension().c_str(), ".dbf"))
+    File.setExtension(".dbf");
+  File.getFullPath(gsFilename);
 }
 
-// sets the global variable glRunNumber and secures a unique run number in the file
-// by adding a record with that run number to fix the multithreading issue
-// if the file doesn't exist then it creates a new one and sets the run number to 1
-// pre: none
-// post: sets the run number and adds a record to the file with that number
-void stsRunHistoryFile::SetRunNumber() {
-   ZdTransaction	        *pTransaction = 0;
-   std::auto_ptr<DBFFile>       pFile;
-
-   try {
-#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
-      std::auto_ptr<TCriticalSection> pSection(new TCriticalSection());
-      pSection->Acquire();
-#endif
-      // if we don't have one then create it
-      if(!ZdIO::Exists(gsFilename.GetCString()))
-         CreateRunHistoryFile();
-
-      pFile.reset(new DBFFile(gsFilename));
-      if(gvFields.empty())
-         SetFieldVector(gvFields, *pFile);
-
-      // get the run number field, so that this only has to be found once in the vector
-      unsigned short  uwRunNumberField = GetFieldNumber(gvFields, RUN_NUMBER_FIELD);
-
-      // get a record buffer, input data and append the record
-      std::auto_ptr<ZdFileRecord> pLastRecord(pFile->GetNewRecord());
-      if(pFile->GotoLastRecord(pLastRecord.get()))      // if there's records in the file
-         glRunNumber = pLastRecord->GetLong(uwRunNumberField) + 1;
-      else
-         glRunNumber = 1;
-
-      std::auto_ptr<ZdFileRecord> pRecord(pFile->GetNewRecord());
-      pRecord->Clear();
-      pRecord->PutField(uwRunNumberField, glRunNumber);       // run number field
-      pRecord->PutField(GetFieldNumber(gvFields, OUTPUT_FILE_FIELD), "Run started, but not completed.");   // output filename field, but for now a text field
-                                                                 // that I can use to display this message - will let
-                                                                 // the user know if an anlysis failed or was cancelled - AJV 9/24/2002
-      pTransaction = pFile->BeginTransaction();
-      pFile->AppendRecord(*pTransaction, *pRecord);
-      pFile->EndTransaction(pTransaction); pTransaction = 0;
-      pFile->Close();
-
-#if defined(__BORLANDC__) && !defined(__BATCH_COMPILE)
-      pSection->Release();
-#endif
-   }
-   catch (ZdException &x) {
-      if(pTransaction)
-         pFile->EndTransaction(pTransaction);
-      pTransaction = 0;
-      x.AddCallpath("SetRunNumber()", "stsRunHistoryFile");
-      throw;
-   }
-}
-
-// strips the carriage return and line feed off of the string because some ZdFile's don't like them embedded in fields
+// strips the carriage return and line feed off of the string because some File's don't like them embedded in fields
 // pre: none
 // post: returns the string by reference without the CR or LF
-void stsRunHistoryFile::StripCRLF(ZdString& sStore) {
-   try {
-      sStore.Replace("\n", "", true);
-      sStore.Replace("\r", "", true);
-   }
-   catch (ZdException &x) {
-      x.AddCallpath("StripCRLF()", "stsRunHistoryFile");
-      throw;
-   }
+void stsRunHistoryFile::StripCRLF(std::string& sStore) {
+  sStore.erase(sStore.find_last_not_of('\n')+1);
+  sStore.erase(sStore.find_last_not_of('\r')+1);
 }
 
 

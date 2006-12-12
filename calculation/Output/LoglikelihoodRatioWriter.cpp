@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "LoglikelihoodRatioWriter.h"
+#include "SSException.h"
 
 const char * LoglikelihoodRatioWriter::TST_STAT_FIELD          = "TST_STAT";
 const char * LoglikelihoodRatioWriter::LOG_LIKL_RATIO_FIELD    = "LLR";
@@ -19,11 +20,11 @@ LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const CParameters& Parameters
     if (gParameters.GetOutputSimLoglikeliRatiosDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, LOG_LIKELIHOOD_FILE_EXT, bAppend);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpRecordBuffer; gpRecordBuffer=0;
     delete gpASCIIFileWriter; gpASCIIFileWriter=0;
     delete gpDBaseFileWriter; gpDBaseFileWriter=0;
-    x.AddCallpath("constructor()","LoglikelihoodRatioWriter");
+    x.addTrace("constructor()","LoglikelihoodRatioWriter");
     throw;
   }
 }
@@ -41,10 +42,10 @@ void LoglikelihoodRatioWriter::DefineFields() {
   unsigned short uwOffset=0;
 
   try {
-    CreateField(vFieldDefinitions, (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? TST_STAT_FIELD : LOG_LIKL_RATIO_FIELD), ZD_NUMBER_FLD, 19, 6, uwOffset);
+    CreateField(vFieldDefinitions, (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? TST_STAT_FIELD : LOG_LIKL_RATIO_FIELD), FieldValue::NUMBER_FLD, 19, 6, uwOffset);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DefineFields()","LoglikelihoodRatioWriter");
+  catch (prg_exception& x) {
+    x.addTrace("DefineFields()","LoglikelihoodRatioWriter");
     throw;
   }
 }
@@ -56,8 +57,8 @@ void LoglikelihoodRatioWriter::Write(double dLoglikelihoodRatio) {
     if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(*gpRecordBuffer);
     if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(*gpRecordBuffer);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("Write()","LoglikelihoodRatioWriter");
+  catch (prg_exception& x) {
+    x.addTrace("Write()","LoglikelihoodRatioWriter");
     throw;
   }
 }

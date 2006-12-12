@@ -5,6 +5,7 @@
 #include "LocationRiskEstimateWriter.h"
 #include "SaTScanData.h"
 #include "SVTTData.h"
+#include "SSException.h"
 
 const char * LocationRiskEstimateWriter::REL_RISK_EXT                     = ".rr";
 const char * LocationRiskEstimateWriter::TIME_TREND_FIELD                 = "TIME_TREND";
@@ -19,10 +20,10 @@ LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataH
     if (gParameters.GetOutputRelativeRisksDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, REL_RISK_EXT);
   }
-  catch (ZdException &x) {
+  catch (prg_exception& x) {
     delete gpASCIIFileWriter;
     delete gpDBaseFileWriter;
-    x.AddCallpath("constructor","LocationRiskEstimateWriter");
+    x.addTrace("constructor","LocationRiskEstimateWriter");
     throw;
   }
 }
@@ -30,35 +31,35 @@ LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataH
 /** class destructor */
 LocationRiskEstimateWriter::~LocationRiskEstimateWriter() {}
 
-// sets up the vector of field structs so that the ZdField Vector can be created
+// sets up the vector of field structs so that the FieldDef Vector can be created
 // pre: none
-// post : returns through reference a vector of ZdFields to determine the structure of the data
+// post : returns through reference a vector of FieldDef to determine the structure of the data
 void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
   unsigned short uwOffset = 0;
 
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      ZdGenerateException("Cluster Information file not implemented for SVTT and Ordinal model.","SetupFields()");
-    CreateField(vFieldDefinitions, LOC_ID_FIELD, ZD_ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
+      throw prg_error("Cluster Information file not implemented for SVTT and Ordinal model.","SetupFields()");
+    CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
     if (gParameters.GetNumDataSets() > 1)
-      CreateField(vFieldDefinitions, DATASET_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == ORDINAL)
-      CreateField(vFieldDefinitions, CATEGORY_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == NORMAL) {
-      CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-      CreateField(vFieldDefinitions, DEVIATION_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, DEVIATION_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
     }
     if (gParameters.GetProbabilityModelType() != NORMAL) {
-      CreateField(vFieldDefinitions, OBSERVED_FIELD, ZD_NUMBER_FLD, 19, 0, uwOffset);
-      CreateField(vFieldDefinitions, EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 2, uwOffset);
-      CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
-      CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
+      CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
     }
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      CreateField(vFieldDefinitions, TIME_TREND_FIELD, ZD_NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("DefineFields()","LocationRiskEstimateWriter");
+  catch (prg_exception& x) {
+    x.addTrace("DefineFields()","LocationRiskEstimateWriter");
     throw;
   }
 }
@@ -68,6 +69,8 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     encountered location with string "et al" concatenated. */
 std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_t tTractIndex, const CSaTScanData& DataHub) const {
   sId = DataHub.GetTInfo()->getIdentifier(tTractIndex);
+  //if location index is not referencing a meta location and location index is associated with more than one locations_id,
+  //then expressive this situation by appending 'et al' (if there is room).
   if ((size_t)tTractIndex < DataHub.GetTInfo()->getLocations().size() && DataHub.GetTInfo()->getLocations().at(tTractIndex)->getSecondaryIdentifiers().size()) {
     if (sId.size() + strlen(" et al") <= GetLocationIdentiferFieldLength(DataHub))
       sId += " et al";
@@ -83,8 +86,8 @@ void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
     else
       RecordRelativeRiskDataStandard(DataHub);
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RecordRelativeRiskData()","LocationRiskEstimateWriter");
+  catch (prg_exception& x) {
+    x.addTrace("RecordRelativeRiskData()","LocationRiskEstimateWriter");
     throw;
   }
 }
@@ -115,9 +118,9 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
           for (size_t j=0; j < Population.GetNumOrdinalCategories(); ++j) {
              pCases = DataSet.getCategoryCaseData(j).GetArray()[0];
              Record.SetAllFieldsBlank(true);
-             Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = sBuffer;
-             if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
-               Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
+             Record.GetFieldValue(LOC_ID_FIELD).AsString() = sBuffer;
+             if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+               Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
              if (gParameters.GetNumDataSets() > 1)
                Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
              Record.GetFieldValue(CATEGORY_FIELD).AsDouble() = j + 1;
@@ -137,8 +140,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsOrdinal(const CSaTScanD
        }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RecordRelativeRiskDataAsOrdinal(const CSaTScanData&)","RelativeRiskData");
+  catch (prg_exception& x) {
+    x.addTrace("RecordRelativeRiskDataAsOrdinal(const CSaTScanData&)","RelativeRiskData");
     throw;
   }
 }
@@ -163,9 +166,9 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
        for (t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
-          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = getLocationId(sBuffer, t, DataHub);
-          if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
-            Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
+          Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
+          if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+            Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
           if (gParameters.GetProbabilityModelType() == NORMAL) {
@@ -191,8 +194,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
        }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RecordRelativeRiskDataStandard(const CSaTScanData&)","LocationRiskEstimateWriter");
+  catch (prg_exception& x) {
+    x.addTrace("RecordRelativeRiskDataStandard(const CSaTScanData&)","LocationRiskEstimateWriter");
     throw;
   }
 }
@@ -220,9 +223,9 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
        for (t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
-          Record.GetFieldValue(LOC_ID_FIELD).AsZdString() = getLocationId(sBuffer, t, DataHub);
-          if (Record.GetFieldValue(LOC_ID_FIELD).AsZdString().GetLength() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
-            Record.GetFieldValue(LOC_ID_FIELD).AsZdString().Truncate(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
+          Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
+          if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+            Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
           Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
@@ -251,8 +254,8 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
        }
     }
   }
-  catch (ZdException &x) {
-    x.AddCallpath("RecordRelativeRiskData(const CSVTTData&)","RelativeRiskData");
+  catch (prg_exception& x) {
+    x.addTrace("RecordRelativeRiskData(const CSVTTData&)","RelativeRiskData");
     throw;
   }
 }
