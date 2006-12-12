@@ -3,11 +3,18 @@
 #define __stsSatScan_H
 //---------------------------------------------------------------------------
 #include <vcl.h>
+#include "SaTScan.h"
+
 #include "stsFrmDownloadProgress.h" // must be included here, prior to 
 				    // zd header defining SOCKET
-#include "SaTScan.h"
+
+#ifndef ZDHEADER
+   #define ZDHEADER "zd543.h"
+#endif
+#include ZDHEADER
+
 #include <Basis540.h>
-#include "DBFFile.h"
+#include "stsDBFFile.h"
 #include "stsFrmAbout.h"
 #include "SSException.h"
 #include "stsFrmAnalysisRun.h"
