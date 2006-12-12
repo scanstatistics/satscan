@@ -153,7 +153,7 @@ void PrintQueue::UpdateThreshold()
 
 long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnConstruction()
 {
-   if (Timestamp::Current(false) > gtsReleaseTime)
+   if (SaTScan::Timestamp::Current(false) > gtsReleaseTime)
    {
       return 0;
    }
@@ -165,7 +165,7 @@ long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnConstruction()
 
 long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue(long lCurrentThreshold, long lCurrentSize)
 {
-   if (Timestamp::Current(false) > gtsReleaseTime)
+   if (SaTScan::Timestamp::Current(false) > gtsReleaseTime)
    {
       return 0;
    }
@@ -177,7 +177,7 @@ long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue(long lCurrentThre
 
 long TimedReleaseThresholdPolicy::GetRecommendedThresholdValue_OnDestruction(long, long)
 {
-   Timestamp CurrentTime;
+   SaTScan::Timestamp CurrentTime;
    CurrentTime.Now(false);
    if (CurrentTime < gtsReleaseTime)
    {

@@ -72,13 +72,13 @@ public:
 class TimedReleaseThresholdPolicy : public PrintQueue::threshold_policy_i
 {
 private:
-   Timestamp gtsReleaseTime;//the time after which the RecommendedThresholdValue goes to 0.
+   SaTScan::Timestamp gtsReleaseTime;//the time after which the RecommendedThresholdValue goes to 0.
 
 public:
-   TimedReleaseThresholdPolicy(Timestamp tsReleaseTime) : gtsReleaseTime(tsReleaseTime) {  }
+   TimedReleaseThresholdPolicy(SaTScan::Timestamp tsReleaseTime) : gtsReleaseTime(tsReleaseTime) {  }
    virtual ~TimedReleaseThresholdPolicy() {}
 
-   void SetFinalizationTime(Timestamp tsNewTime) { gtsReleaseTime = tsNewTime; }
+   void SetFinalizationTime(SaTScan::Timestamp tsNewTime) { gtsReleaseTime = tsNewTime; }
 
    virtual TimedReleaseThresholdPolicy * Clone() const { return new TimedReleaseThresholdPolicy(*this); }
    virtual long GetRecommendedThresholdValue_OnConstruction();
