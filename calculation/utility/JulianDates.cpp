@@ -260,7 +260,7 @@ Julian DecrementableEndDate::Decrement(unsigned long ulLength) {
       //calculate new date
       nTotalMonths = ((nYear1 * 12) + nMon1) - ulLength -1;
       nMon2 = (nTotalMonths % 12) + 1;
-      nYear2 = (UInt)floor(nTotalMonths / 12);
+      nYear2 = (UInt)floor(static_cast<double>(nTotalMonths / 12));
       //stored calculated target month for next function call
       giCurrentDateTargetMonth = nMon2;
       //if the starting date's day was greater than 28, the day varies from

@@ -24,8 +24,8 @@ DateStringParser::ParserStatus DateStringParser::Ensure4DigitYear(unsigned int& 
 
   JulianToMDY(&month, &day, &nLowerBound, LowerBoundDt);
   JulianToMDY(&month, &day, &nUpperBound, UpperBoundDt);
-  nLowerC = (unsigned int) floor(nLowerBound / 100);
-  nUpperC = (unsigned int) floor(nUpperBound / 100);
+  nLowerC = (unsigned int) floor(static_cast<double>(nLowerBound / 100));
+  nUpperC = (unsigned int) floor(static_cast<double>(nUpperBound / 100));
   nLowerD = nLowerBound - nLowerC*100;
   nUpperD = nUpperBound - nUpperC*100;
 
