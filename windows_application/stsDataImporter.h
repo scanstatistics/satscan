@@ -2,7 +2,7 @@
 #ifndef stsDataImporterH
 #define stsDataImporterH
 //---------------------------------------------------------------------------
-#include "ScanfFile.h"
+#include "stsScanfFile.h"
 
 enum InputFileType      {Case=0, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR};
 enum SourceDataFileType {Delimited=0, Fixed_Column, dBase};

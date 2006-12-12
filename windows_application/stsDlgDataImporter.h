@@ -1,4 +1,4 @@
-// $Revision: 1.18 $
+// $Revision: 1.19 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -14,7 +14,7 @@
 #include <StdCtrls.hpp>
 #include <FileCtrl.hpp>
 //------------------------------------------------------------------------------
-#include "ScanfFile.h"
+#include "stsScanfFile.h"
 
 class SourceViewController : public BZdFileViewController {
   protected:
