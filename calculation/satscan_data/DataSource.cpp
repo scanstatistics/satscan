@@ -8,29 +8,15 @@
 
 /** Static method which returns newly allocated DataSource object. */
 DataSource * DataSource::GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII) {
-   long             lIndex=0;
-   bool             bFoundFile=false;
-   vecZdFileTypes * pFileTypeArray = ZdGetFileTypeArray();
-   ZdFileType     * pFileType = 0;
-   FileName         theFile(sSourceFilename.c_str());
-
-   if (!bAssumeASCII) {
-     while (!bFoundFile && (lIndex < (long)pFileTypeArray->size())) {
-           pFileType = (*pFileTypeArray)[lIndex];
-           if (!stricmp(theFile.getExtension().c_str(), pFileType->GetFileTypeExtension()))
-              bFoundFile = true;
-           lIndex++;
-     }
-   }  
-
-    if (bFoundFile && !stricmp(theFile.getExtension().c_str(), ".dbf"))
+    FileName theFile(sSourceFilename.c_str());
+    if (!bAssumeASCII && !stricmp(theFile.getExtension().c_str(), dBaseFile::GetFileTypeExtension()))
       //Though ZdFile hierarchy has other files types, most are not formats used outside IMS.
       //There are 3 that could be used: dBase, comma separated, and scanf.
       //The scanf version could possibly replace AsciiFileDataSource but is likely slower.
       //The comma separated version would probably work but user would have to use default
       //field delimiter (comma) and group delimiter (double quote).
       //The dBase version is already used to create output files and is a common format. 
-      return new ZdFileDataSource(sSourceFilename, *pFileType);
+      return new dBaseFileDataSource(sSourceFilename);
     else
       return new AsciiFileDataSource(sSourceFilename, Print);
 }
@@ -104,7 +90,9 @@ const char * AsciiFileDataSource::StringParser::GetWord(long wWordIndex) {
 /** sets current parsing string -- returns indication of whether string contains any words. */
 bool AsciiFileDataSource::StringParser::SetString(std::string& sParseLine) {
    gwCurrentWordIndex=-1; //clear word index
-   trimString(sParseLine, "\r"); //std::getline is leaving carriage return on Solaris
+#ifndef _WINDOWS_
+   trimString(sParseLine, "\r"); //std::getline is leaving carriage return on DOS text files
+#endif
    gpParseLine = &sParseLine;
    gcp = gpParseLine->c_str();
    return HasWords();
@@ -168,62 +156,68 @@ void AsciiFileDataSource::ThrowUnicodeException() {
                          gPrint.GetImpliedFileTypeString().c_str());
 }
 
-//******************* class ZdFileDataSource ***********************************
+//******************* class dBaseFileDataSource ***********************************
 
 /** constructor */
-ZdFileDataSource::ZdFileDataSource(const std::string& sSourceFilename, ZdFileType& FileType)
-                 :DataSource(), gwCurrentFieldIndex(-1), gbFirstRead(true) {
+dBaseFileDataSource::dBaseFileDataSource(const std::string& sSourceFilename)
+                 :DataSource(), gwCurrentFieldIndex(-1), gbFirstRead(true), glCurrentRecord(0) {
   try {
-    gSourceFile.reset(FileType.Instantiate());
-    gSourceFile->Open(sSourceFilename.c_str(), ZDIO_SREAD);
-    //set date field format to that expected by current SaTScan date parser
-    for (unsigned short w=0; w < gSourceFile->GetNumFields(); w++) 
-       if (gSourceFile->GetFieldInfo(w)->GetType() == ZD_DATE_FLD)
-         gSourceFile->GetFieldInfo(w)->SetFormat(ZdField::Filtered, "", new ZdDateFilter("%y/%m/%d"));
+    gSourceFile.reset(new dBaseFile());
+    gSourceFile->Open(sSourceFilename.c_str());
+    glNumRecords = gSourceFile->GetNumRecords();
   }
-  catch (ZdException & x) {
+  catch (prg_exception & x) {
     throw resolvable_error("Error: Could not open file:\n'%s'.\n", sSourceFilename.c_str());
   }
 }
 
 /** destructor */
-ZdFileDataSource::~ZdFileDataSource() {}
+dBaseFileDataSource::~dBaseFileDataSource() {}
 
 /** Returns current record index. */
-long ZdFileDataSource::GetCurrentRecordIndex() const {
-  return static_cast<long>(gSourceFile->GetSelectedRecordNumber());
+long dBaseFileDataSource::GetCurrentRecordIndex() const {
+  return static_cast<long>(glCurrentRecord);
 }
 
 /** Returns the number of fields in record buffer. */
-long ZdFileDataSource::GetNumValues() {
+long dBaseFileDataSource::GetNumValues() {
   return gSourceFile->GetNumFields();
 }
 
 /** Returns iFieldIndex'th field value from current record. */
-const char * ZdFileDataSource::GetValueAt(long iFieldIndex) {
+const char * dBaseFileDataSource::GetValueAt(long iFieldIndex) {
   if (gwCurrentFieldIndex != iFieldIndex) {
-    if (iFieldIndex > gSourceFile->GetNumFields() - 1)
+    if (iFieldIndex > (long)(gSourceFile->GetNumFields() - 1))
       return 0;
-    gSourceFile->GetSystemRecord()->GetField(iFieldIndex, gTempBuffer, sizeof(gTempBuffer), true);
+    gSourceFile->GetSystemRecord()->GetFieldValue(iFieldIndex, gsValue);
+    if (gSourceFile->GetSystemRecord()->GetFieldType(iFieldIndex) == FieldValue::DATE_FLD && gsValue.size() == SaTScan::Timestamp::DATE_FLD_LEN) {
+      //format date fields -- read process currently expects yyyy/mm/dd
+      gsValue.insert(4, "/");
+      gsValue.insert(7, "/");
+    }
     gwCurrentFieldIndex = iFieldIndex;
   }
-  return gTempBuffer;
+  return gsValue.c_str();
 }
 
 /** Positions read cursor to first record. */
-void ZdFileDataSource::GotoFirstRecord() {
-  gSourceFile->GotoFirstRecord();
-  gbFirstRead = true;
-  gwCurrentFieldIndex=-1;
+void dBaseFileDataSource::GotoFirstRecord() {
+  if (glNumRecords) {
+    gSourceFile->GotoRecord(1);
+    glCurrentRecord = 1;
+    gbFirstRead = false;
+    gwCurrentFieldIndex=-1;
+  }  
 }
 
 /** Either reads first file record in file or next after current record. */
-bool ZdFileDataSource::ReadRecord() {
+bool dBaseFileDataSource::ReadRecord() {
+  if (glCurrentRecord >= glNumRecords) return false;
   gwCurrentFieldIndex=-1;
-  if (gbFirstRead) {
-    gbFirstRead = false;
-    return gSourceFile->GotoFirstRecord();
-  }
-  return gSourceFile->GotoNextRecord();
+  if (gbFirstRead)
+    GotoFirstRecord();
+  else
+    gSourceFile->GotoRecord(++glCurrentRecord);
+  return true;  
 }
 

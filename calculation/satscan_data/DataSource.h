@@ -6,6 +6,7 @@
 #include "UtilityFunctions.h"
 #include <iostream>
 #include <fstream>
+#include "dBaseFile.h"
 
 /** Input data source abstraction. */
 class DataSource {
@@ -64,18 +65,19 @@ class AsciiFileDataSource : public DataSource {
      virtual bool                       ReadRecord();
 };
 
-/** ZdFile file data source (dBase, Scanf, etc.). */
-class ZdFileDataSource : public DataSource {
+/** dBase file data source. */
+class dBaseFileDataSource : public DataSource {
    private:
-     std::auto_ptr<ZdFile>              gSourceFile;
+     std::auto_ptr<dBaseFile>           gSourceFile;
      std::string                        gsValue;
-     mutable char                       gTempBuffer[ZD_BUFFER_LEN];
      long                               gwCurrentFieldIndex;
      bool                               gbFirstRead;
+     unsigned long                      glNumRecords;
+     unsigned long                      glCurrentRecord;
 
    public:
-     ZdFileDataSource(const std::string& sSourceFilename, ZdFileType& FileType);
-     virtual ~ZdFileDataSource();
+     dBaseFileDataSource(const std::string& sSourceFilename);
+     virtual ~dBaseFileDataSource();
 
      virtual long                       GetCurrentRecordIndex() const;
      virtual long                       GetNumValues();
