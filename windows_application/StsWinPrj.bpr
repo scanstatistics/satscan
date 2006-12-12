@@ -10,12 +10,11 @@
       stsFrmDownloadProgress.obj stsFrmUpdateCheck.obj 
       stsBaseAnalysisChildForm.obj stsFrmStartWindow.obj 
       stsFrmAdvancedParameters.obj ..\calculation\Parameters.obj 
-      ..\calculation\Toolkit.obj ..\calculation\utility\ScanfFile.obj 
-      ..\calculation\utility\UtilityFunctions.obj 
+      ..\calculation\Toolkit.obj ..\calculation\utility\UtilityFunctions.obj 
       ..\calculation\utility\JulianDates.obj 
       ..\calculation\utility\RandomNumberGenerator.obj 
       ..\calculation\utility\RandomDistribution.obj 
-      ..\calculation\utility\SSException.obj ..\calculation\utility\DBFFile.obj 
+      ..\calculation\utility\SSException.obj 
       ..\calculation\utility\MultipleDimensionArrayHandler.obj 
       ..\calculation\print\BasePrint.obj ..\calculation\print\PrintScreen.obj 
       ..\calculation\print\PrintQueue.obj 
@@ -148,7 +147,9 @@
       ..\calculation\satscan_data\MetaTractManager.obj 
       ..\calculation\analysis\SVTTCentricAnalysis.obj 
       ..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.obj 
-      ..\calculation\utility\FileName.obj ..\calculation\utility\Ini.obj"/>
+      ..\calculation\utility\FileName.obj ..\calculation\utility\Ini.obj 
+      ..\calculation\utility\dBaseFile.obj ..\calculation\utility\TimeStamp.obj 
+      ..\calculation\utility\FieldDef.obj stsDBFFile.obj stsScanfFile.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 

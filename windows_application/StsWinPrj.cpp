@@ -22,13 +22,11 @@ USEFORM("stsFrmStartWindow.cpp", frmStartWindow);
 USEFORM("stsFrmAdvancedParameters.cpp", frmAdvancedParameters);
 USEUNIT("..\calculation\Parameters.cpp");
 USEUNIT("..\calculation\Toolkit.cpp");
-USEUNIT("..\calculation\utility\ScanfFile.cpp");
 USEUNIT("..\calculation\utility\UtilityFunctions.cpp");
 USEUNIT("..\calculation\utility\JulianDates.cpp");
 USEUNIT("..\calculation\utility\RandomNumberGenerator.cpp");
 USEUNIT("..\calculation\utility\RandomDistribution.cpp");
 USEUNIT("..\calculation\utility\SSException.cpp");
-USEUNIT("..\calculation\utility\DBFFile.cpp");
 USEUNIT("..\calculation\utility\MultipleDimensionArrayHandler.cpp");
 USEUNIT("..\calculation\print\BasePrint.cpp");
 USEUNIT("..\calculation\print\PrintScreen.cpp");
@@ -169,6 +167,11 @@ USEUNIT("..\calculation\analysis\SVTTCentricAnalysis.cpp");
 USEUNIT("..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp");
 USEUNIT("..\calculation\utility\FileName.cpp");
 USEUNIT("..\calculation\utility\Ini.cpp");
+USEUNIT("..\calculation\utility\dBaseFile.cpp");
+USEUNIT("..\calculation\utility\TimeStamp.cpp");
+USEUNIT("..\calculation\utility\FieldDef.cpp");
+USEUNIT("stsDBFFile.cpp");
+USEUNIT("stsScanfFile.cpp");
 //---------------------------------------------------------------------------
 void __SaTScanInit() {
   BasisInit();
