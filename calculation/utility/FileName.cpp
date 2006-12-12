@@ -52,7 +52,7 @@ void FileName::convertToAbsolutePath() {
 
 #ifdef _WINDOWS_
   char sBuffer[MAX_PATH];
-  if (GetFullPathName(getFullPath(fullPath).c_str(), MAX_PATH, sBuffer, 0))
+  if (GetFullPathName((LPCTSTR)getFullPath(fullPath).c_str(), MAX_PATH, (LPTSTR)sBuffer, 0))
 #else
   char sBuffer[PATH_MAX];
   if (realpath(getFullPath(fullPath).c_str(), sBuffer))
@@ -153,7 +153,7 @@ void FileName::setFullPath(const char* sFileName) {
   sFullName[0] = '\0';
   //This will add on the drive and directory if not already specified
   if (sFileName[0])
-    if (!GetFullPathName(sFileName, MAX_PATH, sFullName, &pTrash))
+    if (!GetFullPathName((LPCTSTR)sFileName, MAX_PATH, (LPTSTR)sFullName, (LPTSTR*)&pTrash))
       throw prg_error("Could not get full path name", "setFullPath");
   sWorkPath = sFullName;
 #else
