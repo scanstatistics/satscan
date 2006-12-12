@@ -6,13 +6,15 @@
 #include <string.h>
 #include <ctype.h>
 
+namespace SaTScan {
 
-class Timestamp
-{
-private:
+class Timestamp {
+public:
    static const short  STAMP_FLD_LEN         =   17;
    static const short  DATE_FLD_LEN          =    8;
-   static const short  TIME_FLD_LEN          =    9; 
+   static const short  TIME_FLD_LEN          =    9;
+
+private:
    static const char mgsDefault[STAMP_FLD_LEN+1];
    static const unsigned short  mguwDays[12];
    static const unsigned short  mguwJulianDaysUpToMonth[12];
@@ -39,10 +41,10 @@ public:
    inline bool     operator>=  (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) >= 0 ); }
    inline bool     operator<=  (const Timestamp &rhs) const  { return ( memcmp ( gsStamp, rhs.gsStamp, STAMP_FLD_LEN ) <= 0 ); }
 
-//   inline int      DateCompare ( const Timestamp &rhs ) const { return memcmp ( gsStamp, rhs.gsStamp, ZD_DATE_FLD_LEN ); }
-//   inline int      TimeCompare ( const Timestamp &rhs ) const { return memcmp ( gsStamp + ZD_DATE_FLD_LEN, rhs.gsStamp + ZD_DATE_FLD_LEN, ZD_TIME_FLD_LEN ); }
+   inline int      DateCompare ( const Timestamp &rhs ) const { return memcmp ( gsStamp, rhs.gsStamp, DATE_FLD_LEN ); }
+   inline int      TimeCompare ( const Timestamp &rhs ) const { return memcmp ( gsStamp + DATE_FLD_LEN, rhs.gsStamp + DATE_FLD_LEN, TIME_FLD_LEN ); }
 
-   unsigned long          GetJulianDayFromCalendarStart() const;
+   unsigned long   GetJulianDayFromCalendarStart() const;
    void            SetJulianDayFromCalendarStart ( unsigned long ulJulian );
 
    inline void     AddDays ( long uwAmt )                   { SetJulianDayFromCalendarStart ( GetJulianDayFromCalendarStart() + uwAmt ); }
@@ -182,6 +184,101 @@ inline unsigned short Timestamp::GetYear() const
                          + (long)gsStamp[2] * 10 + (long)gsStamp[3] - 1111 * (long)'0' );
 }
 
+class Date {
+  private:
+    Timestamp   gStamp; // The date
+    mutable char  gsRawDate[Timestamp::DATE_FLD_LEN+1]; // Used by get raw date
+
+  public:
+
+   inline Date()                                        { Clear(); }
+   inline explicit Date ( const Timestamp &stamp ) : gStamp ( stamp ) {}
+   inline Date ( const Date &rhs ) : gStamp ( rhs.gStamp ) {}
+   virtual ~Date() {}
+
+   inline virtual Date * Clone() const                  { return new Date(*this); }
+
+   inline operator Timestamp &()                        { return gStamp; }
+   inline operator const Timestamp &() const            { return gStamp; }
+
+   inline Date &operator= (const Date& rhs)           { gStamp = rhs.gStamp; return *this; }
+   inline Date &operator= ( const char *sDate )         { SetRawDate ( sDate ); return *this; }
+
+   inline bool     operator==  (const Date& rhs) const  { return !gStamp.DateCompare ( rhs.gStamp ); }
+
+   inline bool     operator!=  (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ); }
+   inline bool     operator>   (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) > 0; }
+   inline bool     operator<   (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) < 0; };
+   inline bool     operator>=  (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) >= 0; }
+   inline bool     operator<=  (const Date& rhs) const  { return gStamp.DateCompare ( rhs.gStamp ) <= 0; }
+
+   inline void     AddDays ( unsigned short uwAmt )                  { gStamp.AddDays ( uwAmt ); }
+   inline void     AddMonths ( unsigned short uwAmt )                { gStamp.AddMonths ( uwAmt ); }
+   inline void     AddYears ( unsigned short uwAmt )                 { gStamp.AddYears ( uwAmt ); }
+
+   inline void            Clear()                                               { gStamp.Clear(); }
+   inline unsigned short  GetDay() const                                        { return gStamp.GetDay(); }
+   inline unsigned short  GetDayOfWeek() const                                  { return gStamp.GetDayOfWeek(); }
+   inline unsigned short  GetMonth() const                                      { return gStamp.GetMonth(); }
+   inline unsigned short  GetYear() const                                       { return gStamp.GetYear(); }
+   inline unsigned long   GetJulianDayFromCalendarStart() const                 { return gStamp.GetJulianDayFromCalendarStart(); }
+   inline const char *    GetRawDate() const                                    { gStamp.StoreDateOnly ( gsRawDate ); gsRawDate[Timestamp::DATE_FLD_LEN] = 0; return gsRawDate; }
+   inline void            RetrieveRawDate(std::string & sValue) const              { char sRawDate[Timestamp::DATE_FLD_LEN + 1]; gStamp.StoreDateOnly ( sRawDate ); sRawDate[Timestamp::DATE_FLD_LEN] = 0; sValue = sRawDate; }
+   void            SetRawDate ( const void *pDate )                             { gStamp.SetRawDate ( pDate ); }
+   inline void     SetDay(unsigned short wDay)                                  { gStamp.SetDay ( wDay ); }
+   inline void     SetJulianDayFromCalendarStart ( unsigned long ulJulian )     { gStamp.SetJulianDayFromCalendarStart ( ulJulian ); }
+   inline void     SetMonth(unsigned short wMonth)                              { gStamp.SetMonth ( wMonth ); }
+   inline void     SetYear(unsigned short wYear )                               { gStamp.SetYear ( wYear ); }
+   void            StoreDate ( void *sDate ) const                              { gStamp.StoreDateOnly ( sDate ); }
+   inline void     Today()                                                      { gStamp.Now(); gStamp.ClearTime(); }
+};
+
+
+class Time {
+  private:
+    Timestamp gStamp; // The date
+
+  public:
+   inline Time()                                        { Clear(); }
+   inline explicit Time ( const Timestamp &stamp ) : gStamp ( stamp ) {}
+   inline Time ( const Time &rhs ) : gStamp ( rhs.gStamp ) {}
+   virtual ~Time() {}
+
+   inline virtual Time * Clone() const                  { return new Time(*this); }
+
+   inline operator Timestamp &()                        { return gStamp; }
+   inline operator const Timestamp &() const            { return gStamp; }
+
+   inline Time &operator= (const Time& rhs)           { gStamp = rhs.gStamp; return *this; }
+
+   inline bool     operator==  (const Time& rhs) const  { return !gStamp.TimeCompare ( rhs.gStamp ); }
+
+   inline bool     operator!=  (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ); }
+   inline bool     operator>   (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) > 0; }
+   inline bool     operator<   (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) < 0; };
+   inline bool     operator>=  (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) >= 0; }
+   inline bool     operator<=  (const Time& rhs) const  { return gStamp.TimeCompare ( rhs.gStamp ) <= 0; }
+
+   inline void            Clear()                                    { gStamp.Clear(); }
+   inline const char *    GetRawTime() const                         { return gStamp.GetRawTime(); }
+   inline void            RetrieveRawTime(std::string & sValue) const   { sValue = gStamp.GetRawTime(); }
+   inline unsigned short  GetHour() const                            { return gStamp.GetHour(); }
+   inline unsigned short  GetMinute() const                          { return gStamp.GetMinute(); }
+   inline unsigned short  GetMillisecond() const                     { return gStamp.GetMillisecond(); }
+   inline unsigned short  GetSecond() const                          { return gStamp.GetSecond(); }
+   inline double          GetFractionalDay() const                   { return gStamp.GetFractionalDay(); }
+   inline unsigned long   GetTimeInMilliseconds() const              { return gStamp.GetTimeInMilliseconds(); }
+   void            SetRawTime ( const void *pTime )                  { gStamp.SetRawTime ( pTime ); }
+   inline void     SetTimeInMilliseconds ( unsigned long ulMilli )   { gStamp.SetTimeInMilliseconds ( ulMilli ); }
+   inline void     SetHour(unsigned short uwHour)                    { gStamp.SetHour ( uwHour ); }
+   inline void     SetMinute(unsigned short uwMin)                   { gStamp.SetMinute ( uwMin ); }
+   inline void     SetMillisecond( unsigned short uwMilli )          { gStamp.SetMillisecond ( uwMilli ); }
+   inline void     SetSecond(unsigned short uwSec)                   { gStamp.SetSecond ( uwSec ); }
+   void            StoreTime ( void *sTime ) const                   { gStamp.StoreTimeOnly ( sTime ); }
+   inline void     Now( bool bNoMilliseconds = true )                { gStamp.Now ( bNoMilliseconds ); gStamp.ClearDate(); }
+};
+
+}
 //******************************************************************************
 #endif
 

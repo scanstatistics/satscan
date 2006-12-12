@@ -6,16 +6,16 @@
 #include "SSException.h"
 
 // Default timestamp
-const char Timestamp::mgsDefault[STAMP_FLD_LEN+1] = "00010101000000000";
+const char SaTScan::Timestamp::mgsDefault[STAMP_FLD_LEN+1] = "00010101000000000";
 
 // Zero-based month index
-const unsigned short  Timestamp::mguwDays[12] = {31,29,31,30,31,30,31,31,30,31,30,31};
+const unsigned short  SaTScan::Timestamp::mguwDays[12] = {31,29,31,30,31,30,31,31,30,31,30,31};
 
 // Number of days before a given month
-const unsigned short  Timestamp::mguwJulianDaysUpToMonth[12] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
+const unsigned short  SaTScan::Timestamp::mguwJulianDaysUpToMonth[12] = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
 
 // Adds uwAmt hours to the current time. Note that this may change the date.
-void Timestamp::AddHours ( long lAmt )
+void SaTScan::Timestamp::AddHours ( long lAmt )
 {
    long   lHours; // Current hour
    long   lDays;  // Number of days to add
@@ -47,7 +47,7 @@ void Timestamp::AddHours ( long lAmt )
 }
 
 // Adds uwAmt milliseconds to the time.
-void Timestamp::AddMilliseconds ( long lAmt )
+void SaTScan::Timestamp::AddMilliseconds ( long lAmt )
 {
    long   lMillis; // Current milliseconds
    long   lSecs;
@@ -79,7 +79,7 @@ void Timestamp::AddMilliseconds ( long lAmt )
 }
 
 // Adds uwAmt minutes to the time.
-void Timestamp::AddMinutes ( long lAmt )
+void SaTScan::Timestamp::AddMinutes ( long lAmt )
 {
    long   lMins; // Current milliseconds
    long   lHours;
@@ -112,7 +112,7 @@ void Timestamp::AddMinutes ( long lAmt )
 
 // Adds uwAmt months to the date. Note that this may cause both the year AND the
 // _day_ to change.
-void Timestamp::AddMonths ( long lAmt )
+void SaTScan::Timestamp::AddMonths ( long lAmt )
 {
    long   lMonth; // Current month
    long   lYears;
@@ -151,7 +151,7 @@ void Timestamp::AddMonths ( long lAmt )
 }
 
 // Adds uwAmt milliseconds to the time.
-void Timestamp::AddSeconds ( long lAmt )
+void SaTScan::Timestamp::AddSeconds ( long lAmt )
 {
    long   lSecs; // Current milliseconds
    long   lMins;
@@ -183,7 +183,7 @@ void Timestamp::AddSeconds ( long lAmt )
 }
 
 // Adds uwAmt years to the date. Month and day are unchanged.
-void Timestamp::AddYears ( long lAmt )
+void SaTScan::Timestamp::AddYears ( long lAmt )
 {
    long lYear;  // The new year
 
@@ -204,7 +204,7 @@ void Timestamp::AddYears ( long lAmt )
 }
 
 // Returns the day of the week for the date.
-unsigned short Timestamp::GetDayOfWeek() const
+unsigned short SaTScan::Timestamp::GetDayOfWeek() const
 {
    unsigned short uwAdjYear;  // The adjusted year
    unsigned short uwAdjMonth;  // The adjusted month
@@ -236,7 +236,7 @@ unsigned short Timestamp::GetDayOfWeek() const
 }
 
 // Returns the current time as a fraction of a day
-double Timestamp::GetFractionalDay() const
+double SaTScan::Timestamp::GetFractionalDay() const
 {
    double dRetVal;
 
@@ -260,7 +260,7 @@ double Timestamp::GetFractionalDay() const
 // Returns the julian date. Standard julian dates are reckoned from January 1,
 // 4713 BC at noon. Thus, the start of our calendar is at 1721424.5 in this
 // system
-double Timestamp::GetJulianDate() const
+double SaTScan::Timestamp::GetJulianDate() const
 {
    double   dRetVal;
 
@@ -281,7 +281,7 @@ double Timestamp::GetJulianDate() const
 // Returns the julian date from January 1st,1 at midnight. This is to
 // coincide with Borland's concept of a Julian date. Other functions are
 // provided to get "real" Julian dates.
-double Timestamp::GetJulianDateFromCalendarStart() const
+double SaTScan::Timestamp::GetJulianDateFromCalendarStart() const
 {
    double   dRetVal;
 
@@ -301,7 +301,7 @@ double Timestamp::GetJulianDateFromCalendarStart() const
 
 // Returns the number of days from January 1st, 1. ( The initial day is
 // included, so January 1st,1 is 1. )
-unsigned long Timestamp::GetJulianDayFromCalendarStart() const
+unsigned long SaTScan::Timestamp::GetJulianDayFromCalendarStart() const
 {
    unsigned short uwLeapYearYear; // The "leap year year", starts at 03/01
    unsigned long  ulRetVal;       // Return value
@@ -335,7 +335,7 @@ unsigned long Timestamp::GetJulianDayFromCalendarStart() const
 // Returns the modified Julian date. Modified Julian dates are reckoned from
 // November 17th, 1858 at midnight. Thus, the start of our calendar is
 // -678576 as a modified Julian dates.
-double Timestamp::GetModifiedJulianDate() const
+double SaTScan::Timestamp::GetModifiedJulianDate() const
 {
    double   dRetVal;
 
@@ -354,7 +354,7 @@ double Timestamp::GetModifiedJulianDate() const
 }
 
 // Returns the time of day in milliseconds since midnight
-unsigned long Timestamp::GetTimeInMilliseconds() const
+unsigned long SaTScan::Timestamp::GetTimeInMilliseconds() const
 {
    unsigned long ulRetVal;
 
@@ -373,8 +373,8 @@ unsigned long Timestamp::GetTimeInMilliseconds() const
    return ulRetVal;
 }
 
-#ifdef INTEL_BASED
-void Timestamp::MakeLocalTime()
+#ifdef _WINDOWS_
+void SaTScan::Timestamp::MakeLocalTime()
 {
    TIME_ZONE_INFORMATION  tzInfo;
    DWORD                  dwRetVal;
@@ -401,7 +401,7 @@ void Timestamp::MakeLocalTime()
 
 }
 
-void Timestamp::MakeUniversalTime()
+void SaTScan::Timestamp::MakeUniversalTime()
 {
    TIME_ZONE_INFORMATION  tzInfo;
    DWORD                  dwRetVal;
@@ -425,7 +425,7 @@ void Timestamp::MakeUniversalTime()
 
 }
 
-void Timestamp::Now ( bool bNoMilliseconds )
+void SaTScan::Timestamp::Now ( bool bNoMilliseconds )
 {
    SYSTEMTIME        SysTime;
 
@@ -448,7 +448,7 @@ void Timestamp::Now ( bool bNoMilliseconds )
       }
 }
 #else
-void Timestamp::MakeLocalTime()
+void SaTScan::Timestamp::MakeLocalTime()
 {
    time_t tempTime_t(time(0));
    tm * pTm(localtime(&tempTime_t));
@@ -476,7 +476,7 @@ void Timestamp::MakeLocalTime()
 
 }
 
-void Timestamp::MakeUniversalTime()
+void SaTScan::Timestamp::MakeUniversalTime()
 {
    time_t tempTime_t(time(0));
    tm * pTm(gmtime(&tempTime_t));
@@ -505,7 +505,7 @@ void Timestamp::MakeUniversalTime()
 }
 
 // Sets the time to the current UTC.
-void Timestamp::Now ( bool bNoMilli )
+void SaTScan::Timestamp::Now ( bool bNoMilli )
 {
    struct timeval   tmStruct;
 
@@ -532,7 +532,7 @@ void Timestamp::Now ( bool bNoMilli )
 
 // Checks to see if the day entered is a valid one and
 // then replaces the current day with the new one.
-void Timestamp::SetDay(unsigned short uwDay)
+void SaTScan::Timestamp::SetDay(unsigned short uwDay)
 {
      try
         {
@@ -550,7 +550,7 @@ void Timestamp::SetDay(unsigned short uwDay)
 }
 
 // Sets the hour of the time field.
-void Timestamp::SetHour(unsigned short uwHour)
+void SaTScan::Timestamp::SetHour(unsigned short uwHour)
 {
    try
       {
@@ -569,7 +569,7 @@ void Timestamp::SetHour(unsigned short uwHour)
 
 // Sets the timestamp using the julian day dTime. dTime is considered to be the
 // total number of days since January 1st, 4713 BC 12:00pm
-void Timestamp::SetJulianDate ( double dTime )
+void SaTScan::Timestamp::SetJulianDate ( double dTime )
 {
    try
       {
@@ -586,7 +586,7 @@ void Timestamp::SetJulianDate ( double dTime )
 
 // Sets the timestamp using the julian day dTime. dTime is considered to be the
 // total number of days since January 1st, 1 12:00am.
-void Timestamp::SetJulianDateFromCalendarStart ( double dTime )
+void SaTScan::Timestamp::SetJulianDateFromCalendarStart ( double dTime )
 {
    try
       {
@@ -601,7 +601,7 @@ void Timestamp::SetJulianDateFromCalendarStart ( double dTime )
       }
 }
 
-void Timestamp::SetJulianDayFromCalendarStart ( unsigned long ulJulian )
+void SaTScan::Timestamp::SetJulianDayFromCalendarStart ( unsigned long ulJulian )
 {
    unsigned short  uwYear;
    unsigned short  uwMonth;
@@ -674,7 +674,7 @@ void Timestamp::SetJulianDayFromCalendarStart ( unsigned long ulJulian )
 }
 
 // Sets the minute
-void Timestamp::SetMinute(unsigned short uwMin)
+void SaTScan::Timestamp::SetMinute(unsigned short uwMin)
 {
    try
       {
@@ -691,7 +691,7 @@ void Timestamp::SetMinute(unsigned short uwMin)
       }
 }
 
-void Timestamp::SetMillisecond( unsigned short uwMilli )
+void SaTScan::Timestamp::SetMillisecond( unsigned short uwMilli )
 {
    try
       {
@@ -711,7 +711,7 @@ void Timestamp::SetMillisecond( unsigned short uwMilli )
 
 // Sets the timestamp using the julian day dTime. dTime is considered to be the
 // total number of days since November 17th, 1858 at midnight.
-void Timestamp::SetModifiedJulianDate ( double dTime )
+void SaTScan::Timestamp::SetModifiedJulianDate ( double dTime )
 {
    try
       {
@@ -728,7 +728,7 @@ void Timestamp::SetModifiedJulianDate ( double dTime )
 
 // Sets the month to the indicated value. If the current day is larger than the
 // maximum day for a month, the day is reset to the last valid day of the month.
-void Timestamp::SetMonth(unsigned short uwMonth)
+void SaTScan::Timestamp::SetMonth(unsigned short uwMonth)
 {
     try
         {
@@ -749,7 +749,7 @@ void Timestamp::SetMonth(unsigned short uwMonth)
 }
 
 // Sets the current second
-void Timestamp::SetSecond(unsigned short uwSec)
+void SaTScan::Timestamp::SetSecond(unsigned short uwSec)
 {
    try
       {
@@ -767,7 +767,7 @@ void Timestamp::SetSecond(unsigned short uwSec)
 }
 
 // Sets the time of day in milliseconds since midnight
-void Timestamp::SetTimeInMilliseconds( unsigned long ulMilli )
+void SaTScan::Timestamp::SetTimeInMilliseconds( unsigned long ulMilli )
 {
    try
       {
@@ -791,7 +791,7 @@ void Timestamp::SetTimeInMilliseconds( unsigned long ulMilli )
 
 // Sets the year. If the old date was set to leap day and the new year is not a
 // leap year, the date will be changed to 2/28.
-void Timestamp::SetYear(unsigned short uwYear)
+void SaTScan::Timestamp::SetYear(unsigned short uwYear)
 {
     try
         {
