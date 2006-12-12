@@ -62,7 +62,7 @@ double PoissonSVTTLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases,
   }
   else if (nStatus == CTimeTrend::TREND_INF_BEGIN || nStatus == CTimeTrend::TREND_INF_END) // All cases in first/last t.i.
   {
-    nLL = (pTotalCases*log(pTotalCases) - pTotalCases )/**-
+    nLL = (pTotalCases*log(static_cast<double>(pTotalCases)) - pTotalCases )/**-
           ((CSVTTData&)gData).m_pSumLogs[pTotalCases])**/;
     // -x+x*log(x)-log(x!) from M Kulldorff
   }
