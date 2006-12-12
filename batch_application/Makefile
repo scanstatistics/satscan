@@ -20,26 +20,22 @@ UTILITY        := $(SATSCAN)/calculation/utility
 RANDOMIZER     := $(SATSCAN)/calculation/randomization
 LOGLIKELIHOOD  := $(SATSCAN)/calculation/loglikelihood
 
-ZDANNEX     := /sprj/imsdev/zd
-ZDDIR       := /opt/net/utils/imsdev
-ZDVER       := 543
 XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 BOOSTDIR    := $(SATSCAN)/../boost/boost_1_33_1
 
-INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(ZDDIR) -I$(ZDANNEX) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
+INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
                -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
 	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR)
 
 DEFINES     := -D__BATCH_COMPILE \
-               -DBOOST_ALL_NO_LIB \
-               -DZDHEADER=\"zd$(ZDVER).h\"
+               -DBOOST_ALL_NO_LIB
                               
 CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
 
-#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lzd$(ZDVER)g -lpthread
-LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(ZDDIR) -L$(ZDANNEX) -Wl,-Bstatic -lxbaseg -lm -lzd$(ZDVER)g -Wl,-Bdynamic -lrt -lpthread
+#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lpthread
+LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lxbaseg -lm -Wl,-Bdynamic -lrt -lpthread
 
 SRC         := Main.cpp \
                $(ANALYSIS)/Analysis.cpp \
@@ -154,11 +150,10 @@ SRC         := Main.cpp \
 	             $(SATDATA)/DataSetReader.cpp \
 	             $(SATDATA)/DataSetWriter.cpp \
 	             $(SATDATA)/MetaTractManager.cpp \
-	             $(UTILITY)/DBFFile.cpp \
+	             $(UTILITY)/dBaseFile.cpp \
 	             $(UTILITY)/JulianDates.cpp \
 	             $(UTILITY)/RandomDistribution.cpp \
 	             $(UTILITY)/RandomNumberGenerator.cpp \
-	             $(UTILITY)/ScanfFile.cpp \
 	             $(UTILITY)/SSException.cpp \
 	             $(UTILITY)/UtilityFunctions.cpp \
 	             $(UTILITY)/MultipleDimensionArrayHandler.cpp \
@@ -169,6 +164,8 @@ SRC         := Main.cpp \
 	             $(UTILITY)/stsMCSimJobSource.cpp \
 	             $(UTILITY)/FileName.cpp \
 	             $(UTILITY)/Ini.cpp \
+	             $(UTILITY)/TimeStamp.cpp \
+	             $(UTILITY)/FieldDef.cpp \
 	             $(CALCULATION)/Parameters.cpp \
 	             $(CALCULATION)/ParametersPrint.cpp \
 	             $(CALCULATION)/ParametersValidate.cpp \

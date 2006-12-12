@@ -10,7 +10,6 @@
 #include "SpaceTimeData.h"
 #include "SVTTData.h"
 #include "PrintScreen.h"
-#include "DBFFile.h"
 #include "AnalysisRun.h"
 #include "ParameterFileAccess.h"
 #include "ParametersValidate.h"
@@ -45,16 +44,14 @@ int getCommandLineArgumentIndex(int argc, char *argv[], const char * arg) {
 }
 
 void __SaTScanInit(const char * sApplicationFullPath) {
-  ZdInit();
   reserve_memory_cache();
   std::set_new_handler(prg_new_handler);
   AppToolkit::ToolKitCreate(sApplicationFullPath);
-  ZdGetFileTypeArray()->AddElement(&(DBFFileType::GetDefaultInstance()));
 }
 
 void __SaTScanExit() {
+  release_memory_cache();
   AppToolkit::ToolKitDestroy();
-  ZdExit();
 }
 
 int main(int argc, char *argv[]) {
@@ -127,13 +124,6 @@ int main(int argc, char *argv[]) {
     Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
                    "Please contact technical support with the following information:\n"
                    "%s\n%s\n", BasePrint::P_ERROR, x.what(), "Callpath not available.");
-    __SaTScanExit();
-    return 1;
-  }
-  catch (ZdException & x) {
-    Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
-                   "Please contact technical support with the following information:\n"
-                   "%s\n%s\n", BasePrint::P_ERROR, x.GetErrorMessage(), x.GetCallpath());
     __SaTScanExit();
     return 1;
   }
