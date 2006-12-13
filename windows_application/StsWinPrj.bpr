@@ -276,8 +276,434 @@ RootDir=
   </IDEOPTIONS>
 
   <FILES>
+    <FILE type="override" value="..\calculation\utility\UtilityFunctions.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\PurelySpatialData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSetGateway.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\CentroidNeighbors.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\Tracts.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\GridTractCoordinates.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
     <FILE type="override" value="BasisVCL.cpp" translator="Auto">
-      <CFLAG1 value="-w- -v-"/>
+      <CFLAG1 value=" -O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\print\PrintScreen.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\PoissonDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\PermutationDataRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\IniParameterSpecification.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\Ini.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\DenominatorDataRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\NormalClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\IncidentRate.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\print\BasePrint.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\AbstractClusterDataFactory.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\PurelySpatialAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\LocationRiskEstimateWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\IntermediateClustersContainer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SignificantRatios05.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Parameters.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\ParameterFileAccess.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\JulianDates.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\SpaceTimePermutationModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\NormalModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSet.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\SpaceTimeData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\OrdinalDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\NormalRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSetReader.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\contractor.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\Analysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\AdjustmentHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\TimeIntervals.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\BernoulliDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\stsCentricAlgoFunctor.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\ScanLineParameterFileAccess.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\PoissonModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\NormalClusterDataFactory.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\ExponentialDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\PurelyTemporalData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\PoissonRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSource.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\AbstractCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\TimeStamp.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SVTTCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\SaTScanDataRead.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\recursive_mutex.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\IniParameterFileAccess.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis_run\AnalysisRun.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\thread.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\stsASCIIFileWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\RandomNumberGenerator.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\PopulationData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\CategoricalClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\PurelySpatialCluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\MultiSetNormalClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\FieldDef.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\AsciiPrintFormat.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\TimeIntervalRange.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\stsCentricAlgoJobSource.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\PurelyTemporalAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\OrdinalDataRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\MultipleDimensionArrayHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\SaTScanData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\RankDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\OrdinalModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\once.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\ClusterLocationsWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\ClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\SVTTData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\SaTScanDataDisplay.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\PurelySpatialProspectiveCluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\PurelySpatialMonotoneCluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\DateStringParser.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\BernoulliModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\TimeTrend.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\MetaTractManager.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\ExponentialModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\Cluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\BernoulliRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeIncludePureAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\ParametersValidate.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\mutex.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\MaxWindowLengthIndicator.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\LikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\ExponentialRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\CategoricalClusterDataFactory.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\AbstractAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\tss_hooks.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SVTTAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\Randomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\SpaceTimeCluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\RunTimeComponents.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\xtime.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\ParametersPrint.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\condition.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\ClusterDataFactory.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\RankModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\ProbabilityModel.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\MultiSetCategoricalClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\ClusterInformationWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\SpaceTimeRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\randomization\RankRandomizer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\PurelyTemporalCluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSetInterface.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\probability_model\CalculateMeasure.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\PurelySpatialCentricAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\MultiSetClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Toolkit.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis_run\MostLikelyClustersContainer.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\FileName.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\AbstractDataFileWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\AbstractClusterData.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\MeasureList.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\Output\LoglikelihoodRatioWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\RandomDistribution.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\print\PrintQueue.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\MakeNeighbors.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\DataSetWriter.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\cluster\SVTTCluster.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\SSException.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\satscan_data\NormalDataSetHandler.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\..\boost\boost_1_33_1\libs\thread\src\exceptions.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
+    </FILE>
+    <FILE type="override" value="..\calculation\utility\dBaseFile.cpp" translator="Auto">
+      <CFLAG1 value="-O2 -w- -r -k- -y- -v- -vi"/>
     </FILE>
   </FILES>
 </PROJECT>
