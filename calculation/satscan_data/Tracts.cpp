@@ -27,6 +27,16 @@ TractHandler::Coordinates::~Coordinates() {
   } catch(...){}
 }
 
+bool TractHandler::Coordinates::operator<(const Coordinates& rhs) const {
+  if (giSize != rhs.giSize) return giSize < rhs.giSize;
+  size_t t=0;
+  while (t < giSize) {
+    if (gpCoordinates[t] == rhs.gpCoordinates[t]) ++t;
+    else return gpCoordinates[t] < rhs.gpCoordinates[t];
+  }
+  return false;
+}
+
 /** retrieves coordinates into passed vector */
 void TractHandler::Coordinates::retrieve(std::vector<double>& Repository) const {
   Repository.resize(giSize);
@@ -43,6 +53,8 @@ TractHandler::Location::Location(const char * sIdentifier, const Coordinates& aC
   strcpy(gsIndentifier, sIdentifier);
   gvCoordinatesContainer.add(&aCoordinates, true);
 }
+
+TractHandler::Location::~Location() {try {delete[] gsIndentifier;}catch(...){}}
 
 /** Associates passed coordinates with this LocationIdentifier object. Throws ResolvableException
     if only one coordinates set permitted per location and passed coordinates do not equal

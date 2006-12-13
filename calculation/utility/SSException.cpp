@@ -31,6 +31,8 @@ prg_exception::prg_exception(const char * format, const char * method, ...) : st
   addTrace(method);
 }
 
+prg_exception::~prg_exception() throw() {}
+
 void prg_exception::addWhat(const char * message) {
   _what += message;
 }
@@ -54,6 +56,14 @@ void prg_exception::addTrace(const char * file, int line) {
   _trace.append(temp);
 }
 
+const char * prg_exception::trace() const throw() {
+  return _trace.c_str();
+}
+
+const char * prg_exception::what() const throw() {
+  return _what.c_str();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 prg_error::prg_error(const char * format, const char * method, ...) : prg_exception() {
@@ -73,11 +83,15 @@ prg_error::prg_error(const char * format, const char * method, ...) : prg_except
   addTrace(method);
 }
 
+prg_error::~prg_error() throw() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 memory_exception::memory_exception(const char * message) : std::bad_alloc() {
   _what = message;
 }
+
+memory_exception::~memory_exception() throw() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -99,6 +113,8 @@ resolvable_error::resolvable_error(const char * format, ...) : prg_exception() {
   catch (...) {}
 }
 
+resolvable_error::~resolvable_error() throw() {}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**  Construct. This is an alternate constructor for when the varArgs list for sMessage
@@ -113,6 +129,8 @@ usage_error::usage_error(const char * sExecutableFullpathName) : prg_exception()
                   "         -p     -- print parameter settings to screen (does not perform analysis)\n",
                exe.getFileName().c_str(), exe.getExtension().c_str());
 }
+
+usage_error::~usage_error() throw() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 

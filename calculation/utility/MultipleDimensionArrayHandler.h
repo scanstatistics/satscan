@@ -16,32 +16,47 @@ class MinimalGrowthArray {
      unsigned int    giSize;
 
    public:
-     MinimalGrowthArray(const std::vector<T>& v) : giSize(v.size()) {
-                       gpArray = new T[giSize];
-                       for (unsigned int i=0; i < giSize; ++i) gpArray[i] = v[i];
-     }
+     MinimalGrowthArray(const std::vector<T>& v);
      MinimalGrowthArray() : giSize(0), gpArray(0) {}
-     ~MinimalGrowthArray() {try {delete[] gpArray;}catch(...){}}
+     ~MinimalGrowthArray();
 
      const T       & operator[](const unsigned int i) const {return gpArray[i];}
-     bool            operator!=(const MinimalGrowthArray<T> & rhs) const {
-                       if (giSize != rhs.giSize) return true;
-                       for (unsigned int i=0; i < giSize; ++i) if (gpArray[i]!=rhs.gpArray[i]) return true;
-                       return false;
-                     }
-     void            add(const T& x, bool bSort) {
-                       T * p = new T[giSize + 1];
-                       for (unsigned int i=0; i < giSize; ++i) p[i] = gpArray[i];
-                       std::swap(p, gpArray); delete[] p;
-                       gpArray[giSize] = x; ++giSize; if (bSort) std::sort(gpArray, gpArray + giSize);
-                     }
+     bool            operator!=(const MinimalGrowthArray<T> & rhs) const;
+     void            add(const T& x, bool bSort);
      void            clear() {delete[] gpArray; gpArray=0; giSize=0;}
-     bool            exists(const T& x) const {
-                       for (unsigned int i=0; i < giSize; ++i) if (gpArray[i] == x) return true;
-                       return false;
-                     }
+     bool            exists(const T& x) const;
      unsigned int    size() const {return giSize;}
 };
+
+template <class T>
+MinimalGrowthArray<T>::MinimalGrowthArray(const std::vector<T>& v) : giSize(v.size()) {
+   gpArray = new T[giSize];
+   for (unsigned int i=0; i < giSize; ++i) gpArray[i] = v[i];
+}
+
+template <class T>
+MinimalGrowthArray<T>::~MinimalGrowthArray() {try {delete[] gpArray;}catch(...){}}
+
+template <class T>
+bool MinimalGrowthArray<T>::operator!=(const MinimalGrowthArray<T> & rhs) const {
+  if (giSize != rhs.giSize) return true;
+  for (unsigned int i=0; i < giSize; ++i) if (gpArray[i]!=rhs.gpArray[i]) return true;
+  return false;
+}
+
+template <class T>
+void MinimalGrowthArray<T>::add(const T& x, bool bSort) {
+  T * p = new T[giSize + 1];
+  for (unsigned int i=0; i < giSize; ++i) p[i] = gpArray[i];
+  std::swap(p, gpArray); delete[] p;
+  gpArray[giSize] = x; ++giSize; if (bSort) std::sort(gpArray, gpArray + giSize);
+}
+
+template <class T>
+bool MinimalGrowthArray<T>::exists(const T& x) const {
+  for (unsigned int i=0; i < giSize; ++i) if (gpArray[i] == x) return true;
+  return false;
+}
 
 /** Templated multi-dimensional array handler classes. These classes are intended
     to help manage allocation and deallocation of multiple dimensional arrays. The

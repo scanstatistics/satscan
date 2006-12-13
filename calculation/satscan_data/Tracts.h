@@ -33,15 +33,7 @@ class TractHandler {
         Coordinates(const std::vector<double>& Coordinates, unsigned int iInsertionOrdinal);
         ~Coordinates();
 
-        bool            operator<(const Coordinates& rhs) const {
-                           if (giSize != rhs.giSize) return giSize < rhs.giSize;
-                           size_t t=0;
-                           while (t < giSize) {
-                             if (gpCoordinates[t] == rhs.gpCoordinates[t]) ++t;
-                             else return gpCoordinates[t] < rhs.gpCoordinates[t];
-                           }
-                           return false;
-                        }
+        bool            operator<(const Coordinates& rhs) const;
         bool            operator!=(const Coordinates& rhs) const {
                            if (giSize != rhs.giSize) return true;
                            return memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
@@ -74,7 +66,7 @@ class TractHandler {
 
        public:
          Location(const char * sIdentifier, const Coordinates& aCoordinates);
-         ~Location() {try {delete[] gsIndentifier;}catch(...){}}
+         ~Location();
 
          void                           addCoordinates(const Coordinates& aCoordinates, MultipleCoordinatesType eMultipleCoordinatesType);
          void                           addSecondaryIdentifier(const std::string & sIdentifier);

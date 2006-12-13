@@ -38,8 +38,8 @@ class ptr_vector : public VECTOR {
 
    inline ptr_vector();
    inline explicit ptr_vector(size_type n);
-   inline ptr_vector(size_type n, size_type iStartPos, const_reference theCopy=0);
-   inline ptr_vector(const ptr_vector<TYPE,VECTOR> &rhs);
+   ptr_vector(size_type n, size_type iStartPos, const_reference theCopy=0);
+   ptr_vector(const ptr_vector<TYPE,VECTOR> &rhs);
    virtual ~ptr_vector();
 
    inline ptr_vector<TYPE,VECTOR> &operator=(const ptr_vector<TYPE,VECTOR> &rhs);
@@ -59,7 +59,7 @@ inline ptr_vector<TYPE,VECTOR>::ptr_vector(size_type n) : VECTOR(n) {}
 
 // Constructor. Simply passes through to the std::vector constructor
 template <typename TYPE, typename VECTOR>
-inline ptr_vector<TYPE,VECTOR>::ptr_vector(size_type n, size_type iStartPos, const_reference theCopy) : VECTOR(n, iStartPos, 0) {
+ptr_vector<TYPE,VECTOR>::ptr_vector(size_type n, size_type iStartPos, const_reference theCopy) : VECTOR(n, iStartPos, 0) {
   if (theCopy)
     for (size_type i = 0; i < n; i++)
        (*this)[i] = theCopy->Clone();
@@ -68,7 +68,7 @@ inline ptr_vector<TYPE,VECTOR>::ptr_vector(size_type n, size_type iStartPos, con
 // Copy constructor. Since ptr_vector will have already copied the pointers, this
 // constructor does an "inplace copy".
 template <typename TYPE, typename VECTOR>
-inline ptr_vector<TYPE,VECTOR>::ptr_vector(const ptr_vector<TYPE,VECTOR> &rhs) : VECTOR(rhs) {
+ptr_vector<TYPE,VECTOR>::ptr_vector(const ptr_vector<TYPE,VECTOR> &rhs) : VECTOR(rhs) {
   iterator     pCurrent;
   iterator     pEnd;
 
