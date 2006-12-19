@@ -69,7 +69,7 @@ void TwoDimensionArrayHandler<T>::Allocate() {
     for (i=0; i < g1stDimension; ++i)
        gppData[i] = new T[g2ndDimension];
   }
-  catch (prg_exception& x) {
+  catch (prg_exception&) {
      Deallocate();
      throw;
    }
@@ -113,7 +113,7 @@ void TwoDimensionArrayHandler<T>::ResizeSecondDimension(unsigned int uiSize, con
     }
     g2ndDimension = uiSize;
   }
-  catch (prg_exception& x) {
+  catch (prg_exception&) {
     throw;
   }
 }
@@ -127,7 +127,7 @@ void TwoDimensionArrayHandler<T>::Set(const T& t) {
        for (j=0; j < g2ndDimension; ++j)
           gppData[i][j] = t;
   }
-  catch (prg_exception& x) {
+  catch (prg_exception&) {
     Deallocate();
     throw;
   }
@@ -224,7 +224,7 @@ void ThreeDimensionArrayHandler<T>::Allocate() {
 
     }
   }
-  catch (prg_exception& x) {
+  catch (prg_exception&) {
     Deallocate();
     throw;
   }
@@ -287,7 +287,7 @@ void ThreeDimensionArrayHandler<T>::ResizeThirdDimension(unsigned int uiSize, co
       }
     g3rdDimension = uiSize;
   }
-  catch (prg_exception& x) {
+  catch (prg_exception&) {
     throw;
   }
 }
@@ -302,7 +302,7 @@ void ThreeDimensionArrayHandler<T>::Set(const T& t) {
           for (k=0; k < g3rdDimension; ++k)
              gpppData[i][j][k] = t;
   }
-  catch (prg_exception& x) {
+  catch (prg_exception&) {
     Deallocate();
     throw;
   }
