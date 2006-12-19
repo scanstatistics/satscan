@@ -68,7 +68,7 @@ class AnalysisRunner {
 
     const MostLikelyClustersContainer & GetClusterContainer() const {return gTopClustersContainer;}
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
-    bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios;}
+    bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios != 0;}
     CAnalysis                         * GetNewAnalysisObject() const;
     AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
                                                                     const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;

@@ -105,7 +105,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     - the p-value of most likely cluster is greater than defined cutoff,
       given the current number of simulations completed */
 bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsCompleted) const {
-  float fCutOff;
+  double fCutOff;
 
   if (iNumSimulationsCompleted == gParameters.GetNumReplicationsRequested())
     return false;
@@ -204,7 +204,7 @@ void AnalysisRunner::Execute() {
                             ExecuteSuccessively(); break;
       };
     }
-    catch (std::bad_alloc &x) {
+    catch (std::bad_alloc&) {
       throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
                              "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
                              "Note that memory needs are on the order of %.0lf MB.\n",
@@ -1351,7 +1351,7 @@ bool AnalysisRunner::RepeatAnalysis() {
         for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i) {
            const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).getPopulationData();
            for (size_t t=0; t < Population.GetNumOrdinalCategories(); ++t)
-              if (Population.GetNumOrdinalCategoryCases(t))
+              if (Population.GetNumOrdinalCategoryCases(static_cast<int>(t)) > 0)
                 ++iCategoriesWithCases;
            if (iCategoriesWithCases < 2)
              return false;

@@ -44,7 +44,7 @@ class CCluster {
     int                           m_nFirstInterval;     // Index # of first time interval
     int                           m_nLastInterval;      // Index # of last time interval
 
-    virtual bool                  ClusterDefined() const {return m_nTracts;}
+    virtual bool                  ClusterDefined() const {return m_nTracts > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();
     virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;

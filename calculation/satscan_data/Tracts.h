@@ -36,11 +36,11 @@ class TractHandler {
         bool            operator<(const Coordinates& rhs) const;
         bool            operator!=(const Coordinates& rhs) const {
                            if (giSize != rhs.giSize) return true;
-                           return memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
+                           return memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double)) != 0;
                         }
         bool            operator==(const Coordinates& rhs) const {
                            if (giSize != rhs.giSize) return false;
-                           return !memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
+                           return memcmp(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double)) == 0;
                         }
         double        * getCoordinates() const {return gpCoordinates;}
         unsigned int    getInsertionOrdinal() const {return giInsertionOrdinal;}
