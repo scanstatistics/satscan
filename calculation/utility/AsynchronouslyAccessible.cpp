@@ -1,9 +1,7 @@
 //---------------------------------------------------------------------------
-
+#include "SaTScan.h"
 #pragma hdrstop
-
 #include "AsynchronouslyAccessible.h"
 //---------------------------------------------------------------------------
-#pragma package(smart_init)
 
 
