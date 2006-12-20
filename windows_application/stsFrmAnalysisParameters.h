@@ -214,6 +214,7 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
     void                        SetModelControl(ProbabilityModelType eProbabilityModelType);
     void                        Setup(const char * sParameterFileName);
     void                        SetupInterface();
+    void                        TriggerOnExitEvents();
     void                        ValidateInputFiles();
     bool                        VerifyUnitAndLength();
 

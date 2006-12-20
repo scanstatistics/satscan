@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 0
     Width = 507
     Height = 382
-    ActivePage = tbAnalysis
+    ActivePage = tbInputFiles
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'

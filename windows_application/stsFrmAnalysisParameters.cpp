@@ -1244,6 +1244,10 @@ void TfrmAnalysis::SaveParameterSettings() {
   ZdString sString;
 
   try {
+    //Force calling of methods that would have been performed by TWinControl::OnExit.
+    //Otherwise it is possible that they do not get called prior to this function call.
+    TriggerOnExitEvents();
+
     Caption = gParameters.GetSourceFileName().c_str();
 
     //set version parameter
@@ -1568,6 +1572,15 @@ void TfrmAnalysis::StoreEditText(TEdit& Month, TEdit& Day) {
   catch (EConvertError& e){}
 }
 
+/** Triggers TWinControl::OnExit events for controls that defines such events.
+    Event TWinControl::OnExit is protected, so we can not do this programmatically . */
+void TfrmAnalysis::TriggerOnExitEvents() {
+  edtStudyPeriodStartDateExit(this);
+  edtStudyPeriodEndDateExit(this);
+  edtTimeAggregationLengthExit(this);
+  edtMontCarloRepsExit(this);
+}
+
 /** validates date controls represented by three passed edit controls - prevents an invalid date */
 void TfrmAnalysis::ValidateDate(TEdit& YearControl, TEdit& MonthControl, TEdit& DayControl) {
   int   iDay, iMonth, iYear, iDaysInMonth;
@@ -1700,6 +1713,9 @@ bool TfrmAnalysis::ValidateParams() {
   bool bReturn=true;
 
   try {
+    //Force calling of methods that would have been performed by TWinControl::OnExit.
+    //Otherwise it is possible that they do not get called prior to this validation.
+    TriggerOnExitEvents(); 
     ValidateInputFiles();           // validate 'input' tab parameters
     CheckAnalysisParams();          // validate 'analysis' tab parameters
     CheckOutputParams();
