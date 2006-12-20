@@ -518,19 +518,10 @@ long IniFile::GetNumSections() const {
    return (gaSections.size());
 }
 
-//GetSection returns a pointer to the Section
+//GetSection returns a pointer to the Section, creating section if it does not exist
 IniSection * IniFile::GetSection(const char *sSectionName) {
-   IniSection *pIniSection = 0;
-   long          lIndex;
-
-   if (sSectionName && strlen(sSectionName)) {
-     lIndex = GetSectionIndex(sSectionName);
-     if (lIndex >= 0)
-       pIniSection = GetSection(lIndex);
-     else
-        prg_error("Section '%s' does not exist.", "IniFile", sSectionName);
-   }
-   return pIniSection;
+   long lIndex = GetSectionIndex(sSectionName);
+   return (lIndex >= 0 ? GetSection(lIndex) : AddSection(sSectionName));
 }
 
 //GetSection will load the section if it has not already been loaded
