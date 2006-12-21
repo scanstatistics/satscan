@@ -10,7 +10,6 @@ using std::endl;
 #include "SSException.h"
 #include "ptr_vector.h"
 #include "FieldDef.h"
-#pragma option push -w-8070 //we don't want Borland giving errors for the functions that throw an exception instead of returning a value --bws 14nov2002
 
 class dBaseFile;
 
@@ -154,7 +153,6 @@ class dBaseFile {
     static std::pair<long, long>DecimalCountRangeForXBaseFieldType(char cFieldType, long lFieldLength);
     static const char         * GetFileTypeExtension() {return ".dbf";}
 };
-#pragma option pop
-//******************************************************************************
+//******************************************************************************
 #endif
 

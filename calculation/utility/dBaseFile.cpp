@@ -34,8 +34,6 @@
 // scope at the end of the block, its destructor executes a call to either EndAccess()
 // or (in this case, since 'true' was passed to the constructor) EndManipulation().
 
-#pragma option push -w-8070
-
 /** constructor */
 dBaseRecord::dBaseRecord( dBaseFile & associatedFile, xbDbf & associatedDbf, const ptr_vector<FieldDef>& vFields)
              :gpAssociatedDbf(&associatedDbf), gpBufferChunk(0), gulBufferChunkSize(0),
@@ -800,8 +798,6 @@ void dBaseFile::Create(const char * sFilename, ptr_vector<FieldDef>& vFields) {
 
 // Does 'cCandidate' indicate a FLD that is used by DBFFile ?
 bool dBaseFile::IsValidFieldType(char cCandidate) {
-   bool bResult;
-
    switch (cCandidate) {
      case FieldValue::ALPHA_FLD   :
      case FieldValue::BOOLEAN_FLD :
@@ -1189,6 +1185,3 @@ void dBaseFile::CheckFieldType(char cFieldType) {
   if (! dBaseFile::IsValidFieldType(cFieldType))
     throw prg_error("The character, '%c', does not refer to a valid Zd field type.", "CheckFieldType", cFieldType);
 }
-
-#pragma option pop
-
