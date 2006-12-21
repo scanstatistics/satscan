@@ -1708,12 +1708,12 @@ void TfrmAdvancedParameters::SetSpatialDistanceCaption() {
   try {
     sRadioCaption.printf("is %s with a", (rdoCircular->Checked ? "a circle" : "an ellipse"));
     lblDistancePrefix->Caption = sRadioCaption;
-    edtMaxSpatialRadius->Left = (rdoCircular->Checked ? 123 : 132);
-    lblMaxRadius->Left = (rdoCircular->Checked ? 191 : 200);
+    edtMaxSpatialRadius->Left = lblDistancePrefix->Left + lblDistancePrefix->Width +  10;
+    lblMaxRadius->Left = edtMaxSpatialRadius->Left + edtMaxSpatialRadius->Width +  10;
     sRadioCaption.printf("%s with a", (rdoCircular->Checked ? "a circle" : "an ellipse"));
     lblReportedMaxDistance->Caption = sRadioCaption;
-    edtMaxReportedSpatialRadius->Left = (rdoCircular->Checked ? 136 : 144);
-    lblMaxReportedRadius->Left = (rdoCircular->Checked ? 203 : 211);
+    edtMaxReportedSpatialRadius->Left = lblReportedMaxDistance->Left + lblReportedMaxDistance->Width +  10;
+    lblMaxReportedRadius->Left = edtMaxReportedSpatialRadius->Left + edtMaxReportedSpatialRadius->Width +  10;
     switch (gAnalysisSettings.rgpCoordinates->ItemIndex) {
       case 0  : sLabelCaption.printf("Cartesian units %s", (rdoCircular->Checked ? "radius" : "minor axis"));
                 break;

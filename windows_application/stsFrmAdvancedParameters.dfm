@@ -601,7 +601,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 
             'percent of the population defined in the max circle size file (<' +
             '= 50%)'
-          WordWrap = True
         end
         object lblDistancePrefix: TLabel
           Left = 41
@@ -1428,7 +1427,6 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Caption = 
             'percent of the population defined in the max circle size file (<' +
             '= 50%)'
-          WordWrap = True
         end
         object lblReportedMaxDistance: TLabel
           Left = 53
