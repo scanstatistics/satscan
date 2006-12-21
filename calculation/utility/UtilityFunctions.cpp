@@ -197,6 +197,13 @@ void trimString(std::string &source, const char * t) {
 /** assigns formatted strng to destination */
 std::string& printString(std::string& destination, const char * format, ...) {
   try {
+#ifdef _MSC_VER
+    std::vector<char> temp(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+    va_list varArgs;
+    va_start (varArgs, format);
+    vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
+    va_end(varArgs);
+#else
     std::vector<char> temp(1);
     va_list varArgs;
     va_start (varArgs, format);
@@ -206,26 +213,10 @@ std::string& printString(std::string& destination, const char * format, ...) {
     va_start (varArgs, format);
     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
     va_end(varArgs);
+#endif
     destination = &temp[0];
   }
   catch (...) {}
   return destination;
 }
 
-/** assigns formatted strng to destination */
-std::string& printStringArgs(std::string& destination, va_list varArgs, const char * format) {
-   try {
-     if (!format) return destination;
-
-     std::vector<char> temp(1);
-     // vsnprintf will calculate the required length, not including the NULL,
-     // for the format string when given a NULL pointer and a zero length as
-     // the first two parameters.
-     size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, varArgs);
-     temp.resize(iStringLength + 1);
-     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
-     destination = &temp[0];
-   }
-   catch (...) {}
-   return destination;
-}

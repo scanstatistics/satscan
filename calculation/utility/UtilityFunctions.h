@@ -16,7 +16,6 @@ double                          GetUnbiasedVariance(count_t tCases, measure_t tM
 bool                            ValidateFileAccess(const std::string& filename, bool bWriteEnable=false);
 void                            trimString(std::string &source, const char * t=" ");
 std::string                   & printString(std::string& s, const char * format, ...);
-std::string                   & printStringArgs(std::string& s, va_list varArgs, const char * format);
 //******************************************************************************
 #endif
 
