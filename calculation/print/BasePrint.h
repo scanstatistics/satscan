@@ -15,7 +15,7 @@ class BasePrint {
 
   protected:
     int                                 giMaximumReadErrors;
-    char                              * gsMessage;
+    std::vector<char>                   gsMessage;
     eInputFileType                      geInputFileType;
     std::string                         gsInputFileString;
     std::map<eInputFileType, int>       gInputFileWarningsMap;

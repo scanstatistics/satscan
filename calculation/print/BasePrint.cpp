@@ -8,17 +8,15 @@
 /** constructor */
 BasePrint::BasePrint(bool bSuppressWarnings) : gbSuppressWarnings(bSuppressWarnings), giMaximumReadErrors(75) {
    SetImpliedInputFileType(CASEFILE);
-   gsMessage = new char[1];
-   gsMessage[0] = 0;
+#ifdef _MSC_VER
+   gsMessage.resize(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+#else
+   gsMessage.resize(1);
+#endif
 }
 
 /** destructor */
-BasePrint::~BasePrint() {
-  try {
-    delete [] gsMessage;
-  }
-  catch (...){}
-}
+BasePrint::~BasePrint() {}
 
 /** Returns indication of whether maximum number of read errors have been printed
     through this object. */
@@ -47,27 +45,28 @@ void BasePrint::Print(const char * sMessage, PrintType ePrintType) {
 
 /** Creates formatted output from variable number of parameter arguments and calls class Print() method. */
 void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
-  va_list       varArgs;
-  int           iStringLength, iCurrentLength;
-
-  if (!sMessage || sMessage == gsMessage) return;
+  if (!sMessage || sMessage == &gsMessage[0]) return;
 
   try {
-    iCurrentLength = strlen (gsMessage);
-    va_start(varArgs, ePrintType);
-    iStringLength = vsnprintf(gsMessage, iCurrentLength + 1, sMessage, varArgs);
+#ifdef _MSC_VER
+    va_list varArgs;
+    va_start (varArgs, ePrintType);
+    vsnprintf(&gsMessage[0], gsMessage.size() - 1, sMessage, varArgs);
     va_end(varArgs);
-    if (iStringLength > iCurrentLength) {
-      delete [] gsMessage; gsMessage=0;
-      gsMessage = new char[iStringLength + 1];
-      va_start(varArgs, ePrintType);
-      vsnprintf (gsMessage, iStringLength + 1, sMessage, varArgs);
-      va_end(varArgs);
-    }
+#else
+    va_list varArgs;
+    va_start(varArgs, ePrintType);
+    size_t iStringLength = vsnprintf(&gsMessage[0], gsMessage.size(), sMessage, varArgs);
+    va_end(varArgs);
+    gsMessage.resize(iStringLength + 1);
+    va_start(varArgs, ePrintType);
+    vsnprintf(&gsMessage[0], iStringLength + 1, sMessage, varArgs);
+    va_end(varArgs);
+#endif
   }
   catch (...) {}
 
-  Print(gsMessage, ePrintType);
+  Print(&gsMessage[0], ePrintType);
 }
 
 // function for printing out input file warning messages, this function will print out MAX_READ_ERRORS
