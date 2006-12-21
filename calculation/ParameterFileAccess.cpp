@@ -740,6 +740,13 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
 
 parameter_error::parameter_error(const char * format, ...) : resolvable_error() {
   try {
+#ifdef _MSC_VER
+    std::vector<char> temp(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+    va_list varArgs;
+    va_start (varArgs, format);
+    vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
+    va_end(varArgs);
+#else
     std::vector<char> temp(1);
     va_list varArgs;
     va_start(varArgs, format);
@@ -749,6 +756,7 @@ parameter_error::parameter_error(const char * format, ...) : resolvable_error() 
     va_start(varArgs, format);
     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
     va_end(varArgs);
+#endif
     _what = &temp[0];
   }
   catch (...) {}

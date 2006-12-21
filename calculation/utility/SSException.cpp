@@ -16,6 +16,13 @@ prg_exception::prg_exception(const std::string& what_arg) : std::exception() {
 
 prg_exception::prg_exception(const char * format, const char * method, ...) : std::exception() {
   try {
+#ifdef _MSC_VER
+    std::vector<char> temp(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+    va_list varArgs;
+    va_start (varArgs, method);
+    vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
+    va_end(varArgs);
+#else
     std::vector<char> temp(1);
     va_list varArgs;
     va_start (varArgs, method);
@@ -25,6 +32,7 @@ prg_exception::prg_exception(const char * format, const char * method, ...) : st
     va_start (varArgs, method);
     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
     va_end(varArgs);
+#endif
     _what = &temp[0];
   }
   catch (...) {}
@@ -68,6 +76,13 @@ const char * prg_exception::what() const throw() {
 
 prg_error::prg_error(const char * format, const char * method, ...) : prg_exception() {
   try {
+#ifdef _MSC_VER
+    std::vector<char> temp(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+    va_list varArgs;
+    va_start (varArgs, method);
+    vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
+    va_end(varArgs);
+#else
     std::vector<char> temp(1);
     va_list varArgs;
     va_start (varArgs, method);
@@ -77,6 +92,7 @@ prg_error::prg_error(const char * format, const char * method, ...) : prg_except
     va_start (varArgs, method);
     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
     va_end(varArgs);
+#endif
     _what = &temp[0];
   }
   catch (...) {}
@@ -99,6 +115,13 @@ resolvable_error::resolvable_error() : prg_exception() {}
 
 resolvable_error::resolvable_error(const char * format, ...) : prg_exception() {
   try {
+#ifdef _MSC_VER
+    std::vector<char> temp(MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE);
+    va_list varArgs;
+    va_start (varArgs, format);
+    vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
+    va_end(varArgs);
+#else
     std::vector<char> temp(1);
     va_list varArgs;
     va_start(varArgs, format);
@@ -108,6 +131,7 @@ resolvable_error::resolvable_error(const char * format, ...) : prg_exception() {
     va_start(varArgs, format);
     vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
     va_end(varArgs);
+#endif
     _what = &temp[0];
   }
   catch (...) {}
