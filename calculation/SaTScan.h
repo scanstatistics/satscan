@@ -67,6 +67,10 @@
 #define EARTH_RADIUS_km 6367
 /** comparision tolerance for double precision numbers */
 #define DBL_CMP_TOLERANCE 1.0E-9
+#ifdef _MSC_VER
+  /** default string buffer size for vsnprintf call */
+  #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000
+#endif
 /** case count type */
 typedef long            count_t;
 /** measure type */
