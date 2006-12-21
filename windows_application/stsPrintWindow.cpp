@@ -33,29 +33,22 @@ void PrintWindow::PrintWarning(const char * sMessage) {
 
 /** Creates formatted output from variable number of parameter arguments and calls class Print() method. */
 void PrintWindow::Printf(const char * sMessage, PrintType ePrintType, ...) {
-  va_list   varArgs;
-  int       iStringLength;   // Holds the length of the formatted output
-  int       iCurrentLength;  // Current length of the buffer
-
   if (!sMessage) return;
-
-
   try {
-    iCurrentLength = strlen (gsMessage);
+    va_list varArgs;
     va_start(varArgs, ePrintType);
-    iStringLength = vsnprintf(gsMessage, iCurrentLength + 1, sMessage, varArgs);
+    size_t iStringLength = vsnprintf(&gsMessage[0], gsMessage.size(), sMessage, varArgs);
     va_end(varArgs);
-    if (iStringLength > iCurrentLength) {
-      delete [] gsMessage; gsMessage=0;
-      gsMessage = new char[iStringLength + 1];
+    if (iStringLength > gsMessage.size()) {
+      gsMessage.resize(iStringLength + 1);
       va_start(varArgs, ePrintType);
-      vsnprintf (gsMessage, iStringLength + 1, sMessage, varArgs);
+      vsnprintf(&gsMessage[0], iStringLength + 1, sMessage, varArgs);
       va_end(varArgs);
-    }
+    }  
   }
   catch (...) {return;}
 
-  if (gsMessage[strlen(gsMessage)-1] == '\n') const_cast<char*>(gsMessage)[strlen(gsMessage)-1] = '\0';
-  BasePrint::Print(gsMessage, ePrintType);
+  if (gsMessage[strlen(&gsMessage[0])-1] == '\n') gsMessage[strlen(&gsMessage[0])-1] = '\0';
+  BasePrint::Print(&gsMessage[0], ePrintType);
 }
 
