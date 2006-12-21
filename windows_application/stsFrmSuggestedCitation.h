@@ -8,6 +8,7 @@
 #include <Forms.hpp>
 #include <ComCtrls.hpp>
 #include <AppEvnts.hpp>
+#include <ExtCtrls.hpp>
 #include <map>
 
 //---------------------------------------------------------------------------
@@ -15,7 +16,11 @@ class TfrmSuggestedCitation : public TForm {
 __published:	// IDE-managed Components
    TApplicationEvents *ApplicationEvents1;
    TRichEdit *RichEdit1;
-        TStatusBar *StatusBar1;
+   TStatusBar *StatusBar1;
+   TPanel *pnlClientNorth;
+   TPanel *pnlClientSouth;
+   TPanel *pnlClientWest;
+   TPanel *pnlClientEast;
    void __fastcall ApplicationEvents1Idle(TObject *Sender, bool &Done);
    void __fastcall FormResize(TObject *Sender);
 
