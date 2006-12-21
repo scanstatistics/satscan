@@ -24,6 +24,7 @@ __published:	// IDE-managed Components
         TLabel *lblEmailAddress;
         TLabel *lblReleaseDate;
         TLabel *Label1;
+        TLabel *Label2;
         void __fastcall Button1Click(TObject *Sender);
         void __fastcall lblWebSiteClick(TObject *Sender);
         void __fastcall lblEmailAddressClick(TObject *Sender);

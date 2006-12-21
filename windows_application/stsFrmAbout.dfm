@@ -1,10 +1,10 @@
 object frmAbout: TfrmAbout
-  Left = 423
-  Top = 383
+  Left = 429
+  Top = 325
   BorderStyle = bsDialog
   Caption = 'About SaTScan'
-  ClientHeight = 175
-  ClientWidth = 397
+  ClientHeight = 177
+  ClientWidth = 407
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -53,15 +53,15 @@ object frmAbout: TfrmAbout
   object pnlRootPanel: TPanel
     Left = 0
     Top = 0
-    Width = 397
-    Height = 175
+    Width = 407
+    Height = 177
     Align = alClient
     BevelOuter = bvNone
     TabOrder = 0
     object pnlRootPanelTop: TPanel
       Left = 0
       Top = 0
-      Width = 397
+      Width = 407
       Height = 31
       Align = alTop
       BevelOuter = bvNone
@@ -69,7 +69,7 @@ object frmAbout: TfrmAbout
       object lblVersion: TLabel
         Left = 0
         Top = 9
-        Width = 397
+        Width = 407
         Height = 22
         Align = alBottom
         Alignment = taCenter
@@ -84,10 +84,10 @@ object frmAbout: TfrmAbout
       end
     end
     object pnlRootPanelRight: TPanel
-      Left = 385
+      Left = 395
       Top = 31
       Width = 12
-      Height = 132
+      Height = 134
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
@@ -96,15 +96,15 @@ object frmAbout: TfrmAbout
       Left = 0
       Top = 31
       Width = 12
-      Height = 132
+      Height = 134
       Align = alLeft
       BevelOuter = bvNone
       TabOrder = 2
     end
     object pnlRootPanelBottom: TPanel
       Left = 0
-      Top = 163
-      Width = 397
+      Top = 165
+      Width = 407
       Height = 12
       Align = alBottom
       BevelOuter = bvNone
@@ -113,15 +113,15 @@ object frmAbout: TfrmAbout
     object Panel1: TPanel
       Left = 12
       Top = 31
-      Width = 373
-      Height = 132
+      Width = 383
+      Height = 134
       Align = alClient
       BevelOuter = bvNone
       TabOrder = 4
       object lblTitle: TLabel
         Left = 0
         Top = 0
-        Width = 373
+        Width = 383
         Height = 16
         Align = alTop
         Alignment = taCenter
@@ -208,14 +208,11 @@ object frmAbout: TfrmAbout
       end
       object Label1: TLabel
         Left = 0
-        Top = 99
-        Width = 373
-        Height = 33
+        Top = 102
+        Width = 383
+        Height = 16
         Align = alBottom
-        AutoSize = False
-        Caption = 
-          'Authors: Martin Kulldorff, Harvard Medical School, Boston and In' +
-          'formation Management Services Inc, Silver Spring, Maryland.'
+        Caption = 'Authors: Martin Kulldorff, Harvard Medical School, Boston and'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -13
@@ -223,6 +220,20 @@ object frmAbout: TfrmAbout
         Font.Style = []
         ParentFont = False
         WordWrap = True
+      end
+      object Label2: TLabel
+        Left = 0
+        Top = 118
+        Width = 383
+        Height = 16
+        Align = alBottom
+        Caption = 'Information Management Services Inc, Silver Spring, Maryland.'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
       end
     end
   end
