@@ -24,6 +24,28 @@ void SourceViewController::OnCellLoaded(int DataCol, int DataRow, Variant &Value
   catch(ZdException &x) {/*trap to prevent repeating exception*/}
 }
 
+/** Resizes grid cell heights based upon hieght of contained text. */
+void SourceViewController::RefreshGridRowHeightProperties() {
+  for (int iCol=1, lRowHeight=0; iCol <= GetTopGrid()->Cols; ++iCol)
+     GetTopGrid()->HeadingHeight = std::max(lRowHeight, GetTopGrid()->HeadingTextHeight[iCol]);
+  int lHeight = GetTopGrid()->DefaultRowHeight;
+  for (int lIndex=1; lIndex <= std::min(50, GetGridRowCount())/*limit sampling*/; lIndex++ ) {
+     for (int iCol=1; iCol <= GetTopGrid()->Cols; ++iCol) {
+        lHeight = std::max(lHeight, GetTopGrid()->CellTextHeight[iCol][lIndex]);
+        if (GetTopGrid()->CellButtonType[iCol][lIndex] == btCombo) {
+          int lComboCellHeight = 0;
+          for (int lCellRow=1; lCellRow <= GetTopGrid()->CellCombo[iCol][lIndex]->Grid->Rows; ++lCellRow) {
+            for (int lCellCol=1; lCellCol <= GetTopGrid()->CellCombo[iCol][lIndex]->Grid->Cols; ++lCellCol)
+              lComboCellHeight = std::max(lComboCellHeight, GetTopGrid()->CellCombo[iCol][lIndex]->Grid->CellTextHeight[lCellCol][lCellRow]);
+            GetTopGrid()->CellCombo[iCol][lIndex]->Grid->RowHeight[lCellRow] = lComboCellHeight;
+          }
+        }
+     }
+     //GetTopGrid()->RowHeight[lIndex] = lHeight;
+  }
+  GetTopGrid()->DefaultRowHeight = lHeight;
+}
+
 /** Constructor */
 SaTScanVariable::SaTScanVariable(const char * sVariableName, short wTargetFieldIndex, bool bRequiredVariable, const char * sHelpText) {
   try {
@@ -1039,6 +1061,7 @@ void TBDlgDataImporter::OpenSource() {
       gpDataModel = new BGridZdSingleFileModel(gpSourceFile);
       gpController = new SourceViewController(tsImportFileGrid, gpDataModel);
       gpController->SetGridMode(Tsgrid::gmBrowse);
+      gpController->RefreshGridRowHeightProperties();
      }
      catch (ZdException &x) {
        ImporterException::GenerateException("The import wizard was unable to read source file.\nPlease review settings.",
@@ -1128,6 +1151,7 @@ void TBDlgDataImporter::SetGridHeaders(bool bFirstRowIsHeader) {
              gpController->UpdateColumnHeading(i);
        }
        gpController->GetTopGrid()->TopRow = 1; //Cause first row to be visible.
+       gpController->RefreshGridRowHeightProperties();
      }
   }
   catch (ZdException &x) {

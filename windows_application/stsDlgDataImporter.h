@@ -1,4 +1,4 @@
-// $Revision: 1.19 $
+// $Revision: 1.20 $
 //Author Scott Hostovich
 #ifndef __stsDlgDataImporter_H
 #define __stsDlgDataImporter_H
@@ -23,6 +23,8 @@ class SourceViewController : public BZdFileViewController {
   public:
             SourceViewController(TtsGrid * pTopGrid, BGridZdAbstractFileModel * pGridDataModel);
     virtual ~SourceViewController() {}
+
+    virtual void         RefreshGridRowHeightProperties();
 };
 
 class SaTScanVariable {
