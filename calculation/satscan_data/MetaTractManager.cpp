@@ -110,7 +110,8 @@ bool MetaLocationManager::MetaLocationPool::addMetaLocation(const std::string& s
   if ((tIndex = getAtomicLocationIndex(sMetaIdentifier)) != -1) {
     AtomicMetaLocation *pAtomicMetaLocation = gvAtomicLocations[tIndex];
     pAtomicMetaLocation->setAsPromotedMetaLocation(pMetaLocation.get());
-    gvAtomicLocations.kill(gvAtomicLocations.begin() + tIndex);
+    //move(not delete) this AtomicMetaLocation into the promoted container
+    gvAtomicLocations.erase(gvAtomicLocations.begin() + tIndex);
     gvPromotedAtomicLocations.push_back(pAtomicMetaLocation);
   }
 
