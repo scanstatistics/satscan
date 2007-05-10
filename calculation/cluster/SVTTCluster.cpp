@@ -215,12 +215,7 @@ CSVTTCluster * CSVTTCluster::Clone() const {
 }
 
 void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
-  if (gvSetData[0].gTimeTrendInside.IsNegative())
-    fprintf(fp, "     -");
-  else
-    fprintf(fp, "      ");
-
-  fprintf(fp, "%.3f", gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend());
+  fprintf(fp, "      %.3f", gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend());
 }
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
@@ -229,8 +224,8 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintForma
   PrintFormat.PrintSectionLabel(fp, "Time trend", false, true);
   sBuffer.printf("%f  (%.3f%% %s",
                gvSetData[0].gTimeTrendInside.GetBeta(),
-               gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend(),
-               (gvSetData[0].gTimeTrendInside.IsNegative() ? "annual decrease)\n" : "annual increase)"));
+               fabs(gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend()),
+               (gvSetData[0].gTimeTrendInside.GetAnnualTimeTrend() < 0 ? "annual decrease)\n" : "annual increase)"));
   PrintFormat.PrintAlignedMarginsDataString(fp, sBuffer);
 }
 

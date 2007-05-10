@@ -241,7 +241,7 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
           TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
           TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-          Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = (TractTimeTrend.IsNegative() ? -1 : 1) * TractTimeTrend.GetAnnualTimeTrend();
+          Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
        }
