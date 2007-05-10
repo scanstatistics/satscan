@@ -366,12 +366,7 @@ CSVTTCluster * CSVTTCluster::Clone() const {
 }
 
 void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
-  if (gClusterData->getInsideTrend()->IsNegative())
-    fprintf(fp, "     -");
-  else
-    fprintf(fp, "      ");
-
-  fprintf(fp, "%.3f", gClusterData->getInsideTrend()->GetAnnualTimeTrend());
+  fprintf(fp, "      %.3f", gClusterData->getInsideTrend()->GetAnnualTimeTrend());
 }
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
@@ -419,8 +414,8 @@ void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const CTimeTrend& 
      case CTimeTrend::TREND_INF_BEGIN    : buffer = "-100"; break;
      case CTimeTrend::TREND_INF_END      : buffer = "infinity"; break;
      case CTimeTrend::TREND_NOTCONVERGED : throw prg_error("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
-     case CTimeTrend::TREND_CONVERGED    : printString(buffer, "%f  (%.3f%% %s", Trend.GetBeta(), Trend.GetAnnualTimeTrend(),
-                                                       (Trend.IsNegative() ? "annual decrease)" : "annual increase)"));
+     case CTimeTrend::TREND_CONVERGED    : printString(buffer, "%f  (%.3f%% %s", Trend.GetBeta(), fabs(Trend.GetAnnualTimeTrend()),
+                                                       (Trend.GetAnnualTimeTrend() < 0 ? "annual decrease)" : "annual increase)"));
     }
   }
   catch (prg_exception& x) {

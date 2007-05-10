@@ -222,12 +222,12 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   }
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
     double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).getTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-    if (gDataSets->GetDataSet(0/*for now*/).getTimeTrend().IsNegative())
+    if (nAnnualTT < 0)
       buffer = "Annual decrease";
     else
       buffer = "Annual increase";
     PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
-    fprintf(fp, "%.3lf%%\n", nAnnualTT);
+    fprintf(fp, "%.3lf%%\n", fabs(nAnnualTT));
   }
   PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
 }

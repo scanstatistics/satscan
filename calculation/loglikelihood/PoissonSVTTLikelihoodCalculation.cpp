@@ -15,7 +15,7 @@ bool IncreasingTrend(const CTimeTrend& InsideTrend, const CTimeTrend& GlobalTren
   if (InsideTrend.GetStatus() != CTimeTrend::TREND_CONVERGED)
     return false;
 
-  if (InsideTrend.IsNegative())
+  if (InsideTrend.GetBeta() < 0)
     return false;
   return InsideTrend.GetBeta() > GlobalTrend.GetBeta();
 }
@@ -24,7 +24,7 @@ bool DecreasingTrend(const CTimeTrend& InsideTrend, const CTimeTrend& GlobalTren
   if (InsideTrend.GetStatus() != CTimeTrend::TREND_CONVERGED)
     return false;
 
-  if (!InsideTrend.IsNegative())
+  if (InsideTrend.GetBeta() >= 0)
     return false;
   return InsideTrend.GetBeta() < GlobalTrend.GetBeta();
 }
