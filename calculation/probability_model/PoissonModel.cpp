@@ -121,9 +121,6 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& DataSet, measure_t ** pNonCu
     case CTimeTrend::TREND_NOTCONVERGED :
       GenerateResolvableException("Note: The time trend calculation did not converge and the temporal adjustment could not be performed.\n"
                                   "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
-    case CTimeTrend::TREND_NEGATIVE :
-      GenerateResolvableException("Note: Temporal adjustment could not be performed. The calculated time trend is negative.\n"
-                                  "      Please run analysis without automatic adjustment of time trends.","AdjustForLogLinear()");
     case CTimeTrend::TREND_CONVERGED : break;
     default :
       ZdGenerateException("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
