@@ -180,8 +180,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
       nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaNew * t);
     gdAlpha = Alpha(nSumCases,nSumMsr_ExpBeta);
     gdBeta = nBetaNew;
-    //Set status, a negative beta is not likely, but perform check regardless.
-    gStatus = (gdBeta < -1 ? TREND_NEGATIVE : TREND_CONVERGED);
+    gStatus = TREND_CONVERGED;
   }
   else
     gStatus = TREND_NOTCONVERGED;
@@ -202,29 +201,29 @@ void CTimeTrend::Initialize() {
   gStatus           = TREND_UNDEF;
 }
 
-/** Returns true if m_nBeta is less than TREND_ZERO else returns false. */
-bool CTimeTrend::IsNegative() const {
-  return gdBeta < TREND_ZERO;
-}
-
 /** Calculates second derivative. */
 double CTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) const {
   return (nSTC * nSTME) - (nSC * nST2ME);
 }
 
 /** Calculates annual time trend given specfied time interval precision and length. */
-double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
+double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength) {
   double nUnits;
 
-  switch (eDatePrecision) {
-    case YEAR  : nUnits = 1; break;
-    case MONTH : nUnits = 12; break;
-    case DAY   : nUnits = 365.25; break;
-    default    : ZdGenerateException("SetAnnualTimeTrend() called with unknown date precision '%d'.",
-                                     "SetAnnualTimeTrend()", eDatePrecision);
-  }
+  if (gStatus != TREND_CONVERGED)
+    ZdGenerateException("SetAnnualTimeTrend() called with time trend that is not in converged state.", "SetAnnualTimeTrend()");
 
-  gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
+  switch (eAggregationPrecision) {
+    case YEAR  : gdAnnualTimeTrend = 100 * (exp(gdBeta/dTimeAggregationLength) - 1); break;
+    case MONTH : gdAnnualTimeTrend = 100 * (exp(gdBeta * 12/dTimeAggregationLength) - 1); break;
+    case DAY   : gdAnnualTimeTrend = 100 * (exp(gdBeta * 365.25/dTimeAggregationLength) - 1); break;
+    default    : ZdGenerateException("SetAnnualTimeTrend() called with unknown date precision '%d'.",
+                                     "SetAnnualTimeTrend()", eAggregationPrecision);
+  }
+  //If the time trend is very small, then the value assigned above is more likely the
+  //result of round-off. In this case, set trend to zero.
+  if (-TREND_ZERO < gdAnnualTimeTrend && gdAnnualTimeTrend < TREND_ZERO)
+    gdAnnualTimeTrend = 0;
   return gdAnnualTimeTrend;
 }
 

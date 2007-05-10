@@ -10,7 +10,6 @@ class CTimeTrend {
     enum Status                 {TREND_UNDEF=0,        /** trend undefined */
                                  TREND_INF,            /** trend is infinite */
                                  TREND_NOTCONVERGED,   /** trend did not converge */
-                                 TREND_NEGATIVE,       /** negative beta calculated */
                                  TREND_CONVERGED       /** trend converged */
                                  };
 
@@ -38,8 +37,7 @@ class CTimeTrend {
     double                      GetBeta() const {return gdBeta;}
     Status                      GetStatus() const {return gStatus;}
     void                        Initialize();
-    bool                        IsNegative() const;
-    double                      SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);
+    double                      SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength);
 };
 //*****************************************************************************
 #endif
