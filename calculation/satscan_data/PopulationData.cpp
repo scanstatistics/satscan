@@ -386,7 +386,7 @@ void PopulationData::CheckCasesHavePopulations(const count_t * pCases, const CSa
     error message to print direction object and FILE handle (if pointer not NULL).
     Caller is responsible for ensuring that if 'pDisplay' is not NULL, that is points
     to a valid file handle. */
-bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const {
+bool PopulationData::CheckZeroPopulations(BasePrint& PrintDirection) const {
   UInt                          month, day, year;
   bool                          bValid = true;
   int                           i, j, nPEndIndex, nPStartIndex = 0;
@@ -414,9 +414,7 @@ bool PopulationData::CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirect
        if (PopTotalsArray[j]==0) {
           bValid = false;
           JulianToMDY(&month, &day, &year, gvPopulationDates[j]);
-          if (pDisplay)
-            fprintf(pDisplay, "Error: The population is zero for all location IDs in %d.\n", year);
-          PrintDirection.Printf("Error: The population is zero for all location IDs in %d.\n", BasePrint::P_ERROR, year);
+          PrintDirection.Printf("Error: The population is zero for all location IDs in %d/%d/%d.\n", BasePrint::P_ERROR, year, month, day);
        }
     }
   }

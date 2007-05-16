@@ -94,7 +94,7 @@ class PopulationData {
     size_t                              AddOrdinalCategoryCaseCount(double dOrdinalNumber, count_t Count);
     void                                CalculateAlpha(std::vector<double>& vAlpha, Julian StartDate, Julian EndDate) const;
     void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;
-    bool                                CheckZeroPopulations(FILE *pDisplay, BasePrint& PrintDirection) const;
+    bool                                CheckZeroPopulations(BasePrint& PrintDirection) const;
     int                                 CreateCovariateCategory(DataSource& Source, short iScanOffset, BasePrint& PrintDirection);
     void                                Display(BasePrint& PrintDirection) const;
     double                              GetAlphaAdjustedPopulation(double& dPopulation, tract_t t, int iCategoryIndex,
