@@ -892,6 +892,7 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
   std::string                   sBuffer;
   char                          sDateBuffer[20];
   const CovariateCategory     * pCategoryDescriptor;
+  Julian                        lastReported=0;
 
   try {
     if (gbStartAsPopDt)
@@ -910,7 +911,7 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
              PopTotalsArray[j] += pCategoryDescriptor->GetPopulationAtDateIndex(j, *this);
           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();   
        }
-
+       lastReported = 0;
        for (j=nPStartIndex; j <= nPEndIndex; j++) {
           if (PopTotalsArray[j]==0) {
             if (!bZeroFound) {
@@ -922,10 +923,15 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
                                     "         population totaling zero for the specified date(s).\n\n",
                                     BasePrint::P_WARNING);
             }
-            JulianToChar(sDateBuffer, gvPopulationDates[j]);
-            if (pDisplay)
-              fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
-            PrintDirection.Printf("         Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
+            //Suppress printing the same population date for a location; this can happen when original population date from
+            //input file was precise to the day.
+            if (lastReported != gvPopulationDates[j]) {
+              JulianToChar(sDateBuffer, gvPopulationDates[j]);
+              if (pDisplay)
+                fprintf(pDisplay,"         Location %s, %s\n", Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
+              PrintDirection.Printf("         Location %s, %s\n", BasePrint::P_WARNING, Data.GetTInfo()->getLocations().at(i)->getIndentifier(), sDateBuffer);
+              lastReported = gvPopulationDates[j];
+            }
           }
        }
     }
