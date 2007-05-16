@@ -373,7 +373,7 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
       gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    if (!DataSet.getPopulationData().CheckZeroPopulations(stderr, gPrint))
+    if (!DataSet.getPopulationData().CheckZeroPopulations(gPrint))
       return false;
   }
   catch (prg_exception& x) {
