@@ -94,6 +94,7 @@ void SaTScanDataReader::Read() {
       case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
       case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
       case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
+      case WEIGHTEDNORMAL       :
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       default :

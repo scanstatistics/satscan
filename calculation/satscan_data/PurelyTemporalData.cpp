@@ -129,6 +129,7 @@ void CPurelyTemporalData::SetProbabilityModel() {
      case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
      case ORDINAL              : m_pModel = new OrdinalModel(); break;
      case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
+     case WEIGHTEDNORMAL       :
      case NORMAL               : m_pModel = new CNormalModel(); break;
      case RANK                 : m_pModel = new CRankModel(); break;
      case SPACETIMEPERMUTATION : throw prg_error("Purely Temporal analysis not implemented for Space-Time Permutation model.\n",
