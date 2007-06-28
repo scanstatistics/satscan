@@ -45,11 +45,11 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
       CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == ORDINAL)
       CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
       CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-      CreateField(vFieldDefinitions, DEVIATION_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
     }
-    if (gParameters.GetProbabilityModelType() != NORMAL) {
+    if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -152,7 +152,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
   tract_t               t;
   std::string           sBuffer;
   count_t             * pCases;
-  measure_t           * pMeasure, * pSqMeasure(0);
+  measure_t           * pMeasure, * pMeasureAux(0);
   double                dExpected, dDenominator, dNumerator;
   RecordBuffer          Record(vFieldDefinitions);
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
@@ -161,8 +161,8 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
     for (i=0; i < Handler.GetNumDataSets(); ++i) {
        pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
        pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
-       if (gParameters.GetProbabilityModelType() == NORMAL)
-         pSqMeasure = Handler.GetDataSet(i).getMeasureData_Sq().GetArray()[0];
+       if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+         pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
        for (t=0; t < tTotalLocations; ++t) {
           Record.SetAllFieldsBlank(true);
@@ -171,13 +171,13 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
             Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
-          if (gParameters.GetProbabilityModelType() == NORMAL) {
+          if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
             if (pCases[t]) {
               Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
-              Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(GetUnbiasedVariance(pCases[t], pMeasure[t], pSqMeasure[t]));
+              Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(GetUnbiasedVariance(pCases[t], pMeasure[t], pMeasureAux[t]));
             }  
           }
-          if (gParameters.GetProbabilityModelType() != NORMAL) {
+          if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
             Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
             dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
             Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
@@ -245,10 +245,22 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
           }
           TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
-          if (TractTimeTrend.GetStatus() == CTimeTrend::TREND_CONVERGED) {
-            TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-            Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
-          }  
+          switch (TractTimeTrend.GetStatus()) {
+            case CTimeTrend::UNDEFINED : break;
+            case CTimeTrend::NEGATIVE_INFINITY :
+               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR;
+               break;
+            case CTimeTrend::POSITIVE_INFINITY :
+               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR;
+               break;
+            case CTimeTrend::NOT_CONVERGED     :
+               throw prg_error("The time trend did not converge.\n","Write()");
+            case CTimeTrend::CONVERGED         :
+               TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
+               break;
+            default : throw prg_error("Unknown time trend status type '%d'.", "Write()", TractTimeTrend.GetStatus());
+          };
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
        }

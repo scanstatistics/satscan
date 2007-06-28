@@ -110,11 +110,11 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
 
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, DEVIATION_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       }
       else {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
@@ -125,7 +125,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
         CreateField(vFieldDefinitions, TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-        CreateField(vFieldDefinitions, TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        //CreateField(vFieldDefinitions, TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
     }
   }
@@ -145,11 +145,11 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     CreateField(vDataFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
       CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      CreateField(vDataFieldDefinitions, DEVIATION_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
     }
     else {
       CreateField(vDataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
@@ -164,7 +164,7 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       CreateField(vDataFieldDefinitions, TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       CreateField(vDataFieldDefinitions, TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-      CreateField(vDataFieldDefinitions, TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+      //CreateField(vDataFieldDefinitions, TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
     }
   }
   catch (prg_exception& x) {
@@ -252,7 +252,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         dObserved = theCluster.GetObservedCount();
         dExpected = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = dExpected/dObserved;
@@ -261,13 +261,13 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
-        dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureSq(0),
+        dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureAux(0),
                                                 Handler.GetDataSet().getTotalCases(), Handler.GetDataSet().getTotalMeasure(),
-                                                Handler.GetDataSet().getTotalMeasureSq());
+                                                Handler.GetDataSet().getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
-        Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
+        Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
-      if (gParameters.GetProbabilityModelType() != NORMAL) {
+      if (gParameters.GetProbabilityModelType() != NORMAL &&  gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
       }
@@ -281,16 +281,22 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
           throw prg_error("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
         switch (pClusterData->getInsideTrend()->GetStatus()) {
-          case CTimeTrend::TREND_CONVERGED :
+          case CTimeTrend::UNDEFINED         : break;
+          case CTimeTrend::CONVERGED         :
             Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend()->GetAnnualTimeTrend(); break;
-          case CTimeTrend::TREND_INF_BEGIN :
-            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = -100; break;
-        }    
+          case CTimeTrend::NEGATIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+          case CTimeTrend::POSITIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+        }
         switch (pClusterData->getOutsideTrend()->GetStatus()) {
-          case CTimeTrend::TREND_CONVERGED :
+          case CTimeTrend::UNDEFINED         : break;
+          case CTimeTrend::CONVERGED         :
             Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend()->GetAnnualTimeTrend(); break;
-          case CTimeTrend::TREND_INF_BEGIN :
-            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = -100; break;
+          case CTimeTrend::NEGATIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+          case CTimeTrend::POSITIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
         }
       }
     }
@@ -375,7 +381,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
     itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
     if (itr_Index != vComprisedDataSetIndexes.end()) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         dObserved = theCluster.GetObservedCount(iSetIndex);
         dExpected = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = (dObserved ? dExpected/dObserved : 0);
@@ -384,13 +390,13 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
           throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
-        dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureSq(iSetIndex),
+        dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureAux(iSetIndex),
                                                 Handler.GetDataSet(iSetIndex).getTotalCases(), Handler.GetDataSet(iSetIndex).getTotalMeasure(),
-                                                Handler.GetDataSet(iSetIndex).getTotalMeasureSq());
+                                                Handler.GetDataSet(iSetIndex).getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
-        Record.GetFieldValue(DEVIATION_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
+        Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
-      if (gParameters.GetProbabilityModelType() != NORMAL) {
+      if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub, iSetIndex);
       }  
@@ -404,16 +410,28 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
         if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
           throw prg_error("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
         switch (pClusterData->getInsideTrend()->GetStatus()) {
-          case CTimeTrend::TREND_CONVERGED :
+          case CTimeTrend::UNDEFINED         : break;
+          case CTimeTrend::CONVERGED         :
             Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend()->GetAnnualTimeTrend(); break;
-          case CTimeTrend::TREND_INF_BEGIN :
-            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = -100; break;
-        }    
+          case CTimeTrend::NEGATIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_IN_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+          case CTimeTrend::POSITIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+          case CTimeTrend::NOT_CONVERGED     :
+            throw prg_error("Time trend inside of cluster is did not converge.\n","WriteCountData()");
+          default : throw prg_error("Unknown time trend status type '%d'.", "WriteCountData()", pClusterData->getInsideTrend()->GetStatus());
+        }
         switch (pClusterData->getOutsideTrend()->GetStatus()) {
-          case CTimeTrend::TREND_CONVERGED :
+          case CTimeTrend::UNDEFINED         : break;
+          case CTimeTrend::CONVERGED         :
             Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend()->GetAnnualTimeTrend(); break;
-          case CTimeTrend::TREND_INF_BEGIN :
-            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = -100; break;
+          case CTimeTrend::NEGATIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+          case CTimeTrend::POSITIVE_INFINITY :
+            Record.GetFieldValue(TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+          case CTimeTrend::NOT_CONVERGED     :
+            throw prg_error("Time trend outside of cluster is did not converge.\n","WriteCountData()");
+          default : throw prg_error("Unknown time trend status type '%d'.", "WriteCountData()", pClusterData->getOutsideTrend()->GetStatus());
         }
       }
     }
