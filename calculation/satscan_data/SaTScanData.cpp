@@ -7,6 +7,7 @@
 #include "SSException.h"
 #include "SaTScanDataRead.h"
 #include "NormalRandomizer.h"
+#include "WeightedNormalRandomizer.h"
 #include "ExponentialDataSetHandler.h"
 #include "ParametersPrint.h"
 #include <boost/dynamic_bitset.hpp>
@@ -305,7 +306,7 @@ void CSaTScanData::CalculateExpectedCases() {
   for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
      CalculateMeasure(gDataSets->GetDataSet(t));
      gtTotalMeasure += gDataSets->GetDataSet(t).getTotalMeasure();
-     gtTotalMeasureSq += gDataSets->GetDataSet(t).getTotalMeasureSq();
+     gtTotalMeasureAux += gDataSets->GetDataSet(t).getTotalMeasureAux();
      gtTotalCases += gDataSets->GetDataSet(t).getTotalCases();
      gtTotalPopulation += gDataSets->GetDataSet(t).getTotalPopulation();
   }
@@ -540,7 +541,7 @@ void CSaTScanData::Init() {
   m_nFlexibleWindowEndRangeStartIndex=0;
   m_nFlexibleWindowEndRangeEndIndex=0;
   m_nGridTracts = 0;
-  gtTotalMeasureSq = 0;
+  gtTotalMeasureAux = 0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -639,31 +640,32 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          gtTotalMeasure += DataSet.getTotalMeasure();
       }
     }
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
       //recalculate the data set cases/measure given updated randomizer data
-      AbstractNormalRandomizer *pRandomizer;
+      AbstractNormalDataRandomizer *pRandomizer;
       gtTotalCases=0;
-      gtTotalMeasure=gtTotalMeasureSq=0;
+      gtTotalMeasureAux=gtTotalMeasureAux=0;
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
         RealDataSet& DataSet = gDataSets->GetDataSet(t);
-        if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-          throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+        if ((pRandomizer = dynamic_cast<AbstractNormalDataRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+          throw prg_error("Randomizer could not be dynamically casted to AbstractNormalDataRandomizer type.\n", "RemoveClusterSignificance()");
         pRandomizer->AssignFromAttributes(DataSet);
         //update class variables that defines totals across all data sets
         gtTotalCases += DataSet.getTotalCases();
         gtTotalMeasure += DataSet.getTotalMeasure();
-        gtTotalMeasureSq += DataSet.getTotalMeasureSq();
+        gtTotalMeasureAux += DataSet.getTotalMeasureAux();
       }
     }
     //now recalculate purely temporal arrays as needed
     if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
       switch (gParameters.GetProbabilityModelType()) {
-       case NORMAL      : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Sq));
-       case EXPONENTIAL :
-       case BERNOULLI   :
-       case POISSON     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
-                          std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
-       case ORDINAL     : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
+       case WEIGHTEDNORMAL :
+       case NORMAL         : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
+       case EXPONENTIAL    :
+       case BERNOULLI      :
+       case POISSON        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
+                             std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
+       case ORDINAL        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
        default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
       }
     }
@@ -743,11 +745,11 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
            gtTotalPopulation += DataSet.getTotalCases();
          }
        }
-       else if (gParameters.GetProbabilityModelType() == NORMAL) {
-         AbstractNormalRandomizer *pRandomizer;
+       else if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+         AbstractNormalDataRandomizer *pRandomizer;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-           if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-             throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+           if ((pRandomizer = dynamic_cast<AbstractNormalDataRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+             throw prg_error("Randomizer could not be dynamically casted to AbstractNormalDataRandomizer type.\n", "RemoveClusterSignificance()");
            //zero out cases/measure in clusters defined spatial/temporal window
            for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
              pRandomizer->RemoveCase(i, tTractIndex);

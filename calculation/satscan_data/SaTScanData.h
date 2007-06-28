@@ -62,7 +62,7 @@ class CSaTScanData {
     tract_t                                     m_nTracts;
     measure_t                                   m_nTotalMaxCirclePopulation;    /** total population as defined in gvMaxCirclePopulation */
     measure_t                                   gtTotalMeasure;                 /** total measure for all data sets */
-    measure_t                                   gtTotalMeasureSq;               /** total square measure for all data sets */
+    measure_t                                   gtTotalMeasureAux;              /** total auxillary measure for all data sets */
     count_t                                     gtTotalCases;                   /** total cases for all data sets */
     measure_t                                   gtTotalPopulation;              /** total population for all sets */
     RelativeRiskAdjustmentHandler               gRelativeRiskAdjustments;
@@ -152,7 +152,7 @@ class CSaTScanData {
 
     inline measure_t                            GetTotalDataSetMeasure(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).getTotalMeasure();}
     inline measure_t                            GetTotalMeasure() const {return gtTotalMeasure;}
-    inline measure_t                            GetTotalMeasureSq() const {return gtTotalMeasureSq;}
+    inline measure_t                            GetTotalMeasureAux() const {return gtTotalMeasureAux;}
     inline count_t                              GetTotalCases() const {return gtTotalCases;}
     inline count_t                              GetTotalDataSetCases(size_t iSetIndex) const {return gDataSets->GetDataSet(iSetIndex).getTotalCases();}
     double                                      GetAnnualRate(size_t iSetIndex) const;
