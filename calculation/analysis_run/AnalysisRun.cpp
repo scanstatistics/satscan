@@ -361,15 +361,22 @@ void AnalysisRunner::FinalizeReport() {
 double AnalysisRunner::GetAvailablePhysicalMemory() const {
   double /*dTotalPhysicalMemory(0),*/ dAvailablePhysicalMemory(0);
 
+  //need process for handling failure from system call
+
 #ifdef _WINDOWS_
   MEMORYSTATUS stat;
   GlobalMemoryStatus (&stat);
   //dTotalPhysicalMemory = stat.dwTotalPhys;
   dAvailablePhysicalMemory = stat.dwAvailPhys;
+#elif defined(__APPLE__)
+  #include <sys/sysctl.h>
+  int mib[1] = { HW_USERMEM };  // HW_USERMEM is wrong variable!!! This one reports physical user memory
+  size_t valuelen = sizeof(dAvailablePhysicalMemory);
+  sysctl(mib, 1 , &dAvailablePhysicalMemory, &valuelen, NULL, 0);
 #else
   //dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
   //dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
-  dAvailablePhysicalMemory = sysconf(_SC_AVPHYS_PAGES);   
+  dAvailablePhysicalMemory = sysconf(_SC_AVPHYS_PAGES);
   dAvailablePhysicalMemory *= sysconf(_SC_PAGESIZE);
 #endif
 
@@ -407,6 +414,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case EXPONENTIAL:  b = sizeof(count_t) + sizeof(measure_t); break;
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
     case ORDINAL: b = sizeof(count_t); break;
+    case WEIGHTEDNORMAL:
     case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
@@ -422,6 +430,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case BERNOULLI:
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
+    case WEIGHTEDNORMAL:
     case NORMAL: EXP = 4; break; //cases, measure and measure squared
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
@@ -1131,6 +1140,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
+      case WEIGHTEDNORMAL :
       case NORMAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;
@@ -1331,7 +1341,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       //for SVTT analyses, are data set global time trends converging?
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
          for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-            if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != CTimeTrend::TREND_CONVERGED)
+            if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != CTimeTrend::CONVERGED)
               return false;   
       }
 
