@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SaTScanData.h"
 #include "NormalDataSetHandler.h"
+#include "WeightedNormalRandomizer.h"
 #include "DataSource.h"
 #include "SSException.h"
 
@@ -13,18 +14,18 @@
 SimulationDataContainer_t & NormalDataSetHandler::AllocateSimulationData(SimulationDataContainer_t& Container) const {
   switch (gParameters.GetAnalysisType()) {
     case PURELYSPATIAL             : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Sq));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
                                      break;
     case PURELYTEMPORAL            :
     case PROSPECTIVEPURELYTEMPORAL : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Sq));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
                                      break;
     case SPACETIME                 :
     case PROSPECTIVESPACETIME      : std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData));
-                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Sq));
+                                     std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_Aux));
                                      if (gParameters.GetIncludePurelyTemporalClusters()) {
                                        std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT));
-                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Sq));
+                                       std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::allocateMeasureData_PT_Aux));
                                      }
                                      break;
     case SPATIALVARTEMPTREND       :
@@ -40,7 +41,7 @@ void NormalDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
     (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
     (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-    (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+    (*itr)->setMeasureData_Aux_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
   }
 }
 
@@ -57,29 +58,29 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
       //set total cases and measure
       Interface.SetTotalCasesCount(DataSet.getTotalCases());
       Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
-      Interface.SetTotalMeasureSqCount(DataSet.getTotalMeasureSq());
+      Interface.SetTotalMeasureAuxCount(DataSet.getTotalMeasureAux());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
           Interface.SetCaseArray(DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
-          Interface.SetSqMeasureArray(DataSet.getMeasureData_Sq().GetArray());
+          Interface.SetMeasureAuxArray(DataSet.getMeasureData_Aux().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
           Interface.SetPTCaseArray(DataSet.getCaseData_PT());
-          Interface.SetPTSqMeasureArray(DataSet.getMeasureData_PT_Sq());
+          Interface.SetPTMeasureAuxArray(DataSet.getMeasureData_PT_Aux());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCaseArray(DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(DataSet.getMeasureData().GetArray());
-          Interface.SetSqMeasureArray(DataSet.getMeasureData_Sq().GetArray());
+          Interface.SetMeasureAuxArray(DataSet.getMeasureData_Aux().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
             Interface.SetPTCaseArray(DataSet.getCaseData_PT());
             Interface.SetPTMeasureArray(DataSet.getMeasureData_PT());
-            Interface.SetPTSqMeasureArray(DataSet.getMeasureData_PT_Sq());
+            Interface.SetPTMeasureAuxArray(DataSet.getMeasureData_PT_Aux());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -111,29 +112,29 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
       //set total cases and measure
       Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
       Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
-      Interface.SetTotalMeasureSqCount(R_DataSet.getTotalMeasureSq());
+      Interface.SetTotalMeasureAuxCount(R_DataSet.getTotalMeasureAux());
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
           Interface.SetCaseArray(R_DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
-          Interface.SetSqMeasureArray(S_DataSet.getMeasureData_Sq().GetArray());
+          Interface.SetMeasureAuxArray(S_DataSet.getMeasureData_Aux().GetArray());
           break;
         case PROSPECTIVEPURELYTEMPORAL  :
         case PURELYTEMPORAL             :
           Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
           Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
-          Interface.SetPTSqMeasureArray(S_DataSet.getMeasureData_PT_Sq());
+          Interface.SetPTMeasureAuxArray(S_DataSet.getMeasureData_PT_Aux());
           break;
         case SPACETIME                  :
         case PROSPECTIVESPACETIME       :
           Interface.SetCaseArray(R_DataSet.getCaseData().GetArray());
           Interface.SetMeasureArray(S_DataSet.getMeasureData().GetArray());
-          Interface.SetSqMeasureArray(S_DataSet.getMeasureData_Sq().GetArray());
+          Interface.SetMeasureAuxArray(S_DataSet.getMeasureData_Aux().GetArray());
           if (gParameters.GetIncludePurelyTemporalClusters()) {
             Interface.SetPTCaseArray(R_DataSet.getCaseData_PT());
             Interface.SetPTMeasureArray(S_DataSet.getMeasureData_PT());
-            Interface.SetPTSqMeasureArray(S_DataSet.getMeasureData_PT_Sq());
+            Interface.SetPTMeasureAuxArray(S_DataSet.getMeasureData_PT_Aux());
           }
           break;
         case SPATIALVARTEMPTREND        :
@@ -157,7 +158,7 @@ void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simul
   if (gParameters.UseMetaLocationsFile() || gParameters.UsingMultipleCoordinatesMetaLocations()) {
     for (SimulationDataContainer_t::iterator itr=SimDataContainer.begin(); itr != SimDataContainer.end(); ++itr) {
       (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
-      (*itr)->setMeasureData_Sq_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
+      (*itr)->setMeasureData_Aux_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
     }
   }
 }
@@ -166,13 +167,20 @@ void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simul
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
 bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+   return gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ? ReadCountsWeighted(DataSet, Source) : ReadCountsStandard(DataSet, Source);
+}
+
+/** Read the count data source, storing data in respective DataSet object. As a
+    means to help user clean-up there data, continues to read records as errors
+    are encountered. Returns boolean indication of read success. */
+bool NormalDataSetHandler::ReadCountsStandard(RealDataSet& DataSet, DataSource& Source) {
   bool                                  bValid=true, bEmpty=true;
   Julian                                Date;
   tract_t                               TractIndex;
   count_t                               Count, tTotalCases=0;
   measure_t                             tContinuousVariable;
-  double                                tTotalMeasure=0, tTotalSqMeasure=0;
-  AbstractNormalRandomizer            * pRandomizer;
+  double                                tTotalMeasure=0, tTotalMeasureAux=0;
+  AbstractNormalRandomizer            * pRandomizer=0;
   DataSetHandler::RecordStatusType      eRecordStatus;
 
   try {
@@ -180,7 +188,7 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) 
       throw prg_error("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable);
+           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
              pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
@@ -196,11 +204,10 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) 
                                         std::numeric_limits<measure_t>::max());
                tTotalMeasure += tContinuousVariable;
                //check numeric limits of data type will not be exceeded
-               if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalSqMeasure)
+               if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
                  throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
                                         std::numeric_limits<measure_t>::max());
-               tTotalSqMeasure += std::pow(tContinuousVariable, 2);
-
+               tTotalMeasureAux += std::pow(tContinuousVariable, 2);
              }
            }
            else if (eRecordStatus == DataSetHandler::Ignored)
@@ -221,7 +228,72 @@ bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) 
       pRandomizer->AssignFromAttributes(DataSet);
   }
   catch (prg_exception& x) {
-    x.addTrace("ReadCounts()","NormalDataSetHandler");
+    x.addTrace("ReadCountsStandard()","NormalDataSetHandler");
+    throw;
+  }
+  return bValid;
+}
+
+/** Read the count data source, storing data in respective DataSet object. As a
+    means to help user clean-up there data, continues to read records as errors
+    are encountered. Returns boolean indication of read success. */
+bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& Source) {
+  bool                                  bValid=true, bEmpty=true;
+  Julian                                Date;
+  tract_t                               TractIndex;
+  count_t                               Count, tTotalCases=0;
+  measure_t                             tContinuousVariable;
+  double                                tTotalMeasure=0, tTotalMeasureAux=0, dWeightVariable;
+  AbstractWeightedNormalRandomizer    * pRandomizer=0;
+  DataSetHandler::RecordStatusType      eRecordStatus;
+
+  try {
+    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
+      throw prg_error("Data set randomizer not AbstractWeightedNormalRandomizer type.", "ReadCounts()");
+    //Read data, parse and if no errors, increment count for tract at date.
+    while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
+           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, &dWeightVariable);
+           if (eRecordStatus == DataSetHandler::Accepted) {
+             bEmpty = false;
+             dWeightVariable = 1/dWeightVariable; // see Joe's email -- question for Lan/Martin
+             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable, dWeightVariable);
+             tTotalCases += Count;
+             //check that addition did not exceed data type limitations
+             if (tTotalCases < 0)
+               throw resolvable_error("Error: The total number of individuals in dataset is greater than the maximum allowed of %ld.\n",
+                                      std::numeric_limits<count_t>::max());
+             for (count_t t=0; t < Count; ++t) {
+               //check numeric limits of data type will not be exceeded
+               if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+                 throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
+                                        std::numeric_limits<measure_t>::max());
+               tTotalMeasure += tContinuousVariable * dWeightVariable;
+               //check numeric limits of data type will not be exceeded
+               if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
+                 throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
+                                        std::numeric_limits<measure_t>::max());
+                 tTotalMeasureAux += dWeightVariable;
+             }
+           }
+           else if (eRecordStatus == DataSetHandler::Ignored)
+             continue;
+           else
+             bValid = false;
+    }
+    //if invalid at this point then read encountered problems with data format,
+    //inform user of section to refer to in user guide for assistance
+    if (! bValid)
+      gPrint.Printf("Please see the 'case file' section in the user guide for help.\n", BasePrint::P_ERROR);
+    //print indication if file contained no data
+    else if (bEmpty) {
+      gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
+      bValid = false;
+    }
+    else  
+      pRandomizer->AssignFromAttributes(DataSet);
+  }
+  catch (prg_exception& x) {
+    x.addTrace("ReadCountsWeighted()","NormalDataSetHandler");
     throw;
   }
   return bValid;
@@ -250,8 +322,8 @@ bool NormalDataSetHandler::ReadData() {
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable) {
-  const short   uContinuousVariableIndex=3;
+DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pWeightVariable) {
+  const short   uContinuousVariableIndex=3, uWeightVariableIndex=4;
   short         uOffset;
 
   try {
@@ -287,7 +359,7 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
     if (eDateStatus != DataSetHandler::Accepted)
       return eDateStatus;
 
-    uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex); 
+    uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uContinuousVariableIndex - 1 : uContinuousVariableIndex);
     // read continuous variable
     if (!Source.GetValueAt(uOffset)) {
       gPrint.Printf("Error: Record %d, of the %s, is missing the continuous variable.\n",
@@ -298,6 +370,26 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
        gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
                      BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
        return DataSetHandler::Rejected;
+    }
+
+    if (pWeightVariable) {
+      uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uWeightVariableIndex - 1 : uWeightVariableIndex);
+      // read continuous variable
+      if (!Source.GetValueAt(uOffset)) {
+        gPrint.Printf("Error: Record %d, of the %s, is missing the weight variable.\n",
+                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        return DataSetHandler::Rejected;
+      }
+      if (sscanf(Source.GetValueAt(uOffset), "%lf", pWeightVariable) != 1) {
+         gPrint.Printf("Error: The weight variable value '%s' in record %ld, of %s, is not a number.\n",
+                       BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+         return DataSetHandler::Rejected;
+      }
+      if (*pWeightVariable < 0) {
+         gPrint.Printf("Error: The weight variable value '%s' in record %ld, of %s, is less than zero.\n",
+                       BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+         return DataSetHandler::Rejected;
+      }
     }
   }
   catch (prg_exception& x) {
@@ -310,7 +402,7 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
 void NormalDataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
   try {
     DataSet.setMeasureData_PT();
-    DataSet.setMeasureData_PT_Sq();
+    DataSet.setMeasureData_PT_Aux();
   }
   catch (prg_exception& x) {
     x.addTrace("SetPurelyTemporalMeasureData()","NormalDataSetHandler");
@@ -321,7 +413,7 @@ void NormalDataSetHandler::SetPurelyTemporalMeasureData(RealDataSet& DataSet) {
 /** sets purely temporal structures used in simulations */
 void NormalDataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& Container) {
   std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT));
-  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT_Sq));
+  std::for_each(Container.begin(), Container.end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
 }
 
 /** Allocates randomizers for each dataset. There are currently 3 randomization types
@@ -332,10 +424,18 @@ void NormalDataSetHandler::SetRandomizers() {
     gvDataSetRandomizers.resize(gParameters.GetNumDataSets(), 0);
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
-          if (gParameters.GetIsPurelyTemporalAnalysis())
-            gvDataSetRandomizers.at(0) = new NormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
-          else
-            gvDataSetRandomizers.at(0) = new NormalRandomizer(gParameters.GetRandomizationSeed());
+          if (gParameters.GetIsPurelyTemporalAnalysis()) {
+            if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+              gvDataSetRandomizers.at(0) = new WeightedNormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+            else
+              gvDataSetRandomizers.at(0) = new NormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
+          }
+          else {
+            if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+              gvDataSetRandomizers.at(0) = new WeightedNormalRandomizer(gParameters.GetRandomizationSeed());
+            else
+              gvDataSetRandomizers.at(0) = new NormalRandomizer(gParameters.GetRandomizationSeed());
+          }
           break;
       case FILESOURCE :
       case HA_RANDOMIZATION :

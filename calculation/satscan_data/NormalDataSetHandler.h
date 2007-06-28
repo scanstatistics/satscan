@@ -6,9 +6,13 @@
 #include "NormalRandomizer.h"
 
 class NormalDataSetHandler : public DataSetHandler {
+  private:
+    bool                                ReadCountsStandard(RealDataSet& DataSet, DataSource& Source);
+    bool                                ReadCountsWeighted(RealDataSet& DataSet, DataSource& Source);
+
   protected:
     virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
-    virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable);
+    virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pWeightVariable);
     virtual void                        SetRandomizers();
 
   public:
