@@ -22,7 +22,7 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
       case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
       case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
       case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
-      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation of Temporal Trends"; break;
+      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
       case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
       default : throw prg_error("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", gParameters.GetAnalysisType());
     }
@@ -55,6 +55,7 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
             default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
          }
       case ORDINAL :
+      case WEIGHTEDNORMAL :
       case NORMAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : return "High Values";
@@ -90,6 +91,7 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
       case ORDINAL              : sProbabilityModel = "Ordinal"; break;
       case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
       case NORMAL               : sProbabilityModel = "Normal"; break;
+      case WEIGHTEDNORMAL       : sProbabilityModel = "Weighted Normal"; break;
       case RANK                 : sProbabilityModel = "Rank"; break;
       default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
     }
@@ -234,7 +236,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case PURELYTEMPORAL            : fprintf(fp, "Retrospective Purely Temporal analysis\n"); break;
       case SPACETIME                 : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
       case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
-      case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation of Temporal Trends analysis\n"); break;
+      case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation in Temporal Trends analysis\n"); break;
       case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal analysis\n"); break;
       default : throw prg_error("Unknown analysis type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetAnalysisType());
@@ -252,6 +254,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
       case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
+      case WEIGHTEDNORMAL       : fprintf(fp, "using the Weighted Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
@@ -466,6 +469,7 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       case ORDINAL              :
       case EXPONENTIAL          :
       case NORMAL               :
+      case WEIGHTEDNORMAL       :
       case RANK                 : break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintInputParameters()", gParameters.GetProbabilityModelType());
@@ -541,6 +545,7 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
          case SPACETIMEPERMUTATION :
          case ORDINAL              :
          case EXPONENTIAL          :
+         case WEIGHTEDNORMAL       :
          case NORMAL               :
          case RANK                 : break;
          default :

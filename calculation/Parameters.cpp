@@ -386,7 +386,7 @@ bool CParameters::GetPermitsPurelySpatialCluster() const {
 
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
-  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == WEIGHTEDNORMAL || eModelType == NORMAL
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL;
 }
 
@@ -397,7 +397,7 @@ bool CParameters::GetPermitsPurelyTemporalCluster() const {
 
 /** returns whether probability model type permits inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
-  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == WEIGHTEDNORMAL || eModelType == NORMAL
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL;
 }
 

@@ -230,7 +230,7 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
       PrintDirection.Printf("Invalid Parameter Setting:\n"
                             "The centric analysis execution is not available for:\n"
                             " purely temporal analyses\n purely spatial analyses with isotonic scan\n"
-                            " spatial variation of temporal trends analysis\n", BasePrint::P_PARAMERROR);
+                            " spatial variation in temporal trends analysis\n", BasePrint::P_PARAMERROR);
     }
     if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.UseLocationNeighborsFile()) {
       bValid = false;
@@ -497,7 +497,7 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL ||
-            gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
+            gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ||gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
         PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli, Ordinal, Normal and Exponential models only.\n", BasePrint::P_PARAMERROR);
         return false;
       }
@@ -929,7 +929,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
         break;
       case FILESOURCE       :
         if (gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == NORMAL ||
-            gParameters.GetProbabilityModelType() == RANK) {
+            gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ||gParameters.GetProbabilityModelType() == RANK) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nThe feature to read simulated data from a file is not implemented for "
                                 "the %s probability model.\n", BasePrint::P_PARAMERROR,
@@ -1262,6 +1262,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case ORDINAL              :
       case EXPONENTIAL          :
       case NORMAL               :
+      case WEIGHTEDNORMAL       :
       case RANK                 :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."
