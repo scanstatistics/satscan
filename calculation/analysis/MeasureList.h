@@ -3,7 +3,6 @@
 #define __MEASURELIST_H
 //*****************************************************************************
 #include "SaTScanData.h"
-#include <malloc.h>
 #include "LikelihoodCalculation.h"
 
 /** Abstract base class which defines interface for the process of calculating
