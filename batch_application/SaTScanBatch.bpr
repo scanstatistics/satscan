@@ -143,7 +143,9 @@
       ..\calculation\analysis\SVTTCentricAnalysis.obj 
       ..\calculation\utility\FileName.obj ..\calculation\utility\Ini.obj 
       ..\calculation\utility\TimeStamp.obj ..\calculation\utility\dBaseFile.obj 
-      ..\calculation\utility\FieldDef.obj"/>
+      ..\calculation\utility\FieldDef.obj 
+      ..\calculation\randomization\WeightedNormalRandomizer.obj 
+      ..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.obj"/>
     <RESFILES value="SaTScanBatch.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES)"/>

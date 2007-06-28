@@ -148,6 +148,8 @@ USEUNIT("..\calculation\utility\Ini.cpp");
 USEUNIT("..\calculation\utility\TimeStamp.cpp");
 USEUNIT("..\calculation\utility\dBaseFile.cpp");
 USEUNIT("..\calculation\utility\FieldDef.cpp");
+USEUNIT("..\calculation\randomization\WeightedNormalRandomizer.cpp");
+USEUNIT("..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.cpp");
 //---------------------------------------------------------------------------
 T//---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
