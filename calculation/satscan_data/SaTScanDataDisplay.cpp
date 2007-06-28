@@ -125,6 +125,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     case BERNOULLI            :
     case SPACETIMEPERMUTATION :
     case ORDINAL              :
+    case WEIGHTEDNORMAL       :
     case NORMAL               :
     case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
                                 printString(buffer, "%ld", gDataSets->GetDataSet(0).getTotalCases());
@@ -206,17 +207,44 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureSq()));
+    printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureSq()));
+       printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()));
        buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureSq())));
+    printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())));
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureSq())));
+       printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())));
        buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
+  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
+    printString(buffer, "%.2f", gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalMeasureAux());
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+       printString(work, ", %.2f", gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalMeasureAux());
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+    PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
+    buffer = "?";
+    //printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()));
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+       //printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()));
+       //buffer += work;
+       buffer += ",?";
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+    PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
+    buffer = "?";
+    //printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())));
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+       //printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())));
+       //buffer += work;
+       buffer += ",?";
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
