@@ -105,12 +105,17 @@ const char * GetDatePrecisionAsString(DatePrecisionType eType, std::string& sStr
 
 /** Returns number of processors in the system. */
 unsigned int GetNumSystemProcessors() {
-  unsigned int iNumProcessors;
+  unsigned int iNumProcessors = 1;
 
 #ifdef _WINDOWS_
    SYSTEM_INFO siSysInfo;
    GetSystemInfo(&siSysInfo);
    iNumProcessors = siSysInfo.dwNumberOfProcessors;
+#elif defined(__APPLE__)
+#include <sys/sysctl.h>
+  int mib[1] = { HW_NCPU };
+  size_t valuelen = sizeof(iNumProcessors);
+  sysctl(mib, 1 , &iNumProcessors, &valuelen, NULL, 0);
 #else
   iNumProcessors = sysconf(_SC_NPROCESSORS_ONLN);
 #endif
@@ -155,24 +160,24 @@ void ReportTimeEstimate(boost::posix_time::ptime StartTime, int nRepetitions, in
 }
 
 /** Returns estimated unbiased variance for the entire data set. */
-double GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure_t tSumSqMeasure) {
+double GetUnbiasedVariance(count_t tObservations, measure_t tSumMeasure, measure_t tSumMeasureAux) {
   double dUnbiasedVariance;
 
   if (tObservations < 1) return -1; //error condition
 
-  dUnbiasedVariance = std::fabs((tObservations == 1 ? 0.0 : (tSumSqMeasure - std::pow(tSumMeasure, 2)/tObservations)/(tObservations - 1)));
+  dUnbiasedVariance = std::fabs((tObservations == 1 ? 0.0 : (tSumMeasureAux - std::pow(tSumMeasure, 2)/tObservations)/(tObservations - 1)));
   return (dUnbiasedVariance < DBL_CMP_TOLERANCE ? 0.0 : dUnbiasedVariance);
 }
 
 /** Returns estimated combined variance for all observations adjusting for the cluster.
     This can be thought of as the variance unexplained by the cluster. */
-double GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tSqMeasure, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalSqMeasure) {
+double GetUnbiasedVariance(count_t tCases, measure_t tMeasure, measure_t tMeasureAux, count_t tTotalCases, measure_t tTotalMeasure, measure_t tTotalMeasureAux) {
    double dEstimatedMeanInside = (tCases ? tMeasure/tCases : 0);
    count_t tCasesOutside = tTotalCases - tCases;
    double dEstimatedMeanOutside = (tCasesOutside ? (tTotalMeasure - tMeasure)/tCasesOutside : 0);
    double dUnbiasedVariance = 1.0/(tTotalCases - 1) *
-                             (tSqMeasure - 2.0 * tMeasure * dEstimatedMeanInside + tCases * std::pow(dEstimatedMeanInside , 2) +
-                              (tTotalSqMeasure - tSqMeasure) - 2.0 * (tTotalMeasure - tMeasure) * dEstimatedMeanOutside +
+                             (tMeasureAux - 2.0 * tMeasure * dEstimatedMeanInside + tCases * std::pow(dEstimatedMeanInside , 2) +
+                              (tTotalMeasureAux - tMeasureAux) - 2.0 * (tTotalMeasure - tMeasure) * dEstimatedMeanOutside +
                               (tTotalCases - tCases) * std::pow(dEstimatedMeanOutside, 2));
    return (dUnbiasedVariance < DBL_CMP_TOLERANCE ? 0.0 : dUnbiasedVariance);
 }
