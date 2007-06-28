@@ -32,7 +32,7 @@ class ExponentialRandomizer : public AbstractExponentialRandomizer {
 
     virtual ExponentialRandomizer     * Clone() const {return new ExponentialRandomizer(*this);}
 
-    std::vector<double>               & CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const;
+    std::vector<double>               & CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation, bool bZeroFirst=true) const;
 };
 
 /** Exponential model data randomizer, derives from class AbstractExponentialRandomizer to define appropriate

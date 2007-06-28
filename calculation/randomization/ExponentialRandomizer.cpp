@@ -108,10 +108,11 @@ void ExponentialRandomizer::AssignRandomizedData(const RealDataSet&, DataSet& Si
 
 /** Calculates the total populations for each location - both censored and uncensored data.
     Caller is responsible for sizing vector to number of locations in input data. */
-std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation) const {
+std::vector<double>& ExponentialRandomizer::CalculateMaxCirclePopulationArray(std::vector<double>& vMaxCirclePopulation, bool bZeroFirst) const {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin();
 
-  std::fill(vMaxCirclePopulation.begin(), vMaxCirclePopulation.end(), 0);
+  if (bZeroFirst)
+    std::fill(vMaxCirclePopulation.begin(), vMaxCirclePopulation.end(), 0);
   //assign population array for accumulated data
   for (; itr_stationary != gvStationaryAttribute.end();  ++itr_stationary)
      ++vMaxCirclePopulation[itr_stationary->GetStationaryVariable().second];
