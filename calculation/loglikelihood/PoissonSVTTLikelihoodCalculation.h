@@ -13,6 +13,7 @@ class PoissonSVTTLikelihoodCalculator : public AbstractLikelihoodCalculator {
     SVTT_TREND_FUNCPTR  gpTrendOfInterest;
     const CParameters & gParameters;   /** const reference to CParameters object */
     std::vector<double> gvDataSetLogLikelihoodUnderNull;
+    double              CalcLogLikelihoodSpatialOnly(count_t n, measure_t u) const;
     double              CalcSVTTLogLikelihood(count_t* pCases, measure_t* pMeasure,
                                               count_t pTotalCases, double nAlpha,
                                               double nBeta, int nStatus) const;
