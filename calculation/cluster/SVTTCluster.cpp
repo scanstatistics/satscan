@@ -70,6 +70,7 @@ SVTTClusterData & SVTTClusterData::operator=(const SVTTClusterData& rhs) {
   gtTotalCasesOutsideCluster = rhs.gtTotalCasesOutsideCluster;
   gtTotalCasesInsideCluster = rhs.gtTotalCasesInsideCluster;
   gtTotalMeasureInsideCluster = rhs.gtTotalMeasureInsideCluster;
+  gtTotalMeasureOutsideCluster = rhs.gtTotalMeasureOutsideCluster;
   gTimeTrendInside = rhs.gTimeTrendInside;
   gTimeTrendOutside = rhs.gTimeTrendOutside;
   return *this;
@@ -95,6 +96,7 @@ void SVTTClusterData::AddNeighborData(tract_t tNeighborIndex, const AbstractData
     gtTotalCasesInsideCluster += ppCasesNC[i][tNeighborIndex];
     gtTotalMeasureInsideCluster += ppMeasureNC[i][tNeighborIndex];
     gtTotalCasesOutsideCluster -= ppCasesNC[i][tNeighborIndex];
+    gtTotalMeasureOutsideCluster -= ppMeasureNC[i][tNeighborIndex];
   }
 }
 
@@ -111,6 +113,7 @@ void SVTTClusterData::CopyEssentialClassMembers(const AbstractClusterData& rhs) 
   gtTotalCasesOutsideCluster = ((const SVTTClusterData&)rhs).gtTotalCasesOutsideCluster;
   gtTotalCasesInsideCluster = ((const SVTTClusterData&)rhs).gtTotalCasesInsideCluster;
   gtTotalMeasureInsideCluster = ((const SVTTClusterData&)rhs).gtTotalMeasureInsideCluster;
+  gtTotalMeasureOutsideCluster = ((const SVTTClusterData&)rhs).gtTotalMeasureOutsideCluster;
   gTimeTrendInside = ((const SVTTClusterData&)rhs).gTimeTrendInside;
   gTimeTrendOutside = ((const SVTTClusterData&)rhs).gTimeTrendOutside;
 }
@@ -149,6 +152,7 @@ void SVTTClusterData::Init() {
   gpCasesOutsideCluster=0;
   gpMeasureInsideCluster=0;
   gpMeasureOutsideCluster=0;
+  gtTotalMeasureOutsideCluster=0;
 }
 
 /** re-intialize data */
@@ -166,6 +170,7 @@ void SVTTClusterData::InitializeSVTTData(const DataSetInterface & Interface) {
   memcpy(gpCasesOutsideCluster, Interface.GetPTCaseArray(), giAllocationSize * sizeof(count_t));
   memcpy(gpMeasureOutsideCluster, Interface.GetPTMeasureArray(), giAllocationSize * sizeof(measure_t));
   gtTotalCasesOutsideCluster = Interface.GetTotalCasesCount();
+  gtTotalMeasureOutsideCluster = Interface.GetTotalMeasureCount();
 
   gTimeTrendInside.Initialize();
   gTimeTrendOutside.Initialize();
@@ -378,9 +383,9 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintForma
   PrintFormat.PrintSectionLabel(fp, "Outside Time trend", false, true);
   GetFormattedTimeTrend(buffer, *gClusterData->getOutsideTrend());
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);
-  buffer = "?";
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);
+  //buffer = "?";
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 AbstractClusterData * CSVTTCluster::GetClusterData() {
@@ -410,12 +415,13 @@ measure_t CSVTTCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaT
 void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const CTimeTrend& Trend) const {
   try {
     switch (Trend.GetStatus()) {
-     case CTimeTrend::TREND_UNDEF        : buffer = "undefined"; break;
-     case CTimeTrend::TREND_INF_BEGIN    : buffer = "-100"; break;
-     case CTimeTrend::TREND_INF_END      : buffer = "infinity"; break;
-     case CTimeTrend::TREND_NOTCONVERGED : throw prg_error("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
-     case CTimeTrend::TREND_CONVERGED    : printString(buffer, "%f  (%.3f%% %s", Trend.GetBeta(), fabs(Trend.GetAnnualTimeTrend()),
-                                                       (Trend.GetAnnualTimeTrend() < 0 ? "annual decrease)" : "annual increase)"));
+     case CTimeTrend::UNDEFINED          : buffer = "undefined"; break;
+     case CTimeTrend::NEGATIVE_INFINITY  : buffer = "-infinity"; break;
+     case CTimeTrend::POSITIVE_INFINITY  : buffer = "+infinity"; break;
+     case CTimeTrend::NOT_CONVERGED      : throw prg_error("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
+     case CTimeTrend::CONVERGED          : printString(buffer, "%.3f%% %s", fabs(Trend.GetAnnualTimeTrend()),
+                                                       (Trend.GetAnnualTimeTrend() < 0 ? "annual decrease" : "annual increase")); break;
+     default : throw prg_error("Unknown time trend status type '%d'.", "GetFormattedTimeTrend()", Trend.GetStatus());
     }
   }
   catch (prg_exception& x) {

@@ -50,6 +50,7 @@ class SVTTClusterData : public AbtractSVTTClusterData {
     count_t                   * gpCasesOutsideCluster;          /** cases outside the cluster */
     count_t                     gtTotalCasesOutsideCluster;     /** total cases outside the cluster */
     measure_t                 * gpMeasureOutsideCluster;        /** measure outside the cluster */
+    measure_t                   gtTotalMeasureOutsideCluster;   /** total measure outside the cluster */
     CTimeTrend                  gTimeTrendInside;               /** time trend for defined cluster */
     CTimeTrend                  gTimeTrendOutside;              /** Time trend for area outside cluster */
 
