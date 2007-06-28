@@ -9,24 +9,43 @@
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub)
-                             :gDataHub(DataHub), gpUnifier(0), gtMinLowRateCases(0), gtMinHighRateCases(2) {
+                             :gDataHub(DataHub), gpUnifier(0), gtMinLowRateCases(0), gtMinHighRateCases(2),
+                              gpRateOfInterest(0), gpRateOfInterestNormal(0) {
   try {
     //store data set totals for later calculation
-    for (size_t t=0; t < gDataHub.GetDataSetHandler().GetNumDataSets(); ++t)
+    for (size_t t=0; t < gDataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
        gvDataSetTotals.push_back(std::make_pair(gDataHub.GetDataSetHandler().GetDataSet(t).getTotalCases(),
                                                 gDataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure()));
-
-    switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
-      case LOW        : gpRateOfInterest = &AbstractLikelihoodCalculator::LowRate; break;
-      case HIGHANDLOW : gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate; break;
-      case HIGH       :
-      default         : gpRateOfInterest = &AbstractLikelihoodCalculator::HighRate;
-    };
-
+       gvDataSetMeasureAuxTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux());
+    }
+    if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL) {
+      switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
+        case LOW        : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateNormal; break;
+        case HIGHANDLOW : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighOrLowRateNormal; break;
+        case HIGH       :
+        default         : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateNormal;
+      };
+    }
+    else if (gDataHub.GetParameters().GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
+        case LOW        : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateWeightedNormal; break;
+        case HIGHANDLOW : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal; break;
+        case HIGH       :
+        default         : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateWeightedNormal;
+      };
+    }
+    else {
+      switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
+        case LOW        : gpRateOfInterest = &AbstractLikelihoodCalculator::LowRate; break;
+        case HIGHANDLOW : gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate; break;
+        case HIGH       :
+        default         : gpRateOfInterest = &AbstractLikelihoodCalculator::HighRate;
+      };
+    }
     if (gDataHub.GetParameters().GetNumDataSets() > 1) {
       switch (gDataHub.GetParameters().GetMultipleDataSetPurposeType()) {
         case MULTIVARIATE :
-          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
+          gpUnifier = new MultivariateUnifier(gDataHub.GetParameters().GetExecuteScanRateType(), gDataHub.GetParameters().GetProbabilityModelType()); break;
         case ADJUSTMENT :
           gpUnifier = new AdjustmentUnifier(gDataHub.GetParameters().GetExecuteScanRateType()); break;
         default :
@@ -41,6 +60,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
       case ORDINAL              :
       case RANK                 :
       case EXPONENTIAL          : gtMinLowRateCases = 0; gtMinHighRateCases = 2; break;
+      case WEIGHTEDNORMAL       :
       case NORMAL               : gtMinLowRateCases = 2; gtMinHighRateCases = 2; break;
       default : throw prg_error("Unknown data model type '%d'.","constructor()", gDataHub.GetParameters().GetProbabilityModelType());
     };
