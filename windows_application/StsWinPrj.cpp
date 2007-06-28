@@ -172,6 +172,8 @@ USEUNIT("..\calculation\utility\TimeStamp.cpp");
 USEUNIT("..\calculation\utility\FieldDef.cpp");
 USEUNIT("stsDBFFile.cpp");
 USEUNIT("stsScanfFile.cpp");
+USEUNIT("..\calculation\randomization\WeightedNormalRandomizer.cpp");
+USEUNIT("..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.cpp");
 //---------------------------------------------------------------------------
 void __SaTScanInit() {
   BasisInit();

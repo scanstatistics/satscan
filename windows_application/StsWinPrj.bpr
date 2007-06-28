@@ -149,7 +149,9 @@
       ..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.obj 
       ..\calculation\utility\FileName.obj ..\calculation\utility\Ini.obj 
       ..\calculation\utility\dBaseFile.obj ..\calculation\utility\TimeStamp.obj 
-      ..\calculation\utility\FieldDef.obj stsDBFFile.obj stsScanfFile.obj"/>
+      ..\calculation\utility\FieldDef.obj stsDBFFile.obj stsScanfFile.obj 
+      ..\calculation\randomization\WeightedNormalRandomizer.obj 
+      ..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.obj"/>
     <RESFILES value="StsWinPrj.res"/>
     <DEFFILE value=""/>
     <RESDEPEN value="$(RESFILES) stsMain.dfm stsFrmAnalysisParameters.dfm stsFrmAbout.dfm 
@@ -169,7 +171,7 @@
     <DEBUGLIBPATH value="$(BCB)\lib\debug"/>
     <RELEASELIBPATH value="$(BCB)\lib\release"/>
     <LINKER value="tlink32"/>
-    <USERDEFINES value="INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd546.lib&quot;;ZDHEADER=&quot;zd546.h&quot;;BASIS_AUTOLINKLIB"/>
+    <USERDEFINES value="INTEL_BASED;WIN32;BOOST_ALL_NO_LIB;ZDLIB=&quot;zd547.lib&quot;;ZDHEADER=&quot;zd547.h&quot;;BASIS_AUTOLINKLIB"/>
     <SYSDEFINES value="NO_STRICT"/>
     <MAINSOURCE value="StsWinPrj.cpp"/>
     <INCLUDEPATH value="&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\xbase\xbase_2.0.0\xbase;..\xbase\xbase_2.0.0;..\calculation\Output;..\calculation\satscan_data;..\calculation\probability_model;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\print;..\calculation\utility;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\..\basisdev\include;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;..\..\zero.dimension;$(BCB)\include;$(BCB)\include\vcl;$(BCB)\topgrid;.."/>
