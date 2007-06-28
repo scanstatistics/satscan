@@ -14,6 +14,7 @@
 #include "WilcoxonLikelihoodCalculation.h"
 #include "NormalLikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
+#include "WeightedNormalLikelihoodCalculation.h"
 #include "MeasureList.h"
 #include "SSException.h"
 
@@ -53,6 +54,7 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
     case NORMAL               : return new NormalLikelihoodCalculator(DataHub);
     case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
     case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
+    case WEIGHTEDNORMAL       : return new WeightedNormalLikelihoodCalculator(DataHub);
     default                   :
      throw prg_error("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()",
                       DataHub.GetParameters().GetProbabilityModelType());
@@ -74,7 +76,7 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
     settings - caller is responsible for deletion. */
 CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType) const {
-  if (gParameters.GetProbabilityModelType() == NORMAL) {
+  if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
     if (gParameters.GetNumDataSets() == 1)
       return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
     return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
@@ -95,7 +97,7 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
 void AbstractAnalysis::Setup() {
   try {
     //create cluster data factory
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
       geReplicationsProcessType = ClusterEvaluation;
       if (gParameters.GetNumDataSets() == 1)
         gpClusterDataFactory = new NormalClusterDataFactory();
