@@ -8,8 +8,8 @@
 #include "SSException.h"
 
 /** class constructor */
-MultivariateUnifier::MultivariateUnifier(AreaRateType eScanningArea)
-                    :gdHighRateRatios(0), gdLowRateRatios(0),
+MultivariateUnifier::MultivariateUnifier(AreaRateType eScanningArea, ProbabilityModelType eProbabilityModelType)
+                    :gdHighRateRatios(0), gdLowRateRatios(0), geProbabilityModelType(eProbabilityModelType),
                      gbScanLowRates(eScanningArea == LOW || eScanningArea == HIGHANDLOW),
                      gbScanHighRates(eScanningArea == HIGH || eScanningArea == HIGHANDLOW) {}
 
@@ -22,11 +22,11 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, 
 }
 
 /** Calculates loglikelihood ratio given parameter data; accumulating like high and low rate separately. */
-void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tSqMeasure, size_t tSetIndex) {
-  if (gbScanLowRates && Calculator.LowRate(tCases, tMeasure, tSetIndex))
-    gdLowRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tSqMeasure, tSetIndex);
-  if (gbScanHighRates && Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex))
-    gdHighRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tSqMeasure, tSetIndex);
+void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) {
+  if (gbScanLowRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
+    gdLowRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
+  if (gbScanHighRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)))
+    gdHighRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 
 /** Calculates loglikelihood ratio given ordinal data; accumulating like high
@@ -59,15 +59,15 @@ void MultivariateUnifier::GetHighLowRatio(AbstractLikelihoodCalculator& Calculat
 void MultivariateUnifier::GetHighLowRatio(AbstractLikelihoodCalculator& Calculator,
                                           count_t tCases,
                                           measure_t tMeasure,
-                                          measure_t tSqMeasure,
+                                          measure_t tMeasureAux,
                                           size_t tSetIndex,
                                           std::pair<double, double>& prHighLowRatios) {
   prHighLowRatios.second = 0;
   prHighLowRatios.first = 0;
-  if (gbScanLowRates && Calculator.LowRate(tCases, tMeasure, tSetIndex))
-    prHighLowRatios.second = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tSqMeasure, tSetIndex);
-  if (gbScanHighRates && Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex))
-    prHighLowRatios.first = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tSqMeasure, tSetIndex);
+  if (gbScanLowRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
+    prHighLowRatios.second = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
+  if (gbScanHighRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)))
+    prHighLowRatios.first = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 
 /** Calculates loglikelihood ratio given parameter data; accumulating high and low
@@ -119,12 +119,12 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     count_t tCases,
                                     measure_t tMeasure,
-                                    measure_t tSqMeasure,
+                                    measure_t tMeasureAux,
                                     size_t tSetIndex) {
   if (Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex))
-    gdRatio += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tSqMeasure, tSetIndex);
+    gdRatio += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
   else
-    gdRatio += -1 * Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tSqMeasure, tSetIndex);
+    gdRatio += -1 * Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 
 void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) {

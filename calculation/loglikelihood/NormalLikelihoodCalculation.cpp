@@ -7,11 +7,7 @@
 
 /** constructor */
 NormalLikelihoodCalculator::NormalLikelihoodCalculator(const CSaTScanData& DataHub)
-                           :AbstractLikelihoodCalculator(DataHub) {
-  //pre-calculate each data sets loglikelihood under the null
-  for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t)
-     gvDataSetMeasureSqTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureSq());
-}
+                           :AbstractLikelihoodCalculator(DataHub) {}
 
 /** destructor */
 NormalLikelihoodCalculator::~NormalLikelihoodCalculator() {}
@@ -24,7 +20,7 @@ double NormalLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValu
   if (dMaximizingValue == -std::numeric_limits<double>::max()) return 0.0;
   count_t   N = gvDataSetTotals[tSetIndex].first;
   measure_t U = gvDataSetTotals[tSetIndex].second;
-  measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
+  measure_t U2 = gvDataSetMeasureAuxTotals[tSetIndex];
   return -1 * N * std::log(std::sqrt((-1 * dMaximizingValue))) + N * std::log(std::sqrt(U2/N - std::pow(U/N, 2)));
 }
 
@@ -33,7 +29,7 @@ double NormalLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValu
 double NormalLikelihoodCalculator::CalculateMaximizingValueNormal(count_t n, measure_t u, measure_t u2, size_t tSetIndex) const {
   count_t   N = gvDataSetTotals[tSetIndex].first;
   measure_t U = gvDataSetTotals[tSetIndex].second;
-  measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
+  measure_t U2 = gvDataSetMeasureAuxTotals[tSetIndex];
   if (!(N - n)/*when the cluster contains all the cases in set*/ || n == 0) return -std::numeric_limits<double>::max();
   double dEstimatedMeanInside = u/n;
   double dEstimatedMeanOutside = (U - u)/(N - n);
@@ -46,7 +42,7 @@ double NormalLikelihoodCalculator::CalculateMaximizingValueNormal(count_t n, mea
 double NormalLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t n, measure_t u, measure_t u2, size_t tSetIndex) const {
   count_t   N = gvDataSetTotals[tSetIndex].first;
   measure_t U = gvDataSetTotals[tSetIndex].second;
-  measure_t U2 = gvDataSetMeasureSqTotals[tSetIndex];
+  measure_t U2 = gvDataSetMeasureAuxTotals[tSetIndex];
   if (!(N - n)/*when the cluster contains all the cases in set, ratio is zero*/ || n == 0) return 0;
   double dEstimatedMeanInside = u/n;
   double dEstimatedMeanOutside = (U - u)/(N - n);

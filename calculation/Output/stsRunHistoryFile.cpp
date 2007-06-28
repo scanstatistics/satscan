@@ -202,6 +202,7 @@ void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, Proba
     case POISSON : sTempValue = "Poisson";  break;
     case BERNOULLI : sTempValue = "Bernoulli";  break;
     case SPACETIMEPERMUTATION : sTempValue = "Space Time Permutation"; break;
+    case WEIGHTEDNORMAL : sTempValue = "Weighted Normal"; break;
     case NORMAL : sTempValue = "Normal"; break;
     case EXPONENTIAL : sTempValue = "Exponential"; break;
     case RANK : sTempValue = "Rank"; break;

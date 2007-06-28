@@ -8,9 +8,6 @@
     a shell. All defined functions, when called, will through exceptions.
     Waiting for further implementation details...                             */
 class NormalLikelihoodCalculator : public AbstractLikelihoodCalculator {
-  private:
-    std::vector<measure_t> gvDataSetMeasureSqTotals;
-
   public:
     NormalLikelihoodCalculator(const CSaTScanData& Data);
     virtual ~NormalLikelihoodCalculator();
