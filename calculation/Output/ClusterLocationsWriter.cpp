@@ -60,11 +60,11 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     // for multiple data sets nor the ordinal probability model
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       CreateField(vFieldDefinitions, CLU_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
-      if (gParameters.GetProbabilityModelType() != NORMAL) {
+      if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
         CreateField(vFieldDefinitions, CLU_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, CLU_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
@@ -73,7 +73,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
         CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-        CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        //CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
     }
     //defined location level fields to report -- none of these are reported
@@ -81,9 +81,9 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL)
+      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
         CreateField(vFieldDefinitions, LOC_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      if (gParameters.GetProbabilityModelType() != NORMAL) {
+      if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
         CreateField(vFieldDefinitions, LOC_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, LOC_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
@@ -127,11 +127,11 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          //leave area specific information blank.
          if (vIdentifiers.size() == 1) {
            Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() = theCluster.GetObservedCountForTract(tTract, DataHub);
-           if (gParameters.GetProbabilityModelType() == NORMAL) {
+           if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
              count_t tObserved = theCluster.GetObservedCountForTract(tTract, DataHub);
              if (tObserved) Record.GetFieldValue(LOC_MEAN_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub)/tObserved;
            }
-           if (gParameters.GetProbabilityModelType() != NORMAL) {
+           if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
              Record.GetFieldValue(LOC_EXP_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub);
              Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpectedForTract(tTract, DataHub);
            }
@@ -151,24 +151,36 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
              }
              TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                             DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
-             if (TractTimeTrend.GetStatus() == CTimeTrend::TREND_CONVERGED) {
-              TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-              Record.GetFieldValue(LOC_TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
-             }
+             switch (TractTimeTrend.GetStatus()) {
+                case CTimeTrend::UNDEFINED : break;
+                case CTimeTrend::NEGATIVE_INFINITY :
+                   Record.GetFieldValue(LOC_TIME_TREND_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR;
+                   break;
+                case CTimeTrend::POSITIVE_INFINITY :
+                   Record.GetFieldValue(LOC_TIME_TREND_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR;
+                   break;
+                case CTimeTrend::NOT_CONVERGED     :
+                   throw prg_error("The time trend did not converge.\n","Write()");
+                case CTimeTrend::CONVERGED         :
+                   TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+                   Record.GetFieldValue(LOC_TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
+                   break;
+                default : throw prg_error("Unknown time trend status type '%d'.", "Write()", TractTimeTrend.GetStatus());
+             };
            }
          }
        }
        //cluster information fields are only present for one dataset and not ordinal model
        if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
          Record.GetFieldValue(CLU_OBS_FIELD).AsDouble() = theCluster.GetObservedCount();
-         if (gParameters.GetProbabilityModelType() == NORMAL) {
+         if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
            count_t tObserved = theCluster.GetObservedCount();
            measure_t tExpected = theCluster.GetExpectedCount(DataHub);
            if (tObserved) Record.GetFieldValue(CLU_MEAN_IN_FIELD).AsDouble() = tExpected/tObserved;
            count_t tCasesOutside = DataHub.GetDataSetHandler().GetDataSet().getTotalCases() - tObserved;
            if (tCasesOutside) Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - tExpected)/tCasesOutside;
          }
-         if (gParameters.GetProbabilityModelType() != NORMAL) {
+         if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
            Record.GetFieldValue(CLU_EXP_FIELD).AsDouble() = theCluster.GetExpectedCount(DataHub);
            Record.GetFieldValue(CLU_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
          }
@@ -178,18 +190,30 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
            const AbtractSVTTClusterData * pClusterData=0;
            if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
-             throw prg_error("Dynamic cast to AbtractSVTTClusterData failed.\n", "WriteClusterInformation()");
+             throw prg_error("Dynamic cast to AbtractSVTTClusterData failed.\n", "Write()");
            switch (pClusterData->getInsideTrend()->GetStatus()) {
-             case CTimeTrend::TREND_CONVERGED :
+             case CTimeTrend::UNDEFINED         : break;
+             case CTimeTrend::CONVERGED         :
                Record.GetFieldValue(CLU_TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend()->GetAnnualTimeTrend(); break;
-             case CTimeTrend::TREND_INF_BEGIN :
-              Record.GetFieldValue(CLU_TIME_TREND_IN_FIELD).AsDouble() = -100; break;
+             case CTimeTrend::NEGATIVE_INFINITY :
+               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+             case CTimeTrend::POSITIVE_INFINITY :
+               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+             case CTimeTrend::NOT_CONVERGED     :
+               throw prg_error("The time trend did not converge.\n","Write()");
+             default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getInsideTrend()->GetStatus());
            }
            switch (pClusterData->getOutsideTrend()->GetStatus()) {
-             case CTimeTrend::TREND_CONVERGED :
+             case CTimeTrend::UNDEFINED         : break;
+             case CTimeTrend::CONVERGED         :
                Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend()->GetAnnualTimeTrend(); break;
-             case CTimeTrend::TREND_INF_BEGIN :
-               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = -100; break;
+             case CTimeTrend::NEGATIVE_INFINITY :
+               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+             case CTimeTrend::POSITIVE_INFINITY :
+               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+             case CTimeTrend::NOT_CONVERGED     :
+               throw prg_error("The time trend did not converge.\n","Write()");
+             default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getOutsideTrend()->GetStatus());
            }
          }
        }
