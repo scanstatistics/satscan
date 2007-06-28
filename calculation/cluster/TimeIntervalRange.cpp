@@ -233,7 +233,7 @@ NormalTemporalDataEvaluator::NormalTemporalDataEvaluator(const CSaTScanData& Dat
 void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCluster) {
   int                  iWindowStart, iMinStartWindow, iWindowEnd, iMaxEndWindow;
   NormalTemporalData & Data = (NormalTemporalData&)*(Running.GetClusterData());//GetClusterDataAsType<NormalTemporalData>(*(Running.GetClusterData()));
-  AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
+  AbstractLikelihoodCalculator::SCANRATENORMAL_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestNormal;
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -244,9 +244,9 @@ void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster &
      for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
         Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
         Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
-        Data.gtSqMeasure = Data.gpSqMeasure[iWindowStart] - Data.gpSqMeasure[iWindowEnd];
-        if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, 0)) {
-          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtSqMeasure);
+        Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
+        if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0)) {
+          Running.m_nRatio = gLikelihoodCalculator.CalcLogLikelihoodRatioNormal(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux);
           if (Running.m_nRatio  > TopCluster.m_nRatio) {
             TopCluster.CopyEssentialClassMembers(Running);
             TopCluster.m_nFirstInterval = iWindowStart;
@@ -269,7 +269,7 @@ double NormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClust
   int                  iWindowStart, iWindowEnd, iMaxStartWindow, iMaxEndWindow;
   NormalTemporalData & Data = (NormalTemporalData&)ClusterData;//GetClusterDataAsType<NormalTemporalData>(ClusterData);
   double               dMaxValue(gdDefaultMaximizingValue);
-  AbstractLikelihoodCalculator::SCANRATE_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterest;
+  AbstractLikelihoodCalculator::SCANRATENORMAL_FUNCPTR pRateCheck = gLikelihoodCalculator.gpRateOfInterestNormal;
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
@@ -280,9 +280,9 @@ double NormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClust
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
         Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
-        Data.gtSqMeasure = Data.gpSqMeasure[iWindowStart] - Data.gpSqMeasure[iWindowEnd];
-        if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, 0))
-          dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, Data.gtSqMeasure, 0));
+        Data.gtMeasureAux = Data.gpMeasureAux[iWindowStart] - Data.gpMeasureAux[iWindowEnd];
+        if ((gLikelihoodCalculator.*pRateCheck)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0))
+          dMaxValue = std::max(dMaxValue, (gLikelihoodCalculator.*gpCalculationMethod)(Data.gtCases, Data.gtMeasure, Data.gtMeasureAux, 0));
      }
   }
   return dMaxValue;
@@ -325,8 +325,8 @@ void MultiSetNormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CC
           NormalTemporalData & Datum = *(Data.gvSetClusterData[t]);
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-          Datum.gtSqMeasure = Datum.gpSqMeasure[iWindowStart] - Datum.gpSqMeasure[iWindowEnd];
-          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtSqMeasure, t);
+          Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, t);
         }
         Running.m_nRatio = Unifier.GetLoglikelihoodRatio();
         if (Running.m_nRatio > TopCluster.m_nRatio) {
@@ -364,8 +364,8 @@ double MultiSetNormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
           NormalTemporalData & Datum = *(Data.gvSetClusterData[t]);
           Datum.gtCases = Datum.gpCases[iWindowStart] - Datum.gpCases[iWindowEnd];
           Datum.gtMeasure = Datum.gpMeasure[iWindowStart] - Datum.gpMeasure[iWindowEnd];
-          Datum.gtSqMeasure = Datum.gpSqMeasure[iWindowStart] - Datum.gpSqMeasure[iWindowEnd];
-          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtSqMeasure, t);
+          Datum.gtMeasureAux = Datum.gpMeasureAux[iWindowStart] - Datum.gpMeasureAux[iWindowEnd];
+          Unifier.AdjoinRatio(gLikelihoodCalculator, Datum.gtCases, Datum.gtMeasure, Datum.gtMeasureAux, t);
         }
         dRatio = std::max(dRatio, Unifier.GetLoglikelihoodRatio());
      }
