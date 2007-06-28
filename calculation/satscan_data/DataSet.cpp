@@ -11,7 +11,7 @@
 DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex)
            : giIntervalsDimensions(iNumTimeIntervals), giLocationDimensions(iNumTracts), giMetaLocations(iMetaLocations), giSetIndex(iSetIndex),
              gpCaseData_PT(0), gpCaseData(0), gpCaseData_NC(0), gpMeasureData(0), gpMeasureData_NC(0),
-             gpMeasureData_Sq(0), gpMeasureData_PT(0), gpMeasureData_PT_Sq(0), gpCaseData_PT_NC(0),
+             gpMeasureData_Aux(0), gpMeasureData_PT(0), gpMeasureData_PT_Aux(0), gpCaseData_PT_NC(0),
              gpMeasureData_PT_NC(0), gpCaseData_PT_Cat(0) {}
 
 /** copy constructor */
@@ -29,9 +29,9 @@ DataSet::~DataSet() {
     delete[] gpCaseData_PT_NC;
     delete gpMeasureData;
     delete gpMeasureData_NC;
-    delete gpMeasureData_Sq;
+    delete gpMeasureData_Aux;
     delete[] gpMeasureData_PT;
-    delete[] gpMeasureData_PT_Sq;
+    delete[] gpMeasureData_PT_Aux;
     delete[] gpMeasureData_PT_NC;
   }
   catch(...){}
@@ -212,37 +212,37 @@ measure_t * DataSet::allocateMeasureData_PT_NC() {
   return gpMeasureData_PT_NC;
 }
 
-/** Allocates one dimensional array which will represent not cumulative measure
-    data squared, time only. Initializes all elements of array to zero. */
-measure_t * DataSet::allocateMeasureData_PT_Sq() {
+/** Allocates one dimensional array which will represent not cumulative auxillary measure
+    data, time only. Initializes all elements of array to zero. */
+measure_t * DataSet::allocateMeasureData_PT_Aux() {
   try {
-    if (!gpMeasureData_PT_Sq)
+    if (!gpMeasureData_PT_Aux)
       //allocate to # time intervals plus one -- a pointer to this array will be
       //passed directly CTimeIntervals object, where it is assumed element at index
       //'giIntervalsDimensions' is accessible and set to zero
-      gpMeasureData_PT_Sq = new measure_t[giIntervalsDimensions+1];
-    memset(gpMeasureData_PT_Sq, 0, (giIntervalsDimensions+1) * sizeof(measure_t));
+      gpMeasureData_PT_Aux = new measure_t[giIntervalsDimensions+1];
+    memset(gpMeasureData_PT_Aux, 0, (giIntervalsDimensions+1) * sizeof(measure_t));
   }
   catch (prg_exception& x) {
-    x.addTrace("allocateMeasureData_PT_Sq()","DataSet");
+    x.addTrace("allocateMeasureData_PT_Aux()","DataSet");
     throw;
   }
-  return gpMeasureData_PT_Sq;
+  return gpMeasureData_PT_Aux;
 }
 
-/** Allocates two dimensional array which will represent cumulative measure data
-    squared, time by space. Initializes all elements of array to zero. */
-TwoDimMeasureArray_t & DataSet::allocateMeasureData_Sq() {
+/** Allocates two dimensional array which will represent cumulative auxillary measure data,
+    time by space. Initializes all elements of array to zero. */
+TwoDimMeasureArray_t & DataSet::allocateMeasureData_Aux() {
   try {
-    if (!gpMeasureData_Sq)
-      gpMeasureData_Sq = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
-    gpMeasureData_Sq->Set(0);
+    if (!gpMeasureData_Aux)
+      gpMeasureData_Aux = new TwoDimensionArrayHandler<measure_t>(giIntervalsDimensions, giLocationDimensions + giMetaLocations);
+    gpMeasureData_Aux->Set(0);
   }
   catch (prg_exception& x) {
-    x.addTrace("allocateMeasureData_Sq()","DataSet");
+    x.addTrace("allocateMeasureData_Aux()","DataSet");
     throw;
   }
-  return *gpMeasureData_Sq;
+  return *gpMeasureData_Aux;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
@@ -308,18 +308,18 @@ measure_t * DataSet::getMeasureData_PT_NC() const {
   return gpMeasureData_PT_NC;
 }
 
-/** Returns pointer to allocated array that represents cumulative measure data
-    squared, time only. Throws prg_error if not allocated. */
-measure_t * DataSet::getMeasureData_PT_Sq() const {
-  if (!gpMeasureData_PT_Sq) throw prg_error("gpMeasureData_PT_Sq not allocated.","getMeasureData_PT_Sq()");
-  return gpMeasureData_PT_Sq;
+/** Returns pointer to allocated array that represents cumulative auxillary measure data
+    time only. Throws prg_error if not allocated. */
+measure_t * DataSet::getMeasureData_PT_Aux() const {
+  if (!gpMeasureData_PT_Aux) throw prg_error("gpMeasureData_PT_Aux not allocated.","getMeasureData_PT_Aux()");
+  return gpMeasureData_PT_Aux;
 }
 
 /** Returns reference to object which manages a two dimensional array that represents
-    cumulative measure data squared, time by space. Throws prg_error if not allocated. */
-TwoDimMeasureArray_t & DataSet::getMeasureData_Sq() const {
-  if (!gpMeasureData_Sq) throw prg_error("gpMeasureData_Sq not allocated.","getMeasureData_Sq()");
-  return *gpMeasureData_Sq;
+    cumulative auxillary measure data, time by space. Throws prg_error if not allocated. */
+TwoDimMeasureArray_t & DataSet::getMeasureData_Aux() const {
+  if (!gpMeasureData_Aux) throw prg_error("gpMeasureData_Aux not allocated.","getMeasureData_Aux()");
+  return *gpMeasureData_Aux;
 }
 
 /** For each allocated data structure which could contain meta data, reallocates and
@@ -347,9 +347,9 @@ void DataSet::reassignMetaLocationData(const MetaManagerProxy& MetaProxy) {
     gpMeasureData_NC->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
     setMeasureData_NC();
   }
-  if (gpMeasureData_Sq) {
-    gpMeasureData_Sq->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
-    setMeasureData_Sq_MetaLocations(MetaProxy);
+  if (gpMeasureData_Aux) {
+    gpMeasureData_Aux->ResizeSecondDimension(giLocationDimensions + giMetaLocations, 0);
+    setMeasureData_Aux_MetaLocations(MetaProxy);
   }
 }
 
@@ -409,10 +409,10 @@ void DataSet::setMeasureData_MetaLocations(const MetaManagerProxy& MetaLocations
   }
 }
 
-/** Sets measure sqaure data at meta location indexes. */
-void DataSet::setMeasureData_Sq_MetaLocations(const MetaManagerProxy& MetaLocations) {
+/** Sets measure auxillary data at meta location indexes. */
+void DataSet::setMeasureData_Aux_MetaLocations(const MetaManagerProxy& MetaLocations) {
   std::vector<tract_t>  AtomicIndexes;
-  measure_t ** ppMeasure = getMeasureData_Sq().GetArray();
+  measure_t ** ppMeasure = getMeasureData_Aux().GetArray();
 
   for (unsigned int m=0; m < giMetaLocations; ++m) {
      MetaLocations.getIndexes(m, AtomicIndexes);
@@ -549,18 +549,18 @@ void DataSet::setMeasureData_PT_NC() {
   }
 }
 
-/** Allocates and sets cumulative measure data squared (time only) from cumulative
-    measure data squared (time by space). */
-void DataSet::setMeasureData_PT_Sq() {
+/** Allocates and sets cumulative auxillary measure data (time only) from cumulative
+    auxillry measure data (time by space). */
+void DataSet::setMeasureData_PT_Aux() {
   try {
-    allocateMeasureData_PT_Sq();
-    measure_t ** ppMeasure = getMeasureData_Sq().GetArray();
+    allocateMeasureData_PT_Aux();
+    measure_t ** ppMeasure = getMeasureData_Aux().GetArray();
     for (unsigned int i=0; i < giIntervalsDimensions; ++i)
        for (unsigned int t=0; t < giLocationDimensions; ++t)
-          gpMeasureData_PT_Sq[i] += ppMeasure[i][t];
+          gpMeasureData_PT_Aux[i] += ppMeasure[i][t];
   }
   catch (prg_exception& x) {
-    x.addTrace("setMeasureData_PT_Sq()","DataSet");
+    x.addTrace("setMeasureData_PT_Aux()","DataSet");
     throw;
   }
 }
@@ -588,7 +588,7 @@ RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts
             :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, iSetIndex),
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
              gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
-             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureSq(0) {
+             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0) {
   gPopulation.SetNumTracts(giLocationDimensions);
 }
 

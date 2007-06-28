@@ -36,13 +36,12 @@ class DataSet {
                                                                             - cases are NOT distributed in time intervals cumulatively */
     measure_t                 * gpMeasureData_PT;                       /** number of expected cases, cumulatively stratified by time intervals */
     measure_t                 * gpMeasureData_PT_NC;              /** number of expected cases in each time interval */
-    measure_t                 * gpMeasureData_PT_Sq;                     /** number of expected cases squared, cumulatively stratified by time intervals and
-                                                                            as gotten from gpMeasureData_Sq */
+    measure_t                 * gpMeasureData_PT_Aux;                     /** number of expected cases , cumulatively stratified by time intervals and
+                                                                            as gotten from gpMeasureData_Aux */
     TwoDimMeasureArray_t      * gpMeasureData;                       /** number of expected cases stratified with respect to time intervals by tract index
                                                                             - expected cases are distributed in time intervals cumulatively */
-    TwoDimMeasureArray_t      * gpMeasureData_Sq;                     /** number of expected cases stratified with respect to time intervals by tract index
-                                                                            - expected cases are distributed in time intervals cumulatively and are the square
-                                                                              of entries accumulated in gpMeasureHandler */
+    TwoDimMeasureArray_t      * gpMeasureData_Aux;                     /** number of expected cases stratified with respect to time intervals by tract index
+                                                                            - expected cases are distributed in time intervals cumulatively  */
     TwoDimMeasureArray_t      * gpMeasureData_NC;                     /** number of expected cases stratified with respect to time intervals by tract index
                                                                             - expected cases are NOT distributed in time intervals cumulatively */
     CasesByCategory_t           gvCaseData_Cat;                      /** number of cases stratified with respect to time intervals by tract index for each category
@@ -61,7 +60,7 @@ class DataSet {
 
     virtual DataSet           * Clone() const;
 
-    // PT = purely temporal,  NC = non-cummulative,  Sq = squared,  Cat = Category
+    // PT = purely temporal,  NC = non-cummulative,  Aux = auxillary,  Cat = Category
 
     TwoDimCountArray_t        & allocateCaseData();
     CasesByCategory_t         & allocateCaseData_Cat(unsigned int iNumCategories);
@@ -73,8 +72,8 @@ class DataSet {
     TwoDimMeasureArray_t      & allocateMeasureData_NC();
     measure_t                 * allocateMeasureData_PT();
     measure_t                 * allocateMeasureData_PT_NC();
-    measure_t                 * allocateMeasureData_PT_Sq();
-    TwoDimMeasureArray_t      & allocateMeasureData_Sq();
+    measure_t                 * allocateMeasureData_PT_Aux();
+    TwoDimMeasureArray_t      & allocateMeasureData_Aux();
     TwoDimCountArray_t        & getCaseData() const;
     const CasesByCategory_t   & getCaseData_Cat() const {return gvCaseData_Cat;}
     TwoDimCountArray_t        & getCaseData_NC() const;
@@ -85,8 +84,8 @@ class DataSet {
     TwoDimMeasureArray_t      & getMeasureData_NC() const;
     measure_t                 * getMeasureData_PT() const;
     measure_t                 * getMeasureData_PT_NC() const;
-    measure_t                 * getMeasureData_PT_Sq() const;
-    TwoDimMeasureArray_t      & getMeasureData_Sq() const;
+    measure_t                 * getMeasureData_PT_Aux() const;
+    TwoDimMeasureArray_t      & getMeasureData_Aux() const;
     unsigned int                getIntervalDimension() const {return giIntervalsDimensions;}
     unsigned int                getLocationDimension() const {return giLocationDimensions;}
     CTimeTrend                & getTimeTrend() {return gTimeTrend;}
@@ -100,11 +99,11 @@ class DataSet {
     void                        setCaseData_PT_Cat();
     void                        setCaseData_PT_NC();
     void                        setMeasureData_MetaLocations(const MetaManagerProxy& MetaProxy);
-    void                        setMeasureData_Sq_MetaLocations(const MetaManagerProxy& MetaProxy);
+    void                        setMeasureData_Aux_MetaLocations(const MetaManagerProxy& MetaProxy);
     void                        setMeasureData_NC();
     void                        setMeasureData_PT();
     void                        setMeasureData_PT_NC();
-    void                        setMeasureData_PT_Sq();
+    void                        setMeasureData_PT_Aux();
     void                        setMeasureDataToCumulative();
 };
 
@@ -118,7 +117,7 @@ class RealDataSet : public DataSet {
   protected:
     PopulationData              gPopulation;                            /** population data */
     measure_t                   gtTotalMeasure;                         /** number of expected cases in data set */
-    measure_t                   gtTotalMeasureSq;                       /** number of squared expected cases in data set */
+    measure_t                   gtTotalMeasureAux;                       /** number of auxillary entries in data set */
     count_t                     gtTotalCases;                           /** number of cases in data set */
     double                      gdTotalPop;                             /** population in data set */
     count_t                     gtTotalCasesAtStart;                    /** number of cases as defined at analysis start */
@@ -149,7 +148,7 @@ class RealDataSet : public DataSet {
     count_t                     getTotalCasesAtStart() const {return gtTotalCasesAtStart;}
     count_t                     getTotalControls() const {return gtTotalControls;}
     measure_t                   getTotalMeasure() const {return gtTotalMeasure;}
-    measure_t                   getTotalMeasureSq() const {return gtTotalMeasureSq;}
+    measure_t                   getTotalMeasureAux() const {return gtTotalMeasureAux;}
     measure_t                   getTotalMeasureAtStart() const {return gtTotalMeasureAtStart;}
     double                      getTotalPopulation() const {return gdTotalPop;}
     virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
@@ -161,7 +160,7 @@ class RealDataSet : public DataSet {
     void                        setTotalCasesAtStart(count_t tTotalCases) {gtTotalCasesAtStart = tTotalCases;}
     void                        setTotalControls(count_t tTotalControls) {gtTotalControls = tTotalControls;}
     void                        setTotalMeasure(measure_t tTotalMeasure) {gtTotalMeasure = tTotalMeasure;}
-    void                        setTotalMeasureSq(measure_t tTotalMeasureSq) {gtTotalMeasureSq = tTotalMeasureSq;}
+    void                        setTotalMeasureAux(measure_t tTotalMeasureAux) {gtTotalMeasureAux = tTotalMeasureAux;}
     void                        setTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}
     void                        setTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
 };
