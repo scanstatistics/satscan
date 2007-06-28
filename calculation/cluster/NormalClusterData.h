@@ -10,7 +10,7 @@ class AbstractNormalClusterData {
     AbstractNormalClusterData() {}
     virtual ~AbstractNormalClusterData() {}
 
-    virtual measure_t        GetMeasureSq(unsigned int tSetIndex) const = 0;
+    virtual measure_t        GetMeasureAux(unsigned int tSetIndex) const = 0;
 };
 /** Class representing accumulated data of spatial clustering of a normal probability model. */
 class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
@@ -20,7 +20,7 @@ class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
     virtual ~NormalSpatialData() {}
 
     //public data memebers
-    measure_t                gtSqMeasure;      /** expected number of cases - squared measure */
+    measure_t                gtMeasureAux;      /** expected number of cases - squared measure */
 
     virtual void             AddMeasureList(const DataSetInterface& Interface, CMeasureList* pMeasureList, const CSaTScanData* pData);
     virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
@@ -29,8 +29,8 @@ class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
     virtual NormalSpatialData * Clone() const;
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
-    virtual measure_t        GetMeasureSq(unsigned int tSetIndex=0) const {return gtSqMeasure;}
-    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
+    virtual measure_t        GetMeasureAux(unsigned int tSetIndex=0) const {return gtMeasureAux;}
+    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtMeasureAux=0;}
 };
 
 /** Class representing accumulated data of temporal clustering for normal probability model.
@@ -47,14 +47,14 @@ class NormalTemporalData : public TemporalData, public AbstractNormalClusterData
     NormalTemporalData(const AbstractDataSetGateway& DataGateway);
     virtual ~NormalTemporalData() {}
 
-    measure_t                    gtSqMeasure;
-    measure_t                  * gpSqMeasure;
+    measure_t                    gtMeasureAux;
+    measure_t                  * gpMeasureAux;
 
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual NormalTemporalData * Clone() const;
-    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtSqMeasure=0;}
-    virtual measure_t        GetMeasureSq(unsigned int tSetIndex=0) const {return gtSqMeasure;}
+    virtual void             InitializeData() {gtCases=0;gtMeasure=0;gtMeasureAux=0;}
+    virtual measure_t        GetMeasureAux(unsigned int tSetIndex=0) const {return gtMeasureAux;}
     virtual void             Reassociate(const DataSetInterface& Interface);
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);
 };
@@ -65,7 +65,7 @@ class NormalTemporalData : public TemporalData, public AbstractNormalClusterData
     end date. This class represents that 'spatial' data clustering. */
 class NormalProspectiveSpatialData : public NormalTemporalData, public AbstractProspectiveSpatialClusterData {
   private:
-     void                                  Init() {gpCases=0;gpMeasure=0;gpSqMeasure=0;}
+     void                                  Init() {gpCases=0;gpMeasure=0;gpMeasureAux=0;}
      void                                  Setup(const CSaTScanData& Data, const DataSetInterface& Interface);
 
   protected:

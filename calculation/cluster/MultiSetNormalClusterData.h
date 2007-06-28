@@ -29,7 +29,7 @@ class MultiSetNormalSpatialData : public AbstractSpatialClusterData, public Abst
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
     virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
-    virtual measure_t   GetMeasureSq(unsigned int tSetIndex=0) const;
+    virtual measure_t   GetMeasureAux(unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
 
 };
@@ -49,7 +49,7 @@ class AbstractMultiSetNormalTemporalData : public AbstractTemporalClusterData, p
                                                                AbstractLikelihoodCalculator& Calculator,
                                                                std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
-    virtual measure_t        GetMeasureSq(unsigned int tSetIndex=0) const;
+    virtual measure_t        GetMeasureAux(unsigned int tSetIndex=0) const;
 };
 
 /** Class representing accumulated data of temporal clustering in multiple data sets. */

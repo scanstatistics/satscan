@@ -9,18 +9,18 @@
 
 /** class constructor */
 NormalSpatialData::NormalSpatialData(const DataSetInterface& Interface)
-                  :SpatialData(Interface), gtSqMeasure(0) {}
+                  :SpatialData(Interface), gtMeasureAux(0) {}
 
 /** class constructor */
 NormalSpatialData::NormalSpatialData(const AbstractDataSetGateway& DataGateway)
-                  :SpatialData(DataGateway), gtSqMeasure(0) {}
+                  :SpatialData(DataGateway), gtMeasureAux(0) {}
 
 /** Adds neighbor data to accumulation  - caller is responsible for ensuring that
     'tNeighborIndex' and 'tSetIndex' are valid indexes. */
 void NormalSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
   gtCases += DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
   gtMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
-  gtSqMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSSqMeasureArray()[tNeighborIndex];
+  gtMeasureAux += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureAuxArray()[tNeighborIndex];
 }
 
 /** Not implemeneted - throws prg_error. */
@@ -40,8 +40,8 @@ void NormalSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
     Returns zero if rate not of interest else returns loglikelihood ratio as
     calculated by probability model. */
 double NormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-    return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure);
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0))
+    return Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux);
   return 0;
 }
 
@@ -55,31 +55,31 @@ NormalSpatialData * NormalSpatialData::Clone() const {
 void NormalSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
   gtCases = ((const NormalSpatialData&)rhs).gtCases;
   gtMeasure = ((const NormalSpatialData&)rhs).gtMeasure;
-  gtSqMeasure = ((const NormalSpatialData&)rhs).gtSqMeasure;
+  gtMeasureAux = ((const NormalSpatialData&)rhs).gtMeasureAux;
 }
 
 /** Calculates and returns maximizing value given accumulated cluster data. If data
     is not significant given scanning rate, negation of maximum double returned. */
 double NormalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
-  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-    return Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtSqMeasure);
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0))
+    return Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux);
   return -std::numeric_limits<double>::max();
 }
 
 //************** class NormalTemporalData **************************************
 
 /** class constructor */
-NormalTemporalData::NormalTemporalData() : TemporalData(), gtSqMeasure(0), gpSqMeasure(0) {}
+NormalTemporalData::NormalTemporalData() : TemporalData(), gtMeasureAux(0), gpMeasureAux(0) {}
 
 /** class constructor */
 NormalTemporalData::NormalTemporalData(const DataSetInterface& Interface)
-                   :TemporalData(Interface), gtSqMeasure(0),
-                    gpSqMeasure(Interface.GetPTSqMeasureArray()) {}
+                   :TemporalData(Interface), gtMeasureAux(0),
+                    gpMeasureAux(Interface.GetPTMeasureAuxArray()) {}
 
 /** class constructor */
 NormalTemporalData::NormalTemporalData(const AbstractDataSetGateway& DataGateway)
-                   :TemporalData(DataGateway.GetDataSetInterface()), gtSqMeasure(0),
-                    gpSqMeasure(DataGateway.GetDataSetInterface().GetPTSqMeasureArray()) {}
+                   :TemporalData(DataGateway.GetDataSetInterface()), gtMeasureAux(0),
+                    gpMeasureAux(DataGateway.GetDataSetInterface().GetPTMeasureAuxArray()) {}
 
 /** Assigns cluster data of passed object to 'this' object. Caller of function
     is responsible for ensuring that passed AbstractTemporalClusterData object
@@ -98,7 +98,7 @@ NormalTemporalData * NormalTemporalData::Clone() const {
 void NormalTemporalData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
   gtCases = ((const NormalTemporalData&)rhs).gtCases;
   gtMeasure = ((const NormalTemporalData&)rhs).gtMeasure;
-  gtSqMeasure = ((const NormalTemporalData&)rhs).gtSqMeasure;
+  gtMeasureAux = ((const NormalTemporalData&)rhs).gtMeasureAux;
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers.
@@ -110,7 +110,7 @@ void NormalTemporalData::Reassociate(const DataSetInterface& Interface) {
 /** Reassociates internal data with passed DataSetInterface pointers of DataGateway. */
 void NormalTemporalData::Reassociate(const AbstractDataSetGateway& DataGateway) {
   TemporalData::Reassociate(DataGateway.GetDataSetInterface());
-  gpSqMeasure = DataGateway.GetDataSetInterface().GetPTSqMeasureArray();
+  gpMeasureAux = DataGateway.GetDataSetInterface().GetPTMeasureAuxArray();
 }
 //**************** class NormalProspectiveSpatialData **************************
 
@@ -158,7 +158,7 @@ NormalProspectiveSpatialData::~NormalProspectiveSpatialData() {
   try {
     delete[] gpCases;
     delete[] gpMeasure;
-    delete[] gpSqMeasure;
+    delete[] gpMeasureAux;
   }
   catch (...){}
 }
@@ -170,17 +170,17 @@ void NormalProspectiveSpatialData::AddNeighborData(tract_t tNeighborIndex, const
   unsigned int           i, j;
   count_t             ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t           ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
-  measure_t           ** ppSqMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetSqMeasureArray();
+  measure_t           ** ppMeasureAux = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAuxArray();
 
   //set cases for entire period added by this neighbor
   gpCases[0]   += ppCases[0][tNeighborIndex];
   gpMeasure[0] += ppMeasure[0][tNeighborIndex];
-  gpSqMeasure[0] += ppSqMeasure[0][tNeighborIndex];
+  gpMeasureAux[0] += ppMeasureAux[0][tNeighborIndex];
 
   for (j=1, i=giProspectiveStart; i < giNumTimeIntervals; ++j, ++i) {
      gpCases[j] += ppCases[i][tNeighborIndex];
      gpMeasure[j] += ppMeasure[i][tNeighborIndex];
-     gpSqMeasure[j] += ppSqMeasure[i][tNeighborIndex];
+     gpMeasureAux[j] += ppMeasureAux[i][tNeighborIndex];
   }
 }
 
@@ -202,16 +202,16 @@ double NormalProspectiveSpatialData::CalculateLoglikelihoodRatio(AbstractLikelih
 
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
-  gtSqMeasure = gpSqMeasure[0];
+  gtMeasureAux = gpMeasureAux[0];
   if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure);
+    dMaxLoglikelihoodRatio = Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
-    gtSqMeasure = gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
+    gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
     if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtSqMeasure));
+      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Calculator.CalcLogLikelihoodRatioNormal(gtCases, gtMeasure, gtMeasureAux));
   }
   return dMaxLoglikelihoodRatio;
 }
@@ -225,16 +225,16 @@ double NormalProspectiveSpatialData::GetMaximizingValue(AbstractLikelihoodCalcul
 
   gtCases = gpCases[0];
   gtMeasure = gpMeasure[0];
-  gtSqMeasure = gpSqMeasure[0];
+  gtMeasureAux = gpMeasureAux[0];
   if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-    dMaxValue = Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtSqMeasure, 0);
+    dMaxValue = Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux, 0);
 
   for (iWindowEnd=1; iWindowEnd < giAllocationSize - 1; ++iWindowEnd) {
     gtCases = gpCases[0] - gpCases[iWindowEnd];
     gtMeasure = gpMeasure[0] - gpMeasure[iWindowEnd];
-    gtSqMeasure = gpSqMeasure[0] - gpSqMeasure[iWindowEnd];
+    gtMeasureAux = gpMeasureAux[0] - gpMeasureAux[iWindowEnd];
     if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
-      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtSqMeasure, 0));
+      dMaxValue = std::max(dMaxValue, Calculator.CalculateMaximizingValueNormal(gtCases, gtMeasure, gtMeasureAux, 0));
   }
   return dMaxValue;
 }
@@ -252,7 +252,7 @@ void NormalProspectiveSpatialData::DeallocateEvaluationAssistClassMembers() {
   try {
     delete[] gpCases; gpCases=0;
     delete[] gpMeasure; gpMeasure=0;
-    delete[] gpSqMeasure; gpSqMeasure=0;
+    delete[] gpMeasureAux; gpMeasureAux=0;
     giAllocationSize=0;
     geEvaluationAssistDataStatus = Deallocated;
   }
@@ -264,10 +264,10 @@ void NormalProspectiveSpatialData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
   gtCases=0;
   gtMeasure=0;
-  gtSqMeasure=0;
+  gtMeasureAux=0;
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-  memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  memset(gpMeasureAux, 0, sizeof(measure_t) * giAllocationSize);
 }
 
 /** overloaded assignement operator */
@@ -280,15 +280,15 @@ NormalProspectiveSpatialData & NormalProspectiveSpatialData::operator=(const Nor
    if (rhs.geEvaluationAssistDataStatus == Allocated) {
      if (!gpCases) gpCases = new count_t[rhs.giAllocationSize];
      if (!gpMeasure) gpMeasure = new measure_t[rhs.giAllocationSize];
-     if (!gpSqMeasure) gpSqMeasure = new measure_t[rhs.giAllocationSize];
+     if (!gpMeasureAux) gpMeasureAux = new measure_t[rhs.giAllocationSize];
      memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
      memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
-     memcpy(gpSqMeasure, rhs.gpSqMeasure, giAllocationSize * sizeof(measure_t));
+     memcpy(gpMeasureAux, rhs.gpMeasureAux, giAllocationSize * sizeof(measure_t));
    }
    else {
     delete[] gpCases; gpCases=0;
     delete[] gpMeasure; gpMeasure=0;
-    delete[] gpSqMeasure; gpSqMeasure=0;
+    delete[] gpMeasureAux; gpMeasureAux=0;
    }
    geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
    return *this;
@@ -304,13 +304,13 @@ void NormalProspectiveSpatialData::Setup(const CSaTScanData& Data, const DataSet
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-    gpSqMeasure = new measure_t[giAllocationSize];
-    memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+    gpMeasureAux = new measure_t[giAllocationSize];
+    memset(gpMeasureAux, 0, sizeof(measure_t) * giAllocationSize);
   }
   catch (prg_exception& x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    delete[] gpSqMeasure;
+    delete[] gpMeasureAux;
     x.addTrace("Setup(const CSaTScanData&, const DataSetInterface&)","NormalProspectiveSpatialData");
     throw;
   }
@@ -359,7 +359,7 @@ NormalSpaceTimeData::~NormalSpaceTimeData() {
   try {
     delete[] gpCases;
     delete[] gpMeasure;
-    delete[] gpSqMeasure;
+    delete[] gpMeasureAux;
   }
   catch (...){}
 }
@@ -370,12 +370,12 @@ void NormalSpaceTimeData::AddNeighborData(tract_t tNeighborIndex, const Abstract
   assert(geEvaluationAssistDataStatus == Allocated);
   count_t    ** ppCases = DataGateway.GetDataSetInterface(tSetIndex).GetCaseArray();
   measure_t  ** ppMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureArray();
-  measure_t  ** ppSqMeasure = DataGateway.GetDataSetInterface(tSetIndex).GetSqMeasureArray();
+  measure_t  ** ppMeasureAux = DataGateway.GetDataSetInterface(tSetIndex).GetMeasureAuxArray();
 
   for (unsigned int i=0; i < giAllocationSize - 1; ++i) {
      gpCases[i] += ppCases[i][tNeighborIndex];
      gpMeasure[i] += ppMeasure[i][tNeighborIndex];
-     gpSqMeasure[i] += ppSqMeasure[i][tNeighborIndex];
+     gpMeasureAux[i] += ppMeasureAux[i][tNeighborIndex];
   }
 }
 
@@ -399,7 +399,7 @@ void NormalSpaceTimeData::DeallocateEvaluationAssistClassMembers() {
   try {
     delete[] gpCases; gpCases=0;
     delete[] gpMeasure; gpMeasure=0;
-    delete[] gpSqMeasure; gpSqMeasure=0;
+    delete[] gpMeasureAux; gpMeasureAux=0;
     giAllocationSize=0;
     geEvaluationAssistDataStatus = Deallocated;
   }
@@ -411,10 +411,10 @@ void NormalSpaceTimeData::InitializeData() {
   assert(geEvaluationAssistDataStatus == Allocated);
   gtCases=0;
   gtMeasure=0;
-  gtSqMeasure=0;
+  gtMeasureAux=0;
   memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
   memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-  memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+  memset(gpMeasureAux, 0, sizeof(measure_t) * giAllocationSize);
 }
 
 /** overloaded assignement operator */
@@ -425,15 +425,15 @@ NormalSpaceTimeData & NormalSpaceTimeData::operator=(const NormalSpaceTimeData& 
   if (rhs.geEvaluationAssistDataStatus == Allocated) {
     if (!gpCases) gpCases = new count_t[rhs.giAllocationSize];
     if (!gpMeasure) gpMeasure = new measure_t[rhs.giAllocationSize];
-    if (!gpSqMeasure) gpSqMeasure = new measure_t[rhs.giAllocationSize];
+    if (!gpMeasureAux) gpMeasureAux = new measure_t[rhs.giAllocationSize];
     memcpy(gpCases, rhs.gpCases, giAllocationSize * sizeof(count_t));
     memcpy(gpMeasure, rhs.gpMeasure, giAllocationSize * sizeof(measure_t));
-    memcpy(gpSqMeasure, rhs.gpSqMeasure, giAllocationSize * sizeof(measure_t));
+    memcpy(gpMeasureAux, rhs.gpMeasureAux, giAllocationSize * sizeof(measure_t));
   }
   else {
     delete[] gpCases; gpCases=0;
     delete[] gpMeasure; gpMeasure=0;
-    delete[] gpSqMeasure; gpSqMeasure=0;
+    delete[] gpMeasureAux; gpMeasureAux=0;
   }
   geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
   return *this;
@@ -450,13 +450,13 @@ void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
     memset(gpCases, 0, sizeof(count_t) * giAllocationSize);
     gpMeasure = new measure_t[giAllocationSize];
     memset(gpMeasure, 0, sizeof(measure_t) * giAllocationSize);
-    gpSqMeasure = new measure_t[giAllocationSize];
-    memset(gpSqMeasure, 0, sizeof(measure_t) * giAllocationSize);
+    gpMeasureAux = new measure_t[giAllocationSize];
+    memset(gpMeasureAux, 0, sizeof(measure_t) * giAllocationSize);
   }
   catch (prg_exception& x) {
     delete[] gpCases;
     delete[] gpMeasure;
-    delete[] gpSqMeasure;
+    delete[] gpMeasureAux;
     x.addTrace("Setup(const DataSetInterface&)","NormalSpaceTimeData");
     throw;
   }

@@ -39,7 +39,7 @@ double MultiSetNormalSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihood
 
   Unifier.Reset();
   for (size_t t=0; itr != gvSetClusterData.end(); ++itr, ++t)
-    Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtSqMeasure, t);
+    Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtMeasureAux, t);
   return Unifier.GetLoglikelihoodRatio();
 }
 
@@ -78,7 +78,7 @@ void MultiSetNormalSpatialData::GetDataSetIndexesComprisedInRatio(double dTarget
 
     //for each data set, calculate llr values - possibly scanning for both high and low rates
     for (size_t t=0; t < gvSetClusterData.size(); ++t) {
-       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, gvSetClusterData[t]->gtSqMeasure, t, vHighLowRatios[t]);
+       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, gvSetClusterData[t]->gtMeasureAux, t, vHighLowRatios[t]);
        dHighRatios += vHighLowRatios[t].first;
        dLowRatios += vHighLowRatios[t].second;
     }
@@ -122,8 +122,8 @@ measure_t MultiSetNormalSpatialData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->GetMeasure();
 }
 
-measure_t MultiSetNormalSpatialData::GetMeasureSq(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->GetMeasureSq();
+measure_t MultiSetNormalSpatialData::GetMeasureAux(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->GetMeasureAux();
 }
 
 /** Initializes cluster data in each data set. */
@@ -170,7 +170,7 @@ void AbstractMultiSetNormalTemporalData::GetDataSetIndexesComprisedInRatio(doubl
 
     //for each data set, calculate llr values - possibly scanning for both high and low rates
     for (size_t t=0; t < gvSetClusterData.size(); ++t) {
-       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, gvSetClusterData[t]->gtSqMeasure, t, vHighLowRatios[t]);
+       pUnifier->GetHighLowRatio(Calculator, gvSetClusterData[t]->gtCases, gvSetClusterData[t]->gtMeasure, gvSetClusterData[t]->gtMeasureAux, t, vHighLowRatios[t]);
        dHighRatios += vHighLowRatios[t].first;
        dLowRatios += vHighLowRatios[t].second;
     }
@@ -211,8 +211,8 @@ measure_t AbstractMultiSetNormalTemporalData::GetMeasure(unsigned int tSetIndex)
 
 /** Returns expected number of cases in accumulated respective data sets' cluster data.
     Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
-measure_t AbstractMultiSetNormalTemporalData::GetMeasureSq(unsigned int tSetIndex) const {
-  return gvSetClusterData.at(tSetIndex)->gtSqMeasure;
+measure_t AbstractMultiSetNormalTemporalData::GetMeasureAux(unsigned int tSetIndex) const {
+  return gvSetClusterData.at(tSetIndex)->gtMeasureAux;
 }
 
 //********************** class MultiSetNormalTemporalData ****************************
@@ -286,7 +286,7 @@ double MultiSetNormalProspectiveSpatialData::CalculateLoglikelihoodRatio(Abstrac
   Unifier.Reset();
   iAllocationSize = (*gvSetClusterData.begin())->GetAllocationSize();
   for (t=0;itr != gvSetClusterData.end(); ++itr, ++t)
-     Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], (*itr)->gpSqMeasure[0], t);
+     Unifier.AdjoinRatio(Calculator, (*itr)->gpCases[0], (*itr)->gpMeasure[0], (*itr)->gpMeasureAux[0], t);
   dMaxLoglikelihoodRatio = Unifier.GetLoglikelihoodRatio();
 
   for (iWindowEnd=1; iWindowEnd < iAllocationSize; ++iWindowEnd) {
@@ -294,8 +294,8 @@ double MultiSetNormalProspectiveSpatialData::CalculateLoglikelihoodRatio(Abstrac
      for (t=0, itr=gvSetClusterData.begin(); itr != gvSetClusterData.end(); ++itr, ++t) {
         (*itr)->gtCases = (*itr)->gpCases[0] - (*itr)->gpCases[iWindowEnd];
         (*itr)->gtMeasure =  (*itr)->gpMeasure[0] - (*itr)->gpMeasure[iWindowEnd];
-        (*itr)->gtSqMeasure =  (*itr)->gpSqMeasure[0] - (*itr)->gpSqMeasure[iWindowEnd];
-        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtSqMeasure, t);
+        (*itr)->gtMeasureAux =  (*itr)->gpMeasureAux[0] - (*itr)->gpMeasureAux[iWindowEnd];
+        Unifier.AdjoinRatio(Calculator, (*itr)->gtCases, (*itr)->gtMeasure, (*itr)->gtMeasureAux, t);
      }
      dMaxLoglikelihoodRatio = std::max(dMaxLoglikelihoodRatio, Unifier.GetLoglikelihoodRatio());
   }
