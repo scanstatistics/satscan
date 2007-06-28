@@ -117,17 +117,16 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
 
   //Cancel analysis execution if calculation of time trend fails for various reasons.
   switch (TimeTrend.GetStatus()) {
-    case CTimeTrend::TREND_UNDEF :
+    case CTimeTrend::UNDEFINED         :
       throw resolvable_error("Note: The time trend is undefined and the temporal adjustment could not be performed.\n"
                              "      Please run analysis without automatic adjustment of time trends.");
-    case CTimeTrend::TREND_INF_BEGIN :
-    case CTimeTrend::TREND_INF_END :
+    case CTimeTrend::NEGATIVE_INFINITY :
+    case CTimeTrend::POSITIVE_INFINITY :
       throw resolvable_error("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
                              "      Please run analysis without automatic adjustment of time trends.");
-    case CTimeTrend::TREND_NOTCONVERGED :
-      throw resolvable_error("Note: The time trend calculation did not converge and the temporal adjustment could not be performed.\n"
-                             "      Please run analysis without automatic adjustment of time trends.");
-    case CTimeTrend::TREND_CONVERGED : break;
+    case CTimeTrend::NOT_CONVERGED     :
+      throw prg_error("The time trend did not converge.\n", "AdjustForLogLinear()");
+    case CTimeTrend::CONVERGED         : break;
     default : throw prg_error("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
   };
 
