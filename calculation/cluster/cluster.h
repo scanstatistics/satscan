@@ -63,6 +63,8 @@ class CCluster {
                                                             const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
                                                              const AsciiPrintFormat& PrintFormat) const;
+    virtual void                  DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& DataHub,
+                                                                   const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayCoordinates(FILE* fp, const CSaTScanData& Data,
                                                      const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
