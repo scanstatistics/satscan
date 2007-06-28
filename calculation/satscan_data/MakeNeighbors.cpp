@@ -68,7 +68,7 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize() {
     //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
     //      as a percentage of the total population in all data sets.
     for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
+       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL || Parameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
        else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
@@ -108,7 +108,7 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
     //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
     //      as a percentage of the total population in all data sets.
     for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL)
+       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL || Parameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
        else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
@@ -585,7 +585,7 @@ void CentroidNeighborCalculator::setMetaLocations(std::vector<measure_t>& popMea
 /** Based upon parameter settings, stores references to population arrays maintained by
     CSaTScanData object or calculates population, storing in class member structure. */
 void CentroidNeighborCalculator::SetupPopulationArrays() {
-  count_t                    ** ppCases;
+  count_t                     * pCases;
   const ExponentialRandomizer * pRandomizer;
   const CParameters           & Parameters = gDataHub.GetParameters();
   const DataSetHandler        & DataSetHandler = gDataHub.GetDataSetHandler();
@@ -596,35 +596,49 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
   //prospective space-time analyses, using prospective start date, do not use the population at risk to restrict maximum spatial size
   if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
     switch (Parameters.GetProbabilityModelType()) {
+      case WEIGHTEDNORMAL  :
       case NORMAL  :
         gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
-        ppCases = DataSetHandler.GetDataSet().getCaseData().GetArray();
-        for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] = ppCases[0][j];
+        for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
+          pCases = DataSetHandler.GetDataSet(t).getCaseData().GetArray()[0];
+          for (int j=0; j < gDataHub.GetNumTracts(); ++j)
+             gvCalculatedPopulations[j] = pCases[j];
+        }
         setMetaLocations(gvCalculatedPopulations);
         gpPopulation = &gvCalculatedPopulations[0]; break;
       case ORDINAL :
         //For the Ordinal model, populations for each location are calculated by adding up the
         //total individuals represented in the catgory case arrays.
         gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
-        //Population is calculated from first data set - even when multiple data sets are defined.
-        for (unsigned int k=0; k < DataSetHandler.GetDataSet().getCaseData_Cat().size(); ++k) {
-          ppCases = DataSetHandler.GetDataSet().getCaseData_Cat()[k]->GetArray();
-          for (int j=0; j < gDataHub.GetNumTracts(); ++j) gvCalculatedPopulations[j] += ppCases[0][j];
+        for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
+           for (unsigned int k=0; k < DataSetHandler.GetDataSet(t).getCaseData_Cat().size(); ++k) {
+             pCases = DataSetHandler.GetDataSet(t).getCaseData_Cat()[k]->GetArray()[0];
+             for (int j=0; j < gDataHub.GetNumTracts(); ++j)
+                gvCalculatedPopulations[j] += pCases[j];
+           }
         }
         setMetaLocations(gvCalculatedPopulations);
         gpPopulation = &gvCalculatedPopulations[0];  break;
       case EXPONENTIAL:
         // consider population as cases and non-censored cases
-        gvCalculatedPopulations.assign(gDataHub.GetNumTracts(), 0);
-        //Population is calculated from first data set - even when multiple data sets are defined.
-        pRandomizer = dynamic_cast<const ExponentialRandomizer*>(DataSetHandler.GetRandomizer(0));
-        if (!pRandomizer) throw prg_error("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
-          pRandomizer->CalculateMaxCirclePopulationArray(gvCalculatedPopulations);
-         setMetaLocations(gvCalculatedPopulations);
-         gpPopulation = &gvCalculatedPopulations[0]; break;
+        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
+          pRandomizer = dynamic_cast<const ExponentialRandomizer*>(DataSetHandler.GetRandomizer(t));
+          if (!pRandomizer) throw prg_error("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
+            pRandomizer->CalculateMaxCirclePopulationArray(gvCalculatedPopulations, false);
+        }
+        setMetaLocations(gvCalculatedPopulations);
+        gpPopulation = &gvCalculatedPopulations[0]; break;
       default :
-        //Population is calculated from first data set - even when multiple data sets are defined.
-        gpPopulation = DataSetHandler.GetDataSet().getMeasureData().GetArray()[0];
+        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        //Population is calculated from all data sets
+        for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
+           measure_t * pMeasure = DataSetHandler.GetDataSet(t).getMeasureData().GetArray()[0];
+           for (int j=0; j < gDataHub.GetNumTracts(); ++j)
+             gvCalculatedPopulations[j] += pMeasure[j];
+        }
+        setMetaLocations(gvCalculatedPopulations);
+        gpPopulation = &gvCalculatedPopulations[0]; break;
     }
   }
 }
