@@ -21,7 +21,7 @@ class DataSetInterface {
     count_t                     gTotalCases;            /** number of cases in dataset */
     count_t                     gTotalControls;         /** number of controls in dataset */
     measure_t                   gTotalMeasure;          /** number of expected cases in dataset */
-    measure_t                   gTotalMeasureSq;        /** number of squared expected cases in dataset */
+    measure_t                   gTotalMeasureAux;        /** number of auxillary entries in dataset */
     unsigned int                giNumOrdinalCategories; /** number of ordinal categories in dataset */
 
     void                        Init();
@@ -41,9 +41,9 @@ class DataSetInterface {
     measure_t                ** gppNCMeasureArray;      /** pointer to dataset non-cumulative measure array */
     measure_t                 * gpPTMeasureArray;       /** pointer to dataset temporal measure array */
     measure_t                 * gpPSMeasureArray;       /** pointer to dataset spatial measure array */
-    measure_t                ** gppSqMeasureArray;      /** */
-    measure_t                 * gpPTSqMeasureArray;      /** */
-    measure_t                 * gpPSSqMeasureArray;     /** spatial */
+    measure_t                ** gppMeasureAuxArray;      /** */
+    measure_t                 * gpPTMeasureAuxArray;      /** */
+    measure_t                 * gpPSMeasureAuxArray;     /** spatial */
     const CTimeTrend          * gpTimeTrend;            /** pointer to dataset time trend structure */
 
     inline count_t                    ** GetCaseArray() const {return gppCaseArray;}
@@ -58,14 +58,14 @@ class DataSetInterface {
     unsigned int                         GetNumTimeIntervals() const {return giNumTimeIntervals;}
     inline measure_t                   * GetPSMeasureArray() const {return gpPSMeasureArray;}
     inline measure_t                   * GetPTMeasureArray() const {return gpPTMeasureArray;}
-    inline measure_t                  ** GetSqMeasureArray() const {return gppSqMeasureArray;}
-    inline measure_t                   * GetPSSqMeasureArray() const {return gpPSSqMeasureArray;}
-    inline measure_t                   * GetPTSqMeasureArray() const {return gpPTSqMeasureArray;}
+    inline measure_t                  ** GetMeasureAuxArray() const {return gppMeasureAuxArray;}
+    inline measure_t                   * GetPSMeasureAuxArray() const {return gpPSMeasureAuxArray;}
+    inline measure_t                   * GetPTMeasureAuxArray() const {return gpPTMeasureAuxArray;}
     inline const CTimeTrend            * GetTimeTrend() const {return gpTimeTrend;}
     inline count_t                       GetTotalCasesCount() const {return gTotalCases;}
     inline count_t                       GetTotalControlsCount() const {return gTotalControls;}
     inline measure_t                     GetTotalMeasureCount() const {return gTotalMeasure;}
-    inline measure_t                     GetTotalMeasureSqCount() const {return gTotalMeasureSq;}
+    inline measure_t                     GetTotalMeasureAuxCount() const {return gTotalMeasureAux;}
     void                                 ResetCaseArray(count_t t);
     void                                 SetCaseArray(count_t ** ppCases) {gppCaseArray = ppCases;gpPSCaseArray = ppCases[0];}
     void                                 SetNumOrdinalCategories(unsigned int u) {giNumOrdinalCategories = u;}
@@ -76,13 +76,13 @@ class DataSetInterface {
     void                                 SetMeasureArray(measure_t ** ppMeasure) {gppMeasureArray = ppMeasure;gpPSMeasureArray = ppMeasure[0];}
     void                                 SetNCMeasureArray(measure_t ** ppMeasure) {gppNCMeasureArray = ppMeasure;}
     void                                 SetPTMeasureArray(measure_t * pMeasure) {gpPTMeasureArray = pMeasure;}
-    void                                 SetPTSqMeasureArray(measure_t * pPTSqMeasure) {gpPTSqMeasureArray = pPTSqMeasure;}
-    void                                 SetSqMeasureArray(measure_t ** ppSqMeasure) {gppSqMeasureArray = ppSqMeasure;gpPSSqMeasureArray = ppSqMeasure[0];}
+    void                                 SetPTMeasureAuxArray(measure_t * pPTMeasureAux) {gpPTMeasureAuxArray = pPTMeasureAux;}
+    void                                 SetMeasureAuxArray(measure_t ** ppMeasureAux) {gppMeasureAuxArray = ppMeasureAux;gpPSMeasureAuxArray = ppMeasureAux[0];}
     void                                 SetTimeTrend(const CTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
     void                                 SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
     void                                 SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
     void                                 SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}
-    void                                 SetTotalMeasureSqCount(measure_t tMeasureSq) {gTotalMeasureSq = tMeasureSq;}
+    void                                 SetTotalMeasureAuxCount(measure_t tMeasureAux) {gTotalMeasureAux = tMeasureAux;}
 };
 //******************************************************************************
 #endif

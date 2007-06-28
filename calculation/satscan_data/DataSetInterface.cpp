@@ -24,16 +24,16 @@ void DataSetInterface::Init() {
   gpPSCaseArray=0;
   gppMeasureArray=0;
   gpPTMeasureArray=0;
-  gppSqMeasureArray=0;
+  gppMeasureAuxArray=0;
   gppNCMeasureArray=0;
   gpTimeTrend=0;
   gpPSMeasureArray=0;
-  gpPSSqMeasureArray=0;
-  gpPTSqMeasureArray=0;
+  gpPSMeasureAuxArray=0;
+  gpPTMeasureAuxArray=0;
   gpppCategoryCaseArray=0;
   gppPTCategoryCaseArray=0;
   giNumOrdinalCategories=0;
-  gTotalMeasureSq=0;
+  gTotalMeasureAux=0;
 }
 
 /** initializes case array */
