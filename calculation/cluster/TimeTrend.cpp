@@ -5,13 +5,6 @@
 #include "TimeTrend.h"
 #include "SSException.h"
 
-static unsigned int iLessThanOne=0;
-static unsigned int iLessThanFive=0;
-static unsigned int iLessThanTen=0;
-static unsigned int iLessThanFifteen=0;
-static unsigned int iLessThanTwenty=0;
-static unsigned int iRemainder=0;
-
 /** constructor */
 CTimeTrend::CTimeTrend() {
   Initialize();
@@ -28,6 +21,12 @@ const unsigned int CTimeTrend::MAX_BETA_TEST_ITERATIONS = 1000;
 
 /** static variable - maximum number of loop iterations before attempt to estimate beta quits. */
 const unsigned int CTimeTrend::MAX_CONVERGENCE_ITERATIONS = 1000000;
+
+/** static variable - Time trend negative infinity */
+const double CTimeTrend::NEGATIVE_INFINITY_INDICATOR = -999999.0;
+
+/** static variable - Time trend positive infinity  */
+const double CTimeTrend::POSITIVE_INFINITY_INDICATOR = 999999.0;
 
 /** Returns the natural log of (nSc/nSME). */
 double CTimeTrend::Alpha(double nSC, double nSME) const {
@@ -49,28 +48,6 @@ double CTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeInt
   }
 
   return rval;
-}
-
-double CTimeTrend::safe_exp(double dValue) const {
-   if (dValue < 1)
-     ++iLessThanOne;
-   else if (dValue < 5)
-     ++iLessThanFive;
-   else if (dValue < 10)
-     ++iLessThanTen;
-   else if (dValue < 15)
-     ++iLessThanFifteen;
-   else if (dValue < 20)
-     ++iLessThanTwenty;
-   else
-     ++iRemainder;
-
-   double d = exp(dValue);
-   if (d == HUGE_VAL)
-     throw prg_error("exp(%lf) overflow", "safe_exp()", dValue);
-   if (d == 0)
-     throw prg_error("exp(%lf) underflow", "safe_exp()", dValue);
-   return d;
 }
 
 // ******************************************************************************
@@ -111,14 +88,14 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   // Eliminates situations when the time trend is undefined.
   // *******************************************************
   if (nSumCases < 2)
-    return  (gStatus = TREND_UNDEF);
+    return  (gStatus = CTimeTrend::UNDEFINED);
   else if ((pCases[0] == nSumCases)) {
     gdBeta = 0; /* What if don't set Beta at all??? */
-    return (gStatus = TREND_INF_BEGIN);
+    return (gStatus = CTimeTrend::NEGATIVE_INFINITY);
   }
   else if (pCases[nTimeIntervals-1] == nSumCases) {
     gdBeta = 0; /* What if don't set Beta at all??? */
-    return (gStatus = TREND_INF_END);
+    return (gStatus = CTimeTrend::POSITIVE_INFINITY);
   }
 
   // Calculates the start value of beta for the subsequent Newton-Raphson iterations.
@@ -147,19 +124,20 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   // ********************************************************************************
   nIterations = 0;
   while (!bGoodBetaStart && nIterations < MAX_BETA_TEST_ITERATIONS) {
+     nSumMsr_ExpBeta = nSumTime_Msr_ExpBeta = nSumTimeSquared_Msr_ExpBeta = 0; //SAH -- just trying something
      for (t=0; t < nTimeIntervals; t++) {
-        nSumMsr_ExpBeta += pMeasure[t] * safe_exp(nBetaStart * t);
-        nSumTime_Msr_ExpBeta += t * pMeasure[t] * safe_exp(nBetaStart * t);
-        nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * safe_exp(nBetaStart * t);
+        nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaStart * t);
+        nSumTime_Msr_ExpBeta += t * pMeasure[t] * exp(nBetaStart * t);
+        nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * exp(nBetaStart * t);
      }
      if ( S(nSumCases,nSumTime_Cases,nSumTime_Msr_ExpBeta,nSumTimeSquared_Msr_ExpBeta) < -1)
          bGoodBetaStart = true;
      else
-       nBetaStart += 1;
+       nBetaStart += 0.1;
      nIterations++;  
   }
   if (bGoodBetaStart == false)
-    return (gStatus = TREND_NOTCONVERGED);
+    return (gStatus = CTimeTrend::NOT_CONVERGED);
 
   // Estimates the time trend beta usisng Newton-Raphson's iterative method.
   // Maximum number of iterations increased from 100 to 1,000,000 by MK's request 1999.
@@ -177,9 +155,9 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
     // Create sum terms for calculations in derivatives F() and S(), the first and second derivatives of Alpha.
     // ********************************************************************************************************
     for (t=0; t < nTimeIntervals; t++) {
-      nSumMsr_ExpBeta += pMeasure[t] * safe_exp(nBetaOld * t);
-      nSumTime_Msr_ExpBeta += t * pMeasure[t] * safe_exp(nBetaOld * t);
-      nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * safe_exp(nBetaOld * t);
+      nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaOld * t);
+      nSumTime_Msr_ExpBeta += t * pMeasure[t] * exp(nBetaOld * t);
+      nSumTimeSquared_Msr_ExpBeta += (t*t) * pMeasure[t] * exp(nBetaOld * t);
     }
 
     // Uses Newton-Raphsons method to find the zero of F(Alpha),
@@ -211,16 +189,13 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   if (bConvergence) {
     nSumMsr_ExpBeta=0.0;
     for (t=0; t < nTimeIntervals; t++)
-      nSumMsr_ExpBeta += pMeasure[t] * safe_exp(nBetaNew * t);
+      nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaNew * t);
     gdAlpha = Alpha(nSumCases,nSumMsr_ExpBeta);
     gdBeta = nBetaNew;
-    //Set status, a negative beta is not likely, but perform check regardless.
-    if (gdBeta < -1)
-      throw prg_error("Beta calculated to less than -1. Beta = %g\n", "CalculateAndSet()", gdBeta);
-    gStatus = TREND_CONVERGED;
+    gStatus = CTimeTrend::CONVERGED;
   }
   else
-    gStatus = TREND_NOTCONVERGED;
+    gStatus = CTimeTrend::NOT_CONVERGED;
 
   return gStatus;
 }
@@ -235,12 +210,7 @@ void CTimeTrend::Initialize() {
   gdAlpha           = 0;
   gdBeta            = 0;
   gdAnnualTimeTrend = 0;
-  gStatus           = TREND_UNDEF;
-}
-
-/** Returns true if m_nBeta is less than TREND_ZERO else returns false. */
-bool CTimeTrend::IsNegative() const {
-  return gdBeta < TREND_ZERO;
+  gStatus           = CTimeTrend::NOT_CONVERGED;
 }
 
 /** Calculates second derivative. */
@@ -249,21 +219,29 @@ double CTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) const
 }
 
 /** Calculates annual time trend given specfied time interval precision and length. */
-double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
+double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength) {
   double nUnits;
 
-  switch (eDatePrecision) {
-    case YEAR  : nUnits = 1; break;
-    case MONTH : nUnits = 12; break;
-    case DAY   : nUnits = 365.25; break;
-    default    : throw prg_error("SetAnnualTimeTrend() called with unknown date precision '%d'.",
-                                 "SetAnnualTimeTrend()", eDatePrecision);
+  switch (gStatus) {
+   case NOT_CONVERGED     : throw prg_error("Unable to call SetAnnualTimeTrend with non-converged time trend.", "SetAnnualTimeTrend()");
+   case UNDEFINED         : gdAnnualTimeTrend = 0; return gdAnnualTimeTrend;
+   case NEGATIVE_INFINITY : gdAnnualTimeTrend = NEGATIVE_INFINITY_INDICATOR;  return gdAnnualTimeTrend;
+   case POSITIVE_INFINITY : gdAnnualTimeTrend = POSITIVE_INFINITY_INDICATOR;  return gdAnnualTimeTrend;
+   case CONVERGED         : break;
+   default : throw prg_error("Unknown time trend status '%d'.", "SetAnnualTimeTrend()", gStatus);
   }
-  if (gStatus == TREND_CONVERGED)
-    gdAnnualTimeTrend = (pow(1 + gdBeta, nUnits/nIntervalLen) - 1) * 100;
-  else
-    throw prg_error("SetAnnualTimeTrend() called with time trend that is not in converged state.", "SetAnnualTimeTrend()");
 
+  switch (eAggregationPrecision) {
+    case YEAR  : gdAnnualTimeTrend = 100 * (exp(gdBeta/dTimeAggregationLength) - 1); break;
+    case MONTH : gdAnnualTimeTrend = 100 * (exp(gdBeta * 12/dTimeAggregationLength) - 1); break;
+    case DAY   : gdAnnualTimeTrend = 100 * (exp(gdBeta * 365.25/dTimeAggregationLength) - 1); break;
+    default    : throw prg_error("SetAnnualTimeTrend() called with unknown aggregation precision '%d'.",
+                                 "SetAnnualTimeTrend()", eAggregationPrecision);
+  }
+  //If the time trend is very small, then the value assigned above is more likely the
+  //result of round-off. In this case, set trend to zero.
+  if (-TREND_ZERO < gdAnnualTimeTrend && gdAnnualTimeTrend < TREND_ZERO)
+    gdAnnualTimeTrend = 0;
   return gdAnnualTimeTrend;
 }
 

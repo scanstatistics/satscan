@@ -7,11 +7,11 @@
 /** Calculates temporal trend. */
 class CTimeTrend {
   public:
-    enum Status                 {TREND_UNDEF=0,        /** trend undefined */
-                                 TREND_INF_BEGIN,       /** trend is infinite */
-                                 TREND_INF_END,        /** trend is infinite */
-                                 TREND_NOTCONVERGED,   /** trend did not converge */
-                                 TREND_CONVERGED       /** trend converged */
+    enum Status                 {UNDEFINED=0,        /** trend undefined */
+                                 NEGATIVE_INFINITY,  /** trend is infinite */
+                                 POSITIVE_INFINITY,  /** trend is infinite */
+                                 NOT_CONVERGED,      /** trend did not converge */
+                                 CONVERGED           /** trend converged */
                                  };
 
   private:
@@ -26,11 +26,13 @@ class CTimeTrend {
     double                      Alpha(double nSC, double nSME) const;
     double                      F(double nSC, double nSTC, double nSME, double nSTME) const;
     double                      S(double nSC, double nSTC, double nSTME, double nST2ME) const;
-    double                      safe_exp(double dValue) const;
-    
+
   public:
     CTimeTrend();
     virtual ~CTimeTrend();
+
+    static const double         NEGATIVE_INFINITY_INDICATOR;
+    static const double         POSITIVE_INFINITY_INDICATOR;
 
     double                      Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta) const;
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge);
@@ -39,8 +41,7 @@ class CTimeTrend {
     double                      GetBeta() const {return gdBeta;}
     Status                      GetStatus() const {return gStatus;}
     void                        Initialize();
-    bool                        IsNegative() const;
-    double                      SetAnnualTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen);
+    double                      SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength);
 };
 //*****************************************************************************
 #endif
