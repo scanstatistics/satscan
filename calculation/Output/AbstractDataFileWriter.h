@@ -55,7 +55,7 @@ class AbstractDataFileWriter {
     static const char         * MEAN_INSIDE_FIELD;
     static const char         * MEAN_OUTSIDE_FIELD;
     static const char         * VARIANCE_FIELD;
-    static const char         * DEVIATION_FIELD;
+    static const char         * STD_FIELD;
     static const char         * MEAN_VALUE_FIELD;
     static const size_t         DEFAULT_LOC_FIELD_SIZE;
     static const size_t         MAX_LOC_FIELD_SIZE;
