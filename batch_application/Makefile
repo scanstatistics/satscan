@@ -113,6 +113,7 @@ SRC         := Main.cpp \
 	             $(RANDOMIZER)/OrdinalDataRandomizer.cpp \
 	             $(RANDOMIZER)/RankRandomizer.cpp \
 	             $(RANDOMIZER)/NormalRandomizer.cpp \
+	             $(RANDOMIZER)/WeightedNormalRandomizer.cpp \
 	             $(LOGLIKELIHOOD)/BernoulliLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/LikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/LoglikelihoodRatioUnifier.cpp \
@@ -121,6 +122,7 @@ SRC         := Main.cpp \
 	             $(LOGLIKELIHOOD)/PoissonSVTTLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
 	             $(LOGLIKELIHOOD)/OrdinalLikelihoodCalculation.cpp \
+	             $(LOGLIKELIHOOD)/WeightedNormalLikelihoodCalculation.cpp \
 	             $(SATDATA)/GridTractCoordinates.cpp \
 	             $(SATDATA)/CentroidNeighbors.cpp \
 	             $(SATDATA)/MakeNeighbors.cpp \
