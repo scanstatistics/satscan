@@ -131,7 +131,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
              count_t tObserved = theCluster.GetObservedCountForTract(tTract, DataHub);
              if (tObserved) Record.GetFieldValue(LOC_MEAN_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub)/tObserved;
            }
-           if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+           if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
              Record.GetFieldValue(LOC_EXP_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub);
              Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpectedForTract(tTract, DataHub);
            }
@@ -180,7 +180,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
            count_t tCasesOutside = DataHub.GetDataSetHandler().GetDataSet().getTotalCases() - tObserved;
            if (tCasesOutside) Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - tExpected)/tCasesOutside;
          }
-         if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+         if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
            Record.GetFieldValue(CLU_EXP_FIELD).AsDouble() = theCluster.GetExpectedCount(DataHub);
            Record.GetFieldValue(CLU_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
          }
