@@ -640,14 +640,30 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          gtTotalMeasure += DataSet.getTotalMeasure();
       }
     }
-    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
       //recalculate the data set cases/measure given updated randomizer data
-      AbstractNormalDataRandomizer *pRandomizer;
+      AbstractNormalRandomizer *pRandomizer;
       gtTotalCases=0;
       gtTotalMeasureAux=gtTotalMeasureAux=0;
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
         RealDataSet& DataSet = gDataSets->GetDataSet(t);
-        if ((pRandomizer = dynamic_cast<AbstractNormalDataRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+        if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+          throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+        pRandomizer->AssignFromAttributes(DataSet);
+        //update class variables that defines totals across all data sets
+        gtTotalCases += DataSet.getTotalCases();
+        gtTotalMeasure += DataSet.getTotalMeasure();
+        gtTotalMeasureAux += DataSet.getTotalMeasureAux();
+      }
+    }
+    if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      //recalculate the data set cases/measure given updated randomizer data
+      AbstractWeightedNormalRandomizer *pRandomizer;
+      gtTotalCases=0;
+      gtTotalMeasureAux=gtTotalMeasureAux=0;
+      for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+        RealDataSet& DataSet = gDataSets->GetDataSet(t);
+        if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractNormalDataRandomizer type.\n", "RemoveClusterSignificance()");
         pRandomizer->AssignFromAttributes(DataSet);
         //update class variables that defines totals across all data sets
@@ -745,11 +761,21 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
            gtTotalPopulation += DataSet.getTotalCases();
          }
        }
-       else if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
-         AbstractNormalDataRandomizer *pRandomizer;
+       else if (gParameters.GetProbabilityModelType() == NORMAL) {
+         AbstractNormalRandomizer *pRandomizer;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
-           if ((pRandomizer = dynamic_cast<AbstractNormalDataRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
-             throw prg_error("Randomizer could not be dynamically casted to AbstractNormalDataRandomizer type.\n", "RemoveClusterSignificance()");
+           if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+             throw prg_error("Randomizer could not be dynamically casted to AbstractNormalRandomizer type.\n", "RemoveClusterSignificance()");
+           //zero out cases/measure in clusters defined spatial/temporal window
+           for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
+             pRandomizer->RemoveCase(i, tTractIndex);
+         }
+       }
+       else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+         AbstractWeightedNormalRandomizer *pRandomizer;
+         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
+           if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
+             throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "RemoveClusterSignificance()");
            //zero out cases/measure in clusters defined spatial/temporal window
            for (int i=Cluster.m_nFirstInterval; i < Cluster.m_nLastInterval; ++i)
              pRandomizer->RemoveCase(i, tTractIndex);

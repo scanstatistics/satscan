@@ -3,13 +3,12 @@
 #define NormalRandomizerH
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
-#include "AbstractNormalDataRandomizer.h"
 
 typedef StationaryAttribute<std::pair<int, tract_t> >   NormalStationary_t;
 typedef PermutedAttribute<double>                       NormalPermuted_t;
 
 /** */
-class AbstractNormalRandomizer :  public AbstractNormalDataRandomizer, public AbstractPermutedDataRandomizer<NormalStationary_t, NormalPermuted_t>{
+class AbstractNormalRandomizer : public AbstractPermutedDataRandomizer<NormalStationary_t, NormalPermuted_t>{
    public:
      AbstractNormalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<NormalStationary_t, NormalPermuted_t>(lInitialSeed) {}
      virtual ~AbstractNormalRandomizer() {}

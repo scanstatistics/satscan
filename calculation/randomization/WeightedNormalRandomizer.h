@@ -3,13 +3,12 @@
 #define WeightedNormalRandomizerH
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
-#include "AbstractNormalDataRandomizer.h"
 
 typedef StationaryAttribute<std::pair<int, tract_t> >   WeightedNormalStationary_t;
 typedef PermutedAttribute<std::pair<double, double> >   WeightedNormalPermuted_t;
 
 /** */
-class AbstractWeightedNormalRandomizer :  public AbstractNormalDataRandomizer, public AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>{
+class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>{
    public:
      AbstractWeightedNormalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(lInitialSeed) {}
      virtual ~AbstractWeightedNormalRandomizer() {}
