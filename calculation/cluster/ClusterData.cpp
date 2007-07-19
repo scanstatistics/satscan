@@ -77,6 +77,173 @@ SpatialData & SpatialData::operator=(const SpatialData& rhs) {
   return *this;
 }
 
+//**************** class SpatialMonotoneData************************************
+
+/** class constructor */
+SpatialMonotoneData::SpatialMonotoneData(const DataSetInterface& Interface) : AbstractClusterData() {
+  InitializeData();
+}
+
+/** class constructor */
+SpatialMonotoneData::SpatialMonotoneData(const AbstractDataSetGateway& DataGateway) : AbstractClusterData() {
+  InitializeData();
+}
+
+/** Adds neighbor data to accumulation - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void SpatialMonotoneData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
+  ++m_nSteps;
+  ++m_NeighborIteration;
+  gtCases += DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
+  gtMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
+  gvCasesList[m_nSteps-1] = DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
+  gvMeasureList[m_nSteps-1] = DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
+  gvFirstNeighborList[m_nSteps-1] = m_NeighborIteration;
+  gvLastNeighborList[m_nSteps-1] = m_NeighborIteration;
+}
+
+/** Adds another step and assigns from remainder of cases not already accounted for in existing steps. */
+void SpatialMonotoneData::AddRemainder(const CSaTScanData& Data) {
+  if (Data.GetTotalCases() != gtCases) {
+    ++m_nSteps;
+    gvCasesList[m_nSteps-1] = Data.GetTotalCases() - gtCases;
+    gvMeasureList[m_nSteps-1] = Data.GetTotalMeasure() - gtMeasure;
+    CheckCircle(GetLastCircleIndex());
+  }
+}
+
+/** Allocates internal structures for maximum number of circles in spatial cluster data. */
+void SpatialMonotoneData::AllocateForMaxCircles(tract_t nCircles) {
+  gvCasesList.resize(nCircles);
+  gvMeasureList.resize(nCircles);
+  gvFirstNeighborList.resize(nCircles);
+  gvLastNeighborList.resize(nCircles);
+}
+
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'SpatialData' object. */
+void SpatialMonotoneData::Assign(const AbstractClusterData& rhs) {
+  *this = (const SpatialMonotoneData&)rhs;
+}
+
+/** Calculates loglikelihood ratio, given current accumulated cluster data. */
+double SpatialMonotoneData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+  return Calculator.CalcMonotoneLogLikelihood(m_nSteps, gvCasesList, gvMeasureList) - Calculator.GetLogLikelihoodForTotal();
+}
+
+/** Recursively collapses outer most circles upon inner circles. */
+void SpatialMonotoneData::CheckCircle(tract_t n) {
+  if (n != 0)
+    if (!m_pfRateOfInterest(gvCasesList[n-1], gvMeasureList[n-1], gvCasesList[n], gvMeasureList[n])) {
+      ConcatLastCircles();
+      CheckCircle(n-1);
+    }
+}
+
+/** Returns newly cloned SpatialData object. Caller resonsible for deletion of object. */
+SpatialMonotoneData * SpatialMonotoneData::Clone() const {
+  return new SpatialMonotoneData(*this);
+}
+
+/** Collapses outer circle upon next inner circle. */
+void SpatialMonotoneData::ConcatLastCircles() {
+  --m_nSteps;
+  gvCasesList[m_nSteps-1] += gvCasesList[m_nSteps];
+  gvMeasureList[m_nSteps-1] += gvMeasureList[m_nSteps];
+  gvLastNeighborList[m_nSteps-1] = gvLastNeighborList[m_nSteps];
+
+  gvCasesList[m_nSteps] = 0;
+  gvMeasureList[m_nSteps] = 0;
+  gvFirstNeighborList[m_nSteps] = 0;
+  gvLastNeighborList[m_nSteps] = 0;
+}
+
+/** Restricted version of assignment operator - only copies data needed during reporting of cluster. */
+void SpatialMonotoneData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  gtCases = ((const SpatialMonotoneData&)rhs).gtCases;
+  gtMeasure = ((const SpatialMonotoneData&)rhs).gtMeasure;
+  m_nSteps = ((const SpatialMonotoneData&)rhs).m_nSteps;
+  gvCasesList = ((const SpatialMonotoneData&)rhs).gvCasesList;
+  gvMeasureList = ((const SpatialMonotoneData&)rhs).gvMeasureList;
+  gvFirstNeighborList = ((const SpatialMonotoneData&)rhs).gvFirstNeighborList;
+  gvLastNeighborList = ((const SpatialMonotoneData&)rhs).gvLastNeighborList;
+}
+
+/** Calculates and returns maximizing value given accumulated data. */
+double SpatialMonotoneData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  return Calculator.CalcMonotoneLogLikelihood(m_nSteps, gvCasesList, gvMeasureList);
+}
+
+/** Returns number of cases accumulated in cluster data. */
+count_t SpatialMonotoneData::GetCaseCount(unsigned int) const {
+  return gtCases;
+}
+
+/** Returns number of expected cases accumulated in cluster data. */
+measure_t SpatialMonotoneData::GetMeasure(unsigned int) const {
+  return gtMeasure;
+}
+
+/** Initializes cluster data. */
+void SpatialMonotoneData::InitializeData() {
+  gtCases=0;
+  gtMeasure=0;
+  m_nSteps = 0;
+  m_NeighborIteration = 0;
+  std::fill(gvCasesList.begin(), gvCasesList.end(), 0);
+  std::fill(gvMeasureList.begin(), gvMeasureList.end(), 0);
+  std::fill(gvFirstNeighborList.begin(), gvFirstNeighborList.end(), 0);
+  std::fill(gvLastNeighborList.begin(), gvLastNeighborList.end(), 0);
+}
+
+/** Overloaded assignment operator. */
+SpatialMonotoneData & SpatialMonotoneData::operator=(const SpatialMonotoneData& rhs) {
+  gtCases             = rhs.gtCases;
+  gtMeasure           = rhs.gtMeasure;
+  m_nSteps            = rhs.m_nSteps;
+  m_NeighborIteration = rhs.m_NeighborIteration;
+  gvCasesList         = rhs.gvCasesList;
+  gvMeasureList       = rhs.gvMeasureList;
+  gvFirstNeighborList = rhs.gvFirstNeighborList;
+  gvLastNeighborList  = rhs.gvLastNeighborList;
+  m_pfRateOfInterest  = rhs.m_pfRateOfInterest;
+  return *this;
+}
+
+/** Removes remainder cases added in AddRemainder() function. */
+void SpatialMonotoneData::RemoveRemainder(const CSaTScanData& Data) {
+  if (Data.GetTotalCases() != gtCases) {
+    --m_nSteps;
+    gvCasesList[m_nSteps] = 0;
+    gvMeasureList[m_nSteps] = 0;
+    gvFirstNeighborList[m_nSteps] = 0;
+    gvLastNeighborList[m_nSteps] = 0;
+    if (m_nSteps==0)
+      InitializeData();
+  }
+}
+
+/** Re-calculates the number of cases and expected cases inside of cluster based upon the number of steps. */
+void SpatialMonotoneData::SetCasesAndMeasures() {
+  gtCases   = 0;
+  gtMeasure = 0;
+  for (int i=0; i < m_nSteps; ++i) {
+     gtCases   += gvCasesList[i];
+     gtMeasure += gvMeasureList[i];
+  }
+}
+
+/** Sets scanning area rate. */
+void SpatialMonotoneData::SetRate(AreaRateType eRate) {
+  switch (eRate) {
+    case LOW        : m_pfRateOfInterest = LowRate;       break;
+    case HIGHANDLOW : m_pfRateOfInterest = HighOrLowRate; break;
+    case HIGH       :
+    default         : m_pfRateOfInterest = HighRate;
+  }
+}
+
 //**************** class TemporalData ******************************************
 
 /** Protected class constructor - accessible by derived classes only. */

@@ -47,6 +47,46 @@ inline void SpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, co
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 
+/** Class representing accumulated data of spatial monotone clustering. */
+class SpatialMonotoneData : public AbstractClusterData {
+  private:
+    RATE_FUNCPTRTYPE       m_pfRateOfInterest;   /** scanning rate function pointer */
+    tract_t                m_NeighborIteration;  /** total number of tracts added */
+    count_t                gtCases;              /** accumulated cases */
+    measure_t              gtMeasure;            /** accumulated expected cases */
+
+  public:
+    SpatialMonotoneData(const DataSetInterface& Interface);
+    SpatialMonotoneData(const AbstractDataSetGateway& DataGateway);
+    virtual ~SpatialMonotoneData() {}
+    virtual SpatialMonotoneData * Clone() const;
+    SpatialMonotoneData & operator=(const SpatialMonotoneData& rhs);
+
+    //public data members -- public for speed considerations
+    std::vector<count_t>   gvCasesList;          /** Number of cases in each circle */
+    std::vector<measure_t> gvMeasureList;        /** Expected count for each circle */
+    std::vector<tract_t>   gvFirstNeighborList;  /** First neighbor in circle */
+    std::vector<tract_t>   gvLastNeighborList;   /** Last neighbor in circle */
+    tract_t                m_nSteps;             /** Number of concentric steps in cluster */
+
+    virtual void           AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    void                   AddRemainder(const CSaTScanData& Data);
+    void                   AllocateForMaxCircles(tract_t nCircles);
+    virtual void           Assign(const AbstractClusterData& rhs);
+    virtual double         CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    void                   CheckCircle(tract_t n);
+    void                   ConcatLastCircles();
+    virtual void           CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual count_t        GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual double         GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
+    virtual measure_t      GetMeasure(unsigned int tSetIndex=0) const;
+    tract_t                GetLastCircleIndex() const {return m_nSteps-1;}
+    virtual void           InitializeData();
+    void                   RemoveRemainder(const CSaTScanData& Data);
+    void                   SetCasesAndMeasures();
+    void                   SetRate(AreaRateType eRate);
+};
+
 /** Class representing accumulated data of temporal clustering
     If instantiated through public constructors, points to already calculated
     purely temporal arrays supplied by DataInterface. The protected constructor
