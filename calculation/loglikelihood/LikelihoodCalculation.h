@@ -4,7 +4,7 @@
 //******************************************************************************
 #include "SaTScan.h"
 
-class CPSMonotoneCluster; /** forward class declaration */
+class SpatialMonotoneData; /** forward class declaration */
 class CSaTScanData;       /** forward class declaration */
 class SVTTClusterData;    /** forward class declaration */
 class CTimeTrend;         /** forward class declaration */
@@ -35,7 +35,7 @@ class AbstractLikelihoodCalculator {
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex=0) const;
-    virtual double                      CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const;
+    virtual double                      CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const;
     virtual double                      CalcSVTTLogLikelihood(size_t tSetIndex, SVTTClusterData& ClusterData, const CTimeTrend& GlobalTimeTrend) const;
     virtual double                      CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex=0) const;

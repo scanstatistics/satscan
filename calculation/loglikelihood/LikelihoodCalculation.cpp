@@ -98,8 +98,8 @@ double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t tCases
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster&) const {
-  throw prg_error("CalcMonotoneLogLikelihood(const CPSMonotoneCluster&) not implementated.","AbstractLikelihoodCalculator");
+double AbstractLikelihoodCalculator::CalcMonotoneLogLikelihood(tract_t, const std::vector<count_t>&, const std::vector<measure_t>&) const {
+  throw prg_error("CalcMonotoneLogLikelihood(tract_t, const std::vector<count_t>&, const std::vector<measure_t>&) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */

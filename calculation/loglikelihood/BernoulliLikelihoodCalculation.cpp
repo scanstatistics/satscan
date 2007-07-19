@@ -69,14 +69,14 @@ double BernoulliLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_
 }
 
 /** calculates loglikelihood ratio for purely spatial monotone analysis given passed cluster */
-double BernoulliLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const {
+double BernoulliLikelihoodCalculator::CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const {
   double    nLogLikelihood = 0;
   count_t   n;
   measure_t u;
 
-  for (int i=0; i < PSMCluster.m_nSteps; ++i) {
-     n = PSMCluster.gvCasesList.at(i);
-     u = PSMCluster.gvMeasureList.at(i);
+  for (int i=0; i < tSteps; ++i) {
+     n = vCasesList.at(i);
+     u = vMeasureList.at(i);
      if (n != 0  && n != u)
        nLogLikelihood += n*log(n/u) + (u-n)*log(1-(n/u));
      else if (n == 0)

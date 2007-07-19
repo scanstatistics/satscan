@@ -53,12 +53,12 @@ double PoissonLikelihoodCalculator::CalcLogLikelihoodRatio(count_t n, measure_t 
 }
 
 /** needs documentation */
-double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(const CPSMonotoneCluster& PSMCluster) const {
+double PoissonLikelihoodCalculator::CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const {
   double nLogLikelihood=0;
 
-  for (int i=0; i < PSMCluster.m_nSteps; i++) {
-     if (PSMCluster.gvCasesList.at(i) != 0)
-       nLogLikelihood += PSMCluster.gvCasesList.at(i) * log(PSMCluster.gvCasesList.at(i)/PSMCluster.gvMeasureList.at(i));
+  for (int i=0; i < tSteps; i++) {
+     if (vCasesList.at(i) != 0)
+       nLogLikelihood += vCasesList.at(i) * log(vCasesList.at(i)/vMeasureList.at(i));
   }
   return nLogLikelihood;
 }
