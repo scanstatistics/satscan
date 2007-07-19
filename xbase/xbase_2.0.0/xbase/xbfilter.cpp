@@ -64,6 +64,10 @@
 /*! \file xbfilter.cpp
 */
 
+#include <iostream>
+using std::cout;
+using std::endl;
+
 #ifdef XB_FILTERS
 /************************************************************************/
 //! Short description.
@@ -108,7 +112,7 @@ xbShort xbFilter::GetFirstFilterRec()
     if(( rc = d->xbase->ProcessExpression( e )) != XB_NO_ERROR )
       xb_error( rc );
 
-  cout << "xbfilter fixme" << endl;
+	std::cout << "xbfilter fixme" << std::endl;
 //    if( d->xbase->GetInt()){
       CurFilterRecNo = d->GetCurRecNo();
       return XB_NO_ERROR;
@@ -140,7 +144,7 @@ xbShort xbFilter::GetLastFilterRec()
     if(( rc = d->xbase->ProcessExpression( e )) != XB_NO_ERROR )
       xb_error( rc );
 
-cout << "xbfilter fixme" << endl;
+	std::cout << "xbfilter fixme" << std::endl;
 //    if( d->xbase->GetInt()){
       CurFilterRecNo = d->GetCurRecNo();
       return XB_NO_ERROR;

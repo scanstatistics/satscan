@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: stack.cpp,v 1.2 2002-09-05 13:19:20 hostovic Exp $
+/*  $Id: stack.cpp,v 1.3 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
 
@@ -58,10 +58,10 @@
 
 #include <xbase/xbase.h>
 
-#include <string.h>
+#include <string>
 #include <stdlib.h>
-#include <iostream.h>
-
+#include <iostream>
+using std::cout;
 #include <xbase/xstack.h>
 
 /*! \file stack.cpp

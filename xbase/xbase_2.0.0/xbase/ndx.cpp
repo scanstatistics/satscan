@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: ndx.cpp,v 1.2 2002-09-05 13:19:19 hostovic Exp $
+/*  $Id: ndx.cpp,v 1.3 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
 
@@ -67,8 +67,8 @@
 #endif
 
 #include <xbase/xbase.h>
-#include <iostream.h>
-
+#include <iostream>
+using std::cout;
 #ifdef XB_INDEX_NDX
 
 #ifdef HAVE_IO_H

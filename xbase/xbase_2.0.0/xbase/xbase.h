@@ -1,4 +1,4 @@
-/*  $Id: xbase.h,v 1.1 2002-09-04 19:54:10 simpson Exp $
+/*  $Id: xbase.h,v 1.2 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
 
@@ -70,7 +70,7 @@
 
 #if defined(__WIN32__)
 
-#include "windows.h"
+//#include "windows.h"
 
 // ripped from wxWindows
 

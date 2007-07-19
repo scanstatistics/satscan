@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: dbf.cpp,v 1.3 2003-03-20 16:29:16 hostovic Exp $
+/*  $Id: dbf.cpp,v 1.4 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
    
@@ -79,6 +79,9 @@
 #include <string.h>
 
 #include <xbase/xbexcept.h>
+
+using std::cout;
+using std::endl;
 
 /*! \file dbf.cpp
 */

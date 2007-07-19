@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: ntx.cpp,v 1.2 2002-09-05 13:19:20 hostovic Exp $
+/*  $Id: ntx.cpp,v 1.3 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
 
@@ -63,7 +63,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
+using std::cout;
+using std::endl;
 
 #include <ctype.h>
 #include <sys/stat.h>

@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: memo.cpp,v 1.2 2002-09-05 13:19:19 hostovic Exp $
+/*  $Id: memo.cpp,v 1.3 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
 
@@ -59,6 +59,8 @@
 
 #include <stdio.h>
 #include <xbase/xbexcept.h>
+
+using std::cout;
 
 /*! \file memo.cpp
 */

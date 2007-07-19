@@ -1,4 +1,4 @@
-/*  $Id: html.h,v 1.1 2002-09-04 19:54:09 simpson Exp $
+/*  $Id: html.h,v 1.2 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
  
@@ -92,28 +92,28 @@ public:
    //! Short description.
    /*!
    */
-   void   BoldOff( void ) { cout << "</b>\n"; };
+   void   BoldOff( void ) { std::cout << "</b>\n"; };
    //! Short description.
    /*!
    */
-   void   BoldOn( void ) { cout << "<b>"; };
+   void   BoldOn( void ) { std::cout << "<b>"; };
    //! Short description.
    /*!
    */
-   void   Bullet( void ) { cout << "<li>"; };
+   void   Bullet( void ) { std::cout << "<li>"; };
    void   DumpArray( void );
    //! Short description.
    /*!
    */
-   void   EmphasizeOff( void ) { cout << "</em>\n"; };
+   void   EmphasizeOff( void ) { std::cout << "</em>\n"; };
    //! Short description.
    /*!
    */
-   void   EmphasizeOn( void ) { cout << "<em>"; };
+   void   EmphasizeOn( void ) { std::cout << "<em>"; };
    //! Short description.
    /*!
    */
-   void   EndHtmlPage( void ) { cout << "</BODY>\n</HTML>\n"; }
+   void   EndHtmlPage( void ) { std::cout << "</BODY>\n</HTML>\n"; }
    xbShort  GenFormFields(xbDbf *d, xbShort Option,const char * Title,xbFieldList *fl);
    xbShort  GetArrayNo( const char * FieldName );
    const  char * GetCookie( const char *CookieName );
@@ -124,47 +124,47 @@ public:
    //! Short description.
    /*!
    */
-   void   HeaderOff( xbShort i ){ cout << "</h" << i << ">\n"; };
+   void   HeaderOff( xbShort i ){ std::cout << "</h" << i << ">\n"; };
    //! Short description.
    /*!
    */
-   void   HeaderOn( xbShort i ){ cout << "<h" << i << ">\n"; };
+   void   HeaderOn( xbShort i ){ std::cout << "<h" << i << ">\n"; };
    //! Short description.
    /*!
    */
-   void   ItalicOff( void ) { cout << "</i>\n"; };
+   void   ItalicOff( void ) { std::cout << "</i>\n"; };
    //! Short description.
    /*!
    */
-   void   ItalicOn( void ) { cout << "<i>"; };
+   void   ItalicOn( void ) { std::cout << "<i>"; };
    //! Short description.
    /*!
    */
-   void   NewLine( void ) { cout << "<br>"; }
+   void   NewLine( void ) { std::cout << "<br>"; }
    xbShort  PostMethod( void );
    void   PrintEncodedChar( char );
    void   PrintEncodedString( const char *s );
    //! Short description.
    /*!
    */
-   void   PrintHtml( char * s ) { cout << s; };
+   void   PrintHtml( char * s ) { std::cout << s; };
    //! Short description.
    /*!
    */
-   void   PrintHtml( xbLong l ) { cout << l; };
+   void   PrintHtml( xbLong l ) { std::cout << l; };
    //! Short description.
    /*!
    */
-   void   PrintHtml( xbShort i ) { cout << i; };
+   void   PrintHtml( xbShort i ) { std::cout << i; };
    //! Short description.
    /*!
    */
-   void   PrintHtml( int i ) { cout << i; };
+   void   PrintHtml( int i ) { std::cout << i; };
    void   StartHtmlPage( const char *Title );
    //! Short description.
    /*!
    */
-   void   StartTextPage( void ) { cout << "Content-type: text/plain\n\n"; }
+   void   StartTextPage( void ) { std::cout << "Content-type: text/plain\n\n"; }
    void   TextOut( const char *String );
    xbLong   Tally( const char *FileName );
    xbShort  SetCookie(const char *Name, const char *Value, const char *ExpDate,

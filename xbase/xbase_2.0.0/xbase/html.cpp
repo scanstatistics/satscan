@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: html.cpp,v 1.2 2002-09-05 13:19:19 hostovic Exp $
+/*  $Id: html.cpp,v 1.3 2007-07-19 16:39:38 hostovic Exp $
 
     Xbase project source code
 
@@ -66,7 +66,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>             /* BSDI BSD/OS 3.1 */
-
+using std::cout;
+using std::endl;
 #include <xbase/xbexcept.h>
 
 /*! \file html.cpp
