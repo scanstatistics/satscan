@@ -117,7 +117,8 @@ void AbstractAnalysis::Setup() {
     }
     else {
       gpClusterDataFactory = new ClusterDataFactory();
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND ||
+          (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))
         geReplicationsProcessType = ClusterEvaluation;
       else
         geReplicationsProcessType = MeasureListEvaluation;
