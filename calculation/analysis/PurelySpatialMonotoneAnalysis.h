@@ -6,23 +6,23 @@
 #include "PurelySpatialMonotoneCluster.h"
 
 /** Derives from base class to re-define methods for monotone purely spatial analysis. */
-class CPSMonotoneAnalysis : public CPurelySpatialAnalysis {
+class CPSMonotoneAnalysis : public CAnalysis {
   private:
-    CPSMonotoneCluster     * gpMaxCluster; /** cluster object utilized to find top cluster in real data */
-
-    void                     Init() {gpMaxCluster=0;}
+    std::auto_ptr<CPSMonotoneCluster> gMaxCluster;           /** cluster object utilized to find top cluster in real data */
+    std::auto_ptr<CPSMonotoneCluster> gComparatorCluster;    /** cluster object utilized to find top cluster in real data */
+    std::auto_ptr<CPSMonotoneCluster> gAuxComparatorCluster; /** cluster object utilized to find top cluster in real data */
 
   protected:
-    virtual void             AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
-    virtual void             AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
     virtual const CCluster & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
+    virtual double           MonteCarlo(const DataSetInterface& Interface);
+    virtual double           MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     CPSMonotoneAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPSMonotoneAnalysis();
 
-    virtual double           MonteCarlo(const DataSetInterface& Interface);
-    virtual double           MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+    virtual void             AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+    virtual void             AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway);
 };
 //*****************************************************************************
 #endif
