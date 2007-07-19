@@ -64,8 +64,7 @@ const double CCluster::ConvertAngleToDegrees(double dAngle) const {
 /** Calls class cluster data object, deallocating any class members that were used to
     iterate through data during evaluation process. */
 void CCluster::DeallocateEvaluationAssistClassMembers() {
-  if (GetClusterType() != PURELYSPATIALMONOTONECLUSTER)
-    GetClusterData()->DeallocateEvaluationAssistClassMembers();
+  GetClusterData()->DeallocateEvaluationAssistClassMembers();
 }
 
 /** Writes cluster properties to file stream in format required by result output file  */
@@ -369,13 +368,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
 
   DisplayPopulation(fp, DataHub, PrintFormat);
-
-  if (GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
-    vComprisedDataSetIndexes.push_back(0);
-  else
-    GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
-
-
+  GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (DataHub.GetDataSetHandler().GetNumDataSets() > 1) {
