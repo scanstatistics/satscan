@@ -284,7 +284,7 @@ void AdjustForPercentageTimeTrend(double       nTimeAdjPercent,
           (*pMeasure)[i][t] = (*pMeasure)[i][t]*(pow(p,i*k)) /* * c */ ;
           nAdjustedMeasure += (*pMeasure)[i][t];
     
-          if (nAdjustedMeasure > DBL_MAX)
+          if (nAdjustedMeasure > std::numeric_limits<double>::max())
             throw prg_error("Error: Data overflow due to the time trend adjustment.\n", "AdjustForPercentageTimeTrend()");
         }
     
