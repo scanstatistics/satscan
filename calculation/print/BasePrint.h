@@ -2,9 +2,7 @@
 #ifndef __BasePrint_H
 #define __BasePrint_H
 //******************************************************************************
-#include <stdio.h>
-#include <stdarg.h>
-#include <string>
+#include <cstdarg>
 #include <map>
 
 class BasePrint {
