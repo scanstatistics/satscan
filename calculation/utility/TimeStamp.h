@@ -2,9 +2,9 @@
 #ifndef TimeStampH
 #define TimeStampH
 //******************************************************************************
-#include <math.h>
-#include <string.h>
-#include <ctype.h>
+#include <cmath>
+#include <string>
+#include <cctype>
 
 namespace SaTScan {
 

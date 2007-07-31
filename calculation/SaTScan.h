@@ -5,15 +5,14 @@
 #if defined(_MSC_VER) || defined(__BORLANDC__)
 #include <Windows.h>
 #endif
-#include <stdlib.h>
+#include <cstdlib>
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <ctype.h>
-#include <limits.h>
-#include <math.h>
-#include <time.h>
-#include <float.h>
+#include <cctype>
+#include <climits>
+#include <cmath>
+#include <ctime>
 #ifdef _WINDOWS_
   #include <io.h>
 #else
