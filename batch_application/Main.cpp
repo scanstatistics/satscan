@@ -2,7 +2,6 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //***************************************************************************
-#include <time.h>
 #include "UtilityFunctions.h"
 #include "Parameters.h"
 #include "PurelySpatialData.h"

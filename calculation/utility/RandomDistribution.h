@@ -2,8 +2,6 @@
 #ifndef __RANDOMDISTRIBUTION_H
 #define __RANDOMDISTRIBUTION_H
 //*****************************************************************************
-#include <math.h>
-#include <stdio.h>
 #include "RandomNumberGenerator.h"
 
 /**********************************************************************
