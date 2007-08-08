@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: xbase.cpp,v 1.3 2007-07-19 16:39:38 hostovic Exp $
+/*  $Id: xbase.cpp,v 1.4 2007-08-08 20:22:14 hostovic Exp $
 
     Xbase project source code
 
@@ -253,7 +253,7 @@ xbShort xbXBase::RemoveDbfFromDbfList(xbDbf *d) {
 */
 /* This routine returns a short value from a 2 byte character stream */
 xbShort xbXBase::GetShort(const char *p) {
-   xbShort s, i;
+   xbShort s = 0, i;
    const char *sp;
    char *tp;
 
@@ -282,7 +282,7 @@ xbShort xbXBase::GetShort(const char *p) {
 /* This routine returns a long value from a 4 byte character stream */
 xbLong xbXBase::GetLong( const char *p )
 {
-   xbLong l;
+   xbLong l = 0;
    const char *sp;
    char *tp;
    xbShort i;
@@ -311,7 +311,7 @@ xbLong xbXBase::GetLong( const char *p )
 /* This routine returns a long value from a 4 byte character stream */
 xbULong xbXBase::GetULong( const char *p )
 {
-  xbULong l;
+  xbULong l = 0;
   char *tp;
   xbShort i;
   
@@ -337,7 +337,7 @@ xbULong xbXBase::GetULong( const char *p )
 /* This routine returns a double value from an 8 byte character stream */
 xbDouble xbXBase::GetDouble( const char *p )
 {
-   xbDouble d;
+   xbDouble d = 0;
    const char *sp;
    char *tp;
    xbShort i;
