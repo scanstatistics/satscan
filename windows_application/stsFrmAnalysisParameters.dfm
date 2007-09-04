@@ -45,7 +45,7 @@ object frmAnalysis: TfrmAnalysis
     Top = 0
     Width = 507
     Height = 382
-    ActivePage = tbInputFiles
+    ActivePage = tbAnalysis
     TabOrder = 0
     object tbInputFiles: TTabSheet
       Caption = 'Input'
@@ -729,7 +729,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object stProspectiveAnalyses: TStaticText
           Left = 10
-          Top = 169
+          Top = 134
           Width = 108
           Height = 17
           Caption = 'Prospective Analyses:'
@@ -766,7 +766,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoProspectivePurelyTemporal: TRadioButton
           Left = 14
-          Top = 194
+          Top = 159
           Width = 113
           Height = 17
           Caption = 'Purely Temporal'
@@ -775,30 +775,12 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoProspectiveSpaceTime: TRadioButton
           Left = 14
-          Top = 219
+          Top = 184
           Width = 113
           Height = 17
           Caption = 'Space-Time'
           TabOrder = 6
           OnClick = rdoAnalysisTypeClick
-        end
-        object rdoSVTT: TRadioButton
-          Left = 13
-          Top = 130
-          Width = 113
-          Height = 17
-          Caption = 'Spatial Variation'
-          TabOrder = 7
-          OnClick = rdoAnalysisTypeClick
-        end
-        object stSVTT: TStaticText
-          Left = 32
-          Top = 147
-          Width = 96
-          Height = 17
-          Caption = 'of Temporal Trends'
-          TabOrder = 8
-          OnClick = stSVTTClick
         end
       end
       object rgpScanAreas: TGroupBox
@@ -930,6 +912,26 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 5
         OnClick = btnAdvancedParametersClick
         NumGlyphs = 2
+      end
+      object rdoSVTT: TRadioButton
+        Left = 101
+        Top = 322
+        Width = 113
+        Height = 17
+        Caption = 'Spatial Variation'
+        TabOrder = 6
+        Visible = False
+        OnClick = rdoAnalysisTypeClick
+      end
+      object stSVTT: TStaticText
+        Left = 208
+        Top = 323
+        Width = 96
+        Height = 17
+        Caption = 'of Temporal Trends'
+        TabOrder = 7
+        Visible = False
+        OnClick = stSVTTClick
       end
     end
     object tbOutputFiles: TTabSheet
