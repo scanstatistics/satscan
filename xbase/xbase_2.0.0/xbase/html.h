@@ -1,4 +1,4 @@
-/*  $Id: html.h,v 1.2 2007-07-19 16:39:38 hostovic Exp $
+/*  $Id: html.h,v 1.3 2007-09-11 14:10:53 hostovic Exp $
 
     Xbase project source code
  
@@ -159,7 +159,7 @@ public:
    //! Short description.
    /*!
    */
-   void   PrintHtml( int i ) { std::cout << i; };
+   //void   PrintHtml( int i ) { std::cout << i; };
    void   StartHtmlPage( const char *Title );
    //! Short description.
    /*!
