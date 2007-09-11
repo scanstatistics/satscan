@@ -78,7 +78,7 @@ class MostLikelyClustersContainer {
                                     if (pCluster2->GetNumTractsInCluster() < pCluster1->GetNumTractsInCluster())
                                        return false;
                                     //if ratios are equal, lesser centroid index ranks greater
-                                    return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
+                                    return (pCluster1->GetMostCentralLocationIndex() < pCluster2->GetMostCentralLocationIndex());
                                   }
                                   return pCluster1->m_nRatio > pCluster2->m_nRatio;
                                 }
