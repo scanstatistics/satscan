@@ -1,4 +1,4 @@
-/*  $Id: xtypes.h,v 1.1 2002-09-04 19:54:10 simpson Exp $
+/*  $Id: xtypes.h,v 1.2 2007-09-11 14:09:44 hostovic Exp $
 
     Xbase project source code
 
@@ -54,7 +54,7 @@
 //! xbULong type
 /*!
 */
-typedef unsigned long  int xbULong;
+typedef unsigned int xbULong;
 //! xbUShort type
 /*!
 */
@@ -64,7 +64,7 @@ typedef unsigned short int xbUShort;
 */
 typedef short int          xbShort;
 
-#define xbLong long
+#define xbLong int
 //typedef long             LONG;
 //! xbFloat type
 /*!
