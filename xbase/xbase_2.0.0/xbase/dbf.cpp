@@ -1,5 +1,5 @@
 #pragma hdrstop
-/*  $Id: dbf.cpp,v 1.4 2007-07-19 16:39:38 hostovic Exp $
+/*  $Id: dbf.cpp,v 1.5 2007-09-11 14:13:31 hostovic Exp $
 
     Xbase project source code
    
@@ -625,7 +625,7 @@ xbShort xbDbf::CreateDatabase( const char * TableName, xbSchema * s,
       k2 = k;
       k += SchemaPtr[i].FieldLen;
 
-      if(( fwrite( &SchemaPtr[i], 1, 18, fp )) != 18 ) {
+      if(( fwrite( &SchemaPtr[i], 1, 12, fp )) != 12 ) {
          fclose( fp );
          free( SchemaPtr );
          free( RecBuf );
@@ -633,7 +633,33 @@ xbShort xbDbf::CreateDatabase( const char * TableName, xbSchema * s,
          InitVars(); 
          xb_error(XB_WRITE_ERROR);
       }
-
+      //write 4 bytes for 32-bit pointer
+      for( j = 0; j < 4; j++ ) {
+         if(( fwrite( "\x00", 1, 1, fp )) != 1 ) {
+            free( SchemaPtr );
+            free( RecBuf );
+            free( RecBuf2 );
+            fclose( fp );
+            InitVars(); 
+            xb_error(XB_WRITE_ERROR);
+         }
+      }
+      if(( fwrite( &SchemaPtr[i].FieldLen, 1, 1, fp )) != 1 ) {
+         fclose( fp );
+         free( SchemaPtr );
+         free( RecBuf );
+         free( RecBuf2 );
+         InitVars(); 
+         xb_error(XB_WRITE_ERROR);
+      }
+      if(( fwrite( &SchemaPtr[i].NoOfDecs, 1, 1, fp )) != 1 ) {
+         fclose( fp );
+         free( SchemaPtr );
+         free( RecBuf );
+         free( RecBuf2 );
+         InitVars(); 
+         xb_error(XB_WRITE_ERROR);
+      }
       for( j = 0; j < 14; j++ ) {
          if(( fwrite( "\x00", 1, 1, fp )) != 1 ) {
             free( SchemaPtr );
@@ -748,7 +774,7 @@ xbShort xbDbf::CloseDatabase(bool deleteIndexes)
 
    if (SchemaPtr){
      for( int j = 0; j < NoOfFields; j++ )
-       if( SchemaPtr[j].fp ) delete SchemaPtr[j].fp;
+       if( SchemaPtr[j].fp ) delete[] SchemaPtr[j].fp;
      free( SchemaPtr );
    }
    if (RecBuf)
@@ -1078,7 +1104,7 @@ xbShort xbDbf::AppendRecord( void )
       rc = 0;
       
    xbULong
-     nextRecNo;
+     nextRecNo = 0;
 
 #if defined(XB_INDEX_ANY)
    xbIxList *i;
