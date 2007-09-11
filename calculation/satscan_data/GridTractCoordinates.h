@@ -40,12 +40,12 @@ class CentroidHandler : public GInfo {
 /** Provides an interface to centroid grid points that are actually maintained by the TractHandler class.
     This class is used when the user does not specifiy a special grid file and the locations of the
     TractHandler class are also grid points. */
-class CentroidHandlerPassThrow : public GInfo {
+class CentroidHandlerPassThrough : public GInfo {
    private:
      const TractHandler   & gTractHandler;
      
    public:
-     CentroidHandlerPassThrow(const TractHandler& Handler) : GInfo(), gTractHandler(Handler) {}
+     CentroidHandlerPassThrough(const TractHandler& Handler) : GInfo(), gTractHandler(Handler) {}
 
     virtual int         getGridPointDimensions() const {return gTractHandler.getCoordinateDimensions();}
     virtual tract_t     getNumGridPoints() const {return gTractHandler.getCoordinates().size();}

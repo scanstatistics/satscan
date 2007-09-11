@@ -1011,7 +1011,7 @@ void CSaTScanData::Setup() {
   if (gParameters.UseSpecialGrid())
     gCentroidsHandler.reset(new CentroidHandler());
   else
-    gCentroidsHandler.reset(new CentroidHandlerPassThrow(*gTractHandler));
+    gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler));
 }
 
 /** Throws exception if case(s) were observed for an interval/location
