@@ -602,7 +602,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
           pCases = DataSetHandler.GetDataSet(t).getCaseData().GetArray()[0];
           for (int j=0; j < gDataHub.GetNumTracts(); ++j)
-             gvCalculatedPopulations[j] = pCases[j];
+             gvCalculatedPopulations[j] += pCases[j];
         }
         setMetaLocations(gvCalculatedPopulations);
         gpPopulation = &gvCalculatedPopulations[0]; break;
