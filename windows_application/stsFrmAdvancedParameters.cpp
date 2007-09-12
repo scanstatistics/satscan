@@ -1012,7 +1012,6 @@ void TfrmAdvancedParameters::EnableMultipleLocationsGroup(bool bEnable) {
   rdoAtLeastOne->Enabled = bEnable;
   stAtLeastOne->Enabled = bEnable;
   rdoAllLocations->Enabled = bEnable;
-  stAllLocations->Enabled = bEnable;
 }
 //---------------------------------------------------------------------------
 /** event triggered when key pressed for controls that can contain real numbers. */

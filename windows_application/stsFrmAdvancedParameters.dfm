@@ -63,7 +63,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
     Top = 0
     Width = 450
     Height = 314
-    ActivePage = tsDataSets
+    ActivePage = tabMultipleCoordinates
     Align = alClient
     TabOrder = 0
     object tsDataSets: TTabSheet
@@ -517,15 +517,15 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Left = 8
         Top = 8
         Width = 425
-        Height = 106
-        Caption = 'Multiple Coordinate Locations per Location ID'
+        Height = 97
+        Caption = 'Multiple Sets of Spatial Coordinates per Location ID'
         TabOrder = 0
         object rdoOnePerLocationId: TRadioButton
           Left = 8
           Top = 18
           Width = 409
           Height = 17
-          Caption = 'Allow only one coordinate location per location ID.'
+          Caption = 'Allow only of set of coordinates per location ID.'
           TabOrder = 0
           OnClick = OnMultipleCoordinatesClick
         end
@@ -535,37 +535,29 @@ object frmAdvancedParameters: TfrmAdvancedParameters
           Width = 409
           Height = 17
           Caption = 
-            'Include location in the scanning window if all coordinate locati' +
-            'ons are in '
+            'Include location ID in the scanning window if all sets of coordi' +
+            'nates are included.'
           TabOrder = 1
           OnClick = OnMultipleCoordinatesClick
         end
         object rdoAtLeastOne: TRadioButton
           Left = 8
           Top = 36
-          Width = 409
+          Width = 417
           Height = 17
           Caption = 
-            'Include location in the scanning window if at least one coordina' +
-            'te location '
+            'Include location ID in the scanning window if at least on set of' +
+            ' coordinates is'
           TabOrder = 2
           OnClick = OnMultipleCoordinatesClick
         end
         object stAtLeastOne: TStaticText
           Left = 23
           Top = 52
-          Width = 74
-          Height = 17
-          Caption = ' is in the circle.'
-          TabOrder = 3
-        end
-        object stAllLocations: TStaticText
-          Left = 26
-          Top = 87
           Width = 50
           Height = 17
-          Caption = 'the circle.'
-          TabOrder = 4
+          Caption = ' included.'
+          TabOrder = 3
         end
       end
     end
@@ -780,7 +772,7 @@ object frmAdvancedParameters: TfrmAdvancedParameters
         Top = 255
         Width = 425
         Height = 17
-        Caption = 'Use Isotonic Spatial Scan'
+        Caption = 'Use Isotonic Spatial Scan Statistic'
         Enabled = False
         TabOrder = 3
         OnClick = chkPerformIsotonicScanClick

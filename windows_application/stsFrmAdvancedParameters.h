@@ -156,7 +156,6 @@ __published:	// IDE-managed Components
    TRadioButton *rdoAllLocations;
    TRadioButton *rdoAtLeastOne;
    TStaticText *stAtLeastOne;
-   TStaticText *stAllLocations;
    TCheckBox *chkPerformIsotonicScan;
 
    void __fastcall btnNewClick(TObject *Sender) ;
