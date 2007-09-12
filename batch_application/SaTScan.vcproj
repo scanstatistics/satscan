@@ -43,12 +43,12 @@
 				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_33_1;C:\prj\satscan.development\boost\boost_1_33_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
-				BasicRuntimeChecks="3"
+				BasicRuntimeChecks="0"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="2"
 				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="4"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -119,8 +119,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_33_1;C:\prj\satscan.development\boost\boost_1_33_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;c:\prj\satscan.development\vc.xbase\xbase_2.0.0"
-				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;RPRTCMPT_RUNTIMES"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_33_1;C:\prj\satscan.development\boost\boost_1_33_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
+				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="2"
@@ -138,7 +138,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\vc.xbase\vc.xbase\release\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib $(NOINHERIT)"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"

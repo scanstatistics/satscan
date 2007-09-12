@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\vc.xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_DEBUG;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="1"
 				TreatWChar_tAsBuiltInType="false"
@@ -104,7 +104,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\vc.xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;NDEBUG;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="false"
