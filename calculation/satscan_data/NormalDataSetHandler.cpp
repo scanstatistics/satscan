@@ -242,8 +242,8 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
   Julian                                Date;
   tract_t                               TractIndex;
   count_t                               Count, tTotalCases=0;
-  measure_t                             tContinuousVariable;
-  double                                tTotalMeasure=0, tTotalMeasureAux=0, dWeightVariable;
+  measure_t                             tWeightVariable;
+  double                                tTotalMeasure=0, tTotalMeasureAux=0, dRateVariable;
   AbstractWeightedNormalRandomizer    * pRandomizer=0;
   DataSetHandler::RecordStatusType      eRecordStatus;
 
@@ -252,11 +252,11 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
       throw prg_error("Data set randomizer not AbstractWeightedNormalRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, &dWeightVariable);
+           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tWeightVariable, &dRateVariable);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
-             dWeightVariable = 1/dWeightVariable; // see Joe's email -- question for Lan/Martin
-             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable, dWeightVariable);
+             dRateVariable = 1/dRateVariable; // see Joe's email -- question for Lan/Martin
+             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable);
              tTotalCases += Count;
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
@@ -264,15 +264,15 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
                                       std::numeric_limits<count_t>::max());
              for (count_t t=0; t < Count; ++t) {
                //check numeric limits of data type will not be exceeded
-               if (tContinuousVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
+               if (tWeightVariable > std::numeric_limits<measure_t>::max() - tTotalMeasure)
                  throw resolvable_error("Error: The total summation of observed values exceeds the maximum value allowed of %lf.\n",
                                         std::numeric_limits<measure_t>::max());
-               tTotalMeasure += tContinuousVariable * dWeightVariable;
+               tTotalMeasure += tWeightVariable * dRateVariable;
                //check numeric limits of data type will not be exceeded
-               if (std::pow(tContinuousVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
+               if (std::pow(tWeightVariable, 2) > std::numeric_limits<measure_t>::max() - tTotalMeasureAux)
                  throw resolvable_error("Error: The total summation of observed values squared exceeds the maximum value allowed of %lf.\n",
                                         std::numeric_limits<measure_t>::max());
-                 tTotalMeasureAux += dWeightVariable;
+                 tTotalMeasureAux += dRateVariable;
              }
            }
            else if (eRecordStatus == DataSetHandler::Ignored)
@@ -322,7 +322,7 @@ bool NormalDataSetHandler::ReadData() {
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pWeightVariable) {
+DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pRateVariable) {
   const short   uContinuousVariableIndex=3, uWeightVariableIndex=4;
   short         uOffset;
 
@@ -372,7 +372,7 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
        return DataSetHandler::Rejected;
     }
 
-    if (pWeightVariable) {
+    if (pRateVariable) {
       uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uWeightVariableIndex - 1 : uWeightVariableIndex);
       // read continuous variable
       if (!Source.GetValueAt(uOffset)) {
@@ -380,13 +380,13 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
                       BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;
       }
-      if (sscanf(Source.GetValueAt(uOffset), "%lf", pWeightVariable) != 1) {
-         gPrint.Printf("Error: The weight variable value '%s' in record %ld, of %s, is not a number.\n",
+      if (sscanf(Source.GetValueAt(uOffset), "%lf", pRateVariable) != 1) {
+         gPrint.Printf("Error: The rate variable value '%s' in record %ld, of %s, is not a number.\n",
                        BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
          return DataSetHandler::Rejected;
       }
-      if (*pWeightVariable < 0) {
-         gPrint.Printf("Error: The weight variable value '%s' in record %ld, of %s, is less than zero.\n",
+      if (*pRateVariable < 0) {
+         gPrint.Printf("Error: The rate variable value '%s' in record %ld, of %s, is less than zero.\n",
                        BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
          return DataSetHandler::Rejected;
       }
