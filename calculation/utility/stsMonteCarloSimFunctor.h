@@ -47,7 +47,8 @@ public:
     gDataHub.GetDataSetHandler().GetSimulationDataGateway(*gpDataGateway, *gpSimulationDataContainer);
     //allocate appropriate data members for simulation algorithm
     gpAnalysis->AllocateSimulationObjects(*gpDataGateway);
-    gDataWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(theDataHub.GetParameters()));
+    if (gDataHub.GetParameters().GetOutputSimulationData())
+      gDataWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gDataHub.GetParameters()));
   }
 
 //  ~stsMonteCarloSimFunctor()
