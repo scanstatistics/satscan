@@ -235,6 +235,29 @@ void __fastcall TfrmMain::ActionCompareClusterInformationExecute(TObject *Sender
     Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
 }
 
+/** launches compare program for viewing differences in cluster case information files */
+void __fastcall TfrmMain::ActionCompareClusterCaseInformationExecute(TObject *Sender) {
+  std::string   sMaster, sCompare;
+  AnsiString    sParameters;
+
+  if (!lstDisplay->Selected)
+    return;
+
+  if (!PromptForCompareProgram())
+    return;
+
+  const ZdFileName & Ref = gvParameterResultsInfo[(size_t)lstDisplay->Selected->Data].GetFilename();
+  GetResultFileName(Ref, sMaster);
+  sMaster.insert(sMaster.find_last_of("."),".cci");
+  GetInQuestionFilename(Ref, sCompare);
+  sCompare.insert(sCompare.find_last_of("."),".cci");
+  //launch comparison program
+  sParameters.sprintf("\"%s\" \"%s\"", sMaster.c_str(), sCompare.c_str());
+  HINSTANCE hInst = ShellExecute(NULL, "open", gpFrmOptions->edtComparisonApplication->Text.c_str(), sParameters.c_str(), 0, 0);
+  if ((int)hInst <= 32)
+    Application->MessageBox("Unable to launch comparison program.", "Error", MB_OK);
+}
+
 /** launches compare program for viewing differences in location information files */
 void __fastcall TfrmMain::ActionCompareLocationInformationExecute(TObject *Sender) {
   std::string   sMaster, sCompare;
@@ -494,6 +517,7 @@ void TfrmMain::AddList(const ParameterResultsInfo& ResultsInfo, size_t tPosition
   pListItem->SubItems->Add(ResultsInfo.GetFilename().GetCompleteFileName());
   pListItem->SubItems->Add(GetDisplayTime(ResultsInfo, sDisplay));
   AddSubItemForType(pListItem, ResultsInfo.GetClusterInformationType());
+  AddSubItemForType(pListItem, ResultsInfo.GetClusterCaseInformationType());
   AddSubItemForType(pListItem, ResultsInfo.GetLocationInformationType());
   AddSubItemForType(pListItem, ResultsInfo.GetRelativeRisksType());
   AddSubItemForType(pListItem, ResultsInfo.GetSimulatedRatiosType());
@@ -689,6 +713,28 @@ void TfrmMain::CompareClusterInformationFiles(ParameterResultsInfo& ResultsInfo)
   ResultsInfo.SetClusterInformationType(eType);
 }
 
+/** Sets open dialog filters and displays for selecting parameter list file *//** compare Cluster Information files */
+void TfrmMain::CompareClusterCaseInformationFiles(ParameterResultsInfo& ResultsInfo) {
+  CompareType     eType;
+  std::string     sMaster, sCompare;
+
+  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+
+  sMaster.insert(sMaster.find_last_of("."),".cci");
+  sCompare.insert(sCompare.find_last_of("."),".cci");
+  if (access(sMaster.c_str(), 00))
+    eType = MASTER_MISSING;
+  else if (access(sCompare.c_str(), 00))
+    eType = COMPARE_MISSING;
+  else if (CompareTextFiles(sMaster, sCompare))
+    eType = EQUAL;
+  else
+    eType = NOT_EQUAL;
+
+  ResultsInfo.SetClusterCaseInformationType(eType);
+}
+
 /** compare Location Information files */
 void TfrmMain::CompareLocationInformationFiles(ParameterResultsInfo& ResultsInfo) {
   CompareType     eType;
@@ -757,6 +803,7 @@ void TfrmMain::CompareResultsAndReport() {
 
   for (;itr != gvParameterResultsInfo.end(); ++itr) {
      CompareClusterInformationFiles(*itr);
+     CompareClusterCaseInformationFiles(*itr);
      CompareLocationInformationFiles(*itr);
      CompareRelativeRisksInformationFiles(*itr);
      CompareSimulatedRatiosFiles(*itr);
@@ -934,6 +981,7 @@ void TfrmMain::EnableCompareActions() {
     const ParameterResultsInfo & Ref = gvParameterResultsInfo[(size_t)(lstDisplay->Selected->Data)];
     ActionCompareResultFiles->Enabled = true;
     ActionCompareClusterInformation->Enabled = Ref.GetClusterInformationType() ==  EQUAL || Ref.GetClusterInformationType() ==  NOT_EQUAL;
+    ActionCompareClusterCaseInformation->Enabled = Ref.GetClusterCaseInformationType() ==  EQUAL || Ref.GetClusterCaseInformationType() ==  NOT_EQUAL;
     ActionCompareLocationInformation->Enabled = Ref.GetLocationInformationType() == EQUAL || Ref.GetLocationInformationType() == NOT_EQUAL;
     ActionCompareRelativeRisks->Enabled = Ref.GetRelativeRisksType() == EQUAL || Ref.GetRelativeRisksType() == NOT_EQUAL;
     ActionCompareSimulatedLLRs->Enabled = Ref.GetSimulatedRatiosType() == EQUAL || Ref.GetSimulatedRatiosType() == NOT_EQUAL;
@@ -941,6 +989,7 @@ void TfrmMain::EnableCompareActions() {
   else {
     ActionCompareResultFiles->Enabled = false;
     ActionCompareClusterInformation->Enabled = false;
+    ActionCompareClusterCaseInformation->Enabled = false;
     ActionCompareLocationInformation->Enabled = false;
     ActionCompareRelativeRisks->Enabled = false;
     ActionCompareSimulatedLLRs->Enabled = false;
@@ -1314,4 +1363,5 @@ void __fastcall TfrmMain::btnExecuteQueueQuestionClick(TObject *Sender) {
   pDialog->ShowModal();
 }
 //---------------------------------------------------------------------------
+
 

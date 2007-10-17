@@ -1,7 +1,7 @@
 object frmMain: TfrmMain
   Left = 285
   Top = 121
-  Width = 704
+  Width = 776
   Height = 599
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -16,14 +16,14 @@ object frmMain: TfrmMain
   object Bevel1: TBevel
     Left = 0
     Top = 29
-    Width = 694
+    Width = 768
     Height = 2
     Align = alTop
   end
   object Splitter1: TSplitter
     Left = 0
     Top = 254
-    Width = 694
+    Width = 768
     Height = 3
     Cursor = crVSplit
     Align = alTop
@@ -33,7 +33,7 @@ object frmMain: TfrmMain
   object pnlTop: TPanel
     Left = 0
     Top = 31
-    Width = 694
+    Width = 768
     Height = 223
     Align = alTop
     BevelOuter = bvNone
@@ -43,7 +43,7 @@ object frmMain: TfrmMain
     object pnlTopTop: TPanel
       Left = 0
       Top = 0
-      Width = 694
+      Width = 768
       Height = 89
       Align = alTop
       BevelOuter = bvNone
@@ -63,7 +63,7 @@ object frmMain: TfrmMain
         Caption = 'SaTScan Batch Application (scrutinized executable)'
       end
       object Label1: TLabel
-        Left = 555
+        Left = 627
         Top = 7
         Width = 92
         Height = 13
@@ -73,7 +73,7 @@ object frmMain: TfrmMain
       object edtYardstickExecutable: TEdit
         Left = 12
         Top = 22
-        Width = 500
+        Width = 572
         Height = 21
         Anchors = [akLeft, akRight]
         TabOrder = 0
@@ -82,14 +82,14 @@ object frmMain: TfrmMain
       object edtScutinizedExecutable: TEdit
         Left = 12
         Top = 61
-        Width = 500
+        Width = 572
         Height = 21
         Anchors = [akLeft, akRight]
         TabOrder = 1
         OnChange = edtChangeInput
       end
       object btnBrowseBatchExecutable: TButton
-        Left = 518
+        Left = 590
         Top = 60
         Width = 31
         Height = 21
@@ -108,7 +108,7 @@ object frmMain: TfrmMain
         OnClick = btnBrowseBatchExecutableClick
       end
       object btnBrowseBatchComparatorExecutable: TButton
-        Left = 518
+        Left = 590
         Top = 21
         Width = 31
         Height = 21
@@ -127,7 +127,7 @@ object frmMain: TfrmMain
         OnClick = btnBrowseBatchExecutableComparatorClick
       end
       object edtYardstickOptions: TEdit
-        Left = 553
+        Left = 625
         Top = 22
         Width = 128
         Height = 21
@@ -135,7 +135,7 @@ object frmMain: TfrmMain
         TabOrder = 4
       end
       object edtScrutinizedOptions: TEdit
-        Left = 553
+        Left = 625
         Top = 61
         Width = 128
         Height = 21
@@ -146,7 +146,7 @@ object frmMain: TfrmMain
     object Panel1: TPanel
       Left = 0
       Top = 89
-      Width = 551
+      Width = 625
       Height = 134
       Align = alClient
       BevelOuter = bvNone
@@ -163,7 +163,7 @@ object frmMain: TfrmMain
       object ltvScheduledBatchs: TListView
         Left = 12
         Top = 8
-        Width = 541
+        Width = 613
         Height = 115
         Anchors = [akLeft, akTop, akRight, akBottom]
         Columns = <
@@ -182,7 +182,7 @@ object frmMain: TfrmMain
       end
     end
     object pnlTopButtons: TPanel
-      Left = 551
+      Left = 625
       Top = 89
       Width = 143
       Height = 134
@@ -256,8 +256,8 @@ object frmMain: TfrmMain
   object pnlClient: TPanel
     Left = 0
     Top = 257
-    Width = 694
-    Height = 200
+    Width = 768
+    Height = 203
     Align = alClient
     BevelOuter = bvNone
     Constraints.MinHeight = 200
@@ -266,7 +266,7 @@ object frmMain: TfrmMain
     object lstDisplay: TListView
       Left = 12
       Top = 11
-      Width = 553
+      Width = 625
       Height = 176
       Anchors = [akLeft, akTop, akRight, akBottom]
       Columns = <
@@ -284,6 +284,10 @@ object frmMain: TfrmMain
         item
           Caption = 'Cluster Information'
           Width = 110
+        end
+        item
+          Caption = 'Cluster Case Information'
+          Width = 130
         end
         item
           Caption = 'Location Information'
@@ -309,17 +313,17 @@ object frmMain: TfrmMain
       OnSelectItem = lstDisplaySelectItem
     end
     object pnlClientRight: TPanel
-      Left = 572
+      Left = 616
       Top = 0
-      Width = 122
-      Height = 200
+      Width = 152
+      Height = 203
       Align = alRight
       BevelOuter = bvNone
       TabOrder = 1
       object sbtnCompareResultsFile: TSpeedButton
-        Left = 0
+        Left = 10
         Top = 11
-        Width = 110
+        Width = 130
         Height = 23
         Action = ActionCompareResultFiles
         NumGlyphs = 2
@@ -327,9 +331,9 @@ object frmMain: TfrmMain
         ShowHint = True
       end
       object sbtnCompareCluster: TSpeedButton
-        Left = 0
+        Left = 10
         Top = 40
-        Width = 110
+        Width = 130
         Height = 23
         Action = ActionCompareClusterInformation
         Font.Charset = DEFAULT_CHARSET
@@ -343,9 +347,9 @@ object frmMain: TfrmMain
         ShowHint = True
       end
       object sbtnCompareLocation: TSpeedButton
-        Left = 0
-        Top = 68
-        Width = 110
+        Left = 10
+        Top = 96
+        Width = 130
         Height = 23
         Action = ActionCompareLocationInformation
         Font.Charset = DEFAULT_CHARSET
@@ -359,9 +363,9 @@ object frmMain: TfrmMain
         ShowHint = True
       end
       object sbtnCompareRelativeRisks: TSpeedButton
-        Left = 0
-        Top = 96
-        Width = 110
+        Left = 10
+        Top = 124
+        Width = 130
         Height = 23
         Action = ActionCompareRelativeRisks
         Font.Charset = DEFAULT_CHARSET
@@ -375,12 +379,28 @@ object frmMain: TfrmMain
         ShowHint = True
       end
       object sbtnCompareLLR: TSpeedButton
-        Left = 0
-        Top = 125
-        Width = 110
+        Left = 10
+        Top = 153
+        Width = 130
         Height = 23
         Action = ActionCompareSimulatedLLRs
         NumGlyphs = 2
+        ParentShowHint = False
+        ShowHint = True
+      end
+      object sbtnCompareClusterCase: TSpeedButton
+        Left = 10
+        Top = 68
+        Width = 130
+        Height = 23
+        Action = ActionCompareClusterCaseInformation
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        NumGlyphs = 2
+        ParentFont = False
         ParentShowHint = False
         ShowHint = True
       end
@@ -389,7 +409,7 @@ object frmMain: TfrmMain
   object ToolBar1: TToolBar
     Left = 0
     Top = 0
-    Width = 694
+    Width = 768
     Height = 29
     ButtonHeight = 23
     ButtonWidth = 25
@@ -573,8 +593,8 @@ object frmMain: TfrmMain
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 457
-    Width = 694
+    Top = 460
+    Width = 768
     Height = 105
     Align = alBottom
     BevelOuter = bvNone
@@ -589,7 +609,7 @@ object frmMain: TfrmMain
     object memMessages: TMemo
       Left = 12
       Top = 14
-      Width = 671
+      Width = 743
       Height = 86
       Anchors = [akLeft, akTop, akRight, akBottom]
       ReadOnly = True
@@ -1086,6 +1106,10 @@ object frmMain: TfrmMain
       Caption = 'View'
       Hint = 'View Parameters'
       OnExecute = ActionViewParametersExecute
+    end
+    object ActionCompareClusterCaseInformation: TAction
+      Caption = 'Cluster Case Information'
+      OnExecute = ActionCompareClusterCaseInformationExecute
     end
   end
   object SaveDialog: TSaveDialog

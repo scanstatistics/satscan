@@ -34,6 +34,7 @@ enum TimeDifferenceType {INCOMPLETE=0, SLOWER, SAME, FASTER};
 class ParameterResultsInfo {
   private:
     CompareType         geClusterInformation;
+    CompareType         geClusterCaseInformation;
     CompareType         geLocationInformation;
     CompareType         geRelativeRisks;
     CompareType         geSimulatedRatios;
@@ -56,6 +57,7 @@ class ParameterResultsInfo {
     ~ParameterResultsInfo();
 
     CompareType         GetClusterInformationType() const {return geClusterInformation;}
+    CompareType         GetClusterCaseInformationType() const {return geClusterCaseInformation;}
     bool                GetHasMisMatches() const;
     bool                GetHasMissingFiles() const;
     unsigned short      GetHoursDifferent() const {return guHoursDifferent;}
@@ -73,6 +75,7 @@ class ParameterResultsInfo {
     double              GetYardStickTimeInMinutes() const {return (double)guYardStickHours * 60.0 + (double)guYardStickMinutes + (double)guYardStickSeconds/60.0;}
     double              GetYardStickTimeInSeconds() const {return (double)(guYardStickHours) * 3600.0 + (double)guYardStickMinutes * 60.0 + (double)(guYardStickSeconds);}
     void                SetClusterInformationType(CompareType eCompareType) {geClusterInformation = eCompareType;}
+    void                SetClusterCaseInformationType(CompareType eCompareType) {geClusterCaseInformation = eCompareType;}
     void                SetLocationInformationType(CompareType eCompareType) {geLocationInformation = eCompareType;}
     void                SetRelativeRisksType(CompareType eCompareType) {geRelativeRisks = eCompareType;}
     void                SetResultTimes(unsigned short uYardStickHours, unsigned short uYardStickMinutes, unsigned short uYardStickSeconds,
@@ -151,6 +154,8 @@ __published:	// IDE-managed Components
         TEdit *edtYardstickOptions;
         TEdit *edtScrutinizedOptions;
         TLabel *Label1;
+        TSpeedButton *sbtnCompareClusterCase;
+        TAction *ActionCompareClusterCaseInformation;
         void __fastcall btnBrowseBatchExecutableClick(TObject *Sender);
         void __fastcall btnBrowseBatchExecutableComparatorClick(TObject *Sender);
         void __fastcall ActionStartExecute(TObject *Sender);
@@ -176,6 +181,8 @@ __published:	// IDE-managed Components
         void __fastcall ActionViewParametersExecute(TObject *Sender);
         void __fastcall btnExecuteQueueComparatorClick(TObject *Sender);
         void __fastcall btnExecuteQueueQuestionClick(TObject *Sender);
+        void __fastcall ActionCompareClusterCaseInformationExecute(
+          TObject *Sender);
    
   private:
     std::vector<ParameterResultsInfo>   gvParameterResultsInfo;
@@ -205,6 +212,7 @@ __published:	// IDE-managed Components
     void                                AddSubItemForType(TListItem * pListItem, CompareType eType);
     void                                ArchiveResults();
     void                                CompareClusterInformationFiles(ParameterResultsInfo& ResultsInfo);
+    void                                CompareClusterCaseInformationFiles(ParameterResultsInfo& ResultsInfo);
     void                                CompareLocationInformationFiles(ParameterResultsInfo& ResultsInfo);
     void                                CompareRelativeRisksInformationFiles(ParameterResultsInfo& ResultsInfo);
     void                                CompareResultsAndReport();
