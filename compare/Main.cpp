@@ -366,6 +366,13 @@ void __fastcall TfrmMain::ActionDeleteAnalysesFilesExecute(TObject *Sender) {
     sDeleteMe = sCompare;
     sDeleteMe.insert(sDeleteMe.find_last_of("."),".col");
     remove(sDeleteMe.c_str());
+    //delete cluster case information file
+    sDeleteMe = sMaster;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".cci");
+    remove(sDeleteMe.c_str());
+    sDeleteMe = sCompare;
+    sDeleteMe.insert(sDeleteMe.find_last_of("."),".cci");
+    remove(sDeleteMe.c_str());
     //delete location information file
     sDeleteMe = sMaster;
     sDeleteMe.insert(sDeleteMe.find_last_of("."),".gis");
