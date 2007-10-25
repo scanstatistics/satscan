@@ -70,6 +70,8 @@ const char * AppToolkit::gsLastDirectory = "[LastDirectory]";
 const char * AppToolkit::gsLastDirectoryPathProperty = "Path";
 /** last import destination directory browsed */
 const char * AppToolkit::gsLastImportDestinationDirectoryProperty = "ImportDestination";
+/** debug file name */
+const char * AppToolkit::gsDebugFileName = "_debug";
 
 /** analysis history filename */
 const char * AppToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
@@ -94,7 +96,7 @@ void AppToolkit::ToolKitDestroy() {
 }
 
 /** constructor */
-AppToolkit::AppToolkit(const char * sApplicationFullPath) {
+AppToolkit::AppToolkit(const char * sApplicationFullPath) : gpDebugLog(0) {
   try {
     Setup(sApplicationFullPath);
   }
@@ -111,6 +113,7 @@ AppToolkit::~AppToolkit() {
     FileName::getCurDrive(theDrive);
     theDrive += FileName::getCurDirectory(theDirectory);
     SetLastDirectory(theDrive.c_str());
+    closeDebugFile();
   }
   catch (...){}
 }
@@ -145,6 +148,12 @@ void AppToolkit::AddParameterToHistory(const char * sParameterFileName) {
     throw;
   }
 }
+
+/** Close debug file handle. */
+void AppToolkit::closeDebugFile() {
+   if (gpDebugLog) fclose(gpDebugLog);
+}
+
 
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
@@ -355,6 +364,26 @@ void AppToolkit::InsureSessionStructure() {
     throw;
   }
 }
+
+/** Returns file handle to global debug file. */
+FILE * AppToolkit::openDebugFile() {
+  try {
+	if (!gpDebugLog) {
+      std::string filename;
+      filename = FileName(gsApplicationFullPath.c_str()).getLocation(filename);
+      filename += gsDebugFileName;
+      filename += gsVersion;
+      if ((gpDebugLog = fopen(filename.c_str(), /*"a"*/"w")) == NULL)
+        throw resolvable_error("Error: Debug file '%s' could not be created.\n", filename.c_str());
+	}
+  }
+  catch (prg_exception& x) {
+    x.addTrace("openDebugFile()", "AppToolkit");
+    throw;
+  }
+  return gpDebugLog;
+}
+
 
 /** reads parameter history from ini file */
 void AppToolkit::ReadParametersHistory() {

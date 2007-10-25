@@ -40,6 +40,7 @@ class AppToolkit {
     static const char         * gsLastDirectory;
     static const char         * gsLastDirectoryPathProperty;
     static const char         * gsLastImportDestinationDirectoryProperty;
+    static const char         * gsDebugFileName;
 
     // default defines
     static const char         * gsDefaultRunHistoryFileName;
@@ -55,6 +56,7 @@ class AppToolkit {
     std::string                 gsVersion;
     RunTimeComponentManager     gRunTimeComponentManager;
     IniSession                  gSession;
+    FILE                      * gpDebugLog;
 
     bool                        InsureLastDirectoryPath();
     bool                        InsureLastImportDestinationDirectoryPath();
@@ -70,8 +72,10 @@ class AppToolkit {
     virtual ~AppToolkit();
 
    void                         AddParameterToHistory(const char * sParameterFileName);
+   void                         closeDebugFile();
    const char                 * GetAcknowledgment(std::string & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
+   FILE                       * getDebugFile();
    const char                 * GetLastDirectory() /*const*/;
    const char                 * GetLastImportDirectory() /*const*/;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}
@@ -84,6 +88,7 @@ class AppToolkit {
    const char                 * GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename.c_str();}
    const char                 * GetVersion() const {return gsVersion.c_str();}
    const char                 * GetWebSite() const;
+   FILE                       * openDebugFile(); 
    void                         SetLastImportDirectory(const char * sLastDirectory);
    void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
    void                         SetUpdateArchiveFilename(const char * sArchiveFile) {gsUpdateArchiveFilename = sArchiveFile;}
