@@ -50,7 +50,7 @@ void CPurelyTemporalData::CalculateMeasure(RealDataSet& DataSet) {
 /** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
     handle. */
-void CPurelyTemporalData::DisplayCases(FILE* pFile) {
+void CPurelyTemporalData::DisplayCases(FILE* pFile) const {
   unsigned int   i, j;
 
   fprintf(pFile, "PT Case counts (PTCases)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
@@ -60,12 +60,13 @@ void CPurelyTemporalData::DisplayCases(FILE* pFile) {
         fprintf(pFile, "PTCases [%u] = %i\n", i, gDataSets->GetDataSet(j).getCaseData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
+  fflush(pFile);
 }
 
 /** Debug utility function - prints expected case counts for all datasets.
     Caller is responsible for ensuring that passed file pointer points to valid,
     open file handle. */
-void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
+void CPurelyTemporalData::DisplayMeasure(FILE* pFile) const {
   unsigned int   i, j;
 
   fprintf(pFile, "PT Measures (PTMeasure)   m_nTimeIntervals=%i\n\n", m_nTimeIntervals);
@@ -75,19 +76,21 @@ void CPurelyTemporalData::DisplayMeasure(FILE* pFile) {
         fprintf(pFile, "PTMeasure [%u] = %lf\n", i, gDataSets->GetDataSet(j).getMeasureData_PT()[i]);
      fprintf(pFile, "\n\n");
   }
+  fflush(pFile);
 }
 
-/** Debug utility function - not implemented - needs updating. */
-void CPurelyTemporalData::DisplaySimCases(FILE* pFile) {
-//  unsigned int   i, j;
-//
-//  fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
-// for (j=0; j <  gDataSets->GetNumDataSets(); ++j) {
-//     fprintf(pFile, "Data Set %u:\n", j);
-//     for (i=0; i < m_nTimeIntervals; ++i)
-//        fprintf(pFile, "PTSimCases [%u] = %i\n", i, gDataSets->GetDataSet(j).GetPTSimCasesArray()[i]);
-//     fprintf(pFile, "\n\n");
-//  }
+/** Debug utility function - prints simulation case counts for all datasets. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle. */
+void CPurelyTemporalData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const {
+  fprintf(pFile, "PT Simulated Case counts (PTSimCases)\n\n");
+  for (size_t j=0; j < Container.size(); ++j) {
+     fprintf(pFile, "Data Set %u:\n", j);
+     for (int i=0; i < m_nTimeIntervals; ++i)
+        fprintf(pFile, "PTSimCases [%u] = %i\n", i, Container.at(j)->getCaseData_PT()[i]);
+     fprintf(pFile, "\n\n");
+  }
+  fflush(pFile);
 }
 
 /** Not implemented - throws prg_error. */

@@ -21,9 +21,9 @@ class CPurelyTemporalData : public CSaTScanData {
 
     virtual void        AdjustNeighborCounts(ExecutionType geExecutingType);
     virtual void        CalculateMeasure(RealDataSet& DataSet);
-    virtual void        DisplayCases(FILE* pFile);
-    virtual void        DisplayMeasure(FILE* pFile);
-    virtual void        DisplaySimCases(FILE* pFile);
+    virtual void        DisplayCases(FILE* pFile) const;
+    virtual void        DisplayMeasure(FILE* pFile) const;
+    virtual void        DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const;
     virtual void        FindNeighbors() {/** no action - all locations included */}
     virtual tract_t     GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dMaxRadius) const;
     virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,

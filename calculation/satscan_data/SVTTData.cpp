@@ -27,7 +27,7 @@ CSVTTData::~CSVTTData() {}
 /** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
     handle. */
-void CSVTTData::DisplayCases(FILE* pFile) {
+void CSVTTData::DisplayCases(FILE* pFile) const {
   unsigned int i;
 
   for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
@@ -35,7 +35,8 @@ void CSVTTData::DisplayCases(FILE* pFile) {
      DisplayCounts(pFile, gDataSets->GetDataSet(i).getCaseData().GetArray(), "Cases Array",
                    gDataSets->GetDataSet(i).getCaseData_NC().GetArray(), "Cases Non-Cumulative Array",
                    gDataSets->GetDataSet(i).getCaseData_PT(), "Cases_TotalByTimeInt");
-  }                 
+  }
+  fflush(pFile);
 }
 
 /** Debug utility function - prints counts for passed arrays. Caller is
@@ -46,7 +47,7 @@ void CSVTTData::DisplayCounts(FILE* pFile,
                               count_t** pCounts,   char* szVarName,
                               count_t** pCountsNC, char* szVarNameNC,
                               count_t*  pCountsTI, char* szVarNameTI,
-                              char* szTitle) {
+                              char* szTitle) const {
   if (szTitle != NULL)
     fprintf(pFile, "%s", szTitle);
 
@@ -62,14 +63,14 @@ void CSVTTData::DisplayCounts(FILE* pFile,
   fprintf(pFile, "\nCounts Accumulated by Time Interval\n\n");
   for (int i=0; i<m_nTimeIntervals; i++)
     fprintf(pFile, "%s [%i] = %6i\n", szVarNameTI, i, pCountsTI[i]);
-
   fprintf(pFile, "\n");
+  fflush(pFile);
 }
 
 /** Debug utility function - prints expected counts for for all datasets.
     Caller is responsible for ensuring that passed file pointer points to valid,
     open file handle. */
-void CSVTTData::DisplayMeasures(FILE* pFile) {
+void CSVTTData::DisplayMeasures(FILE* pFile) const {
   unsigned int           i, j, k;
   measure_t           ** ppMeasure, ** ppMeasureNC;
 
@@ -93,6 +94,7 @@ void CSVTTData::DisplayMeasures(FILE* pFile) {
        fprintf(pFile, "Measure_TotalByTimeInt [%i] = %12.5f\n", i, gDataSets->GetDataSet(k).getMeasureData_PT()[i]);
      fprintf(pFile, "\n");
   }
+  fflush(pFile);
 }
 
 // formats the information necessary in the relative risk output file and prints to the specified format
@@ -106,16 +108,15 @@ void CSVTTData::DisplayRelativeRisksForEachTract() const {
   }
 }
 
-/** Not implemented - needs to be updated */
-void CSVTTData::DisplaySimCases(FILE* pFile) {
-//  unsigned int i;                                             
-//
-//  for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
-//     fprintf(pFile, "Data Set %u:\n", i);
-//     DisplayCounts(pFile, gDataSets->GetDataSet(i).GetSimCaseArray(), "Simulated Cases Array",
-//                   gDataSets->GetDataSet(i).GetNCSimCaseArray(), "Simulated Non-Cumulative Cases Array",
-//                   gDataSets->GetDataSet(i).GetPTSimCasesArray(), "SimCases_TotalByTimeInt");
-//  }
+/** Prints simulation data to file stream. */
+void CSVTTData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const {
+  for (unsigned int i=0; i < Container.size(); ++i) {
+     fprintf(pFile, "Data Set %u:\n", i);
+     DisplayCounts(pFile, Container.at(i)->getCaseData().GetArray(), "Simulated Cases Array",
+                   Container.at(i)->getCaseData_NC().GetArray(), "Simulated Non-Cumulative Cases Array",
+                   Container.at(i)->getCaseData_PT(), "SimCases_TotalByTimeInt");
+  }
+  fflush(pFile);
 }
 
 /** Randomizes collection of simulation data in concert with passed collection of randomizers. */

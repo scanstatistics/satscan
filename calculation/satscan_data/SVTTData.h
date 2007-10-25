@@ -17,7 +17,7 @@ class CSVTTData : public CSaTScanData {
     virtual void        DisplayCounts(FILE* pFile, count_t** pCounts,
                                       char* szVarName, count_t** pCountsNC,
                                       char* szVarNameNC, count_t*  pCountsTI,
-                                      char* szVarNameTI, char* szTitle=NULL);
+                                      char* szVarNameTI, char* szTitle=NULL) const;
     virtual void        SetProbabilityModel();
 
   protected:
@@ -28,9 +28,9 @@ class CSVTTData : public CSaTScanData {
     CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection);
     virtual ~CSVTTData();
 
-    virtual void        DisplayCases(FILE* pFile);
-    virtual void        DisplaySimCases(FILE* pFile);
-    virtual void        DisplayMeasures(FILE* pFile);
+    virtual void        DisplayCases(FILE* pFile) const;
+    virtual void        DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const;
+    virtual void        DisplayMeasures(FILE* pFile) const;
     virtual void        DisplayRelativeRisksForEachTract() const;
     virtual void        RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                       SimulationDataContainer_t& SimDataContainer,
