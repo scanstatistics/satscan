@@ -6,59 +6,82 @@
 #include "LocationRiskEstimateWriter.h"
 #include "AsciiPrintFormat.h"
 #include "SSException.h"
+//#include "WeightedNormalRandomizer.h"
 
-void CSaTScanData::DisplayCases(FILE* pFile) {
-  int                   i, j;
-  count_t            ** ppCases = gDataSets->GetDataSet(0/*for now*/).getCaseData().GetArray();
-
+/** Debug utility function - prints case counts for all datasets. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle. */
+void CSaTScanData::DisplayCases(FILE* pFile) const {
   fprintf(pFile, "Case counts (Cases Array)\n\n");
-  for (i = 0; i < m_nTimeIntervals; ++i)
-    for (j = 0; j < m_nTracts; ++j)
-      fprintf(pFile, "Case [%i][%i] = %i\n", i, j, ppCases[i][j]);
-
+  for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
+     fprintf(pFile, "Data Set %u:\n", j);
+     count_t ** ppCases = gDataSets->GetDataSet(j).getCaseData().GetArray();
+     for (int i=0; i < m_nTimeIntervals; ++i)
+        for (int t=0; t < m_nTracts; ++t)
+           fprintf(pFile, "Case [%i][%i] = %i\n", i, j, ppCases[i][t]);
+     fprintf(pFile, "\n");
+  }
   fprintf(pFile, "\n");
+  fflush(pFile);
 }
 
-void CSaTScanData::DisplayControls(FILE* pFile) {
-  int                   i, j;
-  count_t            ** ppControls = gDataSets->GetDataSet(0/*for now*/).getControlData().GetArray();
-
+/** Debug utility function - prints control counts for all datasets. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle. */
+void CSaTScanData::DisplayControls(FILE* pFile) const {
   fprintf(pFile, "Control counts (Controls Array)\n\n");
-
-  for (i=0; i < m_nTimeIntervals; ++i)
-    for (j=0; j < m_nTracts; ++j)
-      fprintf(pFile, "Controls [%i][%i] = %i\n", i, j, ppControls[i][j]);
-
+  for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
+     fprintf(pFile, "Data Set %u:\n", j);
+     count_t ** ppControls = gDataSets->GetDataSet(j).getControlData().GetArray();
+     for (int i=0; i < m_nTimeIntervals; ++i)
+       for (int t=0; t < m_nTracts; ++t)
+         fprintf(pFile, "Controls [%i][%i] = %i\n", i, t, ppControls[i][t]);
+     fprintf(pFile, "\n");
+  }
   fprintf(pFile, "\n");
+  fflush(pFile);
 }
 
-void CSaTScanData::DisplaySimCases(FILE* pFile) {
-//  int                   i, j;
-//  count_t            ** ppSimCases = gDataSets->GetDataSet(0/*for now*/).GetSimCaseArray();
-//
-//  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
-//
-//  for (i = 0; i < m_nTimeIntervals; ++i)
-//    for (j = 0; j < m_nTracts; ++j)
-//      fprintf(pFile, "Cases [%i][%i] = %i\n", i, j, ppSimCases[i][j]);
-//
-// fprintf(pFile, "\n");
+/** Debug utility function - prints simulation case counts for all datasets. Caller is
+    responsible for ensuring that passed file pointer points to valid, open file
+    handle. */
+void CSaTScanData::DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const {
+  fprintf(pFile, "Simulated Case counts (Simulated Cases Array)\n\n");
+  for (size_t j=0; j < Container.size(); ++j) {
+     fprintf(pFile, "Data Set %u:\n", j);
+     count_t ** ppSimCases = Container.at(j)->getCaseData().GetArray();
+     for (int i=0; i < m_nTimeIntervals; ++i)
+       for (int t=0; t < m_nTracts; ++t)
+         fprintf(pFile, "Cases [%i][%i] = %i\n", i, t, ppSimCases[i][t]);
+     fprintf(pFile, "\n");
+  }
+  fprintf(pFile, "\n");
+  fflush(pFile);
 }
 
-void CSaTScanData::DisplayMeasure(FILE* pFile) {
+/** Debug utility function - prints expected case counts for all datasets.
+    Caller is responsible for ensuring that passed file pointer points to valid,
+    open file handle. */
+void CSaTScanData::DisplayMeasure(FILE* pFile) const {
   int           i, j;
-  measure_t  ** ppMeasure = gDataSets->GetDataSet(0/*for now*/).getMeasureData().GetArray();
 
   fprintf(pFile, "Measures (Measure Array)\n\n");
-
-  for (i=0; i < m_nTimeIntervals; ++i)
-    for (j=0; j < m_nTracts; ++j)
-      fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i, j, ppMeasure[i][j]);
-
+  for (size_t j=0; j < gDataSets->GetNumDataSets(); ++j) {
+     fprintf(pFile, "Data Set %u:\n", j);
+     measure_t ** ppMeasure = gDataSets->GetDataSet(j).getMeasureData().GetArray();
+     for (int i=0; i < m_nTimeIntervals; ++i)
+        for (int t=0; t < m_nTracts; ++t)
+          fprintf(pFile, "Measure [%i][%i] = %12.25f\n", i, t, ppMeasure[i][t]);
+     fprintf(pFile, "\n");
+  }
   fprintf(pFile, "\n");
+  fflush(pFile);
 }
 
-void CSaTScanData::DisplayNeighbors(FILE* pFile) {
+/** Debug utility function - prints neighbor information.
+    Caller is responsible for ensuring that passed file pointer points to valid,
+    open file handle. */
+void CSaTScanData::DisplayNeighbors(FILE* pFile) const {
   int                   i, j;
   tract_t            ** ppNeighborCount = gpNeighborCountHandler->GetArray();
   unsigned short    *** pppSortedUShort = (gpSortedUShortHandler ? gpSortedUShortHandler->GetArray() : 0);
@@ -73,7 +96,7 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) {
          fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier());
     else
        for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier());
+         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedUShort[0][i][j])->getIndentifier());
     fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[0][i]);
   }
 
@@ -221,33 +244,70 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
-    PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
+/*  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    AbstractWeightedNormalRandomizer *pRandomizer;
+    PrintFormat.PrintSectionLabel(fp, "Simple Mean", true, false);
+    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
+      throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+    printString(buffer, "%.2f", pRandomizer->getUnweightedTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+      if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
+        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+       printString(work, ", %.2f", pRandomizer->getUnweightedTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    PrintFormat.PrintSectionLabel(fp, "Simple Variance", true, false);
+    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
+      throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+    printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux()));
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+      if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
+        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+       printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux()));
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    PrintFormat.PrintSectionLabel(fp, "Simple Standard deviation", true, false);
+    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
+      throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+    printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux())));
+    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+      if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
+        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
+       printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux())));
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    PrintFormat.PrintSectionLabel(fp, "Weighted Mean", true, false);
     printString(buffer, "%.2f", gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalMeasureAux());
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
        printString(work, ", %.2f", gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalMeasureAux());
        buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    buffer = "?";
+    //PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
+    //buffer = "?";
     //printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()));
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       //printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()));
-       //buffer += work;
-       buffer += ",?";
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    buffer = "?";
+    //for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+    //   printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()));
+    //   buffer += work;
+    //  buffer += ",?";
+    //}
+    //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+    //PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
+    //buffer = "?";
     //printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())));
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       //printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())));
-       //buffer += work;
-       buffer += ",?";
-    }
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
+    //for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+    //   printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())));
+    //   buffer += work;
+    //   buffer += ",?";
+    //}
+    //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }*/
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
     double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).getTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
     if (nAnnualTT < 0)

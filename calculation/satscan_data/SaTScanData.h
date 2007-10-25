@@ -105,7 +105,7 @@ class CSaTScanData {
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
-    virtual void                                DisplayNeighbors(FILE* pFile);
+    virtual void                                DisplayNeighbors(FILE* pFile) const;
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
@@ -159,10 +159,10 @@ class CSaTScanData {
     double                                      GetAnnualRateAtStart(size_t iSetIndex) const;
     double                                      GetAnnualRatePop() const {return m_nAnnualRatePop;}
 
-    virtual void                                DisplayCases(FILE* pFile);
-    virtual void                                DisplayControls(FILE* pFile);
-    virtual void                                DisplayMeasure(FILE* pFile);
-    virtual void                                DisplaySimCases(FILE* pFile);
+    virtual void                                DisplayCases(FILE* pFile) const;
+    virtual void                                DisplayControls(FILE* pFile) const;
+    virtual void                                DisplayMeasure(FILE* pFile) const;
+    virtual void                                DisplaySimCases(SimulationDataContainer_t& Container, FILE* pFile) const;
 
     inline tract_t                           ** GetSortedArrayAsTract_T(int iEllipse) const;
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
