@@ -124,6 +124,7 @@ class dBaseFile {
     virtual ~dBaseFile();
 
     size_t                      GetNumFields() const {return gvFields.size();}
+	const char                * GetFieldName(size_t tField) const {return gvFields.at(tField)->GetName();}
     virtual unsigned long       DataAppend(const dBaseRecord &Record);
     const char                * GetFileName(std::string& name) const;
     dBaseRecord               * GetSystemRecord() const;
