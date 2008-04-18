@@ -48,10 +48,12 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
   switch (DataHub.GetParameters().GetProbabilityModelType()) {
     case POISSON              : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND)
                                   return new PoissonSVTTLikelihoodCalculator(DataHub);
+    case HOMOGENEOUSPOISSON   :
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
     case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
     case NORMAL               : return new NormalLikelihoodCalculator(DataHub);
+    case CATEGORICAL          : /*** may or may not implement separate class ***/
     case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
     case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
     case WEIGHTEDNORMAL       : return new WeightedNormalLikelihoodCalculator(DataHub);
@@ -81,7 +83,7 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
       return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
     return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
   }
-  else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+  else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
     if (gParameters.GetNumDataSets() == 1)
       return new CategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
     return new MultiSetCategoricalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
@@ -104,7 +106,7 @@ void AbstractAnalysis::Setup() {
       else
         gpClusterDataFactory = new MultiSetNormalClusterDataFactory();
     }
-    else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+    else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
       geReplicationsProcessType = ClusterEvaluation;
       if (gParameters.GetNumDataSets() == 1)
         gpClusterDataFactory = new CategoricalClusterDataFactory();

@@ -33,6 +33,7 @@
 #include "ParametersPrint.h"
 #include "SSException.h" 
 #include "SVTTCentricAnalysis.h"
+#include "PurelySpatialBruteForceAnalysis.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -225,7 +226,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       return;
     //calculate number of neighboring locations about each centroid
     macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
-    gpDataHub->FindNeighbors();
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON)
+      gpDataHub->FindNeighbors();
     macroRunTimeStopSerial();
     //detect cancellation
     if (gPrintDirection.GetIsCanceled())
@@ -413,13 +415,15 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case SPACETIMEPERMUTATION:
     case EXPONENTIAL:  b = sizeof(count_t) + sizeof(measure_t); break;
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
+    case CATEGORICAL:
     case ORDINAL: b = sizeof(count_t); break;
     case WEIGHTEDNORMAL:
     case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
+    case HOMOGENEOUSPOISSON: b = 1; break; // ??
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the number of categories in the ordinal model (CAT=1 for other models)
-  double CAT = (gParameters.GetProbabilityModelType() == ORDINAL ? 0 : 1);
+  double CAT = (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ? 0 : 1);
   for (size_t i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
      CAT += gpDataHub->GetDataSetHandler().GetDataSet(i).getPopulationData().GetNumOrdinalCategories();
   //for exponential model, EXP =1 one for all other models
@@ -428,6 +432,8 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case POISSON:
     case SPACETIMEPERMUTATION:
     case BERNOULLI:
+    case HOMOGENEOUSPOISSON: 
+    case CATEGORICAL:
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
     case WEIGHTEDNORMAL:
@@ -435,7 +441,7 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
   //the total number of cases (for the ordinal model or multiple data sets, C=0)
-  double C = (gParameters.GetProbabilityModelType() == ORDINAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).getTotalCases());
+  double C = (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL || gpDataHub->GetDataSetHandler().GetNumDataSets() > 1 ? 0 : gpDataHub->GetDataSetHandler().GetDataSet(0).getTotalCases());
   //1 when scanning for high rates only or low rates only, R=2 when scanning for either high or low rates
   double R = (gParameters.GetAreaScanRateType() == HIGHANDLOW ? 2 : 1);
   //number of data sets
@@ -463,8 +469,12 @@ CAnalysis * AnalysisRunner::GetNewAnalysisObject() const {
   try {
     switch (gParameters.GetAnalysisType()) {
       case PURELYSPATIAL :
-          if (gParameters.GetRiskType() == STANDARDRISK)
-            return new CPurelySpatialAnalysis(gParameters, *gpDataHub, gPrintDirection);
+          if (gParameters.GetRiskType() == STANDARDRISK) {
+              if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)
+                return new CPurelySpatialBruteForceAnalysis(gParameters, *gpDataHub, gPrintDirection);
+              else
+                return new CPurelySpatialAnalysis(gParameters, *gpDataHub, gPrintDirection);
+          }
           else
             return new CPSMonotoneAnalysis(gParameters, *gpDataHub, gPrintDirection);
       case PURELYTEMPORAL :
@@ -971,6 +981,9 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     pAnalysis = GetNewAnalysisObject();
     //allocate appropriate data members for simulation algorithm
     pAnalysis->AllocateSimulationObjects(*pDataGateway);
+    //allocate additional data structures for homogeneous poisson model
+    if (GetDataHub().GetParameters().GetProbabilityModelType() == HOMOGENEOUSPOISSON)
+       dynamic_cast<AbstractBruteForceAnalysis*>(pAnalysis)->AllocateAdditionalSimulationObjects(RandomizationContainer);
     //if writing simulation data to file, delete file now
     if (gParameters.GetOutputSimulationData()) {
       remove(gParameters.GetSimulationDataOutputFilename().c_str());
@@ -1132,6 +1145,9 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
+      case CATEGORICAL:
+            buffer = "All areas scanned had either only one case or an equal number of low or high value cases to expected for any cut-off."; break;
+            break;
       case ORDINAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower number of high value cases than expected for any cut-off."; break;
@@ -1322,7 +1338,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
     Indication of false is returned if user did not request iterative scan option. */
 bool AnalysisRunner::RepeatAnalysis() {
   //NOTE: Still in the air as to the minimum for STP model, set to 2 for now.
-  count_t      tMinCases = (gParameters.GetProbabilityModelType() == ORDINAL ? 4 : 2);
+  count_t      tMinCases = (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ? 4 : 2);
 
   try {
     if (!gParameters.GetIsIterativeScanning()) return false;
@@ -1356,7 +1372,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       if (!gParameters.GetIsPurelyTemporalAnalysis() && ((size_t)gpDataHub->GetNumTracts() + gpDataHub->GetNumMetaTractsReferenced() - gpDataHub->GetNumNullifiedLocations()) < 2)
          return false;
       //is the minimum number of cases per data data set remaining as required by probability model?
-      if (gParameters.GetProbabilityModelType() == ORDINAL) {
+      if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
         int iCategoriesWithCases=0;
         for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i) {
            const PopulationData& Population = gpDataHub->GetDataSetHandler().GetDataSet(i).getPopulationData();
