@@ -4,10 +4,25 @@
 //---------------------------------------------------------------------------
 #include "WeightedNormalLikelihoodCalculation.h"
 #include "SaTScanData.h"
+#include "WeightedNormalRandomizer.h"
 
 /** constructor */
 WeightedNormalLikelihoodCalculator::WeightedNormalLikelihoodCalculator(const CSaTScanData& DataHub)
-                           :AbstractLikelihoodCalculator(DataHub) {}
+                           :AbstractLikelihoodCalculator(DataHub) {
+
+   try {
+     const AbstractWeightedNormalRandomizer *pRandomizer;
+     for (size_t t=0; t < DataHub.GetDataSetHandler().GetNumDataSets(); ++t) {
+       if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(t))) == 0)
+          throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "constructor()");
+       gvDataSetConstants.push_back(std::make_pair(pRandomizer->getFirstRatioConstant(), pRandomizer->getSecondRatioConstant()));
+     }
+   }
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","WeightedNormalLikelihoodCalculator");
+    throw;
+  }
+}
 
 /** destructor */
 WeightedNormalLikelihoodCalculator::~WeightedNormalLikelihoodCalculator() {}
@@ -17,7 +32,8 @@ WeightedNormalLikelihoodCalculator::~WeightedNormalLikelihoodCalculator() {}
     a particular clustering. If maximizing value equals negative double max value, zero is returned
     as this indicates that no significant maximizing value was calculated. */
 double WeightedNormalLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
-  return dMaximizingValue;
+  //return -0.5 * gvDataSetTotals[tSetIndex].first * log(gvDataSetConstants[tSetIndex].first - dMaximizingValue) + gvDataSetConstants[tSetIndex].second;
+  return 0.5 * gvDataSetTotals[tSetIndex].first * log(gvDataSetConstants[tSetIndex].first - dMaximizingValue) + gvDataSetConstants[tSetIndex].second;
 }
 
 /** Calculates the maximizing value given observed cases, expected cases, expected cases squared and data set index.
@@ -39,7 +55,6 @@ double WeightedNormalLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t 
   measure_t U2 = gvDataSetMeasureAuxTotals[tSetIndex];
 
   if (!(N - n)/*when the cluster contains all the cases in set*/ || n == 0) return -std::numeric_limits<double>::max();
-
-  return std::pow(u, 2)/u2 + std::pow(U-u, 2)/(U2-u2);
+  return -0.5 * N * log(gvDataSetConstants[tSetIndex].first - (std::pow(u, 2)/u2 + std::pow(U-u, 2)/(U2-u2))) + gvDataSetConstants[tSetIndex].second;
 }
 
