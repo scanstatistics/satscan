@@ -30,7 +30,9 @@ class TractHandler {
 
       public:
         Coordinates();
+        Coordinates(const Coordinates& rhs);
         Coordinates(const std::vector<double>& Coordinates, unsigned int iInsertionOrdinal);
+        Coordinates(double x, double y, unsigned int iInsertionOrdinal=0);
         ~Coordinates();
 
         bool            operator<(const Coordinates& rhs) const;
@@ -116,6 +118,7 @@ class TractHandler {
     void                                additionsCompleted(bool bReportingRiskEstimates=false);
     void                                addLocation(const char *sIdentifier);
     void                                addLocation(const char *sIdentifier, std::vector<double>& vCoordinates);
+    void                                assignExplicitCoordinates(CoordinatesContainer_t& coordinates);
     addition_status_t                   getAddStatus() const {return gAdditionStatus;}
     const CoordinatesContainer_t      & getCoordinates() const {return gvCoordinates;}
     int                                 getCoordinateDimensions() const {return giCoordinateDimensions;}

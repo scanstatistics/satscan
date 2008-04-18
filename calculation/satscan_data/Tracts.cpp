@@ -21,6 +21,21 @@ TractHandler::Coordinates::Coordinates(const std::vector<double>& Coordinates, u
    memcpy(gpCoordinates, &Coordinates[0], giSize * sizeof(double));
 }
 
+/** Copy constructor. */
+TractHandler::Coordinates::Coordinates(const Coordinates& rhs) {
+   giSize = rhs.giSize;
+   gpCoordinates = new double[giSize];
+   memcpy(gpCoordinates, rhs.gpCoordinates, giSize * sizeof(double));
+}
+
+/** constructor */
+TractHandler::Coordinates::Coordinates(double x, double y, unsigned int iInsertionOrdinal)
+             :giSize(2), giInsertionOrdinal(iInsertionOrdinal) {
+   gpCoordinates = new double[giSize];
+   gpCoordinates[0] = x;
+   gpCoordinates[1] = y;
+}
+
 /** destructor */
 TractHandler::Coordinates::~Coordinates() {
   try {delete[] gpCoordinates;
@@ -73,16 +88,21 @@ void TractHandler::Location::addSecondaryIdentifier(const std::string & sIdentif
   gvSecondaryIdentifiers.add(sIdentifier, false);
 }
 
-/** Retrieves all location identifiers associated with this object. */
-TractHandler::Location::StringContainer_t& TractHandler::Location::retrieveAllIdentifiers(StringContainer_t& Identifiers) const {
-   Identifiers.clear();
-   Identifiers.add(gsIndentifier, false);
+
+/** Retrieves all location identifiers associated with this object. */
+
+TractHandler::Location::StringContainer_t& TractHandler::Location::retrieveAllIdentifiers(StringContainer_t& Identifiers) const {
+
+   Identifiers.clear();
+
+   Identifiers.add(gsIndentifier, false);
    for (unsigned int i=0; i < gvSecondaryIdentifiers.size(); ++i)
      Identifiers.add(gvSecondaryIdentifiers[i], false);
    return Identifiers;
 }
 
-//////////////////////// TractHandler class ////////////////////////////////////
+
+//////////////////////// TractHandler class ////////////////////////////////////
 
 /** Constructor*/
 TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMultipleCoordinatesType)
@@ -306,3 +326,45 @@ void TractHandler::setCoordinateDimensions(size_t iDimensions) {
   giCoordinateDimensions = iDimensions;
 }
 
+/** Assigns locations and coordinates explicitly. Note that this is a special use function, initially
+    designed for use with the homogeneous poisson model. It might have been nicer to abstract this class
+    instead of creating this function but that would have involved a significant re-factor with little benefit. */
+void TractHandler::assignExplicitCoordinates(CoordinatesContainer_t& coordinates) {
+  assert(gAdditionStatus == Accepting);
+
+  try {
+    if (gbAggregatingTracts) return; //ignore operation if aggregating tracts
+
+    //If the internal container of coordinates is equal in size to new container, just copy coordinates.
+    if (gvCoordinates.size() == coordinates.size()) {
+        for (size_t t=0; t < coordinates.size(); ++t) {
+            //Verify that coordinates have equal dimensions...
+            if (gvCoordinates[t]->getSize() != coordinates[t]->getSize())
+               throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates[t]->getSize(), gvCoordinates[t]->getSize());
+             memcpy(gvCoordinates[t]->getCoordinates(), coordinates[t]->getCoordinates(), sizeof(double) * coordinates[t]->getSize() );
+        }
+    }
+    else {
+        //New container and internal container are not equal in size -- clear and rebuild.  
+        gvLocations.killAll();
+        gvCoordinates.killAll();
+        gvCoordinates.resize(coordinates.size(), 0);
+        gvLocations.resize(coordinates.size(), 0);
+        //Note: I'm ignoring meta data, I think it ok to do that. Also, they are not likely used in conjunction with this function.
+        for (size_t t=0; t < coordinates.size(); ++t) {
+            //Verfy that coordinate dimensions match expected.
+            if (coordinates[t]->getSize() != giCoordinateDimensions)
+               throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates.size(), giCoordinateDimensions);
+            //Create new copy of coordinates object.
+            gvCoordinates[t] = new Coordinates(*coordinates[t]);
+            //Create dummy location identifier and associate coordinate object.
+            gvLocations[t] = new Location("_location_", *gvCoordinates[t]);
+        }
+        giNumLocationCoordinates = coordinates.size();
+    }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("assignExplicitCoordinates()", "TractHandler");
+    throw;
+  }
+}
