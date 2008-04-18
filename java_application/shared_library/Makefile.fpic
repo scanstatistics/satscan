@@ -64,7 +64,7 @@ SRC         := SharedLibrary.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelySpatialCentricAnalysis.cpp \
                $(ANALYSIS)/SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp \
                $(ANALYSIS)/AbstractBruteForceAnalysis.cpp \
-               $(ANALYSIS)/PurelySpatialBruteForceAnalysis.cpp \	          
+               $(ANALYSIS)/PurelySpatialBruteForceAnalysis.cpp \
                $(ANALYSIS)_run/AnalysisRun.cpp \
                $(ANALYSIS)_run/MostLikelyClustersContainer.cpp \
                $(CLUSTER)/Cluster.cpp \
