@@ -59,6 +59,17 @@ class usage_error : public prg_exception {
     virtual ~usage_error() throw();
 };
 
+
+/** Exception type to throw when a user resolvable problem is detected (e.g. input). */
+class region_exception : public resolvable_error {
+  protected:
+    region_exception();
+
+  public:
+    region_exception(const char * format, ...);
+    virtual ~region_exception() throw();
+};
+
 template <typename TYPE>
 class CarrierException : public prg_exception {
 private:
