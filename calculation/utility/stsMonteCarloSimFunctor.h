@@ -7,6 +7,7 @@
 #include "AnalysisRun.h"
 #include "stsMCSimJobSource.h"
 #include "DataSetWriter.h"
+#include "AbstractBruteForceAnalysis.h"
 
 //runs jobs for the "successive" algorithm
 class stsMCSimSuccessiveFunctor
@@ -47,6 +48,9 @@ public:
     gDataHub.GetDataSetHandler().GetSimulationDataGateway(*gpDataGateway, *gpSimulationDataContainer);
     //allocate appropriate data members for simulation algorithm
     gpAnalysis->AllocateSimulationObjects(*gpDataGateway);
+    //allocate additional data structures for homogeneous poisson model
+    if (gDataHub.GetParameters().GetProbabilityModelType() == HOMOGENEOUSPOISSON) 
+       dynamic_cast<AbstractBruteForceAnalysis&>(*gpAnalysis).AllocateAdditionalSimulationObjects(*gpRandomizationContainer);
     if (gDataHub.GetParameters().GetOutputSimulationData())
       gDataWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gDataHub.GetParameters()));
   }
