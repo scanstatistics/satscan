@@ -174,6 +174,30 @@ USEUNIT("stsDBFFile.cpp");
 USEUNIT("stsScanfFile.cpp");
 USEUNIT("..\calculation\randomization\WeightedNormalRandomizer.cpp");
 USEUNIT("..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.cpp");
+USEUNIT("..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.cpp");
+USEUNIT("..\calculation\satscan_data\ObservableRegion.cpp");
+USEUNIT("..\calculation\randomization\HomogeneousPoissonRandomizer.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\c_regex_traits.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\cpp_regex_traits.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\cregex.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\fileiter.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\icu.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\instances.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\posix_api.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\regex.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\regex_debug.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\regex_raw_buffer.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\regex_traits_defaults.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\static_mutex.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\usinstances.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\w32_regex_traits.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\wc_regex_traits.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\wide_posix_api.cpp");
+USEUNIT("..\..\boost\boost_1_33_1\libs\regex\src\winstances.cpp");
+USEUNIT("..\calculation\probability_model\HomogeneousPoissonModel.cpp");
+USEUNIT("..\calculation\analysis\AbstractBruteForceAnalysis.cpp");
+USEUNIT("..\calculation\analysis\PurelySpatialBruteForceAnalysis.cpp");
+USEUNIT("..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.cpp");
 //---------------------------------------------------------------------------
 void __SaTScanInit() {
   BasisInit();
@@ -239,3 +263,4 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         return 0;
 }
 //---------------------------------------------------------------------------
+
