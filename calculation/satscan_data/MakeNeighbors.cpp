@@ -8,18 +8,36 @@
 #include "SSException.h"
 #include "cluster.h" 
 #include <boost/dynamic_bitset.hpp>
+#include "HomogeneousPoissonDataSetHandler.h"
 
 /** constructor */
 CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                           :gDataHub(DataHub), gPrintDirection(PrintDirection), gtCurrentEllipseCoordinates(0),
-                            gCentroidInfo(*DataHub.GetGInfo()), gLocationInfo(*DataHub.GetTInfo()),
-                            gPrimaryNeighbors(0,0), gSecondaryNeighbors(0,0), gTertiaryNeighbors(0,0),
+                           :gPrintDirection(PrintDirection), gParameters(DataHub.GetParameters()),
+                            gCentroidInfo(*DataHub.GetGInfo()), gLocationInfo(*DataHub.GetTInfo()), 
+                            gvEllipseAngles(DataHub.gvEllipseAngles), gvEllipseShapes(DataHub.gvEllipseShapes),
+                            gNumTracts(DataHub.GetNumTracts()), gtCurrentEllipseCoordinates(0),
+                            gPrimaryNeighbors(0,0), gSecondaryNeighbors(0,0), gTertiaryNeighbors(0,0), 
                             gPrimaryReportedNeighbors(0,0), gSecondaryReportedNeighbors(0,0), gTertiaryReportedNeighbors(0,0) {
   gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
-  SetupPopulationArrays();
+  SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
-  CalculateMaximumSpatialClusterSize();
-  CalculateMaximumReportedSpatialClusterSize();
+  CalculateMaximumSpatialClusterSize(DataHub);
+  CalculateMaximumReportedSpatialClusterSize(DataHub);
+}
+
+/** constructor */
+CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataHub, const TractHandler& tractHandler, const GInfo& gridInfo, BasePrint& PrintDirection)
+                           :gPrintDirection(PrintDirection), gParameters(DataHub.GetParameters()),
+                            gCentroidInfo(gridInfo), gLocationInfo(tractHandler), 
+                            gvEllipseAngles(DataHub.gvEllipseAngles), gvEllipseShapes(DataHub.gvEllipseShapes),
+                            gNumTracts(DataHub.GetNumTracts()), gtCurrentEllipseCoordinates(0),
+                            gPrimaryNeighbors(0,0), gSecondaryNeighbors(0,0), gTertiaryNeighbors(0,0), 
+                            gPrimaryReportedNeighbors(0,0), gSecondaryReportedNeighbors(0,0), gTertiaryReportedNeighbors(0,0) {
+  gvCentroidToLocationDistances.resize(DataHub.GetTInfo()->getNumLocationCoordinates());
+  SetupPopulationArrays(DataHub);
+  //calculate reported and actual maximum spatial clusters sizes
+  CalculateMaximumSpatialClusterSize(DataHub);
+  CalculateMaximumReportedSpatialClusterSize(DataHub);
 }
 
 /** destructor */
@@ -29,7 +47,7 @@ CentroidNeighborCalculator::~CentroidNeighborCalculator() {}
     not reference the same coordinates as the element after them. Doing this ensures that all locations
     that reference the same coordinate are either included or excluded in spatial window. */
 void CentroidNeighborCalculator::AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, int>& prNeigborsCount) {
-  if (gDataHub.GetParameters().GetMultipleCoordinatesType() != ONEPERLOCATION) {
+  if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
     bool bCalcSecond = prNeigborsCount.first != prNeigborsCount.second;
     prNeigborsCount.first = getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.first);
     prNeigborsCount.second = (bCalcSecond ? getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.second) : prNeigborsCount.first);
@@ -40,8 +58,8 @@ void CentroidNeighborCalculator::AdjustedNeighborCountsForMultipleCoordinates(st
     in the transformed space represent ellipsoids in the original space.
     Stores transformed coordinates in internal array. */
 void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOffset) {
-  double                dAngle=gDataHub.GetEllipseAngle(tEllipseOffset),
-                        dShape=gDataHub.GetEllipseShape(tEllipseOffset);
+  double                dAngle=GetEllipseAngle(tEllipseOffset),
+                        dShape=GetEllipseShape(tEllipseOffset);
 
   if (tEllipseOffset == 0 || gtCurrentEllipseCoordinates == tEllipseOffset)
     return;
@@ -56,21 +74,38 @@ void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOf
 }
 
 /** Determines the maximum clusters size for reported clusters and assigns appropriate function pointers. */
-void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize() {
+void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize(const CSaTScanData& dataHub) {
   measure_t               tPopulation, tTotalPopulation=0;
-  const CParameters     & Parameters = gDataHub.GetParameters();
-  const DataSetHandler  & DataSetHandler = gDataHub.GetDataSetHandler();
+  const DataSetHandler  & DataSetHandler = dataHub.GetDataSetHandler();
   SecondaryCalcPair_t   * pNextToSet = &gPrimaryReportedNeighbors;
 
-  if (!Parameters.GetRestrictingMaximumReportedGeoClusterSize()) return;
+  if (!gParameters.GetRestrictingMaximumReportedGeoClusterSize()) return;
 
-  if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
+  if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
+     const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(&DataSetHandler);
+     if (!pHandler)
+       throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","CalculateMaximumSpatialClusterSize()");
+     //Calculate the maximum circle radius as percentage of total area in regions.
+     measure_t maxRadius = sqrt(pHandler->getTotalArea()/PI);
+      maxRadius *= (gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0);
+     //If also restricting max size by fixed distance, take the minimum value of the two.
+     if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true))
+         maxRadius = std::min(gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), maxRadius);
+      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
+      pNextToSet->second = maxRadius;
+     return; // homogeneous poisson only uses this property during neighbors calculation
+  }
+
+  if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
     //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
     //      as a percentage of the total population in all data sets.
     for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL || Parameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+       if (gParameters.GetProbabilityModelType() == ORDINAL ||
+           gParameters.GetProbabilityModelType() == CATEGORICAL ||
+           gParameters.GetProbabilityModelType() == NORMAL || 
+           gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
-       else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
+       else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
        else
          tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
@@ -80,37 +115,54 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize() {
        tTotalPopulation += tPopulation;
     }
     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
-    pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0) * tTotalPopulation;
+    pNextToSet->second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0) * tTotalPopulation;
     pNextToSet = &gSecondaryReportedNeighbors;
   }
-  if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
+  if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
     //set maximum circle size based upon percentage of population defined in maximum circle size file
     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-    pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
+    pNextToSet->second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) / 100.0) * dataHub.GetMaxCirclePopulationSize();
     pNextToSet = pNextToSet == &gPrimaryReportedNeighbors ? &gSecondaryReportedNeighbors : &gTertiaryReportedNeighbors;
   }
   //set maximum circle size based upon a distance
-  if (Parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
+  if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-    pNextToSet->second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
+    pNextToSet->second = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
   }
 }
 
 /** Determines the maximum clusters size for clusters and assigns appropriate function pointers. */
-void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
+void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize(const CSaTScanData& dataHub) {
   measure_t               tPopulation, tTotalPopulation=0;
-  const CParameters     & Parameters = gDataHub.GetParameters();
-  const DataSetHandler  & DataSetHandler = gDataHub.GetDataSetHandler();
+  const DataSetHandler  & DataSetHandler = dataHub.GetDataSetHandler();
   SecondaryCalcPair_t   * pNextToSet = &gSecondaryNeighbors;
 
-  if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
+  if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
+     const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(&DataSetHandler);
+     if (!pHandler)
+       throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","CalculateMaximumSpatialClusterSize()");
+     //Calculate the maximum circle radius as percentage of total area in regions.
+     measure_t maxRadius = sqrt(pHandler->getTotalArea()/PI);
+      maxRadius *= (gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false) / 100.0);
+     //If also restricting max size by fixed distance, take the minimum value of the two.
+     if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false))
+         maxRadius = std::min(gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false), maxRadius);
+      gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
+      gPrimaryNeighbors.second = maxRadius;
+     return; // homogeneous poisson only uses this property during neighbors calculation
+  }
+   
+  if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
     //set maximum circle size based upon percentage of defined population
     //NOTE: When input data is defined in multiple data sets, the maximum spatial cluster size is calculated
     //      as a percentage of the total population in all data sets.
     for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
-       if (Parameters.GetProbabilityModelType() == ORDINAL || Parameters.GetProbabilityModelType() == NORMAL || Parameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+       if (gParameters.GetProbabilityModelType() == ORDINAL || 
+           gParameters.GetProbabilityModelType() == CATEGORICAL ||
+           gParameters.GetProbabilityModelType() == NORMAL || 
+           gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
-       else if (Parameters.GetProbabilityModelType() == EXPONENTIAL)
+       else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
        else
          tPopulation = DataSetHandler.GetDataSet(t).getTotalMeasure();
@@ -120,57 +172,57 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize() {
        tTotalPopulation += tPopulation;
     }
     gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
-    gPrimaryNeighbors.second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false) / 100.0) * tTotalPopulation;
+    gPrimaryNeighbors.second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false) / 100.0) * tTotalPopulation;
   }
   //set maximum circle size based upon percentage of population defined in maximum circle size file
-  if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
+  if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
     if (!gPrimaryNeighbors.first) {
       gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-      gPrimaryNeighbors.second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
+      gPrimaryNeighbors.second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * dataHub.GetMaxCirclePopulationSize();
       pNextToSet = &gSecondaryNeighbors;
     }
     else {
       pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-      pNextToSet->second = (Parameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * gDataHub.GetMaxCirclePopulationSize();
+      pNextToSet->second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) / 100.0) * dataHub.GetMaxCirclePopulationSize();
       pNextToSet = &gTertiaryNeighbors;
     }
   }
   //set maximum circle size based upon a distance
-  if (Parameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+  if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
     if (!gPrimaryNeighbors.first) {
       gPrimaryNeighbors.first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-      gPrimaryNeighbors.second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
+      gPrimaryNeighbors.second = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
     }
     else {
       pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-      pNextToSet->second = Parameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
+      pNextToSet->second = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false);
     }
   }
 }
 
 /** Calculates neighboring locations about each centroid; storing results in sorted
     array contained in CSaTScanData object. */
-void CentroidNeighborCalculator::CalculateNeighbors() {
+void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub) {
   try {
-    if (gDataHub.GetParameters().UseLocationNeighborsFile()) {
+    if (gParameters.UseLocationNeighborsFile()) {
       std::pair<int, int>   prNeighborsCount;
       boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
       gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
       //Calculate maximum neighboring locations about each centroid for circular regions
-      for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
-         gvCentroidToLocationDistances.resize(gDataHub.GetNeighborCountArray()[0][t]);
+      for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
+         gvCentroidToLocationDistances.resize(dataHub.GetNeighborCountArray()[0][t]);
          //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
          for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
-           gvCentroidToLocationDistances[c].Set(gDataHub.GetNeighbor(0, t, c+1), 0, 0);
+           gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1, -1, false), 0, 0);
          CalculateNeighborsForCurrentState(prNeighborsCount);
-         const_cast<CSaTScanData&>(gDataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
-         if (t == 9) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
+         const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
+         if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, &gPrintDirection);
       }
     }
     else {
-      const_cast<CSaTScanData&>(gDataHub).AllocateSortedArray();
-      CalculateNeighborsByCircles();
-      CalculateNeighborsByEllipses();
+      const_cast<CSaTScanData&>(dataHub).AllocateSortedArray();
+      CalculateNeighborsByCircles(dataHub);
+      CalculateNeighborsByEllipses(dataHub);
     }  
   }
   catch (prg_exception& x) {
@@ -185,10 +237,10 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
   CenterLocationDistancesAbout(tEllipseOffsetIndex, tCentroidIndex);
   //sort locations clostest to farthest
   std::sort(gvCentroidToLocationDistances.begin(), gvCentroidToLocationDistances.end(), CompareLocationDistance(gLocationInfo));
-  switch (gDataHub.GetParameters().GetMultipleCoordinatesType()) {
+  switch (gParameters.GetMultipleCoordinatesType()) {
     case ONEPERLOCATION : break;
     case ATLEASTONELOCATION :
-    { boost::dynamic_bitset<> theSet(gDataHub.GetNumTracts());
+    { boost::dynamic_bitset<> theSet(gNumTracts);
       std::vector<LocationDistance>::iterator itr=gvCentroidToLocationDistances.begin();
       for (;itr != gvCentroidToLocationDistances.end(); ++itr) {
           if (theSet.test(itr->GetTractNumber()))
@@ -198,7 +250,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
       }
     } break;
     case ALLLOCATIONS :
-    { boost::dynamic_bitset<> theSet(gDataHub.GetNumTracts());
+    { boost::dynamic_bitset<> theSet(gNumTracts);
       std::vector<LocationDistance>::iterator itr(gvCentroidToLocationDistances.end() - 1);
       for (;; --itr) {
           if (theSet.test(itr->GetTractNumber()))
@@ -208,7 +260,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
           if (itr == gvCentroidToLocationDistances.begin()) break;
       }
     } break;
-    default : throw prg_error("Unknown multiple coordinate type '%d'.", "CalculateNeighborsAboutCentroid", gDataHub.GetParameters().GetMultipleCoordinatesType());
+    default : throw prg_error("Unknown multiple coordinate type '%d'.", "CalculateNeighborsAboutCentroid", gParameters.GetMultipleCoordinatesType());
   }
 }
 
@@ -257,42 +309,42 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
 
 /** Calculates neighboring locations about each centroid through expanding circle;
     storing results in sorted array contained in CSaTScanData object. */
-void CentroidNeighborCalculator::CalculateNeighborsByCircles() {
+void CentroidNeighborCalculator::CalculateNeighborsByCircles(const CSaTScanData& dataHub) {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   std::pair<int, int>   prNeighborsCount;
 
   gPrintDirection.Printf("Constructing the circles\n", BasePrint::P_STDOUT);
   //Calculate neighboring locations about each centroid for circular regions
-  for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
+  for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
      CalculateNeighborsAboutCentroid(0, t);
      CalculateNeighborsForCurrentState(prNeighborsCount);
      AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
      CoupleLocationsAtSameCoordinates(prNeighborsCount);
-     const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
-     if (t == 9) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts, t, &gPrintDirection);
+     const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, 0, t, prNeighborsCount.second, prNeighborsCount.first);
+     if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, &gPrintDirection);
   }
 }
 
 /** Calculates neighboring locations about each centroid by distance; storing
     results in multiple dimension arrays contained in CSaTScanData object. */
-void CentroidNeighborCalculator::CalculateNeighborsByEllipses() {
+void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData& dataHub) {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   std::pair<int, int>   prNeighborsCount;
 
   //only perform calculation if ellipses requested
-  if (!gDataHub.GetParameters().GetSpatialWindowType() == ELLIPTIC)
+  if (!gParameters.GetSpatialWindowType() == ELLIPTIC)
     return;
 
   gPrintDirection.Printf("Constructing the ellipsoids\n", BasePrint::P_STDOUT);
   //Calculate neighboring locations about each centroid for elliptical regions
-  for (int i=1; i <= gDataHub.GetParameters().GetNumTotalEllipses(); ++i) {
-     for (tract_t t=0; t < gDataHub.m_nGridTracts; ++t) {
+  for (int i=1; i <= gParameters.GetNumTotalEllipses(); ++i) {
+     for (tract_t t=0; t < dataHub.m_nGridTracts; ++t) {
         CalculateNeighborsAboutCentroid(i, t);
         CalculateNeighborsForCurrentState(prNeighborsCount);
         AdjustedNeighborCountsForMultipleCoordinates(prNeighborsCount);
         CoupleLocationsAtSameCoordinates(prNeighborsCount);
-        const_cast<CSaTScanData&>(gDataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, prNeighborsCount.second, prNeighborsCount.first);
-        if (t == 9 && i == 1) ReportTimeEstimate(StartTime, gDataHub.m_nGridTracts * gDataHub.GetParameters().GetNumTotalEllipses(), t, &gPrintDirection);
+        const_cast<CSaTScanData&>(dataHub).AllocateSortedArrayNeighbors(gvCentroidToLocationDistances, i, t, prNeighborsCount.second, prNeighborsCount.first);
+        if (t == 9 && i == 1) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts * gParameters.GetNumTotalEllipses(), t, &gPrintDirection);
      }
   }
 }
@@ -423,8 +475,8 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
   }
   else {
     //tranform centroid coordinates into elliptical space
-    Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], gDataHub.GetEllipseAngle(tEllipseOffsetIndex),
-              gDataHub.GetEllipseShape(tEllipseOffsetIndex), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
+    Transform(vCentroidCoordinates[0], vCentroidCoordinates[1], GetEllipseAngle(tEllipseOffsetIndex),
+              GetEllipseShape(tEllipseOffsetIndex), &vCentroidCoordinates[0], &vCentroidCoordinates[1]);
     vLocationCoordinates.resize(2);
     CalculateEllipticCoordinates(tEllipseOffsetIndex);
     //calculate distances from centroid to each location
@@ -446,7 +498,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
     sorted by distance from target ellipse/centroid and that locations referencing the same coordinates
     are adjacent to each other. */
 void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int, int>& prNeighborsCount) {
-  if (gDataHub.GetParameters().GetMultipleCoordinatesType() == ONEPERLOCATION) return;
+  if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) return;
   std::vector<LocationDistance>::iterator tGroupStart=gvCentroidToLocationDistances.begin(), tGroupEnd=gvCentroidToLocationDistances.end();
   for (int tCurrent=0; tCurrent < prNeighborsCount.first; ++tCurrent) {
     LocationDistance& curr = gvCentroidToLocationDistances[tCurrent];
@@ -460,7 +512,7 @@ void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int,
       std::vector<int> indexes;
       for (std::vector<LocationDistance>::iterator itr=tGroupStart; itr != tGroupEnd+1; ++itr)
          indexes.push_back(itr->GetTractNumber());
-      LocationDistance meta_location(gDataHub.GetNumTracts() + const_cast<TractHandler*>(gDataHub.gTractHandler.get())->getMetaNeighborManager().add(indexes), tGroupStart->GetDistance());
+      LocationDistance meta_location(gNumTracts + const_cast<TractHandler&>(gLocationInfo).getMetaNeighborManager().add(indexes), tGroupStart->GetDistance());
       //replace tGroupStart to tGroupEnd with new LocationDistance that is the meta location
       tGroupStart = gvCentroidToLocationDistances.erase(tGroupStart, tGroupEnd + 1);
       tGroupStart = gvCentroidToLocationDistances.insert(tGroupStart, meta_location) + 1;
@@ -497,6 +549,20 @@ int CentroidNeighborCalculator::getAdjustedNeighborCountsForMultipleCoordinates(
     }
   }
   return iNeigborsCount;
+}
+
+/** Returns angle to referenced ellipse at index. Caller is responsible for ensuring
+    that iEllipseIndex is within validate range where if ellipses where requested,
+    the valid range is 0 to gParameters.GetNumTotalEllipses(). */
+double CentroidNeighborCalculator::GetEllipseAngle(int iEllipseIndex) const {
+  return (iEllipseIndex == 0 ? 0.0 : gvEllipseAngles[iEllipseIndex - 1]);
+}
+
+/** Returns shape to referenced ellipse at index. Caller is responsible for ensuring
+    that iEllipseIndex is within validate range where if ellipses where requested,
+    the valid range is 0 to gParameters.GetNumTotalEllipses(). */
+double CentroidNeighborCalculator::GetEllipseShape(int iEllipseIndex) const {
+  return (iEllipseIndex == 0 ? 1.0 : gvEllipseShapes[iEllipseIndex - 1]);
 }
 
 /** Returns the coordinates of tract given centroid of passed cluster object.
@@ -551,9 +617,9 @@ void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToP
   itr_end = (tMaxToPrint >= gvCentroidToLocationDistances.size() ? gvCentroidToLocationDistances.end() : gvCentroidToLocationDistances.begin() + tMaxToPrint);
   fprintf(stream, "\nCentroidToLocationDistances (size=%d):\n", std::distance(itr, itr_end));
   for (; itr != itr_end; ++itr) {
-    if (itr->GetTractNumber() >= gDataHub.GetNumTracts()) {
+    if (itr->GetTractNumber() >= gNumTracts) {
       std::vector<tract_t> indexes;
-      gDataHub.gTractHandler.get()->getMetaNeighborManager().getIndexes(itr->GetTractNumber() - gDataHub.GetNumTracts(), indexes);
+      gLocationInfo.getMetaNeighborManager().getIndexes(itr->GetTractNumber() - gNumTracts, indexes);
       fprintf(stream, "distance=%.6lf\t\tindexes=", itr->GetDistance());
       for (size_t i=0; i < indexes.size(); ++i)
         fprintf(stream, "%s%d", (i == 0 ? "" : ","), indexes.at(i));
@@ -572,48 +638,48 @@ void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToP
 
 /** Resizes passed vector to #of tracts plus # of meta locations. Assigns meta location data. */
 void CentroidNeighborCalculator::setMetaLocations(std::vector<measure_t>& popMeasure) {
-  popMeasure.resize(gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaLocations().getNumReferencedLocations(), 0);
+  popMeasure.resize(gNumTracts + gLocationInfo.getMetaLocations().getNumReferencedLocations(), 0);
 
   std::vector<tract_t> atomicIndexes;
   for (size_t t=0; t < gLocationInfo.getMetaLocations().getNumReferencedLocations(); ++t) {
      gLocationInfo.getMetaLocations().getAtomicIndexes(t, atomicIndexes);
      for (size_t a=0; a < atomicIndexes.size(); ++a)
-       popMeasure[(size_t)gDataHub.GetNumTracts() + t] += popMeasure[atomicIndexes[a]];
+       popMeasure[(size_t)gNumTracts + t] += popMeasure[atomicIndexes[a]];
   }
 }
 
 /** Based upon parameter settings, stores references to population arrays maintained by
     CSaTScanData object or calculates population, storing in class member structure. */
-void CentroidNeighborCalculator::SetupPopulationArrays() {
+void CentroidNeighborCalculator::SetupPopulationArrays(const CSaTScanData& dataHub) {
   count_t                     * pCases;
   const ExponentialRandomizer * pRandomizer;
-  const CParameters           & Parameters = gDataHub.GetParameters();
-  const DataSetHandler        & DataSetHandler = gDataHub.GetDataSetHandler();
+  const DataSetHandler        & DataSetHandler = dataHub.GetDataSetHandler();
 
   //store reference to population defined in max circle file if either restricting in either real or simulation process
-  if (Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || Parameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
-    gpMaxCircleFilePopulation = &gDataHub.GetMaxCirclePopulationArray()[0];
+  if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
+    gpMaxCircleFilePopulation = &dataHub.GetMaxCirclePopulationArray()[0];
   //prospective space-time analyses, using prospective start date, do not use the population at risk to restrict maximum spatial size
-  if (!(Parameters.GetAnalysisType() == PROSPECTIVESPACETIME && Parameters.GetAdjustForEarlierAnalyses())) {
-    switch (Parameters.GetProbabilityModelType()) {
+  if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
+    switch (gParameters.GetProbabilityModelType()) {
       case WEIGHTEDNORMAL  :
       case NORMAL  :
-        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumTracts(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
           pCases = DataSetHandler.GetDataSet(t).getCaseData().GetArray()[0];
-          for (int j=0; j < gDataHub.GetNumTracts(); ++j)
+          for (int j=0; j < dataHub.GetNumTracts(); ++j)
              gvCalculatedPopulations[j] += pCases[j];
         }
         setMetaLocations(gvCalculatedPopulations);
         gpPopulation = &gvCalculatedPopulations[0]; break;
+      case CATEGORICAL :
       case ORDINAL :
         //For the Ordinal model, populations for each location are calculated by adding up the
         //total individuals represented in the catgory case arrays.
-        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumTracts(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
            for (unsigned int k=0; k < DataSetHandler.GetDataSet(t).getCaseData_Cat().size(); ++k) {
              pCases = DataSetHandler.GetDataSet(t).getCaseData_Cat()[k]->GetArray()[0];
-             for (int j=0; j < gDataHub.GetNumTracts(); ++j)
+             for (int j=0; j < dataHub.GetNumTracts(); ++j)
                 gvCalculatedPopulations[j] += pCases[j];
            }
         }
@@ -621,7 +687,7 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         gpPopulation = &gvCalculatedPopulations[0];  break;
       case EXPONENTIAL:
         // consider population as cases and non-censored cases
-        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumTracts(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
           pRandomizer = dynamic_cast<const ExponentialRandomizer*>(DataSetHandler.GetRandomizer(t));
           if (!pRandomizer) throw prg_error("Randomizer failed cast to ExponentialRandomizer.", "CalculateMaximumReportedSpatialClusterSize()");
@@ -629,12 +695,14 @@ void CentroidNeighborCalculator::SetupPopulationArrays() {
         }
         setMetaLocations(gvCalculatedPopulations);
         gpPopulation = &gvCalculatedPopulations[0]; break;
+      case HOMOGENEOUSPOISSON:
+          break; // This model strictly uses distance to calculate neighbors ...
       default :
-        gvCalculatedPopulations.resize(gDataHub.GetNumTracts(), 0);
+        gvCalculatedPopulations.resize(dataHub.GetNumTracts(), 0);
         //Population is calculated from all data sets
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
            measure_t * pMeasure = DataSetHandler.GetDataSet(t).getMeasureData().GetArray()[0];
-           for (int j=0; j < gDataHub.GetNumTracts(); ++j)
+           for (int j=0; j < dataHub.GetNumTracts(); ++j)
              gvCalculatedPopulations[j] += pMeasure[j];
         }
         setMetaLocations(gvCalculatedPopulations);
