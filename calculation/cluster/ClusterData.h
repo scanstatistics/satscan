@@ -5,6 +5,7 @@
 #include "AbstractClusterData.h"
 #include "MeasureList.h"
 #include "Toolkit.h"
+#include "MakeNeighbors.h"
 
 /** Class representing accumulated data of spatial clustering. */
 class SpatialData : public AbstractSpatialClusterData {
@@ -44,6 +45,56 @@ inline void SpatialData::AddMeasureList(const CentroidNeighbors& CentroidDef, co
     gtMeasure += Interface.gpPSMeasureArray[tNeighborIndex];
     pMeasureList->AddMeasure(gtCases, gtMeasure);
   }
+  macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+}
+
+/** Class representing accumulated data of spatial homogeneous clustering. */
+class SpatialHomogeneousData : public AbstractSpatialClusterData {
+  public:
+    SpatialHomogeneousData(const DataSetInterface& Interface);
+    SpatialHomogeneousData(const AbstractDataSetGateway& DataGateway);
+    virtual ~SpatialHomogeneousData() {}
+
+    //public data members -- public for speed considerations
+    count_t               gtCases;                   /** accumulated cases */
+    measure_t             gtMeasure;                 /** accumulated expected cases */
+
+    inline void           AddMeasureList(const CentroidNeighbors& CentroidDef, 
+                                         const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
+                                         const DataSetInterface& Interface, 
+                                         CMeasureList* pMeasureList);
+    virtual void          AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void          Assign(const AbstractSpatialClusterData& rhs);
+    virtual double        CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual SpatialHomogeneousData * Clone() const;
+    virtual void          CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual double        GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
+    virtual measure_t     GetMeasure(unsigned int tSetIndex=0) const;
+    SpatialHomogeneousData & operator=(const SpatialHomogeneousData& rhs);
+    virtual void          InitializeData() {gtCases=0;gtMeasure=0;}
+};
+
+/** adds neighbor data to accumulation and updates measure list */
+inline void SpatialHomogeneousData::AddMeasureList(const CentroidNeighbors& CentroidDef, 
+                                                   const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
+                                                   const DataSetInterface& Interface, 
+                                                   CMeasureList* pMeasureList) {
+  macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+
+  tract_t               t, tNeighborIndex, tNumNeighbors=CentroidDef.GetNumNeighbors(),
+                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+  measure_t             tAdjustment = Interface.GetTotalMeasureAuxCount();
+
+  gtCases=0;gtMeasure=0; //initialize data
+  for (t=0; t < tNumNeighbors; ++t) {
+    //tNeighborIndex = (pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]);
+    ++gtCases;
+    gtMeasure = pow(locDist[t].GetDistance(),2.0) * PI * tAdjustment;
+    pMeasureList->AddMeasure(gtCases, gtMeasure);
+  }
+
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
 }
 

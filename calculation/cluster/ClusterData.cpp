@@ -77,6 +77,77 @@ SpatialData & SpatialData::operator=(const SpatialData& rhs) {
   return *this;
 }
 
+//**************** class SpatialHomogenenousData ******************************
+
+/** class constructor */
+SpatialHomogeneousData::SpatialHomogeneousData(const DataSetInterface& Interface) : AbstractSpatialClusterData() {
+  InitializeData();
+}
+
+/** class constructor */
+SpatialHomogeneousData::SpatialHomogeneousData(const AbstractDataSetGateway& DataGateway) : AbstractSpatialClusterData() {
+  InitializeData();
+}
+
+/** Adds neighbor data to accumulation - caller is responsible for ensuring that
+    'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void SpatialHomogeneousData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
+  // gtCases ??
+  // gtMeasure ??
+}
+
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'SpatialData' object. */
+void SpatialHomogeneousData::Assign(const AbstractSpatialClusterData& rhs) {
+  *this = (const SpatialHomogeneousData&)rhs;
+}
+
+/** Calculates loglikelihood ratio, given current accumulated cluster data, if
+    it is determined that data fits scanning area of interest (high, low or both).
+    Returns zero if rate not of interest else returns loglikelihood ratio as
+    calculated by probability model. */
+double SpatialHomogeneousData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    return Calculator.CalcLogLikelihoodRatio(gtCases, gtMeasure);
+  return 0;
+}
+
+/** Calculates and returns maximizing value given accumulated data. If accumulated data
+    is not significant, the negation of the maximum double is returned. */
+double SpatialHomogeneousData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  if ((Calculator.*Calculator.gpRateOfInterest)(gtCases, gtMeasure, 0))
+    return Calculator.CalculateMaximizingValue(gtCases, gtMeasure);
+  return -std::numeric_limits<double>::max();
+}
+
+/** Returns newly cloned SpatialHomogeneousData object. Caller resonsible for deletion of object. */
+SpatialHomogeneousData * SpatialHomogeneousData::Clone() const {
+  return new SpatialHomogeneousData(*this);
+}
+
+void SpatialHomogeneousData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  gtCases = ((const SpatialHomogeneousData&)rhs).gtCases;
+  gtMeasure = ((const SpatialHomogeneousData&)rhs).gtMeasure;
+}
+
+/** Returns number of cases accumulated in cluster data. */
+count_t SpatialHomogeneousData::GetCaseCount(unsigned int) const {
+  return gtCases;
+}
+
+/** Returns number of expected cases accumulated in cluster data. */
+measure_t SpatialHomogeneousData::GetMeasure(unsigned int) const {
+  return gtMeasure;
+}
+
+/** Overloaded assignment operator. */
+SpatialHomogeneousData & SpatialHomogeneousData::operator=(const SpatialHomogeneousData& rhs) {
+  gtCases = rhs.gtCases;
+  gtMeasure = rhs.gtMeasure;
+  return *this;
+}
+
 //**************** class SpatialMonotoneData************************************
 
 /** class constructor */
