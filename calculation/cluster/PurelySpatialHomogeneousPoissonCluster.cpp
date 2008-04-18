@@ -120,7 +120,7 @@ measure_t PurelySpatialHomogeneousPoissonCluster::GetExpectedCountForTract(tract
   //return Data.GetMeasureAdjustment(tSetIndex) * Data.GetDataSetHandler().GetDataSet(tSetIndex).getMeasureData().GetArray()[0][tTractIndex];
   std::vector<double>   ClusterCenter,TractCoords;
   DataHub.GetGInfo()->retrieveCoordinates(m_Center, ClusterCenter);
-  CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts, -1, false), TractCoords);
+  CentroidNeighborCalculator::getTractCoordinates(DataHub, *this, DataHub.GetNeighbor(m_iEllipseOffset, m_Center, m_nTracts), TractCoords);
   double distance = std::sqrt(DataHub.GetTInfo()->getDistanceSquared(ClusterCenter, TractCoords));
   measure_t tAdjustment = DataHub.GetDataSetHandler().GetDataSet().getTotalMeasureAux();
   return pow(distance,2.0) * PI * tAdjustment;

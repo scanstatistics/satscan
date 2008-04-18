@@ -213,7 +213,7 @@ void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub)
          gvCentroidToLocationDistances.resize(dataHub.GetNeighborCountArray()[0][t]);
          //assign gvCentroidToLocationDistances from existing sorted array (populated during neighbors file read)
          for (size_t c=0; c < gvCentroidToLocationDistances.size(); ++c)
-           gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1, -1, false), 0, 0);
+           gvCentroidToLocationDistances[c].Set(dataHub.GetNeighbor(0, t, c+1), 0, 0);
          CalculateNeighborsForCurrentState(prNeighborsCount);
          const_cast<CSaTScanData&>(dataHub).setNeighborCounts(0, t, prNeighborsCount.second, prNeighborsCount.first);
          if (t == 9) ReportTimeEstimate(StartTime, dataHub.m_nGridTracts, t, &gPrintDirection);

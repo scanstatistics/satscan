@@ -166,7 +166,16 @@ class CSaTScanData {
 
     inline tract_t                           ** GetSortedArrayAsTract_T(int iEllipse) const;
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
+
+    inline void                                 addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo);
 };
+
+inline void CSaTScanData::addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo) {
+    tract_t tCentroidIndex = NeighborInfo->GetCentroidIndex();
+    if (gvCentroidNeighborStore.size() < (size_t)tCentroidIndex + 1)
+        gvCentroidNeighborStore.resize(tCentroidIndex + 1, 0);
+    gvCentroidNeighborStore[tCentroidIndex] = NeighborInfo.release();
+}                                                                   
 
 /** Returns pointer to 2 dimensional array, representing sorted neighbors
     for all locations for specified ellipse offset. Returns null if array

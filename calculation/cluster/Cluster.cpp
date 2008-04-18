@@ -11,6 +11,7 @@
 #include "SSException.h"
 #include <iostream>
 #include <fstream>
+#include "WeightedNormalRandomizer.h"
 
 /** constructor */
 CCluster::CCluster() {
@@ -81,7 +82,8 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
         DisplayLatLongCoords(fp, DataHub, PrintFormat);
     }    
     DisplayTimeFrame(fp, DataHub, PrintFormat);
-    if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL)
+    if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL ||
+        DataHub.GetParameters().GetProbabilityModelType() == CATEGORICAL)
       DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
     else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
       DisplayClusterDataExponential(fp, DataHub, PrintFormat);
@@ -400,16 +402,18 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
   double                                        dEstimatedMeanInside, dEstimatedMeanOutside, dUnbiasedVariance,
-                                                dEstimatedWeightedMeanInside, dEstimatedWeightedMeanOutside, dUnbiasedWeightedVariance; 
+                                                dEstimatedWeightedMeanInside, dEstimatedWeightedMeanOutside, dSigma;
   const AbstractNormalClusterData             * pClusterData=0;
   count_t                                       tObserved;
   measure_t                                     tExpected;
+  std::vector<tract_t>                          tractIndexes;
 
   if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(GetClusterData())) == 0)
     throw prg_error("Cluster data object could not be dynamically casted to AbstractNormalClusterData type.\n",
                     "DisplayClusterDataWeightedNormal()");
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
   GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
+  getLocationIndexes(DataHub, tractIndexes);
   for (itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
      //print data set number if analyzing more than data set
      if (Handler.GetNumDataSets() > 1) {
@@ -435,19 +439,29 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
      dEstimatedMeanOutside = (Handler.GetDataSet(*itr_Index).getTotalMeasure() - tExpected)/(Handler.GetDataSet(*itr_Index).getTotalMeasureAux() - pClusterData->GetMeasureAux(*itr_Index));
      printString(buffer, "%.2f", dEstimatedMeanOutside);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     //print unexplained variance label
-     PrintFormat.PrintSectionLabel(fp, "Unexplained variance", false, true);
+
+     //print sigma label
+     PrintFormat.PrintSectionLabel(fp, "Sigma", false, true);
+     const AbstractWeightedNormalRandomizer *pRandomizer;
+     if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(*itr_Index))) == 0)
+        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplayClusterDataWeightedNormal()");
+     dSigma = pRandomizer->getSigma(m_nFirstInterval, m_nLastInterval, tractIndexes, dEstimatedMeanInside, dEstimatedMeanOutside);
+     printString(buffer, "%.9f", std::sqrt(dSigma));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+     //print sigma label
+     //PrintFormat.PrintSectionLabel(fp, "Variance", false, true);
      //dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureAux(*itr_Index),
      //                                        Handler.GetDataSet(*itr_Index).getTotalCases(), Handler.GetDataSet(*itr_Index).getTotalMeasure(),
      //                                        Handler.GetDataSet(*itr_Index).getTotalMeasureAux());
      //printString(buffer, "%.2f", dUnbiasedVariance);
-     buffer = "?";
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //buffer = "?";
+     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print common standard deviation
-     PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
+     //PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
      //printString(buffer, "%.2f", std::sqrt(dUnbiasedVariance));
-     buffer = "?";
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //buffer = "?";
+     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
 
@@ -689,6 +703,15 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
   return DataHub.GetProbabilityModel().GetPopulation(tSetIndex, *this, DataHub) *
              DataSet.getPopulationData().GetNumOrdinalCategoryCases(iCategoryIndex) / DataSet.getTotalPopulation();
 
+}
+
+std::vector<tract_t> & CCluster::getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes) const {
+   indexes.clear();
+
+   for (tract_t t=1; t <= m_nTracts; ++t)
+      indexes.push_back(DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius));
+      
+   return indexes;
 }
 
 /** Returns index of most central location. */
