@@ -33,7 +33,8 @@ CSpaceTimeData::~CSpaceTimeData() {}
 void CSpaceTimeData::CalculateMeasure(RealDataSet& DataSet) {
   try {
     CSaTScanData::CalculateMeasure(DataSet);
-    if (gParameters.GetIncludePurelyTemporalClusters() && gParameters.GetProbabilityModelType() != ORDINAL)
+    if (gParameters.GetIncludePurelyTemporalClusters() && 
+        gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL)
       gDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
   catch (prg_exception& x) {
@@ -96,6 +97,7 @@ void CSpaceTimeData::SetProbabilityModel() {
   switch (gParameters.GetProbabilityModelType()) {
      case POISSON              : m_pModel = new CPoissonModel(*this);   break;
      case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
+     case CATEGORICAL          :
      case ORDINAL              : m_pModel = new OrdinalModel(); break;
      case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
      case WEIGHTEDNORMAL       :

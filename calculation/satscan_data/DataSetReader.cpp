@@ -11,6 +11,7 @@ AbstractDataSetReader * AbstractDataSetReader::getNewDataSetReader(const CParame
     case POISSON              :
     case BERNOULLI            :
     case SPACETIMEPERMUTATION : return new DefaultDataSetReader();
+    case CATEGORICAL          :
     case ORDINAL              : return new OrdinalDataSetReader();
     case EXPONENTIAL          :
        throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");

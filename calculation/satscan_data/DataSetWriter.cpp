@@ -11,6 +11,7 @@ AbstractDataSetWriter * AbstractDataSetWriter::getNewDataSetWriter(const CParame
     case POISSON              :
     case BERNOULLI            :
     case SPACETIMEPERMUTATION : return new DefaultDataSetWriter();
+    case CATEGORICAL          :
     case ORDINAL              : return new OrdinalDataSetWriter();
     case EXPONENTIAL          : return new ExponentialDataSetWriter();
     case WEIGHTEDNORMAL       :

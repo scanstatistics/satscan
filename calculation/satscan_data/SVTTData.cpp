@@ -205,6 +205,8 @@ void CSVTTData::SetProbabilityModel() {
                                                    "SetProbabilityModel()");
        case SPACETIMEPERMUTATION : throw prg_error("Spatial Variation in Temporal Trends not implemented for Space-Time Permutation model.\n",
                                                    "SetProbabilityModel()");
+       case CATEGORICAL          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Categorical model.\n",
+                                                   "SetProbabilityModel()");
        case ORDINAL              : throw prg_error("Spatial Variation in Temporal Trends not implemented for Ordinal model.\n",
                                                    "SetProbabilityModel()");
        case EXPONENTIAL          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Exponential model.\n",
