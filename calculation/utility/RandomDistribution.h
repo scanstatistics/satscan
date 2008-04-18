@@ -10,6 +10,7 @@
  **********************************************************************/
 long    Bernoulli(float p, RandomNumberGenerator & rng);
 long    Equilikely(long a, long b, RandomNumberGenerator & rng);
+double  Equilikely(double a, double b, RandomNumberGenerator & rng);
 double  gammln(double xx);
 
 /** Generates binomial(n, p) distributed variable. */

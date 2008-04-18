@@ -57,6 +57,15 @@ long Equilikely(long a, long b, RandomNumberGenerator & rng)
    return a + (long) floor((b - a + 1) * rng.GetRandomDouble());
 } /* Equilikely() */
 
+/**********************************************************************
+ Returns double uniformly distributed from a to b, inclusive
+ **********************************************************************/
+double Equilikely(double a, double b, RandomNumberGenerator & rng)
+{
+   //return a + floor((b - a) * rng.GetRandomDouble());
+   return a + (b - a) * rng.GetRandomDouble();
+} /* Equilikely() */
+
 /** Returns binomial(n, p) distributed variable. */
 long BinomialGenerator::GetBinomialDistributedVariable(long n, float pp, RandomNumberGenerator & rng) {
    long         j, rtn;
