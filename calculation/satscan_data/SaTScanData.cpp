@@ -125,7 +125,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
     //We do not need to recalculate the number of neighbors when the max spatial size restriction is by distance only.
     if (!bDistanceOnlyMax && !gParameters.UseLocationNeighborsFile() && geExecutingType != CENTRICALLY) {
       //Re-calculate neighboring locations about each centroid.
-      CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
+      CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors(*this);
       //possibly re-allocate and assign meta data contained in DataSet objects
       if (gParameters.UsingMultipleCoordinatesMetaLocations())
         for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
@@ -422,7 +422,7 @@ measure_t CSaTScanData::DateMeasure(const PopulationData & Population, measure_t
     Calls MakeNeighbor() function to calculate neighbors for each centroid. */
 void CSaTScanData::FindNeighbors() {
   try {
-    CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors();
+    CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors(*this);
     //possibly re-allocate and assign meta data contained in DataSet objects
     if (gParameters.UsingMultipleCoordinatesMetaLocations())
       for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t)
@@ -541,6 +541,7 @@ void CSaTScanData::Init() {
   m_nFlexibleWindowEndRangeStartIndex=0;
   m_nFlexibleWindowEndRangeEndIndex=0;
   m_nGridTracts = 0;
+  m_nTracts = 0;
   gtTotalMeasureAux = 0;
 }
 
@@ -681,6 +682,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
        case BERNOULLI      :
        case POISSON        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT));
                              std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT)); break;
+       case CATEGORICAL    :
        case ORDINAL        : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setCaseData_PT_Cat)); break;
        default : throw prg_error("Unknown probability %d model.", "RemoveClusterSignificance()", gParameters.GetProbabilityModelType());
       }
@@ -733,7 +735,7 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
            if (gParameters.GetProbabilityModelType() == BERNOULLI) gtTotalPopulation += DataSet.getTotalPopulation();
          }
        }
-       else if (gParameters.GetProbabilityModelType() == ORDINAL) {
+       else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
          gtTotalCases = 0;
          gtTotalPopulation = 0;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
@@ -808,7 +810,7 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
 
 /** Set neighbor array pointer requested type. */
 void CSaTScanData::SetActiveNeighborReferenceType(ActiveNeighborReferenceType eType) {
-  if (gParameters.GetIsPurelyTemporalAnalysis())
+  if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)
     return;
   switch (eType) {
     case REPORTED : if (gpReportedNeighborCountHandler) {
@@ -917,7 +919,7 @@ void CSaTScanData::SetPurelyTemporalCases() {
   size_t        t;
 
   try {
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
+    if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       for (t=0; t < gDataSets->GetNumDataSets(); ++t)
         gDataSets->GetDataSet(t).setCaseData_PT_Cat();
     else
