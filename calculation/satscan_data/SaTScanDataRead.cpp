@@ -16,6 +16,7 @@
 #include "OrdinalDataSetHandler.h"
 #include "ParametersPrint.h"
 #include "MetaTractManager.h"
+#include "HomogeneousPoissonDataSetHandler.h"
 
 const long SaTScanDataReader::guLocationIndex = 0;
 
@@ -92,11 +93,13 @@ void SaTScanDataReader::Read() {
       case POISSON              : bReadSuccess = ReadPoissonData(); break;
       case BERNOULLI            : bReadSuccess = ReadBernoulliData(); break;
       case SPACETIMEPERMUTATION : bReadSuccess = ReadSpaceTimePermutationData(); break;
+      case CATEGORICAL          :
       case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
       case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
       case WEIGHTEDNORMAL       :
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
+      case HOMOGENEOUSPOISSON   : bReadSuccess = ReadHomogeneousPoissonData(); break;
       default :
         throw prg_error("Unknown probability model type '%d'.","ReadDataFromFiles()", gParameters.GetProbabilityModelType());
     };
@@ -585,6 +588,25 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
     throw;
   }
   return bValid;
+}
+
+/** reads data from input files for a Homogeneous Poisson probability model */
+bool SaTScanDataReader::ReadHomogeneousPoissonData() {
+  try {
+    gDataHub.gDataSets.reset(new HomogeneousPoissonDataSetHandler(gDataHub, gTractHandler, gCentroidsHandler, gPrint));
+    gTractHandler.getMetaLocations().getMetaLocationPool().additionsCompleted(gTractHandler);
+    if (!gDataHub.gDataSets->ReadData())
+      return false;
+    //record number of locations read
+    gDataHub.m_nTracts = gTractHandler.getLocations().size();
+    //record number of centroids read
+    gDataHub.m_nGridTracts = gCentroidsHandler.getNumGridPoints();
+  }
+  catch (prg_exception& x) {
+    x.addTrace("ReadPoissonData()","SaTScanDataReader");
+    throw;
+  }
+  return true;
 }
 
 /** Reads latitude/longitude coordinates into vector.
