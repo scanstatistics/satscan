@@ -43,7 +43,8 @@ int OrdinalCombinedCategory::GetCategoryIndex(size_t tCatgoryPositionIndex) cons
 
 /** constructor */
 OrdinalLikelihoodCalculator::OrdinalLikelihoodCalculator(const CSaTScanData& DataHub)
-                            :AbstractLikelihoodCalculator(DataHub),
+                            :AbstractLikelihoodCalculator(DataHub), 
+                             gApplyOrderRestriction(DataHub.GetParameters().GetProbabilityModelType() == ORDINAL),
                              gbScanLowRates(DataHub.GetParameters().GetExecuteScanRateType() == LOW ||
                                             DataHub.GetParameters().GetExecuteScanRateType() == HIGHANDLOW),
                              gbScanHighRates(DataHub.GetParameters().GetExecuteScanRateType() == HIGH ||
@@ -84,20 +85,27 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vec
   double lowLLR=0, highLLR=0;
   bool   bLoglikelihoodRatioCalculated=false;
 
-  if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
-                                                                         gvDataSetTotalCasesPerCategory[tSetIndex],
-                                                                         &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
-    highLLR = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
-    bLoglikelihoodRatioCalculated = true;
+  if (!gApplyOrderRestriction) {
+      if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex])) {
+        highLLR = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+        bLoglikelihoodRatioCalculated = true;
+      }
   }
-  if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
-                                                                        gvDataSetTotalCasesPerCategory[tSetIndex],
-                                                                        &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
-    lowLLR = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
-    highLLR = (bLoglikelihoodRatioCalculated ? std::max(lowLLR, highLLR) : lowLLR);
-    bLoglikelihoodRatioCalculated = true;
+  else {
+      if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                                             gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                                             &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
+        highLLR = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+        bLoglikelihoodRatioCalculated = true;
+      }
+      if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                                            gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                                            &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
+        lowLLR = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+        highLLR = (bLoglikelihoodRatioCalculated ? std::max(lowLLR, highLLR) : lowLLR);
+        bLoglikelihoodRatioCalculated = true;
+      }
   }
-
   // return calculated loglikelihood ratio
   return (bLoglikelihoodRatioCalculated ? highLLR : 0);
 }
@@ -105,27 +113,33 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::vec
 /** Calculates loglikelihood ratio for ordinal data of data set 'tSetIndex', defined in vOrdinalCases;
     scannnig for high rates. Returns zero if llr can not be calculated. */
 double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinalHighRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
-  if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
-                                                      gvDataSetTotalCasesPerCategory[tSetIndex],
-                                                      &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea))
-    // return calculated loglikelihood ratio
-    return CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
-
-  // return zero - default if not calculated
-  return 0;  
+  if (!gApplyOrderRestriction) {
+     if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex]))
+       // return calculated loglikelihood ratio
+       return CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+  }
+  else if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                           gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                           &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea))
+      // return calculated loglikelihood ratio
+      return CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+  return 0; // return zero - default if not calculated
 }
 
 /** Calculates loglikelihood ratio for ordinal data of data set 'tSetIndex', defined in vOrdinalCases;
     scannnig for low rates. Returns zero if llr can not be calculated. */
 double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinalLowRate(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const {
-  if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
-                                                      gvDataSetTotalCasesPerCategory[tSetIndex],
-                                                      &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea))
-    // return calculated loglikelihood ratio
-    return CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
-    
-  // return zero - default if not calculated
-  return 0;  
+  if (!gApplyOrderRestriction) {
+     if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex]))
+       // return calculated loglikelihood ratio
+       return CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+  }
+  else if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                           gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                           &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea))
+      // return calculated loglikelihood ratio
+      return CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+  return 0; // return zero - default if not calculated
 }
 
 /** Creates a collection of OrdinalCombinedCategory objects, which will be representative
@@ -133,15 +147,23 @@ double OrdinalLikelihoodCalculator::CalcLogLikelihoodRatioOrdinalLowRate(const s
     inside and outside of cluster. */
 void OrdinalLikelihoodCalculator::CalculateCombinedCategories(const std::vector<count_t>& vOrdinalCases, std::vector<OrdinalCombinedCategory>& vOrdinalCategories) const {
   vOrdinalCategories.clear();
-  for (size_t k=0; k < vOrdinalCases.size(); ++k) {
-     vOrdinalCategories.push_back(OrdinalCombinedCategory(k));
-     size_t i = k;
-     while (++i < vOrdinalCases.size() &&
-         /* both ratios are infinity */   ((!gvQ[k] && !gvQ[i]) ||
-         /* ratios are equal */            (gvQ[k] && gvQ[i] && std::fabs(gvP[k]/gvQ[k] - gvP[i]/gvQ[i]) < .0000001))) {
-          vOrdinalCategories.back().Combine(i);
-          k = i;
-     }
+  if (gApplyOrderRestriction) {
+    for (size_t k=0; k < vOrdinalCases.size(); ++k) {
+        vOrdinalCategories.push_back(OrdinalCombinedCategory(k));
+        size_t i = k;
+        while (++i < vOrdinalCases.size() &&
+            /* both ratios are infinity */   ((!gvQ[k] && !gvQ[i]) ||
+            /* ratios are equal */            (gvQ[k] && gvQ[i] && std::fabs(gvP[k]/gvQ[k] - gvP[i]/gvQ[i]) < .0000001))) {
+            vOrdinalCategories.back().Combine(i);
+            k = i;
+        }
+    }
+  }
+  else {
+    // no combining of catgories when not applying order restriction
+    for (size_t k=0; k < vOrdinalCases.size(); ++k) {
+        vOrdinalCategories.push_back(OrdinalCombinedCategory(k));
+    }
   }
 }
 
@@ -160,20 +182,27 @@ double OrdinalLikelihoodCalculator::CalculateMaximizingValueOrdinal(const std::v
   double lowMaximizingValue=0, highMaximizingValue=0;
   bool   bMaximizingValue=false;
 
-  if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
-                                                                         gvDataSetTotalCasesPerCategory[tSetIndex],
-                                                                         &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
-    highMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
-    bMaximizingValue = true;
+  if (!gApplyOrderRestriction) {
+     if (CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,gvDataSetTotalCasesPerCategory[tSetIndex])) {
+       highMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
+       bMaximizingValue = true;
+     }
   }
-  if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
-                                                                        gvDataSetTotalCasesPerCategory[tSetIndex],
-                                                                        &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
-    lowMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
-    highMaximizingValue = (bMaximizingValue ? std::max(lowMaximizingValue, highMaximizingValue) : lowMaximizingValue);
-    bMaximizingValue = true;
+  else {
+     if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                                            gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                                            &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
+       highMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
+       bMaximizingValue = true;
+     }
+     if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases,
+                                                                           gvDataSetTotalCasesPerCategory[tSetIndex],
+                                                                           &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea)) {
+       lowMaximizingValue = CalculateLogLikelihood(vOrdinalCases, tSetIndex);
+       highMaximizingValue = (bMaximizingValue ? std::max(lowMaximizingValue, highMaximizingValue) : lowMaximizingValue);
+       bMaximizingValue = true;
+     }
   }
-
   // return calculated loglikelihood ratio
   return (bMaximizingValue ? highMaximizingValue : -std::numeric_limits<double>::max());
 }
@@ -205,20 +234,51 @@ void OrdinalLikelihoodCalculator::CalculateOrdinalCombinedCategories(const std::
 
   vOrdinalCategories.clear();
 
-  //Since we don't know whether the log likelihood ratio for this collection of ordinal cases
-  //was produced by scanning for high or low rates (when scanning for both), re-calculate both
-  //if necessary and keep combined category information for whichever ratio was greater; keeping
-  //that for high should they be equal.
-  if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
-    //Calculate log likelihood for high rates - we might need this to compare against that for low rates.
-    dHighRateLoglikelihoodRatio = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
-    bEvaluatedHighRates = true;
-    CalculateCombinedCategories(vOrdinalCases, vOrdinalCategories);
+  if (!gApplyOrderRestriction) {
+     // when not appling order restriction, there isn't a high or low rate
+     CalculateCombinedCategories(vOrdinalCases, vOrdinalCategories);
   }
-  if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea))
-    if (!bEvaluatedHighRates ||
-        CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex] > dHighRateLoglikelihoodRatio)
-      CalculateCombinedCategories(vOrdinalCases, vOrdinalCategories);
+  else {
+     //Since we don't know whether the log likelihood ratio for this collection of ordinal cases
+     //was produced by scanning for high or low rates (when scanning for both), re-calculate both
+     //if necessary and keep combined category information for whichever ratio was greater; keeping
+     //that for high should they be equal.
+     if (gbScanHighRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForHighScanningArea)) {
+       //Calculate log likelihood for high rates - we might need this to compare against that for low rates.
+       dHighRateLoglikelihoodRatio = CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex];
+       bEvaluatedHighRates = true;
+       CalculateCombinedCategories(vOrdinalCases, vOrdinalCategories);
+     }
+     if (gbScanLowRates && CalculateProbabilitiesInsideAndOutsideOfCluster(vOrdinalCases, gvDataSetTotalCasesPerCategory[tSetIndex], &OrdinalLikelihoodCalculator::CompareRatioForLowScanningArea))
+       if (!bEvaluatedHighRates ||
+           CalculateLogLikelihood(vOrdinalCases, tSetIndex) - gvDataSetLogLikelihoodUnderNull[tSetIndex] > dHighRateLoglikelihoodRatio)
+         CalculateCombinedCategories(vOrdinalCases, vOrdinalCategories);
+  }
+}
+
+/** Calculates probabilities inside and outside of clustering.
+    gvP[k] is the probability that a case inside the window belongs to category k
+    gvQ[k] is the probability that a case outside the window belongs to category k */
+bool OrdinalLikelihoodCalculator::CalculateProbabilitiesInsideAndOutsideOfCluster(const std::vector<count_t>& vOrdinalCases, const std::vector<double>& vOrdinalTotalCases) const {
+  double       W=0; // total cases inside window
+  double       U=0; // total cases outside window
+
+  // calculate total number of cases inside window
+  for (size_t k=0; k < vOrdinalCases.size(); ++k)
+     W += vOrdinalCases[k];
+  if (!W) // return false if no cases to evaluate
+     return false;
+  // calculate total number of cases outside window
+  for (size_t k=0; k < vOrdinalCases.size(); ++k)
+     U += vOrdinalTotalCases[k] - vOrdinalCases[k];
+  if (!U) // return false if no cases to evaluate
+     return false;
+  // calculate P and Q for each category
+  for (size_t k=0; k < vOrdinalCases.size(); ++k) {
+     gvP[k] = (double)vOrdinalCases[k]/W;
+     gvQ[k] = ((double)(vOrdinalTotalCases[k] - vOrdinalCases[k]))/U;
+  }
+  return true;
 }
 
 /** Calculates probabilities inside and outside of clustering.

@@ -108,7 +108,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     }
     CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 5, uwOffset);
 
-    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
@@ -159,7 +159,8 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     //   - relative risk calculation not defined for STP, Exponential, another to be model
     if (gParameters.GetProbabilityModelType() == POISSON  ||
         gParameters.GetProbabilityModelType() == BERNOULLI ||
-        gParameters.GetProbabilityModelType() == ORDINAL)
+        gParameters.GetProbabilityModelType() == ORDINAL ||
+        gParameters.GetProbabilityModelType() == CATEGORICAL)
       CreateField(vDataFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
       CreateField(vDataFieldDefinitions, TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -208,7 +209,8 @@ void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNum
 void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber) {
   try {
     //now write to secondary cluster information file
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
+    if (gParameters.GetProbabilityModelType() == ORDINAL ||
+        gParameters.GetProbabilityModelType() == CATEGORICAL)
       WriteCountOrdinalData(theCluster, iClusterNumber);
     else
       WriteCountData(theCluster, iClusterNumber);
@@ -250,7 +252,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
     Record.GetFieldValue(START_DATE_FLD).AsString() = theCluster.GetStartDate(sBuffer, gDataHub);
     Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
-    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
       if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         dObserved = theCluster.GetObservedCount();

@@ -29,10 +29,12 @@ class OrdinalLikelihoodCalculator : public AbstractLikelihoodCalculator {
     std::vector<std::vector<double> >   gvDataSetTotalCasesPerCategory;
     bool                                gbScanHighRates;           /** indicates whether to scan for high rates */
     bool                                gbScanLowRates;            /** indicates whether to scan for low rates */
+    bool                                gApplyOrderRestriction;
 
     void                CalculateCombinedCategories(const std::vector<count_t>& vOrdinalCases, std::vector<OrdinalCombinedCategory>& vOrdinalCategories) const;
     double              CalculateLogLikelihood(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex) const;
     bool                CalculateProbabilitiesInsideAndOutsideOfCluster(const std::vector<count_t>& vOrdinalCases, const std::vector<double>& vOrdinalTotalCases, COMPARE_RATIOS_METHOD pCompareMethod) const;
+    bool                CalculateProbabilitiesInsideAndOutsideOfCluster(const std::vector<count_t>& vOrdinalCases, const std::vector<double>& vOrdinalTotalCases) const;
     bool                CompareRatioForHighScanningArea(double dPk, double dQk, double dPi,double dQi) const;
     bool                CompareRatioForLowScanningArea(double dPk, double dQk, double dPi, double dQi) const;
 

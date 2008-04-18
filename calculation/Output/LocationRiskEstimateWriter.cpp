@@ -38,12 +38,14 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
   unsigned short uwOffset = 0;
 
   try {
-    if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      throw prg_error("Cluster Information file not implemented for SVTT and Ordinal model.","SetupFields()");
+    if (gParameters.GetProbabilityModelType() == ORDINAL || 
+        gParameters.GetProbabilityModelType() == CATEGORICAL || 
+        gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+      throw prg_error("Risk estimates file not implemented for SVTT, Ordinal or Categorical models.","SetupFields()");
     CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
     if (gParameters.GetNumDataSets() > 1)
       CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
+    if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
       CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -81,7 +83,8 @@ std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_
 /** writes relative risk data to record and appends to internal buffer of records */
 void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
   try {
-    if (gParameters.GetProbabilityModelType() == ORDINAL)
+    if (gParameters.GetProbabilityModelType() == ORDINAL ||
+        gParameters.GetProbabilityModelType() == CATEGORICAL)
       RecordRelativeRiskDataAsOrdinal(DataHub);
     else
       RecordRelativeRiskDataStandard(DataHub);

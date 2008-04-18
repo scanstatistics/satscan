@@ -123,7 +123,7 @@ AbstractTemporalClusterData * MultiSetsCategoricalClusterDataFactory::GetNewSpac
 /** Internal class setup function. */
 void MultiSetsCategoricalClusterDataFactory::Setup(const CParameters& Parameters) {
   try {
-    if (Parameters.GetProbabilityModelType() != ORDINAL)
+    if (Parameters.GetProbabilityModelType() != ORDINAL || Parameters.GetProbabilityModelType() == CATEGORICAL)
       throw prg_error("This class does implements a multiple dataset factory\n"
                       "interface for the Ordinal probability model only.\n","Setup()");
   }

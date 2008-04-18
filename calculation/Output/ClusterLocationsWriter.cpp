@@ -58,7 +58,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
 
     //defined cluster level fields to report -- none of these are reported
     // for multiple data sets nor the ordinal probability model
-    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, CLU_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -78,7 +78,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     }
     //defined location level fields to report -- none of these are reported
     // for multiple data sets nor the ordinal probability model
-    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+    if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
@@ -121,7 +121,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        if (!gbExcludePValueField)
          Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
        //location information fields are only present for one dataset and not ordinal model
-       if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+       if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
          //When there is more than one identifiers for a tract, this indicates
          //that locations where combined. Print a record for each location but
          //leave area specific information blank.
@@ -171,7 +171,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          }
        }
        //cluster information fields are only present for one dataset and not ordinal model
-       if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL) {
+       if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
          Record.GetFieldValue(CLU_OBS_FIELD).AsDouble() = theCluster.GetObservedCount();
          if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
            count_t tObserved = theCluster.GetObservedCount();

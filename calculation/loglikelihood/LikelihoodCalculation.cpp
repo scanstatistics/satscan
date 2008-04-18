@@ -57,8 +57,10 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
       case POISSON              :
       case BERNOULLI            :
       case SPACETIMEPERMUTATION :
+      case CATEGORICAL          :
       case ORDINAL              :
       case RANK                 :
+      case HOMOGENEOUSPOISSON   :
       case EXPONENTIAL          : gtMinLowRateCases = 0; gtMinHighRateCases = 2; break;
       case WEIGHTEDNORMAL       :
       case NORMAL               : gtMinLowRateCases = 2; gtMinHighRateCases = 2; break;
