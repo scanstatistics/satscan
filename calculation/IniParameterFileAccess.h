@@ -17,6 +17,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType);
     std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const;
     void                                ReadMultipleDataSetsSettings(const IniFile& SourceFile);
+    void                                ReadObservableRegionSettings(const IniFile& SourceFile);
 
     void                                WriteAnalysisSettings(IniFile& WriteFile);
     void                                WriteClustersReportedSettings(IniFile& WriteFile);
@@ -29,6 +30,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteMultipleCoordinatesSettings(IniFile& WriteFile);
     void                                WriteMultipleDataSetsSettings(IniFile& WriteFile);
     void                                WriteNeighborsFileSettings(IniFile& WriteFile);
+    void                                WriteObservableRegionSettings(IniFile& WriteFile);
     void                                WriteOutputSettings(IniFile& WriteFile);
     void                                WritePowerSimulationsSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);

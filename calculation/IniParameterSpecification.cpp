@@ -14,6 +14,7 @@ const char * IniParameterSpecification::MultipleCoordinates     = "[Multiple Coo
 const char * IniParameterSpecification::Analysis                = "[Analysis]";
 const char * IniParameterSpecification::SpatialWindow           = "[Spatial Window]";
 const char * IniParameterSpecification::TemporalWindow          = "[Temporal Window]";
+const char * IniParameterSpecification::RegionsWindow           = "[Regions Window]";
 const char * IniParameterSpecification::SpaceAndTimeAdjustments = "[Space and Time Adjustments]";
 const char * IniParameterSpecification::Inference               = "[Inference]";
 const char * IniParameterSpecification::Output                  = "[Output]";
@@ -35,7 +36,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_8_0_x_ParameterList();
+  Build_7_1_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -79,10 +80,10 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     Build_6_0_x_ParameterList();
   else if (Version.iMajor == 6  && Version.iMinor == 1)
     Build_6_1_x_ParameterList();
-  else if (Version.iMajor == 7)
+  else if (Version.iMajor == 7 && Version.iMinor == 0)
     Build_7_0_x_ParameterList();
   else
-    Build_8_0_x_ParameterList();
+    Build_7_1_x_ParameterList();
 }
 
 /** destructor */
@@ -326,7 +327,7 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 }
 
 /** Version 8.0.x */
-void IniParameterSpecification::Build_8_0_x_ParameterList() {
+void IniParameterSpecification::Build_7_1_x_ParameterList() {
   Build_7_0_x_ParameterList();
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"RandomlyGenerateSeed"));
   gvParameterInfo.push_back(std::make_pair(MultipleCoordinates, (const char*)"MultipleCoordinatesType"));
@@ -334,6 +335,9 @@ void IniParameterSpecification::Build_8_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseMetaLocationsFile"));
   //risk/isotonic scan moved to spatial window tab
   gvParameterInfo[RISKFUNCTION - 1] = std::make_pair(SpatialWindow, (const char*)"IsotonicScan");
+
+  gvParameterInfo.push_back(std::make_pair(RegionsWindow, (const char*)"__not_used_yet__"));
+  gvMultipleParameterInfo[OBSERVABLE_REGIONS] = std::make_pair(RegionsWindow, (const char*)"Region");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

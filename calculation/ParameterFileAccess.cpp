@@ -154,6 +154,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MULTIPLE_COORDINATES_TYPE: return " multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)";
       case META_LOCATIONS_FILE      : return " meta locations file";
       case USE_META_LOCATIONS_FILE  : return " use meta locations file (y/n)";
+      case OBSERVABLE_REGIONS       : return " inequalities (comma separated decimal values)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -234,7 +235,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
                                       return s;
       case INTERVAL_ENDRANGE        : printString(s, "%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
                                       return s;
-      case TIMETRENDCONVRG	    : return AsString(s, gParameters.GetTimeTrendConvergence());
+      case TIMETRENDCONVRG	        : return AsString(s, gParameters.GetTimeTrendConvergence());
       case MAXCIRCLEPOPFILE         : s = gParameters.GetMaxCirclePopulationFileName(); return s;
       case EARLY_SIM_TERMINATION    : return AsString(s, gParameters.GetTerminateSimulationsEarly());
       case REPORTED_GEOSIZE         : s = "0"; return s;
@@ -276,6 +277,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case MULTIPLE_COORDINATES_TYPE: return AsString(s, gParameters.GetMultipleCoordinatesType());
       case META_LOCATIONS_FILE      : s = gParameters.getMetaLocationsFilename(); return s;
       case USE_META_LOCATIONS_FILE  : return AsString(s, gParameters.UseMetaLocationsFile());
+      case OBSERVABLE_REGIONS       : s = "n/a"; return s;
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -390,6 +392,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case MULTIPLE_COORDINATES_TYPE: AsString(default_value, gParameters.GetMultipleCoordinatesType()); break;
       case META_LOCATIONS_FILE      : default_value = "<blank>"; break;
       case USE_META_LOCATIONS_FILE  : default_value = (gParameters.UseMetaLocationsFile() ? "y" : "n"); break;
+      case OBSERVABLE_REGIONS       : default_value = "<blank>"; break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -725,6 +728,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetMultipleCoordinatesType((MultipleCoordinatesType)ReadInt(sParameter, eParameterType)); break;
       case META_LOCATIONS_FILE       : gParameters.setMetaLocationsFilename(sParameter.c_str(), true); break;
       case USE_META_LOCATIONS_FILE   : gParameters.UseMetaLocationsFile(ReadBoolean(sParameter, eParameterType)); break;
+      case OBSERVABLE_REGIONS        : break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

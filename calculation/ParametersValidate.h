@@ -18,6 +18,7 @@ class ParametersValidate {
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
+    bool                ValidateObservableRegionsParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
     bool                ValidateProspectiveDate(BasePrint& PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;

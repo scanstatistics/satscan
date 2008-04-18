@@ -115,6 +115,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case MULTIPLE_COORDINATES_TYPE : return "Multiple Coordinates Type (line 93)";
     case META_LOCATIONS_FILE       : return "Meta locations filename (line 94)";
     case USE_META_LOCATIONS_FILE   : return "Use meta locations file (line 95)";
+    case OBSERVABLE_REGIONS        : return "Inequalities (line 96)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

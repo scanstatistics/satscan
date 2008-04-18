@@ -38,14 +38,16 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
 const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
   try {
     switch (gParameters.GetProbabilityModelType()) {
-      case POISSON :  if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-                         switch (gParameters.GetAreaScanRateType()) {
-                           case HIGH       : return "Increasing Rates";
-                           case LOW        : return "Decreasing Rates";
-                           case HIGHANDLOW : return "Increasing or Decreasing Rates";
-                           default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
-                         }
-                      }
+      case POISSON :  
+         if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+            switch (gParameters.GetAreaScanRateType()) {
+                case HIGH       : return "Increasing Rates";
+                case LOW        : return "Decreasing Rates";
+                case HIGHANDLOW : return "Increasing or Decreasing Rates";
+                default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
+            }
+         }
+      case HOMOGENEOUSPOISSON :
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
          switch (gParameters.GetAreaScanRateType()) {
@@ -54,6 +56,7 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
             case HIGHANDLOW : return "High or Low Rates";
             default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
          }
+      case CATEGORICAL : return "All Values";
       case ORDINAL :
       case WEIGHTEDNORMAL :
       case NORMAL :
@@ -88,11 +91,13 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
       case POISSON              : sProbabilityModel = "Poisson"; break;
       case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
       case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
+      case CATEGORICAL          : sProbabilityModel = "Categorical"; break;
       case ORDINAL              : sProbabilityModel = "Ordinal"; break;
       case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
       case NORMAL               : sProbabilityModel = "Normal"; break;
       case WEIGHTEDNORMAL       : sProbabilityModel = "Weighted Normal"; break;
       case RANK                 : sProbabilityModel = "Rank"; break;
+      case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
       default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
     }
   }
@@ -251,11 +256,13 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case POISSON              : fprintf(fp, "using the Poisson model.\n"); break;
       case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
       case SPACETIMEPERMUTATION : fprintf(fp, "using the Space-Time Permutation model.\n"); break;
+      case CATEGORICAL          : fprintf(fp, "using the Categorical model.\n"); break;
       case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
       case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
       case WEIGHTEDNORMAL       : fprintf(fp, "using the Weighted Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
+      case HOMOGENEOUSPOISSON   : fprintf(fp, "using the Homogeneous Poisson model.\n"); break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
     }
@@ -466,11 +473,13 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       case BERNOULLI :
          fprintf(fp, "  Control File      %s : %s\n", sDataSetLabel, gParameters.GetControlFileName(1).c_str()); break;
       case SPACETIMEPERMUTATION :
+      case CATEGORICAL          :
       case ORDINAL              :
       case EXPONENTIAL          :
       case NORMAL               :
       case WEIGHTEDNORMAL       :
-      case RANK                 : break;
+      case RANK                 :
+      case HOMOGENEOUSPOISSON   :  break;    
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintInputParameters()", gParameters.GetProbabilityModelType());
     }
@@ -543,11 +552,13 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
          case BERNOULLI :
            fprintf(fp, "  Control File     (data set %i) : %s\n", t + 1, gParameters.GetControlFileName(t + 1).c_str()); break;
          case SPACETIMEPERMUTATION :
+         case CATEGORICAL          : 
          case ORDINAL              :
          case EXPONENTIAL          :
          case WEIGHTEDNORMAL       :
          case NORMAL               :
-         case RANK                 : break;
+         case RANK                 : 
+         case HOMOGENEOUSPOISSON   : break;
          default :
            throw prg_error("Unknown probability model type '%d'.\n",
                            "PrintMultipleDataSetParameters()", gParameters.GetProbabilityModelType());

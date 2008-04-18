@@ -9,6 +9,7 @@
 #include "SSException.h"
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_int.hpp>
+#include "ObservableRegion.h"
 
 /** constructor */
 ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -32,11 +33,12 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
       bValid = false;
     if (!ValidateSVTTAnalysisSettings(PrintDirection))
       bValid = false;
-    if (gParameters.GetProbabilityModelType() == ORDINAL && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
+    if ((gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
+        && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "Adjustment purpose for multiple data sets is not permitted with ordinal "
-                            "probability model in this version of SaTScan.\n", BasePrint::P_PARAMERROR);
+                            "Adjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n", 
+                            BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
         !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS || gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
@@ -45,6 +47,16 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                             "When using the non-Eucledian neighbors file, the criteria for reporting secondary clusters "
                             "can either be set to 'no restrictions' or 'no geographical overlap'.\n", BasePrint::P_PARAMERROR);
     }
+    if (gParameters.GetOutputRelativeRisksFiles() && 
+        (gParameters.GetProbabilityModelType() == ORDINAL || 
+         gParameters.GetProbabilityModelType() == CATEGORICAL ||
+         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The additional output file for risk estimates is not permitted for %s model.\n", 
+                            BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }
+
     if (!ValidateExecutionTypeParameters(PrintDirection))
       bValid = false;
     //validate dates
@@ -59,6 +71,9 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
 
     //validate spatial options
     if (! ValidateSpatialParameters(PrintDirection))
+      bValid = false;
+
+    if (!ValidateObservableRegionsParameters(PrintDirection))
       bValid = false;
 
     //validate input/oupt files
@@ -339,7 +354,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       }
     }
     //validate coordinates file
-    if (!(gParameters.UseLocationNeighborsFile() || gParameters.GetIsPurelyTemporalAnalysis())) {
+    if (!(gParameters.UseLocationNeighborsFile() || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
       if (gParameters.GetCoordinatesFileName().empty()) {
          bValid = false;
          PrintDirection.Printf("Invalid Parameter Setting:\nNo coordinates file specified.\n", BasePrint::P_PARAMERROR);
@@ -496,9 +511,11 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
         return false;
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
-            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == NORMAL ||
-            gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ||gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is implemented for Poisson, Bernoulli, Ordinal, Normal and Exponential models only.\n", BasePrint::P_PARAMERROR);
+            gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
+            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ||
+            gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for %s model.\n", 
+                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         return false;
       }
       if (gParameters.GetNumIterativeScansRequested() > static_cast<unsigned int>(CParameters::MAXIMUM_ITERATIVE_ANALYSES)) {
@@ -628,6 +645,44 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
   }
   catch (prg_exception& x) {
     x.addTrace("ValidateMonotoneRisk()","ParametersValidate");
+    throw;
+  }
+  return bReturn;
+}
+
+/** Validates observable regions parameters. */
+bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDirection) const {
+  bool  bReturn=true;
+
+  if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) return true;
+
+  try { 
+    std::vector<ConvexPolygonObservableRegion> polygons;
+    // for each region defined, attempt to define region from specifications
+    for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
+       // Validate that regions define inequalities correctly ...
+       InequalityContainer_t inequalities = ConvexPolygonBuilder::parse(gParameters.getObservableRegions()[t]);
+       // Validate inequalities define a bound region ...
+       polygons.push_back(ConvexPolygonBuilder::buildConvexPolygon(inequalities));
+    }
+    //test that polygons do not overlap
+    for (size_t i=0; i < polygons.size() - 1; ++i) {
+       if (polygons[i].intersectsRegion(polygons[i+1]))
+         throw region_exception("Inequalities define regions that overlapp."
+                                "Please check inequalities and/or redefine to not have overlap.");
+    }
+
+    //TODO: 
+    // -- no maximum circle size using max circle population file
+    // -- more ...
+    // -- limit to one thread for simulation process
+  }
+  catch (region_exception& x) {
+    PrintDirection.Printf("Invalid Parameter Setting:\n%s\n", BasePrint::P_PARAMERROR, x.what());
+    bReturn=false;
+  } 
+  catch (prg_exception& x) {
+    x.addTrace("ValidateObservableRegionsParameters()","ParametersValidate");
     throw;
   }
   return bReturn;
@@ -1259,6 +1314,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
           const_cast<CParameters&>(gParameters).SetTimeTrendAdjustmentPercentage(0);
         }
         break;
+      case CATEGORICAL          :
       case ORDINAL              :
       case EXPONENTIAL          :
       case NORMAL               :

@@ -21,6 +21,7 @@ class IniParameterSpecification {
     static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
+    static const char         * RegionsWindow;
     static const char         * SpaceAndTimeAdjustments;
     static const char         * Inference;
     static const char         * Output;
@@ -50,7 +51,7 @@ class IniParameterSpecification {
     void                        Build_6_0_x_ParameterList();
     void                        Build_6_1_x_ParameterList();
     void                        Build_7_0_x_ParameterList();
-    void                        Build_8_0_x_ParameterList();
+    void                        Build_7_1_x_ParameterList();
 
    public:
      IniParameterSpecification();

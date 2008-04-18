@@ -8,7 +8,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 95;
+const int CParameters::giNumParameters 	              = 96;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -124,6 +124,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geMultipleCoordinatesType              != rhs.geMultipleCoordinatesType) return false;
   if (gsMetaLocationsFilename                != rhs.gsMetaLocationsFilename) return false;
   if (gbUseMetaLocationsFile                 != rhs.gbUseMetaLocationsFile) return false;
+  if (gvObservableRegions                    != rhs.gvObservableRegions) return false;
 
   return true;
 }
@@ -147,6 +148,17 @@ void CParameters::AddEllipsoidRotations(int iRotations, bool bEmptyFirst) {
 void CParameters::AddEllipsoidShape(double dShape, bool bEmptyFirst) {
   if (bEmptyFirst) gvEllipseShapes.clear();
   gvEllipseShapes.push_back(dShape);
+}
+
+/** Adds string that defines observable region to internal collection. */
+void CParameters::AddObservableRegion(const char * sRegions, size_t iIndex) {
+  if (!sRegions)
+     throw prg_error("Null pointer.","AddObservableRegion()");
+
+  if (iIndex + 1 > gvObservableRegions.size())
+    gvObservableRegions.resize(iIndex + 1);
+
+  gvObservableRegions[iIndex] = sRegions;
 }
 
 /** If passed filename contains a slash, then assumes that path is complete and
@@ -229,7 +241,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gsEndRangeEndDate                      = rhs.gsEndRangeEndDate;
   gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
   gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
-  gdTimeTrendConverge			 = rhs.gdTimeTrendConverge;
+  gdTimeTrendConverge			         = rhs.gdTimeTrendConverge;
   gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
   gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
   geSimulationType                       = rhs.geSimulationType;
@@ -268,6 +280,7 @@ void CParameters::Copy(const CParameters &rhs) {
   geMultipleCoordinatesType              = rhs.geMultipleCoordinatesType;
   gsMetaLocationsFilename                = rhs.gsMetaLocationsFilename;
   gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
+  gvObservableRegions                    = rhs.gvObservableRegions;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -387,7 +400,7 @@ bool CParameters::GetPermitsPurelySpatialCluster() const {
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == WEIGHTEDNORMAL || eModelType == NORMAL
-         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
 /** returns whether analysis type permits inclusion of purely temporal cluster */
@@ -398,7 +411,7 @@ bool CParameters::GetPermitsPurelyTemporalCluster() const {
 /** returns whether probability model type permits inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
   return eModelType == POISSON || eModelType == BERNOULLI || eModelType == WEIGHTEDNORMAL || eModelType == NORMAL
-         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL;
+         || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
 const std::string & CParameters::GetPopulationFileName(size_t iSetIndex) const {
@@ -664,6 +677,7 @@ void CParameters::SetAsDefaulted() {
   geMultipleCoordinatesType = ONEPERLOCATION;
   gsMetaLocationsFilename = "";
   gbUseMetaLocationsFile = false;
+  gvObservableRegions.clear();
 }
 
 /** Sets start range start date. Throws exception. */

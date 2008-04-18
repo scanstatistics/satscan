@@ -52,6 +52,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
 
     for (ParameterType eType=ANALYSISTYPE; eType <= gParameters.giNumParameters; eType = ParameterType(eType + 1))
        ReadIniParameter(SourceFile, eType);
+    ReadObservableRegionSettings(SourceFile);
     ReadMultipleDataSetsSettings(SourceFile);
   }
   catch (prg_exception& x) {
@@ -91,17 +92,17 @@ std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile
   long                  lSectionIndex, lKeyIndex;
   std::string           sNextKey;
   const char          * sSectionName, * sKey;
-  size_t                iDataSets=2;
+  size_t                iRegion=1;
 
   vParameters.clear();
   if (GetSpecifications().GetMultipleParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
     //read possibly other dataset case source
     if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
       const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
-      printString(sNextKey, "%s%i", sKey, iDataSets);
+      printString(sNextKey, "%s%i", sKey, iRegion);
       while ((lKeyIndex = pSection->FindKey(sNextKey.c_str())) > -1) {
            vParameters.push_back(std::string(pSection->GetLine(lKeyIndex)->GetValue()));
-           printString(sNextKey, "%s%i", sKey, ++iDataSets);
+           printString(sNextKey, "%s%i", sKey, ++iRegion);
       }
     }
   }
@@ -139,6 +140,21 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceF
   }
 }
 
+/** Reads parameter settings grouped under 'Regions Window'. */
+void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceFile) {
+  std::vector<std::string>      inequalities;
+
+  try {
+    ReadIniParameter(SourceFile, OBSERVABLE_REGIONS, inequalities);
+    for (size_t t=0; t < inequalities.size(); ++t)
+        gParameters.AddObservableRegion(inequalities[t].c_str(), t);
+  }
+  catch (prg_exception& x) {
+    x.addTrace("ReadObservableRegionSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
 /** Writes parameters of associated CParameters object to ini file, of most recent
     format specification. */
 void IniParameterFileAccess::Write(const char* sFilename) {
@@ -158,6 +174,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteMultipleCoordinatesSettings(WriteFile);
     WriteSpatialWindowSettings(WriteFile);
     WriteTemporalWindowSettings(WriteFile);
+    WriteObservableRegionSettings(WriteFile);
     WriteSpaceAndTimeAdjustmentSettings(WriteFile);
     WriteInferenceSettings(WriteFile);
     WriteClustersReportedSettings(WriteFile);
@@ -375,6 +392,26 @@ void IniParameterFileAccess::WriteNeighborsFileSettings(IniFile& WriteFile) {
   }
   catch (prg_exception& x) {
     x.addTrace("WriteNeighborsFileSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
+/**  Writes parameter settings grouped under 'Region Window'. */
+void IniParameterFileAccess::WriteObservableRegionSettings(IniFile& WriteFile) {
+  std::string   s, sComment;
+  const char  * sSectionName, * sBaseKey;
+
+  try {
+    if (GetSpecifications().GetMultipleParameterIniInfo(OBSERVABLE_REGIONS, &sSectionName, &sBaseKey)) {
+        for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
+         printString(s, "%s%i", sBaseKey, t + 1);
+         printString(sComment, " inequalities list -- defines bound region");
+         WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.getObservableRegions()[t].c_str(), sComment.c_str());
+      }
+    }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("WriteObservableRegionSettings()","IniParameterFileAccess");
     throw;
   }
 }

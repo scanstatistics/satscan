@@ -31,15 +31,17 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
-                                    MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE};
+                                    MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
 /** cluster types */
 enum ClusterType                   {PURELYSPATIALCLUSTER=1, PURELYTEMPORALCLUSTER, SPACETIMECLUSTER,
-                                    SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER, PURELYSPATIALPROSPECTIVECLUSTER};
+                                    SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER, 
+                                    PURELYSPATIALPROSPECTIVECLUSTER,PURELYSPATIALHOMOGENEOUSCLUSTER};
 /** probability model types */
-enum ProbabilityModelType          {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, NORMAL, WEIGHTEDNORMAL, RANK};
+enum ProbabilityModelType          {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, 
+                                    NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, WEIGHTEDNORMAL, RANK};
 enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
 enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 /** area incidence rate types */
@@ -186,6 +188,7 @@ class CParameters {
     bool                                gbReportCriticalValues;                 /** indicates whether to report critical llr values */
     bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
     SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
+    std::vector<std::string>            gvObservableRegions;                    /** collection of observable regions */
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
@@ -206,6 +209,7 @@ class CParameters {
 
     void                                AddEllipsoidShape(double dShape, bool bEmptyFirst);
     void                                AddEllipsoidRotations(int iRotations, bool bEmptyFirst);
+    void                                AddObservableRegion(const char * sRegions, size_t iIndex);
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
@@ -255,6 +259,7 @@ class CParameters {
     int                                 GetNumRequestedEllipses() const {return (int)gvEllipseShapes.size();}
     unsigned int                        GetNumIterativeScansRequested() const {return giNumIterativeRuns;}
     long                                GetNumTotalEllipses() const {return (gbUseLocationNeighborsFile || geSpatialWindowType == CIRCULAR ? 0 : glTotalNumEllipses);}
+    const std::vector<std::string>    & getObservableRegions() const {return gvObservableRegions;}
     bool                                GetOutputAreaSpecificAscii() const  {return gbOutputAreaSpecificAscii;}
     bool                                GetOutputAreaSpecificDBase() const  {return gbOutputAreaSpecificDBase;}
     bool                                GetOutputAreaSpecificFiles() const;
