@@ -1,0 +1,1842 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JInternalFrameFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="_timePrecisionButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionButtonGroup.add(_timePrecisionNone);&#xa;_timePrecisionButtonGroup.add(_timePrecisionYear);&#xa;_timePrecisionButtonGroup.add(_timePrecisionMonth);&#xa;_timePrecisionButtonGroup.add(_timePrecisionDay);"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="_coordinatesButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinatesButtonGroup.add(_cartesianRadioButton);&#xa;_coordinatesButtonGroup.add(_latLongRadioButton);"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="_analysisTypeButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_analysisTypeButtonGroup.add(_retrospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectivePurelySpatialRadioButton);&#xa;_analysisTypeButtonGroup.add(_retrospectiveSpaceTimeRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectivePurelyTemporalRadioButton);&#xa;_analysisTypeButtonGroup.add(_prospectiveSpaceTimeRadioButton);"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="_probabilityModelTypeButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="_scanAreasButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_scanAreasButtonGroup.add(_highRatesRadioButton);&#xa;_scanAreasButtonGroup.add(_lowRatesRadioButton);&#xa;_scanAreasButtonGroup.add(_highOrLowRatesRadioButton);"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.ButtonGroup" name="_timeAggregationButtonGroup">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationButtonGroup.add(_timeAggregationYearRadioButton);&#xa;_timeAggregationButtonGroup.add(_timeAggregationMonthRadioButton);&#xa;_timeAggregationButtonGroup.add(_timeAggregationDayRadioButton);"/>
+      </AuxValues>
+    </Component>
+  </NonVisualComponents>
+  <Properties>
+    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+      <Border info="null"/>
+    </Property>
+    <Property name="closable" type="boolean" value="true"/>
+    <Property name="defaultCloseOperation" type="int" value="0"/>
+    <Property name="iconifiable" type="boolean" value="true"/>
+  </Properties>
+  <SyntheticProperties>
+    <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+  </SyntheticProperties>
+  <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
+    <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
+  </AuxValues>
+
+  <Layout>
+    <DimensionLayout dim="0">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="_tabbedPane" alignment="0" pref="545" max="32767" attributes="0"/>
+      </Group>
+    </DimensionLayout>
+    <DimensionLayout dim="1">
+      <Group type="103" groupAlignment="0" attributes="0">
+          <Component id="_tabbedPane" alignment="0" pref="457" max="32767" attributes="0"/>
+      </Group>
+    </DimensionLayout>
+  </Layout>
+  <SubComponents>
+    <Container class="javax.swing.JTabbedPane" name="_tabbedPane">
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout"/>
+      <SubComponents>
+        <Container class="javax.swing.JPanel" name="_inputTab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Input">
+                <Property name="tabTitle" type="java.lang.String" value="Input"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="_caseInputPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_advancedInputButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="_geographicalInputPanel" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_populationInputPanel" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_caseInputPanel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="23" max="32767" attributes="0"/>
+                      <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="_caseInputPanel">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                    <EtchetBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="_studyPeriodGroup" alignment="0" max="32767" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_caseFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_controlFileLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="60" max="-2" attributes="0"/>
+                                          <Component id="_bernoulliModelHintLabel" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_controlFileTextField" pref="301" max="32767" attributes="2"/>
+                                              <Component id="_caseFileTextField" alignment="0" pref="301" max="32767" attributes="1"/>
+                                          </Group>
+                                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Group type="102" attributes="0">
+                                                  <Component id="_caseFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                                  <EmptySpace max="-2" attributes="0"/>
+                                                  <Component id="_caseFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                              </Group>
+                                              <Group type="102" attributes="1">
+                                                  <Component id="_controlFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                                  <EmptySpace max="32767" attributes="0"/>
+                                                  <Component id="_controlFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace min="-2" max="-2" attributes="0"/>
+                                  <Component id="_timePrecisionGroup" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Component id="_caseFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_caseFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_caseFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_caseFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_controlFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_bernoulliModelHintLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_controlFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_controlFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_controlFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Component id="_timePrecisionGroup" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_studyPeriodGroup" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_caseFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Case File:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_caseFileTextField">
+                </Component>
+                <Component class="javax.swing.JButton" name="_caseFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Case File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _caseFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_caseFileImportButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import case file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Case File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Container class="javax.swing.JPanel" name="_timePrecisionGroup">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                        <TitledBorder title="Time Precision">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                            <EtchetBorder/>
+                          </Border>
+                          <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                        </TitledBorder>
+                      </Border>
+                    </Property>
+                  </Properties>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_timePrecisionNone" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_timePrecisionYear" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_timePrecisionMonth" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_timePrecisionDay" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="58" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="_timePrecisionNone" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                              <Component id="_timePrecisionYear" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                              <Component id="_timePrecisionMonth" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
+                              <Component id="_timePrecisionDay" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JRadioButton" name="_timePrecisionNone">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="None"/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                          </Border>
+                        </Property>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionNone.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="_timePrecisionYear">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Year"/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                          </Border>
+                        </Property>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionYear.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="_timePrecisionMonth">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Month"/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                          </Border>
+                        </Property>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionMonth.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="_timePrecisionDay">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Day"/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                          </Border>
+                        </Property>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionDay.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onCountTimePrecisionChange();&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Container class="javax.swing.JPanel" name="_studyPeriodGroup">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                        <TitledBorder title="Study Period">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                            <EtchetBorder/>
+                          </Border>
+                          <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                        </TitledBorder>
+                      </Border>
+                    </Property>
+                  </Properties>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_startDateLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="_startDateYearLabel" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="_studyPeriodStartDateYearTextField" alignment="0" pref="45" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_startDateMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodStartDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="_startDateDayLabel" alignment="1" max="32767" attributes="1"/>
+                                  <Component id="_studyPeriodStartDateDayTextField" alignment="1" pref="30" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
+                              <Component id="_endDateLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                                  <Component id="_endDateYearLabel" max="32767" attributes="1"/>
+                                  <Component id="_studyPeriodEndDateYearTextField" alignment="1" pref="45" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_endDateMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodEndDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="_endDateDayLabel" max="32767" attributes="1"/>
+                                  <Component id="_studyPeriodEndDateDayTextField" alignment="0" pref="30" max="32767" attributes="1"/>
+                              </Group>
+                              <EmptySpace pref="76" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="_startDateYearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_startDateMonthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_endDateMonthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_endDateDayLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_startDateDayLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_endDateYearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="3" attributes="0">
+                                  <Component id="_studyPeriodStartDateYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodStartDateMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodStartDateDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_endDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodEndDateYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodEndDateMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_startDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_studyPeriodEndDateDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JLabel" name="_startDateYearLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Tahoma" size="10" style="0"/>
+                        </Property>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="text" type="java.lang.String" value="Year"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="_studyPeriodStartDateYearTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="2000"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodStartDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_studyPeriodStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, undo);&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_startDateLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Start Date:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_startDateMonthLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Tahoma" size="10" style="0"/>
+                        </Property>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="text" type="java.lang.String" value="Month"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="_studyPeriodStartDateMonthTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="01"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodStartDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, undo);&#xa;    }&#xa;});&#xa;"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_startDateDayLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Tahoma" size="10" style="0"/>
+                        </Property>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="text" type="java.lang.String" value="Day"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="_studyPeriodStartDateDayTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="01"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodStartDateDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, undo);&#xa;    }&#xa;});&#xa;"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_endDateLabel">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="End Date:"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="_studyPeriodEndDateYearTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="2000"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodEndDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);&#xa;    }&#xa;});&#xa;"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_endDateYearLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Tahoma" size="10" style="0"/>
+                        </Property>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="text" type="java.lang.String" value="Year"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_endDateMonthLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Tahoma" size="10" style="0"/>
+                        </Property>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="text" type="java.lang.String" value="Month"/>
+                      </Properties>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="_studyPeriodEndDateMonthTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="12"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;            public void undoableEditHappened(UndoableEditEvent evt) {&#xa;                undo.addEdit(evt.getEdit());&#xa;            }&#xa;        });&#xa;_studyPeriodEndDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);&#xa;    }&#xa;});&#xa;        "/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JTextField" name="_studyPeriodEndDateDayTextField">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="31"/>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;            public void undoableEditHappened(UndoableEditEvent evt) {&#xa;                undo.addEdit(evt.getEdit());&#xa;            }&#xa;        });&#xa;_studyPeriodEndDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);&#xa;    }&#xa;});&#xa;                "/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JLabel" name="_endDateDayLabel">
+                      <Properties>
+                        <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                          <Font name="Tahoma" size="10" style="0"/>
+                        </Property>
+                        <Property name="horizontalAlignment" type="int" value="0"/>
+                        <Property name="text" type="java.lang.String" value="Day"/>
+                      </Properties>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="_controlFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Control File:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_controlFileTextField">
+                </Component>
+                <Component class="javax.swing.JButton" name="_controlFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Browse for control file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Control File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _controlFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_controlFileImportButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import control file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Control File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_bernoulliModelHintLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="(Bernoulli Model)"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_populationInputPanel">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_populationFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="50" max="-2" attributes="0"/>
+                                  <Component id="_poissionModelHintLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_populationFileTextField" min="-2" pref="301" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_populationFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_populationFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace pref="147" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_populationFileLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_poissionModelHintLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_populationFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_populationFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_populationFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_populationFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Population File:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_populationFileTextField">
+                </Component>
+                <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Browse for population file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Population File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _populationFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_populationFileImportButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Import population file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Population File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_poissionModelHintLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="(Poisson Model)"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_geographicalInputPanel">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                    <EtchetBorder/>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_coordinatesFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_coordiantesFileTextField" min="-2" pref="301" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_coordinatesFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_coodrinatesFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              </Group>
+                              <Component id="_gridFileLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_gridFileTextField" min="-2" pref="301" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_gridFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_gridFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_coordinateTypeGroup" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_coordinateTypeGroup" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_coordinatesFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_coordiantesFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_coordinatesFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_coodrinatesFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_gridFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_gridFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_gridFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_gridFileImportButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_coordinatesFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Coordiantes File:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_coordiantesFileTextField">
+                </Component>
+                <Component class="javax.swing.JButton" name="_coordinatesFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Browse for coordinates file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Cooridnate File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;geo&quot;,&quot;Coordinates Files (*.geo)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _coordiantesFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_coodrinatesFileImportButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import coordinates file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coodrinatesFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Coordiantes File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;geo&quot;,&quot;Coordinates Files (*.geo)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Coordinates);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Container class="javax.swing.JPanel" name="_coordinateTypeGroup">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                        <TitledBorder title="Coordinates">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                            <EtchetBorder/>
+                          </Border>
+                          <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                        </TitledBorder>
+                      </Border>
+                    </Property>
+                  </Properties>
+
+                  <Layout>
+                    <DimensionLayout dim="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_cartesianRadioButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_latLongRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace pref="42" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                    <DimensionLayout dim="1">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="_cartesianRadioButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace pref="14" max="32767" attributes="0"/>
+                              <Component id="_latLongRadioButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                    </DimensionLayout>
+                  </Layout>
+                  <SubComponents>
+                    <Component class="javax.swing.JRadioButton" name="_cartesianRadioButton">
+                      <Properties>
+                        <Property name="selected" type="boolean" value="true"/>
+                        <Property name="text" type="java.lang.String" value="Cartesian"/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                          </Border>
+                        </Property>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                    <Component class="javax.swing.JRadioButton" name="_latLongRadioButton">
+                      <Properties>
+                        <Property name="text" type="java.lang.String" value="Lat/Long"/>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                            <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                          </Border>
+                        </Property>
+                        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                          <Insets value="[0, 0, 0, 0]"/>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                      </AuxValues>
+                    </Component>
+                  </SubComponents>
+                </Container>
+                <Component class="javax.swing.JLabel" name="_gridFileLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Grid File:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_gridFileTextField">
+                </Component>
+                <Component class="javax.swing.JButton" name="_gridFileBrowseButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Browse for grid file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Grid File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;grd&quot;,&quot;Grid Files (*.grd)&quot;));&#xa;        int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _gridFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_gridFileImportButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="..."/>
+                    <Property name="toolTipText" type="java.lang.String" value="Import grid file ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Grid File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;grd&quot;,&quot;Grid Files (*.grd)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.SpecialGrid);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JButton" name="_advancedInputButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedInputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);&#xa;    }&#xa;});"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_analysisTab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Analysis">
+                <Property name="tabTitle" type="java.lang.String" value="Analysis"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="_analysisTypeGroup" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_probabilityModelGroup" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_scanAreasGroup" max="32767" attributes="0"/>
+                                  <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="_advancedAnalysisButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="jPanel1" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Container class="javax.swing.JPanel" name="_analysisTypeGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Type of Analysis">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                      <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_retrospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_retrospectivePurelySpatialRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_retrospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_prospectiveSpaceTimeRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_prospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace pref="22" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          <Component id="_retrospectivePurelySpatialRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_retrospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_retrospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                          <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="34" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="jLabel1">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Retrospective Analyses:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel2">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Prospective Analyses:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_retrospectivePurelySpatialRadioButton">
+                  <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Purely Spatial"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectivePurelySpatialRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_retrospectivePurelyTemporalRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Purely Temporal"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectivePurelyTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_retrospectiveSpaceTimeRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Space-Time"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_retrospectiveSpaceTimeRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_prospectivePurelyTemporalRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Purely Temporal"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectivePurelyTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_prospectiveSpaceTimeRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Space-Time"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveSpaceTimeRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableModelControlForAnalysisType();&#xa;            enableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_probabilityModelGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Probability Model">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                      <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_poissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_bernoulliModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_spaceTimePermutationModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace pref="13" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="_poissonModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                          <Component id="_bernoulliModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                          <Component id="_spaceTimePermutationModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                          <Component id="_ordinalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                          <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
+                          <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace pref="19" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JRadioButton" name="_poissonModelRadioButton">
+                  <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Poission"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_poissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_bernoulliModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Bernoulli"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_bernoulliModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_spaceTimePermutationModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Space-Time Permutation"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spaceTimePermutationModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_ordinalModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Ordinal"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_ordinalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_exponentialModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Exponential"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_exponentialModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_normalModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Normal"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_normalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_scanAreasGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Scan For Areas With:">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                      <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_highRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_lowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_highOrLowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace pref="52" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="_highRatesRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_lowRatesRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_highOrLowRatesRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JRadioButton" name="_highRatesRadioButton">
+                  <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="High Rates"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_lowRatesRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Low Rates"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_highOrLowRatesRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="High or Low Rates"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Container class="javax.swing.JPanel" name="_timeAggregationGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Time Aggregation">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                      <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_timeAggregationUnitsLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_timeAggregationDayRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_timeAggregationMonthRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_timeAggregationYearRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_timeAggregationLengthLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_timeAggregationLengthTextField" min="-2" pref="50" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace pref="35" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_timeAggregationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_timeAggregationYearRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          <Component id="_timeAggregationMonthRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          <Component id="_timeAggregationDayRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_timeAggregationLengthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_timeAggregationUnitsLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Units:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_timeAggregationYearRadioButton">
+                  <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
+                    <Property name="text" type="java.lang.String" value="Year"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().UpdateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Years&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_timeAggregationMonthRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Month"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().UpdateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Months&quot;);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_timeAggregationDayRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Day"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().UpdateMaxiumTemporalTextCaptions();&#xa;            _aggregrationUnitsLabel.setText(&quot;Days&quot;);&#xa;        }&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_timeAggregationLengthLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Length:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_timeAggregationLengthTextField">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="1"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timeAggregationLengthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_timeAggregationLengthTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _timeAggregationLengthTextField.setText(&quot;1&quot;);&#xa;    }&#xa;});&#xa;_timeAggregationLengthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_timeAggregationLengthTextField, e, 6);&#xa;    }&#xa;});&#xa;_timeAggregationLengthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_aggregrationUnitsLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Years"/>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JButton" name="_advancedAnalysisButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedAnalysisButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.ANALYSIS);&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Container class="javax.swing.JPanel" name="jPanel1">
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_montCarloReplicationsTextField" min="-2" pref="58" max="-2" attributes="0"/>
+                          <EmptySpace pref="158" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_montCarloReplicationsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace pref="81" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="jLabel3">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Monte Carlo Replications (0, 9, 999, or value ending in 999):"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JTextField" name="_montCarloReplicationsTextField">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="999"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_montCarloReplicationsTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText(&quot;999&quot;);&#xa;    }&#xa;});&#xa;_montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);&#xa;    }&#xa;});&#xa;_montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+              </SubComponents>
+            </Container>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="_outputTab">
+          <Constraints>
+            <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
+              <JTabbedPaneConstraints tabName="Output">
+                <Property name="tabTitle" type="java.lang.String" value="Output"/>
+              </JTabbedPaneConstraints>
+            </Constraint>
+          </Constraints>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="__additionalOutputFilesGroup" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_resultsFileTextField" min="-2" pref="395" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="_advancedFeaturesOutputButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="_resultsFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_resultsFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="__additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="190" max="32767" attributes="0"/>
+                      <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JLabel" name="_resultsFileLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Results File:"/>
+              </Properties>
+            </Component>
+            <Component class="javax.swing.JTextField" name="_resultsFileTextField">
+            </Component>
+            <Component class="javax.swing.JButton" name="_resultsFileBrowseButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="..."/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Results File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        if (fc.showOpenDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)&#xa;            _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
+            </Component>
+            <Container class="javax.swing.JPanel" name="__additionalOutputFilesGroup">
+              <Properties>
+                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                    <TitledBorder title="Additional Output Files">
+                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                        <EtchetBorder/>
+                      </Border>
+                      <Color PropertyName="color" blue="0" green="0" red="0" type="rgb"/>
+                    </TitledBorder>
+                  </Border>
+                </Property>
+              </Properties>
+
+              <Layout>
+                <DimensionLayout dim="0">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_clustersInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_clusterCaseInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace pref="191" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_asciiLabel" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_clusterCaseInColumnFormatAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_clustersInColumnFormatAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_censusAreasReportedClustersAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_relativeRiskEstimatesAreaAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_simulatedLogLikelihoodRatiosAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Component id="_dBaseLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="71" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="_clusterCaseInColumnFormatDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_clustersInColumnFormatDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_censusAreasReportedClustersDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_relativeRiskEstimatesAreaDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_simulatedLogLikelihoodRatiosDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace pref="77" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_censusAreasReportedClustersLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="399" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_relativeRiskEstimatesAreaLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="344" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_simulatedLogLikelihoodRatiosLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="279" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_dBaseLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_clustersInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_clustersInColumnFormatDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_clusterCaseInColumnFormatLabel" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_clusterCaseInColumnFormatDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_asciiLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_clustersInColumnFormatAsciiCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_clusterCaseInColumnFormatAsciiCheckBox" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_censusAreasReportedClustersLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="_censusAreasReportedClustersAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_censusAreasReportedClustersDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_relativeRiskEstimatesAreaLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="_relativeRiskEstimatesAreaAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_relativeRiskEstimatesAreaDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_simulatedLogLikelihoodRatiosLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="_simulatedLogLikelihoodRatiosAsciiCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_simulatedLogLikelihoodRatiosDBaseCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JLabel" name="_asciiLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="ASCII"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_dBaseLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="dBase"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_clustersInColumnFormatLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cluster Information"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_clustersInColumnFormatAsciiCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_clustersInColumnFormatDBaseCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_clusterCaseInColumnFormatLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Cluster Case Information"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_clusterCaseInColumnFormatAsciiCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_clusterCaseInColumnFormatDBaseCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_censusAreasReportedClustersLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Location Information"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_censusAreasReportedClustersAsciiCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_censusAreasReportedClustersDBaseCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_relativeRiskEstimatesAreaLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Risk Estimates for Each Location"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_relativeRiskEstimatesAreaAsciiCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_relativeRiskEstimatesAreaDBaseCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_simulatedLogLikelihoodRatiosLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Simulated Log Likelihood Ratios/Test Statistics"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_simulatedLogLikelihoodRatiosAsciiCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_simulatedLogLikelihoodRatiosDBaseCheckBox">
+                  <Properties>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                </Component>
+              </SubComponents>
+            </Container>
+            <Component class="javax.swing.JButton" name="_advancedFeaturesOutputButton">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Advanced &gt;&gt;"/>
+              </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedFeaturesOutputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.OUTPUT);&#xa;    }&#xa;});&#xa;"/>
+              </AuxValues>
+            </Component>
+          </SubComponents>
+        </Container>
+      </SubComponents>
+    </Container>
+  </SubComponents>
+</Form>

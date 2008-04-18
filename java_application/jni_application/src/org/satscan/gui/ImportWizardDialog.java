@@ -1,0 +1,1678 @@
+/*
+ * ImportWizardDialog.java
+ *
+ * Created on December 12, 2007, 3:11 PM
+ */
+package org.satscan.gui;
+
+import java.awt.CardLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Vector;
+import java.util.prefs.Preferences;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollBar;
+import javax.swing.SwingWorker;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.undo.UndoManager;
+import org.satscan.importer.CSVImportDataSource;
+import org.satscan.importer.DBaseImportDataSource;
+import org.satscan.importer.FileImporter;
+import org.satscan.importer.ImportDataSource;
+import org.satscan.importer.ImportException;
+import org.satscan.importer.ImportVariable;
+import org.satscan.app.Parameters;
+import org.satscan.importer.PreviewTableModel;
+import org.satscan.app.UnknownEnumException;
+import org.satscan.importer.XLSImportDataSource;
+import org.satscan.gui.utils.Utils;
+import org.satscan.gui.utils.WaitCursor;
+
+/**
+ *
+ * @author  Hostovic
+ */
+public class ImportWizardDialog extends javax.swing.JDialog implements PropertyChangeListener {
+
+    private Preferences _prefs = Preferences.userNodeForPackage(getClass());
+    private static final String _prefLastBackup = new String("import.destination");
+    private final String _fileFormatCardName = "File Format";
+    private final String _dataMappingCardName = "Mapping Panel";
+    private final String _outPutSettingsCardName = "Output Settings";
+    private final String _fileFormatDelimitedCardName = "cvsPanel";
+    private final String _fileFormatFixedColumnCardName = "fixedPanel";
+    private final String _unAssignedVariableName = "unassigned";
+    private final String _importFilePrefix = "import";
+    private final int _dateVariableColumn = 2;
+    private final int _sourceFileLineSample = 200;
+    private final UndoManager undo = new UndoManager();
+    private Vector<ImportVariable> _importVariables = new Vector<ImportVariable>();
+    private final String _sourceFile;
+    private final FileImporter.InputFileType _fileType;
+    private final Parameters.ProbabilityModelType _startingModelType;
+    private final Parameters.CoordinatesType _startingCoordinatesType;
+    private FileImporter.SourceDataFileType _sourceDataFileType;
+    private String _showingCard;
+    private boolean _errorSamplingSourceFile = true;
+    private PreviewTableModel _previewTableModel = null;
+    private boolean _cancelled = true;
+    private File _destinationFile = null;
+
+    /** Creates new form ImportWizardDialog */
+    public ImportWizardDialog(java.awt.Frame parent, final String sourceFile, FileImporter.InputFileType fileType, Parameters.ProbabilityModelType modelType, Parameters.CoordinatesType coordinatesType) {
+        super(parent, true);
+        initComponents();
+        _sourceFile = sourceFile;
+        _fileType = fileType;
+        _startingModelType = modelType;
+        _startingCoordinatesType = coordinatesType;
+        _sourceDataFileType = getSourceFileType();
+        _progressBar.setVisible(false);
+        configureForDestinationFileType();
+        setLocationRelativeTo(parent);
+    }
+
+    /**
+     * Public function used to determine whether user has imported to the date field.
+     */
+    public boolean getDateFieldImported() {
+        boolean bReturn = false;
+
+        switch (_fileType) {
+            case Case:
+            case Control:
+                bReturn = _importVariables.get(_dateVariableColumn).getIsMappedToInputFileVariable();
+                break;
+            case Population:
+                bReturn = true;
+                break;
+            case Coordinates:
+            case SpecialGrid:
+            case MaxCirclePopulation:
+                bReturn = false;
+                break;
+            case AdjustmentsByRR:
+                bReturn = _importVariables.get(_dateVariableColumn).getIsMappedToInputFileVariable();
+                break;
+            default:
+                throw new UnknownEnumException(_fileType);
+        }
+        return bReturn;
+    }
+
+    /**
+     * Returned whether the user completed the import or cancelled operation.
+     */
+    public boolean getCancelled() {
+        return _cancelled;
+    }
+
+    /**
+     * Create import target file.
+     */
+    private void createDestinationInformation() throws IOException {
+        File outputDirectory = new File(_outputDirectoryTextField.getText());
+        switch (_fileType) {
+            case Case:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".cas", outputDirectory);
+                break;
+            case Control:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".ctl", outputDirectory);
+                break;
+            case Population:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".pop", outputDirectory);
+                break;
+            case Coordinates:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".geo", outputDirectory);
+                break;
+            case SpecialGrid:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".grd", outputDirectory);
+                break;
+            case MaxCirclePopulation:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".max", outputDirectory);
+                break;
+            case AdjustmentsByRR:
+                _destinationFile = File.createTempFile(_importFilePrefix, ".adj", outputDirectory);
+                break;
+            default:
+                throw new UnknownEnumException(_fileType);
+        }
+    }
+
+    /**
+     * Returns import destination filename.
+     */
+    public String getDestinationFilename() {
+        return _destinationFile != null ? _destinationFile.getAbsolutePath() : "";
+    }
+
+    /**
+     * Returns file type given source file extension.
+     */
+    private FileImporter.SourceDataFileType getSourceFileType() {
+        int pos = _sourceFile.lastIndexOf('.');
+        if (pos != -1 && _sourceFile.substring(pos + 1).equalsIgnoreCase("dbf")) {
+            return FileImporter.SourceDataFileType.dBase;
+        }
+        if (pos != -1 && _sourceFile.substring(pos + 1).equalsIgnoreCase("xls")) {
+            return FileImporter.SourceDataFileType.Excel;
+        }
+        return FileImporter.SourceDataFileType.Delimited;
+    }
+
+    private char getColumnDelimiter() {
+        if (_commaRadioButton.isSelected()) {
+            return ',';
+        } else if (_semiColonRadioButton.isSelected()) {
+            return ';';
+        } else if (_whitespaceRadioButton.isSelected()) {
+            return ' ';
+        } else if (_otherRadioButton.isSelected()) {
+            return _otherFieldSeparatorTextField.getText().toCharArray()[0];
+        } else {
+            throw new RuntimeException("Unknown column delimiter.");
+        }
+    }
+
+    private char getGroupMarker() {
+        if (_doubleQuotesRadioButton.isSelected()) {
+            return '"';
+        } else if (_singleQuotesRadioButton.isSelected()) {
+            return '\'';
+        } else {
+            throw new RuntimeException("Unknown group marker.");
+        }
+    }
+
+    /**
+     * Sets which panels and the order of showing panels.
+     */
+    private void setPanelsToShow(FileImporter.SourceDataFileType eType) {
+        _basePanel.removeAll();
+        if (eType != FileImporter.SourceDataFileType.dBase && eType != FileImporter.SourceDataFileType.Excel) {
+            _basePanel.add(_fileFormatPanel, _fileFormatCardName);
+        }
+        _basePanel.add(_dataMappingPanel, _dataMappingCardName);
+        _basePanel.add(_outputSettingsPanel, _outPutSettingsCardName);
+        //reset class variable to that which we are showing
+        _sourceDataFileType = eType;
+    }
+
+    /**
+     * Updates which file format options panel is showing.
+     */
+    private void showFileTypeFormatOptionsPanel(FileImporter.SourceDataFileType eFileType) {
+        CardLayout cl = (CardLayout) (_sourceFileTypeOptions.getLayout());
+        switch (eFileType) {
+            case Delimited:
+                cl.show(_sourceFileTypeOptions, _fileFormatDelimitedCardName);
+                _sourceDataFileType = FileImporter.SourceDataFileType.Delimited;
+                break;
+            case Fixed_Column:
+                cl.show(_sourceFileTypeOptions, _fileFormatFixedColumnCardName);
+                _sourceDataFileType = FileImporter.SourceDataFileType.Fixed_Column;
+                break;
+            default:
+                throw new UnknownEnumException(eFileType);
+        }
+    }
+
+    /**
+     * Returns the coordinates type selected by user. This function
+     * will only behavior as expected when FileImporter.InputFileType
+     * is Coordinates or SpecialGrid.
+     */
+    public Parameters.CoordinatesType getCoorinatesControlType() {
+        switch (_displayVariablesComboBox.getSelectedIndex()) {
+            case 1:
+                return Parameters.CoordinatesType.CARTESIAN;
+            default:
+                return Parameters.CoordinatesType.LATLON;
+        }
+    }
+
+    /**
+     * Returns the probablilty model type selected by user.
+     */
+    public Parameters.ProbabilityModelType getModelControlType() {
+        switch (_displayVariablesComboBox.getSelectedIndex()) {
+            case 1:
+                return Parameters.ProbabilityModelType.BERNOULLI;
+            case 2:
+                return Parameters.ProbabilityModelType.SPACETIMEPERMUTATION;
+            case 3:
+                return Parameters.ProbabilityModelType.ORDINAL;
+            case 4:
+                return Parameters.ProbabilityModelType.EXPONENTIAL;
+            case 5:
+                return Parameters.ProbabilityModelType.NORMAL;
+            case 6:
+                return Parameters.ProbabilityModelType.RANK;
+            case 0:
+            default:
+                return Parameters.ProbabilityModelType.POISSON;
+        }
+    }
+
+    /**
+     * Shows/hides variables based upon destination file type and model/coordindates type.
+     */
+    private void setShowingVariables() {
+        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+        Parameters.ProbabilityModelType _modelType = getModelControlType();
+        Parameters.CoordinatesType _coordindatesType = getCoorinatesControlType();
+
+        switch (_fileType) {
+            case Case:
+                for (int t = 0; t < _importVariables.size(); ++t) {
+                    if (t >= 3 && t <= 12) //show 'covariate' variables for Poisson and space-time permutation models only
+                    {
+                        model.setShowing(_importVariables.get(t),
+                                _modelType == Parameters.ProbabilityModelType.POISSON ||
+                                _modelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION);
+                    } else if (t == 13) //show 'attribute' variable for ordinal, exponential, normal and rank models only
+                    {
+                        model.setShowing(_importVariables.get(t),
+                                _modelType == Parameters.ProbabilityModelType.ORDINAL ||
+                                _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
+                                _modelType == Parameters.ProbabilityModelType.NORMAL ||
+                                _modelType == Parameters.ProbabilityModelType.RANK);
+                    } else if (t == 14) //show 'censored' variable for exponential model only
+                    {
+                        model.setShowing(_importVariables.get(t),
+                                _modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
+                    } else //default - show variable
+                    {
+                        model.setShowing(_importVariables.get(t), true);
+                    }
+                }
+                break;
+            case Coordinates:
+                for (int t = 0; t < _importVariables.size(); ++t) {
+                    if (t == 1 || t == 2) //show 'lat/long' variables for lat/long system
+                    {
+                        model.setShowing(_importVariables.get(t), _coordindatesType == Parameters.CoordinatesType.LATLON);
+                    } else if (t >= 3) //show 'X/Y/Zn' variables for Cartesian system
+                    {
+                        model.setShowing(_importVariables.get(t), _coordindatesType == Parameters.CoordinatesType.CARTESIAN);
+                    } else {
+                        model.setShowing(_importVariables.get(t), true);
+                    }
+                }
+                break;
+            case SpecialGrid:
+                for (int t = 0; t < _importVariables.size(); ++t) {
+                    if (t == 0 || t == 1) //show 'lat/long' variables for lat/long system
+                    {
+                        model.setShowing(_importVariables.get(t), _coordindatesType == Parameters.CoordinatesType.LATLON);
+                    } else //show 'X/Y/Zn' variables for Cartesian system
+                    {
+                        model.setShowing(_importVariables.get(t), _coordindatesType == Parameters.CoordinatesType.CARTESIAN);
+                    }
+                }
+                break;
+            default:
+                for (int t = 0; t < _importVariables.size(); ++t) {
+                    model.setShowing(_importVariables.get(t), true);
+                }
+        }
+        model.fireTableDataChanged();
+    }
+
+    /** Opens source file as dBase file. */
+    private void previewSourceAsDBaseFile() throws Exception {
+        try {
+            DBaseImportDataSource source = new DBaseImportDataSource(new File(_sourceFile), true);
+            _previewTableModel = new PreviewTableModel(true);
+            _previewTableModel.addRow(source.getColumnNames());
+            for (int i = 0; i < _previewTableModel.getPreviewLength(); ++i) {
+                Object[] values = source.readRow();
+                if (values != null) {
+                    _previewTableModel.addRow(values);
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /** Opens source file as dBase file. */
+    private void previewSourceAsExcelFile() throws Exception {
+        try {
+            XLSImportDataSource source = new XLSImportDataSource(new File(_sourceFile), false);
+            _previewTableModel = new PreviewTableModel(true);
+            for (int i = 0; i < _previewTableModel.getPreviewLength(); ++i) {
+                Object[] values = source.readRow();
+                if (values != null) {
+                    _previewTableModel.addRow(values);
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    /** Opens source file as character delimited source file. */
+    private void previewSourceAsCSVFile() throws FileNotFoundException {
+        File file = new File(_sourceFile);
+        CSVImportDataSource source = new CSVImportDataSource(file, false, '\n', getColumnDelimiter(), getGroupMarker());
+        _previewTableModel = new PreviewTableModel(_firstRowColumnHeadersCheckBox.isSelected());
+        int skipRows = Integer.parseInt(_ignoreRowsTextField.getText());
+        for (int i = 0; i < _previewTableModel.getPreviewLength() + skipRows; ++i) {
+            Object[] values = source.readRow();
+            if (values != null && i >= skipRows) {
+                _previewTableModel.addRow(values);
+            }
+        }
+    }
+
+    /** Opens source file as file column variable record length file. */
+    private void previewSourceAsTXVFile() {
+    /*size_t                t;
+    int                   iRecordLength, iMaxLength=0;
+    ZdFileName            fFileName;
+    ZdString              sFieldSection, sFieldName;
+    ZdIniSection          tempSection;
+    ZdIniFile             DataFileDefinition;
+    try {
+    //Define TXV file structure.
+    tempSection.SetName("[FileInfo]");
+    fFileName.SetFullPath(gSourceDescriptor.GetImportFileName());
+    tempSection.AddLine("FileName", fFileName.GetCompleteFileName());
+    tempSection.AddLine("Title", fFileName.GetFileName());
+    tempSection.AddLine("NumberOfFields", IntToStr((int)gvIniSections.size()).c_str());
+    for (t=0; t < gvIniSections.size(); ++t) {
+    iRecordLength = StrToInt(gvIniSections[t].GetString("Length"));
+    iRecordLength += StrToInt(gvIniSections[t].GetString("ByteOffSet"));
+    iMaxLength = max(iRecordLength, iMaxLength);
+    }
+    tempSection.AddLine("RecordLength", IntToStr(iMaxLength).c_str());
+    tempSection.AddLine("StartingCol", "1");
+    DataFileDefinition.AddSection(tempSection.Clone());
+    for (t=0; t < gvIniSections.size(); ++t) {
+    sFieldName.printf("[Field%d]", t + 1);
+    gvIniSections[t].SetName(sFieldName.GetCString());
+    DataFileDefinition.AddSection(gvIniSections[t].Clone());
+    }
+    gpSourceFile = new TXVFile();
+    ((TXVFile*)gpSourceFile)->SetInitialNondataLineCount(gSourceDescriptor.GetNumberOfRowsToIgnore());
+    gpSourceFile->Open(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ|ZDIO_SREAD, 0, 0, &DataFileDefinition);
+    }
+    catch (TXVFile::InitialNondataLineCountInvalidForData_Exception &x) {
+    ZdString sMessage;
+    x.AddCallpath("previewSourceAsScanfFile()","TBDlgDataImporter");
+    x.SetLevel(ZdException::Notify);
+    sMessage << "You are attempting to ignore the first " << x.GetSpecifiedCount();
+    sMessage << " lines of a file that contains " << x.GetProvidedByDataCount();
+    sMessage << " lines.\nPlease specify a lesser number of lines to ignore.";
+    x.SetErrorMessage(sMessage);
+    edtIgnoreFirstRows->SetFocus();
+    throw;
+    }
+    catch (ZdException &x) {
+    x.AddCallpath("previewSourceAsTXVFile()","TBDlgDataImporter");
+    throw;
+    }*/
+    }
+
+    private ImportDataSource getImportSource() throws FileNotFoundException {
+        if (_sourceDataFileType == FileImporter.SourceDataFileType.dBase) {
+            return new DBaseImportDataSource(new File(_sourceFile), false);
+        } //return new NativeImportDataSource(new File(_sourceFile));
+        else if (_sourceDataFileType == FileImporter.SourceDataFileType.Excel) {
+            return new XLSImportDataSource(new File(_sourceFile), true);
+        } else if (_sourceFileTypeComboBox.getSelectedIndex() == 0) {
+            return new CSVImportDataSource(new File(_sourceFile), _firstRowColumnHeadersCheckBox.isSelected(),
+                    '\n', getColumnDelimiter(), getGroupMarker());
+        } else {
+            throw new RuntimeException("Unknown import source file type.");
+        }
+    }
+
+    /** Opening source as specified by file type. */
+    private void previewSource() throws Exception {
+        //set the import tables model to default until we have an instance of the native model avaiable
+        _importTableDataTable.setModel(new DefaultTableModel());
+
+        //if (_nativeTableModel != null) {
+        //    _nativeTableModel.freeResources();
+        //    _nativeTableModel = null;
+        //}
+
+        //create the table model
+        if (_sourceDataFileType == FileImporter.SourceDataFileType.dBase) {
+            previewSourceAsDBaseFile();
+        } else if (_sourceDataFileType == FileImporter.SourceDataFileType.Excel) {
+            previewSourceAsExcelFile();
+        } else if (_sourceFileTypeComboBox.getSelectedIndex() == 0) {
+            previewSourceAsCSVFile();
+        } else if (_sourceFileTypeComboBox.getSelectedIndex() == 1) {
+            previewSourceAsTXVFile();
+        } else {
+            throw new RuntimeException("Unknown import source file type.");
+        }
+
+        //now assign model to table object
+        if (_previewTableModel != null) {
+            _importTableDataTable.setModel(_previewTableModel);
+        }
+    }
+
+    /**
+     * Enables navigation button based upon active panel and settings.
+     */
+    private void enableNavigationButtons() {
+        previousButton.setEnabled(false);
+        nextButton.setEnabled(false);
+        executeButton.setEnabled(false);
+
+        if (_showingCard == null) {
+            return;
+        } else if (_showingCard.equals(_fileFormatCardName)) {
+            nextButton.setEnabled(_sourceFileTypeComboBox.getSelectedIndex() == 0 &&
+                    !_errorSamplingSourceFile &&
+                    _sourceFileTypeComboBox.getSelectedIndex() == 0 &&
+                    (_otherRadioButton.isSelected() ? _otherFieldSeparatorTextField.getText().length() > 0 : true) /*(rdoFileType->ItemIndex == 2 ||
+                    (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
+                    (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0))*/);
+        } else if (_showingCard.equals(_dataMappingCardName)) {
+            previousButton.setEnabled(_sourceDataFileType != FileImporter.SourceDataFileType.dBase &&
+                    _sourceDataFileType != FileImporter.SourceDataFileType.Excel);
+            if (_importTableDataTable.getModel().getRowCount() > 0) {
+                VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+                for (int i = 0; i < model.variables_visible.size() && !nextButton.isEnabled(); ++i) {
+                    nextButton.setEnabled(model.variables_visible.get(i).getIsMappedToInputFileVariable());
+                }
+            }
+        } else if (_showingCard.equals(_outPutSettingsCardName)) {
+            previousButton.setEnabled(true);
+            executeButton.setEnabled(_outputDirectoryTextField.getText().length() > 0);
+        }
+    //else nop
+    }
+
+    /** Event response to changing import file type. */
+    private void OnFieldDefinitionChange() {
+    /*int   iStartColumn, iSelStart=0, iSelLength=0;
+    if (rdoFileType->ItemIndex == Fixed_Column) {
+    AddFixedColDefinitionEnable();
+    UpdateFixedColDefinitionEnable();
+    if (edtStartColumn->GetTextLen()) {
+    iStartColumn = StrToInt(edtStartColumn->Text);
+    if (iStartColumn > 0) {
+    iSelStart = StrToInt(iStartColumn - 1);
+    if (edtFieldLength->GetTextLen())
+    iSelLength = StrToInt(edtFieldLength->Text);
+    }
+    }
+    }
+    memRawData->SelStart = iSelStart;
+    memRawData->SelLength = iSelLength;*/
+    }
+
+    /**
+     * Preparation for viewing file format panel.
+     */
+    private void prepFileFormatPanel() {
+        WaitCursor waitCursor = new WaitCursor(this);
+        try {
+            readDataFileIntoRawDisplayField();
+            showFileTypeFormatOptionsPanel(_sourceFileTypeComboBox.getSelectedIndex() == 0 ? FileImporter.SourceDataFileType.Delimited : FileImporter.SourceDataFileType.Fixed_Column);
+            //edtFieldName->Text = GetFixedColumnFieldName(1, sFieldName).GetCString();
+            enableNavigationButtons();
+            OnFieldDefinitionChange();
+        } finally {
+            waitCursor.restore();
+        }
+    }
+
+    /**
+     * Clears and reassigns values of VariableMappingTableModel combobox column.
+     */
+    private void setMappingTableComboCells() {
+        TableColumn selectionColumn = _fieldMapTable.getColumnModel().getColumn(1);
+        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+        //if (model.comboBox.getItemCount() == 0) {
+        model.comboBox.removeAllItems();
+        model.comboBox.addItem(_unAssignedVariableName);
+        for (int i = 0; i < _importTableDataTable.getModel().getColumnCount(); ++i) {
+            model.comboBox.addItem(_importTableDataTable.getModel().getColumnName(i));
+        }
+        selectionColumn.setCellEditor(new DefaultCellEditor(model.comboBox));
+        model.fireTableDataChanged();
+        clearSaTScanVariableFieldIndexes();
+
+    }
+
+    /** Clears field mapping selections. */
+    private void clearSaTScanVariableFieldIndexes() {
+        for (int t = 0; t < _importVariables.size(); ++t) {
+            _importVariables.get(t).setInputFileVariableIndex(0);
+        }
+        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+        model.fireTableDataChanged();
+    }
+
+    /**
+     * Returns the destination file type as string.
+     */
+    private String getInputFileTypeString() {
+        switch (_fileType) {
+            case Case:
+                return "Case File";
+            case Control:
+                return "Control File";
+            case Population:
+                return "Population File";
+            case Coordinates:
+                return "Coordinates File";
+            case SpecialGrid:
+                return "Grid File";
+            case MaxCirclePopulation:
+                return "Max Circle Size File";
+            case AdjustmentsByRR:
+                return "Adjustments File";
+            default:
+                throw new UnknownEnumException(_fileType);
+        }
+    }
+
+    /**
+     * Validates that required SaTScan Variables has been specified with an input
+     * file field to import from. Displays message if variables are missings.
+     */
+    private boolean checkForRequiredVariables() {
+        StringBuilder message = new StringBuilder();
+        Vector<ImportVariable> missing = new Vector<ImportVariable>();
+        VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+
+        for (int t = 0; t < _importVariables.size(); ++t) {
+            ImportVariable variable = _importVariables.get(t);
+            if (model.isShowing(variable.getVariableName()) && !variable.getIsMappedToInputFileVariable() && variable.getIsRequiredField()) {
+                missing.add(variable);
+            }
+        }
+
+        if (missing.size() > 0) {
+            message.append("For the " + getInputFileTypeString());
+            message.append(", the following SaTScan Variable(s) are required\nand an Input File Variable must");
+            message.append(" be selected for each before import can proceed.\n\nSaTScan Variable(s): ");
+            for (int t = 0; t < missing.size(); ++t) {
+                message.append(missing.get(t).getVariableName());
+                if (t < missing.size() - 1) {
+                    message.append(", ");
+                }
+            }
+            JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+            return true;
+        }
+
+        // we need to ensure that either both or neither dates are assigned for adjustment file
+        if (_fileType == FileImporter.InputFileType.AdjustmentsByRR) {
+            if ((model.variables_visible.get(2).getIsMappedToInputFileVariable() && !model.variables_visible.get(3).getIsMappedToInputFileVariable()) ||
+                    (!model.variables_visible.get(2).getIsMappedToInputFileVariable() && model.variables_visible.get(3).getIsMappedToInputFileVariable())) {
+                message.append("For the " + getInputFileTypeString());
+                message.append(", the dates are required to be selected or omitted as a pair.\n");
+                JOptionPane.showMessageDialog(this, message.toString(), "Note", JOptionPane.WARNING_MESSAGE);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Preparation for viewing mapping panel.
+     */
+    private void prepMappingPanel() throws Exception {
+        WaitCursor waitCursor = new WaitCursor(this);
+        try {
+            previewSource();
+            setMappingTableComboCells();
+            //AutoAlign();
+            setShowingVariables();
+            enableNavigationButtons();
+        } finally {
+            waitCursor.restore();
+        }
+    }
+
+    /**
+     * Causes showCard to be the active card.
+     */
+    private void bringPanelToFront(String showCard) {
+        ((CardLayout) _basePanel.getLayout()).show(_basePanel, showCard);
+        _showingCard = showCard;
+        enableNavigationButtons();
+        if (executeButton.isEnabled()) {
+            executeButton.requestFocus();
+        } else if (nextButton.isEnabled()) {
+            nextButton.requestFocus();
+        }
+    }
+
+    private void prepOutputSettingsPanel() {
+        //reset import table model
+        _importTableDataTable.setModel(new DefaultTableModel());
+    }
+
+    /**
+     * Calls appropriate preparation methods then shows panel.
+     */
+    private void makeActivePanel(String targetCardName) throws Exception {
+        if (targetCardName.equals(_fileFormatCardName)) {
+            prepFileFormatPanel();
+        } else if (targetCardName.equals(_dataMappingCardName)) {
+            prepMappingPanel();
+        } else if (targetCardName.equals(_outPutSettingsCardName)) {
+            prepOutputSettingsPanel();
+        }
+        bringPanelToFront(targetCardName);
+    }
+
+    /**
+     * Reads in a sample of data file into a memo field to help user
+     * to determine structure of source file.
+     */
+    private void readDataFileIntoRawDisplayField() {
+        _fileContentsTextArea.removeAll();
+        _errorSamplingSourceFile = false;
+
+        //Attempt to open source file reader...
+        FileReader fileSample = null;
+        try {
+            fileSample = new FileReader(_sourceFile);
+        } catch (FileNotFoundException e) {
+            _fileContentsTextArea.append("* Unable to view source file. *");
+            _fileContentsTextArea.append("* File does not exist. *");
+            _errorSamplingSourceFile = true;
+        } catch (SecurityException e) {
+            _fileContentsTextArea.append("* Unable to view source file. *");
+            _fileContentsTextArea.append("* File permissions deny read access. *");
+            _errorSamplingSourceFile = true;
+        }
+        //Attempt to read the first X lines of file and add to sample text area
+        try {
+            BufferedReader buffer = new BufferedReader(fileSample);
+            for (int i = 0; i < _sourceFileLineSample; ++i) {
+                String line = null;
+                line = buffer.readLine();
+                if (line == null) {
+                    break;
+                }
+                _fileContentsTextArea.append(line + "\n");
+            }
+            buffer.close();
+            fileSample.close();
+        } catch (IOException e) {
+            _fileContentsTextArea.removeAll();
+            _fileContentsTextArea.append("* Unable to view source file. *");
+            _errorSamplingSourceFile = true;
+        }
+        //Indicate whether the source file had any data...
+        if (_fileContentsTextArea.getLineCount() == 0) {
+            _fileContentsTextArea.append("* Source file contains no data. *");
+            _errorSamplingSourceFile = true;
+        } else {
+            _errorSamplingSourceFile = false;
+        }
+        JScrollBar vbar = jScrollPane1.getVerticalScrollBar();
+        vbar.setValue(vbar.getMinimum());
+    }
+
+    /**
+     * Configure the combo box that changes what variables are displayed.
+     */
+    private void configureDisplayVariablesComboBox() {
+        if (_fileType == FileImporter.InputFileType.Case) {
+            _displayVariablesComboBox.removeAllItems();
+            _displayVariablesComboBox.addItem("Poisson");
+            _displayVariablesComboBox.addItem("Bernoulli");
+            _displayVariablesComboBox.addItem("space-time permutation");
+            _displayVariablesComboBox.addItem("ordinal");
+            _displayVariablesComboBox.addItem("exponential");
+            _displayVariablesComboBox.addItem("normal");
+            _displayVariablesComboBox.setSelectedIndex(0);
+        } else if (_fileType == FileImporter.InputFileType.Coordinates || _fileType == FileImporter.InputFileType.SpecialGrid) {
+            _displayVariablesComboBox.removeAllItems();
+            _displayVariablesComboBox.addItem("Latitude/Longitude Coordinates");
+            _displayVariablesComboBox.addItem("Cartesian (x, y) Coordinates");
+            _displayVariablesComboBox.setSelectedIndex(0);
+        } else {
+            _displayVariablesLabel.setEnabled(false);
+            _displayVariablesComboBox.setEnabled(false);
+        }
+    }
+
+    /**
+     * Configures the variables vector based upon the target file type.
+     */
+    private void configureForDestinationFileType() {
+        switch (_fileType) {
+            case Case:
+                setCaseFileVariables();
+                break;
+            case Control:
+                setControlFileVariables();
+                break;
+            case Population:
+                setPopFileVariables();
+                break;
+            case Coordinates:
+                setGeoFileVariables();
+                break;
+            case SpecialGrid:
+                setGridFileVariables();
+                break;
+            case MaxCirclePopulation:
+                setMaxCirclePopFileVariables();
+                break;
+            case AdjustmentsByRR:
+                setRelativeRisksFileVariables();
+                break;
+            default:
+                throw new UnknownEnumException(_fileType);
+        }
+        configureDisplayVariablesComboBox();
+    }
+
+    /**
+     * Prepares the dialog for the initial
+     */
+    @Override
+    public void setVisible(boolean value) {
+        try {
+            if (value) {
+                if (_sourceDataFileType == FileImporter.SourceDataFileType.dBase || _sourceDataFileType == FileImporter.SourceDataFileType.Excel) {
+                    try {
+                        setPanelsToShow(_sourceDataFileType);
+                        makeActivePanel(_dataMappingCardName);
+                        super.setVisible(value);
+                        return;
+                    } catch (Throwable e) { // try opening as default delimited ascii file
+                        _sourceDataFileType = FileImporter.SourceDataFileType.Delimited;
+                    }
+                }
+                setPanelsToShow(_sourceDataFileType);
+                makeActivePanel(_fileFormatCardName);
+            }
+            super.setVisible(value);
+        } catch (Exception e) {
+            new ExceptionDialog(this, e).setVisible(true);
+        }
+    }
+
+    /**
+     * Setup field descriptors for case file.
+     */
+    private void setCaseFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Number of Cases", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate1", 3, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate2", 4, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate3", 5, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate4", 6, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate5", 7, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate6", 8, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate7", 9, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
+        _importVariables.addElement(new ImportVariable("Attribute", 13, true, null));
+        _importVariables.addElement(new ImportVariable("Censored", 14, false, null));
+    }
+
+    /**
+     * Setup field descriptors for control file.
+     */
+    private void setControlFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Number of Controls", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null));
+    }
+
+    /**
+     * Setup field descriptors for coordinates file.
+     */
+    private void setGeoFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Latitude", 1, true, "y-axis"));
+        _importVariables.addElement(new ImportVariable("Longitude", 2, true, "x-axis"));
+        _importVariables.addElement(new ImportVariable("X", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Y", 2, true, null));
+        _importVariables.addElement(new ImportVariable("Z1", 3, false, null));
+        _importVariables.addElement(new ImportVariable("Z2", 4, false, null));
+        _importVariables.addElement(new ImportVariable("Z3", 5, false, null));
+        _importVariables.addElement(new ImportVariable("Z4", 6, false, null));
+        _importVariables.addElement(new ImportVariable("Z5", 7, false, null));
+        _importVariables.addElement(new ImportVariable("Z6", 8, false, null));
+        _importVariables.addElement(new ImportVariable("Z7", 9, false, null));
+        _importVariables.addElement(new ImportVariable("Z8", 10, false, null));
+    }
+
+    /**
+     * Setup field descriptors for special grid file.
+     */
+    private void setGridFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Latitude", 0, true, "y-axis"));
+        _importVariables.addElement(new ImportVariable("Longitude", 1, true, "x-axis"));
+        _importVariables.addElement(new ImportVariable("X", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Y", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Z1", 2, false, null));
+        _importVariables.addElement(new ImportVariable("Z2", 3, false, null));
+        _importVariables.addElement(new ImportVariable("Z3", 4, false, null));
+        _importVariables.addElement(new ImportVariable("Z4", 5, false, null));
+        _importVariables.addElement(new ImportVariable("Z5", 6, false, null));
+        _importVariables.addElement(new ImportVariable("Z6", 7, false, null));
+        _importVariables.addElement(new ImportVariable("Z7", 8, false, null));
+        _importVariables.addElement(new ImportVariable("Z8", 9, false, null));
+    }
+
+    /**
+     * Setup field descriptors for maximum circle population file.
+     */
+    private void setMaxCirclePopFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Population", 1, true, null));
+    }
+
+    /**
+     * Setup field descriptors for population file.
+     */
+    private void setPopFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Date/Time", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Population", 2, true, null));
+        _importVariables.addElement(new ImportVariable("Covariate1", 3, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate2", 4, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate3", 5, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate4", 6, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate5", 7, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate6", 8, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate7", 9, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
+    }
+
+    /**
+     * Setup field descriptors for relative risks file.
+     */
+    private void setRelativeRisksFileVariables() {
+        _importVariables.clear();
+        _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
+        _importVariables.addElement(new ImportVariable("Relative Risk", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Start Date", 2, false, null));
+        _importVariables.addElement(new ImportVariable("End Date", 3, false, null));
+    }
+
+    /**
+     * Invoked when task's progress property changes.
+     */
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getNewValue() instanceof Integer) {
+            _progressBar.setValue(((Integer) evt.getNewValue()).intValue());
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to
+     * configureForDestinationFileType the form.
+     * WARNING: Do NOT modify this code. The content of this method is
+     * always regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        _fieldSeparatorButtonGroup = new javax.swing.ButtonGroup();
+        _groupIndicatorButtonGroup = new javax.swing.ButtonGroup();
+        cancelButton = new javax.swing.JButton();
+        nextButton = new javax.swing.JButton();
+        previousButton = new javax.swing.JButton();
+        executeButton = new javax.swing.JButton();
+        _basePanel = new javax.swing.JPanel();
+        _fileFormatPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        _fileContentsTextArea = new javax.swing.JTextArea();
+        jLabel4 = new javax.swing.JLabel();
+        _ignoreRowsTextField = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        _firstRowColumnHeadersCheckBox = new javax.swing.JCheckBox();
+        jLabel6 = new javax.swing.JLabel();
+        _sourceFileTypeComboBox = new javax.swing.JComboBox();
+        _sourceFileTypeOptions = new javax.swing.JPanel();
+        _cSVDefsPanel = new javax.swing.JPanel();
+        fieldSeparatorGroup = new javax.swing.JPanel();
+        _commaRadioButton = new javax.swing.JRadioButton();
+        _semiColonRadioButton = new javax.swing.JRadioButton();
+        _whitespaceRadioButton = new javax.swing.JRadioButton();
+        _otherRadioButton = new javax.swing.JRadioButton();
+        _otherFieldSeparatorTextField = new javax.swing.JTextField();
+        _groupIndiocatorGroup = new javax.swing.JPanel();
+        _doubleQuotesRadioButton = new javax.swing.JRadioButton();
+        _singleQuotesRadioButton = new javax.swing.JRadioButton();
+        _fixedColumnDefsPanel = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        _dataMappingPanel = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        _dataMappingTopPanel = new javax.swing.JPanel();
+        _displayVariablesLabel = new javax.swing.JLabel();
+        _displayVariablesComboBox = new javax.swing.JComboBox();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        _fieldMapTable = new javax.swing.JTable();
+        _clearSelectionButton = new javax.swing.JButton();
+        _dataMappingBottomPanel = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        _importTableDataTable = new javax.swing.JTable();
+        _outputSettingsPanel = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        _outputDirectoryTextField = new javax.swing.JTextField();
+        _changeSaveDirectoryButton = new javax.swing.JButton();
+        _progressBar = new javax.swing.JProgressBar();
+
+        _fieldSeparatorButtonGroup.add(_commaRadioButton);
+        _fieldSeparatorButtonGroup.add(_semiColonRadioButton);
+        _fieldSeparatorButtonGroup.add(_whitespaceRadioButton);
+        _fieldSeparatorButtonGroup.add(_otherRadioButton);
+        _groupIndicatorButtonGroup.add(_doubleQuotesRadioButton);
+        _groupIndicatorButtonGroup.add(_singleQuotesRadioButton);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Import Wizard");
+        setModal(true);
+        setResizable(false);
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                _cancelled = true;
+                setVisible(false);
+            }
+        });
+
+        nextButton.setText("Next >");
+        nextButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                try {
+                    if (_showingCard == _fileFormatCardName)
+                    makeActivePanel(_dataMappingCardName);
+                    else if (_showingCard == _dataMappingCardName) {
+                        if (checkForRequiredVariables()) return;
+                        makeActivePanel(_outPutSettingsCardName);
+                    }
+                    //else nop
+                } catch (Throwable t) {
+                    new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);
+                }
+            }
+        });
+
+        previousButton.setText("< Previous");
+        previousButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                try {
+                    if (_showingCard == _dataMappingCardName)
+                    makeActivePanel(_fileFormatCardName);
+                    else if (_showingCard == _outPutSettingsCardName)
+                    makeActivePanel(_dataMappingCardName);
+                    //else nop
+                } catch (Throwable t) {
+                    new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);
+                }
+            }
+        });
+
+        executeButton.setText("Execute");
+        executeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                try {
+                    try {
+                        createDestinationInformation();
+                    } catch (IOException i) {
+                        JOptionPane.showMessageDialog(ImportWizardDialog.this,
+                            "The import wizard encountered an error attempting to create the import file.\n" +
+                            "This is most likely occuring because write permissions are not granted for\n" +
+                            "specified directory. Please check path or review user permissions for specified directory.\n", "Note", JOptionPane.WARNING_MESSAGE);
+                    }
+                    ImportTask task = new ImportTask();
+                    task.addPropertyChangeListener(ImportWizardDialog.this);
+                    task.execute();
+                } catch (Throwable t) {
+                    new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);
+                }
+            }
+        });
+
+        _basePanel.setLayout(new java.awt.CardLayout());
+
+        jLabel1.setText("File Contents:");
+
+        _fileContentsTextArea.setColumns(20);
+        _fileContentsTextArea.setRows(5);
+        jScrollPane1.setViewportView(_fileContentsTextArea);
+
+        jLabel4.setText("Ignore first");
+
+        _ignoreRowsTextField.setText("0");
+        _ignoreRowsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_ignoreRowsTextField.getText().length() == 0)
+                if (undo.canUndo()) undo.undo(); else _ignoreRowsTextField.setText("0");
+            }
+        });
+        _ignoreRowsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_ignoreRowsTextField, e, 5);
+            }
+        });
+        _ignoreRowsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
+        jLabel5.setText("rows");
+
+        _firstRowColumnHeadersCheckBox.setText("First row is column name");
+        _firstRowColumnHeadersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _firstRowColumnHeadersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        jLabel6.setText("File Type");
+
+        _sourceFileTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Delimited", "Fixed Column" }));
+        _sourceFileTypeComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                showFileTypeFormatOptionsPanel(_sourceFileTypeComboBox.getSelectedIndex() == 0 ? FileImporter.SourceDataFileType.Delimited : FileImporter.SourceDataFileType.Fixed_Column);
+                enableNavigationButtons();
+            }
+        });
+
+        _sourceFileTypeOptions.setLayout(new java.awt.CardLayout());
+
+        fieldSeparatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Field Separator", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _commaRadioButton.setSelected(true);
+        _commaRadioButton.setText("Comma");
+        _commaRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _commaRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        _semiColonRadioButton.setText("Semicolon");
+        _semiColonRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _semiColonRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        _whitespaceRadioButton.setText("Whitespace");
+        _whitespaceRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _whitespaceRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        _otherRadioButton.setText("Other");
+        _otherRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _otherRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        _otherFieldSeparatorTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                //Utils.validatePostiveNumericKeyTyped(_otherFieldSeparatorTextField, e, 1);
+                enableNavigationButtons();
+            }
+        });
+        _otherFieldSeparatorTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+                enableNavigationButtons();
+            }
+        });
+
+        javax.swing.GroupLayout fieldSeparatorGroupLayout = new javax.swing.GroupLayout(fieldSeparatorGroup);
+        fieldSeparatorGroup.setLayout(fieldSeparatorGroupLayout);
+        fieldSeparatorGroupLayout.setHorizontalGroup(
+            fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fieldSeparatorGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_commaRadioButton)
+                .addGap(20, 20, 20)
+                .addComponent(_semiColonRadioButton)
+                .addGap(20, 20, 20)
+                .addComponent(_whitespaceRadioButton)
+                .addGap(20, 20, 20)
+                .addComponent(_otherRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(177, Short.MAX_VALUE))
+        );
+        fieldSeparatorGroupLayout.setVerticalGroup(
+            fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(fieldSeparatorGroupLayout.createSequentialGroup()
+                .addGroup(fieldSeparatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_commaRadioButton)
+                    .addComponent(_semiColonRadioButton)
+                    .addComponent(_whitespaceRadioButton)
+                    .addComponent(_otherRadioButton)
+                    .addComponent(_otherFieldSeparatorTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _groupIndiocatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Group Indicator", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _doubleQuotesRadioButton.setSelected(true);
+        _doubleQuotesRadioButton.setText("Double Quotes");
+        _doubleQuotesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _doubleQuotesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        _singleQuotesRadioButton.setText("Single Quotes");
+        _singleQuotesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _singleQuotesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        javax.swing.GroupLayout _groupIndiocatorGroupLayout = new javax.swing.GroupLayout(_groupIndiocatorGroup);
+        _groupIndiocatorGroup.setLayout(_groupIndiocatorGroupLayout);
+        _groupIndiocatorGroupLayout.setHorizontalGroup(
+            _groupIndiocatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_groupIndiocatorGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_doubleQuotesRadioButton)
+                .addGap(20, 20, 20)
+                .addComponent(_singleQuotesRadioButton)
+                .addContainerGap(307, Short.MAX_VALUE))
+        );
+        _groupIndiocatorGroupLayout.setVerticalGroup(
+            _groupIndiocatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_groupIndiocatorGroupLayout.createSequentialGroup()
+                .addGroup(_groupIndiocatorGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_doubleQuotesRadioButton)
+                    .addComponent(_singleQuotesRadioButton))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout _cSVDefsPanelLayout = new javax.swing.GroupLayout(_cSVDefsPanel);
+        _cSVDefsPanel.setLayout(_cSVDefsPanelLayout);
+        _cSVDefsPanelLayout.setHorizontalGroup(
+            _cSVDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _cSVDefsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_cSVDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        _cSVDefsPanelLayout.setVerticalGroup(
+            _cSVDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_cSVDefsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(fieldSeparatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_groupIndiocatorGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(41, Short.MAX_VALUE))
+        );
+        _sourceFileTypeOptions.add(_cSVDefsPanel, "cvsPanel");
+
+        jLabel2.setText("Not implemented!");
+
+        javax.swing.GroupLayout _fixedColumnDefsPanelLayout = new javax.swing.GroupLayout(_fixedColumnDefsPanel);
+        _fixedColumnDefsPanel.setLayout(_fixedColumnDefsPanelLayout);
+        _fixedColumnDefsPanelLayout.setHorizontalGroup(
+            _fixedColumnDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_fixedColumnDefsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addContainerGap(447, Short.MAX_VALUE))
+        );
+        _fixedColumnDefsPanelLayout.setVerticalGroup(
+            _fixedColumnDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_fixedColumnDefsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addContainerGap(142, Short.MAX_VALUE))
+        );
+        _sourceFileTypeOptions.add(_fixedColumnDefsPanel, "fixedPanel");
+
+        javax.swing.GroupLayout _fileFormatPanelLayout = new javax.swing.GroupLayout(_fileFormatPanel);
+        _fileFormatPanel.setLayout(_fileFormatPanelLayout);
+        _fileFormatPanelLayout.setHorizontalGroup(
+            _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_fileFormatPanelLayout.createSequentialGroup()
+                .addGroup(_fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addGroup(_fileFormatPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel6)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_sourceFileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel4)
+                        .addGap(5, 5, 5)
+                        .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(5, 5, 5)
+                        .addComponent(jLabel5)
+                        .addGap(10, 10, 10)
+                        .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+        );
+        _fileFormatPanelLayout.setVerticalGroup(
+            _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _fileFormatPanelLayout.createSequentialGroup()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel6)
+                    .addComponent(_sourceFileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel4)
+                    .addComponent(jLabel5)
+                    .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_firstRowColumnHeadersCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.PREFERRED_SIZE, 167, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+        _basePanel.add(_fileFormatPanel, "File Format");
+
+        jSplitPane1.setBorder(null);
+        jSplitPane1.setDividerLocation(250);
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        _displayVariablesLabel.setText("Display SaTScan Variables For:");
+
+        _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        _displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                setShowingVariables();
+                enableNavigationButtons();
+            }
+        });
+
+        _fieldMapTable.setModel(new VariableMappingTableModel(_importVariables));
+        jScrollPane2.setViewportView(_fieldMapTable);
+
+        _clearSelectionButton.setText("Clear");
+        _clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                clearSaTScanVariableFieldIndexes();
+            }
+        });
+
+        javax.swing.GroupLayout _dataMappingTopPanelLayout = new javax.swing.GroupLayout(_dataMappingTopPanel);
+        _dataMappingTopPanel.setLayout(_dataMappingTopPanelLayout);
+        _dataMappingTopPanelLayout.setHorizontalGroup(
+            _dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataMappingTopPanelLayout.createSequentialGroup()
+                .addGroup(_dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
+                        .addComponent(_displayVariablesLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_displayVariablesComboBox, 0, 327, Short.MAX_VALUE))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_clearSelectionButton))
+        );
+        _dataMappingTopPanelLayout.setVerticalGroup(
+            _dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_dataMappingTopPanelLayout.createSequentialGroup()
+                .addGroup(_dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_displayVariablesLabel)
+                    .addComponent(_displayVariablesComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_dataMappingTopPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_clearSelectionButton)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        jSplitPane1.setTopComponent(_dataMappingTopPanel);
+
+        _importTableDataTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        _importTableDataTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        jScrollPane3.setViewportView(_importTableDataTable);
+
+        javax.swing.GroupLayout _dataMappingBottomPanelLayout = new javax.swing.GroupLayout(_dataMappingBottomPanel);
+        _dataMappingBottomPanel.setLayout(_dataMappingBottomPanelLayout);
+        _dataMappingBottomPanelLayout.setHorizontalGroup(
+            _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+        );
+        _dataMappingBottomPanelLayout.setVerticalGroup(
+            _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_dataMappingBottomPanelLayout.createSequentialGroup()
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jSplitPane1.setRightComponent(_dataMappingBottomPanel);
+
+        javax.swing.GroupLayout _dataMappingPanelLayout = new javax.swing.GroupLayout(_dataMappingPanel);
+        _dataMappingPanel.setLayout(_dataMappingPanelLayout);
+        _dataMappingPanelLayout.setHorizontalGroup(
+            _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane1)
+        );
+        _dataMappingPanelLayout.setVerticalGroup(
+            _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+        );
+        _basePanel.add(_dataMappingPanel, "Mapping Panel");
+
+        jLabel3.setText("Save imported file in directory:");
+
+        _outputDirectoryTextField.setText(_prefs.get(_prefLastBackup, System.getProperty("user.home")));
+
+        _changeSaveDirectoryButton.setText("Change");
+        _changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                JFileChooser fc = new JFileChooser();
+                fc.setDialogTitle("Select directory to save imported file");
+                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                fc.setCurrentDirectory(new File(_outputDirectoryTextField.getText()));
+                int returnVal = fc.showOpenDialog(ImportWizardDialog.this);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    _outputDirectoryTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                    _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());
+                }
+            }
+        });
+
+        javax.swing.GroupLayout _outputSettingsPanelLayout = new javax.swing.GroupLayout(_outputSettingsPanel);
+        _outputSettingsPanel.setLayout(_outputSettingsPanelLayout);
+        _outputSettingsPanelLayout.setHorizontalGroup(
+            _outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _outputSettingsPanelLayout.createSequentialGroup()
+                        .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 446, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_changeSaveDirectoryButton))
+                    .addComponent(jLabel3))
+                .addContainerGap())
+        );
+        _outputSettingsPanelLayout.setVerticalGroup(
+            _outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_outputSettingsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_outputSettingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_changeSaveDirectoryButton)
+                    .addComponent(_outputDirectoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(408, 408, 408)
+                .addComponent(_progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(22, Short.MAX_VALUE))
+        );
+        _basePanel.add(_outputSettingsPanel, "Output Settings");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(previousButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nextButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(executeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_basePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cancelButton)
+                    .addComponent(executeButton)
+                    .addComponent(nextButton)
+                    .addComponent(previousButton))
+                .addContainerGap())
+        );
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel _basePanel;
+    private javax.swing.JPanel _cSVDefsPanel;
+    private javax.swing.JButton _changeSaveDirectoryButton;
+    private javax.swing.JButton _clearSelectionButton;
+    private javax.swing.JRadioButton _commaRadioButton;
+    private javax.swing.JPanel _dataMappingBottomPanel;
+    private javax.swing.JPanel _dataMappingPanel;
+    private javax.swing.JPanel _dataMappingTopPanel;
+    private javax.swing.JComboBox _displayVariablesComboBox;
+    private javax.swing.JLabel _displayVariablesLabel;
+    private javax.swing.JRadioButton _doubleQuotesRadioButton;
+    private javax.swing.JTable _fieldMapTable;
+    private javax.swing.ButtonGroup _fieldSeparatorButtonGroup;
+    private javax.swing.JTextArea _fileContentsTextArea;
+    private javax.swing.JPanel _fileFormatPanel;
+    private javax.swing.JCheckBox _firstRowColumnHeadersCheckBox;
+    private javax.swing.JPanel _fixedColumnDefsPanel;
+    private javax.swing.ButtonGroup _groupIndicatorButtonGroup;
+    private javax.swing.JPanel _groupIndiocatorGroup;
+    private javax.swing.JTextField _ignoreRowsTextField;
+    private javax.swing.JTable _importTableDataTable;
+    private javax.swing.JTextField _otherFieldSeparatorTextField;
+    private javax.swing.JRadioButton _otherRadioButton;
+    private javax.swing.JTextField _outputDirectoryTextField;
+    private javax.swing.JPanel _outputSettingsPanel;
+    private javax.swing.JProgressBar _progressBar;
+    private javax.swing.JRadioButton _semiColonRadioButton;
+    private javax.swing.JRadioButton _singleQuotesRadioButton;
+    private javax.swing.JComboBox _sourceFileTypeComboBox;
+    private javax.swing.JPanel _sourceFileTypeOptions;
+    private javax.swing.JRadioButton _whitespaceRadioButton;
+    private javax.swing.JButton cancelButton;
+    private javax.swing.JButton executeButton;
+    private javax.swing.JPanel fieldSeparatorGroup;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JButton nextButton;
+    private javax.swing.JButton previousButton;
+    // End of variables declaration//GEN-END:variables
+    /**
+     *
+     */
+    class VariableMappingTableModel extends AbstractTableModel {
+
+        private static final long serialVersionUID = 1L;
+        private String[] columnNames = {"SaTScan Variable", "Source File Variable"};
+        private final Vector<ImportVariable> variables_static;
+        private Vector<ImportVariable> variables_visible;
+        public JComboBox comboBox = new JComboBox();
+
+        public VariableMappingTableModel(Vector<ImportVariable> variables) {
+            this.variables_static = variables;
+            variables_visible = (Vector) this.variables_static.clone();
+        }
+
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        public int getRowCount() {
+            return variables_visible.size();
+        }
+
+        @Override
+        public Class getColumnClass(int c) {
+            return getValueAt(0, c).getClass();
+        }
+
+        @Override
+        public String getColumnName(int col) {
+            return columnNames[col];
+        }
+
+        public Object getValueAt(int row, int col) {
+            if (col == 0) {
+                return variables_visible.get(row).getVariableDisplayName();
+            } else {
+                Object obj = comboBox.getItemAt(variables_visible.get(row).getInputFileVariableIndex());
+                if (obj != null) {
+                    return obj;
+                } else {
+                    return "";
+                }
+            }
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return col == 0 ? false : true;
+        }
+
+        public void setShowing(final ImportVariable variable, boolean showing) {
+            if (showing) {
+                showVariable(variable.getVariableName());
+            } else {
+                hideVariable(variable.getVariableName());
+            }
+        }
+
+        public boolean isShowing(final String variableName) {
+            for (int i = 0; i < variables_visible.size(); ++i) {
+                if (variableName.equals(variables_visible.get(i).getVariableName())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void showVariable(final String variableName) {
+            //first search to see if aleady showing
+            for (int i = 0; i < variables_visible.size(); ++i) {
+                if (variableName.equals(variables_visible.get(i).getVariableName())) {
+                    return; //already showing
+                }
+            }
+            //find index in variables vector
+            for (int i = 0; i < variables_static.size(); ++i) {
+                if (variableName.equals(variables_static.get(i).getVariableName())) {
+                    variables_visible.add(variables_static.get(i));
+                    return; //already showing
+                }
+            }
+
+        }
+
+        public void hideVariable(final String variableName) {
+            for (int i = 0; i < variables_visible.size(); ++i) {
+                if (variableName.equals(variables_visible.get(i).getVariableName())) {
+                    variables_visible.remove(i);
+                    return;
+                }
+            }
+        }
+
+        @Override
+        public void setValueAt(Object value, int row, int col) {
+            if (value == null) {
+                return;
+            }
+            for (int i = 0; i < comboBox.getItemCount(); ++i) {
+                if (comboBox.getItemAt(i).equals(value)) {
+                    variables_visible.get(row).setInputFileVariableIndex(i);
+                    enableNavigationButtons();
+                    fireTableCellUpdated(row, col);
+                    return;
+                }
+            }
+        }
+    }
+
+    /*
+     * Import worker; executed in background thread.
+     */
+    class ImportTask extends SwingWorker<Void, Void> implements ActionListener {
+
+        private WaitCursor waitCursor = new WaitCursor(ImportWizardDialog.this);
+        private FileImporter _importer;
+
+        @Override
+        public Void doInBackground() {
+            try {
+                cancelButton.addActionListener(this);
+                previousButton.setEnabled(false);
+                executeButton.setEnabled(false);
+                _progressBar.setVisible(true);
+                _progressBar.setValue(0);
+                VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
+                _importer = new FileImporter(getImportSource(),
+                        model.variables_visible,
+                        _fileType,
+                        _sourceDataFileType,
+                        _destinationFile,
+                        _progressBar);
+                _importer.importFile(Integer.parseInt(_ignoreRowsTextField.getText()));
+                _cancelled = _importer.getCancelled();
+                setVisible(false);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(ImportWizardDialog.this,
+                        "The import wizard encountered an error attempting to create the import file.\n" +
+                        "This is most likely occuring because write permissions are not granted for\n" +
+                        "specified directory. Please check path or review user permissions for specified directory.\n", "Note", JOptionPane.WARNING_MESSAGE);
+            } catch (SecurityException e) {
+                JOptionPane.showMessageDialog(ImportWizardDialog.this,
+                        "The import wizard encountered an error attempting to create the import file.\n" +
+                        "This is most likely occuring because write permissions are not granted for\n" +
+                        "specified directory. Please check path or review user permissions for specified directory.\n", "Note", JOptionPane.WARNING_MESSAGE);
+            } catch (ImportException e) {
+                JOptionPane.showMessageDialog(ImportWizardDialog.this, e.getMessage(), "Note", JOptionPane.ERROR_MESSAGE);
+            } catch (Throwable t) {
+                new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);
+            } finally {
+                cancelButton.removeActionListener(this);
+            }
+            return null;
+        }
+
+        /*
+         * Executed in event dispatching thread
+         */
+        @Override
+        public void done() {
+            executeButton.setEnabled(true);
+            previousButton.setEnabled(true);
+            waitCursor.restore();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            _importer.setCancelled();
+        }
+    }
+}

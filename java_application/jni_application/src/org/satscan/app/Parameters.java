@@ -1,0 +1,823 @@
+package org.satscan.app;
+import java.util.*;
+
+public class Parameters implements Cloneable {
+	
+    public native boolean                     Read(String filename);  
+    public native void                        Write(String filename);  
+	
+    /** analysis and cluster types */
+    public enum AnalysisType                  {PURELYSPATIAL, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
+                                               SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
+    /** cluster types */
+    public enum ClusterType                   {PURELYSPATIALCLUSTER, PURELYTEMPORALCLUSTER, SPACETIMECLUSTER,
+                                               SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER, PURELYSPATIALPROSPECTIVECLUSTER};
+    /** probability model types */
+    public enum ProbabilityModelType          {POISSON, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, NORMAL, RANK};
+    public enum IncludeClustersType           {ALLCLUSTERS, ALIVECLUSTERS, CLUSTERSINRANGE};
+    public enum RiskType                      {STANDARDRISK, MONOTONERISK};
+    /** area incidence rate types */
+    public enum AreaRateType                  {HIGH, LOW, HIGHANDLOW};
+    /** time trend adjustment types */
+    public enum TimeTrendAdjustmentType       {NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC,
+                                               CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION};
+    /** spatial adjustment types */
+    public enum SpatialAdjustmentType         {NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION};
+    public enum CoordinatesType               {CARTESIAN, LATLON};
+    /** criteria for reporting secondary clusters types */
+    public enum CriteriaSecondaryClustersType {NOGEOOVERLAP, NOCENTROIDSINOTHER, NOCENTROIDSINMORELIKE,
+                                               NOCENTROIDSINLESSLIKE, NOPAIRSINEACHOTHERS, NORESTRICTIONS};
+    /** interperation types for maximum temporal size */
+    public enum TemporalSizeType              {PERCENTAGETYPE, TIMETYPE};
+    /** interperation types for maximum spatial size */
+    public enum SpatialSizeType               {PERCENTOFPOPULATION, MAXDISTANCE, PERCENTOFMAXCIRCLEFILE};
+    /** defines how simulated data will be created - only pertinent for Poisson */
+    public enum SimulationType                {STANDARD, HA_RANDOMIZATION, FILESOURCE};
+    /** purpose of multiple data sets */
+    public enum MultipleDataSetPurposeType    {MULTIVARIATE, ADJUSTMENT};
+    /** analysis execution type */
+    public enum ExecutionType                 {AUTOMATIC, SUCCESSIVELY, CENTRICALLY};
+    /** spatial window shape */
+    public enum SpatialWindowType             {CIRCULAR, ELLIPTIC};
+    /** non-compactness penalty type */
+    public enum NonCompactnessPenaltyType     {NOPENALTY, MEDIUMPENALTY, STRONGPENALTY};
+    /** study period data checking type */
+    public enum StudyPeriodDataCheckingType   {STRICTBOUNDS, RELAXEDBOUNDS};
+    /** geographical coordinates data checking type  */
+    public enum CoordinatesDataCheckingType   {STRICTCOORDINATES, RELAXEDCOORDINATES};
+    public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY };    
+    public class CreationVersion {
+    	public int giMajor;
+    	public int giMinor;
+    	public int giRelease;
+    	public CreationVersion(int iMajor, int iMinor, int iRelease) {
+    		super();
+    		giMajor = iMajor;
+    		giMinor = iMinor;
+    		giRelease = iRelease;
+        }
+    }    
+    /** multiple coordinates type */
+    public enum MultipleCoordinatesType       {ONEPERLOCATION, ATLEASTONELOCATION, ALLLOCATIONS};
+
+    private int                         	giNumRequestedParallelProcesses=0; /** number of parallel processes to run */
+    private ExecutionType               	geExecutionType=ExecutionType.AUTOMATIC; /** execution process type */
+    private MultipleDataSetPurposeType  	geMultipleSetPurposeType=MultipleDataSetPurposeType.MULTIVARIATE; /** purpose for multiple data sets */
+    private AnalysisType                	geAnalysisType=AnalysisType.PURELYSPATIAL; /** analysis type */
+    private ProbabilityModelType        	geProbabilityModelType=ProbabilityModelType.POISSON; /** probability model type */
+    private AreaRateType                	geAreaScanRate=AreaRateType.HIGH; /** areas incidence rate type of interest */
+    private RiskType                    	geRiskFunctionType=RiskType.STANDARDRISK; /**  */
+    private IncludeClustersType         	geIncludeClustersType=IncludeClustersType.ALLCLUSTERS;
+    private int                         	giReplications=999; /** number of MonteCarlo replicas */
+    private CriteriaSecondaryClustersType 	geCriteriaSecondClustersType=CriteriaSecondaryClustersType.NOGEOOVERLAP; /** Criteria for Reporting Secondary Clusters */
+    private double                          gdTimeTrendConverge=0.0000001; /** time trend convergence value for SVTT */
+    private boolean                         gbEarlyTerminationSimulations=false; /** indicates whether to stop simulations if large p-values */
+    private SimulationType                  geSimulationType=SimulationType.STANDARD; /** indicates simulation procedure - Poisson only */
+    private boolean                         gbOutputSimulationData=false; /** indicates whether to output simulation data to file */
+    private boolean                         gbAdjustForEarlierAnalyses=false; /** indicates whether to adjust for earlier analyses,
+                                                                                  pertinent for prospective analyses */
+    private SpatialAdjustmentType           geSpatialAdjustmentType=SpatialAdjustmentType.NO_SPATIAL_ADJUSTMENT; /** type of spatial adjustment*/
+    private StudyPeriodDataCheckingType     geStudyPeriodDataCheckingType=StudyPeriodDataCheckingType.STRICTBOUNDS; /** study period data checking type */
+    private CoordinatesDataCheckingType     geCoordinatesDataCheckingType=CoordinatesDataCheckingType.STRICTCOORDINATES; /** geographical coordinates data checking type */
+    private MultipleCoordinatesType         geMultipleCoordinatesType=MultipleCoordinatesType.ONEPERLOCATION; /** multiple locations type */
+        /* Power Calcution variables */
+    private boolean                         gbPowerCalculation=false; /** indicator of whether to perform power calculations */
+    private double                          gdPower_X=0.0, gdPower_Y=0.0; /** power calculation variables */
+
+    /* Maximum spatial cluster variables */
+    private double                          gdMaxSpatialSizeInPopulationAtRisk=50.0;
+    private boolean                         gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile=false;
+    private double                          gdMaxSpatialSizeInMaxCirclePopulationFile=50.0;
+    private boolean                         gbRestrictMaxSpatialSizeThroughDistanceFromCenter=false;
+    private double                          gdMaxSpatialSizeInMaxDistanceFromCenter=1.0;
+       /* Reported Maximum spatial cluster variables */
+    private boolean                         gbRestrictReportedClusters=false;             /** indicates whether reported clusters are limited to specified maximum size */
+    private double                          gdMaxSpatialSizeInPopulationAtRisk_Reported=50.0;
+    private boolean                         gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported=false;
+    private double                          gdMaxSpatialSizeInMaxCirclePopulationFile_Reported=50.0;
+    private boolean                         gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported=false;
+    private double                          gdMaxSpatialSizeInMaxDistanceFromCenter_Reported=1.0;
+    /* Maximum temporal cluster variables */
+    private double                          gdMaxTemporalClusterSize=50.0; /** maximum value for temporal cluster */
+    private TemporalSizeType                geMaxTemporalClusterSizeType=TemporalSizeType.PERCENTAGETYPE; /** maximum temporal cluster value type */
+        /* Time interval variables */
+    private int                             glTimeAggregationLength=0; /** length of time aggregation */
+    private DatePrecisionType               geTimeAggregationUnitsType=DatePrecisionType.NONE; /** time aggregation units type */
+        /* Temporal trend adjusment variables */
+    private double                          gdTimeTrendAdjustPercentage=0; /** percentage for log linear adjustment */
+    private TimeTrendAdjustmentType         geTimeTrendAdjustType=TimeTrendAdjustmentType.NOTADJUSTED; /** Adjust for time trend: no, discrete, % */
+        /* Input precision variables */
+    private DatePrecisionType               gePrecisionOfTimesType=DatePrecisionType.YEAR; /** precision of case/control data: none = no, years=months=days = yes */
+    private CoordinatesType                 geCoordinatesType=CoordinatesType.LATLON; /** coordinates type for coordinates/special grid */
+        /* Ellipse variables */
+    private Vector<Double>                  gvEllipseShapes; /** shape of each ellipsoid */
+    private Vector<Integer>                 gvEllipseRotations; /** number of rotations for each ellipsoid */
+    private NonCompactnessPenaltyType       geNonCompactnessPenaltyType=NonCompactnessPenaltyType.MEDIUMPENALTY; /** indicates penalty for narrower ellipses */
+        /* Pure Clusters variables */
+    private boolean                         gbIncludePurelySpatialClusters=false, /** indicates whether to include purely spatial clusters */
+                                            gbIncludePurelyTemporalClusters=false; /** indicates whether to include purely temporal clusters */
+        /* Additional output variables */
+    private boolean                         gbOutputSimLogLikeliRatiosAscii=false, /** indicates whether to output simulated loglikelihood ratios in acsii format */
+                                            gbOutputSimLogLikeliRatiosDBase=false; /** indicates whether to output simulated loglikelihood ratios in dBase format */
+    private boolean                         gbOutputRelativeRisksAscii=false, /** indicates whether to output relative risks for each tract/location in ascii format */
+                                            gbOutputRelativeRisksDBase=false; /** indicates whether to output relative risks for each tract/location in dBase format */
+    private boolean                         gbOutputClusterLevelAscii=false, /** indicates whether to output most likely clusters for each centroid in ascii format */
+                                            gbOutputClusterLevelDBase=false; /** indicates whether to output most likely clusters for each centroid in dBase format */
+    private boolean                         gbOutputClusterCaseAscii=false, /** indicates whether to output most likely cluster cases for each centroid in ascii format */
+                                            gbOutputClusterCaseDBase=false; /** indicates whether to output most likely cluster cases for each centroid in dBase format */
+    private boolean                         gbOutputAreaSpecificAscii=false, /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
+                                            gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
+    /* Iterative scans variables */
+    private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
+    private int                             giNumIterativeRuns=0; /* number of Iterative scans to attempt */
+    private double                          gbIterativeCutOffPValue=0.05; /* P-Value used to exit Iterative analysis */
+        /* Input/Output filenames */
+    private String                        	gsParametersSourceFileName=""; /** parameters source filename */
+    private Vector<String>                 	gvCaseFilenames; /** case data source filenames */
+    private Vector<String>            		gvControlFilenames; /** control data source filenames */
+    private Vector<String>      			gvPopulationFilenames; /** population data source filenames */
+    private String                          gsCoordinatesFileName=""; /** coordinates data source filename */
+    private String                         	gsSpecialGridFileName=""; /** special grid data source filename */
+    private String                         	gsMaxCirclePopulationFileName=""; /** special population file for constructing circles only */
+    private String                         	gsOutputFileName=""; /** results output filename */
+    private boolean                         gbLogRunHistory=true; /** indicates whether to log history */
+    private String                         	gsSimulationDataSourceFileName=""; /** simualtion data source filename */
+    private boolean                         gbUseAdjustmentsForRRFile=false; /** indicates whether to use adjustments for known relative risks file */
+    private String                         	gsAdjustmentsByRelativeRisksFileName=""; /** adjustments by known relative risks filename */
+    private String                         	gsSimulationDataOutputFilename=""; /** simulation data output filename */
+    private String                          gsLocationNeighborsFilename=""; /** sorted array neighbor file */
+    boolean                                 gbUseLocationNeighborsFile; /** use sorted array neighbor file? */
+    private String                          gsMetaLocationsFilename=""; /** meta locations file */
+    boolean                                 gbUseMetaLocationsFile=false;
+        /* Analysis dates */
+    private String                         	gsProspectiveStartDate="2000/12/31"; /** prospective start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
+    private String                         	gsStudyPeriodStartDate="2000/1/1"; /** study period start date in YYYY/MM/DD, YYYY/MM, or YYYY format */
+    private String                         	gsStudyPeriodEndDate="2000/12/31"; /** study period end date in YYYY/MM/DD, YYYY/MM, or YYYY format */
+    private String                         	gsEndRangeStartDate="2000/1/1";
+    private String                         	gsEndRangeEndDate="2000/12/31";
+    private String                         	gsStartRangeStartDate="2000/1/1";
+    private String                         	gsStartRangeEndDate="2000/12/31";
+        /* Parameter validation variables */
+/**    private boolean                         gbValidatePriorToCalc=true; /** prevents validation prior to execution
+                                                                            The intent of this parameter is to allow an advanced
+                                                                            user to set values to something that would normally
+                                                                            be considered invalid. e.g. setting maximum spatial
+                                                                            cluster size to 60 instead of 50. Settings this parameter
+                                                                            to false has an implied disclaimer, you may get strange
+                                                                            occurances programmatically and statically. */
+
+    private CreationVersion                 gCreationVersion;
+    private int                            	glRandomizationSeed=12345678; /** randomization seed */
+    private boolean                         gbReportCriticalValues=false; /** indicates whether to report critical llr values */
+    private boolean                         gbSuppressWarnings=false; /** indicates whether to suppres warnings printed during execution */
+    private SpatialWindowType        		    geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
+
+//**    public static final int             	  giNumParameters=79; /** number enumerated parameters */
+    public static final int             	MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
+    public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
+    
+    
+    public Parameters() {
+    	super();
+    	
+    	gCreationVersion = new CreationVersion(7,0,0);
+    	gvCaseFilenames = new Vector<String>();
+    	gvCaseFilenames.addElement("");
+      gvControlFilenames = new Vector<String>();
+        gvControlFilenames.addElement("");
+        gvPopulationFilenames = new Vector<String>();
+        gvPopulationFilenames.addElement("");
+    	gvEllipseShapes = new Vector<Double>();
+        gvEllipseShapes.addElement(1.5);
+        gvEllipseShapes.addElement(2.0);
+        gvEllipseShapes.addElement(3.0);
+        gvEllipseShapes.addElement(4.0);
+        gvEllipseShapes.addElement(5.0);
+        gvEllipseRotations = new Vector<Integer>();
+        gvEllipseRotations.addElement(4);
+        gvEllipseRotations.addElement(6);
+        gvEllipseRotations.addElement(9);
+        gvEllipseRotations.addElement(12);
+        gvEllipseRotations.addElement(15);
+    }
+   
+    @Override
+    public Object clone() { 
+      try {
+    	  Parameters newObject = (Parameters)super.clone(); 
+    	  newObject.gsStudyPeriodStartDate = new String(gsStudyPeriodStartDate);
+    	  newObject.gsStudyPeriodEndDate = new String(gsStudyPeriodEndDate);
+    	  newObject.gvCaseFilenames = new Vector<String>(gvCaseFilenames);
+    	  newObject.gvControlFilenames = new Vector<String>(gvControlFilenames);
+    	  newObject.gvPopulationFilenames = new Vector<String>(gvPopulationFilenames);    	  
+    	  newObject.gsCoordinatesFileName = new String(gsCoordinatesFileName);
+    	  newObject.gsSpecialGridFileName = new String(gsSpecialGridFileName);    	  
+    	  newObject.gsMaxCirclePopulationFileName = new String(gsMaxCirclePopulationFileName);
+    	  newObject.gsOutputFileName = new String(gsOutputFileName);
+    	  newObject.gsProspectiveStartDate = new String(gsProspectiveStartDate);
+    	  newObject.gsParametersSourceFileName = new String(gsParametersSourceFileName);
+    	  newObject.gsEndRangeStartDate = new String(gsEndRangeStartDate);
+    	  newObject.gsEndRangeEndDate = new String(gsEndRangeEndDate);
+    	  newObject.gsStartRangeStartDate = new String(gsStartRangeStartDate);
+    	  newObject.gsStartRangeEndDate = new String(gsStartRangeEndDate);
+    	  newObject.gsSimulationDataSourceFileName = new String(gsSimulationDataSourceFileName);
+    	  newObject.gsAdjustmentsByRelativeRisksFileName = new String(gsAdjustmentsByRelativeRisksFileName);
+    	  newObject.gsSimulationDataOutputFilename = new String(gsSimulationDataOutputFilename);
+    	  newObject.gsLocationNeighborsFilename = new String(gsLocationNeighborsFilename);
+    	  newObject.gsMetaLocationsFilename = new String(gsMetaLocationsFilename);
+
+    	  return newObject; 
+      } 
+      catch (CloneNotSupportedException e) {
+        throw new InternalError("But we are Cloneable!!!");
+      }
+    }
+    
+    public MultipleCoordinatesType GetMultipleCoordinatesType() {return geMultipleCoordinatesType;}
+    
+    /** Add ellipsoid shape to collection of spatial shapes evaluated. */
+    public void  AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
+    	if (bEmptyFirst) gvEllipseShapes.setSize(0);
+    	gvEllipseShapes.add(new Double(dShape));
+    }  
+    /** Add ellipsoid rotations to collection of spatial shapes evaluated. */
+    public void AddEllipsoidRotations(int iRotations, boolean bEmptyFirst) {
+    	if (bEmptyFirst) gvEllipseRotations.setSize(0);
+    	gvEllipseRotations.add(new Integer(iRotations));      
+    }
+    @Override
+    public boolean equals(Object _rhs) {
+    	  Parameters rhs = (Parameters)_rhs;
+    	  
+    	  if (geSpatialWindowType                    != rhs.geSpatialWindowType) return false;
+    	  if (gvEllipseShapes                        != rhs.gvEllipseShapes) return false;
+    	  if (gvEllipseRotations                     != rhs.gvEllipseRotations) return false;
+    	  if (geNonCompactnessPenaltyType            != rhs.geNonCompactnessPenaltyType) return false;
+    	  if (geAnalysisType                         != rhs.geAnalysisType) return false;
+    	  if (geAreaScanRate                         != rhs.geAreaScanRate) return false;
+    	  if (geProbabilityModelType                 != rhs.geProbabilityModelType) return false;
+    	  if (geRiskFunctionType                     != rhs.geRiskFunctionType) return false;
+    	  if (giReplications                         != rhs.giReplications) return false;
+    	  if (gbPowerCalculation                     != rhs.gbPowerCalculation) return false;
+    	  if (gdPower_X                              != rhs.gdPower_X) return false;
+    	  if (gdPower_Y                              != rhs.gdPower_Y) return false;
+    	  if (!gsStudyPeriodStartDate.equals(rhs.gsStudyPeriodStartDate)) return false;
+    	  if (!gsStudyPeriodEndDate.equals(rhs.gsStudyPeriodEndDate)) return false;
+    	  if (gdMaxTemporalClusterSize               != rhs.gdMaxTemporalClusterSize) return false;
+    	  if (geIncludeClustersType                  != rhs.geIncludeClustersType) return false;
+    	  if (geTimeAggregationUnitsType             != rhs.geTimeAggregationUnitsType) return false;
+    	  if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
+    	  if (geTimeTrendAdjustType                  != rhs.geTimeTrendAdjustType) return false;
+    	  if (gdTimeTrendAdjustPercentage            != rhs.gdTimeTrendAdjustPercentage) return false;
+    	  if (gbIncludePurelySpatialClusters         != rhs.gbIncludePurelySpatialClusters) return false;
+    	  if (gbIncludePurelyTemporalClusters        != rhs.gbIncludePurelyTemporalClusters) return false;
+    	  if (!gvCaseFilenames.equals(rhs.gvCaseFilenames)) return false;
+    	  if (!gvControlFilenames.equals(rhs.gvControlFilenames)) return false;
+    	  if (!gvPopulationFilenames.equals(rhs.gvPopulationFilenames)) return false;
+    	  if (!gsCoordinatesFileName.equals(rhs.gsCoordinatesFileName)) return false;
+    	  if (!gsSpecialGridFileName.equals(rhs.gsSpecialGridFileName)) return false;
+    	  if (!gsMaxCirclePopulationFileName.equals(rhs.gsMaxCirclePopulationFileName)) return false;
+    	  if (gePrecisionOfTimesType                 != rhs.gePrecisionOfTimesType) return false;
+    	  if (geCoordinatesType                      != rhs.geCoordinatesType) return false;
+    	  if (!gsOutputFileName.equals(rhs.gsOutputFileName)) return false;
+    	  if (gbOutputSimLogLikeliRatiosAscii        != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
+    	  if (gbOutputRelativeRisksAscii             != rhs.gbOutputRelativeRisksAscii) return false;
+    	  if (gbIterativeRuns                        != rhs.gbIterativeRuns) return false;
+    	  if (giNumIterativeRuns                     != rhs.giNumIterativeRuns) return false;
+    	  if (gbIterativeCutOffPValue                != rhs.gbIterativeCutOffPValue) return false;
+    	  if (!gsProspectiveStartDate.equals(rhs.gsProspectiveStartDate)) return false;
+    	  if (gbOutputAreaSpecificAscii              != rhs.gbOutputAreaSpecificAscii) return false;
+    	  if (gbOutputClusterLevelAscii              != rhs.gbOutputClusterLevelAscii) return false;
+    	  if (geCriteriaSecondClustersType           != rhs.geCriteriaSecondClustersType) return false;
+    	  if (geMaxTemporalClusterSizeType           != rhs.geMaxTemporalClusterSizeType) return false;
+    	  if (gbOutputClusterLevelDBase              != rhs.gbOutputClusterLevelDBase) return false;
+    	  if (gbOutputAreaSpecificDBase              != rhs.gbOutputAreaSpecificDBase) return false;
+    	  if (gbOutputRelativeRisksDBase             != rhs.gbOutputRelativeRisksDBase) return false;
+    	  if (gbOutputSimLogLikeliRatiosDBase        != rhs.gbOutputSimLogLikeliRatiosDBase) return false;
+    	  if (gbLogRunHistory                        != rhs.gbLogRunHistory) return false;
+    	  if (!gsParametersSourceFileName.equals(rhs.gsParametersSourceFileName)) return false;
+    	  if (!gsEndRangeStartDate.equals(rhs.gsEndRangeStartDate)) return false;
+    	  if (!gsEndRangeEndDate.equals(rhs.gsEndRangeEndDate)) return false;
+    	  if (!gsStartRangeStartDate.equals(rhs.gsStartRangeStartDate)) return false;
+    	  if (!gsStartRangeEndDate.equals(rhs.gsStartRangeEndDate)) return false;
+    	  if (gdTimeTrendConverge		             != rhs.gdTimeTrendConverge) return false;
+    	  if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
+    	  if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
+    	  if (geSimulationType                       != rhs.geSimulationType) return false;
+    	  if (!gsSimulationDataSourceFileName.equals(rhs.gsSimulationDataSourceFileName)) return false;
+    	  if (!gsAdjustmentsByRelativeRisksFileName.equals(rhs.gsAdjustmentsByRelativeRisksFileName)) return false;
+    	  if (gbOutputSimulationData                 != rhs.gbOutputSimulationData) return false;
+    	  if (!gsSimulationDataOutputFilename.equals(rhs.gsSimulationDataOutputFilename)) return false;
+    	  if (gbAdjustForEarlierAnalyses             != rhs.gbAdjustForEarlierAnalyses) return false;
+    	  if (gbUseAdjustmentsForRRFile              != rhs.gbUseAdjustmentsForRRFile) return false;
+    	  if (geSpatialAdjustmentType                != rhs.geSpatialAdjustmentType) return false;
+    	  if (geMultipleSetPurposeType               != rhs.geMultipleSetPurposeType) return false;
+    	  //if (glRandomizationSeed                    != rhs.glRandomizationSeed) return false;
+    	  if (gbReportCriticalValues                 != rhs.gbReportCriticalValues) return false;
+    	  //if (geExecutionType                        != rhs.geExecutionType) return false;
+    	  if (giNumRequestedParallelProcesses        != rhs.giNumRequestedParallelProcesses) return false;
+    	  if (gbSuppressWarnings                     != rhs.gbSuppressWarnings) return false;
+    	  if (gbOutputClusterCaseAscii               != rhs.gbOutputClusterCaseAscii) return false;
+    	  if (gbOutputClusterCaseDBase               != rhs.gbOutputClusterCaseDBase) return false;
+    	  if (geStudyPeriodDataCheckingType          != rhs.geStudyPeriodDataCheckingType) return false;
+    	  if (geCoordinatesDataCheckingType          != rhs.geCoordinatesDataCheckingType) return false;
+    	  if (gdMaxSpatialSizeInPopulationAtRisk     != rhs.gdMaxSpatialSizeInPopulationAtRisk) return false;
+    	  if (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile != rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile) return false;
+    	  if (gdMaxSpatialSizeInMaxCirclePopulationFile != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile) return false;
+    	  if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter) return false;
+    	  if (gdMaxSpatialSizeInMaxDistanceFromCenter != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter) return false;
+    	  if (gdMaxSpatialSizeInPopulationAtRisk_Reported != rhs.gdMaxSpatialSizeInPopulationAtRisk_Reported) return false;
+    	  if (gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported != rhs.gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported) return false;
+    	  if (gdMaxSpatialSizeInMaxCirclePopulationFile_Reported != rhs.gdMaxSpatialSizeInMaxCirclePopulationFile_Reported) return false;
+    	  if (gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported != rhs.gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported) return false;
+    	  if (gdMaxSpatialSizeInMaxDistanceFromCenter_Reported != rhs.gdMaxSpatialSizeInMaxDistanceFromCenter_Reported) return false;
+    	  if (!gsLocationNeighborsFilename.equals(rhs.gsLocationNeighborsFilename)) return false;
+    	  if (gbUseLocationNeighborsFile != rhs.gbUseLocationNeighborsFile) return false;
+    	  if (geMultipleCoordinatesType != rhs.geMultipleCoordinatesType) return false;
+    	  if (!gsMetaLocationsFilename.equals(rhs.gsMetaLocationsFilename)) return false;
+    	  if (gbUseMetaLocationsFile != rhs.gbUseMetaLocationsFile) return false;
+
+    	  return true;
+    }
+    public boolean GetAdjustForEarlierAnalyses() {return gbAdjustForEarlierAnalyses;}
+    public String GetAdjustmentsByRelativeRisksFilename() {return gsAdjustmentsByRelativeRisksFileName;}
+    public AnalysisType GetAnalysisType() {return geAnalysisType;}
+    public String GetAnalysisTypeAsString() {
+    	  String sAnalysisType = null;
+
+    	  //try {
+    	    switch (geAnalysisType) {
+    	      case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
+    	      case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
+    	      case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
+    	      case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
+    	      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
+    	      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
+    	      //default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
+    	    }
+    	  //}
+    	  //catch (ZdException & x) {
+    	  //  x.AddCallpath("GetAnalysisTypeAsString()","CParameters");
+    	  //  throw;
+    	  //}
+    	  return sAnalysisType;    	
+    }    
+    public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
+    public final String GetCaseFileName(int iSetIndex/*=1*/) {
+    	  return gvCaseFilenames.elementAt(iSetIndex - 1);    	
+    }
+    public final Vector<String> GetCaseFileNames() {return gvCaseFilenames;}    
+    public final String GetControlFileName(int iSetIndex/*=1*/) {
+  	  return gvControlFilenames.elementAt(iSetIndex - 1);    	
+    }
+    public final Vector<String> GetControlFileNames() {return gvControlFilenames;} 
+    public final String GetCoordinatesFileName() {return gsCoordinatesFileName;}
+    public CoordinatesDataCheckingType GetCoordinatesDataCheckingType() {return geCoordinatesDataCheckingType;}
+    public CoordinatesType GetCoordinatesType() {return geCoordinatesType;}
+    public final CreationVersion GetCreationVersion() {return gCreationVersion;}
+    public CriteriaSecondaryClustersType GetCriteriaSecondClustersType() {return geCriteriaSecondClustersType;}
+    public int GetCreationVersionMajor() {return gCreationVersion.giMajor;}
+    public final Vector<Integer> GetEllipseRotations() {return gvEllipseRotations;}
+    public final Vector<Double> GetEllipseShapes() {return gvEllipseShapes;}
+    public final String GetEndRangeEndDate() {return gsEndRangeEndDate;}
+    public final String GetEndRangeStartDate() {return gsEndRangeStartDate;}
+    public ExecutionType GetExecutionType() {return geExecutionType;}
+    public IncludeClustersType GetIncludeClustersType() {return geIncludeClustersType;}
+    public boolean GetIncludePurelySpatialClusters() {return gbIncludePurelySpatialClusters;}
+    public boolean GetIncludePurelyTemporalClusters() {return gbIncludePurelyTemporalClusters;}
+    public boolean GetIsLoggingHistory() {return gbLogRunHistory;}
+    public boolean GetIsPowerCalculated() {return gbPowerCalculation;}
+    /** Returns whether analysis is a prospective analysis. */
+    public boolean GetIsProspectiveAnalysis() {
+    	  return (geAnalysisType == AnalysisType.PROSPECTIVESPACETIME || geAnalysisType == AnalysisType.PROSPECTIVEPURELYTEMPORAL);    	
+    }
+    /** Returns whether analysis is purely temporal. */
+    public boolean GetIsPurelyTemporalAnalysis() {
+    	  return (geAnalysisType == AnalysisType.PURELYTEMPORAL || geAnalysisType == AnalysisType.PROSPECTIVEPURELYTEMPORAL);
+    }
+    public boolean GetIsIterativeScanning() {return gbIterativeRuns;}
+    /** Returns whether analysis is space-time. */
+    public boolean GetIsSpaceTimeAnalysis() {
+    	  return (geAnalysisType == AnalysisType.SPACETIME || geAnalysisType == AnalysisType.PROSPECTIVESPACETIME);
+    }
+    public String GetLocationNeighborsFileName() {return gsLocationNeighborsFilename;}
+    public String GetMetaLocationsFileName() {return gsMetaLocationsFilename;}
+    public final String GetMaxCirclePopulationFileName() {return gsMaxCirclePopulationFileName;}
+    public double GetMaxSpatialSizeForType(int iOrdinal, boolean bReported) {
+        SpatialSizeType eSpatialSizeType=SpatialSizeType.PERCENTOFPOPULATION;
+        
+        try {
+      	  eSpatialSizeType=SpatialSizeType.values()[iOrdinal];
+  	    }
+  	    catch (ArrayIndexOutOfBoundsException e) {
+  		  ThrowOrdinalIndexException(iOrdinal, SpatialSizeType.values());
+  	    }
+    	switch (eSpatialSizeType) {
+    	   case PERCENTOFPOPULATION    : return bReported ? gdMaxSpatialSizeInPopulationAtRisk_Reported : gdMaxSpatialSizeInPopulationAtRisk;
+    	   case MAXDISTANCE            : return bReported ? gdMaxSpatialSizeInMaxDistanceFromCenter_Reported : gdMaxSpatialSizeInMaxDistanceFromCenter;
+    	   case PERCENTOFMAXCIRCLEFILE : return bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported : gdMaxSpatialSizeInMaxCirclePopulationFile;
+    	   default : throw new UnknownEnumException(eSpatialSizeType);
+    	}
+    }
+    public double GetMaximumTemporalClusterSize() {return gdMaxTemporalClusterSize;}
+    public TemporalSizeType GetMaximumTemporalClusterSizeType() {return geMaxTemporalClusterSizeType;}
+    public MultipleDataSetPurposeType GetMultipleDataSetPurposeType() {return geMultipleSetPurposeType;}
+    public NonCompactnessPenaltyType GetNonCompactnessPenaltyType() {return geNonCompactnessPenaltyType;}
+    public int GetNumDataSets() {return gvCaseFilenames.size();}
+    public int GetNumRequestedParallelProcesses() {return giNumRequestedParallelProcesses;}    
+    public int GetNumReplicationsRequested() {return giReplications;}
+    public int GetNumRequestedEllipses() {return 5;/*gvEllipseShapes.size();*/}
+    public int GetNumIterativeScansRequested() {return giNumIterativeRuns;}
+    public boolean GetOutputAreaSpecificAscii() {return gbOutputAreaSpecificAscii;}
+    public boolean GetOutputAreaSpecificDBase() {return gbOutputAreaSpecificDBase;}   
+    public boolean GetOutputClusterLevelAscii() {return gbOutputClusterLevelAscii;}
+    public boolean GetOutputClusterLevelDBase() {return gbOutputClusterLevelDBase;}
+    public boolean GetOutputClusterCaseAscii() {return gbOutputClusterCaseAscii;}
+    public boolean GetOutputClusterCaseDBase() {return gbOutputClusterCaseDBase;}
+    public final String GetOutputFileName() {return gsOutputFileName; }
+    public boolean GetOutputRelativeRisksAscii() {return gbOutputRelativeRisksAscii;}
+    public boolean GetOutputRelativeRisksDBase() {return gbOutputRelativeRisksDBase;}
+    public boolean GetOutputSimLoglikeliRatiosAscii() {return gbOutputSimLogLikeliRatiosAscii;}
+    public boolean GetOutputSimLoglikeliRatiosDBase() {return gbOutputSimLogLikeliRatiosDBase;}
+    public boolean GetOutputSimulationData() {return gbOutputSimulationData;}
+    public boolean GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) {
+    	return geAnalysisType == AnalysisType.PURELYSPATIAL || geAnalysisType == AnalysisType.SPACETIME || GetIsProspectiveAnalysis();
+    }
+    public boolean GetPermitsPurelySpatialCluster() {
+    	return geAnalysisType == AnalysisType.PURELYSPATIAL || geAnalysisType == AnalysisType.SPACETIME || GetIsProspectiveAnalysis();
+    }
+    public boolean GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) {
+    	return geAnalysisType == AnalysisType.PURELYTEMPORAL || geAnalysisType == AnalysisType.SPACETIME || GetIsProspectiveAnalysis();
+    }
+    public boolean GetPermitsPurelyTemporalCluster() {
+    	return geAnalysisType == AnalysisType.PURELYTEMPORAL || geAnalysisType == AnalysisType.SPACETIME || GetIsProspectiveAnalysis();
+    }
+    public final String GetPopulationFileName(int iSetIndex/*=1*/) {
+    	  return gvPopulationFilenames.elementAt(iSetIndex - 1);     	
+    }
+    public final Vector<String> GetPopulationFileNames() {return gvPopulationFilenames;}
+    public double GetPowerCalculationX() {return gdPower_X;}
+    public double GetPowerCalculationY() {return gdPower_Y;}
+    public DatePrecisionType GetPrecisionOfTimesType() {return gePrecisionOfTimesType;}
+    public ProbabilityModelType GetProbabilityModelType() {return geProbabilityModelType;}
+    public static final String GetProbabilityModelTypeAsString(ProbabilityModelType eProbabilityModelType) {
+    	  String sProbabilityModel = null;
+
+    	  //try {
+    	    switch (eProbabilityModelType) {
+    	      case POISSON              : sProbabilityModel = "Poisson"; break;
+    	      case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
+    	      case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
+    	      case ORDINAL              : sProbabilityModel = "Ordinal"; break;
+    	      case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
+    	      case NORMAL               : sProbabilityModel = "Normal"; break;
+    	      case RANK                 : sProbabilityModel = "Rank"; break;
+    	      //default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
+    	    }
+    	  //}
+    	  //catch (ZdException & x) {
+    	  //  x.AddCallpath("GetProbabilityModelTypeAsString()","CParameters");
+    	  //  throw;
+    	  //}
+    	  return sProbabilityModel;    	
+    }
+    public final String GetProspectiveStartDate() {return gsProspectiveStartDate;}
+    public int GetRandomizationSeed() {return glRandomizationSeed;}
+    public boolean GetReportCriticalValues() {return gbReportCriticalValues;}
+    public boolean GetRestrictingMaximumReportedGeoClusterSize() {return gbRestrictReportedClusters;}
+    public boolean GetRestrictMaxSpatialSizeForType(int iOrdinal, boolean bReported) {
+      SpatialSizeType eSpatialSizeType=SpatialSizeType.PERCENTOFPOPULATION;
+      
+      try {
+    	eSpatialSizeType=SpatialSizeType.values()[iOrdinal];
+	  }
+	  catch (ArrayIndexOutOfBoundsException e) {
+		  ThrowOrdinalIndexException(iOrdinal, SpatialSizeType.values());
+	  }
+
+      switch (eSpatialSizeType) {
+        case PERCENTOFPOPULATION    : return true;
+        case MAXDISTANCE            : return bReported ? gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported : gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
+        case PERCENTOFMAXCIRCLEFILE : return bReported ? gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
+        default : throw new UnknownEnumException(eSpatialSizeType);
+      }
+    }
+    public RiskType GetRiskType() {return geRiskFunctionType;}
+    public double GetIterativeCutOffPValue() {return gbIterativeCutOffPValue;}
+    public final String GetSimulationDataOutputFilename() {return gsSimulationDataOutputFilename;}  
+    public final String GetSimulationDataSourceFilename() {return gsSimulationDataSourceFileName;}
+    public SimulationType GetSimulationType() {return geSimulationType;}
+    public final String GetSourceFileName() {return gsParametersSourceFileName;}
+    public SpatialAdjustmentType GetSpatialAdjustmentType() {return geSpatialAdjustmentType;}
+    public SpatialWindowType GetSpatialWindowType() {return geSpatialWindowType;}
+    public final String GetSpecialGridFileName() {return gsSpecialGridFileName;}
+    public final String GetStartRangeEndDate() {return gsStartRangeEndDate;}
+    public final String GetStartRangeStartDate() {return gsStartRangeStartDate;}
+    public StudyPeriodDataCheckingType GetStudyPeriodDataCheckingType() {return geStudyPeriodDataCheckingType;}    
+    public final String GetStudyPeriodEndDate() {return gsStudyPeriodEndDate;}
+    public final String GetStudyPeriodStartDate() {return gsStudyPeriodStartDate;}
+    public boolean GetSuppressingWarnings() {return gbSuppressWarnings;}
+    public boolean GetTerminateSimulationsEarly() {return gbEarlyTerminationSimulations;}
+    public int GetTimeAggregationLength() {return glTimeAggregationLength;}
+    public DatePrecisionType GetTimeAggregationUnitsType() {return geTimeAggregationUnitsType;}
+    public double GetTimeTrendAdjustmentPercentage() {return gdTimeTrendAdjustPercentage;}
+    public TimeTrendAdjustmentType GetTimeTrendAdjustmentType() {return geTimeTrendAdjustType;}
+    public double GetTimeTrendConvergence() {return gdTimeTrendConverge;}
+    public void SetAdjustForEarlierAnalyses(boolean b) {gbAdjustForEarlierAnalyses = b;}
+    /** Sets relative risks adjustments file name.
+        If bCorrectForRelativePath is true, an attempt is made to modify filename
+        to path relative to executable. This is only attempted if current file does not exist. */
+    public void SetAdjustmentsByRelativeRisksFilename(String sAdjustmentsByRelativeRisksFileName) {gsAdjustmentsByRelativeRisksFileName = sAdjustmentsByRelativeRisksFileName;}
+    public void SetAnalysisType(int iOrdinal) {
+    	  try {
+        	geAnalysisType = AnalysisType.values()[iOrdinal];
+    	  }
+    	  catch (ArrayIndexOutOfBoundsException e) {
+    		  ThrowOrdinalIndexException(iOrdinal, AnalysisType.values());
+    	  }
+    }
+    public void SetMultipleCoordinatesType(int iOrdinal) {
+  	  try {
+  		geMultipleCoordinatesType = MultipleCoordinatesType.values()[iOrdinal];
+  	  }
+  	  catch (ArrayIndexOutOfBoundsException e) {
+  		  ThrowOrdinalIndexException(iOrdinal, MultipleCoordinatesType.values());
+  	  }
+    }
+    public void SetAreaRateType(int iOrdinal) {
+    	  try {
+    		    geAreaScanRate = AreaRateType.values()[iOrdinal];
+    	  }
+    	  catch (ArrayIndexOutOfBoundsException e) {
+    		  ThrowOrdinalIndexException(iOrdinal, AreaRateType.values());
+    	  }
+    }
+    public void SetEndRangeEndDate(final String sEndRangeEndDate) {gsEndRangeEndDate = sEndRangeEndDate;}
+    public void SetEndRangeStartDate(final String sEndRangeStartDate) {gsEndRangeStartDate = sEndRangeStartDate;}
+    public void SetExecutionType(int iOrdinal) {
+  	  try {
+  		geExecutionType = ExecutionType.values()[iOrdinal];
+	  }
+	  catch (ArrayIndexOutOfBoundsException e) {
+		  ThrowOrdinalIndexException(iOrdinal, ExecutionType.values());
+	  }    	
+    }
+    public void SetCaseFileName(final String sCaseFileName, int iSetIndex/*=1*/) {
+	  if (iSetIndex > gvCaseFilenames.size())
+    	gvCaseFilenames.setSize(iSetIndex);
+
+      gvCaseFilenames.setElementAt(sCaseFileName, iSetIndex - 1);
+    }
+    public void SetControlFileName(final String sControlFileName, int iSetIndex/*=1*/) {
+  	  if (iSetIndex > gvControlFilenames.size())
+  		gvControlFilenames.setSize(iSetIndex);
+
+  	  gvControlFilenames.setElementAt(sControlFileName, iSetIndex - 1);
+    }
+    public void SetCoordinatesFileName(final String sCoordinatesFileName) {gsCoordinatesFileName = sCoordinatesFileName;}
+    public void SetCoordinatesDataCheckingType(int iOrdinal) {
+    	try {
+    	  geCoordinatesDataCheckingType = CoordinatesDataCheckingType.values()[iOrdinal];
+      }
+   	  catch (ArrayIndexOutOfBoundsException e) {
+   		  ThrowOrdinalIndexException(iOrdinal, CoordinatesDataCheckingType.values());
+   	  }    	
+    }
+    public void SetCoordinatesType(int iOrdinal) {
+      try {
+    	  geCoordinatesType = CoordinatesType.values()[iOrdinal];
+      }
+   	  catch (ArrayIndexOutOfBoundsException e) {
+   		  ThrowOrdinalIndexException(iOrdinal, CoordinatesType.values());
+   	  }    	
+    }
+    public void SetCriteriaForReportingSecondaryClusters(int iOrdinal) {
+      try {
+          geCriteriaSecondClustersType = CriteriaSecondaryClustersType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+         ThrowOrdinalIndexException(iOrdinal, CriteriaSecondaryClustersType.values());
+      }    	
+    }
+    public void SetIncludeClustersType(int iOrdinal) {
+      try {
+       	  geIncludeClustersType = IncludeClustersType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, IncludeClustersType.values());
+      }    	
+    }
+    public void SetIncludePurelySpatialClusters(boolean b) {gbIncludePurelySpatialClusters = b;}
+    public void SetIncludePurelyTemporalClusters(boolean b) {gbIncludePurelyTemporalClusters = b;}
+    public void SetIsLoggingHistory(boolean b) {gbLogRunHistory = b;}
+    public void SetLocationNeighborsFileName(final String sLocationNeighborsFilename) {gsLocationNeighborsFilename = sLocationNeighborsFilename;}
+    public void SetMetaLocationsFileName(final String sMetaLocationsFilename) {gsMetaLocationsFilename = sMetaLocationsFilename;}
+    public void SetMaxCirclePopulationFileName(final String sMaxCirclePopulationFileName) {gsMaxCirclePopulationFileName = sMaxCirclePopulationFileName;}
+    public void SetMaxSpatialSizeForType(int iOrdinal, double d, boolean bReported) {
+        SpatialSizeType eSpatialSizeType=SpatialSizeType.PERCENTOFPOPULATION;
+        
+        try {
+      	  eSpatialSizeType=SpatialSizeType.values()[iOrdinal];
+  	    }
+  	    catch (ArrayIndexOutOfBoundsException e) {
+  		   ThrowOrdinalIndexException(iOrdinal, SpatialSizeType.values());
+  	    }
+  	    switch (eSpatialSizeType) {
+    	    case PERCENTOFPOPULATION    : if (bReported) gdMaxSpatialSizeInPopulationAtRisk_Reported = d;
+    	                                  else gdMaxSpatialSizeInPopulationAtRisk = d; break; 
+            case MAXDISTANCE            : if (bReported)gdMaxSpatialSizeInMaxDistanceFromCenter_Reported = d;
+                                          else gdMaxSpatialSizeInMaxDistanceFromCenter = d; break;
+            case PERCENTOFMAXCIRCLEFILE : if (bReported) gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = d;
+                                          else gdMaxSpatialSizeInMaxCirclePopulationFile = d; break;
+  	        //default : ZdException::Generate("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
+  	    }
+    }
+    public void SetMaximumTemporalClusterSize(double dMaxTemporalClusterSize) {gdMaxTemporalClusterSize = dMaxTemporalClusterSize;}
+    public void SetMaximumTemporalClusterSizeType(int iOrdinal) {
+      try {
+          geMaxTemporalClusterSizeType = TemporalSizeType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, TemporalSizeType.values());
+      }    	
+    }
+    public void SetMultipleDataSetPurposeType(int iOrdinal) {
+      try {
+       	  geMultipleSetPurposeType = MultipleDataSetPurposeType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, MultipleDataSetPurposeType.values());
+      }    	
+    }
+    public void SetNonCompactnessPenalty(int iOrdinal) {
+      try {
+       	  geNonCompactnessPenaltyType = NonCompactnessPenaltyType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, NonCompactnessPenaltyType.values());
+      }      	
+    }
+    public void SetNumDataSets(int iNumDataSets) {
+      //adjust the number of filenames for case, control, and population
+      gvCaseFilenames.setSize(iNumDataSets);
+      gvControlFilenames.setSize(iNumDataSets);
+      gvPopulationFilenames.setSize(iNumDataSets);
+    }
+    public void SetNumParallelProcessesToExecute(int i) {giNumRequestedParallelProcesses = i;}
+    public void SetNumberMonteCarloReplications(int iReplications) {giReplications = iReplications;}
+    public void SetNumIterativeScans(int iNumIterativeScans) {giNumIterativeRuns = iNumIterativeScans;}
+    public void SetOutputAreaSpecificAscii(boolean b) {gbOutputAreaSpecificAscii = b;}
+    public void SetOutputAreaSpecificDBase(boolean b) {gbOutputAreaSpecificDBase = b;}
+    public void SetOutputClusterLevelAscii(boolean b) {gbOutputClusterLevelAscii = b;}
+    public void SetOutputClusterLevelDBase(boolean b) {gbOutputClusterLevelDBase = b;}
+    public void SetOutputClusterCaseAscii(boolean b) {gbOutputClusterCaseAscii = b;}
+    public void SetOutputClusterCaseDBase(boolean b) {gbOutputClusterCaseDBase = b;}
+    public void SetOutputFileName(final String  sOutPutFileName) {gsOutputFileName = sOutPutFileName;}
+    public void SetOutputRelativeRisksAscii(boolean b) {gbOutputRelativeRisksAscii = b;}
+    public void SetOutputRelativeRisksDBase(boolean b) {gbOutputRelativeRisksDBase = b;}
+    public void SetOutputSimLogLikeliRatiosAscii(boolean b) {gbOutputSimLogLikeliRatiosAscii = b;}
+    public void SetOutputSimLogLikeliRatiosDBase(boolean b) {gbOutputSimLogLikeliRatiosDBase = b;}
+    public void SetOutputSimulationData(boolean b) {gbOutputSimulationData = b;}
+    public void SetPopulationFileName(final String  sPopulationFileName, int iSetIndex/*=1*/) {
+  	  if (iSetIndex > gvPopulationFilenames.size())
+  		gvPopulationFilenames.setSize(iSetIndex);
+  	  gvPopulationFilenames.setElementAt(sPopulationFileName, iSetIndex - 1);
+    }
+    public void SetPowerCalculation(boolean b) {gbPowerCalculation = b;}
+    public void SetPowerCalculationX(double dPowerX) {gdPower_X = dPowerX;}
+    public void SetPowerCalculationY(double dPowerY) {gdPower_Y = dPowerY;}
+    public void SetPrecisionOfTimesType(int iOrdinal) {
+      try {
+       	  gePrecisionOfTimesType = DatePrecisionType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values());
+      }      	
+    }
+    public void SetProbabilityModelType(int iOrdinal) {
+      try {
+       	  geProbabilityModelType = ProbabilityModelType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, ProbabilityModelType.values());
+      }      	
+    }
+    public void SetProspectiveStartDate(final String  sProspectiveStartDate) {gsProspectiveStartDate = sProspectiveStartDate;}
+    public void SetRandomizationSeed(int lSeed) {glRandomizationSeed = lSeed;}
+    public void SetReportCriticalValues(boolean b) {gbReportCriticalValues = b;}
+    public void SetRestrictReportedClusters(boolean b) {gbRestrictReportedClusters = b;}
+    public void SetRestrictMaxSpatialSizeForType(int iOrdinal, boolean b, boolean bReported) {
+        SpatialSizeType eSpatialSizeType=SpatialSizeType.PERCENTOFPOPULATION;
+        
+        try {
+      	  eSpatialSizeType=SpatialSizeType.values()[iOrdinal];
+  	    }
+  	    catch (ArrayIndexOutOfBoundsException e) {
+  		   ThrowOrdinalIndexException(iOrdinal, SpatialSizeType.values());
+  	    }
+    	switch (eSpatialSizeType) {
+    	    case PERCENTOFPOPULATION    : break;
+    	    case MAXDISTANCE            : if (bReported) gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported = b;
+    	                                  else gbRestrictMaxSpatialSizeThroughDistanceFromCenter = b; break;
+    	    case PERCENTOFMAXCIRCLEFILE : if (bReported) gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported = b;
+    	                                  else gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile = b; break;
+    	    default : throw new UnknownEnumException(eSpatialSizeType);
+    	}   	
+    }
+    public void SetRiskType(int iOrdinal) {
+      try {
+    	  geRiskFunctionType = RiskType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, RiskType.values());
+      }      	
+    }
+    public void SetIterativeCutOffPValue(double dPValue) {gbIterativeCutOffPValue = dPValue;}
+    public void SetIterativeScanning(boolean b) {gbIterativeRuns = b;}
+    public void SetSimulationDataOutputFileName(final String sSourceFileName) {gsSimulationDataOutputFilename = sSourceFileName;}
+    public void SetSimulationDataSourceFileName(final String sSourceFileName) {gsSimulationDataSourceFileName = sSourceFileName;}
+    public void SetSimulationType(int iOrdinal) {
+      try {
+    	  geSimulationType = SimulationType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, SimulationType.values());
+      }      	
+    }
+    public void SetSourceFileName(final String sParametersSourceFileName) {gsParametersSourceFileName = sParametersSourceFileName;}
+    public void SetSpatialAdjustmentType(int iOrdinal) {
+      try {
+    	  geSpatialAdjustmentType = SpatialAdjustmentType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, SpatialAdjustmentType.values());
+      }      	
+    }
+    public void SetSpatialWindowType(int iOrdinal) {
+      try {
+    	  geSpatialWindowType = SpatialWindowType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, SpatialWindowType.values());
+      }      	
+    }
+    public void SetSpecialGridFileName(final String sSpecialGridFileName/*, boolean bSetUsingFlag*//*=false*/) {
+      gsSpecialGridFileName = sSpecialGridFileName;
+     //** if (gsSpecialGridFileName.length() == 0) 
+     //**	gbUseSpecialGridFile = false; //If empty, then definately not using special grid.
+     //** else if (bSetUsingFlag)
+     //**	gbUseSpecialGridFile = true;  //Permits setting special grid filename in GUI interface
+     //**                              //where obviously the use of special grid file is the desire.
+     //**		                          //else gbUseSpecialGridFile is as set from parameters read. This permits the situation
+     //**		                          //where user has modified the paramters file manually so that there is a named
+     //**		                          //special grid file but they turned off option to use it. 
+    }
+    public void SetStartRangeEndDate(final String sStartRangeEndDate) {gsStartRangeEndDate = sStartRangeEndDate;}
+    public void SetStartRangeStartDate(final String sStartRangeStartDate) {gsStartRangeStartDate = sStartRangeStartDate;}
+    public void SetStudyPeriodDataCheckingType(int iOrdinal) {
+      try {
+    	  geStudyPeriodDataCheckingType = StudyPeriodDataCheckingType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, StudyPeriodDataCheckingType.values());
+      }       	
+    }    
+    public void SetStudyPeriodEndDate(final String sStudyPeriodEndDate) {gsStudyPeriodEndDate = sStudyPeriodEndDate;}
+    public void SetStudyPeriodStartDate(final String sStudyPeriodStartDate) {gsStudyPeriodStartDate = sStudyPeriodStartDate;}
+    public void SetSuppressingWarnings(boolean b) {gbSuppressWarnings=b;}
+    public void SetTerminateSimulationsEarly(boolean b) {gbEarlyTerminationSimulations = b;}
+    public void SetTimeAggregationLength(int lTimeAggregationLength) {glTimeAggregationLength = lTimeAggregationLength;}
+    public void SetTimeAggregationUnitsType(int iOrdinal) {
+      try {
+    	  geTimeAggregationUnitsType = DatePrecisionType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, DatePrecisionType.values());
+      }      	
+    }
+    public void SetTimeTrendAdjustmentPercentage(double dPercentage) {gdTimeTrendAdjustPercentage = dPercentage;}
+    public void SetTimeTrendAdjustmentType(int iOrdinal) {
+      try {
+          geTimeTrendAdjustType = TimeTrendAdjustmentType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, TimeTrendAdjustmentType.values());
+      }      	
+    }
+    public void SetTimeTrendConvergence(double dTimeTrendConvergence) {gdTimeTrendConverge = dTimeTrendConvergence;}
+    public void SetUseAdjustmentForRelativeRisksFile(boolean b) {gbUseAdjustmentsForRRFile = b;}
+    public void SetVersion(final CreationVersion vVersion) {gCreationVersion = vVersion;}
+    /**  
+     * @param iInvalidOrdinal -- index of ordinal position that is out of range
+     * @param e               -- array of Enum that ordinal failed with
+     */
+    public void ThrowOrdinalIndexException(int iInvalidOrdinal, Enum[] e) {
+ 	  throw new RuntimeException("Ordinal index " + iInvalidOrdinal + " out of range [" + 
+                                 e[0].ordinal() + "," +  e[e.length - 1].ordinal() + "].");   	
+    }
+    public boolean UseAdjustmentForRelativeRisksFile() {return gbUseAdjustmentsForRRFile;}
+    public void UseLocationNeighborsFile(boolean b) {gbUseLocationNeighborsFile = b;}
+    public boolean UseLocationNeighborsFile() {return gbUseLocationNeighborsFile;}
+    public void UseMetaLocationsFile(boolean b) {gbUseMetaLocationsFile = b;}
+    public boolean UseMetaLocationsFile() {return gbUseMetaLocationsFile;}
+}
