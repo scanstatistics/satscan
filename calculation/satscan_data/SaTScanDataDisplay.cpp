@@ -6,7 +6,8 @@
 #include "LocationRiskEstimateWriter.h"
 #include "AsciiPrintFormat.h"
 #include "SSException.h"
-//#include "WeightedNormalRandomizer.h"
+#include "WeightedNormalRandomizer.h"
+#include "HomogeneousPoissonDataSetHandler.h"
 
 /** Debug utility function - prints case counts for all datasets. Caller is
     responsible for ensuring that passed file pointer points to valid, open file
@@ -147,10 +148,12 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     case POISSON              :
     case BERNOULLI            :
     case SPACETIMEPERMUTATION :
+    case CATEGORICAL          :
     case ORDINAL              :
     case WEIGHTEDNORMAL       :
     case NORMAL               :
-    case EXPONENTIAL          : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
+    case EXPONENTIAL          : 
+    case HOMOGENEOUSPOISSON   : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
                                 printString(buffer, "%ld", gDataSets->GetDataSet(0).getTotalCases());
                                 for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
                                   printString(work, ", %ld", gDataSets->GetDataSet(i).getTotalCases());
@@ -160,8 +163,18 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
                                 break;
     default                   : break;
   }
+  //print total area per data set for Homogeneous Poisson model
+  if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
+      const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(gDataSets.get());
+    if (!pHandler)
+      throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","DisplaySummary()");
+    PrintFormat.PrintSectionLabel(fp, "Total Area", true, false);
+    printString(buffer, "%.0f", pHandler->getTotalArea());
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
+
   //for the ordinal probability model, also print category values and total cases per ordinal category
-  if (gParameters.GetProbabilityModelType() == ORDINAL) {
+  if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
     if (gDataSets->GetNumDataSets() == 1) {
       PrintFormat.PrintSectionLabel(fp, "Category values", false, false);
       const PopulationData& Population = gDataSets->GetDataSet().getPopulationData();
@@ -244,7 +257,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-/*  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
     AbstractWeightedNormalRandomizer *pRandomizer;
     PrintFormat.PrintSectionLabel(fp, "Simple Mean", true, false);
     if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
@@ -307,7 +320,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     //   buffer += ",?";
     //}
     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }*/
+  }
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
     double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).getTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
     if (nAnnualTT < 0)
