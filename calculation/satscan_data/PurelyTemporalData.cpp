@@ -38,7 +38,7 @@ void CPurelyTemporalData::CalculateMeasure(RealDataSet& DataSet) {
   try {
     CSaTScanData::CalculateMeasure(DataSet);
     //Set temporal structures
-    if (gParameters.GetProbabilityModelType() != ORDINAL)
+    if (gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL)
       gDataSets->SetPurelyTemporalMeasureData(DataSet);
   }
   catch (prg_exception &x) {
@@ -130,6 +130,7 @@ void CPurelyTemporalData::SetProbabilityModel() {
   switch (gParameters.GetProbabilityModelType()) {
      case POISSON              : m_pModel = new CPoissonModel(*this);   break;
      case BERNOULLI            : m_pModel = new CBernoulliModel(); break;
+     case CATEGORICAL          :
      case ORDINAL              : m_pModel = new OrdinalModel(); break;
      case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
      case WEIGHTEDNORMAL       :
