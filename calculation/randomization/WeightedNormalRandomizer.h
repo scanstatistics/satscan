@@ -9,12 +9,26 @@ typedef PermutedAttribute<std::pair<double, double> >   WeightedNormalPermuted_t
 
 /** */
 class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>{
+   protected:
+     measure_t                 gtUnweightedTotalMeasure;
+     measure_t                 gtUnweightedTotalMeasureAux;
+     measure_t                 gtFirstRatioConstant;
+     measure_t                 gtSecondRatioConstant;
+
    public:
-     AbstractWeightedNormalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(lInitialSeed) {}
+     AbstractWeightedNormalRandomizer(long lInitialSeed) : AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>(lInitialSeed),
+                                                           gtUnweightedTotalMeasureAux(0), gtUnweightedTotalMeasure(0),
+                                                           gtFirstRatioConstant(0), gtSecondRatioConstant(0) {}
      virtual ~AbstractWeightedNormalRandomizer() {}
 
     virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
+    measure_t                  getUnweightedTotalMeasure() const {return gtUnweightedTotalMeasure;}
+    measure_t                  getUnweightedTotalMeasureAux() const {return gtUnweightedTotalMeasureAux;}
+    measure_t                  getRateSquaredWeightedSummation(int iTimeInterval, tract_t tTractIndex) const;
+    measure_t                  getFirstRatioConstant() const {return gtFirstRatioConstant;}
+    measure_t                  getSecondRatioConstant() const {return gtSecondRatioConstant;}
+    measure_t                  getSigma(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts, measure_t tMuInside, measure_t tMuOutside) const;
     virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
 };
 
