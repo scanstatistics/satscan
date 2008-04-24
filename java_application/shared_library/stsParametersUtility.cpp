@@ -445,6 +445,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Parameters.UseMetaLocationsFile());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "AddObservableRegion", "(Ljava/lang/String;IZ)V");
+  for (size_t t=0; t < Parameters.getObservableRegions().size(); ++t) {
+    Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.getObservableRegions()[t].c_str()), (jint)(t), (t ? JNI_FALSE : JNI_TRUE));
+    jni_error::_detectError(Env);
+  }
+
   return jParameters;
 }
 
@@ -860,6 +866,22 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   mid = _getMethodId_Checked(Env, clazz, "UseMetaLocationsFile", "()Z");
   Parameters.UseMetaLocationsFile(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "GetObservableRegions", "()Ljava/util/Vector;");
+  vectorobject = Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  vclazz = Env.GetObjectClass(vectorobject);
+  mid = _getMethodId_Checked(Env, vclazz, "size", "()I");
+  vsize = Env.CallIntMethod(vectorobject, mid);
+  jni_error::_detectError(Env);
+  for (jint i=0; i < vsize; ++i) {
+      mid = _getMethodId_Checked(Env, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+      jstring str_object = (jstring)Env.CallObjectMethod(vectorobject, mid, i);
+      jni_error::_detectError(Env);
+      sFilename = Env.GetStringUTFChars(str_object, &iscopy);
+      Parameters.AddObservableRegion(sFilename, i, i == 0);
+      if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
+  }
 
   return Parameters;
 }

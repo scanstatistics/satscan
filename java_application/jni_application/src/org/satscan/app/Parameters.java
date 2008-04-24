@@ -11,9 +11,11 @@ public class Parameters implements Cloneable {
                                                SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
     /** cluster types */
     public enum ClusterType                   {PURELYSPATIALCLUSTER, PURELYTEMPORALCLUSTER, SPACETIMECLUSTER,
-                                               SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER, PURELYSPATIALPROSPECTIVECLUSTER};
+                                               SPATIALVARTEMPTRENDCLUSTER, PURELYSPATIALMONOTONECLUSTER, 
+                                               PURELYSPATIALPROSPECTIVECLUSTER, PURELYSPATIALHOMOGENEOUSCLUSTER};
     /** probability model types */
-    public enum ProbabilityModelType          {POISSON, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, NORMAL, RANK};
+    public enum ProbabilityModelType          {POISSON, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, 
+                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, WEIGHTEDNORMAL, RANK};
     public enum IncludeClustersType           {ALLCLUSTERS, ALIVECLUSTERS, CLUSTERSINRANGE};
     public enum RiskType                      {STANDARDRISK, MONOTONERISK};
     /** area incidence rate types */
@@ -157,6 +159,8 @@ public class Parameters implements Cloneable {
     private String                         	gsEndRangeEndDate="2000/12/31";
     private String                         	gsStartRangeStartDate="2000/1/1";
     private String                         	gsStartRangeEndDate="2000/12/31";
+    
+    private Vector<String>                  gvObservableRegions; /** collection of observable regions */
         /* Parameter validation variables */
 /**    private boolean                         gbValidatePriorToCalc=true; /** prevents validation prior to execution
                                                                             The intent of this parameter is to allow an advanced
@@ -199,6 +203,7 @@ public class Parameters implements Cloneable {
         gvEllipseRotations.addElement(9);
         gvEllipseRotations.addElement(12);
         gvEllipseRotations.addElement(15);
+        gvObservableRegions = new Vector<String>();
     }
    
     @Override
@@ -225,6 +230,7 @@ public class Parameters implements Cloneable {
     	  newObject.gsSimulationDataOutputFilename = new String(gsSimulationDataOutputFilename);
     	  newObject.gsLocationNeighborsFilename = new String(gsLocationNeighborsFilename);
     	  newObject.gsMetaLocationsFilename = new String(gsMetaLocationsFilename);
+    	  newObject.gvObservableRegions = new Vector<String>(gvObservableRegions);
 
     	  return newObject; 
       } 
@@ -245,6 +251,15 @@ public class Parameters implements Cloneable {
     	if (bEmptyFirst) gvEllipseRotations.setSize(0);
     	gvEllipseRotations.add(new Integer(iRotations));      
     }
+    
+    /** Add observable region to definition to collection. */
+    public void AddObservableRegion(final String sRegions, int iIndex, boolean bEmptyFirst) {
+        if (bEmptyFirst) gvObservableRegions.setSize(0);
+        if (iIndex + 1 > gvObservableRegions.size())
+            gvObservableRegions.setSize(iIndex + 1);
+        gvObservableRegions.setElementAt(sRegions, iIndex);        
+    }
+    
     @Override
     public boolean equals(Object _rhs) {
     	  Parameters rhs = (Parameters)_rhs;
@@ -336,6 +351,7 @@ public class Parameters implements Cloneable {
     	  if (geMultipleCoordinatesType != rhs.geMultipleCoordinatesType) return false;
     	  if (!gsMetaLocationsFilename.equals(rhs.gsMetaLocationsFilename)) return false;
     	  if (gbUseMetaLocationsFile != rhs.gbUseMetaLocationsFile) return false;
+    	  if (!gvObservableRegions.equals(rhs.gvObservableRegions)) return false;
 
     	  return true;
     }
@@ -363,6 +379,7 @@ public class Parameters implements Cloneable {
     	  return sAnalysisType;    	
     }    
     public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
+    public final Vector<String> GetObservableRegions() {return gvObservableRegions;}    
     public final String GetCaseFileName(int iSetIndex/*=1*/) {
     	  return gvCaseFilenames.elementAt(iSetIndex - 1);    	
     }
@@ -472,6 +489,9 @@ public class Parameters implements Cloneable {
     	      case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
     	      case NORMAL               : sProbabilityModel = "Normal"; break;
     	      case RANK                 : sProbabilityModel = "Rank"; break;
+    	      case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
+    	      case CATEGORICAL          : sProbabilityModel = "Categorical"; break;
+    	      case WEIGHTEDNORMAL       : sProbabilityModel = "Weighted Normal"; break;
     	      //default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
     	    }
     	  //}
