@@ -216,6 +216,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     _normalModelRadioButton.setSelected(true);
                     break;
                 }
+            case CATEGORICAL:
+                if (_categoricallModelRadioButton.isEnabled()) {
+                    _categoricallModelRadioButton.setSelected(true);
+                    break;
+                }
+            case HOMOGENEOUSPOISSON:
+                if (_homogeneouspoissonModelRadioButton.isEnabled()) {
+                    _homogeneouspoissonModelRadioButton.setSelected(true);
+                    break;
+                }
             case POISSON:
             default:
                 _poissonModelRadioButton.setSelected(true);
@@ -409,7 +419,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         Parameters.AnalysisType eAnalysisType = getAnalysisControlType();
         //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
         if (!getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected() &&
-                !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL)) {
+            !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL) &&
+            getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON) {
             if (_coordiantesFileTextField.getText().length() == 0) {
                 throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
             } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {
@@ -777,6 +788,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             eReturn = Parameters.ProbabilityModelType.EXPONENTIAL;
         } else if (_normalModelRadioButton.isSelected()) {
             eReturn = Parameters.ProbabilityModelType.NORMAL;
+        } else if (_categoricallModelRadioButton.isSelected()) {
+            eReturn = Parameters.ProbabilityModelType.CATEGORICAL;
+        } else if (_homogeneouspoissonModelRadioButton.isSelected()) {
+            eReturn = Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         } else {
             throw new RuntimeException("Unable to determine probability model type.");
         }
@@ -905,20 +920,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * enables probability model control based upon the setting in analysis control
      */
     private void enableModelControlForAnalysisType() {
-        switch (getAnalysisControlType()) {
-            case PURELYSPATIAL:
-            case PURELYTEMPORAL:
-            case PROSPECTIVEPURELYTEMPORAL:
-                if (_spaceTimePermutationModelRadioButton.isSelected()) {
-                    _spaceTimePermutationModelRadioButton.setSelected(false);
-                    _poissonModelRadioButton.setSelected(true);
-                }
-                _spaceTimePermutationModelRadioButton.setEnabled(false);
-                break;
-            case SPACETIME:
-            case PROSPECTIVESPACETIME:
-                _spaceTimePermutationModelRadioButton.setEnabled(true);
-                break;
+        Parameters.AnalysisType eAnalysisType = getAnalysisControlType();
+        _spaceTimePermutationModelRadioButton.setEnabled(eAnalysisType == Parameters.AnalysisType.SPACETIME || eAnalysisType == Parameters.AnalysisType.PROSPECTIVESPACETIME);
+        if (!_spaceTimePermutationModelRadioButton.isEnabled() && _spaceTimePermutationModelRadioButton.isSelected()) {
+          _poissonModelRadioButton.setSelected(true);  
+        }
+        _homogeneouspoissonModelRadioButton.setEnabled(eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL);
+        if (!_homogeneouspoissonModelRadioButton.isEnabled() && _homogeneouspoissonModelRadioButton.isSelected()) {
+          _poissonModelRadioButton.setSelected(true);  
         }
         enableSettingsForAnalysisModelCombination();
     }
@@ -1002,12 +1011,23 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             case BERNOULLI:
             case ORDINAL:
             case NORMAL:
+            case CATEGORICAL:
             case EXPONENTIAL:
                 _retrospectivePurelySpatialRadioButton.setEnabled(true);
                 _retrospectivePurelyTemporalRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
                 _retrospectiveSpaceTimeRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
                 _prospectivePurelyTemporalRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
                 _prospectiveSpaceTimeRadioButton.setEnabled(eDatePrecisionType != Parameters.DatePrecisionType.NONE);
+                break;
+            case HOMOGENEOUSPOISSON:
+                _retrospectivePurelySpatialRadioButton.setEnabled(true);
+                _retrospectivePurelyTemporalRadioButton.setEnabled(false);
+                _retrospectiveSpaceTimeRadioButton.setEnabled(false);
+                _prospectivePurelyTemporalRadioButton.setEnabled(false);
+                _prospectiveSpaceTimeRadioButton.setEnabled(false);
+                if (!_retrospectivePurelySpatialRadioButton.isSelected()) {
+                    _retrospectivePurelySpatialRadioButton.setSelected(true);
+                }
                 break;
             case SPACETIMEPERMUTATION:
                 _retrospectivePurelySpatialRadioButton.setEnabled(false);
@@ -1027,8 +1047,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Sets captions of TRadioButton controls of 'Scan for Areas with:' group based upon selected probablility model.
      */
     private void setAreaScanRateControlText(Parameters.ProbabilityModelType eProbabilityModelType) {
+        Boolean bEnable = getModelControlType() != Parameters.ProbabilityModelType.CATEGORICAL;
+        
+        _scanAreasGroup.setEnabled(bEnable);
+        _lowRatesRadioButton.setEnabled(bEnable);
+        _highRatesRadioButton.setEnabled(bEnable);
+        _highOrLowRatesRadioButton.setEnabled(bEnable);  
         switch (eProbabilityModelType) {
             case POISSON:
+            case HOMOGENEOUSPOISSON:    
             case BERNOULLI:
             case SPACETIMEPERMUTATION:
                 _lowRatesRadioButton.setText("Low Rates");
@@ -1058,6 +1085,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             case POISSON:
             case BERNOULLI:
             case ORDINAL:
+            case CATEGORICAL:
+            case HOMOGENEOUSPOISSON:    
             case NORMAL:
             case EXPONENTIAL:
                 _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios");
@@ -1225,6 +1254,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _ordinalModelRadioButton = new javax.swing.JRadioButton();
         _exponentialModelRadioButton = new javax.swing.JRadioButton();
         _normalModelRadioButton = new javax.swing.JRadioButton();
+        _categoricallModelRadioButton = new javax.swing.JRadioButton();
+        _homogeneouspoissonModelRadioButton = new javax.swing.JRadioButton();
         _scanAreasGroup = new javax.swing.JPanel();
         _highRatesRadioButton = new javax.swing.JRadioButton();
         _lowRatesRadioButton = new javax.swing.JRadioButton();
@@ -1285,6 +1316,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);
         _probabilityModelTypeButtonGroup.add(_normalModelRadioButton);
+        _probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);
+        _probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);
 
         _scanAreasButtonGroup.add(_highRatesRadioButton);
         _scanAreasButtonGroup.add(_lowRatesRadioButton);
@@ -2154,6 +2187,26 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        _categoricallModelRadioButton.setText("Categorical");
+        _categoricallModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _categoricallModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _categoricallModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onProbabilityModelTypeClick();
+            }
+        });
+
+        _homogeneouspoissonModelRadioButton.setText("Homogeneous Poisson");
+        _homogeneouspoissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _homogeneouspoissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onProbabilityModelTypeClick();
+            }
+        });
+
         javax.swing.GroupLayout _probabilityModelGroupLayout = new javax.swing.GroupLayout(_probabilityModelGroup);
         _probabilityModelGroup.setLayout(_probabilityModelGroupLayout);
         _probabilityModelGroupLayout.setHorizontalGroup(
@@ -2166,24 +2219,30 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_spaceTimePermutationModelRadioButton)
                     .addComponent(_ordinalModelRadioButton)
                     .addComponent(_exponentialModelRadioButton)
-                    .addComponent(_normalModelRadioButton))
+                    .addComponent(_normalModelRadioButton)
+                    .addComponent(_categoricallModelRadioButton)
+                    .addComponent(_homogeneouspoissonModelRadioButton))
                 .addContainerGap(13, Short.MAX_VALUE))
         );
         _probabilityModelGroupLayout.setVerticalGroup(
             _probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
                 .addComponent(_poissonModelRadioButton)
-                .addGap(25, 25, 25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_bernoulliModelRadioButton)
-                .addGap(25, 25, 25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_spaceTimePermutationModelRadioButton)
-                .addGap(25, 25, 25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
                 .addComponent(_ordinalModelRadioButton)
-                .addGap(25, 25, 25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_exponentialModelRadioButton)
-                .addGap(25, 25, 25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_normalModelRadioButton)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_categoricallModelRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_homogeneouspoissonModelRadioButton)
+                .addGap(39, 39, 39))
         );
 
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Scan For Areas With:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
@@ -2630,6 +2689,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _caseFileLabel;
     private javax.swing.JTextField _caseFileTextField;
     private javax.swing.JPanel _caseInputPanel;
+    private javax.swing.JRadioButton _categoricallModelRadioButton;
     private javax.swing.JCheckBox _censusAreasReportedClustersAsciiCheckBox;
     private javax.swing.JCheckBox _censusAreasReportedClustersDBaseCheckBox;
     private javax.swing.JLabel _censusAreasReportedClustersLabel;
@@ -2662,6 +2722,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JTextField _gridFileTextField;
     private javax.swing.JRadioButton _highOrLowRatesRadioButton;
     private javax.swing.JRadioButton _highRatesRadioButton;
+    private javax.swing.JRadioButton _homogeneouspoissonModelRadioButton;
     private javax.swing.JPanel _inputTab;
     private javax.swing.JRadioButton _latLongRadioButton;
     private javax.swing.JRadioButton _lowRatesRadioButton;

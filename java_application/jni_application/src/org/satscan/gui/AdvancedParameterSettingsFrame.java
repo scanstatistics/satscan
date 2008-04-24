@@ -490,8 +490,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void UpdateMaxiumSpatialTextCaptions() {
         switch (_analysisSettingsWindow.getModelControlType()) {
             case POISSON:
+            case HOMOGENEOUSPOISSON:    
             case BERNOULLI:
             case ORDINAL:
+            case CATEGORICAL:    
             case NORMAL:
             case EXPONENTIAL:
                 _percentageOfPopulationLabel.setText("percent of the study period (<= 90%, default = 50%)");
@@ -878,8 +880,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }  //for loop
 
         //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal
-        if (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL && _adjustmentByDataSetsRadioButton.isEnabled() && _adjustmentByDataSetsRadioButton.isSelected()) {
-            throw new AdvFeaturesExpection("For the ordinal probability model with input data defined in multiple data sets,\n" + "the adjustment option has not been implemented.", FocusedTabSet.INPUT, (Component) _adjustmentByDataSetsRadioButton);
+        if ((_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL ||
+             _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL)
+            && _adjustmentByDataSetsRadioButton.isEnabled() && _adjustmentByDataSetsRadioButton.isSelected()) {
+            throw new AdvFeaturesExpection("For the ordinal and categorical probability models with input data defined in multiple data sets,\n" + 
+                                            "the adjustment option has not been implemented.", FocusedTabSet.INPUT, (Component) _adjustmentByDataSetsRadioButton);
         }
     }
 
