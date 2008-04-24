@@ -151,10 +151,13 @@ void CParameters::AddEllipsoidShape(double dShape, bool bEmptyFirst) {
 }
 
 /** Adds string that defines observable region to internal collection. */
-void CParameters::AddObservableRegion(const char * sRegions, size_t iIndex) {
+void CParameters::AddObservableRegion(const char * sRegions, size_t iIndex, bool bEmptyFirst) {
   if (!sRegions)
      throw prg_error("Null pointer.","AddObservableRegion()");
 
+  if (bEmptyFirst) 
+    gvObservableRegions.clear();
+    
   if (iIndex + 1 > gvObservableRegions.size())
     gvObservableRegions.resize(iIndex + 1);
 

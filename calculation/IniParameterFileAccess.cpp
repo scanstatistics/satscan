@@ -147,7 +147,7 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
   try {
     ReadIniParameter(SourceFile, OBSERVABLE_REGIONS, inequalities);
     for (size_t t=0; t < inequalities.size(); ++t)
-        gParameters.AddObservableRegion(inequalities[t].c_str(), t);
+        gParameters.AddObservableRegion(inequalities[t].c_str(), t, t == 0);
   }
   catch (prg_exception& x) {
     x.addTrace("ReadObservableRegionSettings()","IniParameterFileAccess");

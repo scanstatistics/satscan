@@ -209,7 +209,7 @@ class CParameters {
 
     void                                AddEllipsoidShape(double dShape, bool bEmptyFirst);
     void                                AddEllipsoidRotations(int iRotations, bool bEmptyFirst);
-    void                                AddObservableRegion(const char * sRegions, size_t iIndex);
+    void                                AddObservableRegion(const char * sRegions, size_t iIndex, bool bEmptyFirst);
     bool                                GetAdjustForEarlierAnalyses() const {return gbAdjustForEarlierAnalyses;}
     const std::string                 & GetAdjustmentsByRelativeRisksFilename() const {return gsAdjustmentsByRelativeRisksFileName;}
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
