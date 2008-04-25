@@ -9,6 +9,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -361,7 +362,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      */
     public class HelpSystemAction extends AbstractAction {
 
-        static final String helpsetName = "SaTScanHelp";
+        static final String helpsetName = "SaTScan_Help";
         private static final long serialVersionUID = 1L;
 
         public HelpSystemAction() {
@@ -371,10 +372,16 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         public void actionPerformed(ActionEvent e) {
             try {
                 ClassLoader cl = SaTScanApplication.class.getClassLoader();
-                URL url = HelpSet.findHelpSet(cl, helpsetName);
+                URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
+                if (url == null) {
+                    url = HelpSet.findHelpSet(cl,helpsetName, ".hs", Locale.getDefault());
+                    if (url == null) {
+                        JOptionPane.showMessageDialog(null,"The help system could not be located."," Help",JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                }
                 HelpSet mainHS = new HelpSet(cl, url);
                 HelpBroker mainHB = mainHS.createHelpBroker();
-
                 mainHB.setDisplayed(true);
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
