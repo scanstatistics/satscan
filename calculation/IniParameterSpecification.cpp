@@ -36,7 +36,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_7_1_x_ParameterList();
+  Build_8_0_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -83,7 +83,7 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
   else if (Version.iMajor == 7 && Version.iMinor == 0)
     Build_7_0_x_ParameterList();
   else
-    Build_7_1_x_ParameterList();
+    Build_8_0_x_ParameterList();
 }
 
 /** destructor */
@@ -327,7 +327,7 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 }
 
 /** Version 8.0.x */
-void IniParameterSpecification::Build_7_1_x_ParameterList() {
+void IniParameterSpecification::Build_8_0_x_ParameterList() {
   Build_7_0_x_ParameterList();
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"RandomlyGenerateSeed"));
   gvParameterInfo.push_back(std::make_pair(MultipleCoordinates, (const char*)"MultipleCoordinatesType"));
