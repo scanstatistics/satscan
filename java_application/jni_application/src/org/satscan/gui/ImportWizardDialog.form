@@ -15,7 +15,9 @@
   </NonVisualComponents>
   <Properties>
     <Property name="defaultCloseOperation" type="int" value="2"/>
-    <Property name="title" type="java.lang.String" value="Import Wizard"/>
+    <Property name="title" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+      <PlainString value="Import Wizard"/>
+    </Property>
     <Property name="modal" type="boolean" value="true"/>
     <Property name="resizable" type="boolean" value="false"/>
   </Properties>
@@ -73,7 +75,9 @@
   <SubComponents>
     <Component class="javax.swing.JButton" name="cancelButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Cancel"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="Cancel"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="cancelButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        _cancelled = true;&#xa;        setVisible(false);&#xa;    }&#xa;});"/>
@@ -81,7 +85,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="nextButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Next &gt;"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="Next &gt;"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="nextButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_showingCard == _fileFormatCardName)&#xa;                makeActivePanel(_dataMappingCardName);&#xa;            else if (_showingCard == _dataMappingCardName) {&#xa;                if (checkForRequiredVariables()) return;&#xa;                makeActivePanel(_outPutSettingsCardName);&#xa;            }&#xa;            //else nop&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
@@ -89,7 +95,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="previousButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="&lt; Previous"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="&lt; Previous"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="previousButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            if (_showingCard == _dataMappingCardName)&#xa;                makeActivePanel(_fileFormatCardName);&#xa;            else if (_showingCard == _outPutSettingsCardName)&#xa;                makeActivePanel(_dataMappingCardName);&#xa;            //else nop&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});&#xa;"/>
@@ -97,7 +105,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="executeButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Execute"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="Execute"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="executeButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            try {&#xa;                createDestinationInformation();&#xa;            } catch (IOException i) {&#xa;                JOptionPane.showMessageDialog(ImportWizardDialog.this,&#xa;                        &quot;The import wizard encountered an error attempting to create the import file.\n&quot; +&#xa;                        &quot;This is most likely occuring because write permissions are not granted for\n&quot; +&#xa;                        &quot;specified directory. Please check path or review user permissions for specified directory.\n&quot;, &quot;Note&quot;, JOptionPane.WARNING_MESSAGE);&#xa;            }&#xa;            ImportTask task = new ImportTask();&#xa;            task.addPropertyChangeListener(ImportWizardDialog.this);&#xa;            task.execute();&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(ImportWizardDialog.this, t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
@@ -165,7 +175,9 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="File Contents:"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="File Contents:"/>
+                </Property>
               </Properties>
             </Component>
             <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -185,12 +197,16 @@
             </Container>
             <Component class="javax.swing.JLabel" name="jLabel4">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Ignore first"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Ignore first"/>
+                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_ignoreRowsTextField">
               <Properties>
-                <Property name="text" type="java.lang.String" value="0"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="0"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_ignoreRowsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_ignoreRowsTextField.getText().length() == 0)&#xa;            if (undo.canUndo()) undo.undo(); else _ignoreRowsTextField.setText(&quot;0&quot;);&#xa;    }&#xa;});&#xa;_ignoreRowsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_ignoreRowsTextField, e, 5);&#xa;    }&#xa;});&#xa;_ignoreRowsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -198,12 +214,16 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel5">
               <Properties>
-                <Property name="text" type="java.lang.String" value="rows"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="rows"/>
+                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JCheckBox" name="_firstRowColumnHeadersCheckBox">
               <Properties>
-                <Property name="text" type="java.lang.String" value="First row is column name"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="First row is column name"/>
+                </Property>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                     <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -216,7 +236,9 @@
             </Component>
             <Component class="javax.swing.JLabel" name="jLabel6">
               <Properties>
-                <Property name="text" type="java.lang.String" value="File Type"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="File Type"/>
+                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JComboBox" name="_sourceFileTypeComboBox">
@@ -320,7 +342,9 @@
                         <Component class="javax.swing.JRadioButton" name="_commaRadioButton">
                           <Properties>
                             <Property name="selected" type="boolean" value="true"/>
-                            <Property name="text" type="java.lang.String" value="Comma"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <PlainString value="Comma"/>
+                            </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -333,7 +357,9 @@
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="_semiColonRadioButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Semicolon"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <PlainString value="Semicolon"/>
+                            </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -346,7 +372,9 @@
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="_whitespaceRadioButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Whitespace"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <PlainString value="Whitespace"/>
+                            </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -359,7 +387,9 @@
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="_otherRadioButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Other"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <PlainString value="Other"/>
+                            </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -419,7 +449,9 @@
                         <Component class="javax.swing.JRadioButton" name="_doubleQuotesRadioButton">
                           <Properties>
                             <Property name="selected" type="boolean" value="true"/>
-                            <Property name="text" type="java.lang.String" value="Double Quotes"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <PlainString value="Double Quotes"/>
+                            </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -432,7 +464,9 @@
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="_singleQuotesRadioButton">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Single Quotes"/>
+                            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                              <PlainString value="Single Quotes"/>
+                            </Property>
                             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                               <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                                 <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -477,7 +511,9 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="jLabel2">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Not implemented!"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Not implemented!"/>
+                        </Property>
                       </Properties>
                     </Component>
                   </SubComponents>
@@ -561,7 +597,9 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="_displayVariablesLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Display SaTScan Variables For:"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Display SaTScan Variables For:"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JComboBox" name="_displayVariablesComboBox">
@@ -595,7 +633,9 @@
                     </Container>
                     <Component class="javax.swing.JButton" name="_clearSelectionButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Clear"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Clear"/>
+                        </Property>
                       </Properties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        clearSaTScanVariableFieldIndexes();&#xa;    }&#xa;});"/>
@@ -699,7 +739,9 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel3">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Save imported file in directory:"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Save imported file in directory:"/>
+                </Property>
               </Properties>
             </Component>
             <Component class="javax.swing.JTextField" name="_outputDirectoryTextField">
@@ -709,10 +751,12 @@
             </Component>
             <Component class="javax.swing.JButton" name="_changeSaveDirectoryButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Change"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Change"/>
+                </Property>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select directory to save imported file&quot;);&#xa;        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);&#xa;        fc.setCurrentDirectory(new File(_outputDirectoryTextField.getText()));&#xa;        int returnVal = fc.showOpenDialog(ImportWizardDialog.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _outputDirectoryTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());&#xa;        }&#xa;    }&#xa;});"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select directory to save imported file&quot;);&#xa;        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);&#xa;        fc.setCurrentDirectory(new File(_outputDirectoryTextField.getText()));&#xa;        int returnVal = fc.showOpenDialog(ImportWizardDialog.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _outputDirectoryTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;            _prefs.put(_prefLastBackup, _outputDirectoryTextField.getText());&#xa;        }&#xa;    }&#xa;});"/>
               </AuxValues>
             </Component>
             <Component class="javax.swing.JProgressBar" name="_progressBar">

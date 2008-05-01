@@ -70,11 +70,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     public boolean SaveAs() {
         boolean bSaved = true;
 
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
         fc.setDialogTitle("Save Parameter Settings As");
         fc.addChoosableFileFilter(new InputFileFilter("prm", "Parameter Files (*.prm)"));
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
             WriteSession(fc.getSelectedFile().getAbsolutePath());
             setTitle(fc.getSelectedFile().getAbsolutePath());
         } else {
@@ -419,13 +420,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         Parameters.AnalysisType eAnalysisType = getAnalysisControlType();
         //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
         if (!getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected() &&
-            !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL) &&
-            getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON) {
-            if (_coordiantesFileTextField.getText().length() == 0) {
-                throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
-            } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {
-                throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
-                        (Component) _coordiantesFileTextField);
+            !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL)) {
+            if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON) {
+               if (_coordiantesFileTextField.getText().length() == 0) {
+                   throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
+               } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {
+                   throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
+                           (Component) _coordiantesFileTextField);
+               }
             }
             //validate special grid file -- optional
             if (_gridFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false)) {
@@ -1340,12 +1342,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _caseFileBrowseButton.setToolTipText("Browse for case file ...");
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Case File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
                 fc.addChoosableFileFilter(new InputFileFilter("cas","Case Files (*.cas)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                     _caseFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
@@ -1356,7 +1359,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser();
+                    JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                     fc.setDialogTitle("Select Source Case File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
@@ -1365,6 +1368,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("cas","Case Files (*.cas)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                         LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);
                     }
                 } catch (Throwable t) {
@@ -1637,12 +1641,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _controlFileBrowseButton.setToolTipText("Browse for control file ...");
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Control File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
                 fc.addChoosableFileFilter(new InputFileFilter("ctl","Control Files (*.ctl)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                     _controlFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
@@ -1653,7 +1658,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser();
+                    JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                     fc.setDialogTitle("Select Source Control File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
@@ -1662,6 +1667,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("ctl","Control Files (*.ctl)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                         LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);
                     }
                 } catch (Throwable t) {
@@ -1738,12 +1744,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileBrowseButton.setToolTipText("Browse for population file ...");
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Population File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
                 fc.addChoosableFileFilter(new InputFileFilter("pop","Population Files (*.pop)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                     _populationFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
@@ -1753,7 +1760,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser();
+                    JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                     fc.setDialogTitle("Select Source Population File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
@@ -1762,6 +1769,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("pop","Population Files (*.pop)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                         LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);
                     }
                 } catch (Throwable t) {
@@ -1813,12 +1821,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coordinatesFileBrowseButton.setToolTipText("Browse for coordinates file ...");
         _coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Cooridnate File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
                 fc.addChoosableFileFilter(new InputFileFilter("geo","Coordinates Files (*.geo)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                     _coordiantesFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
@@ -1829,7 +1838,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coodrinatesFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser();
+                    JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                     fc.setDialogTitle("Select Source Coordiantes File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
@@ -1838,6 +1847,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("geo","Coordinates Files (*.geo)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                         LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Coordinates);
                     }
                 } catch (Throwable t) {
@@ -1899,12 +1909,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _gridFileBrowseButton.setToolTipText("Browse for grid file ...");
         _gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Grid File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Text Files (*.txt)"));
                 fc.addChoosableFileFilter(new InputFileFilter("grd","Grid Files (*.grd)"));
                 int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                     _gridFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
                 }
             }
@@ -1915,7 +1926,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
-                    JFileChooser fc = new JFileChooser();
+                    JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                     fc.setDialogTitle("Select Source Grid File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
@@ -1924,6 +1935,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     fc.addChoosableFileFilter(new InputFileFilter("grd","Grid Files (*.grd)"));
                     int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);
                     if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                         LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.SpecialGrid);
                     }
                 } catch (Throwable t) {
@@ -2478,10 +2490,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _resultsFileBrowseButton.setText("...");
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser();
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Results File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
                 if (fc.showOpenDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
+                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                 _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
             }
         });

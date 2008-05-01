@@ -6,7 +6,9 @@
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="_fileMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="File"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="File"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="_newSessionMenuItem">
@@ -17,7 +19,9 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+N"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="New Session"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="New Session"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_newSessionMenuItem.setIcon(null);"/>
@@ -31,7 +35,9 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="Ctrl+O"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Open Session File"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Open Session File"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_openSessionMenuItem.setIcon(null);"/>
@@ -39,7 +45,9 @@
             </MenuItem>
             <Menu class="javax.swing.JMenu" name="_reopenSessionMenu">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Reopen Session File"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Reopen Session File"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reopenSessionMenu.setIcon(null);"/>
@@ -96,7 +104,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new ExitAction()" type="code"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Exit"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Exit"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_exitMenuItem.setIcon(null);"/>
@@ -106,7 +116,9 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="_sessionMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Session"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Session"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="_executeSessionMenuItem">
@@ -133,7 +145,9 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="_helpMenu">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Help"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Help"/>
+            </Property>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="_helpContentMenuItem">
@@ -144,7 +158,9 @@
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
                   <KeyStroke key="F1"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Help Contents"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Help Contents"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_helpContentMenuItem.setIcon(null);"/>
@@ -155,7 +171,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new UserGuideAction()" type="code"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="User Guide"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="User Guide"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_userGuideMenuItem.setIcon(null);"/>
@@ -168,7 +186,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new CheckNewVersionAction()" type="code"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Check for New Version"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Check for New Version"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_chechVersionMenuItem.setIcon(null);"/>
@@ -181,7 +201,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new SuggestedCitationAction()" type="code"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="Suggested Citation"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Suggested Citation"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_suggestedCitationMenuItem.setIcon(null);"/>
@@ -194,7 +216,9 @@
                 <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="new AboutAction()" type="code"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="About SaTScan"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="About SaTScan"/>
+                </Property>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_aboutMenuItem.setIcon(null);"/>
@@ -261,7 +285,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/New.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="New Session"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="New Session"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -273,7 +299,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Open.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Open Session"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Open Session"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -285,7 +313,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Save.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Save Session"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Save Session"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -297,7 +327,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Execute.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Execute Session"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Execute Session"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -309,7 +341,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Print.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Print Analysis Results"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Print Analysis Results"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -321,7 +355,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Update.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Check for New Version"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Check for New Version"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
@@ -333,7 +369,9 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/Help.gif"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Help"/>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <PlainString value="Help"/>
+            </Property>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>

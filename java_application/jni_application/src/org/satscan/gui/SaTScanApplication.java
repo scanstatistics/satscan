@@ -77,6 +77,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private boolean gbShowStartWindow = true;
     private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
     private static SaTScanApplication _instance;
+    public File lastBrowseDirectory = null;
 
     /**
      * Creates new form SaTScanApplication
@@ -170,12 +171,13 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      */
     private void openParameterSessionWindow() {
         //Create a file chooser
-        JFileChooser fc = new JFileChooser();
+        JFileChooser fc = new JFileChooser(lastBrowseDirectory);
         fc.setDialogTitle("Select Parameter File");
         fc.addChoosableFileFilter(new InputFileFilter("txt", "Text Files (*.txt)"));
         fc.addChoosableFileFilter(new InputFileFilter("prm", "Parameter Files (*.prm)"));
         int returnVal = fc.showOpenDialog(SaTScanApplication.this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
+            lastBrowseDirectory = fc.getCurrentDirectory();
             openNewParameterSessionWindow(fc.getSelectedFile().getAbsolutePath());
         }
     }
