@@ -81,7 +81,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
               <Component id="jTabbedPane1" min="-2" pref="411" max="-2" attributes="0"/>
-              <EmptySpace pref="66" max="32767" attributes="0"/>
+              <EmptySpace pref="70" max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="_closeButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -100,7 +100,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Multiple Data Sets">
-                <Property name="tabTitle" type="java.lang.String" value="Multiple Data Sets"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Multiple Data Sets"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -222,7 +224,9 @@
                     </Container>
                     <Component class="javax.swing.JButton" name="_addDataSetButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Add"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Add"/>
+                        </Property>
                       </Properties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_addDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        EnableDataSetList(true);&#xa;        EnableDataSetPurposeControls(true);&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_inputDataSetsList.getModel().getSize() + 1));&#xa;        &#xa;        // enable and clear the edit boxes&#xa;        EnableInputFileEdits(true);&#xa;        _caseFilenames.addElement(&quot;&quot;);&#xa;        _controlFilenames.addElement(&quot;&quot;);&#xa;        _populationFilenames.addElement(&quot;&quot;);&#xa;       _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        EnableNewButton();&#xa;        EnableRemoveButton();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -230,7 +234,9 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="_removeDataSetButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Remove"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Remove"/>
+                        </Property>
                       </Properties>
                       <AuxValues>
                         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        // update remaining list box names&#xa;        for (int i=_inputDataSetsList.getSelectedIndex()+1; i &lt; _inputDataSetsList.getModel().getSize() ;i++) {&#xa;            String s = (String)_dataSetsListModel.getElementAt(i);&#xa;            s =&#x9;&quot;Data Set &quot; + Integer.toString(i);&#xa;            _dataSetsListModel.setElementAt(s, i);&#xa;        }&#xa;        int iDeleteIndex = _inputDataSetsList.getSelectedIndex();&#xa;        // remove list box name&#xa;        _dataSetsListModel.remove(iDeleteIndex);&#xa;        // remove files&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _caseFilenames.remove(iDeleteIndex);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _controlFilenames.remove(iDeleteIndex);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _populationFilenames.remove(iDeleteIndex);&#xa;        if (_inputDataSetsList.getModel().getSize() &gt; 0) {&#xa;            _inputDataSetsList.setSelectedIndex(0);&#xa;            _inputDataSetsList.ensureIndexIsVisible(0);&#xa;        }&#xa;        EnableDataSetList(_dataSetsListModel.getSize() &gt; 0);&#xa;        EnableDataSetPurposeControls(_dataSetsListModel.getSize() &gt; 0);&#xa;        EnableInputFileEdits(_dataSetsListModel.getSize() &gt; 0);&#xa;        EnableNewButton();&#xa;        EnableRemoveButton();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -309,7 +315,9 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="_caseFileLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Case File:"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Case File:"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_caseFileTextField">
@@ -319,25 +327,35 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="_caseFileBrowseButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Browse for case file ..."/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="..."/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Browse for case file ..."/>
+                        </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Case File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _caseFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Case File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _caseFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JButton" name="_caseFileImportButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Import case file ..."/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="..."/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Import case file ..."/>
+                        </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Case File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Source Case File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;cas&quot;,&quot;Case Files (*.cas)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Case);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_controlFileLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Control File:"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Control File:"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_controlFileTextField">
@@ -347,25 +365,35 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="_controlFileBrowseButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Browse for control file ..."/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="..."/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Browse for control file ..."/>
+                        </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Control File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _controlFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Control File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _controlFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JButton" name="_controlFileImportButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Import control file ..."/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="..."/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Import control file ..."/>
+                        </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Control File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Source Control File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;ctl&quot;,&quot;Control Files (*.ctl)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Control);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_populationFileLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Population File:"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Population File:"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_populationFileTextField">
@@ -375,20 +403,28 @@
                     </Component>
                     <Component class="javax.swing.JButton" name="_populationFileBrowseButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Browse for population file ..."/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="..."/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Browse for population file ..."/>
+                        </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Population File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _populationFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Population File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _populationFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JButton" name="_populationFileImportButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="..."/>
-                        <Property name="toolTipText" type="java.lang.String" value="Import population file ..."/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="..."/>
+                        </Property>
+                        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Import population file ..."/>
+                        </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Population File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Source Population File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>
@@ -431,13 +467,17 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="_multipleDataSetPurposeLabel">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Purpose of Multiple Data Sets:"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Purpose of Multiple Data Sets:"/>
+                        </Property>
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="_multivariateAdjustmentsRadioButton">
                       <Properties>
                         <Property name="selected" type="boolean" value="true"/>
-                        <Property name="text" type="java.lang.String" value="Multivariate Analysis (clusters in one or more data sets)"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Multivariate Analysis (clusters in one or more data sets)"/>
+                        </Property>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -453,7 +493,9 @@
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="_adjustmentByDataSetsRadioButton">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Adjustment (clusters in all data sets simultaneously)"/>
+                        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                          <PlainString value="Adjustment (clusters in all data sets simultaneously)"/>
+                        </Property>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                             <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -477,7 +519,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Data Checking">
-                <Property name="tabTitle" type="java.lang.String" value="Data Checking"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Data Checking"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -551,7 +595,9 @@
                 <Component class="javax.swing.JRadioButton" name="_strictStudyPeriodCheckRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Check to ensure that cases and controls are within the Study Period."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Check to ensure that cases and controls are within the Study Period."/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -567,7 +613,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_relaxedStudyPeriodCheckRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Ignore cases and controls that are outside the Study Period."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Ignore cases and controls that are outside the Study Period."/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -638,7 +686,9 @@
                 <Component class="javax.swing.JRadioButton" name="_strictCoordinatesRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Check to ensure that all locations in the case, control and population files are present"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Check to ensure that all locations in the case, control and population files are present"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -654,7 +704,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_relaxedCoordinatesRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Ignore data in the case, control and population files that do not correspond to a location ID"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Ignore data in the case, control and population files that do not correspond to a location ID"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -670,12 +722,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_strictCoordinatesLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value=" in the coordinates file."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value=" in the coordinates file."/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_relaxedCoordinatesLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value=" listed in the coordinates file."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value=" listed in the coordinates file."/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -686,7 +742,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Non-Eucledian Neighbors">
-                <Property name="tabTitle" type="java.lang.String" value="Non-Eucledian Neighbors"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Non-Eucledian Neighbors"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -776,7 +834,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_specifiyNeighborsFileCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify neighbors through a user defined file"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Specify neighbors through a user defined file"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -797,16 +857,22 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="_neighborsFileBrowseButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="..."/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for neighbors file ..."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="..."/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Browse for neighbors file ..."/>
+                    </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Neighbors File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;nei&quot;,&quot;Neighbors Files (*.nei)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _neighborsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Neighbors File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;nei&quot;,&quot;Neighbors Files (*.nei)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _neighborsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_specifiyMetaLocationsFileCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Specify meta locations through a user defined file"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Specify meta locations through a user defined file"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -827,11 +893,15 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="_metaLocationsFileBrowseButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="..."/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for meta locations file ..."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="..."/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Browse for meta locations file ..."/>
+                    </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Meta Locations File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;meta&quot;,&quot;Meta Locations Files (*.meta)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _metaLocationsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Meta Locations File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;meta&quot;,&quot;Meta Locations Files (*.meta)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _metaLocationsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -842,7 +912,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Mutliple Coordinates Per Location">
-                <Property name="tabTitle" type="java.lang.String" value="Mutliple Coordinates Per Location"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Mutliple Coordinates Per Location"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -914,7 +986,9 @@
                 <Component class="javax.swing.JRadioButton" name="_onePerLocationIdRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Allow only of set of coordinates per location ID."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Allow only of set of coordinates per location ID."/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -930,7 +1004,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_atLeastOneRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include location ID in the scanning window if at least on set of coordinates is included."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Include location ID in the scanning window if at least on set of coordinates is included."/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -946,7 +1022,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_allLocationsRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include location ID in the scanning window if all sets of coordinates are included."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Include location ID in the scanning window if all sets of coordinates are included."/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -968,7 +1046,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Spatial Window">
-                <Property name="tabTitle" type="java.lang.String" value="Spatial Window"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Spatial Window"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -1104,7 +1184,9 @@
               <SubComponents>
                 <Component class="javax.swing.JTextField" name="_maxSpatialClusterSizeTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="50"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="50"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxSpatialClusterSizeTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxSpatialClusterSizeTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) == 0 ||&#xa;                Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) &gt; 50.0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxSpatialClusterSizeTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -1112,7 +1194,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfPopulationLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="percent of the population defined in the max circle size file (&lt;= 50%)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_spatialPopulationFileCheckBox">
@@ -1132,7 +1216,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxSpatialPercentFileTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="50"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="50"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxSpatialPercentFileTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxSpatialPercentFileTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_maxSpatialPercentFileTextField.getText()) == 0 ||&#xa;                Double.parseDouble(_maxSpatialPercentFileTextField.getText()) &gt; 50.0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxSpatialPercentFileTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -1140,27 +1226,37 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfPopFileLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="percent of the population defined in the max circle size file (&lt;= 50%)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxCirclePopulationFilenameTextField">
                 </Component>
                 <Component class="javax.swing.JButton" name="_maxCirclePopFileBrowseButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="..."/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for max circle size file ..."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="..."/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Browse for max circle size file ..."/>
+                    </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Max Circle Size File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;max&quot;,&quot;Max Circle Size files (*.max)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _maxCirclePopulationFilenameTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Max Circle Size File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;max&quot;,&quot;Max Circle Size files (*.max)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _maxCirclePopulationFilenameTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JButton" name="_maxCirclePopFileImportButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="..."/>
-                    <Property name="toolTipText" type="java.lang.String" value="Import max circle size file ..."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="..."/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Import max circle size file ..."/>
+                    </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Max Circle File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;max&quot;,&quot;Max Circle Files (*.max)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.MaxCirclePopulation);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxCirclePopFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Source Max Circle File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;max&quot;,&quot;Max Circle Files (*.max)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.MaxCirclePopulation);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_spatialDistanceCheckBox">
@@ -1180,12 +1276,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_distancePrefixLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="is an ellipse with a"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="is an ellipse with a"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxSpatialRadiusTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="1"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="1"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maxSpatialRadiusTextField, e, 20);&#xa;    }&#xa;});&#xa;_maxSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxSpatialRadiusTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxSpatialRadiusTextField.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -1193,14 +1293,18 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxRadiusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="kilometer radius"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="kilometer radius"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
             </Container>
             <Component class="javax.swing.JCheckBox" name="_inclPureTempClustCheckBox">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Include Purely Temporal Clusters (Spatial Size = 100%)"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Include Purely Temporal Clusters (Spatial Size = 100%)"/>
+                </Property>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                     <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1267,7 +1371,9 @@
                 <Component class="javax.swing.JRadioButton" name="_circularRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Circular"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Circular"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1283,7 +1389,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_ellipticRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Elliptic"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Elliptic"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1299,7 +1407,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_nonCompactnessPenaltyLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Non-compactness penalty:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Non-compactness penalty:"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JComboBox" name="_nonCompactnessPenaltyComboBox">
@@ -1320,7 +1430,9 @@
             </Container>
             <Component class="javax.swing.JCheckBox" name="_performIsotonicScanCheckBox">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Use Isotonic Spatial Scan Statistic"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Use Isotonic Spatial Scan Statistic"/>
+                </Property>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                     <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1340,7 +1452,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Temporal Window">
-                <Property name="tabTitle" type="java.lang.String" value="Temporal Window"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Temporal Window"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -1437,7 +1551,9 @@
                 <Component class="javax.swing.JRadioButton" name="_percentageTemporalRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="is"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="is"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1453,7 +1569,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_timeTemporalRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="is"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="is"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1469,7 +1587,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxTemporalClusterSizeTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="50"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="50"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxTemporalClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        double dMaxValue = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;&#xa;        while (_maxTemporalClusterSizeTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) == 0 ||&#xa;                Double.parseDouble(_maxTemporalClusterSizeTextField.getText()) &gt; dMaxValue) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -1477,12 +1597,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_percentageOfStudyPeriodLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the study period (&lt;= 90%, default = 50%)"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="percent of the study period (&lt;= 90%, default = 50%)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxTemporalClusterSizeUnitsTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="1"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="1"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeUnitsTextField, e, 6);&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeUnitsTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxTemporalClusterSizeUnitsTextField.getText().length() == 0 || Double.parseDouble(_maxTemporalClusterSizeUnitsTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxTemporalClusterSizeUnitsTextField.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxTemporalClusterSizeUnitsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -1490,14 +1614,18 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxTemporalTimeUnitsLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="years"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="years"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
             </Container>
             <Component class="javax.swing.JCheckBox" name="_includePureSpacClustCheckBox">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Include Purely Spatial Clusters (Temporal Size = 100%)"/>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Include Purely Spatial Clusters (Temporal Size = 100%)"/>
+                </Property>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                     <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1617,7 +1745,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_restrictTemporalRangeCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Include only windows with:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Include only windows with:"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1633,17 +1763,23 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_startWindowRangeLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Start time in range:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Start time in range:"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="End time in range:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="End time in range:"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_startRangeStartYearTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="2000"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="2000"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -1651,7 +1787,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_endRangeStartYearTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="2000"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="2000"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -1659,7 +1797,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_startRangeStartMonthTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="01"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="01"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -1667,7 +1807,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_endRangeStartMonthTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="12"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="12"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1675,7 +1817,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_startRangeStartDayTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="01"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="01"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1683,7 +1827,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_endRangeStartDayTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="31"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="31"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);        &#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1691,17 +1837,23 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_startRangeToLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="to"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="to"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_endRangeToLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="to"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="to"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_startRangeEndYearTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="2000"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="2000"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -1709,7 +1861,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_endRangeEndYearTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="2000"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="2000"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -1717,7 +1871,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_startRangeEndMonthTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="01"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="01"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1725,7 +1881,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_startRangeEndDayTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="01"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="01"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1733,7 +1891,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_endRangeEndMonthTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="12"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="12"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1741,7 +1901,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_endRangeEndDayTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="31"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="31"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -1755,7 +1917,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Space and Time Adjustments">
-                <Property name="tabTitle" type="java.lang.String" value="Space and Time Adjustments"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Space and Time Adjustments"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -1848,7 +2012,9 @@
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjNoneRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="None"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="None"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1864,7 +2030,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjTimeStratifiedRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Nonparametric, with time stratified randomization"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Nonparametric, with time stratified randomization"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1880,7 +2048,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log linear trend with"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Log linear trend with"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1896,7 +2066,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_temporalTrendAdjLogLinearCalcRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Log linear with automatically calculated trend"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Log linear with automatically calculated trend"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1912,7 +2084,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_logLinearTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="0"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="0"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_logLinearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_logLinearTextField, e, 5);&#xa;    }&#xa;});&#xa;_logLinearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_logLinearTextField.getText().length() == 0 || Double.parseDouble(_logLinearTextField.getText()) &lt; -100) {&#xa;            if (undo.canUndo()) undo.undo(); else _logLinearTextField.setText(&quot;0&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -1920,7 +2094,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_logLinearLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="%  per year"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="%  per year"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -1968,7 +2144,9 @@
                 <Component class="javax.swing.JRadioButton" name="_spatialAdjustmentsNoneRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="None"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="None"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1984,7 +2162,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_spatialAdjustmentsSpatialStratifiedRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Nonparametric, with spatial stratified randomization"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Nonparametric, with spatial stratified randomization"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2058,7 +2238,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_adjustForKnownRelativeRisksCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjust for known relative risks"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Adjust for known relative risks"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2076,25 +2258,35 @@
                 </Component>
                 <Component class="javax.swing.JButton" name="_adjustmentsFileBrowseButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="..."/>
-                    <Property name="toolTipText" type="java.lang.String" value="Browse for adjustments file ..."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="..."/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Browse for adjustments file ..."/>
+                    </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser();&#xa;        fc.setDialogTitle(&quot;Select Adjustments File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;adj&quot;,&quot;Adjustments Files (*.adj)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            _adjustmentsByRelativeRisksFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Adjustments File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;adj&quot;,&quot;Adjustments Files (*.adj)&quot;));&#xa;        int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;        if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _adjustmentsByRelativeRisksFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JButton" name="_adjustmentsFileImportButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="..."/>
-                    <Property name="toolTipText" type="java.lang.String" value="Import adjustments file ..."/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="..."/>
+                    </Property>
+                    <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Import adjustments file ..."/>
+                    </Property>
                   </Properties>
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser();&#xa;            fc.setDialogTitle(&quot;Select Source Adjustments File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;adj&quot;,&quot;Adjustments Files (*.adj)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.AdjustmentsByRR);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustmentsFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Source Adjustments File&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;adj&quot;,&quot;Adjustments Files (*.adj)&quot;));&#xa;            int returnVal = fc.showOpenDialog(AdvancedParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.AdjustmentsByRR);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_adjustmentsByRelativeRisksFileLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjustments File:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Adjustments File:"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -2105,7 +2297,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Inference">
-                <Property name="tabTitle" type="java.lang.String" value="Inference"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Inference"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -2179,7 +2373,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_terminateEarlyCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Terminate the analysis early for large p-values"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Terminate the analysis early for large p-values"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2257,7 +2453,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_adjustForEarlierAnalysesCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjust for earlier analyses performed since:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Adjust for earlier analyses performed since:"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2273,7 +2471,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_prospectiveStartDateYearTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="2000"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="2000"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
@@ -2281,7 +2481,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_prospectiveStartDateMonthTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="12"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="12"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -2289,7 +2491,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_prospectiveStartDateDayTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="31"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="31"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
@@ -2301,7 +2505,9 @@
                       <Font name="Tahoma" size="10" style="0"/>
                     </Property>
                     <Property name="horizontalAlignment" type="int" value="0"/>
-                    <Property name="text" type="java.lang.String" value="Year"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Year"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_prospectiveStartMonthLabel">
@@ -2310,7 +2516,9 @@
                       <Font name="Tahoma" size="10" style="0"/>
                     </Property>
                     <Property name="horizontalAlignment" type="int" value="0"/>
-                    <Property name="text" type="java.lang.String" value="Month"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Month"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_prospectiveStartDayLabel">
@@ -2319,7 +2527,9 @@
                       <Font name="Tahoma" size="10" style="0"/>
                     </Property>
                     <Property name="horizontalAlignment" type="int" value="0"/>
-                    <Property name="text" type="java.lang.String" value="Day"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Day"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -2361,7 +2571,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_reportCriticalValuesCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Report critical values for an observed cluster to be significant"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Report critical values for an observed cluster to be significant"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2440,7 +2652,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_performIterativeScanCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Adjusting for More Likely Clusters"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Adjusting for More Likely Clusters"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2456,12 +2670,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxIterativeScansLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Maximum number of iterations:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Maximum number of iterations:"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_numIterativeScansTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="10"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="10"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_numIterativeScansTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_numIterativeScansTextField, e, 5);&#xa;    }&#xa;});&#xa;_numIterativeScansTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_numIterativeScansTextField.getText().length() == 0 ||&#xa;                Integer.parseInt(_numIterativeScansTextField.getText()) &lt; 1 ||&#xa;                Integer.parseInt(_numIterativeScansTextField.getText()) &gt; Parameters.MAXIMUM_ITERATIVE_ANALYSES) {&#xa;            if (undo.canUndo()) undo.undo(); else _numIterativeScansTextField.setText(&quot;10&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_numIterativeScansTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -2469,12 +2687,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_iterativeCutoffLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Stop when p-value greater:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Stop when p-value greater:"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_iterativeScanCutoffTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value=".05"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value=".05"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_iterativeScanCutoffTextField, e, 20);&#xa;    }&#xa;});&#xa;_iterativeScanCutoffTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_iterativeScanCutoffTextField.getText().length() == 0 ||&#xa;                Double.parseDouble(_iterativeScanCutoffTextField.getText()) &lt;= 0 ||&#xa;                Double.parseDouble(_iterativeScanCutoffTextField.getText()) &gt; 1)&#xa;            if (undo.canUndo()) undo.undo(); else _iterativeScanCutoffTextField.setText(&quot;.05&quot;);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_iterativeScanCutoffTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -2488,7 +2710,9 @@
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout" value="org.netbeans.modules.form.compat2.layouts.support.JTabbedPaneSupportLayout$JTabbedPaneConstraintsDescription">
               <JTabbedPaneConstraints tabName="Clusters Reported">
-                <Property name="tabTitle" type="java.lang.String" value="Clusters Reported"/>
+                <Property name="tabTitle" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <PlainString value="Clusters Reported"/>
+                </Property>
               </JTabbedPaneConstraints>
             </Constraint>
           </Constraints>
@@ -2574,7 +2798,9 @@
                 <Component class="javax.swing.JRadioButton" name="_criteriaSecClustersNoGeoLapRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="No Geographical Overlap"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="No Geographical Overlap"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2590,7 +2816,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_criteriaSecClustersNoCentersRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="No Cluster Centers in Other Clusters"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="No Cluster Centers in Other Clusters"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2606,7 +2834,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_criteriaSecClustersNoCentersMoreRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="No Cluster Centers in More Likely Clusters"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="No Cluster Centers in More Likely Clusters"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2622,7 +2852,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_criteriaSecClustersNoCentersLessRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="No Cluster Centers in Less Likely Clusters"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="No Cluster Centers in Less Likely Clusters"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2638,7 +2870,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_criteriaSecClustersNoCentersEachRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="No Pairs of Centers Both in Each Others Clusters"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="No Pairs of Centers Both in Each Others Clusters"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2654,7 +2888,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_criteriaSecClustersNoRestrictionsRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="No Restrictions = Most Likely Cluster for Each Grid Point"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="No Restrictions = Most Likely Cluster for Each Grid Point"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2755,7 +2991,9 @@
               <SubComponents>
                 <Component class="javax.swing.JCheckBox" name="_restrictReportedClustersCheckBox">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Report only clusters smaller than:"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="Report only clusters smaller than:"/>
+                    </Property>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -2771,7 +3009,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxReportedSpatialClusterSizeTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="50"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="50"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxReportedSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialClusterSizeTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxReportedSpatialClusterSizeTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxReportedSpatialClusterSizeTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxReportedSpatialClusterSizeTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxReportedSpatialClusterSizeTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -2779,7 +3019,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedPercentOfPopulationLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population at risk (&lt;= 50%, default = 50%)"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="percent of the population at risk (&lt;= 50%, default = 50%)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportedSpatialPopulationFileCheckBox">
@@ -2799,7 +3041,9 @@
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxReportedSpatialPercentFileTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="50"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="50"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxReportedSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialPercentFileTextField, e, 5);&#xa;    }&#xa;});&#xa;_maxReportedSpatialPercentFileTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxReportedSpatialPercentFileTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxReportedSpatialPercentFileTextField.setText(&quot;50&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxReportedSpatialPercentFileTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -2807,7 +3051,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedPercentageOfPopFileLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="percent of the population defined in the max circle size file (&lt;= 50%)"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="percent of the population defined in the max circle size file (&lt;= 50%)"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_reportedSpatialDistanceCheckBox">
@@ -2827,12 +3073,16 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_reportedMaxDistanceLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="is an ellipse with a"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="is an ellipse with a"/>
+                    </Property>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_maxReportedSpatialRadiusTextField">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="1"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="1"/>
+                    </Property>
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_maxReportedSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_maxReportedSpatialRadiusTextField, e, 20);&#xa;    }&#xa;});&#xa;_maxReportedSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_maxReportedSpatialRadiusTextField.getText().length() == 0 || Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _maxReportedSpatialRadiusTextField.setText(&quot;1&quot;);&#xa;        }&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;_maxReportedSpatialRadiusTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;"/>
@@ -2840,7 +3090,9 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_maxReportedRadiusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="kilometer radius"/>
+                    <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                      <PlainString value="kilometer radius"/>
+                    </Property>
                   </Properties>
                 </Component>
               </SubComponents>
@@ -2851,7 +3103,9 @@
     </Container>
     <Component class="javax.swing.JButton" name="_closeButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Close"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="Close"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_closeButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        setVisible(false, null);&#xa;    }&#xa;});"/>
@@ -2859,7 +3113,9 @@
     </Component>
     <Component class="javax.swing.JButton" name="_setDefaultButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Set Defaults"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <PlainString value="Set Defaults"/>
+        </Property>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_setDefaultButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        SetDefaultsClick();&#xa;    }&#xa;});"/>
