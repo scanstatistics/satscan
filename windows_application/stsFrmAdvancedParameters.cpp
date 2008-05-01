@@ -1770,8 +1770,10 @@ void TfrmAdvancedParameters::Setup() {
       rdoElliptic->Checked = ref.GetSpatialWindowType() == ELLIPTIC;
       cmbNonCompactnessPenalty->ItemIndex = ref.GetNonCompactnessPenaltyType();
       SetSpatialDistanceCaption();
-      SetMultipleCoordinatesType(ref.GetMultipleCoordinatesType());
       chkPerformIsotonicScan->Checked = ref.GetRiskType() == MONOTONERISK;
+
+      // Multiple Coordinates Tab
+      SetMultipleCoordinatesType(ref.GetMultipleCoordinatesType());
 
       // Temporal tab
       SetMaxTemporalClusterSizeTypeControl(ref.GetMaximumTemporalClusterSizeType());
@@ -2033,8 +2035,9 @@ void TfrmAdvancedParameters::ValidateInputFiles() {
     }  //for loop
 
     //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal
-    if (gAnalysisSettings.GetModelControlType() == ORDINAL && rdoAdjustmentByDataSets->Enabled && rdoAdjustmentByDataSets->Checked)
-      GenerateAFException("For the ordinal probability model with input data defined in multiple data sets,\n"
+    if ((gAnalysisSettings.GetModelControlType() == ORDINAL || gAnalysisSettings.GetModelControlType() == CATEGORICAL) &&
+         rdoAdjustmentByDataSets->Enabled && rdoAdjustmentByDataSets->Checked)
+      GenerateAFException("For the ordinal and categorical probability models with input data defined in multiple data sets,\n"
                           "the adjustment option has not been implemented.","ValidateInputFiles()", *rdoAdjustmentByDataSets, INPUT_TABS);
   }
   catch (ZdException & x) {
