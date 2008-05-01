@@ -611,6 +611,7 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
       case POISSON   		:
       case BERNOULLI            :
       case ORDINAL              :
+      case CATEGORICAL          :
       case NORMAL               :
       case EXPONENTIAL          : rdoRetrospectivePurelySpatial->Enabled = true;
                                   rdoRetrospectivePurelyTemporal->Enabled = eDatePrecisionType != NONE;
@@ -619,6 +620,16 @@ void TfrmAnalysis::EnableAnalysisControlForModelType() {
                                   rdoProspectiveSpaceTime->Enabled = eDatePrecisionType != NONE;
                                   rdoSVTT->Enabled = eDatePrecisionType != NONE;
                                   stSVTT->Enabled = rdoSVTT->Enabled;
+                                  break;
+      case HOMOGENEOUSPOISSON   : rdoRetrospectivePurelySpatial->Enabled = true;
+                                  rdoRetrospectivePurelyTemporal->Enabled = false;
+                                  rdoRetrospectiveSpaceTime->Enabled = false;
+                                  rdoProspectivePurelyTemporal->Enabled = false;
+                                  rdoProspectiveSpaceTime->Enabled = false;
+                                  rdoSVTT->Enabled = false;
+                                  stSVTT->Enabled = false;
+                                  if (!rdoRetrospectivePurelySpatial->Checked)
+                                    rdoRetrospectivePurelySpatial->Checked = true;
                                   break;
       case SPACETIMEPERMUTATION : rdoRetrospectivePurelySpatial->Enabled = false;
                                   rdoRetrospectivePurelyTemporal->Enabled = false;
@@ -660,34 +671,14 @@ void TfrmAnalysis::EnableDatesByTimePrecisionUnits() {
 /** enables probability model control based upon the setting in analysis control */
 void TfrmAnalysis::EnableModelControlForAnalysisType() {
   try {
-    switch (GetAnalysisControlType()) {
-      case PURELYSPATIAL             :
-      case PURELYTEMPORAL            :
-      case PROSPECTIVEPURELYTEMPORAL : rdoBernoulliModel->Enabled = true;
-                                       rdoSpaceTimePermutationModel->Enabled = true;
-                                       rdoOrdinalModel->Enabled = true;
-                                       rdoExponentialModel->Enabled = true;
-                                       rdoNormalModel->Enabled = true;
-                                       rdoSpaceTimePermutationModel->Enabled = false;
-                                       if (rdoSpaceTimePermutationModel->Checked)
-                                          rdoPoissonModel->Checked = true;
-                                       break;
-      case SPACETIME                 :
-      case PROSPECTIVESPACETIME      : rdoBernoulliModel->Enabled = true;
-                                       rdoSpaceTimePermutationModel->Enabled = true;
-                                       rdoOrdinalModel->Enabled = true;
-                                       rdoExponentialModel->Enabled = true;
-                                       rdoNormalModel->Enabled = true;
-                                       rdoSpaceTimePermutationModel->Enabled = true;
-                                       break;
-      case SPATIALVARTEMPTREND       : rdoBernoulliModel->Enabled = false;
-                                       rdoSpaceTimePermutationModel->Enabled = false;
-                                       rdoOrdinalModel->Enabled = false;
-                                       rdoExponentialModel->Enabled = false;
-                                       rdoNormalModel->Enabled = false;
-                                       if (!rdoPoissonModel->Checked) rdoPoissonModel->Checked = true;
-                                       break;
-      default : ZdGenerateException("Unknown analysis type '%d'.", "EnableModelControlForAnalysisType()", GetAnalysisControlType());
+    AnalysisType eAnalysisType = GetAnalysisControlType();
+    rdoSpaceTimePermutationModel->Enabled = eAnalysisType == SPACETIME || eAnalysisType == PROSPECTIVESPACETIME;
+    if (!rdoSpaceTimePermutationModel->Enabled && rdoSpaceTimePermutationModel->Checked) {
+      rdoPoissonModel->Checked = true;
+    }
+    rdoHomogeneousPoissonModel->Enabled = eAnalysisType == PURELYSPATIAL;
+    if (!rdoHomogeneousPoissonModel->Enabled && rdoHomogeneousPoissonModel->Checked) {
+      rdoPoissonModel.setSelected(true);
     }
     EnableSettingsForAnalysisModelCombination();
     SetAreaScanRateControlText(GetModelControlType());
@@ -880,6 +871,10 @@ ProbabilityModelType TfrmAnalysis::GetModelControlType() const {
     eReturn = EXPONENTIAL;
   else if (rdoNormalModel->Checked)
     eReturn = NORMAL;
+  else if (rdoCategoricalModel->Checked)
+    eReturn = CATEGORICAL;
+  else if (rdoHomogeneousPoissonModel->Checked)
+    eReturn = HOMOGENEOUSPOISSON;
   else
     ZdGenerateException("Probability model type not selected.","GetModelControlType()");
 
@@ -899,6 +894,8 @@ AnsiString TfrmAnalysis::GetModelControlTypeName() const {
     return rdoExponentialModel->Caption;
   else if (rdoNormalModel->Checked)
     return rdoNormalModel->Caption;
+  else if (rdoCategoricalModel->Checked)
+    return rdoCategoricalModel->Caption;  
   else
     ZdGenerateException("Probability model type not selected.","GetModelControlType()");
   return "";  
@@ -1072,8 +1069,10 @@ void TfrmAnalysis::OnProbabilityModelClick() {
     switch (GetModelControlType()) {
       case POISSON   		:
       case BERNOULLI            :
+      case CATEGORICAL          :
       case ORDINAL              :
       case NORMAL               :
+      case HOMOGENEOUSPOISSON   :
       case EXPONENTIAL          : lblSimulatedLogLikelihoodRatios->Caption = "Simulated Log Likelihood Ratios";
                                   gpfrmAdvancedParameters->lblPercentageOfStudyPeriod->Caption = "percent of the study period (<= 90%, default = 50%)";
                                   break;
@@ -1331,7 +1330,16 @@ void TfrmAnalysis::SetAreaScanRateControl(AreaRateType eAreaRateType) {
 //---------------------------------------------------------------------------
 /** Sets captions of TRadioButton controls of 'Scan for Areas with:' group based upon selected probablility model. */
 void TfrmAnalysis::SetAreaScanRateControlText(ProbabilityModelType eProbabilityModelType) {
+    bool bEnable = GetModelControlType() != CATEGORICAL;
+
+    rgpScanAreas->Enabled = bEnable;
+    rdoHighRates->Enabled = bEnable;
+    rdoLowRates->Enabled = bEnable;
+    rdoHighLowRates->Enabled = bEnable;
+
     switch (GetModelControlType()) {
+      case CATEGORICAL          : break;
+      case HOMOGENEOUSPOISSON   :
       case POISSON   		: if (GetAnalysisControlType() == SPATIALVARTEMPTREND) {
                                     rdoLowRates->Caption = "Decreasing Rates";
                                     rdoHighRates->Caption = "Increasing Rates";
@@ -1408,9 +1416,11 @@ void TfrmAnalysis::SetModelControl(ProbabilityModelType eProbabilityModelType) {
   switch (eProbabilityModelType) {
     case BERNOULLI            : if (rdoBernoulliModel->Enabled) {rdoBernoulliModel->Checked = true; break;}
     case SPACETIMEPERMUTATION : if (rdoSpaceTimePermutationModel->Enabled) {rdoSpaceTimePermutationModel->Checked = true; break;}
+    case CATEGORICAL          : if (rdoCategoricalModel->Enabled) {rdoCategoricalModel->Checked = true; break;}
     case ORDINAL              : if (rdoOrdinalModel->Enabled) {rdoOrdinalModel->Checked = true; break;}
     case EXPONENTIAL          : if (rdoExponentialModel->Enabled) {rdoExponentialModel->Checked = true; break;}
     case NORMAL               : if (rdoNormalModel->Enabled) {rdoNormalModel->Checked = true; break;}
+    case HOMOGENEOUSPOISSON   : if (rdoHomogeneousPoissonModel->Enabled) {rdoHomogeneousPoissonModel->Checked = true; break;}
     case POISSON              :
     default                   : rdoPoissonModel->Checked = true;
   }
@@ -1678,17 +1688,19 @@ void TfrmAnalysis::ValidateInputFiles() {
     //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
     if (!(gpfrmAdvancedParameters->chkSpecifiyNeighborsFile->Enabled && gpfrmAdvancedParameters->chkSpecifiyNeighborsFile->Checked) &&
         !(eAnalysisType == PURELYTEMPORAL || eAnalysisType == PROSPECTIVEPURELYTEMPORAL)) {
-      if (edtCoordinateFileName->Text.IsEmpty()) {
-        PageControl1->ActivePage = tbInputFiles;
-        edtCoordinateFileName->SetFocus();
-        ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
-      }
-      else if (!ValidateFileAccess(edtCoordinateFileName->Text.c_str())) {
-        PageControl1->ActivePage = tbInputFiles;
-        edtCoordinateFileName->SetFocus();
-        ZdException::GenerateNotification("The coordinates file could not be opened for reading.\n"
-                                          "Please confirm that the path and/or file name are\n"
-                                          "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
+      if (GetModelControlType() != HOMOGENEOUSPOISSON) {
+         if (edtCoordinateFileName->Text.IsEmpty()) {
+           PageControl1->ActivePage = tbInputFiles;
+           edtCoordinateFileName->SetFocus();
+           ZdException::GenerateNotification("Please specify a coordinates file.","ValidateInputFiles()");
+         }
+         else if (!ValidateFileAccess(edtCoordinateFileName->Text.c_str())) {
+           PageControl1->ActivePage = tbInputFiles;
+           edtCoordinateFileName->SetFocus();
+           ZdException::GenerateNotification("The coordinates file could not be opened for reading.\n"
+                                             "Please confirm that the path and/or file name are\n"
+                                            "valid and that you have permissions to read from this\ndirectory and file.", "ValidateInputFiles()");
+         }
       }
       //validate special grid file -- optional
       if (!edtGridFileName->Text.IsEmpty() &&  !ValidateFileAccess(edtGridFileName->Text.c_str())) {

@@ -132,6 +132,8 @@ class TfrmAnalysis : public stsBaseAnalysisChildForm  {
    TRadioButton *rdoSVTT;
    TStaticText *stSVTT;
    TStaticText *stScanAreaRates;
+        TRadioButton *rdoCategoricalModel;
+        TRadioButton *rdoHomogeneousPoissonModel;
    
    void __fastcall FormClose(TObject *Sender, TCloseAction &Action);
    void __fastcall rgpPrecisionTimesClick(TObject *Sender);

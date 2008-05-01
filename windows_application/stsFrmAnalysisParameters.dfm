@@ -1,6 +1,6 @@
 object frmAnalysis: TfrmAnalysis
-  Left = 229
-  Top = 200
+  Left = 670
+  Top = 179
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'SaTScan Analysis Settings'
@@ -651,7 +651,7 @@ object frmAnalysis: TfrmAnalysis
         TabOrder = 1
         object rdoPoissonModel: TRadioButton
           Left = 13
-          Top = 25
+          Top = 19
           Width = 82
           Height = 17
           Caption = 'Poisson'
@@ -662,7 +662,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoBernoulliModel: TRadioButton
           Left = 13
-          Top = 65
+          Top = 47
           Width = 87
           Height = 17
           Caption = 'Bernoulli'
@@ -671,7 +671,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoSpaceTimePermutationModel: TRadioButton
           Left = 13
-          Top = 102
+          Top = 74
           Width = 140
           Height = 17
           Caption = 'Space-Time Permutation'
@@ -680,7 +680,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoOrdinalModel: TRadioButton
           Left = 13
-          Top = 141
+          Top = 105
           Width = 82
           Height = 17
           Caption = 'Ordinal'
@@ -689,7 +689,7 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoExponentialModel: TRadioButton
           Left = 13
-          Top = 179
+          Top = 135
           Width = 82
           Height = 17
           Caption = 'Exponential'
@@ -698,11 +698,29 @@ object frmAnalysis: TfrmAnalysis
         end
         object rdoNormalModel: TRadioButton
           Left = 13
-          Top = 217
+          Top = 163
           Width = 82
           Height = 17
           Caption = 'Normal'
           TabOrder = 5
+          OnClick = rdoProbabilityModelClick
+        end
+        object rdoCategoricalModel: TRadioButton
+          Left = 13
+          Top = 192
+          Width = 84
+          Height = 17
+          Caption = 'Categorical'
+          TabOrder = 6
+          OnClick = rdoProbabilityModelClick
+        end
+        object rdoHomogeneousPoissonModel: TRadioButton
+          Left = 13
+          Top = 221
+          Width = 140
+          Height = 17
+          Caption = 'Homogeneous Poisson'
+          TabOrder = 7
           OnClick = rdoProbabilityModelClick
         end
       end
