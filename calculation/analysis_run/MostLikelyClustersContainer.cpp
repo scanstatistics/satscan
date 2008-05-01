@@ -233,15 +233,20 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
       if ((pFile = fopen(sFilename, "w")) == NULL)
         throw resolvable_error("Error: Unable to open top clusters file.\n");
       else {
+
+
         for (size_t i=0; i < gvTopClusterList.size(); ++i) {
+          /*
           fprintf(pFile, "GridTract:  %i\n", i);
           fprintf(pFile, "  Ellipe Offset:  %i\n", gvTopClusterList[i]->GetEllipseOffset());
           fprintf(pFile, "         Center:  %i\n", gvTopClusterList[i]->GetCentroidIndex());
-          fprintf(pFile, "        Measure:  %f\n", gvTopClusterList[i]->GetExpectedCount(DataHub));
+          //fprintf(pFile, "        Measure:  %f\n", gvTopClusterList[i]->GetExpectedCount(DataHub));
           fprintf(pFile, "         Tracts:  %i\n", gvTopClusterList[i]->GetNumTractsInCluster());
           fprintf(pFile, "LikelihoodRatio:  %f\n", gvTopClusterList[i]->m_nRatio);
           fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
           fprintf(pFile, "   Cart. Radius:  %lf\n", gvTopClusterList[i]->GetCartesianRadius());
+          */
+          gvTopClusterList[i]->Display(pFile, DataHub, i + 1, 0);
           fprintf(pFile, " \n");
           fprintf(pFile, " \n");
         }
