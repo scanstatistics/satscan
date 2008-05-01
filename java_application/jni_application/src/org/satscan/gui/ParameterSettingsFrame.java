@@ -932,6 +932,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
           _poissonModelRadioButton.setSelected(true);  
         }
         enableSettingsForAnalysisModelCombination();
+        setAreaScanRateControlText(getModelControlType());
     }
 
     /**
