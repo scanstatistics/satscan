@@ -633,7 +633,7 @@ void CentroidNeighborCalculator::printCentroidToLocationDistances(size_t tMaxToP
       fprintf(stream, "\t\tdistance=%.6lf\t\tname='%s'\t\tindex=%d\n", itr->GetDistance(), pcurr->getIndentifier(), itr->GetTractNumber());
     }
   }
-  fclose(fp);
+  if (fp) fclose(fp);
 }
 
 /** Resizes passed vector to #of tracts plus # of meta locations. Assigns meta location data. */
