@@ -94,6 +94,8 @@ class TractHandler {
     class CompareFirstCoordinatePointer {
        public:
          bool operator() (const Location * lhs, const Location * rhs) {
+            if (lhs->getCoordinates()[0] == rhs->getCoordinates()[0])
+              return strcmp(lhs->getIndentifier(), rhs->getIndentifier()) < 0;
             return lhs->getCoordinates()[0] < rhs->getCoordinates()[0];
          }
     };
@@ -102,7 +104,7 @@ class TractHandler {
     CoordinatesContainer_t              gvCoordinates;
     LocationsContainer_t                gvLocations;
     size_t                              giCoordinateDimensions;
-    std::map<std::string,tract_t>       gmAggregateTracts;
+    std::map<std::string,std::string>   gmAggregateTracts;
     bool                                gbAggregatingTracts;
     MultipleCoordinatesType             geMultipleCoordinatesType;
     size_t                              giMaxIdentifierLength;
@@ -133,6 +135,7 @@ class TractHandler {
     MetaNeighborManager               & getMetaNeighborManager() {return gMetaNeighborManager;}
     const MetaManagerProxy            & getMetaManagerProxy() const {return *gMetaManagerProxy;}
     size_t                              getNumLocationCoordinates() const {return giNumLocationCoordinates;}
+    void                                printLocations(const char * sFilename);
     void                                reportCombinedLocations(FILE * fDisplay) const;
     Location::StringContainer_t       & retrieveAllIdentifiers(tract_t tIndex, Location::StringContainer_t& Identifiers) const;
     void                                setCoordinateDimensions(size_t iDimensions);

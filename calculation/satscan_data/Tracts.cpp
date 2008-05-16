@@ -133,7 +133,7 @@ void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
         if (gvLocations[tOuter]->getCoordinates() != gvLocations[tInner]->getCoordinates()) break;
         //add identifier of tInner to tOuter, they reference the same coordinate sets
         gvLocations[tOuter]->addSecondaryIdentifier(gvLocations[tInner]->getIndentifier());
-        gmAggregateTracts[gvLocations[tInner]->getIndentifier()] = tOuter;
+        gmAggregateTracts[gvLocations[tInner]->getIndentifier()] = gvLocations[tOuter]->getIndentifier();
         gvLocations.erase(gvLocations.begin() + tInner);
         tInner = tInner - 1;
         tSize = gvLocations.size();
@@ -240,16 +240,20 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
       //when aggregation locations, all tract identifiers refer to the same index
       return 0;
 
+    std::string _identifier;
+
     //first search collection of known aggregated location identifiers 
-    std::map<std::string,tract_t>::const_iterator itrm = gmAggregateTracts.find(std::string(sIdentifier));
+    std::map<std::string,std::string>::const_iterator itrm = gmAggregateTracts.find(std::string(sIdentifier));
     if (itrm != gmAggregateTracts.end())
-      return itrm->second;
+        _identifier = itrm->second;
+    else
+        _identifier = sIdentifier;
 
     //search for tract identifier in vector
+    std::auto_ptr<Location> _search(new Location(_identifier.c_str(), Coordinates()));
     ptr_vector<Location>::const_iterator   itr;
-    std::auto_ptr<Location> identifier(new Location(sIdentifier, Coordinates()));
-    itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), identifier.get(), CompareIdentifiers());
-    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), sIdentifier))
+    itr = std::lower_bound(gvLocations.begin(), gvLocations.end(), _search.get(), CompareIdentifiers());
+    if (itr != gvLocations.end() && !strcmp((*itr)->getIndentifier(), _identifier.c_str()))
       tPosReturn = std::distance(gvLocations.begin(), itr);
     else
       tPosReturn = -1;
@@ -259,6 +263,40 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
     throw;
   }
   return tPosReturn;
+}
+
+/** Print locations to ASCII file. */
+void TractHandler::printLocations(const char * sFilename) {
+   FILE* pFile;
+
+   try {
+      if ((pFile = fopen(sFilename, "w")) == NULL)
+        throw resolvable_error("Error: Unable to open top clusters file.\n");
+      else {
+        ptr_vector<Location>::const_iterator itr;
+        for (itr=gvLocations.begin(); itr != gvLocations.end(); ++itr) {
+            fprintf(pFile,"Identifier: %s\n",(*itr)->getIndentifier());
+            fprintf(pFile,"Coordinates: ");            
+            for (unsigned int t=0; t < (*itr)->getCoordinates().size(); ++t) {
+                const Coordinates * pCoords = (*itr)->getCoordinates()[t];
+                for (size_t c=0; c < pCoords->getSize(); ++c) {
+                    fprintf(pFile," %lf ", pCoords->getCoordinates()[c]);
+                }
+            }
+            fprintf(pFile,"Secondary Identifiers: ");   
+            for (unsigned int i=0; i < (*itr)->getSecondaryIdentifiers().size(); ++i) {
+                fprintf(pFile," %s ", (*itr)->getSecondaryIdentifiers()[i].c_str() );
+            }
+            fprintf(pFile, " \n\n");
+        }
+      }
+      fclose(pFile);
+   }
+  catch (prg_exception& x) {
+    fclose(pFile);
+    x.addTrace("printLocations()","TractHandler");
+    throw;
+  }
 }
 
 /** Prints formatted message to file which details the locations of the coordinates
