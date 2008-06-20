@@ -251,6 +251,11 @@ public class Parameters implements Cloneable {
     	if (bEmptyFirst) gvEllipseRotations.setSize(0);
     	gvEllipseRotations.add(new Integer(iRotations));      
     }
+
+    /** Add observable region to definition to collection. */
+    public void ClearObservableRegions() {
+        gvObservableRegions.setSize(0);
+    }
     
     /** Add observable region to definition to collection. */
     public void AddObservableRegion(final String sRegions, int iIndex, boolean bEmptyFirst) {
