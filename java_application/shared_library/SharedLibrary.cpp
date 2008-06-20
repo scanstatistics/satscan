@@ -22,9 +22,11 @@
 #include "stsJNIPrintWindow.h"
 #include "stsParametersUtility.h"
 #include "org_satscan_gui_ParameterSettingsFrame.h"
+#include "org_satscan_gui_OberservableRegionsFrame.h"
 #include "org_satscan_app_AppConstants.h"
 #include "FileName.h"
 #include "JNIException.h"
+#include "ObservableRegion.h"
 
 #pragma argsused
 
@@ -106,6 +108,79 @@ JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getReleaseDate(JNIEn
 
 JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getVersionId(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(VERSION_ID);
+}
+
+JNIEXPORT jstring JNICALL Java_org_satscan_gui_OberservableRegionsFrame__1getRegionIsValid(JNIEnv  * pEnv, jobject , jstring regions) {
+  try {
+    jboolean iscopy;
+    const char *temp = pEnv->GetStringUTFChars(regions, &iscopy);
+    std::string listRegions(temp);
+    if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(regions, temp);
+    //attempt to parse the regions into polygon object   
+    ConvexPolygonBuilder::buildConvexPolygon(ConvexPolygonBuilder::parse(listRegions));  
+    return pEnv->NewStringUTF("Ok");
+  }
+  catch (jni_error & x) {
+    return pEnv->NewStringUTF("Failed"); // let the Java exception to be handled in the caller of JNI function
+  }
+  catch (region_exception& e) {
+    printf("Polygon Error: %s\n", e.what());
+    return pEnv->NewStringUTF(e.what());
+  }
+  catch (std::exception& x) {
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    return pEnv->NewStringUTF("Failed");
+  }
+  catch (...) {
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    return pEnv->NewStringUTF("Failed");
+  }
+}
+
+JNIEXPORT jstring JNICALL Java_org_satscan_gui_OberservableRegionsFrame__1getRegionIsValidRegionCollection(JNIEnv * pEnv, jobject, jobject vectorobject) {
+  jboolean iscopy;
+
+  try {
+    std::vector<ConvexPolygonObservableRegion> polygons;
+
+    jclass vclazz = pEnv->GetObjectClass(vectorobject);
+    jmethodID mid = _getMethodId_Checked(*pEnv, vclazz, "size", "()I");
+    jint vsize = pEnv->CallIntMethod(vectorobject, mid);
+    jni_error::_detectError(*pEnv);
+    for (jint i=0; i < vsize; ++i) {
+        mid = _getMethodId_Checked(*pEnv, vclazz, "elementAt", "(I)Ljava/lang/Object;");
+        jstring str_object = (jstring)pEnv->CallObjectMethod(vectorobject, mid, i);
+        jni_error::_detectError(*pEnv);
+        const char * temp = pEnv->GetStringUTFChars(str_object, &iscopy);
+        std::string poly_list(temp);
+        polygons.push_back(ConvexPolygonBuilder::buildConvexPolygon(ConvexPolygonBuilder::parse(poly_list))); 
+        if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(str_object, temp);
+    }
+
+    //test that polygons do not overlap
+    for (size_t i=0; i < polygons.size() - 1; ++i) {
+        for (size_t j=i+1; j < polygons.size(); ++j) {
+            if (polygons[i].intersectsRegion(polygons[j]))
+              throw region_exception("The regions you have defined are valid but there is overlapp.\nPlease check regions/inequalities and re-define to remove overlap.");
+        }
+    }
+ 
+    return pEnv->NewStringUTF("Ok");
+  }
+  catch (jni_error & x) {
+    return pEnv->NewStringUTF("Failed"); // let the Java exception to be handled in the caller of JNI function
+  }
+  catch (region_exception& e) {
+    return pEnv->NewStringUTF(e.what());
+  }
+  catch (std::exception& x) {
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, x.what());
+    return pEnv->NewStringUTF("Failed");
+  }
+  catch (...) {
+	jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    return pEnv->NewStringUTF("Failed");
+  }
 }
 
 /** Calcuates the number of time intervals given study period start and end dates. */
