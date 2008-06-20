@@ -77,7 +77,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private boolean gbShowStartWindow = true;
     private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
     private static SaTScanApplication _instance;
-    public File lastBrowseDirectory = null;
+    public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
 
     /**
      * Creates new form SaTScanApplication
