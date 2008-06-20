@@ -199,6 +199,12 @@ void trimString(std::string &source, const char * t) {
   source.erase(source.find_last_not_of(t)+1);
 }
 
+/** Converts string to lower case. */
+std::string& lowerString(std::string &source) {
+  std::transform(source.begin(), source.end(), source.begin(), (int(*)(int)) tolower);
+  return source;
+}
+
 /** assigns formatted strng to destination */
 std::string& printString(std::string& destination, const char * format, ...) {
   try {
