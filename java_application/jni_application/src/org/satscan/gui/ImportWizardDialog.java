@@ -38,6 +38,7 @@ import org.satscan.importer.ImportVariable;
 import org.satscan.app.Parameters;
 import org.satscan.importer.PreviewTableModel;
 import org.satscan.app.UnknownEnumException;
+import org.satscan.gui.utils.AutofitTableColumns;
 import org.satscan.importer.XLSImportDataSource;
 import org.satscan.gui.utils.Utils;
 import org.satscan.gui.utils.WaitCursor;
@@ -222,10 +223,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 cl.show(_sourceFileTypeOptions, _fileFormatDelimitedCardName);
                 _sourceDataFileType = FileImporter.SourceDataFileType.Delimited;
                 break;
-            case Fixed_Column:
-                cl.show(_sourceFileTypeOptions, _fileFormatFixedColumnCardName);
-                _sourceDataFileType = FileImporter.SourceDataFileType.Fixed_Column;
-                break;
             default:
                 throw new UnknownEnumException(eFileType);
         }
@@ -261,7 +258,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case 5:
                 return Parameters.ProbabilityModelType.NORMAL;
             case 6:
-                return Parameters.ProbabilityModelType.RANK;
+                return Parameters.ProbabilityModelType.CATEGORICAL;
+            case 7:
+                return Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
             case 0:
             default:
                 return Parameters.ProbabilityModelType.POISSON;
@@ -279,7 +278,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         switch (_fileType) {
             case Case:
                 for (int t = 0; t < _importVariables.size(); ++t) {
-                    if (t >= 3 && t <= 12) //show 'covariate' variables for Poisson and space-time permutation models only
+                    if (t >= 1 && t <= 2) {//show '# cases' and 'date time'  variables for all but H. Poisson
+                        model.setShowing(_importVariables.get(t), _modelType != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);                        
+                    } else if (t >= 3 && t <= 12) //show 'covariate' variables for Poisson and space-time permutation models only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.POISSON ||
@@ -288,6 +289,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.ORDINAL ||
+                                _modelType == Parameters.ProbabilityModelType.CATEGORICAL ||
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
                                 _modelType == Parameters.ProbabilityModelType.NORMAL ||
                                 _modelType == Parameters.ProbabilityModelType.RANK);
@@ -295,6 +297,10 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
+                    } else if (t >= 15 && t <= 16) //show 'X' and 'Y' variables for H. Poisson model only
+                    {
+                        model.setShowing(_importVariables.get(t),
+                                _modelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
                     } else //default - show variable
                     {
                         model.setShowing(_importVariables.get(t), true);
@@ -380,67 +386,16 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         }
     }
 
-    /** Opens source file as file column variable record length file. */
-    private void previewSourceAsTXVFile() {
-    /*size_t                t;
-    int                   iRecordLength, iMaxLength=0;
-    ZdFileName            fFileName;
-    ZdString              sFieldSection, sFieldName;
-    ZdIniSection          tempSection;
-    ZdIniFile             DataFileDefinition;
-    try {
-    //Define TXV file structure.
-    tempSection.SetName("[FileInfo]");
-    fFileName.SetFullPath(gSourceDescriptor.GetImportFileName());
-    tempSection.AddLine("FileName", fFileName.GetCompleteFileName());
-    tempSection.AddLine("Title", fFileName.GetFileName());
-    tempSection.AddLine("NumberOfFields", IntToStr((int)gvIniSections.size()).c_str());
-    for (t=0; t < gvIniSections.size(); ++t) {
-    iRecordLength = StrToInt(gvIniSections[t].GetString("Length"));
-    iRecordLength += StrToInt(gvIniSections[t].GetString("ByteOffSet"));
-    iMaxLength = max(iRecordLength, iMaxLength);
-    }
-    tempSection.AddLine("RecordLength", IntToStr(iMaxLength).c_str());
-    tempSection.AddLine("StartingCol", "1");
-    DataFileDefinition.AddSection(tempSection.Clone());
-    for (t=0; t < gvIniSections.size(); ++t) {
-    sFieldName.printf("[Field%d]", t + 1);
-    gvIniSections[t].SetName(sFieldName.GetCString());
-    DataFileDefinition.AddSection(gvIniSections[t].Clone());
-    }
-    gpSourceFile = new TXVFile();
-    ((TXVFile*)gpSourceFile)->SetInitialNondataLineCount(gSourceDescriptor.GetNumberOfRowsToIgnore());
-    gpSourceFile->Open(gSourceDescriptor.GetImportFileName(), ZDIO_OPEN_READ|ZDIO_SREAD, 0, 0, &DataFileDefinition);
-    }
-    catch (TXVFile::InitialNondataLineCountInvalidForData_Exception &x) {
-    ZdString sMessage;
-    x.AddCallpath("previewSourceAsScanfFile()","TBDlgDataImporter");
-    x.SetLevel(ZdException::Notify);
-    sMessage << "You are attempting to ignore the first " << x.GetSpecifiedCount();
-    sMessage << " lines of a file that contains " << x.GetProvidedByDataCount();
-    sMessage << " lines.\nPlease specify a lesser number of lines to ignore.";
-    x.SetErrorMessage(sMessage);
-    edtIgnoreFirstRows->SetFocus();
-    throw;
-    }
-    catch (ZdException &x) {
-    x.AddCallpath("previewSourceAsTXVFile()","TBDlgDataImporter");
-    throw;
-    }*/
-    }
-
     private ImportDataSource getImportSource() throws FileNotFoundException {
         if (_sourceDataFileType == FileImporter.SourceDataFileType.dBase) {
             return new DBaseImportDataSource(new File(_sourceFile), false);
         } //return new NativeImportDataSource(new File(_sourceFile));
         else if (_sourceDataFileType == FileImporter.SourceDataFileType.Excel) {
             return new XLSImportDataSource(new File(_sourceFile), true);
-        } else if (_sourceFileTypeComboBox.getSelectedIndex() == 0) {
+        } else {
             return new CSVImportDataSource(new File(_sourceFile), _firstRowColumnHeadersCheckBox.isSelected(),
                     '\n', getColumnDelimiter(), getGroupMarker());
-        } else {
-            throw new RuntimeException("Unknown import source file type.");
-        }
+        } 
     }
 
     /** Opening source as specified by file type. */
@@ -448,27 +403,29 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         //set the import tables model to default until we have an instance of the native model avaiable
         _importTableDataTable.setModel(new DefaultTableModel());
 
-        //if (_nativeTableModel != null) {
-        //    _nativeTableModel.freeResources();
-        //    _nativeTableModel = null;
-        //}
-
         //create the table model
         if (_sourceDataFileType == FileImporter.SourceDataFileType.dBase) {
             previewSourceAsDBaseFile();
         } else if (_sourceDataFileType == FileImporter.SourceDataFileType.Excel) {
             previewSourceAsExcelFile();
-        } else if (_sourceFileTypeComboBox.getSelectedIndex() == 0) {
-            previewSourceAsCSVFile();
-        } else if (_sourceFileTypeComboBox.getSelectedIndex() == 1) {
-            previewSourceAsTXVFile();
         } else {
-            throw new RuntimeException("Unknown import source file type.");
-        }
-
+            previewSourceAsCSVFile();
+        } 
         //now assign model to table object
         if (_previewTableModel != null) {
             _importTableDataTable.setModel(_previewTableModel);
+        }
+
+        int widthTotal = 0;
+        //calculate the column widths to fit header/data
+        Vector<Integer> colWidths = new Vector<Integer>();
+        for (int c=0; c < _importTableDataTable.getColumnCount(); ++c) {
+            colWidths.add(AutofitTableColumns.getMaxColumnWidth(_importTableDataTable, c, true, 20));
+            widthTotal += colWidths.lastElement();
+        }   
+        int additional = Math.max(0, _importTableScrollPane.getViewport().getSize().width - widthTotal - 20/*scrollbar width?*/)/colWidths.size();
+        for (int c=0; c < colWidths.size(); ++c) {
+            _importTableDataTable.getColumnModel().getColumn(c).setMinWidth(colWidths.elementAt(c) + additional);            
         }
     }
 
@@ -483,12 +440,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         if (_showingCard == null) {
             return;
         } else if (_showingCard.equals(_fileFormatCardName)) {
-            nextButton.setEnabled(_sourceFileTypeComboBox.getSelectedIndex() == 0 &&
-                    !_errorSamplingSourceFile &&
-                    _sourceFileTypeComboBox.getSelectedIndex() == 0 &&
-                    (_otherRadioButton.isSelected() ? _otherFieldSeparatorTextField.getText().length() > 0 : true) /*(rdoFileType->ItemIndex == 2 ||
-                    (rdoFileType->ItemIndex == 0 && cmbColDelimiter->GetTextLen()) ||
-                    (rdoFileType->ItemIndex == 1 &&  lstFixedColFieldDefs->Items->Count > 0))*/);
+            nextButton.setEnabled(!_errorSamplingSourceFile &&
+                                  (_otherRadioButton.isSelected() ? _otherFieldSeparatorTextField.getText().length() > 0 : true));
         } else if (_showingCard.equals(_dataMappingCardName)) {
             previousButton.setEnabled(_sourceDataFileType != FileImporter.SourceDataFileType.dBase &&
                     _sourceDataFileType != FileImporter.SourceDataFileType.Excel);
@@ -531,7 +484,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         WaitCursor waitCursor = new WaitCursor(this);
         try {
             readDataFileIntoRawDisplayField();
-            showFileTypeFormatOptionsPanel(_sourceFileTypeComboBox.getSelectedIndex() == 0 ? FileImporter.SourceDataFileType.Delimited : FileImporter.SourceDataFileType.Fixed_Column);
+            showFileTypeFormatOptionsPanel(FileImporter.SourceDataFileType.Delimited);
             //edtFieldName->Text = GetFixedColumnFieldName(1, sFieldName).GetCString();
             enableNavigationButtons();
             OnFieldDefinitionChange();
@@ -745,12 +698,28 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             _displayVariablesComboBox.addItem("ordinal");
             _displayVariablesComboBox.addItem("exponential");
             _displayVariablesComboBox.addItem("normal");
-            _displayVariablesComboBox.setSelectedIndex(0);
+            _displayVariablesComboBox.addItem("categorical");
+            _displayVariablesComboBox.addItem("Homogeneous Poisson");
+            switch (_startingModelType) {
+                case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
+                case SPACETIMEPERMUTATION : _displayVariablesComboBox.setSelectedIndex(2); break;
+                case ORDINAL              : _displayVariablesComboBox.setSelectedIndex(3); break;
+                case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(4); break;
+                case NORMAL               : _displayVariablesComboBox.setSelectedIndex(5); break;
+                case CATEGORICAL          : _displayVariablesComboBox.setSelectedIndex(6); break;
+                case HOMOGENEOUSPOISSON   : _displayVariablesComboBox.setSelectedIndex(7); break;    
+                case POISSON              :
+                default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
+            }
         } else if (_fileType == FileImporter.InputFileType.Coordinates || _fileType == FileImporter.InputFileType.SpecialGrid) {
             _displayVariablesComboBox.removeAllItems();
             _displayVariablesComboBox.addItem("Latitude/Longitude Coordinates");
             _displayVariablesComboBox.addItem("Cartesian (x, y) Coordinates");
-            _displayVariablesComboBox.setSelectedIndex(0);
+            switch (_startingCoordinatesType) {
+                case CARTESIAN : _displayVariablesComboBox.setSelectedIndex(1);
+                case LATLON    :   
+                default        : _displayVariablesComboBox.setSelectedIndex(0); 
+            }
         } else {
             _displayVariablesLabel.setEnabled(false);
             _displayVariablesComboBox.setEnabled(false);
@@ -835,6 +804,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
         _importVariables.addElement(new ImportVariable("Attribute", 13, true, null));
         _importVariables.addElement(new ImportVariable("Censored", 14, false, null));
+        _importVariables.addElement(new ImportVariable("X", 1, true, null));
+        _importVariables.addElement(new ImportVariable("Y", 2, true, null));
     }
 
     /**
@@ -959,8 +930,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _ignoreRowsTextField = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         _firstRowColumnHeadersCheckBox = new javax.swing.JCheckBox();
-        jLabel6 = new javax.swing.JLabel();
-        _sourceFileTypeComboBox = new javax.swing.JComboBox();
         _sourceFileTypeOptions = new javax.swing.JPanel();
         _cSVDefsPanel = new javax.swing.JPanel();
         fieldSeparatorGroup = new javax.swing.JPanel();
@@ -972,8 +941,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _groupIndiocatorGroup = new javax.swing.JPanel();
         _doubleQuotesRadioButton = new javax.swing.JRadioButton();
         _singleQuotesRadioButton = new javax.swing.JRadioButton();
-        _fixedColumnDefsPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
         _dataMappingPanel = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         _dataMappingTopPanel = new javax.swing.JPanel();
@@ -983,7 +950,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _fieldMapTable = new javax.swing.JTable();
         _clearSelectionButton = new javax.swing.JButton();
         _dataMappingBottomPanel = new javax.swing.JPanel();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        _importTableScrollPane = new javax.swing.JScrollPane();
         _importTableDataTable = new javax.swing.JTable();
         _outputSettingsPanel = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -1000,11 +967,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _groupIndicatorButtonGroup.add(_singleQuotesRadioButton);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Import Wizard");
+        setTitle("Import Wizard"); // NOI18N
         setModal(true);
         setResizable(false);
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText("Cancel"); // NOI18N
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 _cancelled = true;
@@ -1012,7 +979,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         });
 
-        nextButton.setText("Next >");
+        nextButton.setText("Next >"); // NOI18N
         nextButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1029,7 +996,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         });
 
-        previousButton.setText("< Previous");
+        previousButton.setText("< Previous"); // NOI18N
         previousButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1044,7 +1011,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         });
 
-        executeButton.setText("Execute");
+        executeButton.setText("Execute"); // NOI18N
         executeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1067,15 +1034,15 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
 
         _basePanel.setLayout(new java.awt.CardLayout());
 
-        jLabel1.setText("File Contents:");
+        jLabel1.setText("File Contents:"); // NOI18N
 
         _fileContentsTextArea.setColumns(20);
         _fileContentsTextArea.setRows(5);
         jScrollPane1.setViewportView(_fileContentsTextArea);
 
-        jLabel4.setText("Ignore first");
+        jLabel4.setText("Ignore first"); // NOI18N
 
-        _ignoreRowsTextField.setText("0");
+        _ignoreRowsTextField.setText("0"); // NOI18N
         _ignoreRowsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_ignoreRowsTextField.getText().length() == 0)
@@ -1093,40 +1060,30 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         });
 
-        jLabel5.setText("rows");
+        jLabel5.setText("rows"); // NOI18N
 
-        _firstRowColumnHeadersCheckBox.setText("First row is column name");
+        _firstRowColumnHeadersCheckBox.setText("First row is column name"); // NOI18N
         _firstRowColumnHeadersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _firstRowColumnHeadersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
-        jLabel6.setText("File Type");
-
-        _sourceFileTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Delimited", "Fixed Column" }));
-        _sourceFileTypeComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                showFileTypeFormatOptionsPanel(_sourceFileTypeComboBox.getSelectedIndex() == 0 ? FileImporter.SourceDataFileType.Delimited : FileImporter.SourceDataFileType.Fixed_Column);
-                enableNavigationButtons();
-            }
-        });
 
         _sourceFileTypeOptions.setLayout(new java.awt.CardLayout());
 
         fieldSeparatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Field Separator", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _commaRadioButton.setSelected(true);
-        _commaRadioButton.setText("Comma");
+        _commaRadioButton.setText("Comma"); // NOI18N
         _commaRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _commaRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _semiColonRadioButton.setText("Semicolon");
+        _semiColonRadioButton.setText("Semicolon"); // NOI18N
         _semiColonRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _semiColonRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _whitespaceRadioButton.setText("Whitespace");
+        _whitespaceRadioButton.setText("Whitespace"); // NOI18N
         _whitespaceRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _whitespaceRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _otherRadioButton.setText("Other");
+        _otherRadioButton.setText("Other"); // NOI18N
         _otherRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _otherRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -1175,11 +1132,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _groupIndiocatorGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Group Indicator", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _doubleQuotesRadioButton.setSelected(true);
-        _doubleQuotesRadioButton.setText("Double Quotes");
+        _doubleQuotesRadioButton.setText("Double Quotes"); // NOI18N
         _doubleQuotesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _doubleQuotesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _singleQuotesRadioButton.setText("Single Quotes");
+        _singleQuotesRadioButton.setText("Single Quotes"); // NOI18N
         _singleQuotesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _singleQuotesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -1226,50 +1183,25 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
 
         _sourceFileTypeOptions.add(_cSVDefsPanel, "cvsPanel");
 
-        jLabel2.setText("Not implemented!");
-
-        javax.swing.GroupLayout _fixedColumnDefsPanelLayout = new javax.swing.GroupLayout(_fixedColumnDefsPanel);
-        _fixedColumnDefsPanel.setLayout(_fixedColumnDefsPanelLayout);
-        _fixedColumnDefsPanelLayout.setHorizontalGroup(
-            _fixedColumnDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fixedColumnDefsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addContainerGap(447, Short.MAX_VALUE))
-        );
-        _fixedColumnDefsPanelLayout.setVerticalGroup(
-            _fixedColumnDefsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_fixedColumnDefsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addContainerGap(142, Short.MAX_VALUE))
-        );
-
-        _sourceFileTypeOptions.add(_fixedColumnDefsPanel, "fixedPanel");
-
         javax.swing.GroupLayout _fileFormatPanelLayout = new javax.swing.GroupLayout(_fileFormatPanel);
         _fileFormatPanel.setLayout(_fileFormatPanelLayout);
         _fileFormatPanelLayout.setHorizontalGroup(
             _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_fileFormatPanelLayout.createSequentialGroup()
-                .addGroup(_fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addGroup(_fileFormatPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_sourceFileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(10, 10, 10)
-                        .addComponent(jLabel4)
-                        .addGap(5, 5, 5)
-                        .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(5, 5, 5)
-                        .addComponent(jLabel5)
-                        .addGap(10, 10, 10)
-                        .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)))
+                .addComponent(jLabel1)
                 .addContainerGap())
             .addComponent(_sourceFileTypeOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
             .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .addGroup(_fileFormatPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel4)
+                .addGap(5, 5, 5)
+                .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(5, 5, 5)
+                .addComponent(jLabel5)
+                .addGap(18, 18, 18)
+                .addComponent(_firstRowColumnHeadersCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
+                .addGap(164, 164, 164))
         );
         _fileFormatPanelLayout.setVerticalGroup(
             _fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1279,8 +1211,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_fileFormatPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
-                    .addComponent(_sourceFileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4)
                     .addComponent(jLabel5)
                     .addComponent(_ignoreRowsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1295,7 +1225,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
-        _displayVariablesLabel.setText("Display SaTScan Variables For:");
+        _displayVariablesLabel.setText("Display SaTScan Variables For:"); // NOI18N
 
         _displayVariablesComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         _displayVariablesComboBox.addItemListener(new java.awt.event.ItemListener() {
@@ -1305,10 +1235,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         });
 
+        _fieldMapTable.setRowSelectionAllowed(false);
         _fieldMapTable.setModel(new VariableMappingTableModel(_importVariables));
         jScrollPane2.setViewportView(_fieldMapTable);
 
-        _clearSelectionButton.setText("Clear");
+        _clearSelectionButton.setText("Clear"); // NOI18N
         _clearSelectionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 clearSaTScanVariableFieldIndexes();
@@ -1356,18 +1287,19 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         ));
         _importTableDataTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        jScrollPane3.setViewportView(_importTableDataTable);
+        _importTableDataTable.setRowSelectionAllowed(false);
+        _importTableScrollPane.setViewportView(_importTableDataTable);
 
         javax.swing.GroupLayout _dataMappingBottomPanelLayout = new javax.swing.GroupLayout(_dataMappingBottomPanel);
         _dataMappingBottomPanel.setLayout(_dataMappingBottomPanelLayout);
         _dataMappingBottomPanelLayout.setHorizontalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
+            .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
         );
         _dataMappingBottomPanelLayout.setVerticalGroup(
             _dataMappingBottomPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_dataMappingBottomPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
+                .addComponent(_importTableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1377,7 +1309,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _dataMappingPanel.setLayout(_dataMappingPanelLayout);
         _dataMappingPanelLayout.setHorizontalGroup(
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 541, Short.MAX_VALUE)
         );
         _dataMappingPanelLayout.setVerticalGroup(
             _dataMappingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1386,11 +1318,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
 
         _basePanel.add(_dataMappingPanel, "Mapping Panel");
 
-        jLabel3.setText("Save imported file in directory:");
+        jLabel3.setText("Save imported file in directory:"); // NOI18N
 
         _outputDirectoryTextField.setText(_prefs.get(_prefLastBackup, System.getProperty("user.home")));
 
-        _changeSaveDirectoryButton.setText("Change");
+        _changeSaveDirectoryButton.setText("Change"); // NOI18N
         _changeSaveDirectoryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -1488,11 +1420,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private javax.swing.JTextArea _fileContentsTextArea;
     private javax.swing.JPanel _fileFormatPanel;
     private javax.swing.JCheckBox _firstRowColumnHeadersCheckBox;
-    private javax.swing.JPanel _fixedColumnDefsPanel;
     private javax.swing.ButtonGroup _groupIndicatorButtonGroup;
     private javax.swing.JPanel _groupIndiocatorGroup;
     private javax.swing.JTextField _ignoreRowsTextField;
     private javax.swing.JTable _importTableDataTable;
+    private javax.swing.JScrollPane _importTableScrollPane;
     private javax.swing.JTextField _otherFieldSeparatorTextField;
     private javax.swing.JRadioButton _otherRadioButton;
     private javax.swing.JTextField _outputDirectoryTextField;
@@ -1500,21 +1432,17 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private javax.swing.JProgressBar _progressBar;
     private javax.swing.JRadioButton _semiColonRadioButton;
     private javax.swing.JRadioButton _singleQuotesRadioButton;
-    private javax.swing.JComboBox _sourceFileTypeComboBox;
     private javax.swing.JPanel _sourceFileTypeOptions;
     private javax.swing.JRadioButton _whitespaceRadioButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JButton executeButton;
     private javax.swing.JPanel fieldSeparatorGroup;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JButton nextButton;
     private javax.swing.JButton previousButton;
