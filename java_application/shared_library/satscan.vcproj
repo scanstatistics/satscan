@@ -1607,6 +1607,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\org_satscan_gui_OberservableRegionsFrame.h"
+					>
+				</File>
+				<File
 					RelativePath=".\org_satscan_gui_ParameterSettingsFrame.h"
 					>
 				</File>
