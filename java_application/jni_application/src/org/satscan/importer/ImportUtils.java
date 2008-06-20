@@ -9,6 +9,7 @@
 package org.satscan.importer;
 
 import java.util.Vector;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -111,6 +112,7 @@ public class ImportUtils {
 
         String s;
 
+        sLine = StringUtils.strip(sLine);
         //if the delimiter is a single whitespace character, pre-process the line
         if (sDelimiter.length() == 1 && Character.isWhitespace(sDelimiter.charAt(0))) {
             StringBuilder temp = new StringBuilder();
