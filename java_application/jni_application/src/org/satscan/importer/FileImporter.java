@@ -14,7 +14,7 @@ import org.satscan.app.*;
  */
 public class FileImporter {
     public enum InputFileType      {Case, Control, Population, Coordinates, SpecialGrid, MaxCirclePopulation, AdjustmentsByRR};
-    public enum SourceDataFileType {Delimited, Fixed_Column, dBase, Excel};
+    public enum SourceDataFileType {Delimited, dBase, Excel};
     
     private final InputFileType _fileType;
     private final SourceDataFileType _sourceDataFileType;
