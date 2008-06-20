@@ -46,6 +46,19 @@ public class Utils {
     }
 
     /**
+     * Validates that key typed is a positive integer, period, minus or back space; otherwise consumes key.
+     */
+    public static void validateFloatKeyTyped(JTextField thisField, java.awt.event.KeyEvent e, int maxFieldLength) {
+        if (!(Character.isDigit(e.getKeyChar()) || e.getKeyChar() == '\b' || e.getKeyChar() == '-' || e.getKeyChar() == '.')) {
+            e.consume();
+            return;
+        }
+        if (thisField.getSelectedText() == null && thisField.getText().length() >= maxFieldLength) {
+            e.consume();
+        }
+    }    
+    
+    /**
      * validates date controls represented by three passed edit controls - prevents an invalid date
      */
     public static void validateDateControlGroup(JTextField YearControl, JTextField MonthControl, JTextField DayControl, UndoManager undo) {
