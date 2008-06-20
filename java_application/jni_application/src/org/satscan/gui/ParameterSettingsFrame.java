@@ -18,6 +18,7 @@ import org.satscan.utils.FileAccess;
 import org.satscan.importer.FileImporter;
 import org.satscan.app.ParameterHistory;
 import org.satscan.app.Parameters;
+import org.satscan.app.RegionFeaturesException;
 import org.satscan.app.UnknownEnumException;
 import org.satscan.gui.ImportWizardDialog;
 import org.satscan.gui.utils.InputFileFilter;
@@ -32,6 +33,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private Parameters _parameters = new Parameters();
     private Parameters _initialParameters = new Parameters();
     private AdvancedParameterSettingsFrame _advancedParametersSetting = null;
+    private OberservableRegionsFrame _oberservableRegionsFrame = null;
     private boolean gbPromptOnExist = true;
     private int _stickyStudyPeriodStartDateMonth = 12;
     private int _stickyStudyPeriodStartDateDay = 1;
@@ -62,6 +64,27 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     public void setAdvancedParametersWindowVisible(boolean b) {
         getAdvancedParameterInternalFrame().setVisible(b, null);
+    }
+
+        /**
+     * Returns whether the associated AdvancedParameterSettingsFrame object is visible.
+     */
+    public boolean isObservableRegionsParametersWindowVisible() {
+        return getAdvancedParameterInternalFrame().isVisible();
+    }
+
+    /**
+     * Set the associated AdvancedParameterSettingsFrame object to not visible.
+     */
+    public void setObservableRegionsParametersWindowVisible(boolean b) {
+        getAdvancedParameterInternalFrame().setVisible(b, null);
+    }
+
+    /**
+     * Returns reference to associated obserbable regions parameters frame.
+     */
+    private OberservableRegionsFrame geObservableRegionsParameterInternalFrame() {
+        return _oberservableRegionsFrame;
     }
 
     /**
@@ -116,6 +139,20 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         return _advancedParametersSetting;
     }
 
+    /**
+     * If necessary, removes from from iconized state and brings to front.
+     */
+    public void focusWindow() {
+        if (this.isIcon()) {
+            try {
+                this.setIcon(false);
+            } catch (PropertyVetoException e) {
+                return;
+            }
+        }
+        toFront();
+    }
+    
     /** Determines whether window can be closed by comparing parameter settings contained
      * in window verse intial parameter settings. */
     public boolean QueryWindowCanClose() {
@@ -127,14 +164,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 getAdvancedParameterInternalFrame().setVisible(false, null);
             //return false;
             }
-            if (this.isIcon()) {
-                try {
-                    this.setIcon(false);
-                } catch (PropertyVetoException e) {
-                    return false;
-                }
-            }
-            toFront();
+            focusWindow();
             switch (JOptionPane.showInternalConfirmDialog(this, "Parameter settings have changed. Do you want to save?", "Save?", JOptionPane.YES_NO_CANCEL_OPTION)) {
                 case JOptionPane.YES_OPTION:
                     if (WriteSession("")) {
@@ -565,6 +595,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             CheckAnalysisParams();
             CheckOutputParams();
         } catch (SettingsException e) {
+            focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());
             e.setControlFocus();
             return false;
@@ -572,9 +603,20 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         try {
             getAdvancedParameterInternalFrame().Validate();
         } catch (AdvFeaturesExpection e) {
+            focusWindow();
             JOptionPane.showInternalMessageDialog(this, e.getMessage());
             getAdvancedParameterInternalFrame().setVisible(e.focusTab, e.focusComponent);
             enableAdvancedButtons();
+            return false;
+        }
+        try {
+            if (getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON)
+                geObservableRegionsParameterInternalFrame().Validate();
+        } catch (RegionFeaturesException e) {
+            focusWindow();
+            JOptionPane.showInternalMessageDialog(this, e.getMessage());
+            geObservableRegionsParameterInternalFrame().selectRegionAtIndex(e._regionIndex);
+            geObservableRegionsParameterInternalFrame().setVisible(true);
             return false;
         }
         return true;
@@ -585,6 +627,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     private void setupInterface(final Parameters parameters) {
         _advancedParametersSetting = new AdvancedParameterSettingsFrame(_rootPane, this, parameters);
+        _oberservableRegionsFrame = new OberservableRegionsFrame(_rootPane, this, parameters);
 
         title = parameters.GetSourceFileName();
         if (title == null || title.length() == 0) {
@@ -730,6 +773,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetOutputSimLogLikeliRatiosAscii(_simulatedLogLikelihoodRatiosAsciiCheckBox.isSelected());
         parameters.SetOutputSimLogLikeliRatiosDBase(_simulatedLogLikelihoodRatiosDBaseCheckBox.isSelected());
         getAdvancedParameterInternalFrame().SaveParameterSettings(parameters);
+        geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
     }
 
     /**
@@ -913,8 +957,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         enableDatesByTimePrecisionUnits();
         enableTimeAggregationGroup(eAnalysisType != Parameters.AnalysisType.PURELYSPATIAL);
         enableAdditionalOutFilesOptionsGroup(eModelType != Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
+                eModelType != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON &&
                 eAnalysisType != Parameters.AnalysisType.PURELYTEMPORAL &&
                 eAnalysisType != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
+        _observableRegionsButton.setEnabled(eModelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
         getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();
     }
 
@@ -1259,6 +1305,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _normalModelRadioButton = new javax.swing.JRadioButton();
         _categoricallModelRadioButton = new javax.swing.JRadioButton();
         _homogeneouspoissonModelRadioButton = new javax.swing.JRadioButton();
+        _observableRegionsButton = new javax.swing.JButton();
         _scanAreasGroup = new javax.swing.JPanel();
         _highRatesRadioButton = new javax.swing.JRadioButton();
         _lowRatesRadioButton = new javax.swing.JRadioButton();
@@ -1337,10 +1384,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _caseInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        _caseFileLabel.setText("Case File:");
+        _caseFileLabel.setText("Case File:"); // NOI18N
 
-        _caseFileBrowseButton.setText("...");
-        _caseFileBrowseButton.setToolTipText("Browse for case file ...");
+        _caseFileBrowseButton.setText("..."); // NOI18N
+        _caseFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -1355,8 +1402,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _caseFileImportButton.setText("...");
-        _caseFileImportButton.setToolTipText("Import case file ...");
+        _caseFileImportButton.setText("..."); // NOI18N
+        _caseFileImportButton.setToolTipText("Import case file ..."); // NOI18N
         _caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1380,7 +1427,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _timePrecisionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Time Precision", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _timePrecisionNone.setText("None");
+        _timePrecisionNone.setText("None"); // NOI18N
         _timePrecisionNone.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timePrecisionNone.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timePrecisionNone.addItemListener(new java.awt.event.ItemListener() {
@@ -1391,7 +1438,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _timePrecisionYear.setSelected(true);
-        _timePrecisionYear.setText("Year");
+        _timePrecisionYear.setText("Year"); // NOI18N
         _timePrecisionYear.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timePrecisionYear.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timePrecisionYear.addItemListener(new java.awt.event.ItemListener() {
@@ -1401,7 +1448,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _timePrecisionMonth.setText("Month");
+        _timePrecisionMonth.setText("Month"); // NOI18N
         _timePrecisionMonth.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timePrecisionMonth.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timePrecisionMonth.addItemListener(new java.awt.event.ItemListener() {
@@ -1411,7 +1458,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _timePrecisionDay.setText("Day");
+        _timePrecisionDay.setText("Day"); // NOI18N
         _timePrecisionDay.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timePrecisionDay.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timePrecisionDay.addItemListener(new java.awt.event.ItemListener() {
@@ -1450,9 +1497,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _startDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _startDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _startDateYearLabel.setText("Year");
+        _startDateYearLabel.setText("Year"); // NOI18N
 
-        _studyPeriodStartDateYearTextField.setText("2000");
+        _studyPeriodStartDateYearTextField.setText("2000"); // NOI18N
         _studyPeriodStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -1469,13 +1516,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _startDateLabel.setText("Start Date:");
+        _startDateLabel.setText("Start Date:"); // NOI18N
 
         _startDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _startDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _startDateMonthLabel.setText("Month");
+        _startDateMonthLabel.setText("Month"); // NOI18N
 
-        _studyPeriodStartDateMonthTextField.setText("01");
+        _studyPeriodStartDateMonthTextField.setText("01"); // NOI18N
         _studyPeriodStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -1494,9 +1541,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _startDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _startDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _startDateDayLabel.setText("Day");
+        _startDateDayLabel.setText("Day"); // NOI18N
 
-        _studyPeriodStartDateDayTextField.setText("01");
+        _studyPeriodStartDateDayTextField.setText("01"); // NOI18N
         _studyPeriodStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -1513,9 +1560,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _endDateLabel.setText("End Date:");
+        _endDateLabel.setText("End Date:"); // NOI18N
 
-        _studyPeriodEndDateYearTextField.setText("2000");
+        _studyPeriodEndDateYearTextField.setText("2000"); // NOI18N
         _studyPeriodEndDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -1528,19 +1575,19 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
         _studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);
+                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);
             }
         });
 
         _endDateYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _endDateYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _endDateYearLabel.setText("Year");
+        _endDateYearLabel.setText("Year"); // NOI18N
 
         _endDateMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _endDateMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _endDateMonthLabel.setText("Month");
+        _endDateMonthLabel.setText("Month"); // NOI18N
 
-        _studyPeriodEndDateMonthTextField.setText("12");
+        _studyPeriodEndDateMonthTextField.setText("12"); // NOI18N
         _studyPeriodEndDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -1553,11 +1600,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
         _studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);
+                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);
             }
         });
 
-        _studyPeriodEndDateDayTextField.setText("31");
+        _studyPeriodEndDateDayTextField.setText("31"); // NOI18N
         _studyPeriodEndDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -1565,18 +1612,18 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
         _studyPeriodEndDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);
+                Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateDayTextField, e, 2);
             }
         });
         _studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);
+                Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);
             }
         });
 
         _endDateDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _endDateDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _endDateDayLabel.setText("Day");
+        _endDateDayLabel.setText("Day"); // NOI18N
 
         javax.swing.GroupLayout _studyPeriodGroupLayout = new javax.swing.GroupLayout(_studyPeriodGroup);
         _studyPeriodGroup.setLayout(_studyPeriodGroupLayout);
@@ -1636,10 +1683,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _controlFileLabel.setText("Control File:");
+        _controlFileLabel.setText("Control File:"); // NOI18N
 
-        _controlFileBrowseButton.setText("...");
-        _controlFileBrowseButton.setToolTipText("Browse for control file ...");
+        _controlFileBrowseButton.setText("..."); // NOI18N
+        _controlFileBrowseButton.setToolTipText("Browse for control file ..."); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -1654,8 +1701,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _controlFileImportButton.setText("...");
-        _controlFileImportButton.setToolTipText("Import control file ...");
+        _controlFileImportButton.setText("..."); // NOI18N
+        _controlFileImportButton.setToolTipText("Import control file ..."); // NOI18N
         _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1677,7 +1724,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _bernoulliModelHintLabel.setText("(Bernoulli Model)");
+        _bernoulliModelHintLabel.setText("(Bernoulli Model)"); // NOI18N
 
         javax.swing.GroupLayout _caseInputPanelLayout = new javax.swing.GroupLayout(_caseInputPanel);
         _caseInputPanel.setLayout(_caseInputPanelLayout);
@@ -1739,10 +1786,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _populationFileLabel.setText("Population File:");
+        _populationFileLabel.setText("Population File:"); // NOI18N
 
-        _populationFileBrowseButton.setText("...");
-        _populationFileBrowseButton.setToolTipText("Browse for population file ...");
+        _populationFileBrowseButton.setText("..."); // NOI18N
+        _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -1757,7 +1804,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _populationFileImportButton.setText("Import population file ...");
+        _populationFileImportButton.setText("Import population file ..."); // NOI18N
         _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1779,7 +1826,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _poissionModelHintLabel.setText("(Poisson Model)");
+        _poissionModelHintLabel.setText("(Poisson Model)"); // NOI18N
 
         javax.swing.GroupLayout _populationInputPanelLayout = new javax.swing.GroupLayout(_populationInputPanel);
         _populationInputPanel.setLayout(_populationInputPanelLayout);
@@ -1816,10 +1863,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _geographicalInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        _coordinatesFileLabel.setText("Coordiantes File:");
+        _coordinatesFileLabel.setText("Coordiantes File:"); // NOI18N
 
-        _coordinatesFileBrowseButton.setText("...");
-        _coordinatesFileBrowseButton.setToolTipText("Browse for coordinates file ...");
+        _coordinatesFileBrowseButton.setText("..."); // NOI18N
+        _coordinatesFileBrowseButton.setToolTipText("Browse for coordinates file ..."); // NOI18N
         _coordinatesFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -1834,8 +1881,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _coodrinatesFileImportButton.setText("...");
-        _coodrinatesFileImportButton.setToolTipText("Import coordinates file ...");
+        _coodrinatesFileImportButton.setText("..."); // NOI18N
+        _coodrinatesFileImportButton.setToolTipText("Import coordinates file ..."); // NOI18N
         _coodrinatesFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1860,7 +1907,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _coordinateTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Coordinates", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _cartesianRadioButton.setSelected(true);
-        _cartesianRadioButton.setText("Cartesian");
+        _cartesianRadioButton.setText("Cartesian"); // NOI18N
         _cartesianRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _cartesianRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -1872,7 +1919,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _latLongRadioButton.setText("Lat/Long");
+        _latLongRadioButton.setText("Lat/Long"); // NOI18N
         _latLongRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _latLongRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -1904,10 +1951,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap())
         );
 
-        _gridFileLabel.setText("Grid File:");
+        _gridFileLabel.setText("Grid File:"); // NOI18N
 
-        _gridFileBrowseButton.setText("...");
-        _gridFileBrowseButton.setToolTipText("Browse for grid file ...");
+        _gridFileBrowseButton.setText("..."); // NOI18N
+        _gridFileBrowseButton.setToolTipText("Browse for grid file ..."); // NOI18N
         _gridFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -1922,8 +1969,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _gridFileImportButton.setText("...");
-        _gridFileImportButton.setToolTipText("Import grid file ...");
+        _gridFileImportButton.setText("..."); // NOI18N
+        _gridFileImportButton.setToolTipText("Import grid file ..."); // NOI18N
         _gridFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -1993,7 +2040,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _advancedInputButton.setText("Advanced >>");
+        _advancedInputButton.setText("Advanced >>"); // NOI18N
         _advancedInputButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.INPUT);
@@ -2031,12 +2078,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _analysisTypeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Type of Analysis", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        jLabel1.setText("Retrospective Analyses:");
+        jLabel1.setText("Retrospective Analyses:"); // NOI18N
 
-        jLabel2.setText("Prospective Analyses:");
+        jLabel2.setText("Prospective Analyses:"); // NOI18N
 
         _retrospectivePurelySpatialRadioButton.setSelected(true);
-        _retrospectivePurelySpatialRadioButton.setText("Purely Spatial");
+        _retrospectivePurelySpatialRadioButton.setText("Purely Spatial"); // NOI18N
         _retrospectivePurelySpatialRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _retrospectivePurelySpatialRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _retrospectivePurelySpatialRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2048,7 +2095,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _retrospectivePurelyTemporalRadioButton.setText("Purely Temporal");
+        _retrospectivePurelyTemporalRadioButton.setText("Purely Temporal"); // NOI18N
         _retrospectivePurelyTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _retrospectivePurelyTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _retrospectivePurelyTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2060,7 +2107,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _retrospectiveSpaceTimeRadioButton.setText("Space-Time");
+        _retrospectiveSpaceTimeRadioButton.setText("Space-Time"); // NOI18N
         _retrospectiveSpaceTimeRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _retrospectiveSpaceTimeRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _retrospectiveSpaceTimeRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2072,7 +2119,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _prospectivePurelyTemporalRadioButton.setText("Purely Temporal");
+        _prospectivePurelyTemporalRadioButton.setText("Purely Temporal"); // NOI18N
         _prospectivePurelyTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _prospectivePurelyTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _prospectivePurelyTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2084,7 +2131,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _prospectiveSpaceTimeRadioButton.setText("Space-Time");
+        _prospectiveSpaceTimeRadioButton.setText("Space-Time"); // NOI18N
         _prospectiveSpaceTimeRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _prospectiveSpaceTimeRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _prospectiveSpaceTimeRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2134,13 +2181,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_prospectivePurelyTemporalRadioButton)
                 .addGap(20, 20, 20)
                 .addComponent(_prospectiveSpaceTimeRadioButton)
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
 
         _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _poissonModelRadioButton.setSelected(true);
-        _poissonModelRadioButton.setText("Poission");
+        _poissonModelRadioButton.setText("Poission"); // NOI18N
         _poissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _poissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _poissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2150,7 +2197,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _bernoulliModelRadioButton.setText("Bernoulli");
+        _bernoulliModelRadioButton.setText("Bernoulli"); // NOI18N
         _bernoulliModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _bernoulliModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _bernoulliModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2160,7 +2207,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _spaceTimePermutationModelRadioButton.setText("Space-Time Permutation");
+        _spaceTimePermutationModelRadioButton.setText("Space-Time Permutation"); // NOI18N
         _spaceTimePermutationModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _spaceTimePermutationModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _spaceTimePermutationModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2170,7 +2217,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _ordinalModelRadioButton.setText("Ordinal");
+        _ordinalModelRadioButton.setText("Ordinal"); // NOI18N
         _ordinalModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _ordinalModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _ordinalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2180,7 +2227,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _exponentialModelRadioButton.setText("Exponential");
+        _exponentialModelRadioButton.setText("Exponential"); // NOI18N
         _exponentialModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _exponentialModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _exponentialModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2190,7 +2237,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _normalModelRadioButton.setText("Normal");
+        _normalModelRadioButton.setText("Normal"); // NOI18N
         _normalModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _normalModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _normalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2200,7 +2247,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _categoricallModelRadioButton.setText("Categorical");
+        _categoricallModelRadioButton.setText("Categorical"); // NOI18N
         _categoricallModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _categoricallModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _categoricallModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2210,13 +2257,21 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _homogeneouspoissonModelRadioButton.setText("Homogeneous Poisson");
+        _homogeneouspoissonModelRadioButton.setText("Homogeneous Poisson"); // NOI18N
         _homogeneouspoissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _homogeneouspoissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
                 onProbabilityModelTypeClick();
+            }
+        });
+
+        _observableRegionsButton.setText("_defineRegionsButton");
+        _observableRegionsButton.setToolTipText("Define regions ...");
+        _observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                geObservableRegionsParameterInternalFrame().setVisible(true);
             }
         });
 
@@ -2234,8 +2289,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_exponentialModelRadioButton)
                     .addComponent(_normalModelRadioButton)
                     .addComponent(_categoricallModelRadioButton)
-                    .addComponent(_homogeneouspoissonModelRadioButton))
-                .addContainerGap(13, Short.MAX_VALUE))
+                    .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
+                        .addComponent(_homogeneouspoissonModelRadioButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _probabilityModelGroupLayout.setVerticalGroup(
             _probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2245,7 +2303,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_bernoulliModelRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_spaceTimePermutationModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addComponent(_ordinalModelRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_exponentialModelRadioButton)
@@ -2254,22 +2312,24 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_categoricallModelRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_homogeneouspoissonModelRadioButton)
+                .addGroup(_probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_homogeneouspoissonModelRadioButton)
+                    .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(39, 39, 39))
         );
 
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Scan For Areas With:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _highRatesRadioButton.setSelected(true);
-        _highRatesRadioButton.setText("High Rates");
+        _highRatesRadioButton.setText("High Rates"); // NOI18N
         _highRatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _highRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _lowRatesRadioButton.setText("Low Rates");
+        _lowRatesRadioButton.setText("Low Rates"); // NOI18N
         _lowRatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _lowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _highOrLowRatesRadioButton.setText("High or Low Rates");
+        _highOrLowRatesRadioButton.setText("High or Low Rates"); // NOI18N
         _highOrLowRatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _highOrLowRatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
@@ -2283,7 +2343,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_highRatesRadioButton)
                     .addComponent(_lowRatesRadioButton)
                     .addComponent(_highOrLowRatesRadioButton))
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(36, Short.MAX_VALUE))
         );
         _scanAreasGroupLayout.setVerticalGroup(
             _scanAreasGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2298,10 +2358,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _timeAggregationGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Time Aggregation", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _timeAggregationUnitsLabel.setText("Units:");
+        _timeAggregationUnitsLabel.setText("Units:"); // NOI18N
 
         _timeAggregationYearRadioButton.setSelected(true);
-        _timeAggregationYearRadioButton.setText("Year");
+        _timeAggregationYearRadioButton.setText("Year"); // NOI18N
         _timeAggregationYearRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timeAggregationYearRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timeAggregationYearRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2313,7 +2373,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _timeAggregationMonthRadioButton.setText("Month");
+        _timeAggregationMonthRadioButton.setText("Month"); // NOI18N
         _timeAggregationMonthRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timeAggregationMonthRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timeAggregationMonthRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2325,7 +2385,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _timeAggregationDayRadioButton.setText("Day");
+        _timeAggregationDayRadioButton.setText("Day"); // NOI18N
         _timeAggregationDayRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timeAggregationDayRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timeAggregationDayRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2337,9 +2397,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _timeAggregationLengthLabel.setText("Length:");
+        _timeAggregationLengthLabel.setText("Length:"); // NOI18N
 
-        _timeAggregationLengthTextField.setText("1");
+        _timeAggregationLengthTextField.setText("1"); // NOI18N
         _timeAggregationLengthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_timeAggregationLengthTextField.getText().length() == 0)
@@ -2357,7 +2417,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _aggregrationUnitsLabel.setText("Years");
+        _aggregrationUnitsLabel.setText("Years"); // NOI18N
 
         javax.swing.GroupLayout _timeAggregationGroupLayout = new javax.swing.GroupLayout(_timeAggregationGroup);
         _timeAggregationGroup.setLayout(_timeAggregationGroupLayout);
@@ -2379,7 +2439,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationLengthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_aggregrationUnitsLabel)))
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addContainerGap(19, Short.MAX_VALUE))
         );
         _timeAggregationGroupLayout.setVerticalGroup(
             _timeAggregationGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2396,19 +2456,19 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_timeAggregationLengthLabel)
                     .addComponent(_timeAggregationLengthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_aggregrationUnitsLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
-        _advancedAnalysisButton.setText("Advanced >>");
+        _advancedAnalysisButton.setText("Advanced >>"); // NOI18N
         _advancedAnalysisButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.ANALYSIS);
             }
         });
 
-        jLabel3.setText("Monte Carlo Replications (0, 9, 999, or value ending in 999):");
+        jLabel3.setText("Monte Carlo Replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
-        _montCarloReplicationsTextField.setText("999");
+        _montCarloReplicationsTextField.setText("999"); // NOI18N
         _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 while (_montCarloReplicationsTextField.getText().length() == 0)
@@ -2444,7 +2504,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(81, Short.MAX_VALUE))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _analysisTabLayout = new javax.swing.GroupLayout(_analysisTab);
@@ -2461,8 +2521,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_scanAreasGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_scanAreasGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(_advancedAnalysisButton))
                 .addContainerGap())
         );
@@ -2486,9 +2546,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _tabbedPane.addTab("Analysis", _analysisTab);
 
-        _resultsFileLabel.setText("Results File:");
+        _resultsFileLabel.setText("Results File:"); // NOI18N
 
-        _resultsFileBrowseButton.setText("...");
+        _resultsFileBrowseButton.setText("..."); // NOI18N
         _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2502,11 +2562,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         __additionalOutputFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Output Files", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _asciiLabel.setText("ASCII");
+        _asciiLabel.setText("ASCII"); // NOI18N
 
-        _dBaseLabel.setText("dBase");
+        _dBaseLabel.setText("dBase"); // NOI18N
 
-        _clustersInColumnFormatLabel.setText("Cluster Information");
+        _clustersInColumnFormatLabel.setText("Cluster Information"); // NOI18N
 
         _clustersInColumnFormatAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _clustersInColumnFormatAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2514,7 +2574,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clustersInColumnFormatDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _clustersInColumnFormatDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _clusterCaseInColumnFormatLabel.setText("Cluster Case Information");
+        _clusterCaseInColumnFormatLabel.setText("Cluster Case Information"); // NOI18N
 
         _clusterCaseInColumnFormatAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _clusterCaseInColumnFormatAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2522,7 +2582,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clusterCaseInColumnFormatDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _clusterCaseInColumnFormatDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _censusAreasReportedClustersLabel.setText("Location Information");
+        _censusAreasReportedClustersLabel.setText("Location Information"); // NOI18N
 
         _censusAreasReportedClustersAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _censusAreasReportedClustersAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2530,7 +2590,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _censusAreasReportedClustersDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _censusAreasReportedClustersDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _relativeRiskEstimatesAreaLabel.setText("Risk Estimates for Each Location");
+        _relativeRiskEstimatesAreaLabel.setText("Risk Estimates for Each Location"); // NOI18N
 
         _relativeRiskEstimatesAreaAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _relativeRiskEstimatesAreaAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2538,7 +2598,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _relativeRiskEstimatesAreaDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _relativeRiskEstimatesAreaDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios/Test Statistics");
+        _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios/Test Statistics"); // NOI18N
 
         _simulatedLogLikelihoodRatiosAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _simulatedLogLikelihoodRatiosAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2630,7 +2690,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _advancedFeaturesOutputButton.setText("Advanced >>");
+        _advancedFeaturesOutputButton.setText("Advanced >>"); // NOI18N
         _advancedFeaturesOutputButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.OUTPUT);
@@ -2742,6 +2802,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _lowRatesRadioButton;
     private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JRadioButton _normalModelRadioButton;
+    private javax.swing.JButton _observableRegionsButton;
     private javax.swing.JRadioButton _ordinalModelRadioButton;
     private javax.swing.JPanel _outputTab;
     private javax.swing.JLabel _poissionModelHintLabel;

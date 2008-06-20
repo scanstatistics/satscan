@@ -488,7 +488,7 @@
                         <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodEndDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);&#xa;    }&#xa;});&#xa;"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_studyPeriodEndDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);&#xa;    }&#xa;});&#xa;"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_endDateYearLabel">
@@ -514,7 +514,7 @@
                         <Property name="text" type="java.lang.String" value="12" noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;            public void undoableEditHappened(UndoableEditEvent evt) {&#xa;                undo.addEdit(evt.getEdit());&#xa;            }&#xa;        });&#xa;_studyPeriodEndDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);&#xa;    }&#xa;});&#xa;        "/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;            public void undoableEditHappened(UndoableEditEvent evt) {&#xa;                undo.addEdit(evt.getEdit());&#xa;            }&#xa;        });&#xa;_studyPeriodEndDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);&#xa;    }&#xa;});&#xa;        "/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_studyPeriodEndDateDayTextField">
@@ -522,7 +522,7 @@
                         <Property name="text" type="java.lang.String" value="31" noResource="true"/>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;            public void undoableEditHappened(UndoableEditEvent evt) {&#xa;                undo.addEdit(evt.getEdit());&#xa;            }&#xa;        });&#xa;_studyPeriodEndDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateYearTextField, undo);&#xa;    }&#xa;});&#xa;                "/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodEndDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;            public void undoableEditHappened(UndoableEditEvent evt) {&#xa;                undo.addEdit(evt.getEdit());&#xa;            }&#xa;        });&#xa;_studyPeriodEndDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_studyPeriodEndDateDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_studyPeriodEndDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, undo);&#xa;    }&#xa;});&#xa;                "/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JLabel" name="_endDateDayLabel">
@@ -871,8 +871,8 @@
                               <Component id="_probabilityModelGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="_scanAreasGroup" max="32767" attributes="0"/>
                                   <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
+                                  <Component id="_scanAreasGroup" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="_advancedAnalysisButton" alignment="1" min="-2" max="-2" attributes="0"/>
@@ -962,7 +962,7 @@
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="34" max="32767" attributes="0"/>
+                          <EmptySpace pref="38" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1088,9 +1088,13 @@
                               <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_categoricallModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_homogeneouspoissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace pref="13" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1102,7 +1106,7 @@
                           <Component id="_bernoulliModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_spaceTimePermutationModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="9" max="32767" attributes="0"/>
+                          <EmptySpace pref="12" max="32767" attributes="0"/>
                           <Component id="_ordinalModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
@@ -1111,7 +1115,10 @@
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_categoricallModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+                          </Group>
                           <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
                       </Group>
                   </Group>
@@ -1247,6 +1254,15 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
+                <Component class="javax.swing.JButton" name="_observableRegionsButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="_defineRegionsButton"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Define regions ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        geObservableRegionsParameterInternalFrame().setVisible(true);&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="_scanAreasGroup">
@@ -1273,7 +1289,7 @@
                               <Component id="_lowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_highOrLowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="52" max="32767" attributes="0"/>
+                          <EmptySpace pref="36" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1370,7 +1386,7 @@
                                   <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="35" max="32767" attributes="0"/>
+                          <EmptySpace pref="19" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1391,7 +1407,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="15" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1501,7 +1517,7 @@
                               <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_montCarloReplicationsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="81" max="32767" attributes="0"/>
+                          <EmptySpace pref="77" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
