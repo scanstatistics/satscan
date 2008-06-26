@@ -24,9 +24,9 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="_inequalitiesPanel" alignment="0" min="0" pref="375" max="32767" attributes="1"/>
-                  <Component id="_regionsPanel" alignment="1" min="-2" pref="373" max="-2" attributes="1"/>
+                  <Component id="_inequalitiesPanel" alignment="0" min="0" max="32767" attributes="1"/>
                   <Component id="_closeButton" alignment="1" min="-2" pref="70" max="-2" attributes="1"/>
+                  <Component id="_regionsPanel" alignment="0" pref="395" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -225,7 +225,7 @@
                   <Component id="_interceptTextField" min="-2" pref="32" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="_updateInequalityButton" min="-2" max="-2" attributes="1"/>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="23" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -233,16 +233,16 @@
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="_ycoefficientTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_variableSelectComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_inequalitySelectComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_xcoefficientTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="_ycoefficientTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="_variableSelectComboBox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="_inequalitySelectComboBox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="_xcoefficientTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                       <Component id="_xcoefficientLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_plusMinusComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_interceptTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_updateInequalityButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="_plusMinusComboBox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="_interceptTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                      <Component id="_updateInequalityButton" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="35" max="32767" attributes="0"/>
+                  <EmptySpace pref="21" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
