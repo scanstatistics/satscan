@@ -389,7 +389,7 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
 }
 
 bool CParameters::GetPermitsCentricExecution() const {
- return  !(GetIsPurelyTemporalAnalysis() ||
+ return  !(GetIsPurelyTemporalAnalysis() || GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
           (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
           (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||
            GetTerminateSimulationsEarly() || UseLocationNeighborsFile() || UsingMultipleCoordinatesMetaLocations());
