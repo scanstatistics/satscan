@@ -139,6 +139,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib $(NOINHERIT)"
+				OutputFile="$(OutDir)\SaTScanBatch.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
 				SubSystem="1"
