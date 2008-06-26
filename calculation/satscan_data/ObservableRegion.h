@@ -2,8 +2,6 @@
 #ifndef __SCAN_REGION_H
 #define __SCAN_REGION_H
 //*****************************************************************************
-#pragma once
-
 #include <vector>
 #include "RandomDistribution.h"
 
