@@ -22,10 +22,6 @@
 
 typedef unsigned long Julian;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 double          CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrecisionType eUnits, int iIntervalLength);
 int             CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
 Julian          CharToJulian(const char* szDateString);
@@ -61,9 +57,6 @@ class DecrementableEndDate {
 
     Julian              Decrement(unsigned long ulLength);
 };
-#ifdef __cplusplus
-}
-#endif
 
 //*****************************************************************************
 #endif
