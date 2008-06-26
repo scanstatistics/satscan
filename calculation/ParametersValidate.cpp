@@ -47,16 +47,6 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                             "When using the non-Eucledian neighbors file, the criteria for reporting secondary clusters "
                             "can either be set to 'no restrictions' or 'no geographical overlap'.\n", BasePrint::P_PARAMERROR);
     }
-    if (gParameters.GetOutputRelativeRisksFiles() && 
-        (gParameters.GetProbabilityModelType() == ORDINAL || 
-         gParameters.GetProbabilityModelType() == CATEGORICAL ||
-         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The additional output file for risk estimates is not permitted for %s model.\n", 
-                            BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-    }
-
     if (!ValidateExecutionTypeParameters(PrintDirection))
       bValid = false;
     //validate dates
@@ -80,6 +70,9 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (! ValidateFileParameters(PrintDirection))
       bValid = false;
 
+    if (! ValidateOutputOptionParameters(PrintDirection))
+      bValid = false;
+
     //validate model parameters
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
       if (!(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PROSPECTIVESPACETIME)) {
@@ -88,8 +81,6 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                               "For the %s model, the analysis type must be either Retrospective or Prospective Space-Time.\n",
                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
       }
-      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
-      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
     }
     //validate range parameters
     if (! ValidateRangeParameters(PrintDirection))
@@ -657,6 +648,29 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
   if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) return true;
 
   try { 
+    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
+        gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
+        bReturn = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum spatial cluster size can not be specified interms of as percentage\n"
+                              "of population defined in maximum circle file. This feature is not implemented for %s model.\n", 
+                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }
+    if (gParameters.GetExecutionType() == CENTRICALLY) {
+      bReturn = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nCentric analysis execution is not a valid settings for %s model.\n", 
+                            BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }
+    if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
+      bReturn = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nElliptical scans are not implemented for %s model.\n", 
+                            BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }
+    if (gParameters.GetNumDataSets() > 1) {
+       bReturn = false;
+       PrintDirection.Printf("Invalid Parameter Setting:\nMultiple data sets are not permitted with %s model.\n", 
+                             BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }
+      
     std::vector<ConvexPolygonObservableRegion> polygons;
     // for each region defined, attempt to define region from specifications
     for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
@@ -667,15 +681,12 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
     }
     //test that polygons do not overlap
     for (size_t i=0; i < polygons.size() - 1; ++i) {
-       if (polygons[i].intersectsRegion(polygons[i+1]))
-         throw region_exception("Inequalities define regions that overlapp."
-                                "Please check inequalities and/or redefine to not have overlap.");
+        for (size_t j=i+1; j < polygons.size(); ++j) {
+            if (polygons[i].intersectsRegion(polygons[j]))
+                throw region_exception("Inequalities define regions that overlapp.\n"
+                                       "Please check inequalities and/or redefine to not have overlap.");
+        }
     }
-
-    //TODO: 
-    // -- no maximum circle size using max circle population file
-    // -- more ...
-    // -- limit to one thread for simulation process
   }
   catch (region_exception& x) {
     PrintDirection.Printf("Invalid Parameter Setting:\n%s\n", BasePrint::P_PARAMERROR, x.what());
@@ -686,6 +697,37 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
     throw;
   }
   return bReturn;
+}
+
+/** Validates output options. */
+bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirection) const {
+  try {
+    // Sometime in a previous version, it was decided to just suppress this setting
+    // for situations that don't allow it. 
+    if (gParameters.GetOutputRelativeRisksFiles() &&
+        (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
+      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The additional output file for risk estimates is not permitted for %s model (option was disabled).\n", 
+                            BasePrint::P_WARNING, 
+                            ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }
+    if (gParameters.GetOutputRelativeRisksFiles() && gParameters.GetIsPurelyTemporalAnalysis()) {
+      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
+      const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The additional output file for risk estimates is not permitted for %s analysis.\nThe option was disabled.\n", 
+                            BasePrint::P_WARNING, 
+                            ParametersPrint(gParameters).GetAnalysisTypeAsString());
+    }
+
+  } 
+  catch (prg_exception& x) {
+    x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
+    throw;
+  }
+  return true;
 }
 
 /** Validates power calculation parameters.
@@ -1394,8 +1436,6 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     //the locations neighbor file is irrelevant when analysis type is purely temporal
     if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).UseLocationNeighborsFile(false);
     //since there is not location data, we can no report relative risk estimates per location
-    if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
-    if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
   }
   catch (prg_exception& x) {
     x.addTrace("ValidateTemporalParameters()","ParametersValidate");
