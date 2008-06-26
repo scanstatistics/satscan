@@ -904,7 +904,7 @@ void PopulationData::ReportZeroPops(const CSaTScanData& Data, FILE *pDisplay, Ba
 
     std::vector<float> PopTotalsArray(gvPopulationDates.size());
     for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
-       std::fill(PopTotalsArray.begin(), PopTotalsArray.end(), 0);
+       std::fill(PopTotalsArray.begin(), PopTotalsArray.end(), static_cast<float>(0));
        pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
        while (pCategoryDescriptor) {
           for (j=nPStartIndex; j <= nPEndIndex; j++)

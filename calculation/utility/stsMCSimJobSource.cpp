@@ -5,7 +5,7 @@
 #include "stsMCSimJobSource.h"
 
 const unsigned stsMCSimJobSource::guaAutoAbortCheckPoints[] = { 99, 199, 499, 999 };
-const float stsMCSimJobSource::guaAutoAbortCheckCutoffValues[] = { 0.5, 0.4, 0.2, 0.1 };
+const float stsMCSimJobSource::guaAutoAbortCheckCutoffValues[] = { (float)0.5, (float)0.4, (float)0.2, (float)0.1 };
 //BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckPoints)/sizeof(unsigned))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
 //BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckCutoffValues)/sizeof(float))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
 
