@@ -115,7 +115,7 @@ void test_fn()
   long l=0;
 
   cntor.job_acquired(i, w);
-  cntor.register_result(i, w, l);
+  cntor.register_result(i, w, static_cast<float>(l));
 }
 
 
