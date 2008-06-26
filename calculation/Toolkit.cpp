@@ -76,11 +76,7 @@ const char * AppToolkit::gsDebugFileName = "_debug";
 /** analysis history filename */
 const char * AppToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
 /** Default website. */
-#ifdef _WINDOWS_
-const char * AppToolkit::gsDefaultSaTScanWebSite = "http:/\/www.satscan.org/";
-#else
 const char * AppToolkit::gsDefaultSaTScanWebSite = "http://www.satscan.org/";
-#endif
 /** Default Substantive Support Email. */
 const char * AppToolkit::gsDefaultSubstantiveSupportEmail = "kulldorff@satscan.org";
 /** Default Technical Support Email. */
