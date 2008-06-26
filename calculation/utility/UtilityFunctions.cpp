@@ -72,7 +72,7 @@ boost::posix_time::ptime GetCurrentTime_HighResolution()
   using namespace boost::gregorian;
   SYSTEMTIME stm;
   GetSystemTime(&stm);
-  time_duration::fractional_seconds_type frct_secs = stm.wMilliseconds * pow(static_cast<double>(10), time_duration::num_fractional_digits()-3);
+  time_duration::fractional_seconds_type frct_secs = static_cast<time_duration::fractional_seconds_type>(stm.wMilliseconds * pow(static_cast<double>(10), time_duration::num_fractional_digits()-3));
   return ptime(date(stm.wYear,stm.wMonth,stm.wDay), time_duration(stm.wHour,stm.wMinute,stm.wSecond,frct_secs));
 }
 #else
@@ -83,7 +83,7 @@ boost::posix_time::ptime GetCurrentTime_HighResolution()
   using namespace boost::gregorian;
   struct timeval   tmStruct;
   gettimeofday(&tmStruct, 0);
-  time_duration::fractional_seconds_type frct_secs = tmStruct.tv_usec * std::pow(static_cast<double>(10), time_duration::num_fractional_digits()-6);
+  time_duration::fractional_seconds_type frct_secs = static_cast<time_duration::fractional_seconds_type>(tmStruct.tv_usec * std::pow(static_cast<double>(10), time_duration::num_fractional_digits()-6));
   return ptime(date(1970,1,1), time_duration(0,0,tmStruct.tv_sec,frct_secs));
 }
 #endif
