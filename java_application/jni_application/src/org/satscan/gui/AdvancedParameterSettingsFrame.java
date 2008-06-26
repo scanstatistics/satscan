@@ -287,6 +287,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void EnableAdditionalDataSetsGroup(boolean bEnable) {
         bEnable &= (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true);
+        bEnable &= _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _additionalDataSetsGroup.setEnabled(bEnable);
 
         EnableDataSetList(_additionalDataSetsGroup.isEnabled());
@@ -522,21 +523,23 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      * Enables/disables TListBox that list defined data sets
      */
     private void EnableDataSetList(boolean bEnable) {
-        _inputDataSetsList.setEnabled(bEnable);
+        _inputDataSetsList.setEnabled(bEnable && _additionalDataSetsGroup.isEnabled());
     }
 
     /**
      * enables or disables the New button on the Input tab
      */
     private void EnableNewButton() {
-        _addDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() < MAXIMUM_ADDITIONAL_SETS ? true : false);
+         boolean bEnable = _additionalDataSetsGroup.isEnabled();
+        _addDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() < MAXIMUM_ADDITIONAL_SETS ? bEnable : false);
     }
 
     /**
      * enables or disables the New button on the Input tab
      */
     private void EnableRemoveButton() {
-        _removeDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() > 0 ? true : false);
+        boolean bEnable = _additionalDataSetsGroup.isEnabled();
+        _removeDataSetButton.setEnabled(_inputDataSetsList.getModel().getSize() > 0 ? bEnable : false);
     }
 
     /** Checks to determine if only default values are set in the dialog
@@ -726,18 +729,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetMetaLocationsFileName(_metaLocationsFileTextField.getText());
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), Double.parseDouble(_maxSpatialClusterSizeTextField.getText()), false);
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), Double.parseDouble(_maxSpatialPercentFileTextField.getText()), false);
-        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), _spatialPopulationFileCheckBox.isSelected(), false);
+        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), _spatialPopulationFileCheckBox.isEnabled() && _spatialPopulationFileCheckBox.isSelected(), false);
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), Double.parseDouble(_maxSpatialRadiusTextField.getText()), false);
-        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), _spatialDistanceCheckBox.isSelected(), false);
+        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), _spatialDistanceCheckBox.isEnabled() && _spatialDistanceCheckBox.isSelected(), false);
         parameters.SetRestrictReportedClusters(_restrictReportedClustersCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected());
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()), true);
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()), true);
-        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), _reportedSpatialPopulationFileCheckBox.isSelected(), true);
+        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), _reportedSpatialPopulationFileCheckBox.isEnabled() && _reportedSpatialPopulationFileCheckBox.isSelected(), true);
         parameters.SetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()), true);
-        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), _reportedSpatialDistanceCheckBox.isSelected(), true);
+        parameters.SetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), _reportedSpatialDistanceCheckBox.isEnabled() && _reportedSpatialDistanceCheckBox.isSelected(), true);
 
         parameters.SetIterativeCutOffPValue(Double.parseDouble(_iterativeScanCutoffTextField.getText()));
-        parameters.SetIterativeScanning(_performIterativeScanCheckBox.isSelected());
+        parameters.SetIterativeScanning(_performIterativeScanCheckBox.isEnabled() && _performIterativeScanCheckBox.isSelected());
         parameters.SetNumIterativeScans(Integer.parseInt(_numIterativeScansTextField.getText()));
         parameters.SetUseAdjustmentForRelativeRisksFile(_adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected());
         parameters.SetAdjustmentsByRelativeRisksFilename(_adjustmentsByRelativeRisksFileTextField.getText());
@@ -762,7 +765,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
 
         // save the input files on Input tab
-        if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.SPATIALVARTEMPTREND || (_performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected())) {
+        if (!_additionalDataSetsGroup.isEnabled()) {
             parameters.SetNumDataSets(1);
         } else {
             parameters.SetNumDataSets(1);
@@ -1177,6 +1180,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _additionalDataSetsGroup.setEnabled(bEnable);
         _multivariateAdjustmentsRadioButton.setEnabled(bEnable);
         _adjustmentByDataSetsRadioButton.setEnabled(bEnable);
+        _multipleDataSetPurposeLabel.setEnabled(bEnable);
     }
 
     /**
@@ -1312,12 +1316,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
         _maxSpatialClusterSizeTextField.setEnabled(bEnable && bEnablePopPercentage);
         _percentageOfPopulationLabel.setEnabled(bEnable && bEnablePopPercentage);
-        _spatialPopulationFileCheckBox.setEnabled(bEnable);
-        _maxSpatialPercentFileTextField.setEnabled(bEnable && _spatialPopulationFileCheckBox.isSelected());
-        _percentageOfPopFileLabel.setEnabled(bEnable);
-        _maxCirclePopulationFilenameTextField.setEnabled(bEnable);
-        _maxCirclePopFileBrowseButton.setEnabled(bEnable);
-        _maxCirclePopFileImportButton.setEnabled(bEnable);
+        
+        boolean bEnablePopulationFile = bEnable && _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+        _spatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile);
+        _maxSpatialPercentFileTextField.setEnabled(bEnablePopulationFile && _spatialPopulationFileCheckBox.isSelected());
+        _percentageOfPopFileLabel.setEnabled(bEnablePopulationFile);
+        _maxCirclePopulationFilenameTextField.setEnabled(bEnablePopulationFile);
+        _maxCirclePopFileBrowseButton.setEnabled(bEnablePopulationFile);
+        _maxCirclePopFileImportButton.setEnabled(bEnablePopulationFile);
 
         _spatialDistanceCheckBox.setEnabled(bEnable && !_specifiyNeighborsFileCheckBox.isSelected());
         _maxSpatialRadiusTextField.setEnabled(_spatialDistanceCheckBox.isEnabled() && _spatialDistanceCheckBox.isSelected());
@@ -1335,7 +1341,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
         _spatialWindowShapeGroup.setEnabled(bEnable);
         _circularRadioButton.setEnabled(bEnable);
-        _ellipticRadioButton.setEnabled(bEnable && _analysisSettingsWindow.getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN);
+        _ellipticRadioButton.setEnabled(bEnable && 
+                                        _analysisSettingsWindow.getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN &&
+                                        _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
         _nonCompactnessPenaltyLabel.setEnabled(_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected());
         _nonCompactnessPenaltyComboBox.setEnabled(_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected());
         if (!_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected() && _circularRadioButton.isEnabled()) {
@@ -1353,9 +1361,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
         _maxReportedSpatialClusterSizeTextField.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
         _reportedPercentOfPopulationLabel.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && bEnablePopPercentage);
-        _reportedSpatialPopulationFileCheckBox.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected());
-        _maxReportedSpatialPercentFileTextField.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected() && _reportedSpatialPopulationFileCheckBox.isSelected());
-        _reportedPercentageOfPopFileLabel.setEnabled(bEnable && _restrictReportedClustersCheckBox.isSelected());
+        boolean bEnablePopulationFile = bEnable && _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+        _reportedSpatialPopulationFileCheckBox.setEnabled(bEnablePopulationFile && _restrictReportedClustersCheckBox.isSelected());
+        _maxReportedSpatialPercentFileTextField.setEnabled(bEnablePopulationFile && _restrictReportedClustersCheckBox.isSelected() && _reportedSpatialPopulationFileCheckBox.isSelected());
+        _reportedPercentageOfPopFileLabel.setEnabled(bEnablePopulationFile && _restrictReportedClustersCheckBox.isSelected());
 
         _reportedSpatialDistanceCheckBox.setEnabled(bEnable && !_specifiyNeighborsFileCheckBox.isSelected() && _restrictReportedClustersCheckBox.isSelected());
         _reportedMaxDistanceLabel.setEnabled(_reportedSpatialDistanceCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected());
