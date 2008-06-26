@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "NormalClusterData.h"
 #include "SSException.h"
+#include "SaTScanData.h"
 
 //************** class NormalSpatialData ***************************************
 
