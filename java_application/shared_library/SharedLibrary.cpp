@@ -28,7 +28,7 @@
 #include "JNIException.h"
 #include "ObservableRegion.h"
 
-#pragma argsused
+//#pragma argsused
 
 void __SaTScanInit() {
 printf("__SaTScanInit called\n"); 
