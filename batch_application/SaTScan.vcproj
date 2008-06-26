@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0\xbase\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
