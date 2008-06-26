@@ -2,8 +2,9 @@
 #ifndef __MEASURELIST_H
 #define __MEASURELIST_H
 //*****************************************************************************
-#include "SaTScanData.h"
-#include "LikelihoodCalculation.h"
+
+class CSaTScanData;
+class AbstractLikelihoodCalculator;
 
 /** Abstract base class which defines interface for the process of calculating
     the greatest log likelihood ratio for a simulation. The intent of this class

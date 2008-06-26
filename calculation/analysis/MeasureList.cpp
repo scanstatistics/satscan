@@ -5,6 +5,8 @@
 #include "MeasureList.h"
 #include "Toolkit.h"
 #include "SSException.h"
+#include "SaTScanData.h"
+#include "LikelihoodCalculation.h"
 
 /** Constructor */
 CMeasureList::CMeasureList(const CSaTScanData & SaTScanData, AbstractLikelihoodCalculator & LikelihoodCalculator)
