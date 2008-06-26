@@ -34,7 +34,8 @@ long AsciiFileDataSource::StringParser::GetNumberWords() {
 /** Returns wWordIndex + 1 'th word in associated string.
     If wWordIndex is greater than number of words, NULL pointer returned. */
 const char * AsciiFileDataSource::StringParser::GetWord(long wWordIndex) {
-  int           inwd, wdlen;
+  bool          inwd;
+  int           wdlen;
   long          w = wWordIndex;
   const char  * cp2, * cp3;
 
