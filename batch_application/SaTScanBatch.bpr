@@ -81,14 +81,14 @@
       ..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.obj 
       ..\calculation\analysis_run\AnalysisRun.obj 
       ..\calculation\analysis_run\MostLikelyClustersContainer.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\xtime.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\exceptions.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\mutex.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\once.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\recursive_mutex.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\thread.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\condition.obj 
-      ..\..\boost\boost_1_33_1\libs\thread\src\tss_hooks.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\xtime.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\exceptions.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\mutex.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\once.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\recursive_mutex.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\thread.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\condition.obj 
+      ..\..\boost\boost_1_34_1\libs\thread\src\tss_hooks.obj 
       ..\calculation\utility\stsMonteCarloSimFunctor.obj 
       ..\calculation\utility\contractor.obj 
       ..\calculation\utility\DateStringParser.obj 
@@ -147,23 +147,23 @@
       ..\calculation\randomization\WeightedNormalRandomizer.obj 
       ..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.obj 
       ..\calculation\satscan_data\ObservableRegion.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\c_regex_traits.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\cpp_regex_traits.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\cregex.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\fileiter.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\icu.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\instances.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\posix_api.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\regex.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\regex_debug.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\regex_raw_buffer.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\regex_traits_defaults.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\static_mutex.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\usinstances.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\w32_regex_traits.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\wc_regex_traits.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\wide_posix_api.obj 
-      ..\..\boost\boost_1_33_1\libs\regex\src\winstances.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\c_regex_traits.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\cpp_regex_traits.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\cregex.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\fileiter.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\icu.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\instances.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\posix_api.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\regex.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\regex_debug.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\regex_raw_buffer.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\regex_traits_defaults.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\static_mutex.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\usinstances.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\w32_regex_traits.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\wc_regex_traits.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\wide_posix_api.obj 
+      ..\..\boost\boost_1_34_1\libs\regex\src\winstances.obj 
       ..\calculation\probability_model\HomogeneousPoissonModel.obj 
       ..\calculation\randomization\HomogeneousPoissonRandomizer.obj 
       ..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.obj 
@@ -180,7 +180,7 @@
       bcb2kaxserver50.bpi bcbsmp50.bpi ibsmp50.bpi dclocx50.bpi vclie50.bpi 
       Inetdb50.bpi Inet50.bpi TeeQR50.bpi TeeUI50.bpi TeeDB50.bpi Tee50.bpi 
       Qrpt50.bpi NMFast50.bpi VCLIB50.bpi TSGC5201.bpi TSDGC5201.bpi"/>
-    <PATHCPP value=".;..\calculation;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation\Output;..\calculation\randomization;..\calculation\loglikelihood;..\calculation\analysis_run;..\..\boost\boost_1_33_1\libs\thread\src;..\..\boost\boost_1_33_1\libs\regex\src"/>
+    <PATHCPP value=".;..\calculation;..\calculation\utility;..\calculation\print;..\calculation\probability_model;..\calculation\satscan_data;..\calculation\cluster;..\calculation\analysis;..\calculation\Output;..\calculation\randomization;..\calculation\loglikelihood;..\calculation\analysis_run;..\..\boost\boost_1_34_1\libs\thread\src;..\..\boost\boost_1_34_1\libs\regex\src"/>
     <PATHPAS value=".;"/>
     <PATHRC value=".;"/>
     <PATHASM value=".;"/>
@@ -190,8 +190,8 @@
     <USERDEFINES value="__BATCH_COMPILE;BOOST_ALL_NO_LIB;_DEBUG"/>
     <SYSDEFINES value="NO_STRICT;_NO_VCL"/>
     <MAINSOURCE value="SaTScanBatch.bpf"/>
-    <INCLUDEPATH value="..\..\boost\boost_1_33_1\libs\regex\src;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl"/>
-    <LIBPATH value="..\..\boost\boost_1_33_1\libs\regex\src;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src"/>
+    <INCLUDEPATH value="..\..\boost\boost_1_34_1\libs\regex\src;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_34_1;..\..\boost\boost_1_34_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl"/>
+    <LIBPATH value="..\..\boost\boost_1_34_1\libs\regex\src;&quot;C:\Program Files\Borland\CBuilder5\Projects\&quot;;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1\libs\thread\src"/>
     <WARNINGS value="-w-par -w-8027 -w-8026 -w-aus"/>
   </MACROS>
   <OPTIONS>
@@ -246,22 +246,22 @@ $(BCB)\Bin\mfcwizard.bpl=MFC Wizard
 
 [HistoryLists\hlIncludePath]
 Count=7
-Item0=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
-Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
-Item2=C:\Program Files\Borland\CBuilder5\Projects;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
-Item3=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
-Item4=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;C:\Prj\SaTScan Project\zero.dimension;..\..\boost\boost_1_33_1;..\..\boost\boost_1_33_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
-Item5=..\..\boost\boost_1_33_1\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1
+Item0=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_34_1;..\..\boost\boost_1_34_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
+Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_34_1;..\..\boost\boost_1_34_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
+Item2=C:\Program Files\Borland\CBuilder5\Projects;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_34_1;..\..\boost\boost_1_34_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
+Item3=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\zero.dimension;..\..\boost\boost_1_34_1;..\..\boost\boost_1_34_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
+Item4=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;C:\Prj\SaTScan Project\zero.dimension;..\..\boost\boost_1_34_1;..\..\boost\boost_1_34_1\libs\thread\src;$(BCB)\include;$(BCB)\include\vcl
+Item5=..\..\boost\boost_1_34_1\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1
 Item6=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\include;$(BCB)\include\vcl;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlLibraryPath]
 Count=7
-Item0=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src
-Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src
-Item2=C:\Program Files\Borland\CBuilder5\Projects;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src
-Item3=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src
-Item4=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;C:\Prj\SaTScan Project\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_33_1\libs\thread\src
-Item5=..\..\boost\boost_1_33_1\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0
+Item0=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1\libs\thread\src
+Item1=C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1\libs\thread\src
+Item2=C:\Program Files\Borland\CBuilder5\Projects;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1\libs\thread\src
+Item3=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;..\..\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1\libs\thread\src
+Item4=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;C:\Prj\SaTScan Project\zero.dimension;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0;..\..\boost\boost_1_34_1\libs\thread\src
+Item5=..\..\boost\boost_1_34_1\libs\thread\src;..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 Item6=..\calculation\analysis_run;..\calculation\loglikelihood;..\calculation\randomization;C:\Program Files\Borland\CBuilder5\Projects\;..\calculation\Output;..\calculation;..\calculation\analysis;..\calculation\cluster;..\calculation\satscan_data;..\calculation\probability_model;..\calculation\print;..\calculation\utility;$(BCB)\lib\obj;$(BCB)\lib;..\..\basisdev\include;..\..\basisdev\source\nonvcl;..\..\basisdev\source\vcldep;..\xbase\xbase_2.0.0
 
 [HistoryLists\hlDebugSourcePath]

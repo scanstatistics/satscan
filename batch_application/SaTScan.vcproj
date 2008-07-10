@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_33_1;C:\prj\satscan.development\boost\boost_1_33_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_34_1;C:\prj\satscan.development\boost\boost_1_34_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -120,7 +120,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_33_1;C:\prj\satscan.development\boost\boost_1_33_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_34_1;C:\prj\satscan.development\boost\boost_1_34_1\libs\thread\src;C:\prj\satscan.development\SatScan\calculation;C:\prj\satscan.development\SatScan\calculation\analysis;C:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation\cluster;C:\prj\satscan.development\SatScan\calculation\loglikelihood;C:\prj\satscan.development\SatScan\calculation\Output;C:\prj\satscan.development\SatScan\calculation\print;C:\prj\satscan.development\SatScan\calculation\probability_model;C:\prj\satscan.development\SatScan\calculation\randomization;C:\prj\satscan.development\SatScan\calculation\satscan_data;C:\prj\satscan.development\SatScan\calculation\utility;C:\prj\satscan.development\SatScan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -185,107 +185,103 @@
 				Name="boost"
 				>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\c_regex_traits.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\c_regex_traits.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\condition.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\condition.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\calculation\utility\contractor.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\cpp_regex_traits.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\cpp_regex_traits.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\cregex.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\cregex.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\exceptions.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\exceptions.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\fileiter.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\fileiter.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\icu.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\icu.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\instances.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\instances.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\mutex.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\mutex.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\once.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\once.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\posix_api.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\posix_api.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\recursive_mutex.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\recursive_mutex.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\regex.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex_debug.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\regex_debug.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex_raw_buffer.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\regex_raw_buffer.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex_traits_defaults.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\regex_traits_defaults.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\static_mutex.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\static_mutex.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\thread.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\thread.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\tss_hooks.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\tss_hooks.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\usinstances.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\usinstances.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\w32_regex_traits.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\w32_regex_traits.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\wc_regex_traits.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\wc_regex_traits.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\wide_posix_api.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\wide_posix_api.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\winstances.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\regex\src\winstances.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_33_1\libs\thread\src\xtime.cpp"
+					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\xtime.cpp"
 					>
 				</File>
 			</Filter>
@@ -585,6 +581,10 @@
 					>
 					<File
 						RelativePath="..\calculation\utility\AsynchronouslyAccessible.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\calculation\utility\contractor.cpp"
 						>
 					</File>
 					<File
