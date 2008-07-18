@@ -116,6 +116,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_33_1\libs\thread\src;C:\prj\satscan.development\boost\boost_1_33_1;c:\prj\satscan.development\SatScan\xbase\xbase_2.0.0;c:\prj\satscan.development\SatScan\calculation\utility;c:\prj\satscan.development\SatScan\calculation\satscan_data;c:\prj\satscan.development\SatScan\calculation\randomization;c:\prj\satscan.development\SatScan\calculation\probability_model;c:\prj\satscan.development\SatScan\calculation\print;c:\prj\satscan.development\SatScan\calculation\Output;c:\prj\satscan.development\SatScan\calculation\loglikelihood;c:\prj\satscan.development\SatScan\calculation\cluster;c:\prj\satscan.development\SatScan\calculation\analysis_run;C:\prj\satscan.development\SatScan\calculation;c:\prj\satscan.development\SatScan\calculation\analysis"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
