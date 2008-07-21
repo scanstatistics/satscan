@@ -678,7 +678,7 @@ void TfrmAnalysis::EnableModelControlForAnalysisType() {
     }
     rdoHomogeneousPoissonModel->Enabled = eAnalysisType == PURELYSPATIAL;
     if (!rdoHomogeneousPoissonModel->Enabled && rdoHomogeneousPoissonModel->Checked) {
-      rdoPoissonModel.setSelected(true);
+      rdoPoissonModel->Checked = true;
     }
     EnableSettingsForAnalysisModelCombination();
     SetAreaScanRateControlText(GetModelControlType());
