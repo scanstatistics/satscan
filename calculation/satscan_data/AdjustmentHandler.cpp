@@ -23,7 +23,7 @@ void RelativeRiskAdjustment::MultiplyRisk(measure_t dRisk) {
   try {
     if (dRisk > std::numeric_limits<measure_t>::max()/gdRelativeRisk)
       throw resolvable_error("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                             "       The combined relative risk %lf and %lf in the adjustment file\n"
+                             "       The combined relative risk %g and %g in the adjustment file\n"
                              "       is too large.\n", gdRelativeRisk, dRisk);
 
     gdRelativeRisk *= dRisk;
