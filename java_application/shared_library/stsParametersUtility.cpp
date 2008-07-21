@@ -386,6 +386,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetStartRangeEndDate().c_str()));
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "SetStartRangeStartDate", "(Ljava/lang/String;)V");
+  Env.CallVoidMethod(jParameters, mid, Env.NewStringUTF(Parameters.GetStartRangeStartDate().c_str()));
+  jni_error::_detectError(Env);
+
   //problems???
 
   jfieldID vfid = _getFieldId_Checked(Env, clazz, "gCreationVersion", "Lorg/satscan/app/Parameters$CreationVersion;");
@@ -815,6 +819,13 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
   Parameters.SetStartRangeEndDate(sFilename);
+  if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
+
+  mid = _getMethodId_Checked(Env, clazz, "GetStartRangeStartDate", "()Ljava/lang/String;");
+  jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
+  jni_error::_detectError(Env);
+  sFilename = Env.GetStringUTFChars(jstr, &iscopy);
+  Parameters.SetStartRangeStartDate(sFilename);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   //CParameters::CreationVersion Version;
