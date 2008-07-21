@@ -352,7 +352,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                     String[] sHTTP_Body = str.split(",");
                     if (sHTTP_Body.length < _updateTokenCount || sHTTP_Body[0].equals("no")) {
                         _updateExists = false;
-                    } else if (Integer.parseInt(sHTTP_Body[_updateVersionIdIndex]) > Integer.parseInt("6"/*JAboutInternalFrame.getVersionId()*/)) {
+                    } else if (Integer.parseInt(sHTTP_Body[_updateVersionIdIndex]) > Integer.parseInt(AppConstants.getVersionId())) {
                         _updateExists = true;
                         //get update information
                         _updateVersion = sHTTP_Body[_updateVersionIndex];
