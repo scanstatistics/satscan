@@ -110,9 +110,9 @@ public class InstallerFrame extends javax.swing.JFrame {
          */
         private boolean isExtracted(ZipEntry entry) {
             if (System.getProperty("os.name").startsWith("Windows")) {
-                return entry.getName().endsWith(".so") ? false : true;
+                return entry.getName().endsWith(".so") || entry.getName().endsWith(".sh") || entry.getName().endsWith("_32bit") || entry.getName().endsWith("_64bit") ? false : true;
             } else {
-                return entry.getName().endsWith(".dll") || entry.getName().endsWith(".chm") ? false : true;
+                return entry.getName().endsWith(".dll") || entry.getName().endsWith(".chm") || entry.getName().endsWith(".exe") ? false : true;
             }
         }
 
