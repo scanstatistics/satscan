@@ -61,6 +61,8 @@ void ParameterResultsInfo::SetResultTimes(unsigned short uYardStickHours, unsign
     SetTimeDifference(uHours, uMinutes, uSeconds, FASTER);
   }
   else {
+    //prevent division by zero
+    dYardStickTimeInSeconds = dYardStickTimeInSeconds == 0.0 ? std::numeric_limits<double>::min() : dYardStickTimeInSeconds;
     SetTimeDifferencePercentage(std::fabs(100 * dScrutinizedTimeInSeconds/dYardStickTimeInSeconds - 100));
     dScrutinizedTimeInSeconds = dScrutinizedTimeInSeconds - dYardStickTimeInSeconds;
     uHours = dScrutinizedTimeInSeconds/3600.0;
@@ -907,7 +909,7 @@ void TfrmMain::CreateExcelSheet() {
     ExcelSheet(iRowIndex, ++iColumnIndex) = sYardTime.ToDouble();
     sScrutinizedTime.printf("%.2lf", itr->GetScrutinizedTimeInMinutes());
     ExcelSheet(iRowIndex, ++iColumnIndex) = sScrutinizedTime.ToDouble();
-    sString.printf("%.2lf", 100.0 * sScrutinizedTime.ToDouble()/sYardTime.ToDouble() - 100.0);
+    sString.printf("%.2lf", sYardTime.ToDouble() ? (100.0 * sScrutinizedTime.ToDouble()/sYardTime.ToDouble() - 100.0) : 0.0);
     ExcelSheet(iRowIndex, ++iColumnIndex) = sString.ToDouble();
     ExcelSheet(iRowIndex, ++iColumnIndex) = DateTimeToStr(gStartDate).c_str();
   }
