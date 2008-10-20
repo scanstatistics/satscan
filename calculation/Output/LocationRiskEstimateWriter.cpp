@@ -38,7 +38,8 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
   unsigned short uwOffset = 0;
 
   try {
-    if (gParameters.GetProbabilityModelType() == ORDINAL || 
+    if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
+        gParameters.GetProbabilityModelType() == ORDINAL || 
         gParameters.GetProbabilityModelType() == CATEGORICAL || 
         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
       throw prg_error("Risk estimates file not implemented for SVTT, Ordinal or Categorical models.","SetupFields()");
