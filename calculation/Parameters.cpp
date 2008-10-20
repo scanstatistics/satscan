@@ -467,10 +467,17 @@ void CParameters::RequestAllAdditionalOutputFiles() {
    SetOutputClusterCaseDBase(true);
    SetOutputClusterLevelAscii(true);
    SetOutputClusterLevelDBase(true);
-   if (!GetIsPurelyTemporalAnalysis() && GetProbabilityModelType() != SPACETIMEPERMUTATION) {
+   if (!GetIsPurelyTemporalAnalysis() && 
+        GetProbabilityModelType() != SPACETIMEPERMUTATION &&
+        GetProbabilityModelType() != ORDINAL &&
+        GetProbabilityModelType() != CATEGORICAL &&
+        GetProbabilityModelType() != SPATIALVARTEMPTREND) {
      SetOutputRelativeRisksAscii(true);
      SetOutputRelativeRisksDBase(true);
-   }  
+   } else {
+     SetOutputRelativeRisksAscii(false);
+     SetOutputRelativeRisksDBase(false);
+   }
    SetOutputSimLogLikeliRatiosAscii(true);
    SetOutputSimLogLikeliRatiosDBase(true);
 }
