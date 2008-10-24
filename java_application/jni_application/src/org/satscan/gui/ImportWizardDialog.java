@@ -169,7 +169,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         if (pos != -1 && _sourceFile.substring(pos + 1).equalsIgnoreCase("dbf")) {
             return FileImporter.SourceDataFileType.dBase;
         }
-        if (pos != -1 && _sourceFile.substring(pos + 1).equalsIgnoreCase("xls")) {
+        if (pos != -1 && (_sourceFile.substring(pos + 1).equalsIgnoreCase("xls") || _sourceFile.substring(pos + 1).equalsIgnoreCase("xlsx"))) {
             return FileImporter.SourceDataFileType.Excel;
         }
         return FileImporter.SourceDataFileType.Delimited;
