@@ -99,8 +99,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-            WriteSession(fc.getSelectedFile().getAbsolutePath());
-            setTitle(fc.getSelectedFile().getAbsolutePath());
+            String filename = fc.getSelectedFile().getAbsolutePath();
+            if (fc.getSelectedFile().getName().indexOf('.') == -1){
+                filename = filename + ".prm";
+            } 
+            WriteSession(filename);
+            setTitle(filename);
         } else {
             bSaved = false;
         }
@@ -225,38 +229,52 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             case BERNOULLI:
                 if (_bernoulliModelRadioButton.isEnabled()) {
                     _bernoulliModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case SPACETIMEPERMUTATION:
                 if (_spaceTimePermutationModelRadioButton.isEnabled()) {
                     _spaceTimePermutationModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case ORDINAL:
                 if (_ordinalModelRadioButton.isEnabled()) {
                     _ordinalModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case EXPONENTIAL:
                 if (_exponentialModelRadioButton.isEnabled()) {
                     _exponentialModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case NORMAL:
                 if (_normalModelRadioButton.isEnabled()) {
                     _normalModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case CATEGORICAL:
                 if (_categoricallModelRadioButton.isEnabled()) {
                     _categoricallModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case HOMOGENEOUSPOISSON:
                 if (_homogeneouspoissonModelRadioButton.isEnabled()) {
                     _homogeneouspoissonModelRadioButton.setSelected(true);
-                    break;
+                } else {
+                    _poissonModelRadioButton.setSelected(true);
                 }
+                break;
             case POISSON:
             default:
                 _poissonModelRadioButton.setSelected(true);
