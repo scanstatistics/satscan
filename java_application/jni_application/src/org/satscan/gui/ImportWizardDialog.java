@@ -723,6 +723,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         } else {
             _displayVariablesLabel.setEnabled(false);
             _displayVariablesComboBox.setEnabled(false);
+            _displayVariablesComboBox.removeAllItems();            
         }
     }
 
@@ -1576,7 +1577,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 _progressBar.setValue(0);
                 VariableMappingTableModel model = (VariableMappingTableModel) _fieldMapTable.getModel();
                 _importer = new FileImporter(getImportSource(),
-                        model.variables_visible,
+                        model.variables_static,
                         _fileType,
                         _sourceDataFileType,
                         _destinationFile,
