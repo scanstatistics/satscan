@@ -976,6 +976,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         enableTimeAggregationGroup(eAnalysisType != Parameters.AnalysisType.PURELYSPATIAL);
         enableAdditionalOutFilesOptionsGroup(eModelType != Parameters.ProbabilityModelType.SPACETIMEPERMUTATION &&
                 eModelType != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON &&
+                eModelType != Parameters.ProbabilityModelType.ORDINAL &&
+                eModelType != Parameters.ProbabilityModelType.CATEGORICAL &&
                 eAnalysisType != Parameters.AnalysisType.PURELYTEMPORAL &&
                 eAnalysisType != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
         _observableRegionsButton.setEnabled(eModelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);

@@ -469,6 +469,7 @@ void CParameters::RequestAllAdditionalOutputFiles() {
    SetOutputClusterLevelDBase(true);
    if (!GetIsPurelyTemporalAnalysis() && 
         GetProbabilityModelType() != SPACETIMEPERMUTATION &&
+        GetProbabilityModelType() != HOMOGENEOUSPOISSON &&
         GetProbabilityModelType() != ORDINAL &&
         GetProbabilityModelType() != CATEGORICAL &&
         GetProbabilityModelType() != SPATIALVARTEMPTREND) {

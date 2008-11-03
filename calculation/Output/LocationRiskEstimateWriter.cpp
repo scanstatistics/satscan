@@ -6,6 +6,7 @@
 #include "SaTScanData.h"
 #include "SVTTData.h"
 #include "SSException.h"
+#include "ParametersPrint.h"
 
 const char * LocationRiskEstimateWriter::REL_RISK_EXT                     = ".rr";
 const char * LocationRiskEstimateWriter::TIME_TREND_FIELD                 = "TIME_TREND";
@@ -39,10 +40,12 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
 
   try {
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
+        gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || 
         gParameters.GetProbabilityModelType() == ORDINAL || 
         gParameters.GetProbabilityModelType() == CATEGORICAL || 
         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      throw prg_error("Risk estimates file not implemented for SVTT, Ordinal or Categorical models.","SetupFields()");
+      throw prg_error("Risk estimates file not implemented for %s model.",
+                      "SetupFields()", ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString());
     CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset);
     if (gParameters.GetNumDataSets() > 1)
       CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);

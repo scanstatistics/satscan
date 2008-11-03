@@ -705,7 +705,9 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     // Sometime in a previous version, it was decided to just suppress this setting
     // for situations that don't allow it. 
     if (gParameters.GetOutputRelativeRisksFiles() &&
-        (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+        (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
+         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
+         gParameters.GetProbabilityModelType() == SPATIALVARTEMPTREND)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
