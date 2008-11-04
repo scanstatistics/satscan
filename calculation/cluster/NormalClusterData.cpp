@@ -275,6 +275,7 @@ void NormalProspectiveSpatialData::InitializeData() {
 NormalProspectiveSpatialData & NormalProspectiveSpatialData::operator=(const NormalProspectiveSpatialData& rhs) {
    gtCases = rhs.gtCases;
    gtMeasure = rhs.gtMeasure;
+   gtMeasureAux = rhs.gtMeasureAux;
    giAllocationSize = rhs.giAllocationSize;
    giNumTimeIntervals = rhs.giNumTimeIntervals;
    giProspectiveStart = rhs.giProspectiveStart;
@@ -422,6 +423,7 @@ void NormalSpaceTimeData::InitializeData() {
 NormalSpaceTimeData & NormalSpaceTimeData::operator=(const NormalSpaceTimeData& rhs) {
   gtCases = rhs.gtCases;
   gtMeasure = rhs.gtMeasure;
+  gtMeasureAux = rhs.gtMeasureAux;
   giAllocationSize = rhs.giAllocationSize;
   if (rhs.geEvaluationAssistDataStatus == Allocated) {
     if (!gpCases) gpCases = new count_t[rhs.giAllocationSize];
