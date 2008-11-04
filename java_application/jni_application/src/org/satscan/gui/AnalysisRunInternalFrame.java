@@ -258,7 +258,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
                         e1.printStackTrace();
                     }
                 } else {
-                    _progressTextArea.append("Cancelling job, please wait...");
+                    PrintProgressWindow("Cancelling job, please wait...");
                     gbCancel = true;
                 }
                 // gRegistry.Release(gsOutputFileName);
