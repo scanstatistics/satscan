@@ -577,7 +577,16 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             try {
                 openNewParameterSessionWindow(_file.getAbsolutePath());
             } catch (Throwable t) {
-                new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+                //The JNI method to read the parameters file might have initiated
+                //this exception; so check file access to see if that was infact the problem.
+                if (!FileAccess.ValidateFileAccess(_file.getAbsolutePath(), false))
+                    JOptionPane.showMessageDialog(SaTScanApplication.this, 
+                        "The parameter file could not be opened for reading:\n " + 
+                        _file.getAbsolutePath() + 
+                        "\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.",
+                        "Note", JOptionPane.INFORMATION_MESSAGE);
+                else    
+                    new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
             }
         }
     }
