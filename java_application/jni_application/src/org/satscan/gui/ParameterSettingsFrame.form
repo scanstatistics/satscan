@@ -19,7 +19,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_probabilityModelTypeButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_weightedNormalModelRadioButton);&#xa;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_scanAreasButtonGroup">
@@ -63,7 +63,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="457" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="440" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -107,7 +107,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="23" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -141,8 +141,8 @@
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_controlFileTextField" pref="301" max="32767" attributes="2"/>
-                                              <Component id="_caseFileTextField" alignment="0" pref="301" max="32767" attributes="1"/>
+                                              <Component id="_controlFileTextField" pref="300" max="32767" attributes="2"/>
+                                              <Component id="_caseFileTextField" alignment="0" pref="300" max="32767" attributes="1"/>
                                           </Group>
                                           <EmptySpace min="-2" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -252,7 +252,7 @@
                                   <Component id="_timePrecisionMonth" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="_timePrecisionDay" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="58" max="32767" attributes="0"/>
+                              <EmptySpace pref="59" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -887,7 +887,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" max="-2" attributes="0">
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="0" min="0" max="32767" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
@@ -962,7 +962,7 @@
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="38" max="32767" attributes="0"/>
+                          <EmptySpace pref="58" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1087,6 +1087,7 @@
                               <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_weightedNormalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_categoricallModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
@@ -1106,12 +1107,14 @@
                           <Component id="_bernoulliModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_spaceTimePermutationModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="12" max="32767" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_ordinalModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="_weightedNormalModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_categoricallModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -1119,7 +1122,7 @@
                               <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
+                          <EmptySpace pref="34" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1261,6 +1264,22 @@
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        geObservableRegionsParameterInternalFrame().setVisible(true);&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_weightedNormalModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Weighted Normal" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_weightedNormalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
               </SubComponents>
@@ -1407,7 +1426,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="15" max="32767" attributes="0"/>
+                          <EmptySpace pref="35" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1517,7 +1536,7 @@
                               <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_montCarloReplicationsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="77" max="32767" attributes="0"/>
+                          <EmptySpace pref="40" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1584,7 +1603,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="__additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="190" max="32767" attributes="0"/>
+                      <EmptySpace pref="173" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
