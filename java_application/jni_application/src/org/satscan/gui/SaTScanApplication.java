@@ -93,7 +93,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _printResultsAction = new PrintResultsAction();
         initComponents();
         setTitle(AppConstants.getSoftwareTitle());
-        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/SaTScan.gif")));
+        setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/SaTScan.png")));
         enableActions(false, false);
         addWindowFocusListener(this);
         addWindowListener(this);
