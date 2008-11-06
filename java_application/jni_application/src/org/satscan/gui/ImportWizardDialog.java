@@ -261,6 +261,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 return Parameters.ProbabilityModelType.CATEGORICAL;
             case 7:
                 return Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+            case 8:
+                return Parameters.ProbabilityModelType.WEIGHTEDNORMAL;
             case 0:
             default:
                 return Parameters.ProbabilityModelType.POISSON;
@@ -292,12 +294,17 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                                 _modelType == Parameters.ProbabilityModelType.CATEGORICAL ||
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
                                 _modelType == Parameters.ProbabilityModelType.NORMAL ||
+                                _modelType == Parameters.ProbabilityModelType.WEIGHTEDNORMAL ||
                                 _modelType == Parameters.ProbabilityModelType.RANK);
                     } else if (t == 14) //show 'censored' variable for exponential model only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
-                    } else if (t >= 15 && t <= 16) //show 'X' and 'Y' variables for H. Poisson model only
+                    } else if (t == 15) //show 'weight' variable for weight normal model only
+                    {
+                        model.setShowing(_importVariables.get(t),
+                                _modelType == Parameters.ProbabilityModelType.WEIGHTEDNORMAL);
+                    } else if (t >= 16 && t <= 17) //show 'X' and 'Y' variables for H. Poisson model only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
@@ -700,6 +707,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             _displayVariablesComboBox.addItem("normal");
             _displayVariablesComboBox.addItem("categorical");
             _displayVariablesComboBox.addItem("Homogeneous Poisson");
+            _displayVariablesComboBox.addItem("weighted normal");
             switch (_startingModelType) {
                 case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
                 case SPACETIMEPERMUTATION : _displayVariablesComboBox.setSelectedIndex(2); break;
@@ -708,6 +716,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 case NORMAL               : _displayVariablesComboBox.setSelectedIndex(5); break;
                 case CATEGORICAL          : _displayVariablesComboBox.setSelectedIndex(6); break;
                 case HOMOGENEOUSPOISSON   : _displayVariablesComboBox.setSelectedIndex(7); break;    
+                case WEIGHTEDNORMAL       : _displayVariablesComboBox.setSelectedIndex(8); break;
                 case POISSON              :
                 default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
             }
@@ -803,8 +812,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null));
         _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null));
         _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
-        _importVariables.addElement(new ImportVariable("Attribute", 13, true, null));
-        _importVariables.addElement(new ImportVariable("Censored", 14, false, null));
+        _importVariables.addElement(new ImportVariable("Attribute", 3, true, null));
+        _importVariables.addElement(new ImportVariable("Censored", 4, false, null));
+        _importVariables.addElement(new ImportVariable("Weight", 4, true, null));
         _importVariables.addElement(new ImportVariable("X", 1, true, null));
         _importVariables.addElement(new ImportVariable("Y", 2, true, null));
     }
@@ -1023,6 +1033,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                             "The import wizard encountered an error attempting to create the import file.\n" +
                             "This is most likely occuring because write permissions are not granted for\n" +
                             "specified directory. Please check path or review user permissions for specified directory.\n", "Note", JOptionPane.WARNING_MESSAGE);
+                        return;
                     }
                     ImportTask task = new ImportTask();
                     task.addPropertyChangeListener(ImportWizardDialog.this);
