@@ -1444,7 +1444,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Case File");
+                    fc.setDialogTitle("Select Case File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -1743,7 +1743,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Control File");
+                    fc.setDialogTitle("Select Control File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -1840,12 +1840,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _populationFileImportButton.setText("Import population file ..."); // NOI18N
+        _populationFileImportButton.setToolTipText("Import population file ...");
+        _populationFileImportButton.setLabel("...");
         _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Population File");
+                    fc.setDialogTitle("Select Population File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -1897,6 +1898,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _populationFileImportButton.getAccessibleContext().setAccessibleName("...");
+        _populationFileImportButton.getAccessibleContext().setAccessibleDescription("Import population file ...");
+
         _geographicalInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         _coordinatesFileLabel.setText("Coordiantes File:"); // NOI18N
@@ -1923,7 +1927,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Coordiantes File");
+                    fc.setDialogTitle("Select Coordinates File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -2011,7 +2015,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Grid File");
+                    fc.setDialogTitle("Select Grid File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));

@@ -2096,7 +2096,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_dataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_removeDataSetButton)
                     .addComponent(_addDataSetButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(5, Short.MAX_VALUE))
         );
 
         _caseFileLabel.setText("Case File:"); // NOI18N
@@ -2130,13 +2130,13 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _caseFileImportButton.setText("..."); // NOI18N
+        _caseFileImportButton.setText("...");
         _caseFileImportButton.setToolTipText("Import case file ..."); // NOI18N
         _caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Case File");
+                    fc.setDialogTitle("Select Case File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -2190,7 +2190,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Control File");
+                    fc.setDialogTitle("Select Control File Import Source");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -2244,7 +2244,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Population File");
+                    fc.setDialogTitle("Select Source Population Import File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -2314,7 +2314,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_populationFileBrowseButton)
                     .addComponent(_populationFileImportButton)
                     .addComponent(_populationFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(17, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:"); // NOI18N
@@ -2369,24 +2369,25 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _additionalDataSetsGroup.setLayout(_additionalDataSetsGroupLayout);
         _additionalDataSetsGroupLayout.setHorizontalGroup(
             _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _additionalDataSetsGroupLayout.createSequentialGroup()
+            .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
+                .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _additionalDataSetsGroupLayout.createSequentialGroup()
                         .addComponent(_dataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _additionalDataSetsGroupLayout.setVerticalGroup(
             _additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_additionalDataSetsGroupLayout.createSequentialGroup()
                 .addGroup(_additionalDataSetsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_dataSetsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_dataSetsGroup, 0, 134, Short.MAX_VALUE)
                     .addComponent(_fileInputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(_multipleSetPurposeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout _multipleDataSetsTabLayout = new javax.swing.GroupLayout(_multipleDataSetsTab);
@@ -2403,7 +2404,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(109, Short.MAX_VALUE))
+                .addContainerGap(104, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -2807,7 +2808,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Max Circle File");
+                    fc.setDialogTitle("Select Source Max Circle Import File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -3685,7 +3686,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
                     JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                    fc.setDialogTitle("Select Source Adjustments File");
+                    fc.setDialogTitle("Select Source Adjustments Import File");
                     fc.addChoosableFileFilter(new InputFileFilter("dbf","dBase Files (*.dbf)"));
                     fc.addChoosableFileFilter(new InputFileFilter("csv","Delimited Files (*.csv)"));
                     fc.addChoosableFileFilter(new InputFileFilter("xls","Excel Files (*.xls)"));
@@ -4355,7 +4356,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 411, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
                     .addComponent(_closeButton))
