@@ -494,7 +494,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case HOMOGENEOUSPOISSON:    
             case BERNOULLI:
             case ORDINAL:
-            case CATEGORICAL:    
+            case CATEGORICAL:  
+            case WEIGHTEDNORMAL:    
             case NORMAL:
             case EXPONENTIAL:
                 _percentageOfPopulationLabel.setText("percent of the study period (<= 90%, default = 50%)");
@@ -2024,7 +2025,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         });
         jScrollPane1.setViewportView(_inputDataSetsList);
 
-        _addDataSetButton.setText("Add");
+        _addDataSetButton.setText("Add"); // NOI18N
         _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 EnableDataSetList(true);
@@ -2048,7 +2049,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _removeDataSetButton.setText("Remove");
+        _removeDataSetButton.setText("Remove"); // NOI18N
         _removeDataSetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 // update remaining list box names
@@ -2101,7 +2102,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _caseFileLabel.setText("Case File:");
+        _caseFileLabel.setText("Case File:"); // NOI18N
 
         _caseFileTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -2116,8 +2117,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _caseFileBrowseButton.setText("...");
-        _caseFileBrowseButton.setToolTipText("Browse for case file ...");
+        _caseFileBrowseButton.setText("..."); // NOI18N
+        _caseFileBrowseButton.setToolTipText("Browse for case file ..."); // NOI18N
         _caseFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2132,8 +2133,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _caseFileImportButton.setText("...");
-        _caseFileImportButton.setToolTipText("Import case file ...");
+        _caseFileImportButton.setText("..."); // NOI18N
+        _caseFileImportButton.setToolTipText("Import case file ..."); // NOI18N
         _caseFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -2155,7 +2156,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _controlFileLabel.setText("Control File:");
+        _controlFileLabel.setText("Control File:"); // NOI18N
 
         _controlFileTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -2170,8 +2171,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _controlFileBrowseButton.setText("...");
-        _controlFileBrowseButton.setToolTipText("Browse for control file ...");
+        _controlFileBrowseButton.setText("..."); // NOI18N
+        _controlFileBrowseButton.setToolTipText("Browse for control file ..."); // NOI18N
         _controlFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2186,8 +2187,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _controlFileImportButton.setText("...");
-        _controlFileImportButton.setToolTipText("Import control file ...");
+        _controlFileImportButton.setText("..."); // NOI18N
+        _controlFileImportButton.setToolTipText("Import control file ..."); // NOI18N
         _controlFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -2209,7 +2210,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _populationFileLabel.setText("Population File:");
+        _populationFileLabel.setText("Population File:"); // NOI18N
 
         _populationFileTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void changedUpdate(DocumentEvent e) {
@@ -2224,8 +2225,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _populationFileBrowseButton.setText("...");
-        _populationFileBrowseButton.setToolTipText("Browse for population file ...");
+        _populationFileBrowseButton.setText("..."); // NOI18N
+        _populationFileBrowseButton.setToolTipText("Browse for population file ..."); // NOI18N
         _populationFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2240,8 +2241,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _populationFileImportButton.setText("...");
-        _populationFileImportButton.setToolTipText("Import population file ...");
+        _populationFileImportButton.setText("..."); // NOI18N
+        _populationFileImportButton.setToolTipText("Import population file ..."); // NOI18N
         _populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -2319,10 +2320,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(17, Short.MAX_VALUE))
         );
 
-        _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:");
+        _multipleDataSetPurposeLabel.setText("Purpose of Multiple Data Sets:"); // NOI18N
 
         _multivariateAdjustmentsRadioButton.setSelected(true);
-        _multivariateAdjustmentsRadioButton.setText("Multivariate Analysis (clusters in one or more data sets)");
+        _multivariateAdjustmentsRadioButton.setText("Multivariate Analysis (clusters in one or more data sets)"); // NOI18N
         _multivariateAdjustmentsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _multivariateAdjustmentsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _multivariateAdjustmentsRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2331,7 +2332,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _adjustmentByDataSetsRadioButton.setText("Adjustment (clusters in all data sets simultaneously)");
+        _adjustmentByDataSetsRadioButton.setText("Adjustment (clusters in all data sets simultaneously)"); // NOI18N
         _adjustmentByDataSetsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _adjustmentByDataSetsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _adjustmentByDataSetsRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2413,7 +2414,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Study Period Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _strictStudyPeriodCheckRadioButton.setSelected(true);
-        _strictStudyPeriodCheckRadioButton.setText("Check to ensure that cases and controls are within the Study Period.");
+        _strictStudyPeriodCheckRadioButton.setText("Check to ensure that cases and controls are within the Study Period."); // NOI18N
         _strictStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _strictStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _strictStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2422,7 +2423,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _relaxedStudyPeriodCheckRadioButton.setText("Ignore cases and controls that are outside the Study Period.");
+        _relaxedStudyPeriodCheckRadioButton.setText("Ignore cases and controls that are outside the Study Period."); // NOI18N
         _relaxedStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _relaxedStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _relaxedStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2455,7 +2456,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Coordinates Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _strictCoordinatesRadioButton.setSelected(true);
-        _strictCoordinatesRadioButton.setText("Check to ensure that all locations in the case, control and population files are present");
+        _strictCoordinatesRadioButton.setText("Check to ensure that all locations in the case, control and population files are present"); // NOI18N
         _strictCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _strictCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _strictCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2464,7 +2465,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _relaxedCoordinatesRadioButton.setText("Ignore data in the case, control and population files that do not correspond to a location ID");
+        _relaxedCoordinatesRadioButton.setText("Ignore data in the case, control and population files that do not correspond to a location ID"); // NOI18N
         _relaxedCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _relaxedCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _relaxedCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2473,9 +2474,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _strictCoordinatesLabel.setText(" in the coordinates file.");
+        _strictCoordinatesLabel.setText(" in the coordinates file."); // NOI18N
 
-        _relaxedCoordinatesLabel.setText(" listed in the coordinates file.");
+        _relaxedCoordinatesLabel.setText(" listed in the coordinates file."); // NOI18N
 
         javax.swing.GroupLayout _geographicalCoordinatesCheckGroupLayout = new javax.swing.GroupLayout(_geographicalCoordinatesCheckGroup);
         _geographicalCoordinatesCheckGroup.setLayout(_geographicalCoordinatesCheckGroupLayout);
@@ -2533,7 +2534,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Special Neighbor Files", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a user defined file");
+        _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a user defined file"); // NOI18N
         _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _specifiyNeighborsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _specifiyNeighborsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -2549,8 +2550,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _neighborsFileBrowseButton.setText("...");
-        _neighborsFileBrowseButton.setToolTipText("Browse for neighbors file ...");
+        _neighborsFileBrowseButton.setText("..."); // NOI18N
+        _neighborsFileBrowseButton.setToolTipText("Browse for neighbors file ..."); // NOI18N
         _neighborsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2565,7 +2566,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _specifiyMetaLocationsFileCheckBox.setText("Specify meta locations through a user defined file");
+        _specifiyMetaLocationsFileCheckBox.setText("Specify meta locations through a user defined file"); // NOI18N
         _specifiyMetaLocationsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _specifiyMetaLocationsFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _specifiyMetaLocationsFileCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -2581,8 +2582,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _metaLocationsFileBrowseButton.setText("...");
-        _metaLocationsFileBrowseButton.setToolTipText("Browse for meta locations file ...");
+        _metaLocationsFileBrowseButton.setText("..."); // NOI18N
+        _metaLocationsFileBrowseButton.setToolTipText("Browse for meta locations file ..."); // NOI18N
         _metaLocationsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2658,7 +2659,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _onePerLocationIdRadioButton.setSelected(true);
-        _onePerLocationIdRadioButton.setText("Allow only of set of coordinates per location ID.");
+        _onePerLocationIdRadioButton.setText("Allow only of set of coordinates per location ID."); // NOI18N
         _onePerLocationIdRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _onePerLocationIdRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _onePerLocationIdRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2667,7 +2668,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _atLeastOneRadioButton.setText("Include location ID in the scanning window if at least on set of coordinates is included.");
+        _atLeastOneRadioButton.setText("Include location ID in the scanning window if at least on set of coordinates is included."); // NOI18N
         _atLeastOneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _atLeastOneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _atLeastOneRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2676,7 +2677,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _allLocationsRadioButton.setText("Include location ID in the scanning window if all sets of coordinates are included.");
+        _allLocationsRadioButton.setText("Include location ID in the scanning window if all sets of coordinates are included."); // NOI18N
         _allLocationsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _allLocationsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _allLocationsRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2730,7 +2731,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _maxSpatialClusterSizeTextField.setText("50");
+        _maxSpatialClusterSizeTextField.setText("50"); // NOI18N
         _maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_maxSpatialClusterSizeTextField, e, 5);
@@ -2752,7 +2753,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _percentageOfPopulationLabel.setText("percent of the population defined in the max circle size file (<= 50%)");
+        _percentageOfPopulationLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
 
         _spatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _spatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2763,7 +2764,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxSpatialPercentFileTextField.setText("50");
+        _maxSpatialPercentFileTextField.setText("50"); // NOI18N
         _maxSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_maxSpatialPercentFileTextField, e, 5);
@@ -2785,10 +2786,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _percentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)");
+        _percentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
 
-        _maxCirclePopFileBrowseButton.setText("...");
-        _maxCirclePopFileBrowseButton.setToolTipText("Browse for max circle size file ...");
+        _maxCirclePopFileBrowseButton.setText("..."); // NOI18N
+        _maxCirclePopFileBrowseButton.setToolTipText("Browse for max circle size file ..."); // NOI18N
         _maxCirclePopFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -2803,8 +2804,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxCirclePopFileImportButton.setText("...");
-        _maxCirclePopFileImportButton.setToolTipText("Import max circle size file ...");
+        _maxCirclePopFileImportButton.setText("..."); // NOI18N
+        _maxCirclePopFileImportButton.setToolTipText("Import max circle size file ..."); // NOI18N
         _maxCirclePopFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -2835,9 +2836,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _distancePrefixLabel.setText("is an ellipse with a");
+        _distancePrefixLabel.setText("is an ellipse with a"); // NOI18N
 
-        _maxSpatialRadiusTextField.setText("1");
+        _maxSpatialRadiusTextField.setText("1"); // NOI18N
         _maxSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveNumericKeyTyped(_maxSpatialRadiusTextField, e, 20);
@@ -2857,7 +2858,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxRadiusLabel.setText("kilometer radius");
+        _maxRadiusLabel.setText("kilometer radius"); // NOI18N
 
         javax.swing.GroupLayout _spatialOptionsGroupLayout = new javax.swing.GroupLayout(_spatialOptionsGroup);
         _spatialOptionsGroup.setLayout(_spatialOptionsGroupLayout);
@@ -2924,7 +2925,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(21, Short.MAX_VALUE))
         );
 
-        _inclPureTempClustCheckBox.setText("Include Purely Temporal Clusters (Spatial Size = 100%)");
+        _inclPureTempClustCheckBox.setText("Include Purely Temporal Clusters (Spatial Size = 100%)"); // NOI18N
         _inclPureTempClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _inclPureTempClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _inclPureTempClustCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -2936,7 +2937,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _circularRadioButton.setSelected(true);
-        _circularRadioButton.setText("Circular");
+        _circularRadioButton.setText("Circular"); // NOI18N
         _circularRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _circularRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _circularRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2948,7 +2949,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _ellipticRadioButton.setText("Elliptic");
+        _ellipticRadioButton.setText("Elliptic"); // NOI18N
         _ellipticRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _ellipticRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _ellipticRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2960,7 +2961,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _nonCompactnessPenaltyLabel.setText("Non-compactness penalty:");
+        _nonCompactnessPenaltyLabel.setText("Non-compactness penalty:"); // NOI18N
 
         _nonCompactnessPenaltyComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "None", "Medium", "Strong" }));
         _nonCompactnessPenaltyComboBox.setLightWeightPopupEnabled(false);
@@ -2999,7 +3000,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _performIsotonicScanCheckBox.setText("Use Isotonic Spatial Scan Statistic");
+        _performIsotonicScanCheckBox.setText("Use Isotonic Spatial Scan Statistic"); // NOI18N
         _performIsotonicScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _performIsotonicScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _performIsotonicScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3041,7 +3042,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _percentageTemporalRadioButton.setSelected(true);
-        _percentageTemporalRadioButton.setText("is");
+        _percentageTemporalRadioButton.setText("is"); // NOI18N
         _percentageTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _percentageTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _percentageTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3054,7 +3055,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _timeTemporalRadioButton.setText("is");
+        _timeTemporalRadioButton.setText("is"); // NOI18N
         _timeTemporalRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _timeTemporalRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _timeTemporalRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3067,7 +3068,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxTemporalClusterSizeTextField.setText("50");
+        _maxTemporalClusterSizeTextField.setText("50"); // NOI18N
         _maxTemporalClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeTextField, e, 5);
@@ -3090,9 +3091,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)");
+        _percentageOfStudyPeriodLabel.setText("percent of the study period (<= 90%, default = 50%)"); // NOI18N
 
-        _maxTemporalClusterSizeUnitsTextField.setText("1");
+        _maxTemporalClusterSizeUnitsTextField.setText("1"); // NOI18N
         _maxTemporalClusterSizeUnitsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveNumericKeyTyped(_maxTemporalClusterSizeUnitsTextField, e, 6);
@@ -3112,7 +3113,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxTemporalTimeUnitsLabel.setText("years");
+        _maxTemporalTimeUnitsLabel.setText("years"); // NOI18N
 
         javax.swing.GroupLayout _temporalOptionsGroupLayout = new javax.swing.GroupLayout(_temporalOptionsGroup);
         _temporalOptionsGroup.setLayout(_temporalOptionsGroupLayout);
@@ -3151,7 +3152,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _includePureSpacClustCheckBox.setText("Include Purely Spatial Clusters (Temporal Size = 100%)");
+        _includePureSpacClustCheckBox.setText("Include Purely Spatial Clusters (Temporal Size = 100%)"); // NOI18N
         _includePureSpacClustCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _includePureSpacClustCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _includePureSpacClustCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3162,7 +3163,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _restrictTemporalRangeCheckBox.setText("Include only windows with:");
+        _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
         _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _restrictTemporalRangeCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3173,11 +3174,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _startWindowRangeLabel.setText("Start time in range:");
+        _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
 
-        _endWindowRangeLabel.setText("End time in range:");
+        _endWindowRangeLabel.setText("End time in range:"); // NOI18N
 
-        _startRangeStartYearTextField.setText("2000");
+        _startRangeStartYearTextField.setText("2000"); // NOI18N
         _startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3195,7 +3196,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeStartYearTextField.setText("2000");
+        _endRangeStartYearTextField.setText("2000"); // NOI18N
         _endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3213,7 +3214,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _startRangeStartMonthTextField.setText("01");
+        _startRangeStartMonthTextField.setText("01"); // NOI18N
         _startRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3231,7 +3232,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeStartMonthTextField.setText("12");
+        _endRangeStartMonthTextField.setText("12"); // NOI18N
         _endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3249,7 +3250,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _startRangeStartDayTextField.setText("01");
+        _startRangeStartDayTextField.setText("01"); // NOI18N
         _startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3267,7 +3268,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeStartDayTextField.setText("31");
+        _endRangeStartDayTextField.setText("31"); // NOI18N
         _endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3285,11 +3286,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _startRangeToLabel.setText("to");
+        _startRangeToLabel.setText("to"); // NOI18N
 
-        _endRangeToLabel.setText("to");
+        _endRangeToLabel.setText("to"); // NOI18N
 
-        _startRangeEndYearTextField.setText("2000");
+        _startRangeEndYearTextField.setText("2000"); // NOI18N
         _startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3307,7 +3308,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeEndYearTextField.setText("2000");
+        _endRangeEndYearTextField.setText("2000"); // NOI18N
         _endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3325,7 +3326,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _startRangeEndMonthTextField.setText("01");
+        _startRangeEndMonthTextField.setText("01"); // NOI18N
         _startRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3343,7 +3344,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _startRangeEndDayTextField.setText("01");
+        _startRangeEndDayTextField.setText("01"); // NOI18N
         _startRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3361,7 +3362,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeEndMonthTextField.setText("12");
+        _endRangeEndMonthTextField.setText("12"); // NOI18N
         _endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3379,7 +3380,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeEndDayTextField.setText("31");
+        _endRangeEndDayTextField.setText("31"); // NOI18N
         _endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3501,7 +3502,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _temporalTrendAdjNoneRadioButton.setSelected(true);
-        _temporalTrendAdjNoneRadioButton.setText("None");
+        _temporalTrendAdjNoneRadioButton.setText("None"); // NOI18N
         _temporalTrendAdjNoneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _temporalTrendAdjNoneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _temporalTrendAdjNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3511,7 +3512,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _temporalTrendAdjTimeStratifiedRadioButton.setText("Nonparametric, with time stratified randomization");
+        _temporalTrendAdjTimeStratifiedRadioButton.setText("Nonparametric, with time stratified randomization"); // NOI18N
         _temporalTrendAdjTimeStratifiedRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _temporalTrendAdjTimeStratifiedRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _temporalTrendAdjTimeStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3524,7 +3525,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _temporalTrendAdjLogLinearRadioButton.setText("Log linear trend with");
+        _temporalTrendAdjLogLinearRadioButton.setText("Log linear trend with"); // NOI18N
         _temporalTrendAdjLogLinearRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _temporalTrendAdjLogLinearRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _temporalTrendAdjLogLinearRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3537,7 +3538,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _temporalTrendAdjLogLinearCalcRadioButton.setText("Log linear with automatically calculated trend");
+        _temporalTrendAdjLogLinearCalcRadioButton.setText("Log linear with automatically calculated trend"); // NOI18N
         _temporalTrendAdjLogLinearCalcRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _temporalTrendAdjLogLinearCalcRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _temporalTrendAdjLogLinearCalcRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3547,7 +3548,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _logLinearTextField.setText("0");
+        _logLinearTextField.setText("0"); // NOI18N
         _logLinearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3567,7 +3568,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _logLinearLabel.setText("%  per year");
+        _logLinearLabel.setText("%  per year"); // NOI18N
 
         javax.swing.GroupLayout _temporalTrendAdjGroupLayout = new javax.swing.GroupLayout(_temporalTrendAdjGroup);
         _temporalTrendAdjGroup.setLayout(_temporalTrendAdjGroupLayout);
@@ -3607,7 +3608,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _spatialAdjustmentsNoneRadioButton.setSelected(true);
-        _spatialAdjustmentsNoneRadioButton.setText("None");
+        _spatialAdjustmentsNoneRadioButton.setText("None"); // NOI18N
         _spatialAdjustmentsNoneRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _spatialAdjustmentsNoneRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _spatialAdjustmentsNoneRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3617,7 +3618,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _spatialAdjustmentsSpatialStratifiedRadioButton.setText("Nonparametric, with spatial stratified randomization");
+        _spatialAdjustmentsSpatialStratifiedRadioButton.setText("Nonparametric, with spatial stratified randomization"); // NOI18N
         _spatialAdjustmentsSpatialStratifiedRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _spatialAdjustmentsSpatialStratifiedRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _spatialAdjustmentsSpatialStratifiedRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -3650,7 +3651,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks");
+        _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
         _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _adjustForKnownRelativeRisksCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _adjustForKnownRelativeRisksCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3665,8 +3666,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _adjustmentsFileBrowseButton.setText("...");
-        _adjustmentsFileBrowseButton.setToolTipText("Browse for adjustments file ...");
+        _adjustmentsFileBrowseButton.setText("..."); // NOI18N
+        _adjustmentsFileBrowseButton.setToolTipText("Browse for adjustments file ..."); // NOI18N
         _adjustmentsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
@@ -3681,8 +3682,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _adjustmentsFileImportButton.setText("...");
-        _adjustmentsFileImportButton.setToolTipText("Import adjustments file ...");
+        _adjustmentsFileImportButton.setText("..."); // NOI18N
+        _adjustmentsFileImportButton.setToolTipText("Import adjustments file ..."); // NOI18N
         _adjustmentsFileImportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 try {
@@ -3704,7 +3705,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _adjustmentsByRelativeRisksFileLabel.setText("Adjustments File:");
+        _adjustmentsByRelativeRisksFileLabel.setText("Adjustments File:"); // NOI18N
 
         javax.swing.GroupLayout _knownAdjustmentsGroupLayout = new javax.swing.GroupLayout(_knownAdjustmentsGroup);
         _knownAdjustmentsGroup.setLayout(_knownAdjustmentsGroupLayout);
@@ -3768,7 +3769,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _earlyTerminationGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Early Termination", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _terminateEarlyCheckBox.setText("Terminate the analysis early for large p-values");
+        _terminateEarlyCheckBox.setText("Terminate the analysis early for large p-values"); // NOI18N
         _terminateEarlyCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _terminateEarlyCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _terminateEarlyCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3796,7 +3797,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _prospectiveSurveillanceGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Prospective Surveillance", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _adjustForEarlierAnalysesCheckBox.setText("Adjust for earlier analyses performed since:");
+        _adjustForEarlierAnalysesCheckBox.setText("Adjust for earlier analyses performed since:"); // NOI18N
         _adjustForEarlierAnalysesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _adjustForEarlierAnalysesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _adjustForEarlierAnalysesCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3806,7 +3807,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _prospectiveStartDateYearTextField.setText("2000");
+        _prospectiveStartDateYearTextField.setText("2000"); // NOI18N
         _prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3824,7 +3825,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _prospectiveStartDateMonthTextField.setText("12");
+        _prospectiveStartDateMonthTextField.setText("12"); // NOI18N
         _prospectiveStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3842,7 +3843,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _prospectiveStartDateDayTextField.setText("31");
+        _prospectiveStartDateDayTextField.setText("31"); // NOI18N
         _prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
@@ -3862,15 +3863,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _prospectiveStartYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _prospectiveStartYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartYearLabel.setText("Year");
+        _prospectiveStartYearLabel.setText("Year"); // NOI18N
 
         _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _prospectiveStartMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartMonthLabel.setText("Month");
+        _prospectiveStartMonthLabel.setText("Month"); // NOI18N
 
         _prospectiveStartDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
         _prospectiveStartDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartDayLabel.setText("Day");
+        _prospectiveStartDayLabel.setText("Day"); // NOI18N
 
         javax.swing.GroupLayout _prospectiveSurveillanceGroupLayout = new javax.swing.GroupLayout(_prospectiveSurveillanceGroup);
         _prospectiveSurveillanceGroup.setLayout(_prospectiveSurveillanceGroupLayout);
@@ -3911,7 +3912,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant");
+        _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
         _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _reportCriticalValuesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3939,7 +3940,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters");
+        _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
         _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _performIterativeScanCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _performIterativeScanCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -3949,9 +3950,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxIterativeScansLabel.setText("Maximum number of iterations:");
+        _maxIterativeScansLabel.setText("Maximum number of iterations:"); // NOI18N
 
-        _numIterativeScansTextField.setText("10");
+        _numIterativeScansTextField.setText("10"); // NOI18N
         _numIterativeScansTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveNumericKeyTyped(_numIterativeScansTextField, e, 5);
@@ -3973,9 +3974,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _iterativeCutoffLabel.setText("Stop when p-value greater:");
+        _iterativeCutoffLabel.setText("Stop when p-value greater:"); // NOI18N
 
-        _iterativeScanCutoffTextField.setText(".05");
+        _iterativeScanCutoffTextField.setText(".05"); // NOI18N
         _iterativeScanCutoffTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_iterativeScanCutoffTextField, e, 20);
@@ -4064,7 +4065,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
-        _criteriaSecClustersNoGeoLapRadioButton.setText("No Geographical Overlap");
+        _criteriaSecClustersNoGeoLapRadioButton.setText("No Geographical Overlap"); // NOI18N
         _criteriaSecClustersNoGeoLapRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _criteriaSecClustersNoGeoLapRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _criteriaSecClustersNoGeoLapRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -4073,7 +4074,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _criteriaSecClustersNoCentersRadioButton.setText("No Cluster Centers in Other Clusters");
+        _criteriaSecClustersNoCentersRadioButton.setText("No Cluster Centers in Other Clusters"); // NOI18N
         _criteriaSecClustersNoCentersRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _criteriaSecClustersNoCentersRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _criteriaSecClustersNoCentersRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -4082,7 +4083,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _criteriaSecClustersNoCentersMoreRadioButton.setText("No Cluster Centers in More Likely Clusters");
+        _criteriaSecClustersNoCentersMoreRadioButton.setText("No Cluster Centers in More Likely Clusters"); // NOI18N
         _criteriaSecClustersNoCentersMoreRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _criteriaSecClustersNoCentersMoreRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _criteriaSecClustersNoCentersMoreRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -4091,7 +4092,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _criteriaSecClustersNoCentersLessRadioButton.setText("No Cluster Centers in Less Likely Clusters");
+        _criteriaSecClustersNoCentersLessRadioButton.setText("No Cluster Centers in Less Likely Clusters"); // NOI18N
         _criteriaSecClustersNoCentersLessRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _criteriaSecClustersNoCentersLessRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _criteriaSecClustersNoCentersLessRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -4100,7 +4101,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _criteriaSecClustersNoCentersEachRadioButton.setText("No Pairs of Centers Both in Each Others Clusters");
+        _criteriaSecClustersNoCentersEachRadioButton.setText("No Pairs of Centers Both in Each Others Clusters"); // NOI18N
         _criteriaSecClustersNoCentersEachRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _criteriaSecClustersNoCentersEachRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _criteriaSecClustersNoCentersEachRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -4109,7 +4110,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _criteriaSecClustersNoRestrictionsRadioButton.setText("No Restrictions = Most Likely Cluster for Each Grid Point");
+        _criteriaSecClustersNoRestrictionsRadioButton.setText("No Restrictions = Most Likely Cluster for Each Grid Point"); // NOI18N
         _criteriaSecClustersNoRestrictionsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _criteriaSecClustersNoRestrictionsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _criteriaSecClustersNoRestrictionsRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -4153,7 +4154,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
-        _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:");
+        _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
         _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _restrictReportedClustersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _restrictReportedClustersCheckBox.addItemListener(new java.awt.event.ItemListener() {
@@ -4163,7 +4164,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxReportedSpatialClusterSizeTextField.setText("50");
+        _maxReportedSpatialClusterSizeTextField.setText("50"); // NOI18N
         _maxReportedSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialClusterSizeTextField, e, 5);
@@ -4183,7 +4184,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)");
+        _reportedPercentOfPopulationLabel.setText("percent of the population at risk (<= 50%, default = 50%)"); // NOI18N
 
         _reportedSpatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _reportedSpatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -4194,7 +4195,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxReportedSpatialPercentFileTextField.setText("50");
+        _maxReportedSpatialPercentFileTextField.setText("50"); // NOI18N
         _maxReportedSpatialPercentFileTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveFloatKeyTyped(_maxReportedSpatialPercentFileTextField, e, 5);
@@ -4214,7 +4215,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)");
+        _reportedPercentageOfPopFileLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
 
         _reportedSpatialDistanceCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _reportedSpatialDistanceCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -4225,9 +4226,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _reportedMaxDistanceLabel.setText("is an ellipse with a");
+        _reportedMaxDistanceLabel.setText("is an ellipse with a"); // NOI18N
 
-        _maxReportedSpatialRadiusTextField.setText("1");
+        _maxReportedSpatialRadiusTextField.setText("1"); // NOI18N
         _maxReportedSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validatePostiveNumericKeyTyped(_maxReportedSpatialRadiusTextField, e, 20);
@@ -4247,7 +4248,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _maxReportedRadiusLabel.setText("kilometer radius");
+        _maxReportedRadiusLabel.setText("kilometer radius"); // NOI18N
 
         javax.swing.GroupLayout _reportedSpatialOptionsGroupLayout = new javax.swing.GroupLayout(_reportedSpatialOptionsGroup);
         _reportedSpatialOptionsGroup.setLayout(_reportedSpatialOptionsGroupLayout);
@@ -4327,14 +4328,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
 
-        _closeButton.setText("Close");
+        _closeButton.setText("Close"); // NOI18N
         _closeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 setVisible(false, null);
             }
         });
 
-        _setDefaultButton.setText("Set Defaults");
+        _setDefaultButton.setText("Set Defaults"); // NOI18N
         _setDefaultButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 SetDefaultsClick();
@@ -4357,7 +4358,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 411, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
                     .addComponent(_closeButton))
