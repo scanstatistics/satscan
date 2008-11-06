@@ -3,6 +3,7 @@
 #define __SCAN_REGION_H
 //*****************************************************************************
 #include <vector>
+#include <map>
 #include "RandomDistribution.h"
 
 /* Abstract observable region. */
@@ -119,11 +120,11 @@ class ConvexPolygonObservableRegion : public ObservableRegion {
                                            return *this;
                                         }
 
-        virtual double         getArea() const {return _areaOfRegion;}
-        bool                   intersectsPoint(double px, double py, bool forceNonInclusive) const;
-        bool                   intersectsRegion(const ConvexPolygonObservableRegion& other) const;
-        virtual std::string    toString() const;
-        void                   retrieveRandomPointInRegion(double& x, double& y, RandomNumberGenerator& rng) const;
+        virtual double                  getArea() const {return _areaOfRegion;}
+        bool                            intersectsPoint(double px, double py, bool forceNonInclusive) const;
+        bool                            intersectsRegion(const ConvexPolygonObservableRegion& other) const;
+        virtual std::string             toString() const;
+        void                            retrieveRandomPointInRegion(double& x, double& y, RandomNumberGenerator& rng) const;
 };
 
 class ConvexPolygonBuilder {
