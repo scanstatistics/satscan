@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Vector;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JRootPane;
@@ -37,13 +38,8 @@ import org.satscan.app.UnknownEnumException;
 public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     public enum FocusedTabSet {
-
         INPUT, ANALYSIS, OUTPUT
-    }
-
-    
-    
-        ;
+    };
     private JPanel _glass = null;
     private final JRootPane _rootPane;
     private final Component _rootPaneInitialGlass;
@@ -61,6 +57,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      */
     public AdvancedParameterSettingsFrame(final JRootPane rootPane, final ParameterSettingsFrame analysisSettingsWindow, final Parameters parameters) {
         initComponents();
+        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
         _analysisSettingsWindow = analysisSettingsWindow;
         _rootPaneInitialGlass = rootPane.getGlassPane();

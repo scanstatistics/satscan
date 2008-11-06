@@ -5,6 +5,7 @@ import java.awt.Container;
 import java.beans.PropertyVetoException;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
@@ -47,6 +48,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     public ParameterSettingsFrame(final JRootPane rootPane, final String sParameterFilename) {
         initComponents();
+        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         _rootPane = rootPane;
         addInternalFrameListener(this);
         setUp(sParameterFilename);

@@ -3,6 +3,7 @@ package org.satscan.gui;
 import java.beans.PropertyVetoException;
 import java.io.FileReader;
 import java.io.IOException;
+import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollBar;
@@ -32,6 +33,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      */
     public AnalysisRunInternalFrame(final Parameters parameters) {
         initComponents();
+        setFrameIcon(new ImageIcon(getClass().getResource("/SaTScan.png")));
         addInternalFrameListener(this);
         _parameters = parameters;
         setTitle("Running " + (_parameters.GetSourceFileName().equals("") ? "Session" : _parameters.GetSourceFileName()));
