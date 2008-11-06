@@ -143,10 +143,10 @@ std::string ConvexPolygonObservableRegion::toString() const {
     polygon << "Rectangular Bound Region(_x_left=" << _x_left << ";_x_right=" 
             << _x_right << ";_y_bottom=" << _y_bottom << ";_y_top=" << _y_top << ")" << std::endl;
     polygon << "Area of Region: "  << _areaOfRegion << std::endl;
-    for (int i=0; i < _linearInequalities.size(); ++i) {
+    for (size_t i=0; i < _linearInequalities.size(); ++i) {
         polygon << "Linear Inequality: "  << _linearInequalities[i].toString() << std::endl;
     }
-    for (int i=0; i < _vertices.size(); ++i) {
+    for (size_t i=0; i < _vertices.size(); ++i) {
         polygon << "Vertex: "  << _vertices[i].toString() << std::endl;
     }
     return polygon.str().c_str();
