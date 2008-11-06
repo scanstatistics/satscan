@@ -15,7 +15,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     virtual const char                * GetParameterLabel(ParameterType eParameterType) const;
     const IniParameterSpecification   & GetSpecifications() const;
     void                                ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType);
-    std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const;
+    std::vector<std::string>          & ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters, size_t iSuffixIndex) const;
     void                                ReadMultipleDataSetsSettings(const IniFile& SourceFile);
     void                                ReadObservableRegionSettings(const IniFile& SourceFile);
 

@@ -88,21 +88,20 @@ void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Paramet
 /** Reads parameter from ini file and returns all found key values in vector for
     those parameters that have optional additional keys, such as files with
     multiple datasets. */
-std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters) const {
+std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType, std::vector<std::string>& vParameters, size_t iSuffixIndex) const {
   long                  lSectionIndex, lKeyIndex;
   std::string           sNextKey;
   const char          * sSectionName, * sKey;
-  size_t                iRegion=1;
 
   vParameters.clear();
   if (GetSpecifications().GetMultipleParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
     //read possibly other dataset case source
     if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
       const IniSection  * pSection = SourceFile.GetSection(lSectionIndex);
-      printString(sNextKey, "%s%i", sKey, iRegion);
+      printString(sNextKey, "%s%i", sKey, iSuffixIndex);
       while ((lKeyIndex = pSection->FindKey(sNextKey.c_str())) > -1) {
            vParameters.push_back(std::string(pSection->GetLine(lKeyIndex)->GetValue()));
-           printString(sNextKey, "%s%i", sKey, ++iRegion);
+           printString(sNextKey, "%s%i", sKey, ++iSuffixIndex);
       }
     }
   }
@@ -117,15 +116,15 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceF
 
   try {
     ReadIniParameter(SourceFile, MULTI_DATASET_PURPOSE_TYPE);
-    ReadIniParameter(SourceFile, CASEFILE, vFilenames);
+    ReadIniParameter(SourceFile, CASEFILE, vFilenames, 2);
     for (t=0; t < vFilenames.size(); ++t)
       gParameters.SetCaseFileName(vFilenames[t].c_str(), true, t + 2);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
-    ReadIniParameter(SourceFile, CONTROLFILE, vFilenames);
+    ReadIniParameter(SourceFile, CONTROLFILE, vFilenames, 2);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
       gParameters.SetControlFileName(vFilenames[t].c_str(), true, t + 2);
-    ReadIniParameter(SourceFile, POPFILE, vFilenames);
+    ReadIniParameter(SourceFile, POPFILE, vFilenames, 2);
     iMostDataSets = std::max(iMostDataSets, vFilenames.size() + 1);
     for (t=0; t < vFilenames.size(); ++t)
       gParameters.SetPopulationFileName(vFilenames[t].c_str(), true, t + 2);
@@ -145,7 +144,7 @@ void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceF
   std::vector<std::string>      inequalities;
 
   try {
-    ReadIniParameter(SourceFile, OBSERVABLE_REGIONS, inequalities);
+    ReadIniParameter(SourceFile, OBSERVABLE_REGIONS, inequalities, 1);
     for (size_t t=0; t < inequalities.size(); ++t)
         gParameters.AddObservableRegion(inequalities[t].c_str(), t, t == 0);
   }
