@@ -123,7 +123,7 @@ void AdjustmentUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator,
                                     size_t tSetIndex) {
   if (Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex))
     gdRatio += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
-  else
+  else if (Calculator.LowRate(tCases, tMeasure, tSetIndex))
     gdRatio += -1 * Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 
