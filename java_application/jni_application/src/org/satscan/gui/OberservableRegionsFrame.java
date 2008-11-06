@@ -125,12 +125,15 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
         _inequalitiesListModel.clear();
         if (!_regionsList.getSelectionModel().isSelectionEmpty()) {
             int index = _regionsList.getSelectionModel().getMinSelectionIndex();
+           _inequalitiesForRegion.setText("Region " + (index + 1) +" Inequalities:");
             for (int i=0; index != -1 && i < _regionInequalities.get(index).size(); ++i) {
                 _inequalitiesListModel.addElement(_regionInequalities.get(index).get(i));
             }
             if (!_inequalitiesListModel.isEmpty()) {
                 _inequalitiesList.getSelectionModel().setSelectionInterval(0, 0);
             }
+        } else {
+          _inequalitiesForRegion.setText("Region Inequalities:");
         }
     }
     
@@ -323,15 +326,19 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
 
         _closeButton = new javax.swing.JButton();
         _regionsPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         _regionsList = new javax.swing.JList(_regionsListModel);
         _addRegionButton = new javax.swing.JButton();
         _deleteRegionButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        jPanel2 = new javax.swing.JPanel();
+        _inequalitiesForRegion = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         _inequalitiesList = new javax.swing.JList(_inequalitiesListModel);
         _addInequalityButton = new javax.swing.JButton();
         _deleteInequalityButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         _inequalitiesPanel = new javax.swing.JPanel();
         _ycoefficientTextField = new javax.swing.JTextField();
         _ycoefficientTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -419,6 +426,8 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
 
         _regionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Bounding Regions:"));
 
+        jLabel1.setText("Regions:");
+
         _regionsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         _regionsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
@@ -436,12 +445,53 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             }
         });
 
-        _deleteRegionButton.setText("Del");
+        _deleteRegionButton.setText("Delete");
         _deleteRegionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 deleteRegion();
             }
         });
+
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_addRegionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_deleteRegionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator1))
+                    .addComponent(jLabel1))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(11, 11, 11)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 139, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(_addRegionButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_deleteRegionButton))
+                            .addComponent(jScrollPane1))))
+                .addContainerGap())
+        );
+
+        _inequalitiesForRegion.setText("Region 1 Inequalities:");
 
         _inequalitiesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         _inequalitiesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -460,52 +510,56 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             }
         });
 
-        _deleteInequalityButton.setText("Del");
+        _deleteInequalityButton.setText("Delete");
         _deleteInequalityButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 deleteInequalityFromRegion();
             }
         });
 
-        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_addInequalityButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_deleteInequalityButton)))
+                    .addComponent(_inequalitiesForRegion))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(_inequalitiesForRegion)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(_addInequalityButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_deleteInequalityButton))
+                    .addComponent(jScrollPane2))
+                .addContainerGap())
+        );
 
         javax.swing.GroupLayout _regionsPanelLayout = new javax.swing.GroupLayout(_regionsPanel);
         _regionsPanel.setLayout(_regionsPanelLayout);
         _regionsPanelLayout.setHorizontalGroup(
             _regionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_regionsPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_regionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_deleteRegionButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_addRegionButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_regionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_deleteInequalityButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_addInequalityButton))
-                .addGap(39, 39, 39))
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         _regionsPanelLayout.setVerticalGroup(
             _regionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_regionsPanelLayout.createSequentialGroup()
-                .addGroup(_regionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 93, Short.MAX_VALUE)
-                    .addGroup(_regionsPanelLayout.createSequentialGroup()
-                        .addComponent(_addRegionButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_deleteRegionButton))
-                    .addGroup(_regionsPanelLayout.createSequentialGroup()
-                        .addComponent(_addInequalityButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_deleteInequalityButton)))
-                .addContainerGap())
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         _inequalitiesPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Inequality Editor"));
@@ -575,7 +629,7 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                 .addComponent(_interceptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_updateInequalityButton)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(57, Short.MAX_VALUE))
         );
         _inequalitiesPanelLayout.setVerticalGroup(
             _inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -589,7 +643,7 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                     .addComponent(_plusMinusComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_interceptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_updateInequalityButton, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -599,10 +653,11 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_inequalitiesPanel, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_closeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_regionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 395, Short.MAX_VALUE))
-                .addContainerGap())
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(_inequalitiesPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(_regionsPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -633,6 +688,7 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
     private javax.swing.JButton _closeButton;
     private javax.swing.JButton _deleteInequalityButton;
     private javax.swing.JButton _deleteRegionButton;
+    private javax.swing.JLabel _inequalitiesForRegion;
     private javax.swing.JList _inequalitiesList;
     private javax.swing.JPanel _inequalitiesPanel;
     private javax.swing.JComboBox _inequalitySelectComboBox;
@@ -645,6 +701,9 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
     private javax.swing.JLabel _xcoefficientLabel;
     private javax.swing.JTextField _xcoefficientTextField;
     private javax.swing.JTextField _ycoefficientTextField;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
