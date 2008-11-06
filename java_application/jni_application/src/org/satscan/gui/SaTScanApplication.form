@@ -215,6 +215,7 @@
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
@@ -259,11 +260,13 @@
               <Connection code="new NewSessionFileAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/New.gif"/>
+              <Image iconType="3" name="/New.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="New Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="jSeparator3">
         </Component>
         <Component class="javax.swing.JButton" name="_openSessionToolButton">
           <Properties>
@@ -271,7 +274,7 @@
               <Connection code="new OpenSessionFileAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Open.gif"/>
+              <Image iconType="3" name="/Folder.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Open Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
@@ -283,11 +286,13 @@
               <Connection code="_saveSessionAction" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Save.gif"/>
+              <Image iconType="3" name="/save.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Save Session" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="jSeparator1">
         </Component>
         <Component class="javax.swing.JButton" name="_executeSessionToolButton">
           <Properties>
@@ -301,17 +306,21 @@
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
         </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="jSeparator2">
+        </Component>
         <Component class="javax.swing.JButton" name="_printToolButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
               <Connection code="_printResultsAction" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Print.gif"/>
+              <Image iconType="3" name="/print.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Print Analysis Results" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="jSeparator4">
         </Component>
         <Component class="javax.swing.JButton" name="_versionUpdateToolButton">
           <Properties>
@@ -319,11 +328,13 @@
               <Connection code="new CheckNewVersionAction()" type="code"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/Update.gif"/>
+              <Image iconType="3" name="/update.png"/>
             </Property>
             <Property name="toolTipText" type="java.lang.String" value="Check for New Version" noResource="true"/>
             <Property name="hideActionText" type="boolean" value="true"/>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JToolBar$Separator" name="jSeparator5">
         </Component>
         <Component class="javax.swing.JButton" name="helpSystemToolButton">
           <Properties>
