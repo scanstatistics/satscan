@@ -10,6 +10,7 @@
 #include "NormalClusterData.h"
 #include "SVTTCluster.h"
 #include "SSException.h"
+#include "WeightedNormalRandomizer.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	          = ".col";
 const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	  = ".cci";
@@ -32,6 +33,7 @@ const char * ClusterInformationWriter::OBS_DIV_EXP_FIELD          = "ODE";
 const char * ClusterInformationWriter::TIME_TREND_IN_FIELD        = "TREND_IN";
 const char * ClusterInformationWriter::TIME_TREND_OUT_FIELD       = "TREND_OUT";
 const char * ClusterInformationWriter::TIME_TREND_DIFF_FIELD      = "TREND_DIFF";
+const char * ClusterInformationWriter::SIGMA_FIELD                = "SIGMA";
 
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -110,13 +112,17 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
 
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL) {
         CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      }
-      else {
+      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+        // Answer question in data write function:  
+        //   CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        //   CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        //   CreateField(vFieldDefinitions, SIGMA_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+      } else {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       }  
@@ -145,13 +151,16 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     CreateField(vDataFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
       CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-    }
-    else {
+    } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+      CreateField(vDataFieldDefinitions, SIGMA_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+    } else {
       CreateField(vDataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
     }
@@ -254,7 +263,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
-      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL) {
         dObserved = theCluster.GetObservedCount();
         dExpected = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = dExpected/dObserved;
@@ -262,13 +271,16 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         if (dCasesOutside) Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - dExpected)/dCasesOutside;
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
-          throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
+            throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteClusterInformation()");
         dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureAux(0),
                                                 Handler.GetDataSet().getTotalCases(), Handler.GetDataSet().getTotalMeasure(),
                                                 Handler.GetDataSet().getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
       }
+      if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+        // What would values be for multiple data sets?
+      } 
       if (gParameters.GetProbabilityModelType() != NORMAL &&  gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
@@ -363,17 +375,23 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
 
 /** Writes obvserved, expected and  observed/expected to file(s).*/
 void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iClusterNumber) const {
-  double                                        dObserved, dExpected, dCasesOutside, dUnbiasedVariance, dRelativeRisk;
+  double                                        dExpected, dUnbiasedVariance, dRelativeRisk;
+  count_t                                       dObserved, dCasesOutside;
   RecordBuffer                                  Record(vDataFieldDefinitions);
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(gDataHub));
   const DataSetHandler                        & Handler = gDataHub.GetDataSetHandler();
+  std::vector<tract_t>                          tractIndexes;
 
   if (theCluster.GetClusterType() == PURELYSPATIALMONOTONECLUSTER)
     vComprisedDataSetIndexes.push_back(0);
   else
     theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), *Calculator.get(), vComprisedDataSetIndexes);
+
+  // Calculate cluster location indexes once for weight normal model.
+  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+     theCluster.getLocationIndexes(gDataHub, tractIndexes);
 
   for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);
@@ -383,7 +401,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
     itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
     if (itr_Index != vComprisedDataSetIndexes.end()) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
-      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL) {
         dObserved = theCluster.GetObservedCount(iSetIndex);
         dExpected = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = (dObserved ? dExpected/dObserved : 0);
@@ -391,12 +409,32 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
         Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = (dCasesOutside ? (Handler.GetDataSet(iSetIndex).getTotalMeasure() - dExpected)/dCasesOutside : 0);
         const AbstractNormalClusterData * pClusterData=0;
         if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
-          throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
+            throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
         dUnbiasedVariance = GetUnbiasedVariance(static_cast<count_t>(dObserved), dExpected, pClusterData->GetMeasureAux(iSetIndex),
                                                 Handler.GetDataSet(iSetIndex).getTotalCases(), Handler.GetDataSet(iSetIndex).getTotalMeasure(),
                                                 Handler.GetDataSet(iSetIndex).getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
+      }
+      if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+        dObserved = theCluster.GetObservedCount(iSetIndex);
+        dExpected = theCluster.GetExpectedCount(gDataHub, iSetIndex);
+        const AbstractNormalClusterData * pClusterData=0;
+        if ((pClusterData = dynamic_cast<const AbstractNormalClusterData*>(theCluster.GetClusterData())) == 0)
+            throw prg_error("Dynamic cast to AbstractNormalClusterData failed.\n", "WriteCountData()");
+        Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = dExpected/pClusterData->GetMeasureAux(iSetIndex);
+        count_t tCasesOutside = Handler.GetDataSet(iSetIndex).getTotalCases() - dObserved;
+        double dEstimatedMeanOutside = (Handler.GetDataSet(iSetIndex).getTotalMeasure() - dExpected)/(Handler.GetDataSet(iSetIndex).getTotalMeasureAux() - pClusterData->GetMeasureAux(iSetIndex));
+        Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble() = dEstimatedMeanOutside;
+        if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+            const AbstractWeightedNormalRandomizer *pRandomizer;
+            if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(iSetIndex))) == 0)
+                throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteCountData()");
+            double dSigma = pRandomizer->getSigma(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes, 
+                                                  Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble(), 
+                                                  Record.GetFieldValue(MEAN_OUTSIDE_FIELD).AsDouble());
+            Record.GetFieldValue(SIGMA_FIELD).AsDouble() = std::sqrt(dSigma);
+        }
       }
       if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub, iSetIndex);
