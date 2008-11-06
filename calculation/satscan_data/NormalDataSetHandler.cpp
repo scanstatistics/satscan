@@ -255,7 +255,7 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
            eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tWeightVariable, &dRateVariable);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
-             dRateVariable = 1/dRateVariable; // see Joe's email -- question for Lan/Martin
+             // -- input is expected to be actual weight variable; not variance -- dRateVariable = 1/dRateVariable;
              pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable);
              tTotalCases += Count;
              //check that addition did not exceed data type limitations
