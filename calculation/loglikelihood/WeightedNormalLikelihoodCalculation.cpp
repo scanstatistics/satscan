@@ -32,8 +32,7 @@ WeightedNormalLikelihoodCalculator::~WeightedNormalLikelihoodCalculator() {}
     a particular clustering. If maximizing value equals negative double max value, zero is returned
     as this indicates that no significant maximizing value was calculated. */
 double WeightedNormalLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
-  //return -0.5 * gvDataSetTotals[tSetIndex].first * log(gvDataSetConstants[tSetIndex].first - dMaximizingValue) + gvDataSetConstants[tSetIndex].second;
-  return 0.5 * gvDataSetTotals[tSetIndex].first * log(gvDataSetConstants[tSetIndex].first - dMaximizingValue) + gvDataSetConstants[tSetIndex].second;
+  return -0.5 * gvDataSetTotals[tSetIndex].first * log(gvDataSetConstants[tSetIndex].first - dMaximizingValue) + gvDataSetConstants[tSetIndex].second;
 }
 
 /** Calculates the maximizing value given observed cases, expected cases, expected cases squared and data set index.
