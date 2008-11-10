@@ -707,7 +707,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     if (gParameters.GetOutputRelativeRisksFiles() &&
         (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
          gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
-         gParameters.GetProbabilityModelType() == SPATIALVARTEMPTREND)) {
+         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"

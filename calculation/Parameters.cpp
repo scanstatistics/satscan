@@ -472,7 +472,7 @@ void CParameters::RequestAllAdditionalOutputFiles() {
         GetProbabilityModelType() != HOMOGENEOUSPOISSON &&
         GetProbabilityModelType() != ORDINAL &&
         GetProbabilityModelType() != CATEGORICAL &&
-        GetProbabilityModelType() != SPATIALVARTEMPTREND) {
+        GetAnalysisType() != SPATIALVARTEMPTREND) {
      SetOutputRelativeRisksAscii(true);
      SetOutputRelativeRisksDBase(true);
    } else {
