@@ -46,25 +46,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "SaTScan.jar";
 
-    static { // load the appropriate shared object for VM
-        boolean is64BitVM = false;
-        try {
-            int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
-            if (bits != 0) {
-                is64BitVM = bits == 64;
-            } else // fallback if sun.arch.data.model isn't available
-            {
-                is64BitVM = System.getProperty("java.vm.name").toLowerCase().indexOf("64") >= 0;
-            }
-        } catch (Throwable t) {
-        }
-
-        if (is64BitVM) {
-            System.loadLibrary("satscan64");
-        } else {
-            System.loadLibrary("satscan32");
-        }
-    }
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction;
     private final ExecuteOptionsAction _executeOptionsAction;
@@ -104,6 +85,30 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         return _instance;
     }
 
+    /**
+     * Loads shared object libray.
+     * @param is64bitEnabled
+     */
+    public static void loadSharedLibray(boolean is64bitEnabled) {
+        boolean is64BitVM = false;
+        try {
+            int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
+            if (bits != 0) {
+                is64BitVM = bits == 64;
+            } else // fallback if sun.arch.data.model isn't available
+            {
+                is64BitVM = System.getProperty("java.vm.name").toLowerCase().indexOf("64") >= 0;
+            }
+        } catch (Throwable t) {
+        }
+
+        if (is64BitVM && is64bitEnabled) {
+            System.loadLibrary("satscan64");
+        } else {
+            System.loadLibrary("satscan32");
+        }
+    }
+    
     /**
      * Open new session action.
      */
@@ -813,7 +818,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(final String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
 
             public void run() {
@@ -821,6 +826,13 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e) {
                 }
+                //check and show End User License Agreement if not "unrequested":
+                String ENABLE_64BIT_OPTION_STRING = "-64bit-enabled";
+                boolean is64bitEnabled = false;                
+                for (int i = 0; i < args.length && !is64bitEnabled; ++i) {
+                   is64bitEnabled = args[i].startsWith(ENABLE_64BIT_OPTION_STRING);
+                }                
+                SaTScanApplication.loadSharedLibray(is64bitEnabled);
                 new SaTScanApplication().setVisible(true);
             }
         });
