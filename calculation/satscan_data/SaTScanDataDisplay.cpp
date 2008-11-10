@@ -2,6 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //---------------------------------------------------------------------------
+#include <vector>
 #include "SaTScanData.h"
 #include "LocationRiskEstimateWriter.h"
 #include "AsciiPrintFormat.h"
@@ -259,67 +260,77 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   }
   if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
     AbstractWeightedNormalRandomizer *pRandomizer;
-    PrintFormat.PrintSectionLabel(fp, "Simple Mean", true, false);
-    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
-      throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-    printString(buffer, "%.2f", pRandomizer->getUnweightedTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
+    std::vector<AbstractWeightedNormalRandomizer::DataSetStatistics> dataSetStatistics;
+
+    //Check that all randomizers are derived from AbstractWeightedNormalRandomizer class.
+    for (i=0; i < gDataSets->GetNumDataSets(); ++i) {
       if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
         throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-       printString(work, ", %.2f", pRandomizer->getUnweightedTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
+       dataSetStatistics.push_back(pRandomizer->getDataSetStatistics());
+    }
+
+    //Print total weight for all data sets.
+    PrintFormat.PrintSectionLabel(fp, "Total weights", true, false);
+    printString(buffer, "%.2f", dataSetStatistics.front().gtTotalWeight);
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+       printString(work, ", %.2f", dataSetStatistics[i].gtTotalWeight);
        buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
-    PrintFormat.PrintSectionLabel(fp, "Simple Variance", true, false);
-    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
-      throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-    printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux()));
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-      if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
-        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-       printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux()));
+    //Print mean for all data sets.
+    PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
+    printString(buffer, "%.2f", dataSetStatistics.front().gtMean);
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+       printString(work, ", %.2f", dataSetStatistics[i].gtMean);
        buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
-    PrintFormat.PrintSectionLabel(fp, "Simple Standard deviation", true, false);
-    if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(0))) == 0)
-      throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-    printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux())));
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-      if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(i))) == 0)
-        throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "DisplaySummary()");
-       printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), pRandomizer->getUnweightedTotalMeasure(), pRandomizer->getUnweightedTotalMeasureAux())));
+    //Print variance for all data sets.
+    PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
+    printString(buffer, "%.2f", dataSetStatistics.front().gtVariance);
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+       printString(work, ", %.2f", dataSetStatistics[i].gtVariance);
        buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
+    //Print standard deviation for all data sets.
+    PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
+    printString(buffer, "%.2f", std::sqrt(dataSetStatistics.front().gtVariance));
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+       printString(work, ", %.2f", std::sqrt(dataSetStatistics[i].gtVariance));
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    //Print weighted mean for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Weighted Mean", true, false);
-    printString(buffer, "%.2f", gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalMeasureAux());
-    for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.2f", gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalMeasureAux());
+    printString(buffer, "%.2f", dataSetStatistics.front().gtWeightedMean);
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+       printString(work, ", %.2f", dataSetStatistics[i].gtWeightedMean);
        buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    //PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    //buffer = "?";
-    //printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()));
-    //for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-    //   printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()));
-    //   buffer += work;
-    //  buffer += ",?";
-    //}
-    //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    //PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    //buffer = "?";
-    //printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())));
-    //for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-    //   printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())));
-    //   buffer += work;
-    //   buffer += ",?";
-    //}
-    //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    //Print weighted variance for all data sets.
+    PrintFormat.PrintSectionLabel(fp, "Weighted Variance", true, false);
+    printString(buffer, "%.2f", dataSetStatistics.front().gtWeightedVariance);
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+        printString(work, ", %.2f", dataSetStatistics[i].gtWeightedVariance);
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+    //Print weighted variance for all data sets.
+    PrintFormat.PrintSectionLabel(fp, "Weighted Standard deviation", true, false);
+    printString(buffer, "%.2f", std::sqrt(dataSetStatistics.front().gtWeightedVariance));
+    for (i=1; i < dataSetStatistics.size(); ++i) {
+       printString(work, ", %.2f", std::sqrt(dataSetStatistics[i].gtWeightedVariance));
+       buffer += work;
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
     double nAnnualTT = gDataSets->GetDataSet(0/*for now*/).getTimeTrend().SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
