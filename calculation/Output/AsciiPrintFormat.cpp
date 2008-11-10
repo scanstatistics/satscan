@@ -10,7 +10,7 @@
 /** width of label with one dataset for cluster section */
 const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
 /** width of label for summary section with one data set */
-const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 25;
+const unsigned int AsciiPrintFormat::giOneDataSetSummuaryLabelWidth  = 30;
 /** width of label for cluster section with multiple datasets */
 const unsigned int AsciiPrintFormat::giMultiDataSetClusterLabelWidth = 32;
 /** width of label for summary section with multiple datasets */
