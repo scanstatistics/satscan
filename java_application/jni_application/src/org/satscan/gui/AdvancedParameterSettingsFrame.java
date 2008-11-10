@@ -2751,7 +2751,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _percentageOfPopulationLabel.setText("percent of the population defined in the max circle size file (<= 50%)"); // NOI18N
+        _percentageOfPopulationLabel.setText("percent of the study period (<= 50%, default = 50%)"); // NOI18N
 
         _spatialPopulationFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _spatialPopulationFileCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -4356,7 +4356,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 411, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 26, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
                     .addComponent(_closeButton))
