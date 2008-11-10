@@ -30,7 +30,11 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * TIME_TREND_IN_FIELD;
       static const char       * TIME_TREND_OUT_FIELD;
       static const char       * TIME_TREND_DIFF_FIELD;
-      static const char       * SIGMA_FIELD;
+      static const char       * WEIGHTED_VARIANCE_FIELD;
+      static const char       * WEIGHTED_STD_FIELD;
+      static const char       * WEIGHTED_MEAN_INSIDE_FIELD;
+      static const char       * WEIGHTED_MEAN_OUTSIDE_FIELD;
+      static const char       * WEIGHT_INSIDE_FIELD;
 
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
