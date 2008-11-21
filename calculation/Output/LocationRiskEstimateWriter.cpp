@@ -7,9 +7,11 @@
 #include "SVTTData.h"
 #include "SSException.h"
 #include "ParametersPrint.h"
+#include "WeightedNormalRandomizer.h"
 
 const char * LocationRiskEstimateWriter::REL_RISK_EXT                     = ".rr";
 const char * LocationRiskEstimateWriter::TIME_TREND_FIELD                 = "TIME_TREND";
+const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD        = "W_MEAN";
 
 /** class constructor */
 LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataHub)
@@ -51,11 +53,14 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
       CreateField(vFieldDefinitions, DATASET_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
       CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+    } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+      CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);      
     }
-    if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+    else {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -87,9 +92,11 @@ std::string & LocationRiskEstimateWriter::getLocationId(std::string& sId, tract_
 /** writes relative risk data to record and appends to internal buffer of records */
 void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
   try {
-    if (gParameters.GetProbabilityModelType() == ORDINAL ||
-        gParameters.GetProbabilityModelType() == CATEGORICAL)
+    if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       RecordRelativeRiskDataAsOrdinal(DataHub);
+    else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      RecordRelativeRiskDataAsWeightedNormal(DataHub);
+    }
     else
       RecordRelativeRiskDataStandard(DataHub);
   }
@@ -203,6 +210,39 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
   }
   catch (prg_exception& x) {
     x.addTrace("RecordRelativeRiskDataStandard(const CSaTScanData&)","LocationRiskEstimateWriter");
+    throw;
+  }
+}
+
+/** writes relative risk data to record and appends to internal buffer of records */
+void LocationRiskEstimateWriter::RecordRelativeRiskDataAsWeightedNormal(const CSaTScanData& DataHub) {
+  std::string           sBuffer;
+  RecordBuffer          Record(vFieldDefinitions);
+  const DataSetHandler& Handler = DataHub.GetDataSetHandler();
+  const AbstractWeightedNormalRandomizer * pRandomizer=0;
+
+  try {
+    for (unsigned int i=0; i < Handler.GetNumDataSets(); ++i) {
+        if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(i))) == 0)
+          throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
+        AbstractWeightedNormalRandomizer::RiskEstimateStatistics statistics = pRandomizer->getRiskEstimateStatistics();
+        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+        for (tract_t t=0; t < tTotalLocations; ++t) {
+           Record.SetAllFieldsBlank(true);
+           Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
+           if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
+             Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
+           if (gParameters.GetNumDataSets() > 1)
+             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
+           Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = statistics.gtMean[t];
+           Record.GetFieldValue(WEIGHTED_MEAN_VALUE_FIELD).AsDouble() = statistics.gtWeightedMean[t];
+          if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
+          if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
+        }
+    }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("RecordRelativeRiskDataAsWeightedNormal()","LocationRiskEstimateWriter");
     throw;
   }
 }

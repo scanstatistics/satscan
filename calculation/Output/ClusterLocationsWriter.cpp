@@ -7,22 +7,25 @@
 #include "SVTTCluster.h"
 #include "SSException.h"
 
-const char * LocationInformationWriter::AREA_SPECIFIC_FILE_EXT    = ".gis";
-const char * LocationInformationWriter::LOC_OBS_FIELD             = "LOC_OBS";
-const char * LocationInformationWriter::LOC_EXP_FIELD             = "LOC_EXP";
-const char * LocationInformationWriter::LOC_MEAN_FIELD            = "LOC_MEAN";
-const char * LocationInformationWriter::LOC_OBS_DIV_EXP_FIELD     = "LOC_ODE";
-const char * LocationInformationWriter::LOC_REL_RISK_FIELD        = "LOC_RISK";
-const char * LocationInformationWriter::LOC_TIME_TREND_FIELD      = "LOC_TREND";
-const char * LocationInformationWriter::CLU_OBS_FIELD             = "CLU_OBS";
-const char * LocationInformationWriter::CLU_EXP_FIELD             = "CLU_EXP";
-const char * LocationInformationWriter::CLU_OBS_DIV_EXP_FIELD     = "CLU_ODE";
-const char * LocationInformationWriter::CLU_REL_RISK_FIELD        = "CLU_RISK";
-const char * LocationInformationWriter::CLU_MEAN_IN_FIELD         = "CLU_MEAN_I";
-const char * LocationInformationWriter::CLU_MEAN_OUT_FIELD        = "CLU_MEAN_O";
-const char * LocationInformationWriter::CLU_TIME_TREND_IN_FIELD   = "CLU_TT_IN";
-const char * LocationInformationWriter::CLU_TIME_TREND_OUT_FIELD  = "CLU_TT_OUT";
-const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD = "CLU_TT_DIF";
+const char * LocationInformationWriter::AREA_SPECIFIC_FILE_EXT      = ".gis";
+const char * LocationInformationWriter::LOC_OBS_FIELD               = "LOC_OBS";
+const char * LocationInformationWriter::LOC_EXP_FIELD               = "LOC_EXP";
+const char * LocationInformationWriter::LOC_MEAN_FIELD              = "LOC_MEAN";
+const char * LocationInformationWriter::LOC_WEIGHTED_MEAN_FIELD     = "LOC_WMEAN";
+const char * LocationInformationWriter::LOC_OBS_DIV_EXP_FIELD       = "LOC_ODE";
+const char * LocationInformationWriter::LOC_REL_RISK_FIELD          = "LOC_RISK";
+const char * LocationInformationWriter::LOC_TIME_TREND_FIELD        = "LOC_TREND";
+const char * LocationInformationWriter::CLU_OBS_FIELD               = "CLU_OBS";
+const char * LocationInformationWriter::CLU_EXP_FIELD               = "CLU_EXP";
+const char * LocationInformationWriter::CLU_OBS_DIV_EXP_FIELD       = "CLU_ODE";
+const char * LocationInformationWriter::CLU_REL_RISK_FIELD          = "CLU_RISK";
+const char * LocationInformationWriter::CLU_MEAN_IN_FIELD           = "CLU_MEAN_I";
+const char * LocationInformationWriter::CLU_MEAN_OUT_FIELD          = "CLU_MEAN_O";
+const char * LocationInformationWriter::CLU_WEIGHTED_MEAN_IN_FIELD  = "CL_WMEAN_I";
+const char * LocationInformationWriter::CLU_WEIGHTED_MEAN_OUT_FIELD = "CL_WMEAN_O";
+const char * LocationInformationWriter::CLU_TIME_TREND_IN_FIELD     = "CLU_TT_IN";
+const char * LocationInformationWriter::CLU_TIME_TREND_OUT_FIELD    = "CLU_TT_OUT";
+const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD   = "CLU_TT_DIF";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend)
@@ -60,11 +63,15 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     // for multiple data sets nor the ordinal probability model
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, CLU_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL) {
         CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-      }
-      if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+        CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_WEIGHTED_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        CreateField(vFieldDefinitions, CLU_WEIGHTED_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+      } else {
         CreateField(vFieldDefinitions, CLU_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, CLU_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
@@ -81,9 +88,12 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+      if (gParameters.GetProbabilityModelType() == NORMAL) {
         CreateField(vFieldDefinitions, LOC_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+        CreateField(vFieldDefinitions, LOC_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        CreateField(vFieldDefinitions, LOC_WEIGHTED_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+      } else {
         CreateField(vFieldDefinitions, LOC_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, LOC_OBS_DIV_EXP_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
       }
@@ -127,11 +137,13 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          //leave area specific information blank.
          if (vIdentifiers.size() == 1) {
            Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() = theCluster.GetObservedCountForTract(tTract, DataHub);
-           if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+           if (gParameters.GetProbabilityModelType() == NORMAL) {
              count_t tObserved = theCluster.GetObservedCountForTract(tTract, DataHub);
              if (tObserved) Record.GetFieldValue(LOC_MEAN_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub)/tObserved;
-           }
-           if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+           } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+             Record.GetFieldValue(LOC_MEAN_FIELD).AsDouble() = gStatistics.gtLocMean[tTract];
+             Record.GetFieldValue(LOC_WEIGHTED_MEAN_FIELD).AsDouble() = gStatistics.gtLocWeightedMean[tTract];
+           } else {
              Record.GetFieldValue(LOC_EXP_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub);
              Record.GetFieldValue(LOC_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpectedForTract(tTract, DataHub);
            }
@@ -173,14 +185,18 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        //cluster information fields are only present for one dataset and not ordinal model
        if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
          Record.GetFieldValue(CLU_OBS_FIELD).AsDouble() = theCluster.GetObservedCount();
-         if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+         if (gParameters.GetProbabilityModelType() == NORMAL) {
            count_t tObserved = theCluster.GetObservedCount();
            measure_t tExpected = theCluster.GetExpectedCount(DataHub);
            if (tObserved) Record.GetFieldValue(CLU_MEAN_IN_FIELD).AsDouble() = tExpected/tObserved;
            count_t tCasesOutside = DataHub.GetDataSetHandler().GetDataSet().getTotalCases() - tObserved;
            if (tCasesOutside) Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - tExpected)/tCasesOutside;
-         }
-         if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+         } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+           Record.GetFieldValue(CLU_MEAN_IN_FIELD).AsDouble() = gStatistics.gtMeanIn;
+           Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = gStatistics.gtMeanOut;
+           Record.GetFieldValue(CLU_WEIGHTED_MEAN_IN_FIELD).AsDouble() = gStatistics.gtWeightedMeanIn;
+           Record.GetFieldValue(CLU_WEIGHTED_MEAN_OUT_FIELD).AsDouble() = gStatistics.gtWeightedMeanOut;
+         } else {
            Record.GetFieldValue(CLU_EXP_FIELD).AsDouble() = theCluster.GetExpectedCount(DataHub);
            Record.GetFieldValue(CLU_OBS_DIV_EXP_FIELD).AsDouble() = theCluster.GetObservedDivExpected(DataHub);
          }
@@ -228,3 +244,22 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
   }
 }
 
+/** Preparation step before writing cluster information (i.e. calling LocationInformationWriter::Write()). */
+void LocationInformationWriter::WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub) {
+  try {
+      if (DataHub.GetParameters().GetNumDataSets() == 1 && DataHub.GetParameters().GetProbabilityModelType() == WEIGHTEDNORMAL) {
+        //Cache weighted normal model statistics instead of calculating each time in Write() method.
+        const AbstractWeightedNormalRandomizer * pRandomizer=0;
+        if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(0))) == 0)
+           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "Write()");
+        std::vector<tract_t> tractIndexes;
+        theCluster.getLocationIndexes(DataHub, tractIndexes);
+        gStatistics = pRandomizer->getClusterLocationStatistics(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes);
+    }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("WritePrep()","LocationInformationWriter");
+    throw;
+  }
+
+}

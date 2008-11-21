@@ -3,6 +3,7 @@
 #define ClusterLocationsWriterH
 //******************************************************************************
 #include "AbstractDataFileWriter.h"
+#include "WeightedNormalRandomizer.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -13,6 +14,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * LOC_OBS_FIELD;
       static const char       * LOC_EXP_FIELD;
       static const char       * LOC_MEAN_FIELD;
+      static const char       * LOC_WEIGHTED_MEAN_FIELD;
       static const char       * LOC_OBS_DIV_EXP_FIELD;
       static const char       * LOC_REL_RISK_FIELD;
       static const char       * LOC_TIME_TREND_FIELD;
@@ -22,10 +24,14 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_REL_RISK_FIELD;
       static const char       * CLU_MEAN_IN_FIELD;
       static const char       * CLU_MEAN_OUT_FIELD;
+      static const char       * CLU_WEIGHTED_MEAN_IN_FIELD;
+      static const char       * CLU_WEIGHTED_MEAN_OUT_FIELD;
       static const char       * CLU_TIME_TREND_IN_FIELD;
       static const char       * CLU_TIME_TREND_OUT_FIELD;
       static const char       * CLU_TIME_TREND_DIFF_FIELD;
       bool                      gbExcludePValueField;
+
+      AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
 
       void                      DefineFields(const CSaTScanData& DataHub);
 
@@ -35,6 +41,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
 
       virtual void              Write(const CCluster& theCluster, const CSaTScanData& theData,
                                       int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted);
+      void                      WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
 };
 //******************************************************************************
 #endif
