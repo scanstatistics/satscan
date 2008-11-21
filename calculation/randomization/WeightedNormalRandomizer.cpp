@@ -109,6 +109,59 @@ AbstractWeightedNormalRandomizer::ClusterStatistics AbstractWeightedNormalRandom
   return statistics; 
 }
 
+/** Calculates statistics about cluster from internal structures. */
+AbstractWeightedNormalRandomizer::ClusterLocationStatistics AbstractWeightedNormalRandomizer::getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const {
+  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
+  PermutedContainer_t::const_iterator   itr_permuted=gvOriginalPermutedAttribute.begin();
+  ClusterLocationStatistics statistics;
+  ClusterLocationStatistics::container_t::iterator itrObs, itrWeight;
+  measure_t tTotalWeight=0;
+
+  statistics.init();  
+  for (;itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
+     if (itr_stationary->GetStationaryVariable().first >= iIntervalStart &&
+         itr_stationary->GetStationaryVariable().first <= iIntervalEnd &&
+         std::find(vTracts.begin(), vTracts.end(), itr_stationary->GetStationaryVariable().second) != vTracts.end()) {
+        ++statistics.gtObservations;
+        statistics.gtMeanIn += itr_permuted->GetPermutedVariable().first;
+        statistics.gtWeightedMeanIn += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
+        statistics.gtWeight += itr_permuted->GetPermutedVariable().second;
+
+        itrObs = statistics.gtLocTotalObserved.find(itr_stationary->GetStationaryVariable().second);
+        if (itrObs == statistics.gtLocTotalObserved.end()) {
+           statistics.gtLocTotalObserved[itr_stationary->GetStationaryVariable().second] = 1;
+           statistics.gtLocMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first;
+           statistics.gtLocTotalWeight[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().second;
+           statistics.gtLocWeightedMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+        }
+        else {
+           ++itrObs->second;
+           statistics.gtLocMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first;
+           statistics.gtLocTotalWeight[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
+           statistics.gtLocWeightedMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+        }
+     } else {
+       statistics.gtMeanOut += itr_permuted->GetPermutedVariable().first;
+       statistics.gtWeightedMeanOut += itr_permuted->GetPermutedVariable().second * itr_permuted->GetPermutedVariable().first;
+     }
+     tTotalWeight += itr_permuted->GetPermutedVariable().second;
+  }
+  if (statistics.gtObservations) statistics.gtMeanIn /= statistics.gtObservations;
+  statistics.gtMeanOut /= static_cast<measure_t>(gvOriginalPermutedAttribute.size() - statistics.gtObservations);
+
+  if (statistics.gtWeight) statistics.gtWeightedMeanIn /= statistics.gtWeight;
+  statistics.gtWeightedMeanOut /= tTotalWeight - statistics.gtWeight;
+
+  itrObs = statistics.gtLocTotalObserved.begin();
+  itrWeight = statistics.gtLocTotalWeight.begin();
+  for (; itrObs != statistics.gtLocTotalObserved.end(); ++itrObs, ++itrWeight) {
+      statistics.gtLocMean[itrObs->first] /= itrObs->second;
+      statistics.gtLocWeightedMean[itrWeight->first] /= itrWeight->second;
+  }
+
+  return statistics; 
+}
+
 /** Calculates statistics about entire data set from internal structures. */
 AbstractWeightedNormalRandomizer::DataSetStatistics AbstractWeightedNormalRandomizer::getDataSetStatistics() const {
   PermutedContainer_t::const_iterator itr_permuted=gvOriginalPermutedAttribute.begin(), itr_end=gvOriginalPermutedAttribute.end();
@@ -131,6 +184,38 @@ AbstractWeightedNormalRandomizer::DataSetStatistics AbstractWeightedNormalRandom
   statistics.gtVariance /= static_cast<measure_t>(gvOriginalPermutedAttribute.size());
   statistics.gtWeightedVariance /= statistics.gtTotalWeight;
 
+  return statistics;
+}
+
+AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalRandomizer::getRiskEstimateStatistics() const {
+  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
+  PermutedContainer_t::const_iterator itr_permuted=gvOriginalPermutedAttribute.begin();
+  RiskEstimateStatistics statistics;
+  RiskEstimateStatistics::container_t::iterator itrObs, itrWeight;
+
+  statistics.init();
+  for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
+      itrObs = statistics.gtTotalObserved.find(itr_stationary->GetStationaryVariable().second);
+      if (itrObs == statistics.gtTotalObserved.end()) {
+        statistics.gtTotalObserved[itr_stationary->GetStationaryVariable().second] = 1;
+        statistics.gtMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first;
+        statistics.gtTotalWeight[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().second;
+        statistics.gtWeightedMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+      }
+      else {
+        ++itrObs->second;
+        statistics.gtMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first;
+        statistics.gtTotalWeight[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
+        statistics.gtWeightedMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+      }
+  }
+
+  itrObs = statistics.gtTotalObserved.begin();
+  itrWeight = statistics.gtTotalWeight.begin();
+  for (; itrObs != statistics.gtTotalObserved.end(); ++itrObs, ++itrWeight) {
+      statistics.gtMean[itrObs->first] /= itrObs->second;
+      statistics.gtWeightedMean[itrWeight->first] /= itrWeight->second;
+  }
   return statistics;
 }
 

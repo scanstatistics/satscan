@@ -23,6 +23,17 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
           void init() {gtMean=0;gtWeightedMean=0;gtVariance=0;gtWeightedVariance=0;gtTotalWeight=0;}
       };
 
+      struct RiskEstimateStatistics {
+          typedef std::map<tract_t,measure_t> container_t;
+
+          container_t gtMean;
+          container_t gtWeightedMean;
+          container_t gtTotalObserved;
+          container_t gtTotalWeight;
+
+          void init() {gtMean.clear();gtWeightedMean.clear();gtTotalObserved.clear();gtTotalWeight.clear();}
+      };
+
       struct ClusterStatistics {
           count_t    gtObservations;
           measure_t  gtMeanIn;
@@ -34,6 +45,25 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
           measure_t  gtWeight;
 
           void init() {gtObservations=0;gtMeanIn=0;gtMeanOut=0;gtWeightedMeanIn=0;gtWeightedMeanOut=0;gtVariance=0;gtWeightedVariance=0;gtWeight=0;}
+      };
+
+      struct ClusterLocationStatistics {
+          typedef std::map<tract_t,measure_t> container_t;
+
+          count_t     gtObservations;
+          measure_t   gtMeanIn;
+          measure_t   gtMeanOut;
+          measure_t   gtWeightedMeanIn;
+          measure_t   gtWeightedMeanOut;
+          measure_t   gtWeight;
+          container_t gtLocObserved;
+          container_t gtLocMean;
+          container_t gtLocWeightedMean;
+          container_t gtLocTotalObserved;
+          container_t gtLocTotalWeight;
+
+          void init() {gtObservations=0;gtMeanIn=0;gtMeanOut=0;gtWeightedMeanIn=0;gtWeightedMeanOut=0;gtWeight=0;
+                       gtLocObserved.clear();gtLocMean.clear();gtLocWeightedMean.clear();gtLocTotalObserved.clear();gtLocTotalWeight.clear();}
       };
 
    protected:
@@ -48,8 +78,10 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
     virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
     ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
+    ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
     DataSetStatistics          getDataSetStatistics() const;
     measure_t                  getFirstRatioConstant() const {return gtFirstRatioConstant;}
+    RiskEstimateStatistics     getRiskEstimateStatistics() const;
     measure_t                  getSecondRatioConstant() const {return gtSecondRatioConstant;}
     virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
 };
