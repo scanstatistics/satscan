@@ -292,8 +292,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
                                                 Handler.GetDataSet().getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
-      }
-      if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
         const AbstractWeightedNormalRandomizer * pRandomizer=0;
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(0))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
@@ -312,8 +311,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(statistics.gtVariance);
         Record.GetFieldValue(WEIGHTED_STD_FIELD).AsDouble() = std::sqrt(statistics.gtWeightedVariance);
         Record.GetFieldValue(WEIGHT_INSIDE_FIELD).AsDouble() = statistics.gtWeight;
-      } 
-      if (gParameters.GetProbabilityModelType() != NORMAL &&  gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+      } else {
         Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(OBSERVED_DIV_EXPECTED_FIELD).AsDouble() = theCluster.GetObservedDivExpected(gDataHub);
       }
