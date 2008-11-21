@@ -946,6 +946,7 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
   int           i;
 
   try {
+    LocationWriter.WritePrep(*this, DataHub);
     for (i=1; i <= m_nTracts; ++i) {
        tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
        if (tTract >= DataHub.GetNumTracts() && DataHub.GetTInfo()->getMetaNeighborManager().size()) {
