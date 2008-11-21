@@ -165,7 +165,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 jTabbedPane1.addTab("Multiple Data Sets", null, _multipleDataSetsTab, null);
                 jTabbedPane1.addTab("Data Checking", null, _dataCheckingTab, null);
                 jTabbedPane1.addTab("Non-Eucledian Neighbors", null, _nonEucledianNeighborsTab, null);
-                jTabbedPane1.addTab("Non-Eucledian Neighbors", null, _multipleCoordinatesTab, null);
+                jTabbedPane1.addTab("Mutliple Coordinates Per Location", null, _multipleCoordinatesTab, null);
         }
     }
 
