@@ -87,7 +87,7 @@ void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const std::string
     gsFileName.setExtension(ext.c_str());
 
     if ((gpFile = fopen(gsFileName.getFullPath(buffer).c_str(), (bAppend ? "a" : "w"))) == NULL)
-      throw prg_error("Unable to open/create file %s", "Error!", gsFileName.getFullPath(buffer).c_str());
+      throw resolvable_error("Unable to open/create file %s", "Setup()", gsFileName.getFullPath(buffer).c_str());
   }
   catch (prg_exception& x) {
     x.addTrace("Setup()","ASCIIDataFileWriter");
