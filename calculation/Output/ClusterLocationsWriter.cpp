@@ -38,8 +38,8 @@ LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
   }
   catch (prg_exception& x) {
-    delete gpASCIIFileWriter;
-    delete gpDBaseFileWriter;
+    delete gpASCIIFileWriter; gpASCIIFileWriter=0;
+    delete gpDBaseFileWriter; gpDBaseFileWriter=0;
     x.addTrace("constructor","LocationInformationWriter");
     throw;
   }

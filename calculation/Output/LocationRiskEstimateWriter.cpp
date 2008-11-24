@@ -24,8 +24,8 @@ LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataH
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, REL_RISK_EXT);
   }
   catch (prg_exception& x) {
-    delete gpASCIIFileWriter;
-    delete gpDBaseFileWriter;
+    delete gpASCIIFileWriter; gpASCIIFileWriter=0;
+    delete gpDBaseFileWriter; gpDBaseFileWriter=0;
     x.addTrace("constructor","LocationRiskEstimateWriter");
     throw;
   }
