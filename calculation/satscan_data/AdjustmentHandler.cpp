@@ -160,7 +160,7 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
   std::string                           sStart, sEnd;
-  FILE                                * pFile;
+  FILE                                * pFile=0;
 
   if ((pFile = fopen("c:\\Adustments.txt", "w")) == NULL)
     throw prg_error("Unable to create adjustments outpt file.","PrintAdjustments()");
@@ -175,7 +175,7 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
      }
      fprintf(pFile, "\n\n");
   }
-  fclose(pFile);
+  if (pFile) fclose(pFile);
 }
 
 

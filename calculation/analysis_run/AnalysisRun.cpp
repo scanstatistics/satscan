@@ -164,10 +164,10 @@ void AnalysisRunner::CreateReport() {
     ParametersPrint(gParameters).PrintAnalysisSummary(fp);
     ParametersPrint(gParameters).PrintAdjustments(fp, gpDataHub->GetDataSetHandler());
     gpDataHub->DisplaySummary(fp, "SUMMARY OF DATA", true);
-    fclose(fp);
+    fclose(fp); fp=0;
   }
   catch (prg_exception& x) {
-    fclose(fp);
+    if (fp) fclose(fp);
     x.addTrace("CreateReport()","AnalysisRunner");
     throw;
   }
@@ -350,10 +350,10 @@ void AnalysisRunner::FinalizeReport() {
     if (gParameters.GetNumParallelProcessesToExecute() > 1)
       fprintf(fp,"\nProcessor Usage    : %u processors", gParameters.GetNumParallelProcessesToExecute());
 
-    fclose(fp);
+    fclose(fp); fp=0;
   }
   catch (prg_exception& x) {
-    fclose(fp);
+    if (fp) fclose(fp);
     x.addTrace("FinalizeReport()","AnalysisRunner");
     throw;
   }
@@ -1252,7 +1252,7 @@ void AnalysisRunner::PrintTopClusters() {
     fclose(fp); fp=0;
   }
   catch (prg_exception& x) {
-    fclose(fp);
+    if (fp) fclose(fp);
     x.addTrace("PrintTopClusters()","AnalysisRunner");
     throw;
   }
@@ -1321,7 +1321,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
     fclose(fp); fp=0;
   }
   catch (prg_exception& x) {
-    fclose(fp);
+     if (fp) fclose(fp);
     x.addTrace("PrintTopIterativeScanCluster()","AnalysisRunner");
     throw;
   }

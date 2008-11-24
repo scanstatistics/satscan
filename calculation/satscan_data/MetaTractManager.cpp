@@ -211,7 +211,7 @@ void MetaLocationManager::MetaLocationPool::print(TractHandler& TInfo, FILE * st
        fprintf(stream, "%s%s(index=%d)", (t == 0 ? "=" : ","), TInfo.getLocations().at(AtomicIndexes.at(t))->getIndentifier(), AtomicIndexes.at(t));
      fprintf(stream, "\n");
   }
-  fclose(fp);
+  if (fp) fclose(fp);
 }
 
 /////////////////////////// MetaLocationManager ////////////////////////////////

@@ -214,7 +214,7 @@ void PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFil
     fclose(pFile); pFile=0;
    }
   catch (prg_exception& x) {
-    fclose(pFile);
+    if (pFile) fclose(pFile);
     x.addTrace("PrintJulianDates()","JulianDate.cpp");
     throw;
   }

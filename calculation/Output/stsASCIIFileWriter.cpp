@@ -21,7 +21,7 @@ ASCIIDataFileWriter::ASCIIDataFileWriter(const CParameters& Parameters, const st
 /** destructor */
 ASCIIDataFileWriter::~ASCIIDataFileWriter() {
   try {
-    fclose(gpFile);
+    if (gpFile) fclose(gpFile);
   }
   catch (...){}
 }

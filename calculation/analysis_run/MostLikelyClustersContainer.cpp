@@ -251,10 +251,10 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
           fprintf(pFile, " \n");
         }
       }
-      fclose(pFile);
+      fclose(pFile); pFile=0;
    }
   catch (prg_exception& x) {
-    fclose(pFile);
+    if (pFile) fclose(pFile);
     x.addTrace("PrintTopClusters()","MostLikelyClustersContainer");
     throw;
   }
