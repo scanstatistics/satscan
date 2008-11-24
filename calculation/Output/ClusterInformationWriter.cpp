@@ -58,8 +58,8 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
       gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
   }
   catch (prg_exception& x) {
-    delete gpASCIIFileWriter;
-    delete gpDBaseFileWriter;
+    delete gpASCIIFileDataWriter;
+    delete gpDBaseFileDataWriter;
     x.addTrace("constructor","ClusterInformationWriter");
     throw;
   }
