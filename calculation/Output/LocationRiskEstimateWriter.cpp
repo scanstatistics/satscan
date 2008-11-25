@@ -185,13 +185,12 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
             Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
           if (gParameters.GetNumDataSets() > 1)
             Record.GetFieldValue(DATASET_FIELD).AsDouble() = i + 1;
-          if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+          if (gParameters.GetProbabilityModelType() == NORMAL) {
             if (pCases[t]) {
               Record.GetFieldValue(MEAN_VALUE_FIELD).AsDouble() = pMeasure[t]/pCases[t];
               Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(GetUnbiasedVariance(pCases[t], pMeasure[t], pMeasureAux[t]));
             }  
-          }
-          if (gParameters.GetProbabilityModelType() != NORMAL && gParameters.GetProbabilityModelType() != WEIGHTEDNORMAL) {
+          } else {
             Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = pCases[t];
             dExpected = DataHub.GetMeasureAdjustment(i) * pMeasure[t];
             Record.GetFieldValue(EXPECTED_FIELD).AsDouble() = dExpected;
