@@ -298,7 +298,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
 
         std::vector<tract_t> tractIndexes;
-        theCluster.getLocationIndexes(gDataHub, tractIndexes);
+        theCluster.getLocationIndexes(gDataHub, tractIndexes, true);
         AbstractWeightedNormalRandomizer::ClusterStatistics statistics;
         statistics = pRandomizer->getClusterStatistics(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes);
 
@@ -421,7 +421,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
 
   // Calculate cluster location indexes once for weight normal model.
   if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
-     theCluster.getLocationIndexes(gDataHub, tractIndexes);
+     theCluster.getLocationIndexes(gDataHub, tractIndexes, true);
 
   for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
     Record.SetAllFieldsBlank(true);

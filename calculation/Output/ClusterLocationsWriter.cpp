@@ -253,7 +253,7 @@ void LocationInformationWriter::WritePrep(const CCluster& theCluster, const CSaT
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(0))) == 0)
            throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "Write()");
         std::vector<tract_t> tractIndexes;
-        theCluster.getLocationIndexes(DataHub, tractIndexes);
+        theCluster.getLocationIndexes(DataHub, tractIndexes, true);
         gStatistics = pRandomizer->getClusterLocationStatistics(theCluster.m_nFirstInterval, theCluster.m_nLastInterval, tractIndexes);
     }
   }

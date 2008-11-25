@@ -405,7 +405,7 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
 
   const DataSetHandler& Handler = DataHub.GetDataSetHandler();
   GetClusterData()->GetDataSetIndexesComprisedInRatio(m_nRatio/m_NonCompactnessPenalty, *Calculator.get(), vComprisedDataSetIndexes);
-  getLocationIndexes(DataHub, tractIndexes);
+  getLocationIndexes(DataHub, tractIndexes, true);
   for (std::vector<unsigned int>::iterator itr_Index=vComprisedDataSetIndexes.begin(); itr_Index != vComprisedDataSetIndexes.end(); ++itr_Index) {
       const RealDataSet& dataSet = Handler.GetDataSet(*itr_Index);
       //get randomizer for data set to retrieve various information
@@ -712,11 +712,26 @@ measure_t CCluster::GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t 
 
 }
 
-std::vector<tract_t> & CCluster::getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes) const {
+/** Returns collection of location indexes that define this cluster. If 'bAtomize' is true, breaks
+    down meta locations into atomic indexes. */
+std::vector<tract_t> & CCluster::getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
    indexes.clear();
+   std::vector<tract_t> atomicIndexes;
+   std::vector<tract_t>::iterator itr;
 
-   for (tract_t t=1; t <= m_nTracts; ++t)
-      indexes.push_back(DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius));
+   for (tract_t t=1; t <= m_nTracts; ++t) {
+      tract_t n = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, t, m_CartesianRadius); 
+      if (n < DataHub.GetNumTracts() || !bAtomize) {
+          if (!DataHub.GetIsNullifiedLocation(n))
+            indexes.push_back(n);
+      } else {
+        DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(n - DataHub.GetNumTracts(), atomicIndexes);
+        for (itr=atomicIndexes.begin(); itr != atomicIndexes.end(); ++itr) {
+            if (!DataHub.GetIsNullifiedLocation(*itr))
+                indexes.push_back(*itr);
+        }
+      }
+   }
       
    return indexes;
 }
@@ -949,11 +964,11 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
     LocationWriter.WritePrep(*this, DataHub);
     for (i=1; i <= m_nTracts; ++i) {
        tTract = DataHub.GetNeighbor(m_iEllipseOffset, m_Center, i, m_CartesianRadius);
-       if (tTract >= DataHub.GetNumTracts() && DataHub.GetTInfo()->getMetaNeighborManager().size()) {
+       if (tTract >= DataHub.GetNumTracts() && DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations()) {
          //When the location index exceeds number of tracts and the meta neighbors manager contains
          //entries, we need to resolve meta location into it's real location indexes.
          std::vector<tract_t> indexes;
-         DataHub.GetTInfo()->getMetaNeighborManager().getIndexes(tTract - DataHub.GetNumTracts(), indexes);
+         DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - DataHub.GetNumTracts(), indexes);
          for (size_t t=0; t < indexes.size(); ++t)
             LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], iNumSimsCompleted);
        }
