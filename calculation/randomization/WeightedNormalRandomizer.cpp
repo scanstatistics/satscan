@@ -3,6 +3,7 @@
 #pragma hdrstop
 //******************************************************************************
 #include "WeightedNormalRandomizer.h"
+#include "SaTScanData.h"
 
 /** Adds new randomization entry with passed attrbiute values. */
 void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight) {
@@ -187,35 +188,38 @@ AbstractWeightedNormalRandomizer::DataSetStatistics AbstractWeightedNormalRandom
   return statistics;
 }
 
-AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalRandomizer::getRiskEstimateStatistics() const {
+AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalRandomizer::getRiskEstimateStatistics(const CSaTScanData& DataHub) const {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator itr_permuted=gvOriginalPermutedAttribute.begin();
   RiskEstimateStatistics statistics;
   RiskEstimateStatistics::container_t::iterator itrObs, itrWeight;
 
-  statistics.init();
+  statistics.init(DataHub.GetNumTracts() + DataHub.GetNumMetaTracts());
   for (; itr_stationary != itr_end; ++itr_stationary, ++itr_permuted) {
-      itrObs = statistics.gtTotalObserved.find(itr_stationary->GetStationaryVariable().second);
-      if (itrObs == statistics.gtTotalObserved.end()) {
-        statistics.gtTotalObserved[itr_stationary->GetStationaryVariable().second] = 1;
-        statistics.gtMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first;
-        statistics.gtTotalWeight[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().second;
-        statistics.gtWeightedMean[itr_stationary->GetStationaryVariable().second] = itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
-      }
-      else {
-        ++itrObs->second;
-        statistics.gtMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first;
-        statistics.gtTotalWeight[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
-        statistics.gtWeightedMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+      statistics.gtTotalObserved[itr_stationary->GetStationaryVariable().second] += 1;
+      statistics.gtMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first;
+      statistics.gtTotalWeight[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().second;
+      statistics.gtWeightedMean[itr_stationary->GetStationaryVariable().second] += itr_permuted->GetPermutedVariable().first * itr_permuted->GetPermutedVariable().second;
+  }
+  //Now calculate values for meta locations.
+  std::vector<tract_t> atomic;
+  for (tract_t t=0; t < DataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(); ++t) {
+      DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(t, atomic);
+      for (std::vector<tract_t>::const_iterator itr=atomic.begin(); itr != atomic.end(); ++itr) {
+          statistics.gtTotalObserved[DataHub.GetNumTracts() + t] += statistics.gtTotalObserved[*itr];
+          statistics.gtMean[DataHub.GetNumTracts() + t] += statistics.gtMean[*itr];
+          statistics.gtTotalWeight[DataHub.GetNumTracts() + t] += statistics.gtTotalWeight[*itr];
+          statistics.gtWeightedMean[DataHub.GetNumTracts() + t] += statistics.gtWeightedMean[*itr];
       }
   }
 
   itrObs = statistics.gtTotalObserved.begin();
   itrWeight = statistics.gtTotalWeight.begin();
   for (; itrObs != statistics.gtTotalObserved.end(); ++itrObs, ++itrWeight) {
-      statistics.gtMean[itrObs->first] /= itrObs->second;
-      statistics.gtWeightedMean[itrWeight->first] /= itrWeight->second;
+      if (itrObs->second) statistics.gtMean[itrObs->first] /= itrObs->second;
+      if (itrWeight->second) statistics.gtWeightedMean[itrWeight->first] /= itrWeight->second;
   }
+
   return statistics;
 }
 

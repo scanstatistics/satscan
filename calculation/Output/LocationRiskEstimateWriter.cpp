@@ -225,7 +225,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataAsWeightedNormal(const CS
     for (unsigned int i=0; i < Handler.GetNumDataSets(); ++i) {
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(i))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
-        AbstractWeightedNormalRandomizer::RiskEstimateStatistics statistics = pRandomizer->getRiskEstimateStatistics();
+        AbstractWeightedNormalRandomizer::RiskEstimateStatistics statistics = pRandomizer->getRiskEstimateStatistics(DataHub);
         tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
         for (tract_t t=0; t < tTotalLocations; ++t) {
            Record.SetAllFieldsBlank(true);

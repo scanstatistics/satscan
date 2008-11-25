@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
 
+class CSaTScanData;  /** forward class declaration */
+
 typedef StationaryAttribute<std::pair<int, tract_t> >   WeightedNormalStationary_t;
 typedef PermutedAttribute<std::pair<double, double> >   WeightedNormalPermuted_t;
 
@@ -31,7 +33,11 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
           container_t gtTotalObserved;
           container_t gtTotalWeight;
 
-          void init() {gtMean.clear();gtWeightedMean.clear();gtTotalObserved.clear();gtTotalWeight.clear();}
+          void init(tract_t tNum) {
+              gtMean.clear();
+              for (tract_t t=0; t < tNum; ++t) {gtMean[t] = 0;}
+              gtTotalWeight = gtTotalObserved = gtWeightedMean = gtMean;
+          }
       };
 
       struct ClusterStatistics {
@@ -81,7 +87,7 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
     ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
     DataSetStatistics          getDataSetStatistics() const;
     measure_t                  getFirstRatioConstant() const {return gtFirstRatioConstant;}
-    RiskEstimateStatistics     getRiskEstimateStatistics() const;
+    RiskEstimateStatistics     getRiskEstimateStatistics(const CSaTScanData& DataHub) const;
     measure_t                  getSecondRatioConstant() const {return gtSecondRatioConstant;}
     virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
 };
