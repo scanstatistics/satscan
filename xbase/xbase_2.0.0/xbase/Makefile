@@ -43,6 +43,14 @@ SOURCEFILES = \
 #--- Ordinary rules
 default : libxbase.a	
 
+libxbase.dylib   : Makedepend
+	${MAKE} -r -f Makedepend COMPILATION=${COMPILATION} DEBUG=${DEBUG}
+	ar -r $@ ${SOURCEFILES}
+	#cp libxbase.a libxbaseg.a
+	#strip -x libxbase.a
+	ar -ts $@
+	rm Makedepend
+
 libxbase.a   : Makedepend
 	${MAKE} -r -f Makedepend COMPILATION=${COMPILATION} DEBUG=${DEBUG}
 	ar r $@ ${SOURCEFILES}
