@@ -190,7 +190,11 @@ void AnalysisRunner::Execute() {
     std::pair<double, double> prMemory = GetMemoryApproxiation();
     if (geExecutingType == AUTOMATIC) {
       //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
+#ifdef __APPLE__
+      if (!gParameters.GetPermitsCentricExecution())
+#else
       if (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution())
+#endif
         geExecutingType = SUCCESSIVELY;
       else
         geExecutingType = CENTRICALLY;
@@ -371,10 +375,11 @@ double AnalysisRunner::GetAvailablePhysicalMemory() const {
   //dTotalPhysicalMemory = stat.dwTotalPhys;
   dAvailablePhysicalMemory = stat.dwAvailPhys;
 #elif defined(__APPLE__)
-  #include <sys/sysctl.h>
-  int mib[1] = { HW_USERMEM };  // HW_USERMEM is wrong variable!!! This one reports physical user memory
-  size_t valuelen = sizeof(dAvailablePhysicalMemory);
-  sysctl(mib, 1 , &dAvailablePhysicalMemory, &valuelen, NULL, 0);
+  throw prg_error("GetAvailablePhysicalMemory() is not implemented.", "GetAvailablePhysicalMemory()");
+  //#include <sys/sysctl.h>
+  //int mib[1] = { HW_USERMEM };  // HW_USERMEM is wrong variable!!! This one reports physical user memory
+  //size_t valuelen = sizeof(dAvailablePhysicalMemory);
+  //sysctl(mib, 1 , &dAvailablePhysicalMemory, &valuelen, NULL, 0);
 #else
   //dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
   //dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
