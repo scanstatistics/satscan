@@ -733,7 +733,7 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   jstr = (jstring)Env.CallObjectMethod(jParameters, mid);
   jni_error::_detectError(Env);
   sFilename = Env.GetStringUTFChars(jstr, &iscopy);
-  Parameters.SetSpecialGridFileName(sFilename);
+  Parameters.SetSpecialGridFileName(sFilename, false, true);
   if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(jstr, sFilename);
 
   mid = _getMethodId_Checked(Env, clazz, "GetMaxCirclePopulationFileName", "()Ljava/lang/String;");
