@@ -33,8 +33,12 @@ DEFINES     := -D__BATCH_COMPILE \
                               
 CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
+# static libgcc flags 
+#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lpthread 
 
-#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lpthread
+# Mac OS X flags
+#LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-dynamic -lxbase -lstdc++ -lm
+
 LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lxbaseg -lm -Wl,-Bdynamic -lrt -lpthread
 
 SRC         := Main.cpp \
