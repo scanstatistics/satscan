@@ -91,15 +91,18 @@ void CSaTScanData::DisplayNeighbors(FILE* pFile) const {
 
   fprintf(pFile, "Neighbors (m_pSorted)   m_nGridTracts=%i\n\n", m_nGridTracts);
 
-  for (i=0; i < m_nGridTracts; ++i) {
-    fprintf(pFile, "Grid Point # %i : ", i);
-    if (pppSortedInt)
-       for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[0][i][j])->getIndentifier());
-    else
-       for (j=0; j < ppNeighborCount[0][i]; ++j)
-         fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedUShort[0][i][j])->getIndentifier());
-    fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[0][i]);
+  for (int e=0; e <= gParameters.GetNumTotalEllipses(); ++e) {
+    fprintf(pFile, "\n\nEllipse %i: Ellipse Angle %lf Ellipse Shape %lf\n\n", e, GetEllipseAngle(e), GetEllipseShape(e));
+    for (i=0; i < m_nGridTracts; ++i) {
+        fprintf(pFile, "Grid Point # %i : ", i);
+        if (pppSortedInt)
+            for (j=0; j < ppNeighborCount[e][i]; ++j)
+                fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedInt[e][i][j])->getIndentifier());
+        else
+            for (j=0; j < ppNeighborCount[e][i]; ++j)
+                fprintf(pFile, "%s ", gTractHandler->getLocations().at(pppSortedUShort[e][i][j])->getIndentifier());
+        fprintf(pFile, "(# of neighbors=%i)\n", ppNeighborCount[e][i]);
+    }
   }
 
   fprintf(pFile,"\n");
