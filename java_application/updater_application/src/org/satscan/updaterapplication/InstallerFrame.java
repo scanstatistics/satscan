@@ -46,9 +46,9 @@ public class InstallerFrame extends javax.swing.JFrame {
     private void relaunchApplication() {
         try { // ... what if user has custom invocation script?
             if (!System.getProperty("os.name").startsWith("Windows")) {
-                Runtime.getRuntime().exec(new String[]{"java", "-jar", _launchApp.getName()}, null, _launchApp.getParentFile());
+                Runtime.getRuntime().exec(new String[]{"java", "-jar", "-Djava.library.path=.", _launchApp.getName()}, null, _launchApp.getParentFile());
             } else {
-                // the Windows jar file is wrapped up in th launch4j executable
+                // the Windows jar file is wrapped up in the launch4j executable
                 Runtime.getRuntime().exec(new String[]{_launchApp.getAbsolutePath().replaceAll(".jar", ".exe")}, null, _launchApp.getParentFile());
             }
         } catch (IOException ex) {
@@ -230,16 +230,17 @@ public class InstallerFrame extends javax.swing.JFrame {
         public void done() {
             try {
                 deleteArchive();
-                if (!System.getProperty("os.name").startsWith("Windows")) {
-                    //create symbolic links to shared objects -- still in progress
-                    _progressLabel.setText("Creating symbolic links ...");
-                    // ### hard coding gcc3.3.5 shared objects until a suitable design is determined ###
-                    Runtime.getRuntime().exec("ln -sf libsatscan.v8.0.x.gcc3.3.5_x86_64_32bit.so libsatscan32.so", null, _launchApp.getParentFile());
-                    Runtime.getRuntime().exec("ln -sf libsatscan.v8.0.x.gcc3.3.5_x86_64_64bit.so libsatscan64.so", null, _launchApp.getParentFile());
-                }
+                //if (!System.getProperty("os.name").startsWith("Windows")) {
+                //    //create symbolic links to shared objects -- still in progress
+                //    _progressLabel.setText("Creating symbolic links ...");
+                //    // ### hard coding gcc3.3.5 shared objects until a suitable design is determined ###
+                //    Runtime.getRuntime().exec("ln -sf libsatscan.v8.0.x.gcc3.3.5_x86_64_32bit.so libsatscan32.so", null, _launchApp.getParentFile());
+                //    Runtime.getRuntime().exec("ln -sf libsatscan.v8.0.x.gcc3.3.5_x86_64_64bit.so libsatscan64.so", null, _launchApp.getParentFile());
+                //}
                 _progressLabel.setText("Update completed ...");
-            } catch (IOException ex) {
-                Logger.getLogger(InstallerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            //} catch (IOException ex) {
+            //    Logger.getLogger(InstallerFrame.class.getName()).log(Level.SEVERE, null, ex);
+            //}    
             } finally { // time to restart application
                 relaunchApplication();
             }
