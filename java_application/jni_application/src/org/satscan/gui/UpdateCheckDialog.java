@@ -319,7 +319,9 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
     class CheckUpdateTask extends SwingWorker<Void, Void> {
 
-        private final static String _URLFormat = "http://www118.imsweb.com/cgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=%s&form_current_version_number=%s&os=%s";
+        private final static String _baseDebugURL = "http://www118.imsweb.com/";
+        private final static String _baseURL = "http://www.satscan.org/";
+        private final static String _URLFormat = "%scgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=%s&form_current_version_number=%s&os=%s";
         private final static int _updateTokenCount = 9;
         private final static int _updateIndicatorIndex = 0;
         private final static int _updateVersionIdIndex = 3;
@@ -332,7 +334,9 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         protected Void doInBackground() throws Exception {
             try {
-                String dir = String.format(_URLFormat, AppConstants.getVersionId(), AppConstants.getVersion(), System.getProperty("os.name"));
+                String dir = String.format(_URLFormat, 
+                                           (SaTScanApplication.getDebugURL().booleanValue() ? _baseDebugURL: _baseURL),
+                                           AppConstants.getVersionId(), AppConstants.getVersion(), System.getProperty("os.name"));
                 dir = dir.replace(" ", "%20");
                 URL u = new URL(dir);
                 HttpURLConnection huc = (HttpURLConnection) u.openConnection();

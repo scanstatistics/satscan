@@ -45,6 +45,7 @@ import org.satscan.gui.utils.WaitCursor;
 public class SaTScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener {
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "SaTScan.jar";
+    private static Boolean _debug_url = new Boolean(false);
 
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction;
@@ -108,7 +109,19 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             System.loadLibrary("satscan32");
         }
     }
-    
+
+    /**
+     * Sets flag for debug application update.
+     * @param is64bitEnabled
+     */
+    public static void setDebugURL(boolean debugURL) {
+        _debug_url = new Boolean(debugURL);
+    }
+
+    public static Boolean getDebugURL() {
+        return _debug_url;
+    }
+
     /**
      * Open new session action.
      */
@@ -828,11 +841,17 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 }
                 //check and show End User License Agreement if not "unrequested":
                 String ENABLE_64BIT_OPTION_STRING = "-64bit-enabled";
+                String DEBUG_URL_STRING = "-debug-url";
                 boolean is64bitEnabled = false;                
-                for (int i = 0; i < args.length && !is64bitEnabled; ++i) {
-                   is64bitEnabled = args[i].startsWith(ENABLE_64BIT_OPTION_STRING);
+                boolean debugURL = false;                
+                for (int i = 0; i < args.length; ++i) {
+                   if (args[i].startsWith(ENABLE_64BIT_OPTION_STRING))
+                       is64bitEnabled = true;
+                   else if (args[i].startsWith(DEBUG_URL_STRING))
+                       debugURL = true;
                 }                
                 SaTScanApplication.loadSharedLibray(is64bitEnabled);
+                SaTScanApplication.setDebugURL(debugURL);
                 new SaTScanApplication().setVisible(true);
             }
         });
