@@ -33,7 +33,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBAS
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
                               
-CFLAGS      := -c -fPIC $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
+CFLAGS      := -c -fPIC $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
 
 #LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lxbaseg -lm -Wl,-Bdynamic -lrt -lpthread

@@ -31,7 +31,7 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBAS
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
                               
-CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(BASE_SYSTEM_FLAG) $(THREAD_DEFINE) $(COMPONENT_REPORT)
+CFLAGS      := -c $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
               
 # static libgcc flags 
 #LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lpthread 
