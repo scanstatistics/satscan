@@ -191,13 +191,14 @@ void AnalysisRunner::Execute() {
     if (geExecutingType == AUTOMATIC) {
       //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
 #ifdef __APPLE__
-      if (!gParameters.GetPermitsCentricExecution())
+      geExecutingType = SUCCESSIVELY;
 #else
       if (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution())
-#endif
+
         geExecutingType = SUCCESSIVELY;
       else
         geExecutingType = CENTRICALLY;
+#endif
     }
     //start execution of analysis
     try {
