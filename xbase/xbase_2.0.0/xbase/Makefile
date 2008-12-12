@@ -1,8 +1,9 @@
 
 COMPILATION = -m32
 CC = g++
+CFLAGS =
 DEBUG = -gstabs+
-DEPEND = ${CC} ${COMPILATION} -Wno-deprecated -MM -E -I../ -I./
+DEPEND = ${CC} ${COMPILATION} $(CFLAGS) -Wno-deprecated -MM -E -I../ -I./
 
 SOURCEFILES = \
    xdate.o \
@@ -46,8 +47,6 @@ default : libxbase.a
 libxbase.dylib   : Makedepend
 	${MAKE} -r -f Makedepend COMPILATION=${COMPILATION} DEBUG=${DEBUG}
 	ar -r $@ ${SOURCEFILES}
-	#cp libxbase.a libxbaseg.a
-	#strip -x libxbase.a
 	ar -ts $@
 	rm Makedepend
 
@@ -62,6 +61,8 @@ libxbase.a   : Makedepend
 clean :
 	rm -f *.d
 	rm -f *.o
+	rm -f *.a
+	rm -f *.dylib
 	
 Makedepend : Makedepend.stub ${SOURCEFILES:o=d}
 	echo "default : ${SOURCEFILES}" > Makedepend.1

@@ -2,7 +2,7 @@
 
 CC = g++
 DEBUG = -gstabs+
-COMPILE = ${CC} -c ${COMPILATION} -D_REENTRANT -Wno-deprecated -finline-functions -O3 -I../ -I./ ${DEBUG}
+COMPILE = ${CC} -c $(CFLAGS) ${COMPILATION} -D_REENTRANT -Wno-deprecated -finline-functions -O3 -I../ -I./ ${DEBUG}
 
 .SUFFIXES : .cpp .o
 
