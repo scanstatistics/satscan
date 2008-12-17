@@ -32,6 +32,9 @@ import org.satscan.app.ParameterHistory;
 import org.satscan.app.Parameters;
 import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.WaitCursor;
+import org.satscan.gui.utils.WindowsMenu;
+import ca.guydavis.swing.desktop.CascadingWindowPositioner;
+
 /*
  * SaTScanApplication.java
  *
@@ -46,7 +49,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "SaTScan.jar";
     private static Boolean _debug_url = new Boolean(false);
-
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction;
     private final ExecuteOptionsAction _executeOptionsAction;
@@ -59,6 +61,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private Vector<JInternalFrame> allOpenFrames = new Vector<JInternalFrame>();
     private static SaTScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
+    WindowsMenu windowsMenu = null;
 
     /**
      * Creates new form SaTScanApplication
@@ -73,6 +76,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _saveSessionAsAction = new SaveSessionAsAction();
         _printResultsAction = new PrintResultsAction();
         initComponents();
+        windowsMenu = new WindowsMenu(this.desktopPane);
+        windowsMenu.setWindowPositioner(new CascadingWindowPositioner(this.desktopPane));
+        menuBar.add(windowsMenu, 2);
         setTitle(AppConstants.getSoftwareTitle());
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/SaTScan.png")));
         enableActions(false, false);
@@ -393,9 +399,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 ClassLoader cl = SaTScanApplication.class.getClassLoader();
                 URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
                 if (url == null) {
-                    url = HelpSet.findHelpSet(cl,helpsetName, ".hs", Locale.getDefault());
+                    url = HelpSet.findHelpSet(cl, helpsetName, ".hs", Locale.getDefault());
                     if (url == null) {
-                        JOptionPane.showMessageDialog(null,"The help system could not be located."," Help",JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(null, "The help system could not be located.", " Help", JOptionPane.WARNING_MESSAGE);
                         return;
                     }
                 }
@@ -404,9 +410,9 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 mainHB.setDisplayed(true);
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
-            }                
+            }
 
-            //JOptionPane.showMessageDialog(SaTScanApplication.this, "HelpSystemAction::actionPerformed() not implemented.", "Note", JOptionPane.INFORMATION_MESSAGE);
+        //JOptionPane.showMessageDialog(SaTScanApplication.this, "HelpSystemAction::actionPerformed() not implemented.", "Note", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
@@ -596,14 +602,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             } catch (Throwable t) {
                 //The JNI method to read the parameters file might have initiated
                 //this exception; so check file access to see if that was infact the problem.
-                if (!FileAccess.ValidateFileAccess(_file.getAbsolutePath(), false))
-                    JOptionPane.showMessageDialog(SaTScanApplication.this, 
-                        "The parameter file could not be opened for reading:\n " + 
-                        _file.getAbsolutePath() + 
-                        "\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.",
-                        "Note", JOptionPane.INFORMATION_MESSAGE);
-                else    
+                if (!FileAccess.ValidateFileAccess(_file.getAbsolutePath(), false)) {
+                    JOptionPane.showMessageDialog(SaTScanApplication.this,
+                            "The parameter file could not be opened for reading:\n " +
+                            _file.getAbsolutePath() +
+                            "\n\nPlease confirm that the path and/or file name are valid and that you have permissions to read from this directory and file.",
+                            "Note", JOptionPane.INFORMATION_MESSAGE);
+                } else {
                     new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
+                }
             }
         }
     }
@@ -842,14 +849,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 //check and show End User License Agreement if not "unrequested":
                 String ENABLE_64BIT_OPTION_STRING = "-64bit-enabled";
                 String DEBUG_URL_STRING = "-debug-url";
-                boolean is64bitEnabled = false;                
-                boolean debugURL = false;                
+                boolean is64bitEnabled = false;
+                boolean debugURL = false;
                 for (int i = 0; i < args.length; ++i) {
-                   if (args[i].startsWith(ENABLE_64BIT_OPTION_STRING))
-                       is64bitEnabled = true;
-                   else if (args[i].startsWith(DEBUG_URL_STRING))
-                       debugURL = true;
-                }                
+                    if (args[i].startsWith(ENABLE_64BIT_OPTION_STRING)) {
+                        is64bitEnabled = true;
+                    } else if (args[i].startsWith(DEBUG_URL_STRING)) {
+                        debugURL = true;
+                    }
+                }
                 SaTScanApplication.loadSharedLibray(is64bitEnabled);
                 SaTScanApplication.setDebugURL(debugURL);
                 new SaTScanApplication().setVisible(true);
