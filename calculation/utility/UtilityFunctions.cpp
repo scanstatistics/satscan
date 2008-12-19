@@ -112,14 +112,8 @@ unsigned int GetNumSystemProcessors() {
    GetSystemInfo(&siSysInfo);
    iNumProcessors = siSysInfo.dwNumberOfProcessors;
 #elif defined(__APPLE__)
-//   #include <sys/types.h>
-//   #include <sys/sysctl.h>
-//
-//   int mib[2] = { CTL_HW, HW_AVAILCPU };
-//   int cpus;
-//   size_t size = sizeof( cpus );
-//   if( sysctl(mib, 2, &cpus, &size, NULL, 0) != -1 )
-//     iNumProcessors = cpus;
+  #include <unistd.h>
+  iNumProcessors = sysconf(_SC_NPROCESSORS_ONLN);
 #else
   iNumProcessors = sysconf(_SC_NPROCESSORS_ONLN);
 #endif
