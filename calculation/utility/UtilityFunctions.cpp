@@ -111,9 +111,6 @@ unsigned int GetNumSystemProcessors() {
    SYSTEM_INFO siSysInfo;
    GetSystemInfo(&siSysInfo);
    iNumProcessors = siSysInfo.dwNumberOfProcessors;
-#elif defined(__APPLE__)
-  #include <unistd.h>
-  iNumProcessors = sysconf(_SC_NPROCESSORS_ONLN);
 #else
   iNumProcessors = sysconf(_SC_NPROCESSORS_ONLN);
 #endif
