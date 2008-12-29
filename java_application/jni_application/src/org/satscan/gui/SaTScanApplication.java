@@ -858,7 +858,14 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                         debugURL = true;
                     }
                 }
-                SaTScanApplication.loadSharedLibray(is64bitEnabled);
+                try {
+                    SaTScanApplication.loadSharedLibray(is64bitEnabled);
+                } catch (java.lang.UnsatisfiedLinkError e) {
+                    JOptionPane.showMessageDialog(null,
+                            "SaTScan could not locate required library. Please review error message:\n\n" + e.getMessage() + "\n",
+                            "Start Failure", JOptionPane.ERROR_MESSAGE); 
+                    return;
+                }
                 SaTScanApplication.setDebugURL(debugURL);
                 new SaTScanApplication().setVisible(true);
             }
