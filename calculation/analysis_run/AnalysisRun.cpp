@@ -2,6 +2,10 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //***************************************************************************
+#if defined(__APPLE__)
+#include <sys/sysctl.h>
+#endif
+
 #include "AnalysisRun.h"
 #include "PurelySpatialData.h"
 #include "PurelyTemporalData.h"
@@ -190,15 +194,10 @@ void AnalysisRunner::Execute() {
     std::pair<double, double> prMemory = GetMemoryApproxiation();
     if (geExecutingType == AUTOMATIC) {
       //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
-#ifdef __APPLE__
-      geExecutingType = SUCCESSIVELY;
-#else
       if (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution())
-
         geExecutingType = SUCCESSIVELY;
       else
         geExecutingType = CENTRICALLY;
-#endif
     }
     //start execution of analysis
     try {
@@ -376,11 +375,12 @@ double AnalysisRunner::GetAvailablePhysicalMemory() const {
   //dTotalPhysicalMemory = stat.dwTotalPhys;
   dAvailablePhysicalMemory = stat.dwAvailPhys;
 #elif defined(__APPLE__)
-  throw prg_error("GetAvailablePhysicalMemory() is not implemented.", "GetAvailablePhysicalMemory()");
-  //#include <sys/sysctl.h>
-  //int mib[1] = { HW_USERMEM };  // HW_USERMEM is wrong variable!!! This one reports physical user memory
-  //size_t valuelen = sizeof(dAvailablePhysicalMemory);
-  //sysctl(mib, 1 , &dAvailablePhysicalMemory, &valuelen, NULL, 0);
+    int physmem;
+    size_t len = sizeof physmem;
+    static int mib[2] = { CTL_HW, HW_USERMEM };
+    if (sysctl (mib, 2, &physmem, &len, NULL, 0) == 0 && len == sizeof (physmem)) {
+        dAvailablePhysicalMemory = static_cast<double>(physmem);
+    }
 #else
   //dTotalPhysicalMemory = sysconf(_SC_PHYS_PAGES);
   //dTotalPhysicalMemory *= sysconf(_SC_PAGESIZE);
