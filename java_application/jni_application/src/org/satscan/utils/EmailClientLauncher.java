@@ -24,7 +24,7 @@ public class EmailClientLauncher {
     }
 
     /**
-     * Launches default emial application and creates message detailing error.
+     * Launches default emial application
      */
     public boolean launchDefaultClientEmail(String mailTo, String subject, String body) {
         try {
@@ -42,6 +42,26 @@ public class EmailClientLauncher {
             }
             if (_text != null && _text.length() > 0) {
                 uriText.append("&BODY=" + _text);
+            }
+            uriMailTo = new URI("mailto", uriText.toString(), null);
+            Desktop.getDesktop().mail(uriMailTo);
+        } catch (Exception e) {
+            // Try launching without body ...
+            return launchDefaultClientEmail(mailTo, subject);
+        }
+        return true;
+    }
+
+    /**
+     * Launches default emial application.
+     */
+    public boolean launchDefaultClientEmail(String mailTo, String subject) {
+        try {
+            URI uriMailTo = null;
+            StringBuilder uriText = new StringBuilder();
+            uriText.append(mailTo);
+            if (subject != null && subject.length() > 0) {
+                uriText.append("?SUBJECT=" + subject);
             }
             uriMailTo = new URI("mailto", uriText.toString(), null);
             Desktop.getDesktop().mail(uriMailTo);
