@@ -10,15 +10,16 @@ const char * IniParameterSpecification::Input                   = "[Input]";
 const char * IniParameterSpecification::MultipleDataSets        = "[Multiple Data Sets]";
 const char * IniParameterSpecification::DataChecking            = "[Data Checking]";
 const char * IniParameterSpecification::NeighborsFile           = "[Non-Eucledian Neighbors]";
-const char * IniParameterSpecification::MultipleCoordinates     = "[Multiple Coordinates Per Location]";
+const char * IniParameterSpecification::SpatialNeighbors        = "[Spatial Neighbors]";
 const char * IniParameterSpecification::Analysis                = "[Analysis]";
 const char * IniParameterSpecification::SpatialWindow           = "[Spatial Window]";
 const char * IniParameterSpecification::TemporalWindow          = "[Temporal Window]";
-const char * IniParameterSpecification::RegionsWindow           = "[Regions Window]";
+const char * IniParameterSpecification::Polygons                = "[Polygons]";
 const char * IniParameterSpecification::SpaceAndTimeAdjustments = "[Space and Time Adjustments]";
 const char * IniParameterSpecification::Inference               = "[Inference]";
 const char * IniParameterSpecification::Output                  = "[Output]";
 const char * IniParameterSpecification::ClustersReported        = "[Clusters Reported]";
+const char * IniParameterSpecification::AdditionalOutput        = "[Additional Output]";
 
 const char * IniParameterSpecification::EllipticScan            = "[Elliptic Scan]";
 const char * IniParameterSpecification::SequentialScan          = "[Sequential Scan]";
@@ -330,14 +331,20 @@ void IniParameterSpecification::Build_7_0_x_ParameterList() {
 void IniParameterSpecification::Build_8_0_x_ParameterList() {
   Build_7_0_x_ParameterList();
   gvParameterInfo.push_back(std::make_pair(RunOptions, (const char*)"RandomlyGenerateSeed"));
-  gvParameterInfo.push_back(std::make_pair(MultipleCoordinates, (const char*)"MultipleCoordinatesType"));
-  gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"MetaLocationsFilename"));
-  gvParameterInfo.push_back(std::make_pair(NeighborsFile, (const char*)"UseMetaLocationsFile"));
+  gvParameterInfo.push_back(std::make_pair(SpatialNeighbors, (const char*)"MultipleCoordinatesType"));
+  gvParameterInfo.push_back(std::make_pair(SpatialNeighbors, (const char*)"MetaLocationsFilename"));
+  gvParameterInfo.push_back(std::make_pair(SpatialNeighbors, (const char*)"UseMetaLocationsFile"));
+
+  gvParameterInfo.push_back(std::make_pair(Polygons, (const char*)"Polygons"));
+  gvMultipleParameterInfo[OBSERVABLE_REGIONS] = std::make_pair(Polygons, (const char*)"Polygon");
+
   //risk/isotonic scan moved to spatial window tab
   gvParameterInfo[RISKFUNCTION - 1] = std::make_pair(SpatialWindow, (const char*)"IsotonicScan");
-
-  gvParameterInfo.push_back(std::make_pair(RegionsWindow, (const char*)"__not_used_yet__"));
-  gvMultipleParameterInfo[OBSERVABLE_REGIONS] = std::make_pair(RegionsWindow, (const char*)"Region");
+  //non-Euclidian neighbors moved to new spatial neighbors tab
+  gvParameterInfo[LOCATION_NEIGHBORS_FILE - 1] = std::make_pair(SpatialNeighbors, (const char*)"NeighborsFilename");
+  gvParameterInfo[USE_LOCATION_NEIGHBORS_FILE - 1] = std::make_pair(SpatialNeighbors, (const char*)"UseNeighborsFile");
+  //critical values parameter moved to new to additional output tab
+  gvParameterInfo[REPORT_CRITICAL_VALUES - 1] = std::make_pair(AdditionalOutput, (const char*)"CriticalValue");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

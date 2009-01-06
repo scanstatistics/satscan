@@ -17,15 +17,16 @@ class IniParameterSpecification {
     static const char         * MultipleDataSets;
     static const char         * DataChecking;
     static const char         * NeighborsFile;
-    static const char         * MultipleCoordinates;
+    static const char         * SpatialNeighbors;
     static const char         * Analysis;
     static const char         * SpatialWindow;
     static const char         * TemporalWindow;
-    static const char         * RegionsWindow;
+    static const char         * Polygons;
     static const char         * SpaceAndTimeAdjustments;
     static const char         * Inference;
     static const char         * Output;
     static const char         * ClustersReported;
+    static const char         * AdditionalOutput;
 
     static const char         * EllipticScan;
     static const char         * SequentialScan;

@@ -167,16 +167,16 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteAnalysisSettings(WriteFile);
     WriteOutputSettings(WriteFile);
     //write settings as provided in advanced features of graphical interface
+    WriteObservableRegionSettings(WriteFile);
     WriteMultipleDataSetsSettings(WriteFile);
     WriteDataCheckingSettings(WriteFile);
-    WriteNeighborsFileSettings(WriteFile);
-    WriteMultipleCoordinatesSettings(WriteFile);
+    WriteSpatialNeighborsSettings(WriteFile);
     WriteSpatialWindowSettings(WriteFile);
     WriteTemporalWindowSettings(WriteFile);
-    WriteObservableRegionSettings(WriteFile);
     WriteSpaceAndTimeAdjustmentSettings(WriteFile);
     WriteInferenceSettings(WriteFile);
     WriteClustersReportedSettings(WriteFile);
+    WriteAdditionalOutputSettings(WriteFile);
     
     //write settings as provided only through user mofication of parameter file and batch executable
     WriteEllipticScanSettings(WriteFile);
@@ -188,6 +188,19 @@ void IniParameterFileAccess::Write(const char* sFilename) {
   }
   catch (prg_exception& x) {
     x.addTrace("Write()", "IniParameterFileAccess");
+    throw;
+  }
+}
+
+/** Writes parameter settings grouped under 'Additional Output'. */
+void IniParameterFileAccess::WriteAdditionalOutputSettings(IniFile& WriteFile) {
+  std::string s;
+
+  try {
+    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
+  }
+  catch (prg_exception& x) {
+    x.addTrace("WriteAdditionalOutputSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -265,7 +278,6 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, START_PROSP_SURV, GetParameterString(START_PROSP_SURV, s).c_str(), GetParameterComment(START_PROSP_SURV));
     WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s).c_str(), GetParameterComment(EARLY_SIM_TERMINATION));
     WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s).c_str(), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
-    WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
     WriteIniParameter(WriteFile, ITERATIVE, GetParameterString(ITERATIVE, s).c_str(), GetParameterComment(ITERATIVE));
     WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s).c_str(), GetParameterComment(ITERATIVE_NUM));
     WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s).c_str(), GetParameterComment(ITERATIVE_PVAL));
@@ -329,19 +341,6 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
   }
 }
 
-/** Writes parameter settings grouped under 'Multiple Coordinates Per Location'. */
-void IniParameterFileAccess::WriteMultipleCoordinatesSettings(IniFile& WriteFile) {
-  std::string s;
-
-  try {
-    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
-  }
-  catch (prg_exception& x) {
-    x.addTrace("WriteMultipleCoordinatesSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
 /** Writes parameter settings grouped under 'Multiple Data Sets'. */
 void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
   std::string   s, sComment;
@@ -375,22 +374,6 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
   }
   catch (prg_exception& x) {
     x.addTrace("WriteMultipleDataSetsSettings()","IniParameterFileAccess");
-    throw;
-  }
-}
-
-/** Writes parameter settings grouped under 'Neighbors File'. */
-void IniParameterFileAccess::WriteNeighborsFileSettings(IniFile& WriteFile) {
-  std::string  s;
-
-  try {
-    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(LOCATION_NEIGHBORS_FILE));
-    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
-    WriteIniParameter(WriteFile, META_LOCATIONS_FILE, GetParameterString(META_LOCATIONS_FILE, s).c_str(), GetParameterComment(META_LOCATIONS_FILE));
-    WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
-  }
-  catch (prg_exception& x) {
-    x.addTrace("WriteNeighborsFileSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -494,6 +477,23 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
   }
   catch (prg_exception& x) {
     x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+    throw;
+  }
+}
+
+/** Writes parameter settings grouped under 'Spatial Neighbors'. */
+void IniParameterFileAccess::WriteSpatialNeighborsSettings(IniFile& WriteFile) {
+  std::string  s;
+
+  try {
+    WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
+    WriteIniParameter(WriteFile, META_LOCATIONS_FILE, GetParameterString(META_LOCATIONS_FILE, s).c_str(), GetParameterComment(META_LOCATIONS_FILE));
+    WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
+    WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
+  }
+  catch (prg_exception& x) {
+    x.addTrace("WriteNeighborsFileSettings()","IniParameterFileAccess");
     throw;
   }
 }

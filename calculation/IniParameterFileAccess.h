@@ -19,6 +19,7 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                ReadMultipleDataSetsSettings(const IniFile& SourceFile);
     void                                ReadObservableRegionSettings(const IniFile& SourceFile);
 
+    void                                WriteAdditionalOutputSettings(IniFile& WriteFile);
     void                                WriteAnalysisSettings(IniFile& WriteFile);
     void                                WriteClustersReportedSettings(IniFile& WriteFile);
     void                                WriteDataCheckingSettings(IniFile& WriteFile);
@@ -27,14 +28,13 @@ class IniParameterFileAccess : public AbtractParameterFileAccess  {
     void                                WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment=0);
     void                                WriteIniParameterAsKey(IniFile& WriteFile, const char* sSectionName, const char* sKey, const char* sValue, const char* sComment=0);
     void                                WriteInputSettings(IniFile& WriteFile);
-    void                                WriteMultipleCoordinatesSettings(IniFile& WriteFile);
     void                                WriteMultipleDataSetsSettings(IniFile& WriteFile);
-    void                                WriteNeighborsFileSettings(IniFile& WriteFile);
     void                                WriteObservableRegionSettings(IniFile& WriteFile);
     void                                WriteOutputSettings(IniFile& WriteFile);
     void                                WritePowerSimulationsSettings(IniFile& WriteFile);
     void                                WriteRunOptionSettings(IniFile& WriteFile);
     void                                WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteFile);
+    void                                WriteSpatialNeighborsSettings(IniFile& WriteFile);
     void                                WriteSpatialWindowSettings(IniFile& WriteFile);
     void                                WriteSystemSettings(IniFile& WriteFile);
     void                                WriteTemporalWindowSettings(IniFile& WriteFile);
