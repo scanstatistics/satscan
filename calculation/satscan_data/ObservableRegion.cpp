@@ -239,7 +239,7 @@ void ConvexPolygonBuilder::removeVerticesOutsideRegion(InequalityVertexContainer
    }
    // If all vertices are eliminated, the area is zero (warning).
    if (remainingVertices == 0) 
-       throw region_exception("The area of region is zero.");
+       throw region_exception("The area of polygon is zero.");
 }
 
 /* Finds all vertices(intersection points) of all pairs of equations. Returns a std::map
@@ -409,11 +409,11 @@ ConvexPolygonObservableRegion ConvexPolygonBuilder::buildConvexPolygon(const Ine
 
    // if there is only one vertex left, the area is 0 (warning) -- #7
    if (remainingVertices.size() < 2) 
-       throw region_exception("The area of region is zero.");
+       throw region_exception("The area of polygon is zero.");
 
    // if there is only one vertex left, the area is 0 (warning) -- #8
    if (remainingVertices.size() > inequalityVertices.size())
-       throw region_exception("The area of region is infinite.");
+       throw region_exception("Polygon is not properly defined.");
        //throw region_exception("Area is infinite -- %u vertices and %u inequalities.", 
        //                       remainingVertices.size(), inequalityVertices.size());
     
