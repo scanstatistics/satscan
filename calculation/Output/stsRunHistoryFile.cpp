@@ -199,16 +199,16 @@ void stsRunHistoryFile::GetMaxTemporalExtentString(std::string& sTempValue, cons
 // post : string will contain the formatted value for printing
 void stsRunHistoryFile::GetProbabilityModelString(std::string& sTempValue, ProbabilityModelType eProbabilityModelType) {
   switch(eProbabilityModelType) {
-    case POISSON : sTempValue = "Poisson";  break;
+    case POISSON : sTempValue = "Discrete Poisson";  break;
     case BERNOULLI : sTempValue = "Bernoulli";  break;
     case SPACETIMEPERMUTATION : sTempValue = "Space Time Permutation"; break;
     case WEIGHTEDNORMAL : sTempValue = "Weighted Normal"; break;
     case NORMAL : sTempValue = "Normal"; break;
     case EXPONENTIAL : sTempValue = "Exponential"; break;
     case RANK : sTempValue = "Rank"; break;
-    case CATEGORICAL : sTempValue = "Categorical"; break;
+    case CATEGORICAL : sTempValue = "Multinomial"; break;
     case ORDINAL : sTempValue = "Ordinal"; break;
-    case HOMOGENEOUSPOISSON : sTempValue = "Homogeneous Poisson"; break;
+    case HOMOGENEOUSPOISSON : sTempValue = "Continuous Poisson"; break;
     default : throw prg_error("Invalid probability model in the run history file.", "stsRunHistoryFile");
   }
 }
