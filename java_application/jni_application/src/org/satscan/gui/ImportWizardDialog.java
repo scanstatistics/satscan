@@ -260,8 +260,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case 6:
                 return Parameters.ProbabilityModelType.CATEGORICAL;
             case 7:
-                return Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
-            case 8:
                 return Parameters.ProbabilityModelType.WEIGHTEDNORMAL;
             case 0:
             default:
@@ -280,8 +278,8 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         switch (_fileType) {
             case Case:
                 for (int t = 0; t < _importVariables.size(); ++t) {
-                    if (t >= 1 && t <= 2) {//show '# cases' and 'date time'  variables for all but H. Poisson
-                        model.setShowing(_importVariables.get(t), _modelType != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);                        
+                    if (t >= 1 && t <= 2) {//show '# cases' and 'date time'  variables
+                        model.setShowing(_importVariables.get(t), true);                        
                     } else if (t >= 3 && t <= 12) //show 'covariate' variables for Poisson and space-time permutation models only
                     {
                         model.setShowing(_importVariables.get(t),
@@ -304,10 +302,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.WEIGHTEDNORMAL);
-                    } else if (t >= 16 && t <= 17) //show 'X' and 'Y' variables for H. Poisson model only
-                    {
-                        model.setShowing(_importVariables.get(t),
-                                _modelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
                     } else //default - show variable
                     {
                         model.setShowing(_importVariables.get(t), true);
@@ -699,14 +693,13 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private void configureDisplayVariablesComboBox() {
         if (_fileType == FileImporter.InputFileType.Case) {
             _displayVariablesComboBox.removeAllItems();
-            _displayVariablesComboBox.addItem("Poisson");
+            _displayVariablesComboBox.addItem("discrete Poisson");
             _displayVariablesComboBox.addItem("Bernoulli");
             _displayVariablesComboBox.addItem("space-time permutation");
             _displayVariablesComboBox.addItem("ordinal");
             _displayVariablesComboBox.addItem("exponential");
             _displayVariablesComboBox.addItem("normal");
-            _displayVariablesComboBox.addItem("categorical");
-            _displayVariablesComboBox.addItem("Homogeneous Poisson");
+            _displayVariablesComboBox.addItem("multinomial");
             _displayVariablesComboBox.addItem("weighted normal");
             switch (_startingModelType) {
                 case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
@@ -715,7 +708,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(4); break;
                 case NORMAL               : _displayVariablesComboBox.setSelectedIndex(5); break;
                 case CATEGORICAL          : _displayVariablesComboBox.setSelectedIndex(6); break;
-                case HOMOGENEOUSPOISSON   : _displayVariablesComboBox.setSelectedIndex(7); break;    
                 case WEIGHTEDNORMAL       : _displayVariablesComboBox.setSelectedIndex(8); break;
                 case POISSON              :
                 default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
@@ -812,11 +804,9 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null));
         _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null));
         _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
-        _importVariables.addElement(new ImportVariable("Attribute", 3, true, null));
+        _importVariables.addElement(new ImportVariable("Attribute (value)", 3, true, null));
         _importVariables.addElement(new ImportVariable("Censored", 4, false, null));
         _importVariables.addElement(new ImportVariable("Weight", 4, true, null));
-        _importVariables.addElement(new ImportVariable("X", 1, true, null));
-        _importVariables.addElement(new ImportVariable("Y", 2, true, null));
     }
 
     /**
