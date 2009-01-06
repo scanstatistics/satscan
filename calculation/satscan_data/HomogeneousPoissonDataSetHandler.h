@@ -22,9 +22,10 @@ class HomogeneousPoissonDataSetHandler : public DataSetHandler {
     TractHandler                      & gTractHandler;
     GInfo                             & gCentroidsHandler;
 
+    bool                                ReadCoordinates(RealDataSet& DataSet, DataSource& Source);
+    bool                                ReadCoordinatesFile(RealDataSet& DataSet);
     bool                                ReadGridFile(DataSource& Source);
     bool                                ReadCartesianCoordinates(DataSource& Source, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet);
-    virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
     virtual void                        SetRandomizers();
 
   public:

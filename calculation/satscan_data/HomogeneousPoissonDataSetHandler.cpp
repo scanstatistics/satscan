@@ -111,10 +111,10 @@ void HomogeneousPoissonDataSetHandler::RandomizeData(RandomizerContainer_t& Cont
   DataSetHandler::RandomizeData(Container, SimDataContainer, iSimulationNumber);
 }
 
-/** Reads the count data source, storing data in RealDataSet object. As a
+/** Reads the coordinate data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
+bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, DataSource& Source) {
   short                 iScanCount=2;
   const long            uLocationIndex=0;
   bool                  bValid=true, bEmpty=true,bHasIdentifier=false;
@@ -124,11 +124,6 @@ bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSour
   gTractHandler.setCoordinateDimensions(iScanCount);
 
   try {
-      for (size_t t=0; t < gPolygons.size(); ++t) {
-         gPrint.Printf("Polygon_parsed:\n%s", BasePrint::P_STDOUT, gPolygons[t].toString().c_str());
-         //ConvexPolygonBuilder::generateRandomPoints(gPolygons[t], std::string("H:\\prj\\satscan\\data.sets\\homogeneous.possion\\nm.cas"), 50);
-      }
-
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
          iScanCount = Source.GetNumValues();
          //if empty and this record has data, then this is the first record w/ data
@@ -137,7 +132,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSour
            //determine number of dimensions from first record
            //there must be at least two dimensions
            if (iScanCount < 2) {
-             gPrint.Printf("Error: The first record of the case file contains %s.\n",
+             gPrint.Printf("Error: The first record of the coordinate file contains %s.\n",
                            BasePrint::P_READERROR, iScanCount == 2 ? "only x-coordinate" : "no coordinates");
              bValid = false;
              break; //stop reading records, the first record defines remaining records format
@@ -147,7 +142,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSour
 
          //there must be at least two dimensions plus optional identifier
          if (iScanCount < (bHasIdentifier ? 3 : 2)) {
-           gPrint.Printf("Error: Record %ld of the case file contains %s.\n",
+           gPrint.Printf("Error: Record %ld of the coordinate file contains %s.\n",
                           BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), 
                           iScanCount == (bHasIdentifier ? 2 : 1) ? "only x-coordinate" : "no coordinates");
            bValid = false;
@@ -161,7 +156,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSour
          //validate that we read the correct number of coordinates
          if (iScanCount < gTractHandler.getCoordinateDimensions()) {
            //Note: since the first record defined the number of dimensions, this error could not happen.
-           gPrint.Printf("Error: Record %ld in the case file contains %d dimension%s but expecting %d.\n", BasePrint::P_READERROR,
+           gPrint.Printf("Error: Record %ld in the coordinate file contains %d dimension%s but expecting %d.\n", BasePrint::P_READERROR,
                          Source.GetCurrentRecordIndex(), iScanCount, (iScanCount == 1 ? "" : "s"), gTractHandler.getCoordinateDimensions());
            bValid = false;
            continue;
@@ -169,12 +164,16 @@ bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSour
 
          // check that coordinates are within one of the regions
          if (!isPointInRegions(vCoordinates[0], vCoordinates[1])) {
-           gPrint.Printf("Error: Record %ld in the case file contains a coordinate that is not within "
-                         "any of the defined regions.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex());
-           bValid = false;
-           continue;
+             if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+                gPrint.Printf("Error: Record %ld in the coordinate file contains a coordinate that is not within "
+                             "any of the defined polygons.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex());
+                bValid = false;
+             }
+             continue;
          }
          
+         //check that coordinates of case are not already defined
+
          //add the tract identifier and coordinates to tract handler
          if (bHasIdentifier) 
            gTractHandler.addLocation(Source.GetValueAt(uLocationIndex), vCoordinates);
@@ -183,18 +182,17 @@ bool HomogeneousPoissonDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSour
              identifier << "point" << Source.GetCurrentRecordIndex();
              gTractHandler.addLocation(identifier.str().c_str(), vCoordinates);
          }
-         ++tTotalCases;
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
       gPrint.Printf("Please see the '%s' section in the user guide for help.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
     //print indication if file contained no data
-    else if (bEmpty) {
+    else if (bEmpty || tTotalCases == 0) {
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
- 
+    tTotalCases = gTractHandler.getLocations().size();
     DataSet.setTotalCases(tTotalCases);
     DataSet.setTotalMeasure(tTotalCases);
     measure_t tTotalMeasure=0;
@@ -250,10 +248,12 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
         }
         // check that coordinates are within one of the regions
         if (!isPointInRegions(vCoordinates[0], vCoordinates[1])) {
-          gPrint.Printf("Error: Record %ld in the grid file contains a coordinate that is not within "
-                        "any of the defined regions.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex());
-          bValid = false;
-          continue;
+            if (gParameters.GetCoordinatesDataCheckingType() == STRICTCOORDINATES) {
+                gPrint.Printf("Error: Record %ld in the grid file contains a coordinate that is not within "
+                                "any of the defined regions.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex());
+                bValid = false;
+            }
+            continue;
         }
 
         pGridPoints->addGridPoint(vCoordinates);
@@ -270,6 +270,11 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
     pGridPoints->additionsCompleted();
     //record number of centroids read
     gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
+
+    if (gDataHub.m_nGridTracts == 0) {
+      gPrint.Printf("Error: The Grid file does not contain any data.\n", BasePrint::P_ERROR);
+      bValid = false;
+    }
   }
   catch (prg_exception& x) {
     x.addTrace("ReadGridFile()","HomogeneousPoissonDataSetHandler");
@@ -278,7 +283,7 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
   return bValid;
 }
 
-/** TODO */
+/** Reads coordinates from data source record into passed vector. */
 bool HomogeneousPoissonDataSetHandler::ReadCartesianCoordinates(DataSource& Source, std::vector<double>& vCoordinates, short& iScanCount, short iWordOffSet) {
   const char  * pCoordinate;
   int           i;
@@ -299,14 +304,27 @@ bool HomogeneousPoissonDataSetHandler::ReadCartesianCoordinates(DataSource& Sour
   return true;          
 }
 
-/** Attempts to read population and case data files into class RealDataSet objects. */
+/** Attempts to read coordinate file data into RealDataSet object. Returns boolean indication of read success. */
+bool HomogeneousPoissonDataSetHandler::ReadCoordinatesFile(RealDataSet& DataSet) {
+  try {
+      gPrint.SetImpliedInputFileType(BasePrint::COORDFILE);
+      std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCoordinatesFileName(), gPrint));
+    return ReadCoordinates(DataSet, *Source);
+  }
+  catch (prg_exception& x) {
+    x.addTrace("ReadCoordinatesFile()","HomogeneousPoissonDataSetHandler");
+    throw;
+  }
+}
+
+/** Attempts to read data files into class RealDataSet objects. */
 bool HomogeneousPoissonDataSetHandler::ReadData() {
   try {
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        //read case data file
-       if (GetNumDataSets() == 1) gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
-       else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
-       if (!ReadCaseFile(GetDataSet(t))) return false;
+       if (GetNumDataSets() == 1) gPrint.Printf("Reading the coordinates file\n", BasePrint::P_STDOUT);
+       else gPrint.Printf("Reading the coordinates file for data set %u\n", BasePrint::P_STDOUT, t + 1);
+       if (!ReadCoordinatesFile(GetDataSet(t))) return false;
     }
 
     //signal insertions completed
