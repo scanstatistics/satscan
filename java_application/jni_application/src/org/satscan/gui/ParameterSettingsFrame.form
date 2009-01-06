@@ -58,12 +58,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="545" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="552" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="440" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="453" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -107,7 +107,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="19" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -141,8 +141,8 @@
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="_controlFileTextField" pref="300" max="32767" attributes="2"/>
-                                              <Component id="_caseFileTextField" alignment="0" pref="300" max="32767" attributes="1"/>
+                                              <Component id="_controlFileTextField" pref="303" max="32767" attributes="2"/>
+                                              <Component id="_caseFileTextField" alignment="0" pref="303" max="32767" attributes="1"/>
                                           </Group>
                                           <EmptySpace min="-2" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -252,7 +252,7 @@
                                   <Component id="_timePrecisionMonth" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="_timePrecisionDay" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="59" max="32767" attributes="0"/>
+                              <EmptySpace pref="63" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -390,7 +390,7 @@
                                   <Component id="_endDateDayLabel" max="32767" attributes="1"/>
                                   <Component id="_studyPeriodEndDateDayTextField" alignment="0" pref="30" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="76" max="32767" attributes="0"/>
+                              <EmptySpace pref="83" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -589,7 +589,7 @@
                                   <Component id="_populationFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="147" max="32767" attributes="0"/>
+                          <EmptySpace pref="154" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -633,10 +633,6 @@
                     <Property name="toolTipText" type="java.lang.String" value="Import population file ..."/>
                     <Property name="label" type="java.lang.String" value="..."/>
                   </Properties>
-                  <AccessibilityProperties>
-                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="..."/>
-                    <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Import population file ..."/>
-                  </AccessibilityProperties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_populationFileImportButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        try {&#xa;            JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;            fc.setDialogTitle(&quot;Select Population File Import Source&quot;);&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;dbf&quot;,&quot;dBase Files (*.dbf)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;csv&quot;,&quot;Delimited Files (*.csv)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;xls&quot;,&quot;Excel Files (*.xls)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Text Files (*.txt)&quot;));&#xa;            fc.addChoosableFileFilter(new InputFileFilter(&quot;pop&quot;,&quot;Population Files (*.pop)&quot;));&#xa;            int returnVal = fc.showOpenDialog(ParameterSettingsFrame.this);&#xa;            if (returnVal == JFileChooser.APPROVE_OPTION) {&#xa;                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;                LaunchImporter(fc.getSelectedFile().getAbsolutePath(), FileImporter.InputFileType.Population);&#xa;            }&#xa;        } catch (Throwable t) {&#xa;            new ExceptionDialog(SaTScanApplication.getInstance(), t).setVisible(true);&#xa;        }&#xa;    }&#xa;});"/>
                   </AuxValues>
@@ -764,7 +760,7 @@
                                   <Component id="_cartesianRadioButton" min="-2" max="-2" attributes="0"/>
                                   <Component id="_latLongRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="42" max="32767" attributes="0"/>
+                              <EmptySpace pref="49" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -794,7 +790,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();            &#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                     <Component class="javax.swing.JRadioButton" name="_latLongRadioButton">
@@ -810,7 +806,7 @@
                         </Property>
                       </Properties>
                       <AuxValues>
-                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();&#xa;            ParameterSettingsFrame.this.enableModelControlForAnalysisType();&#xa;            getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
                       </AuxValues>
                     </Component>
                   </SubComponents>
@@ -866,21 +862,21 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="1" attributes="0">
                               <Component id="_analysisTypeGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_probabilityModelGroup" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="_probabilityModelGroup" min="-2" max="-2" attributes="1"/>
+                              <EmptySpace min="-2" pref="9" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
                                   <Component id="_scanAreasGroup" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                           <Component id="_advancedAnalysisButton" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -890,18 +886,18 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                          <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="0" min="0" max="32767" attributes="1"/>
-                          <Group type="102" alignment="0" attributes="0">
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Group type="102" alignment="0" attributes="1">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
+                              <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
                           </Group>
+                          <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel1" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -967,7 +963,7 @@
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="58" max="32767" attributes="0"/>
+                          <EmptySpace pref="47" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1070,7 +1066,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Probability Model">
+                    <TitledBorder title="Discrete Scan Statistics">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -1083,51 +1079,63 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_poissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_bernoulliModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_spaceTimePermutationModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_weightedNormalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="_categoricallModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                                   <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
                               </Group>
+                              <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_bernoulliModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_poissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_spaceTimePermutationModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_categoricallModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_weightedNormalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="25" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_poissonModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_bernoulliModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_spaceTimePermutationModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_ordinalModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_weightedNormalModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Component id="_categoricallModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_ordinalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_weightedNormalModelRadioButton" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="3" attributes="0">
                               <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="34" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1136,7 +1144,7 @@
                 <Component class="javax.swing.JRadioButton" name="_poissonModelRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Poission" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Discrete Poission" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1232,7 +1240,7 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_categoricallModelRadioButton">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Categorical" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Multinomial" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1244,31 +1252,6 @@
                   </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_categoricallModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JRadioButton" name="_homogeneouspoissonModelRadioButton">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Homogeneous Poisson" noResource="true"/>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-                      </Border>
-                    </Property>
-                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                      <Insets value="[0, 0, 0, 0]"/>
-                    </Property>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JButton" name="_observableRegionsButton">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="_defineRegionsButton"/>
-                    <Property name="toolTipText" type="java.lang.String" value="Define regions ..."/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        geObservableRegionsParameterInternalFrame().setVisible(true);&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_weightedNormalModelRadioButton">
@@ -1286,6 +1269,41 @@
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_weightedNormalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
+                </Component>
+                <Component class="javax.swing.JRadioButton" name="_homogeneouspoissonModelRadioButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Continuous Poisson" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JButton" name="_observableRegionsButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="_defineRegionsButton"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Define polygons ..."/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        geObservableRegionsParameterInternalFrame().setVisible(true);&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel4">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Continuous Scan Statistics:"/>
+                  </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="jLabel5">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Discrete Scan Statistics:"/>
+                  </Properties>
                 </Component>
               </SubComponents>
             </Container>
@@ -1313,7 +1331,7 @@
                               <Component id="_lowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_highOrLowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="36" max="32767" attributes="0"/>
+                          <EmptySpace pref="29" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1410,7 +1428,7 @@
                                   <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="19" max="32767" attributes="0"/>
+                          <EmptySpace pref="12" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1431,7 +1449,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="35" max="32767" attributes="0"/>
+                          <EmptySpace pref="24" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1529,7 +1547,7 @@
                           <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_montCarloReplicationsTextField" min="-2" pref="58" max="-2" attributes="0"/>
-                          <EmptySpace pref="158" max="32767" attributes="0"/>
+                          <EmptySpace pref="165" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1541,7 +1559,7 @@
                               <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_montCarloReplicationsTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="40" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1608,7 +1626,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="__additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="173" max="32767" attributes="0"/>
+                      <EmptySpace pref="186" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1656,7 +1674,7 @@
                                       <Component id="_clustersInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_clusterCaseInColumnFormatLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace pref="191" max="32767" attributes="0"/>
+                                  <EmptySpace pref="178" max="32767" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_asciiLabel" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
@@ -1691,15 +1709,15 @@
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_censusAreasReportedClustersLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="399" max="32767" attributes="0"/>
+                                  <EmptySpace pref="406" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_relativeRiskEstimatesAreaLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="344" max="32767" attributes="0"/>
+                                  <EmptySpace pref="351" max="32767" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_simulatedLogLikelihoodRatiosLabel" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="279" max="32767" attributes="0"/>
+                                  <EmptySpace pref="286" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -1795,7 +1813,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_clusterCaseInColumnFormatLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Cluster Case Information" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Stratified Cluster Information" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="_clusterCaseInColumnFormatAsciiCheckBox">

@@ -444,12 +444,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             throw new SettingsException("The study period start date can not be greater than the end date.", (Component) _studyPeriodStartDateYearTextField);
         }
         //validate the case file
-        if (_caseFileTextField.getText().length() == 0) {
-            throw new SettingsException("Please specify a case file.", (Component) _caseFileTextField);
-        }
-        if (!FileAccess.ValidateFileAccess(_caseFileTextField.getText(), false)) {
-            throw new SettingsException("The case file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",
-                    (Component) _caseFileTextField);
+        if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON) {
+            if (_caseFileTextField.getText().length() == 0) {
+                throw new SettingsException("Please specify a case file.", (Component) _caseFileTextField);
+            }
+            if (!FileAccess.ValidateFileAccess(_caseFileTextField.getText(), false)) {
+                throw new SettingsException("The case file could not be opened for reading.\n" + "Please confirm that the path and/or file name\n" + "are valid and that you have permissions to read\nfrom this directory and file.",
+                        (Component) _caseFileTextField);
+            }
         }
         //validate the control file - Bernoulli model only
         if (getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI) {
@@ -478,13 +480,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
         if (!getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected() &&
             !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL)) {
-            if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON) {
-               if (_coordiantesFileTextField.getText().length() == 0) {
-                   throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
-               } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {
-                   throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
-                           (Component) _coordiantesFileTextField);
-               }
+            if (_coordiantesFileTextField.getText().length() == 0) {
+                throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
+            } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {
+                throw new SettingsException("The coordinates file could not be opened for reading.\n" + "Please confirm that the path and/or file name are\n" + "valid and that you have permissions to read from this\ndirectory and file.",
+                        (Component) _coordiantesFileTextField);
             }
             //validate special grid file -- optional
             if (_gridFileTextField.getText().length() > 0 && !FileAccess.ValidateFileAccess(_gridFileTextField.getText(), false)) {
@@ -1004,7 +1004,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         if (!_spaceTimePermutationModelRadioButton.isEnabled() && _spaceTimePermutationModelRadioButton.isSelected()) {
           _poissonModelRadioButton.setSelected(true);  
         }
-        _homogeneouspoissonModelRadioButton.setEnabled(eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL);
+        _homogeneouspoissonModelRadioButton.setEnabled(eAnalysisType == Parameters.AnalysisType.PURELYSPATIAL && getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN);
         if (!_homogeneouspoissonModelRadioButton.isEnabled() && _homogeneouspoissonModelRadioButton.isSelected()) {
           _poissonModelRadioButton.setSelected(true);  
         }
@@ -1129,11 +1129,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     private void setAreaScanRateControlText(Parameters.ProbabilityModelType eProbabilityModelType) {
         Boolean bEnable = getModelControlType() != Parameters.ProbabilityModelType.CATEGORICAL;
+        Boolean bEnableLowRates = getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+        Boolean bEnableBothRates = getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         
         _scanAreasGroup.setEnabled(bEnable);
-        _lowRatesRadioButton.setEnabled(bEnable);
+        _lowRatesRadioButton.setEnabled(bEnable && bEnableLowRates);
         _highRatesRadioButton.setEnabled(bEnable);
-        _highOrLowRatesRadioButton.setEnabled(bEnable);  
+        _highOrLowRatesRadioButton.setEnabled(bEnable && bEnableBothRates);
+        if (bEnable && ((bEnableLowRates == false && _lowRatesRadioButton.isSelected()) ||
+                        (bEnableBothRates == false && _highOrLowRatesRadioButton.isSelected()))) {
+            _highRatesRadioButton.setSelected(true);
+        }
         switch (eProbabilityModelType) {
             case POISSON:
             case HOMOGENEOUSPOISSON:    
@@ -1163,21 +1169,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      */
     private void onProbabilityModelTypeClick() {
         enableAnalysisControlForModelType();
-        switch (getModelControlType()) {
-            case POISSON:
-            case BERNOULLI:
-            case ORDINAL:
-            case CATEGORICAL:
-            case HOMOGENEOUSPOISSON:    
-            case WEIGHTEDNORMAL:
-            case NORMAL:
-            case EXPONENTIAL:
-                _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios");
-                break;
-            case SPACETIMEPERMUTATION:
-                _simulatedLogLikelihoodRatiosLabel.setText("Simulated Test Statistics");
-                break;
+        if (getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION) {
+            _simulatedLogLikelihoodRatiosLabel.setText("Simulated Test Statistics");
+        } else {
+            _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios");  
         }
+        getAdvancedParameterInternalFrame().SetGeographicalCoordinateCheckLabelsCaption();
         getAdvancedParameterInternalFrame().UpdateMaxiumSpatialTextCaptions();
         setAreaScanRateControlText(getModelControlType());
         enableSettingsForAnalysisModelCombination();
@@ -1338,9 +1335,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _exponentialModelRadioButton = new javax.swing.JRadioButton();
         _normalModelRadioButton = new javax.swing.JRadioButton();
         _categoricallModelRadioButton = new javax.swing.JRadioButton();
+        _weightedNormalModelRadioButton = new javax.swing.JRadioButton();
         _homogeneouspoissonModelRadioButton = new javax.swing.JRadioButton();
         _observableRegionsButton = new javax.swing.JButton();
-        _weightedNormalModelRadioButton = new javax.swing.JRadioButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
         _scanAreasGroup = new javax.swing.JPanel();
         _highRatesRadioButton = new javax.swing.JRadioButton();
         _lowRatesRadioButton = new javax.swing.JRadioButton();
@@ -1515,7 +1514,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_timePrecisionYear)
                     .addComponent(_timePrecisionMonth)
                     .addComponent(_timePrecisionDay))
-                .addContainerGap(59, Short.MAX_VALUE))
+                .addContainerGap(63, Short.MAX_VALUE))
         );
         _timePrecisionGroupLayout.setVerticalGroup(
             _timePrecisionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1694,7 +1693,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(_studyPeriodGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(_endDateDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_studyPeriodEndDateDayTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
-                .addContainerGap(76, Short.MAX_VALUE))
+                .addContainerGap(83, Short.MAX_VALUE))
         );
         _studyPeriodGroupLayout.setVerticalGroup(
             _studyPeriodGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1779,8 +1778,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                 .addComponent(_bernoulliModelHintLabel))
                             .addGroup(_caseInputPanelLayout.createSequentialGroup()
                                 .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
-                                    .addComponent(_caseFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE))
+                                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                                    .addComponent(_caseFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addGroup(_caseInputPanelLayout.createSequentialGroup()
@@ -1882,7 +1881,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_populationFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_populationFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(147, Short.MAX_VALUE))
+                .addContainerGap(154, Short.MAX_VALUE))
         );
         _populationInputPanelLayout.setVerticalGroup(
             _populationInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1897,9 +1896,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_populationFileImportButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        _populationFileImportButton.getAccessibleContext().setAccessibleName("...");
-        _populationFileImportButton.getAccessibleContext().setAccessibleDescription("Import population file ...");
 
         _geographicalInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -1953,6 +1949,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _cartesianRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    ParameterSettingsFrame.this.enableModelControlForAnalysisType();
+                    ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();
                     getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();
                     getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();
                 }
@@ -1965,6 +1963,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _latLongRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+                    ParameterSettingsFrame.this.enableSettingsForAnalysisModelCombination();
+                    ParameterSettingsFrame.this.enableModelControlForAnalysisType();
                     getAdvancedParameterInternalFrame().SetSpatialDistanceCaption();
                     getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();
                 }
@@ -1980,7 +1980,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(_coordinateTypeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_cartesianRadioButton)
                     .addComponent(_latLongRadioButton))
-                .addContainerGap(42, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
         _coordinateTypeGroupLayout.setVerticalGroup(
             _coordinateTypeGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2109,7 +2109,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2221,13 +2221,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_prospectivePurelyTemporalRadioButton)
                 .addGap(20, 20, 20)
                 .addComponent(_prospectiveSpaceTimeRadioButton)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
 
-        _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Discrete Scan Statistics", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _poissonModelRadioButton.setSelected(true);
-        _poissonModelRadioButton.setText("Poission"); // NOI18N
+        _poissonModelRadioButton.setText("Discrete Poission"); // NOI18N
         _poissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _poissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _poissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2287,31 +2287,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        _categoricallModelRadioButton.setText("Categorical"); // NOI18N
+        _categoricallModelRadioButton.setText("Multinomial"); // NOI18N
         _categoricallModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _categoricallModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _categoricallModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
                 onProbabilityModelTypeClick();
-            }
-        });
-
-        _homogeneouspoissonModelRadioButton.setText("Homogeneous Poisson"); // NOI18N
-        _homogeneouspoissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _homogeneouspoissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
-                onProbabilityModelTypeClick();
-            }
-        });
-
-        _observableRegionsButton.setText("_defineRegionsButton");
-        _observableRegionsButton.setToolTipText("Define regions ...");
-        _observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                geObservableRegionsParameterInternalFrame().setVisible(true);
             }
         });
 
@@ -2325,6 +2307,28 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        _homogeneouspoissonModelRadioButton.setText("Continuous Poisson"); // NOI18N
+        _homogeneouspoissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _homogeneouspoissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)
+                onProbabilityModelTypeClick();
+            }
+        });
+
+        _observableRegionsButton.setText("_defineRegionsButton");
+        _observableRegionsButton.setToolTipText("Define polygons ...");
+        _observableRegionsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                geObservableRegionsParameterInternalFrame().setVisible(true);
+            }
+        });
+
+        jLabel4.setText("Continuous Scan Statistics:");
+
+        jLabel5.setText("Discrete Scan Statistics:");
+
         javax.swing.GroupLayout _probabilityModelGroupLayout = new javax.swing.GroupLayout(_probabilityModelGroup);
         _probabilityModelGroup.setLayout(_probabilityModelGroupLayout);
         _probabilityModelGroupLayout.setHorizontalGroup(
@@ -2332,43 +2336,53 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_poissonModelRadioButton)
-                    .addComponent(_bernoulliModelRadioButton)
-                    .addComponent(_spaceTimePermutationModelRadioButton)
-                    .addComponent(_ordinalModelRadioButton)
-                    .addComponent(_exponentialModelRadioButton)
-                    .addComponent(_normalModelRadioButton)
-                    .addComponent(_weightedNormalModelRadioButton)
-                    .addComponent(_categoricallModelRadioButton)
                     .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
                         .addComponent(_homogeneouspoissonModelRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jLabel5)
+                    .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(_probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(_bernoulliModelRadioButton)
+                            .addComponent(_poissonModelRadioButton)
+                            .addComponent(_spaceTimePermutationModelRadioButton)
+                            .addComponent(_categoricallModelRadioButton)
+                            .addComponent(_ordinalModelRadioButton)
+                            .addComponent(_exponentialModelRadioButton)
+                            .addComponent(_normalModelRadioButton)
+                            .addComponent(_weightedNormalModelRadioButton)))
+                    .addComponent(jLabel4))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         _probabilityModelGroupLayout.setVerticalGroup(
             _probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
+                .addComponent(jLabel5)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_poissonModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_bernoulliModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_spaceTimePermutationModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_ordinalModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_exponentialModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_normalModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_weightedNormalModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_categoricallModelRadioButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_ordinalModelRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_exponentialModelRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_normalModelRadioButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_weightedNormalModelRadioButton)
+                .addGap(18, 18, 18)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_homogeneouspoissonModelRadioButton)
                     .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Scan For Areas With:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
@@ -2396,7 +2410,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_highRatesRadioButton)
                     .addComponent(_lowRatesRadioButton)
                     .addComponent(_highOrLowRatesRadioButton))
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
         _scanAreasGroupLayout.setVerticalGroup(
             _scanAreasGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2492,7 +2506,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationLengthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_aggregrationUnitsLabel)))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         _timeAggregationGroupLayout.setVerticalGroup(
             _timeAggregationGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2509,7 +2523,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_timeAggregationLengthLabel)
                     .addComponent(_timeAggregationLengthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_aggregrationUnitsLabel))
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         _advancedAnalysisButton.setText("Advanced >>"); // NOI18N
@@ -2548,7 +2562,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(158, Short.MAX_VALUE))
+                .addContainerGap(165, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2557,42 +2571,42 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
                     .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(40, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout _analysisTabLayout = new javax.swing.GroupLayout(_analysisTab);
         _analysisTab.setLayout(_analysisTabLayout);
         _analysisTabLayout.setHorizontalGroup(
             _analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _analysisTabLayout.createSequentialGroup()
+            .addGroup(_analysisTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _analysisTabLayout.createSequentialGroup()
+                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _analysisTabLayout.createSequentialGroup()
                         .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(9, 9, 9)
                         .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_scanAreasGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(_advancedAnalysisButton))
+                    .addComponent(_advancedAnalysisButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _analysisTabLayout.setVerticalGroup(
             _analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_analysisTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, _analysisTabLayout.createSequentialGroup()
+                .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(_analysisTabLayout.createSequentialGroup()
                         .addComponent(_scanAreasGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(59, 59, 59)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2627,7 +2641,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clustersInColumnFormatDBaseCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _clustersInColumnFormatDBaseCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        _clusterCaseInColumnFormatLabel.setText("Cluster Case Information"); // NOI18N
+        _clusterCaseInColumnFormatLabel.setText("Stratified Cluster Information"); // NOI18N
 
         _clusterCaseInColumnFormatAsciiCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _clusterCaseInColumnFormatAsciiCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -2670,7 +2684,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGroup(__additionalOutputFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_clustersInColumnFormatLabel)
                             .addComponent(_clusterCaseInColumnFormatLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 191, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 178, Short.MAX_VALUE)
                         .addGroup(__additionalOutputFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_asciiLabel)
                             .addGroup(__additionalOutputFilesGroupLayout.createSequentialGroup()
@@ -2697,13 +2711,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                 .addContainerGap(77, Short.MAX_VALUE))))
                     .addGroup(__additionalOutputFilesGroupLayout.createSequentialGroup()
                         .addComponent(_censusAreasReportedClustersLabel)
-                        .addContainerGap(399, Short.MAX_VALUE))
+                        .addContainerGap(406, Short.MAX_VALUE))
                     .addGroup(__additionalOutputFilesGroupLayout.createSequentialGroup()
                         .addComponent(_relativeRiskEstimatesAreaLabel)
-                        .addContainerGap(344, Short.MAX_VALUE))
+                        .addContainerGap(351, Short.MAX_VALUE))
                     .addGroup(__additionalOutputFilesGroupLayout.createSequentialGroup()
                         .addComponent(_simulatedLogLikelihoodRatiosLabel)
-                        .addContainerGap(279, Short.MAX_VALUE))))
+                        .addContainerGap(286, Short.MAX_VALUE))))
         );
         __additionalOutputFilesGroupLayout.setVerticalGroup(
             __additionalOutputFilesGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2778,7 +2792,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(__additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 173, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 186, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2789,11 +2803,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 545, Short.MAX_VALUE)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 552, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 440, Short.MAX_VALUE)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
         );
 
         pack();
@@ -2914,6 +2928,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
     public void internalFrameOpened(InternalFrameEvent e) {
