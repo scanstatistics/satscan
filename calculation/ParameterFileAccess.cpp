@@ -79,7 +79,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case PURESPATIAL              : return " include purely spatial clusters? (y/n)";
       case TIMESIZE                 : return " maximum temporal cluster size (<=90%)";
       case REPLICAS                 : return " Monte Carlo replications (0, 9, 999, n999)";
-      case MODEL                    : return " model type (0=Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Homogeneous Poisson, 7=Categorical, 8=Weighted Normal)";
+      case MODEL                    : return " model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial, 8=Weighted Normal)";
       case RISKFUNCTION             : return " isotonic scan (0=Standard, 1=Monotone)";
       case POWERCALC                : return " p-values for 2 pre-specified log likelihood ratios? (y/n)";
       case POWERX                   : return " power calculation log likelihood ratio (no. 1)";
@@ -154,7 +154,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case MULTIPLE_COORDINATES_TYPE: return " multiple coordinates type (0=OnePerLocation, 1=AtLeastOneLocation, 2=AllLocations)";
       case META_LOCATIONS_FILE      : return " meta locations file";
       case USE_META_LOCATIONS_FILE  : return " use meta locations file (y/n)";
-      case OBSERVABLE_REGIONS       : return " inequalities (comma separated decimal values)";
+      case OBSERVABLE_REGIONS       : return " polygon inequalities (comma separated decimal values)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
