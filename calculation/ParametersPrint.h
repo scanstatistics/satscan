@@ -25,6 +25,7 @@ class ParametersPrint {
     void                PrintNeighborsFileParameters(FILE* fp) const;
     void                PrintOutputParameters(FILE* fp) const;
     void                PrintPowerSimulationsParameters(FILE* fp) const;
+    void                PrintPolygonParameters(FILE* fp) const;
     void                PrintRunOptionsParameters(FILE* fp) const;
     void                PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const;
     void                PrintSpatialWindowParameters(FILE* fp) const;

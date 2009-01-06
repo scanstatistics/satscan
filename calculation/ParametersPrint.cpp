@@ -5,6 +5,7 @@
 #include "ParametersPrint.h"
 #include "DataSetHandler.h"
 #include "SSException.h"
+#include "ObservableRegion.h"
 
 /** constructor*/
 ParametersPrint::ParametersPrint(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -88,16 +89,16 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
 
   try {
     switch (gParameters.GetProbabilityModelType()) {
-      case POISSON              : sProbabilityModel = "Poisson"; break;
+      case POISSON              : sProbabilityModel = "Discrete Poisson"; break;
       case BERNOULLI            : sProbabilityModel = "Bernoulli"; break;
       case SPACETIMEPERMUTATION : sProbabilityModel = "Space-Time Permutation"; break;
-      case CATEGORICAL          : sProbabilityModel = "Categorical"; break;
+      case CATEGORICAL          : sProbabilityModel = "Multinomial"; break;
       case ORDINAL              : sProbabilityModel = "Ordinal"; break;
       case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
       case NORMAL               : sProbabilityModel = "Normal"; break;
       case WEIGHTEDNORMAL       : sProbabilityModel = "Weighted Normal"; break;
       case RANK                 : sProbabilityModel = "Rank"; break;
-      case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
+      case HOMOGENEOUSPOISSON   : sProbabilityModel = "Continuous Poisson"; break;
       default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
     }
   }
@@ -127,6 +128,8 @@ void ParametersPrint::Print(FILE* fp) const {
     PrintNeighborsFileParameters(fp);
     //print 'Multiple Coordinates Per Location' tab settings
     PrintMultipleCoordinatesParameters(fp);
+    //print polygon settings
+    PrintPolygonParameters(fp);
     //print 'Spatial Window' tab settings
     PrintSpatialWindowParameters(fp);
     //print 'Temporal Window' tab settings
@@ -253,16 +256,16 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
     std::transform(s.begin(), s.end(), s.begin(), (int(*)(int)) tolower);
     fprintf(fp, "clusters with %s\n", s.c_str());
     switch (gParameters.GetProbabilityModelType()) {
-      case POISSON              : fprintf(fp, "using the Poisson model.\n"); break;
+      case POISSON              : fprintf(fp, "using the Discrete Poisson model.\n"); break;
       case BERNOULLI            : fprintf(fp, "using the Bernoulli model.\n"); break;
       case SPACETIMEPERMUTATION : fprintf(fp, "using the Space-Time Permutation model.\n"); break;
-      case CATEGORICAL          : fprintf(fp, "using the Categorical model.\n"); break;
+      case CATEGORICAL          : fprintf(fp, "using the Multinomial model.\n"); break;
       case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
       case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
       case WEIGHTEDNORMAL       : fprintf(fp, "using the Weighted Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
-      case HOMOGENEOUSPOISSON   : fprintf(fp, "using the Homogeneous Poisson model.\n"); break;
+      case HOMOGENEOUSPOISSON   : fprintf(fp, "using the Continuous Poisson model.\n"); break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetProbabilityModelType());
     }
@@ -465,7 +468,9 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
 
   try {
     fprintf(fp, "\nInput\n-----\n");
-    fprintf(fp, "  Case File         %s : %s\n", sDataSetLabel, gParameters.GetCaseFileName(1).c_str());
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        fprintf(fp, "  Case File         %s : %s\n", sDataSetLabel, gParameters.GetCaseFileName(1).c_str());
+    }
     switch (gParameters.GetProbabilityModelType()) {
       case POISSON :
          if (!gParameters.UsePopulationFile()) break;
@@ -686,6 +691,26 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
   }
   catch (prg_exception& x) {
     x.addTrace("PrintPowerSimulationsParameters()","ParametersPrint");
+    throw;
+  }
+}
+
+/** Prints polygon paramters to file stream. */
+void ParametersPrint::PrintPolygonParameters(FILE* fp) const {
+    try {
+        if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
+            fprintf(fp, "\nPolygons\n--------\n");
+            for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
+                fprintf(fp, "  Region %i: ", t + 1);
+                InequalityContainer_t list = ConvexPolygonBuilder::parse(gParameters.getObservableRegions().at(t));
+                for (size_t y=0; y < list.size(); ++y) {
+                    fprintf(fp, "%s%s", list.at(y).toString().c_str(), (y < list.size() - 1 ? ", " : "\n") );
+                }
+            }
+        }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("PrintPolygonParameters()","ParametersPrint");
     throw;
   }
 }

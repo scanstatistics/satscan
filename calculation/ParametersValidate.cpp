@@ -241,7 +241,7 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
     if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.UseLocationNeighborsFile()) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "Centric analysis execution is not implemented with the special neighbors file.\n", BasePrint::P_PARAMERROR);
+                            "Centric analysis execution is not implemented with the non-Eucludian neighbors file.\n", BasePrint::P_PARAMERROR);
     }
     if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
       bValid = false;
@@ -262,20 +262,22 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
   size_t        t;
 
   try {
-    //validate case file
-    if (!gParameters.GetCaseFileNames().size()) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\nNo case file was specified.\n", BasePrint::P_PARAMERROR);
-    }
-    for (t=0; t < gParameters.GetCaseFileNames().size(); ++t) {
-       if (!ValidateFileAccess(gParameters.GetCaseFileNames()[t])) {
-         bValid = false;
-         PrintDirection.Printf("Invalid Parameter Setting:\n"
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        //validate case file
+        if (!gParameters.GetCaseFileNames().size()) {
+            bValid = false;
+            PrintDirection.Printf("Invalid Parameter Setting:\nNo case file was specified.\n", BasePrint::P_PARAMERROR);
+        }
+        for (t=0; t < gParameters.GetCaseFileNames().size(); ++t) {
+            if (!ValidateFileAccess(gParameters.GetCaseFileNames()[t])) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
                                "The case file '%s' could not be opened for reading. "
                                "Please confirm that the path and/or file name are valid and that you "
                                "have permissions to read from this directory and file.\n",
                                BasePrint::P_PARAMERROR, gParameters.GetCaseFileNames()[t].c_str());
-       }
+            }
+        }
     }
     //validate population file for a poisson model.
     if (gParameters.GetProbabilityModelType() == POISSON) {
@@ -345,7 +347,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       }
     }
     //validate coordinates file
-    if (!(gParameters.UseLocationNeighborsFile() || gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
+    if (!(gParameters.UseLocationNeighborsFile() || gParameters.GetIsPurelyTemporalAnalysis())) {
       if (gParameters.GetCoordinatesFileName().empty()) {
          bValid = false;
          PrintDirection.Printf("Invalid Parameter Setting:\nNo coordinates file specified.\n", BasePrint::P_PARAMERROR);
@@ -647,7 +649,8 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
 
   if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) return true;
 
-  try { 
+  try {
+    const_cast<CParameters&>(gParameters).SetMultipleCoordinatesType(ONEPERLOCATION);
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
         gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
         bReturn = false;
@@ -670,7 +673,12 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
        PrintDirection.Printf("Invalid Parameter Setting:\nMultiple data sets are not permitted with %s model.\n", 
                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
-      
+    if (gParameters.GetCoordinatesType() == LATLON) {
+      bReturn = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nLatitude/Longitude coordinates are not implemented for %s model.\n", 
+                            BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+    }      
+
     std::vector<ConvexPolygonObservableRegion> polygons;
     // for each region defined, attempt to define region from specifications
     for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
@@ -683,7 +691,7 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
     for (size_t i=0; i < polygons.size() - 1; ++i) {
         for (size_t j=i+1; j < polygons.size(); ++j) {
             if (polygons[i].intersectsRegion(polygons[j]))
-                throw region_exception("Inequalities define regions that overlapp.\n"
+                throw region_exception("Inequalities define regions that overlap.\n"
                                        "Please check inequalities and/or redefine to not have overlap.");
         }
     }
