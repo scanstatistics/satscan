@@ -2,7 +2,7 @@
 
 <Form version="1.3" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JInternalFrameFormInfo">
   <Properties>
-    <Property name="title" type="java.lang.String" value="Region Settings"/>
+    <Property name="title" type="java.lang.String" value="Polygons"/>
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
@@ -27,7 +27,7 @@
                   <Component id="_closeButton" alignment="1" min="-2" pref="70" max="-2" attributes="1"/>
                   <Group type="103" alignment="0" groupAlignment="1" max="-2" attributes="0">
                       <Component id="_inequalitiesPanel" alignment="0" max="32767" attributes="1"/>
-                      <Component id="_regionsPanel" alignment="0" max="32767" attributes="1"/>
+                      <Component id="_regionsPanel" alignment="0" pref="462" max="32767" attributes="1"/>
                   </Group>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
@@ -96,8 +96,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jScrollPane1" min="-2" pref="101" max="-2" attributes="1"/>
-                              <EmptySpace min="10" pref="10" max="-2" attributes="0"/>
+                              <Component id="jScrollPane1" min="-2" pref="115" max="-2" attributes="1"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="_addRegionButton" max="32767" attributes="1"/>
                                   <Component id="_deleteRegionButton" alignment="0" max="32767" attributes="1"/>
@@ -117,18 +117,19 @@
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Group type="102" attributes="0">
                               <EmptySpace min="11" pref="11" max="11" attributes="0"/>
-                              <Component id="jSeparator1" pref="139" max="32767" attributes="0"/>
+                              <Component id="jSeparator1" pref="150" max="32767" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
+                                  <Group type="102" attributes="0">
                                       <Component id="_addRegionButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="_deleteRegionButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace pref="89" max="32767" attributes="0"/>
                                   </Group>
-                                  <Component id="jScrollPane1" alignment="0" max="32767" attributes="1"/>
+                                  <Component id="jScrollPane1" pref="141" max="32767" attributes="1"/>
                               </Group>
                           </Group>
                       </Group>
@@ -140,7 +141,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Regions:"/>
+                <Property name="text" type="java.lang.String" value="Polygons:"/>
               </Properties>
             </Component>
             <Container class="javax.swing.JScrollPane" name="jScrollPane1">
@@ -196,7 +197,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jScrollPane2" min="-2" pref="116" max="-2" attributes="1"/>
+                              <Component id="jScrollPane2" min="-2" pref="127" max="-2" attributes="1"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="_addInequalityButton" max="32767" attributes="1"/>
@@ -215,12 +216,12 @@
                       <Component id="_inequalitiesForRegion" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
+                          <Group type="102" attributes="0">
                               <Component id="_addInequalityButton" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_deleteInequalityButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane2" alignment="0" max="32767" attributes="1"/>
+                          <Component id="jScrollPane2" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -303,7 +304,7 @@
                   <Component id="_interceptTextField" min="-2" pref="32" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="_updateInequalityButton" min="-2" max="-2" attributes="1"/>
-                  <EmptySpace pref="57" max="32767" attributes="0"/>
+                  <EmptySpace pref="90" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -320,7 +321,7 @@
                       <Component id="_interceptTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                       <Component id="_updateInequalityButton" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="32767" attributes="0"/>
+                  <EmptySpace pref="19" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
