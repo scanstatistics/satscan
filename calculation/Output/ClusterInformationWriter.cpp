@@ -13,7 +13,7 @@
 #include "WeightedNormalRandomizer.h"
 
 const char * ClusterInformationWriter::CLUSTER_FILE_EXT	            = ".col";
-const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	        = ".cci";
+const char * ClusterInformationWriter::CLUSTERCASE_FILE_EXT	        = ".sci";
 const char * ClusterInformationWriter::START_DATE_FLD	            = "START_DATE";
 const char * ClusterInformationWriter::END_DATE_FLD	                = "END_DATE";
 const char * ClusterInformationWriter::RADIUS_FIELD	                = "RADIUS";
