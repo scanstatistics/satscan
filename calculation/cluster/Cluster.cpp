@@ -241,7 +241,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      printString(buffer, "%.2f", dEstimatedMeanOutside);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print unexplained variance label
-     PrintFormat.PrintSectionLabel(fp, "Unexplained variance", false, true);
+     PrintFormat.PrintSectionLabel(fp, "Variance", false, true);
      dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureAux(*itr_Index),
                                              Handler.GetDataSet(*itr_Index).getTotalCases(), Handler.GetDataSet(*itr_Index).getTotalMeasure(),
                                              Handler.GetDataSet(*itr_Index).getTotalMeasureAux());
