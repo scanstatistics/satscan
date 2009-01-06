@@ -426,28 +426,8 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print total cluster weight
-     PrintFormat.PrintSectionLabel(fp, "Total weights inside", false, true);
+     PrintFormat.PrintSectionLabel(fp, "Total weights", false, true);
      printString(buffer, "%.2f", statistics.gtWeight);
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-     //print cluster variance
-     PrintFormat.PrintSectionLabel(fp, "Variance", false, true);
-     printString(buffer, "%.2f", statistics.gtVariance);
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-     //print cluster standard deviation
-     PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
-     printString(buffer, "%.2f", std::sqrt(statistics.gtVariance));
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-     //print cluster weighted variance
-     PrintFormat.PrintSectionLabel(fp, "Weighted variance", false, true);
-     printString(buffer, "%.2f", statistics.gtWeightedVariance);
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
-     //print cluster standard deviation
-     PrintFormat.PrintSectionLabel(fp, "Weighted std deviation", false, true);
-     printString(buffer, "%.2f", std::sqrt(statistics.gtWeightedVariance));
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print mean inside
@@ -460,6 +440,16 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
      printString(buffer, "%.2f", statistics.gtMeanOut);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
+     //print cluster variance
+     PrintFormat.PrintSectionLabel(fp, "Variance", false, true);
+     printString(buffer, "%.2f", statistics.gtVariance);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+     //print cluster standard deviation
+     PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
+     printString(buffer, "%.2f", std::sqrt(statistics.gtVariance));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
      //print weighted mean inside
      PrintFormat.PrintSectionLabel(fp, "Weighted mean inside", false, true);
      printString(buffer, "%.2f", statistics.gtWeightedMeanIn);
@@ -469,6 +459,17 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
      PrintFormat.PrintSectionLabel(fp, "Weighted mean outside", false, true);
      printString(buffer, "%.2f", statistics.gtWeightedMeanOut);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+     //print cluster weighted variance
+     PrintFormat.PrintSectionLabel(fp, "Weighted variance", false, true);
+     printString(buffer, "%.2f", statistics.gtWeightedVariance);
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+     //print cluster standard deviation
+     PrintFormat.PrintSectionLabel(fp, "Weighted std deviation", false, true);
+     printString(buffer, "%.2f", std::sqrt(statistics.gtWeightedVariance));
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
   }
 }
 
