@@ -240,6 +240,8 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
         jSplitPane1.setResizeWeight(1.0);
 
         _progressTextArea.setColumns(20);
+        _progressTextArea.setEditable(false);
+        _progressTextArea.setFont(new java.awt.Font("Courier New", 0, 11));
         _progressTextArea.setRows(5);
         jScrollPane1.setViewportView(_progressTextArea);
 
@@ -295,7 +297,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_cancelButton)
@@ -317,7 +319,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
