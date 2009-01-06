@@ -161,7 +161,7 @@ JNIEXPORT jstring JNICALL Java_org_satscan_gui_OberservableRegionsFrame__1getReg
     for (size_t i=0; i < polygons.size() - 1; ++i) {
         for (size_t j=i+1; j < polygons.size(); ++j) {
             if (polygons[i].intersectsRegion(polygons[j]))
-              throw region_exception("The regions you have defined are valid but there is overlapp.\nPlease check regions/inequalities and re-define to remove overlap.");
+              throw region_exception("The polygons you have defined are valid but there is overlap.\nPlease check polygons/inequalities and redefine to remove overlap.");
         }
     }
  
