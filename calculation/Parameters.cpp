@@ -1003,3 +1003,24 @@ bool CParameters::UseMaxCirclePopulationFile() const {
   return bAskForByUser;
 }
 
+/** Returns indication of whether multiple coordinates per location parameter is used. */
+bool CParameters::UsingMultipleCoordinatesMetaLocations() const {
+    return !GetIsPurelyTemporalAnalysis() && 
+           !UseLocationNeighborsFile() && 
+           geMultipleCoordinatesType != ONEPERLOCATION &&
+           GetProbabilityModelType() != HOMOGENEOUSPOISSON;
+}
+
+/** Returns indication of whether meta locations file parameter is used. */
+bool CParameters::UseMetaLocationsFile() const {
+    return !GetIsPurelyTemporalAnalysis() && 
+           UseLocationNeighborsFile() && 
+           gbUseMetaLocationsFile;
+}
+
+/** Returns indication of whether non-Euclidian neighbors file parameter is used. */
+bool CParameters::UseLocationNeighborsFile() const {
+    return !GetIsPurelyTemporalAnalysis() && 
+            gbUseLocationNeighborsFile &&
+            GetProbabilityModelType() != HOMOGENEOUSPOISSON;
+}
