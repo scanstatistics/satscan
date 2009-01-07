@@ -318,7 +318,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _strictCoordinatesRadioButton.setEnabled(bEnable);
         _relaxedCoordinatesRadioButton.setEnabled(bEnable);
         _strictCoordinatesLabel.setEnabled(bEnable);
-        _relaxedCoordinatesLabel.setEnabled(bEnable);
     }
 
     private void EnableMultipleLocationsGroup(boolean bEnable) {
@@ -473,21 +472,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         EnableAdjustmentsGroup(bPoisson);
     }
 
-    /** Sets the geographical coordinates check labels based upon current model. */
-    public void SetGeographicalCoordinateCheckLabelsCaption() {
-        if (_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON) {
-            _strictCoordinatesRadioButton.setText("Check to ensure that all locations in the coordinate and grid files are within the defined polygons.");
-            _strictCoordinatesLabel.setText("");
-            _relaxedCoordinatesRadioButton.setText("Ignore data in the coordinate and grid files that do not correspond to a location that is within boundries");
-            _relaxedCoordinatesLabel.setText(" of defined polygons.");            
-        } else {
-            _strictCoordinatesRadioButton.setText("Check to ensure that all locations in the case, control and population files are present");
-            _strictCoordinatesLabel.setText(" in the coordinates file.");
-            _relaxedCoordinatesRadioButton.setText("Ignore data in the case, control and population files that do not correspond to a location ID");
-            _relaxedCoordinatesLabel.setText(" listed in the coordinates file.");
-        }
-        
-    }    
     /** Sets caption of spatial distance radio button based upon coordinates group setting. */
     public void SetSpatialDistanceCaption() {
         String sRadioCaption = "", sLabelCaption = "";
@@ -1877,7 +1861,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _strictCoordinatesRadioButton = new javax.swing.JRadioButton();
         _relaxedCoordinatesRadioButton = new javax.swing.JRadioButton();
         _strictCoordinatesLabel = new javax.swing.JLabel();
-        _relaxedCoordinatesLabel = new javax.swing.JLabel();
         _spatialNeighborsTab = new javax.swing.JPanel();
         _specialNeighborFilesGroup = new javax.swing.JPanel();
         _specifiyNeighborsFileCheckBox = new javax.swing.JCheckBox();
@@ -2316,7 +2299,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_caseFileLabel)
                     .addComponent(_controlFileLabel)
                     .addComponent(_populationFileLabel))
-                .addContainerGap(10, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         _fileInputGroupLayout.setVerticalGroup(
             _fileInputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2431,15 +2414,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(148, Short.MAX_VALUE))
+                .addContainerGap(156, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
 
-        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Study Period Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _strictStudyPeriodCheckRadioButton.setSelected(true);
-        _strictStudyPeriodCheckRadioButton.setText("Check to ensure that cases and controls are within the Study Period."); // NOI18N
+        _strictStudyPeriodCheckRadioButton.setText("Check to ensure that all cases and controls are within the specified temporal study period."); // NOI18N
         _strictStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _strictStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _strictStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2448,7 +2431,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _relaxedStudyPeriodCheckRadioButton.setText("Ignore cases and controls that are outside the Study Period."); // NOI18N
+        _relaxedStudyPeriodCheckRadioButton.setText("Ignore cases and controls that are outside the specified temporal study period."); // NOI18N
         _relaxedStudyPeriodCheckRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _relaxedStudyPeriodCheckRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _relaxedStudyPeriodCheckRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2466,7 +2449,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_strictStudyPeriodCheckRadioButton)
                     .addComponent(_relaxedStudyPeriodCheckRadioButton))
-                .addContainerGap(198, Short.MAX_VALUE))
+                .addContainerGap(96, Short.MAX_VALUE))
         );
         _studyPeriodCheckGroupLayout.setVerticalGroup(
             _studyPeriodCheckGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2478,10 +2461,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Coordinates Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _strictCoordinatesRadioButton.setSelected(true);
-        _strictCoordinatesRadioButton.setText("Check to ensure that all locations in the case, control and population files are present"); // NOI18N
+        _strictCoordinatesRadioButton.setText("Check to ensure that all observations (cases, controls and populations) are within the specified"); // NOI18N
         _strictCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _strictCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _strictCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2490,7 +2473,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _relaxedCoordinatesRadioButton.setText("Ignore data in the case, control and population files that do not correspond to a location ID"); // NOI18N
+        _relaxedCoordinatesRadioButton.setText("Ignore observations that are outside the specified geographical area."); // NOI18N
         _relaxedCoordinatesRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _relaxedCoordinatesRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _relaxedCoordinatesRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2499,9 +2482,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _strictCoordinatesLabel.setText(" in the coordinates file."); // NOI18N
-
-        _relaxedCoordinatesLabel.setText(" listed in the coordinates file."); // NOI18N
+        _strictCoordinatesLabel.setText(" geographical area."); // NOI18N
 
         javax.swing.GroupLayout _geographicalCoordinatesCheckGroupLayout = new javax.swing.GroupLayout(_geographicalCoordinatesCheckGroup);
         _geographicalCoordinatesCheckGroup.setLayout(_geographicalCoordinatesCheckGroupLayout);
@@ -2514,10 +2495,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                         .addGap(17, 17, 17)
                         .addComponent(_strictCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE))
                     .addComponent(_relaxedCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
-                    .addGroup(_geographicalCoordinatesCheckGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(_relaxedCoordinatesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
+                    .addComponent(_strictCoordinatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _geographicalCoordinatesCheckGroupLayout.setVerticalGroup(
@@ -2529,8 +2507,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_strictCoordinatesLabel)
                 .addGap(10, 10, 10)
                 .addComponent(_relaxedCoordinatesRadioButton)
-                .addGap(0, 0, 0)
-                .addComponent(_relaxedCoordinatesLabel)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -2538,11 +2514,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _dataCheckingTab.setLayout(_dataCheckingTabLayout);
         _dataCheckingTabLayout.setHorizontalGroup(
             _dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_dataCheckingTabLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _dataCheckingTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(_dataCheckingTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _dataCheckingTabLayout.setVerticalGroup(
@@ -2552,7 +2528,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(190, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -2734,7 +2710,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(139, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3044,7 +3020,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addContainerGap(108, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -3504,7 +3480,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(160, Short.MAX_VALUE))
+                .addContainerGap(168, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -3772,7 +3748,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(56, Short.MAX_VALUE))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4036,7 +4012,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(140, Short.MAX_VALUE))
+                .addContainerGap(148, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -4302,7 +4278,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addContainerGap(61, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
@@ -4349,7 +4325,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_additionalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(334, Short.MAX_VALUE))
+                .addContainerGap(342, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -4383,7 +4359,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -4500,7 +4476,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _prospectiveStartMonthLabel;
     private javax.swing.JLabel _prospectiveStartYearLabel;
     private javax.swing.JPanel _prospectiveSurveillanceGroup;
-    private javax.swing.JLabel _relaxedCoordinatesLabel;
     private javax.swing.JRadioButton _relaxedCoordinatesRadioButton;
     private javax.swing.JRadioButton _relaxedStudyPeriodCheckRadioButton;
     private javax.swing.JButton _removeDataSetButton;

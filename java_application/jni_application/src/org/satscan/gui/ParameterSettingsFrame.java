@@ -1174,7 +1174,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         } else {
             _simulatedLogLikelihoodRatiosLabel.setText("Simulated Log Likelihood Ratios");  
         }
-        getAdvancedParameterInternalFrame().SetGeographicalCoordinateCheckLabelsCaption();
         getAdvancedParameterInternalFrame().UpdateMaxiumSpatialTextCaptions();
         setAreaScanRateControlText(getModelControlType());
         enableSettingsForAnalysisModelCombination();
