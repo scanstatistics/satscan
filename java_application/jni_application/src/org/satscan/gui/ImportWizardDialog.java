@@ -259,8 +259,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 return Parameters.ProbabilityModelType.NORMAL;
             case 6:
                 return Parameters.ProbabilityModelType.CATEGORICAL;
-            case 7:
-                return Parameters.ProbabilityModelType.WEIGHTEDNORMAL;
             case 0:
             default:
                 return Parameters.ProbabilityModelType.POISSON;
@@ -292,16 +290,15 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                                 _modelType == Parameters.ProbabilityModelType.CATEGORICAL ||
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
                                 _modelType == Parameters.ProbabilityModelType.NORMAL ||
-                                _modelType == Parameters.ProbabilityModelType.WEIGHTEDNORMAL ||
                                 _modelType == Parameters.ProbabilityModelType.RANK);
                     } else if (t == 14) //show 'censored' variable for exponential model only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
-                    } else if (t == 15) //show 'weight' variable for weight normal model only
+                    } else if (t == 15) //show 'weight' variable for normal model only
                     {
                         model.setShowing(_importVariables.get(t),
-                                _modelType == Parameters.ProbabilityModelType.WEIGHTEDNORMAL);
+                                _modelType == Parameters.ProbabilityModelType.NORMAL);
                     } else //default - show variable
                     {
                         model.setShowing(_importVariables.get(t), true);
@@ -700,7 +697,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             _displayVariablesComboBox.addItem("exponential");
             _displayVariablesComboBox.addItem("normal");
             _displayVariablesComboBox.addItem("multinomial");
-            _displayVariablesComboBox.addItem("weighted normal");
             switch (_startingModelType) {
                 case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
                 case SPACETIMEPERMUTATION : _displayVariablesComboBox.setSelectedIndex(2); break;
@@ -708,7 +704,6 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                 case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(4); break;
                 case NORMAL               : _displayVariablesComboBox.setSelectedIndex(5); break;
                 case CATEGORICAL          : _displayVariablesComboBox.setSelectedIndex(6); break;
-                case WEIGHTEDNORMAL       : _displayVariablesComboBox.setSelectedIndex(8); break;
                 case POISSON              :
                 default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
             }
@@ -806,7 +801,7 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
         _importVariables.addElement(new ImportVariable("Attribute (value)", 3, true, null));
         _importVariables.addElement(new ImportVariable("Censored", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Weight", 4, true, null));
+        _importVariables.addElement(new ImportVariable("Weight", 4, false, null));
     }
 
     /**
