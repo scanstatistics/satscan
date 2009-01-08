@@ -15,7 +15,7 @@ public class Parameters implements Cloneable {
                                                PURELYSPATIALPROSPECTIVECLUSTER, PURELYSPATIALHOMOGENEOUSCLUSTER};
     /** probability model types */
     public enum ProbabilityModelType          {POISSON, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, 
-                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, WEIGHTEDNORMAL, RANK};
+                                               NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK};
     public enum IncludeClustersType           {ALLCLUSTERS, ALIVECLUSTERS, CLUSTERSINRANGE};
     public enum RiskType                      {STANDARDRISK, MONOTONERISK};
     /** area incidence rate types */
@@ -496,7 +496,6 @@ public class Parameters implements Cloneable {
     	      case RANK                 : sProbabilityModel = "Rank"; break;
     	      case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
     	      case CATEGORICAL          : sProbabilityModel = "Categorical"; break;
-    	      case WEIGHTEDNORMAL       : sProbabilityModel = "Weighted Normal"; break;
     	      //default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
     	    }
     	  //}
