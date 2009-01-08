@@ -96,7 +96,6 @@ void SaTScanDataReader::Read() {
       case CATEGORICAL          :
       case ORDINAL              : bReadSuccess = ReadOrdinalData(); break;
       case EXPONENTIAL          : bReadSuccess = ReadExponentialData(); break;
-      case WEIGHTEDNORMAL       :
       case NORMAL               : bReadSuccess = ReadNormalData(); break;
       case RANK                 : bReadSuccess = ReadRankData(); break;
       case HOMOGENEOUSPOISSON   : bReadSuccess = ReadHomogeneousPoissonData(); break;

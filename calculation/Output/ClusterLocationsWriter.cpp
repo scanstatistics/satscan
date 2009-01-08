@@ -63,10 +63,10 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     // for multiple data sets nor the ordinal probability model
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, CLU_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
         CreateField(vFieldDefinitions, CLU_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, CLU_MEAN_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
         CreateField(vFieldDefinitions, CLU_WEIGHTED_MEAN_IN_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -88,9 +88,9 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       //these fields will no be supplied for analyses with more than one dataset
       CreateField(vFieldDefinitions, LOC_OBS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         CreateField(vFieldDefinitions, LOC_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
         CreateField(vFieldDefinitions, LOC_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, LOC_WEIGHTED_MEAN_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       } else {
@@ -137,10 +137,10 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          //leave area specific information blank.
          if (vIdentifiers.size() == 1) {
            Record.GetFieldValue(LOC_OBS_FIELD).AsDouble() = theCluster.GetObservedCountForTract(tTract, DataHub);
-           if (gParameters.GetProbabilityModelType() == NORMAL) {
+           if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
              count_t tObserved = theCluster.GetObservedCountForTract(tTract, DataHub);
              if (tObserved) Record.GetFieldValue(LOC_MEAN_FIELD).AsDouble() = theCluster.GetExpectedCountForTract(tTract, DataHub)/tObserved;
-           } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+           } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
              Record.GetFieldValue(LOC_MEAN_FIELD).AsDouble() = gStatistics.gtLocMean[tTract];
              Record.GetFieldValue(LOC_WEIGHTED_MEAN_FIELD).AsDouble() = gStatistics.gtLocWeightedMean[tTract];
            } else {
@@ -185,13 +185,13 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        //cluster information fields are only present for one dataset and not ordinal model
        if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
          Record.GetFieldValue(CLU_OBS_FIELD).AsDouble() = theCluster.GetObservedCount();
-         if (gParameters.GetProbabilityModelType() == NORMAL) {
+         if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
            count_t tObserved = theCluster.GetObservedCount();
            measure_t tExpected = theCluster.GetExpectedCount(DataHub);
            if (tObserved) Record.GetFieldValue(CLU_MEAN_IN_FIELD).AsDouble() = tExpected/tObserved;
            count_t tCasesOutside = DataHub.GetDataSetHandler().GetDataSet().getTotalCases() - tObserved;
            if (tCasesOutside) Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = (Handler.GetDataSet().getTotalMeasure() - tExpected)/tCasesOutside;
-         } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+         } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
            Record.GetFieldValue(CLU_MEAN_IN_FIELD).AsDouble() = gStatistics.gtMeanIn;
            Record.GetFieldValue(CLU_MEAN_OUT_FIELD).AsDouble() = gStatistics.gtMeanOut;
            Record.GetFieldValue(CLU_WEIGHTED_MEAN_IN_FIELD).AsDouble() = gStatistics.gtWeightedMeanIn;
@@ -247,7 +247,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
 /** Preparation step before writing cluster information (i.e. calling LocationInformationWriter::Write()). */
 void LocationInformationWriter::WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub) {
   try {
-      if (DataHub.GetParameters().GetNumDataSets() == 1 && DataHub.GetParameters().GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      if (DataHub.GetParameters().GetNumDataSets() == 1 && 
+          DataHub.GetParameters().GetProbabilityModelType() == NORMAL &&
+          DataHub.GetParameters().getIsWeightedNormal()) {
         //Cache weighted normal model statistics instead of calculating each time in Write() method.
         const AbstractWeightedNormalRandomizer * pRandomizer=0;
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(DataHub.GetDataSetHandler().GetRandomizer(0))) == 0)

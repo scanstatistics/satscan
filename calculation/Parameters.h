@@ -41,7 +41,7 @@ enum ClusterType                   {PURELYSPATIALCLUSTER=1, PURELYTEMPORALCLUSTE
                                     PURELYSPATIALPROSPECTIVECLUSTER,PURELYSPATIALHOMOGENEOUSCLUSTER};
 /** probability model types */
 enum ProbabilityModelType          {POISSON=0, BERNOULLI, SPACETIMEPERMUTATION, ORDINAL, EXPONENTIAL, 
-                                    NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, WEIGHTEDNORMAL, RANK};
+                                    NORMAL, HOMOGENEOUSPOISSON, CATEGORICAL, RANK};
 enum IncludeClustersType           {ALLCLUSTERS=0, ALIVECLUSTERS, CLUSTERSINRANGE};
 enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 /** area incidence rate types */
@@ -189,6 +189,7 @@ class CParameters {
     bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
     SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
     std::vector<std::string>            gvObservableRegions;                    /** collection of observable regions */
+    bool                                gbWeightedNormal;                       /** convieniance variable - is normal model is weighted*/
 
     void                                ConvertRelativePath(std::string & sInputFilename);
     void                                Copy(const CParameters &rhs);
@@ -315,6 +316,7 @@ class CParameters {
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
+    bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
     void                                RequestAllAdditionalOutputFiles();
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
@@ -395,6 +397,7 @@ class CParameters {
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
+    void                                SetIsWeightedNormal(bool b) {gbWeightedNormal = b;}
     void                                UseMetaLocationsFile(bool b) {gbUseMetaLocationsFile = b;}
     void                                UseLocationNeighborsFile(bool b) {gbUseLocationNeighborsFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}

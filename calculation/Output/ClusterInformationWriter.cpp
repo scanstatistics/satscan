@@ -117,20 +117,22 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       if (gParameters.GetProbabilityModelType() == NORMAL) {
-        CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
-        CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, WEIGHTED_MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, WEIGHTED_MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, WEIGHTED_VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, WEIGHTED_STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-        CreateField(vFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+          if (!gParameters.getIsWeightedNormal()) {
+            CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+          } else {
+            CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, WEIGHTED_MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, WEIGHTED_MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, WEIGHTED_VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, WEIGHTED_STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+          }
       } else {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
@@ -161,20 +163,22 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
     CreateField(vDataFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     CreateField(vDataFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == NORMAL) {
-      CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-      CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-    } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
-       CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, WEIGHTED_MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, WEIGHTED_MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, WEIGHTED_VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, WEIGHTED_STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-       CreateField(vDataFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        if (!gParameters.getIsWeightedNormal()) {
+            CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        } else  {
+            CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, WEIGHTED_MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, WEIGHTED_MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, WEIGHTED_VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, WEIGHTED_STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+        }
     } else {
       CreateField(vDataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vDataFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
@@ -278,7 +282,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         dObserved = theCluster.GetObservedCount();
         dExpected = theCluster.GetExpectedCount(gDataHub);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = dExpected/dObserved;
@@ -292,7 +296,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
                                                 Handler.GetDataSet().getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
-      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
         const AbstractWeightedNormalRandomizer * pRandomizer=0;
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(0))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");
@@ -420,7 +424,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
     theCluster.GetClusterData()->GetDataSetIndexesComprisedInRatio(theCluster.m_nRatio/theCluster.GetNonCompactnessPenalty(), *Calculator.get(), vComprisedDataSetIndexes);
 
   // Calculate cluster location indexes once for weight normal model.
-  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+  if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal())
      theCluster.getLocationIndexes(gDataHub, tractIndexes, true);
 
   for (unsigned int iSetIndex=0; iSetIndex < gParameters.GetNumDataSets(); ++iSetIndex) {
@@ -431,7 +435,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
     itr_Index = std::find(vComprisedDataSetIndexes.begin(), vComprisedDataSetIndexes.end(), iSetIndex);
     if (itr_Index != vComprisedDataSetIndexes.end()) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount(iSetIndex);
-      if (gParameters.GetProbabilityModelType() == NORMAL) {
+      if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
         dObserved = theCluster.GetObservedCount(iSetIndex);
         dExpected = theCluster.GetExpectedCount(gDataHub, iSetIndex);
         Record.GetFieldValue(MEAN_INSIDE_FIELD).AsDouble() = (dObserved ? dExpected/dObserved : 0);
@@ -445,7 +449,7 @@ void ClusterInformationWriter::WriteCountData(const CCluster& theCluster, int iC
                                                 Handler.GetDataSet(iSetIndex).getTotalMeasureAux());
         Record.GetFieldValue(VARIANCE_FIELD).AsDouble() = dUnbiasedVariance;
         Record.GetFieldValue(STD_FIELD).AsDouble() = std::sqrt(dUnbiasedVariance);
-      } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+      } else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
         const AbstractWeightedNormalRandomizer * pRandomizer=0;
         if ((pRandomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Handler.GetRandomizer(iSetIndex))) == 0)
           throw prg_error("Randomizer could not be dynamically casted to AbstractWeightedNormalRandomizer type.\n", "WriteClusterInformation()");

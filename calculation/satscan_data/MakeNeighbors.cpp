@@ -102,8 +102,7 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize(cons
     for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
        if (gParameters.GetProbabilityModelType() == ORDINAL ||
            gParameters.GetProbabilityModelType() == CATEGORICAL ||
-           gParameters.GetProbabilityModelType() == NORMAL || 
-           gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+           gParameters.GetProbabilityModelType() == NORMAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
        else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
@@ -159,8 +158,7 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize(const CSaTSc
     for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {
        if (gParameters.GetProbabilityModelType() == ORDINAL || 
            gParameters.GetProbabilityModelType() == CATEGORICAL ||
-           gParameters.GetProbabilityModelType() == NORMAL || 
-           gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+           gParameters.GetProbabilityModelType() == NORMAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalCases();
        else if (gParameters.GetProbabilityModelType() == EXPONENTIAL)
          tPopulation = DataSetHandler.GetDataSet(t).getTotalPopulation();
@@ -661,7 +659,6 @@ void CentroidNeighborCalculator::SetupPopulationArrays(const CSaTScanData& dataH
   //prospective space-time analyses, using prospective start date, do not use the population at risk to restrict maximum spatial size
   if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
     switch (gParameters.GetProbabilityModelType()) {
-      case WEIGHTEDNORMAL  :
       case NORMAL  :
         gvCalculatedPopulations.resize(dataHub.GetNumTracts(), 0);
         for (size_t t=0; t < DataSetHandler.GetNumDataSets(); ++t) {

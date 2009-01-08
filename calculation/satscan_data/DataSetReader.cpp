@@ -15,8 +15,6 @@ AbstractDataSetReader * AbstractDataSetReader::getNewDataSetReader(const CParame
     case ORDINAL              : return new OrdinalDataSetReader();
     case EXPONENTIAL          :
        throw prg_error("getNewDataSetReader() not implemented for Exponential model.","getNewDataSetReader()");
-    case WEIGHTEDNORMAL       :
-       throw prg_error("getNewDataSetReader() not implemented for Weighted Normal model.","getNewDataSetReader()");
     case NORMAL               :
        throw prg_error("getNewDataSetReader() not implemented for Normal model.","getNewDataSetReader()");
     case RANK                 :

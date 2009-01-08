@@ -14,8 +14,6 @@ AbstractDataSetWriter * AbstractDataSetWriter::getNewDataSetWriter(const CParame
     case CATEGORICAL          :
     case ORDINAL              : return new OrdinalDataSetWriter();
     case EXPONENTIAL          : return new ExponentialDataSetWriter();
-    case WEIGHTEDNORMAL       :
-       throw prg_error("getNewDataSetReader() not implemented for Weighted Normal model.","getNewDataSetReader()");
     case NORMAL               :
        throw prg_error("getNewDataSetReader() not implemented for Normal model.","getNewDataSetReader()");
     case RANK                 :

@@ -167,7 +167,7 @@ void NormalDataSetHandler::RandomizeData(RandomizerContainer_t& Container, Simul
     means to help user clean-up there data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
 bool NormalDataSetHandler::ReadCounts(RealDataSet& DataSet, DataSource& Source) {
-   return gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ? ReadCountsWeighted(DataSet, Source) : ReadCountsStandard(DataSet, Source);
+    return gParameters.getIsWeightedNormal() ? ReadCountsWeighted(DataSet, Source) : ReadCountsStandard(DataSet, Source);
 }
 
 /** Read the count data source, storing data in respective DataSet object. As a
@@ -299,9 +299,43 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
   return bValid;
 }
 
+/** Scans case input files to determine if data set is weighted. Returns indication
+    of whether it was able to determine weighted status. */
+bool NormalDataSetHandler::setIsWeighted() {
+  std::vector<int> setColumns(GetNumDataSets(), 0);
+
+  try {
+    for (size_t t=0; t < GetNumDataSets(); ++t) {
+        const RealDataSet& DataSet = GetDataSet(t);
+        std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetCaseFileName(DataSet.getSetIndex()), gPrint));
+        if (Source->ReadRecord()) {
+            setColumns.at(t) = Source->GetNumValues();
+        }
+    }
+
+    int currentColumnsSize = setColumns.front();
+    const_cast<CParameters&>(gParameters).SetIsWeightedNormal(currentColumnsSize > (gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4));
+    for (size_t t=1; t < setColumns.size(); ++t) {
+        if (currentColumnsSize != setColumns.at(t)) {
+            gPrint.Printf("Error: Data sets do not have same number of columns.\n"
+                          "Data set 1 has %d columns while data set %d has %d.\n",
+                          BasePrint::P_READERROR, currentColumnsSize, t + 1, setColumns.at(t));
+            return false;
+        }
+    }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("setIsWeighted()","NormalDataSetHandler");
+    throw;
+  }
+  return true;
+}
+
 /** Attempts to read case data file into class RealDataSet objects. */
 bool NormalDataSetHandler::ReadData() {
   try {
+    if (!setIsWeighted())
+        return false;
     SetRandomizers();
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (GetNumDataSets() == 1)
@@ -425,13 +459,13 @@ void NormalDataSetHandler::SetRandomizers() {
     switch (gParameters.GetSimulationType()) {
       case STANDARD :
           if (gParameters.GetIsPurelyTemporalAnalysis()) {
-            if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+              if (gParameters.getIsWeightedNormal())
               gvDataSetRandomizers.at(0) = new WeightedNormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
             else
               gvDataSetRandomizers.at(0) = new NormalPurelyTemporalRandomizer(gParameters.GetRandomizationSeed());
           }
           else {
-            if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+            if (gParameters.getIsWeightedNormal())
               gvDataSetRandomizers.at(0) = new WeightedNormalRandomizer(gParameters.GetRandomizationSeed());
             else
               gvDataSetRandomizers.at(0) = new NormalRandomizer(gParameters.GetRandomizationSeed());

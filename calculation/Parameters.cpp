@@ -85,7 +85,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsEndRangeEndDate                      != rhs.gsEndRangeEndDate) return false;
   if (gsStartRangeStartDate                  != rhs.gsStartRangeStartDate) return false;
   if (gsStartRangeEndDate                    != rhs.gsStartRangeEndDate) return false;
-  if (gdTimeTrendConverge		     != rhs.gdTimeTrendConverge) return false;
+  if (gdTimeTrendConverge		             != rhs.gdTimeTrendConverge) return false;
   if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
   if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
   if (geSimulationType                       != rhs.geSimulationType) return false;
@@ -125,6 +125,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsMetaLocationsFilename                != rhs.gsMetaLocationsFilename) return false;
   if (gbUseMetaLocationsFile                 != rhs.gbUseMetaLocationsFile) return false;
   if (gvObservableRegions                    != rhs.gvObservableRegions) return false;
+  if (gbWeightedNormal                       != rhs.gbWeightedNormal) return false;
 
   return true;
 }
@@ -284,6 +285,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gsMetaLocationsFilename                = rhs.gsMetaLocationsFilename;
   gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
   gvObservableRegions                    = rhs.gvObservableRegions;
+  gbWeightedNormal                       = rhs.gbWeightedNormal;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -402,7 +404,7 @@ bool CParameters::GetPermitsPurelySpatialCluster() const {
 
 /** returns whether probability model type permits inclusion of purely spatial cluster */
 bool CParameters::GetPermitsPurelySpatialCluster(ProbabilityModelType eModelType) const {
-  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == WEIGHTEDNORMAL || eModelType == NORMAL
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
@@ -413,7 +415,7 @@ bool CParameters::GetPermitsPurelyTemporalCluster() const {
 
 /** returns whether probability model type permits inclusion of purely temporal cluster */
 bool CParameters::GetPermitsPurelyTemporalCluster(ProbabilityModelType eModelType) const {
-  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == WEIGHTEDNORMAL || eModelType == NORMAL
+  return eModelType == POISSON || eModelType == BERNOULLI || eModelType == NORMAL
          || eModelType == EXPONENTIAL || eModelType == RANK || eModelType == ORDINAL || eModelType == CATEGORICAL;
 }
 
@@ -689,6 +691,7 @@ void CParameters::SetAsDefaulted() {
   gsMetaLocationsFilename = "";
   gbUseMetaLocationsFile = false;
   gvObservableRegions.clear();
+  gbWeightedNormal = false;
 }
 
 /** Sets start range start date. Throws exception. */

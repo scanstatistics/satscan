@@ -87,10 +87,12 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
       DisplayClusterDataOrdinal(fp, DataHub, PrintFormat);
     else if (DataHub.GetParameters().GetProbabilityModelType() == EXPONENTIAL)
       DisplayClusterDataExponential(fp, DataHub, PrintFormat);
-    else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL)
-      DisplayClusterDataNormal(fp, DataHub, PrintFormat);
-    else if (DataHub.GetParameters().GetProbabilityModelType() == WEIGHTEDNORMAL)
-      DisplayClusterDataWeightedNormal(fp, DataHub, PrintFormat);
+    else if (DataHub.GetParameters().GetProbabilityModelType() == NORMAL) { 
+        if (DataHub.GetParameters().getIsWeightedNormal())
+            DisplayClusterDataWeightedNormal(fp, DataHub, PrintFormat);
+        else
+            DisplayClusterDataNormal(fp, DataHub, PrintFormat);
+    }
     else
       DisplayClusterDataStandard(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);

@@ -423,7 +423,6 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case BERNOULLI: b = 2 * sizeof(count_t) + sizeof(measure_t); break;
     case CATEGORICAL:
     case ORDINAL: b = sizeof(count_t); break;
-    case WEIGHTEDNORMAL:
     case NORMAL: b = sizeof(count_t) + sizeof(measure_t) + sizeof(measure_t); break;
     case HOMOGENEOUSPOISSON: b = 1; break; // ??
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
@@ -442,7 +441,6 @@ std::pair<double, double> AnalysisRunner::GetMemoryApproxiation() const {
     case CATEGORICAL:
     case ORDINAL: EXP = 1; break;
     case EXPONENTIAL: EXP = 3; break; //cases and measure
-    case WEIGHTEDNORMAL:
     case NORMAL: EXP = 4; break; //cases, measure and measure squared
     default : throw prg_error("Unknown model type '%d'.\n", "GetMemoryApproxiation()", gParameters.GetProbabilityModelType());
   };
@@ -1162,7 +1160,6 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
             default : throw prg_error("Unknown area scan rate type '%d'.\n", "PrintRetainedClustersStatus()", gParameters.GetAreaScanRateType());
          }
          break;
-      case WEIGHTEDNORMAL :
       case NORMAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or lower mean than outside the area."; break;

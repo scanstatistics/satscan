@@ -641,7 +641,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
          gtTotalMeasure += DataSet.getTotalMeasure();
       }
     }
-    if (gParameters.GetProbabilityModelType() == NORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
       //recalculate the data set cases/measure given updated randomizer data
       AbstractNormalRandomizer *pRandomizer;
       gtTotalCases=0;
@@ -657,7 +657,7 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
         gtTotalMeasureAux += DataSet.getTotalMeasureAux();
       }
     }
-    if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
       //recalculate the data set cases/measure given updated randomizer data
       AbstractWeightedNormalRandomizer *pRandomizer;
       gtTotalCases=0;
@@ -676,7 +676,6 @@ void CSaTScanData::RemoveClusterSignificance(const CCluster& Cluster) {
     //now recalculate purely temporal arrays as needed
     if (gParameters.GetIncludePurelyTemporalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
       switch (gParameters.GetProbabilityModelType()) {
-       case WEIGHTEDNORMAL :
        case NORMAL         : std::for_each(gDataSets->getDataSets().begin(), gDataSets->getDataSets().end(), std::mem_fun(&DataSet::setMeasureData_PT_Aux));
        case EXPONENTIAL    :
        case BERNOULLI      :
@@ -763,7 +762,7 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
            gtTotalPopulation += DataSet.getTotalCases();
          }
        }
-       else if (gParameters.GetProbabilityModelType() == NORMAL) {
+       else if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
          AbstractNormalRandomizer *pRandomizer;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            if ((pRandomizer = dynamic_cast<AbstractNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)
@@ -773,7 +772,7 @@ void CSaTScanData::RemoveTractSignificance(const CCluster& Cluster, tract_t tTra
              pRandomizer->RemoveCase(i, tTractIndex);
          }
        }
-       else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+       else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
          AbstractWeightedNormalRandomizer *pRandomizer;
          for (size_t t=0; t < gDataSets->GetNumDataSets(); ++t) {
            if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gDataSets->GetRandomizer(t))) == 0)

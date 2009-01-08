@@ -211,7 +211,6 @@ void CSVTTData::SetProbabilityModel() {
                                                    "SetProbabilityModel()");
        case EXPONENTIAL          : throw prg_error("Spatial Variation in Temporal Trends not implemented for Exponential model.\n",
                                                    "SetProbabilityModel()");
-       case WEIGHTEDNORMAL       :
        case NORMAL               : throw prg_error("Spatial Variation in Temporal Trends not implemented for Normal model.\n",
                                                    "SetProbabilityModel()");
        case RANK                 : throw prg_error("Spatial Variation in Temporal Trends not implemented for Rank model.\n",

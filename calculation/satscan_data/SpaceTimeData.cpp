@@ -100,7 +100,6 @@ void CSpaceTimeData::SetProbabilityModel() {
      case CATEGORICAL          :
      case ORDINAL              : m_pModel = new OrdinalModel(); break;
      case EXPONENTIAL          : m_pModel = new ExponentialModel(); break;
-     case WEIGHTEDNORMAL       :
      case NORMAL               : m_pModel = new CNormalModel(); break;
      case RANK                 : m_pModel = new CRankModel(); break;
      case SPACETIMEPERMUTATION : m_pModel = new CSpaceTimePermutationModel(); break;

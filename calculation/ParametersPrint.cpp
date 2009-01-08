@@ -59,7 +59,6 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
          }
       case CATEGORICAL : return "All Values";
       case ORDINAL :
-      case WEIGHTEDNORMAL :
       case NORMAL :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : return "High Values";
@@ -96,7 +95,6 @@ const char * ParametersPrint::GetProbabilityModelTypeAsString() const {
       case ORDINAL              : sProbabilityModel = "Ordinal"; break;
       case EXPONENTIAL          : sProbabilityModel = "Exponential"; break;
       case NORMAL               : sProbabilityModel = "Normal"; break;
-      case WEIGHTEDNORMAL       : sProbabilityModel = "Weighted Normal"; break;
       case RANK                 : sProbabilityModel = "Rank"; break;
       case HOMOGENEOUSPOISSON   : sProbabilityModel = "Continuous Poisson"; break;
       default : throw prg_error("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", gParameters.GetProbabilityModelType());
@@ -263,7 +261,6 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       case ORDINAL              : fprintf(fp, "using the Ordinal model.\n"); break;
       case EXPONENTIAL          : fprintf(fp, "using the Exponential model.\n"); break;
       case NORMAL               : fprintf(fp, "using the Normal model.\n"); break;
-      case WEIGHTEDNORMAL       : fprintf(fp, "using the Weighted Normal model.\n"); break;
       case RANK                 : fprintf(fp, "using the Rank model.\n"); break;
       case HOMOGENEOUSPOISSON   : fprintf(fp, "using the Continuous Poisson model.\n"); break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
@@ -482,7 +479,6 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       case ORDINAL              :
       case EXPONENTIAL          :
       case NORMAL               :
-      case WEIGHTEDNORMAL       :
       case RANK                 :
       case HOMOGENEOUSPOISSON   :  break;    
       default : throw prg_error("Unknown probability model type '%d'.\n",
@@ -560,7 +556,6 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
          case CATEGORICAL          : 
          case ORDINAL              :
          case EXPONENTIAL          :
-         case WEIGHTEDNORMAL       :
          case NORMAL               :
          case RANK                 : 
          case HOMOGENEOUSPOISSON   : break;

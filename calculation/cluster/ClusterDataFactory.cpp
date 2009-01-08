@@ -150,7 +150,7 @@ AbstractTemporalClusterData * MultiSetClusterDataFactory::GetNewSpaceTimeCluster
 /** Internal class setup function. */
 void MultiSetClusterDataFactory::Setup(const CParameters& Parameters) {
   try {
-    if (Parameters.GetProbabilityModelType() == NORMAL || Parameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+    if (Parameters.GetProbabilityModelType() == NORMAL)
       throw prg_error("This class does not implement a multiple dataset factory\n"
                           "interface for the Normal probability model.\n","Setup()");
   }

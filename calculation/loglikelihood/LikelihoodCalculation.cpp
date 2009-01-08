@@ -18,7 +18,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
                                                 gDataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasure()));
        gvDataSetMeasureAuxTotals.push_back(DataHub.GetDataSetHandler().GetDataSet(t).getTotalMeasureAux());
     }
-    if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL) {
+    if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL && !gDataHub.GetParameters().getIsWeightedNormal()) {
       switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
         case LOW        : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateNormal; break;
         case HIGHANDLOW : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighOrLowRateNormal; break;
@@ -26,7 +26,7 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         default         : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateNormal;
       };
     }
-    else if (gDataHub.GetParameters().GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    else if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL && gDataHub.GetParameters().getIsWeightedNormal()) {
       switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
         case LOW        : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateWeightedNormal; break;
         case HIGHANDLOW : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal; break;
@@ -62,7 +62,6 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
       case RANK                 :
       case HOMOGENEOUSPOISSON   :
       case EXPONENTIAL          : gtMinLowRateCases = 0; gtMinHighRateCases = 2; break;
-      case WEIGHTEDNORMAL       :
       case NORMAL               : gtMinLowRateCases = 2; gtMinHighRateCases = 2; break;
       default : throw prg_error("Unknown data model type '%d'.","constructor()", gDataHub.GetParameters().GetProbabilityModelType());
     };

@@ -505,8 +505,7 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
       }
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
-            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ||
-            gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
+            gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
         PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for %s model.\n", 
                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         return false;
@@ -1036,7 +1035,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
         break;
       case FILESOURCE       :
         if (gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == NORMAL ||
-            gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL ||gParameters.GetProbabilityModelType() == RANK) {
+            gParameters.GetProbabilityModelType() == RANK) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nThe feature to read simulated data from a file is not implemented for "
                                 "the %s probability model.\n", BasePrint::P_PARAMERROR,
@@ -1370,7 +1369,6 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
       case ORDINAL              :
       case EXPONENTIAL          :
       case NORMAL               :
-      case WEIGHTEDNORMAL       :
       case RANK                 :
         if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
           PrintDirection.Printf("Notice:\nFor the %s model, adjusting for temporal trends is not permitted."

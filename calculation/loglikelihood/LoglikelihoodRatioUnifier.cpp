@@ -6,6 +6,7 @@
 #include "LikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "SSException.h"
+#include "SaTScanData.h"
 
 /** class constructor */
 MultivariateUnifier::MultivariateUnifier(AreaRateType eScanningArea, ProbabilityModelType eProbabilityModelType)
@@ -23,9 +24,10 @@ void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, 
 
 /** Calculates loglikelihood ratio given parameter data; accumulating like high and low rate separately. */
 void MultivariateUnifier::AdjoinRatio(AbstractLikelihoodCalculator& Calculator, count_t tCases, measure_t tMeasure, measure_t tMeasureAux, size_t tSetIndex) {
-  if (gbScanLowRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
+  bool bWeightedNormal = geProbabilityModelType == NORMAL && Calculator.GetDataHub().GetParameters().getIsWeightedNormal();  
+  if (gbScanLowRates && (bWeightedNormal ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
     gdLowRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
-  if (gbScanHighRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)))
+  if (gbScanHighRates && (bWeightedNormal ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)))
     gdHighRateRatios += Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 
@@ -64,9 +66,10 @@ void MultivariateUnifier::GetHighLowRatio(AbstractLikelihoodCalculator& Calculat
                                           std::pair<double, double>& prHighLowRatios) {
   prHighLowRatios.second = 0;
   prHighLowRatios.first = 0;
-  if (gbScanLowRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
+  bool bWeightedNormal = geProbabilityModelType == NORMAL && Calculator.GetDataHub().GetParameters().getIsWeightedNormal();
+  if (gbScanLowRates && (bWeightedNormal ? Calculator.LowRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.LowRate(tCases, tMeasure, tSetIndex)))
     prHighLowRatios.second = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
-  if (gbScanHighRates && (geProbabilityModelType == WEIGHTEDNORMAL ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)))
+  if (gbScanHighRates && (bWeightedNormal ? Calculator.MultipleSetsHighRateWeightedNormal(tCases, tMeasure, tMeasureAux, tSetIndex) : Calculator.MultipleSetsHighRate(tCases, tMeasure, tSetIndex)))
     prHighLowRatios.first = Calculator.CalcLogLikelihoodRatioNormal(tCases, tMeasure, tMeasureAux, tSetIndex);
 }
 

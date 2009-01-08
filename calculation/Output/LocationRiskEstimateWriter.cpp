@@ -54,13 +54,14 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       CreateField(vFieldDefinitions, CATEGORY_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
     if (gParameters.GetProbabilityModelType() == NORMAL) {
-      CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-      CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-    } else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
-      CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
-      CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);      
-    }
-    else {
+        if (!gParameters.getIsWeightedNormal()) {
+            CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+            CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+        } else {
+            CreateField(vFieldDefinitions, MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
+            CreateField(vFieldDefinitions, WEIGHTED_MEAN_VALUE_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);      
+        }
+    } else {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset);
       CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
       CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 3, uwOffset);
@@ -94,7 +95,7 @@ void LocationRiskEstimateWriter::Write(const CSaTScanData& DataHub) {
   try {
     if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)
       RecordRelativeRiskDataAsOrdinal(DataHub);
-    else if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    else if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
       RecordRelativeRiskDataAsWeightedNormal(DataHub);
     }
     else
@@ -175,7 +176,7 @@ void LocationRiskEstimateWriter::RecordRelativeRiskDataStandard(const CSaTScanDa
     for (i=0; i < Handler.GetNumDataSets(); ++i) {
        pCases = Handler.GetDataSet(i).getCaseData().GetArray()[0];
        pMeasure = Handler.GetDataSet(i).getMeasureData().GetArray()[0];
-       if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL)
+       if (gParameters.GetProbabilityModelType() == NORMAL)
          pMeasureAux = Handler.GetDataSet(i).getMeasureData_Aux().GetArray()[0];
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
        for (t=0; t < tTotalLocations; ++t) {

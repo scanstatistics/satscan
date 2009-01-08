@@ -52,11 +52,12 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
     case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
-    case NORMAL               : return new NormalLikelihoodCalculator(DataHub);
+    case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) 
+                                    return new WeightedNormalLikelihoodCalculator(DataHub);
+                                return new NormalLikelihoodCalculator(DataHub);
     case CATEGORICAL          : /*** may or may not implement separate class ***/
     case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
     case RANK                 : return new WilcoxonLikelihoodCalculator(DataHub);
-    case WEIGHTEDNORMAL       : return new WeightedNormalLikelihoodCalculator(DataHub);
     default                   :
      throw prg_error("Unknown probability model '%d'.", "GetNewLikelihoodCalculator()",
                       DataHub.GetParameters().GetProbabilityModelType());
@@ -78,7 +79,7 @@ CMeasureList * AbstractAnalysis::GetNewMeasureListObject() const {
 /** Returns newly allocated CTimeIntervals derived object based upon parameter
     settings - caller is responsible for deletion. */
 CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType) const {
-  if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+  if (gParameters.GetProbabilityModelType() == NORMAL) {
     if (gParameters.GetNumDataSets() == 1)
       return new NormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType, eExecutionType);
     return new MultiSetNormalTemporalDataEvaluator(gDataHub, *gpLikelihoodCalculator, eIncludeClustersType);
@@ -99,7 +100,7 @@ CTimeIntervals * AbstractAnalysis::GetNewTemporalDataEvaluatorObject(IncludeClus
 void AbstractAnalysis::Setup() {
   try {
     //create cluster data factory
-    if (gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+    if (gParameters.GetProbabilityModelType() == NORMAL) {
       geReplicationsProcessType = ClusterEvaluation;
       if (gParameters.GetNumDataSets() == 1)
         gpClusterDataFactory = new NormalClusterDataFactory();

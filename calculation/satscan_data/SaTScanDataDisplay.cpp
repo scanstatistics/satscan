@@ -154,7 +154,6 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     case SPACETIMEPERMUTATION :
     case CATEGORICAL          :
     case ORDINAL              :
-    case WEIGHTEDNORMAL       :
     case NORMAL               :
     case EXPONENTIAL          : 
     case HOMOGENEOUSPOISSON   : PrintFormat.PrintSectionLabel(fp, "Total number of cases", true, false);
@@ -261,7 +260,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-  if (gParameters.GetProbabilityModelType() == WEIGHTEDNORMAL) {
+  if (gParameters.GetProbabilityModelType() == NORMAL && gParameters.getIsWeightedNormal()) {
     AbstractWeightedNormalRandomizer *pRandomizer;
     std::vector<AbstractWeightedNormalRandomizer::DataSetStatistics> dataSetStatistics;
 
