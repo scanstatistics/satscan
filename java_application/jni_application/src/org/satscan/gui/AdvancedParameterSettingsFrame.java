@@ -503,7 +503,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case BERNOULLI:
             case ORDINAL:
             case CATEGORICAL:  
-            case WEIGHTEDNORMAL:    
             case NORMAL:
             case EXPONENTIAL:
                 _percentageOfPopulationLabel.setText("percent of the population at risk (<= 90%, default = 50%)");
