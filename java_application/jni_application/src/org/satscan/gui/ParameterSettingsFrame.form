@@ -19,7 +19,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_probabilityModelTypeButtonGroup">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_weightedNormalModelRadioButton);&#xa;"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_bernoulliModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_spaceTimePermutationModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_ordinalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_exponentialModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_normalModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_categoricallModelRadioButton);&#xa;_probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);&#xa;"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.ButtonGroup" name="_scanAreasButtonGroup">
@@ -876,7 +876,7 @@
                               </Group>
                           </Group>
                           <Component id="_advancedAnalysisButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="jPanel1" alignment="1" max="32767" attributes="0"/>
+                          <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -887,17 +887,17 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
+                          <Component id="_analysisTypeGroup" max="32767" attributes="1"/>
+                          <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="_timeAggregationGroup" max="32767" attributes="0"/>
+                              <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
-                          <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="jPanel1" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -963,7 +963,7 @@
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="47" max="32767" attributes="0"/>
+                          <EmptySpace pref="34" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1079,15 +1079,9 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
+                      <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
-                                  <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
-                              </Group>
                               <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="10" pref="10" max="10" attributes="0"/>
@@ -1099,8 +1093,13 @@
                                       <Component id="_ordinalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_exponentialModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_normalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="_weightedNormalModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                   </Group>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                  <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
                               </Group>
                               <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -1126,8 +1125,6 @@
                           <Component id="_exponentialModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_normalModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_weightedNormalModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1135,7 +1132,7 @@
                               <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <EmptySpace pref="19" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1143,6 +1140,9 @@
               <SubComponents>
                 <Component class="javax.swing.JRadioButton" name="_poissonModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Discrete Poission" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
@@ -1160,6 +1160,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_bernoulliModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Bernoulli" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1176,6 +1179,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_spaceTimePermutationModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Space-Time Permutation" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1192,6 +1198,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_ordinalModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Ordinal" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1208,6 +1217,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_exponentialModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Exponential" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1224,6 +1236,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_normalModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Normal" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1240,6 +1255,9 @@
                 </Component>
                 <Component class="javax.swing.JRadioButton" name="_categoricallModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Multinomial" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1254,24 +1272,11 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_categoricallModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="_weightedNormalModelRadioButton">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Weighted Normal" noResource="true"/>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-                      </Border>
-                    </Property>
-                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                      <Insets value="[0, 0, 0, 0]"/>
-                    </Property>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_weightedNormalModelRadioButton.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED)&#xa;            onProbabilityModelTypeClick();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
                 <Component class="javax.swing.JRadioButton" name="_homogeneouspoissonModelRadioButton">
                   <Properties>
+                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                      <ComponentRef name="_probabilityModelTypeButtonGroup"/>
+                    </Property>
                     <Property name="text" type="java.lang.String" value="Continuous Poisson" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
@@ -1449,7 +1454,7 @@
                               <Component id="_timeAggregationLengthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_aggregrationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="24" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
