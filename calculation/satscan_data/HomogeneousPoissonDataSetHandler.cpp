@@ -173,6 +173,11 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
          }
          
          //check that coordinates of case are not already defined
+         if (gTractHandler.getCoordinatesExist(vCoordinates)) {
+             gPrint.Printf("Error: Record %ld in the coordinate file contains a duplicate coordinate.\n"
+                           "       In the continuous Poisson model, two cases cannot have exactly the same location.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex());
+             bValid = false;
+         }
 
          //add the tract identifier and coordinates to tract handler
          if (bHasIdentifier) 
@@ -183,6 +188,7 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
              gTractHandler.addLocation(identifier.str().c_str(), vCoordinates);
          }
     }
+    tTotalCases = gTractHandler.getLocations().size();
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
     if (! bValid)
@@ -191,14 +197,14 @@ bool HomogeneousPoissonDataSetHandler::ReadCoordinates(RealDataSet& DataSet, Dat
     else if (bEmpty || tTotalCases == 0) {
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
+    } else {
+        DataSet.setTotalCases(tTotalCases);
+        DataSet.setTotalMeasure(tTotalCases);
+        measure_t tTotalMeasure=0;
+        // This is actually the total adusted measure. We'll need to apply this ratio during scanning.
+        DataSet.setTotalMeasureAux(tTotalCases/getTotalArea()); 
+        DataSet.setTotalPopulation(getTotalArea());
     }
-    tTotalCases = gTractHandler.getLocations().size();
-    DataSet.setTotalCases(tTotalCases);
-    DataSet.setTotalMeasure(tTotalCases);
-    measure_t tTotalMeasure=0;
-    // This is actually the total adusted measure. We'll need to apply this ratio during scanning.
-    DataSet.setTotalMeasureAux(tTotalCases/getTotalArea()); 
-    DataSet.setTotalPopulation(getTotalArea());
   }
   catch (prg_exception& x) {
     x.addTrace("ReadCounts()","HomogeneousPoissonDataSetHandler");
@@ -266,10 +272,11 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
     else if (bEmpty) {
       gPrint.Printf("Error: The Grid file does not contain any data.\n", BasePrint::P_ERROR);
       bValid = false;
+    } else {
+        pGridPoints->additionsCompleted();
+        //record number of centroids read
+        gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
     }
-    pGridPoints->additionsCompleted();
-    //record number of centroids read
-    gDataHub.m_nGridTracts = pGridPoints->getNumGridPoints();
 
     if (gDataHub.m_nGridTracts == 0) {
       gPrint.Printf("Error: The Grid file does not contain any data.\n", BasePrint::P_ERROR);

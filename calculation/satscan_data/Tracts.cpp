@@ -203,6 +203,22 @@ void TractHandler::addLocation(const char *sIdentifier, std::vector<double>& vCo
   }
 }
 
+/** Returns indication of whether coordinates are currently defined. */
+bool TractHandler::getCoordinatesExist(std::vector<double>& vCoordinates) const {
+  try {
+    std::auto_ptr<Coordinates> pCoordinates(new Coordinates(vCoordinates, gvCoordinates.size()));
+    ptr_vector<Coordinates>::const_iterator itrCoordinates;
+    itrCoordinates = std::lower_bound(gvCoordinates.begin(), gvCoordinates.end(), pCoordinates.get(), CompareCoordinates());
+    if (itrCoordinates == gvCoordinates.end() || *(pCoordinates.get()) != *(*itrCoordinates))
+        return false;
+  }
+  catch (prg_exception& x) {
+    x.addTrace("getCoordinatesExist()", "TractHandler");
+    throw;
+  }
+  return true;
+}
+
 /** Compute distance squared between two points. */
 double TractHandler::getDistanceSquared(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint) {
   double        dDistanceSquared=0;

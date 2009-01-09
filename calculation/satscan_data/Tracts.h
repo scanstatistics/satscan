@@ -124,6 +124,7 @@ class TractHandler {
     addition_status_t                   getAddStatus() const {return gAdditionStatus;}
     const CoordinatesContainer_t      & getCoordinates() const {return gvCoordinates;}
     int                                 getCoordinateDimensions() const {return giCoordinateDimensions;}
+    bool                                getCoordinatesExist(std::vector<double>& vCoordinates) const;
     static double                       getDistanceSquared(const std::vector<double>& vFirstPoint, const std::vector<double>& vSecondPoint);
     const char                        * getIdentifier(tract_t tIndex) const;
     const LocationsContainer_t        & getLocations() const {return gvLocations;}
