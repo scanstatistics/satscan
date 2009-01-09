@@ -123,15 +123,15 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
             CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
           } else {
+            CreateField(vFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, WEIGHTED_MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, WEIGHTED_MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-            CreateField(vFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, WEIGHTED_VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-            CreateField(vFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vFieldDefinitions, WEIGHTED_STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-            CreateField(vFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
           }
       } else {
         CreateField(vFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
@@ -169,15 +169,15 @@ void ClusterInformationWriter::DefineClusterCaseInformationFields() {
             CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         } else  {
+            CreateField(vDataFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
+            CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, WEIGHTED_MEAN_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, WEIGHTED_MEAN_OUTSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-            CreateField(vDataFieldDefinitions, VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, WEIGHTED_VARIANCE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-            CreateField(vDataFieldDefinitions, STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
             CreateField(vDataFieldDefinitions, WEIGHTED_STD_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
-            CreateField(vDataFieldDefinitions, WEIGHT_INSIDE_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
         }
     } else {
       CreateField(vDataFieldDefinitions, EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 2, uwOffset);
