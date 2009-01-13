@@ -113,7 +113,7 @@ void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex
   if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     printString(buffer, "Annual cases / %.0f", DataHub.GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, true);
-    printString(buffer, "%.1f", DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex));
+    buffer = getValueAsString(DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex), buffer, 1);
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
@@ -193,7 +193,7 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
      //print expected cases label
      PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
      //print expected cases
-     printString(buffer, "%.2f", GetExpectedCount(DataHub, *itr_Index));
+     buffer = getValueAsString(GetExpectedCount(DataHub, *itr_Index), buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      DisplayObservedDivExpected(fp, *itr_Index, DataHub, PrintFormat);
      //NOTE: Not printing relative risk information for exponential model at this time.
@@ -203,7 +203,7 @@ void CCluster::DisplayClusterDataExponential(FILE* fp, const CSaTScanData& DataH
 /** Prints observed cases, expected cases and observed/expected, for Normal model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  std::string                                   buffer;
+  std::string                                   buffer, work;
   std::vector<unsigned int>                     vComprisedDataSetIndexes;
   std::vector<unsigned int>::iterator           itr_Index;
   std::auto_ptr<AbstractLikelihoodCalculator>   Calculator(AbstractAnalysis::GetNewLikelihoodCalculator(DataHub));
@@ -233,25 +233,25 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
      PrintFormat.PrintSectionLabel(fp, "Mean inside", false, true);
      //print estimated mean inside
      dEstimatedMeanInside = (tObserved ? tExpected/tObserved : 0);
-     printString(buffer, "%.2f", dEstimatedMeanInside);
+     buffer = getValueAsString(dEstimatedMeanInside, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print estimated mean outside label
      PrintFormat.PrintSectionLabel(fp, "Mean outside", false, true);
      //print estimated mean inside
      count_t tCasesOutside = Handler.GetDataSet(*itr_Index).getTotalCases() - tObserved;
      dEstimatedMeanOutside = (tCasesOutside ? (Handler.GetDataSet(*itr_Index).getTotalMeasure() - tExpected)/tCasesOutside : 0);
-     printString(buffer, "%.2f", dEstimatedMeanOutside);
+     buffer = getValueAsString(dEstimatedMeanOutside, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print unexplained variance label
      PrintFormat.PrintSectionLabel(fp, "Variance", false, true);
      dUnbiasedVariance = GetUnbiasedVariance(GetObservedCount(*itr_Index), GetExpectedCount(DataHub, *itr_Index), pClusterData->GetMeasureAux(*itr_Index),
                                              Handler.GetDataSet(*itr_Index).getTotalCases(), Handler.GetDataSet(*itr_Index).getTotalMeasure(),
                                              Handler.GetDataSet(*itr_Index).getTotalMeasureAux());
-     printString(buffer, "%.2f", dUnbiasedVariance);
+     buffer = getValueAsString(dUnbiasedVariance, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //print common standard deviation
      PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
-     printString(buffer, "%.2f", std::sqrt(dUnbiasedVariance));
+     buffer = getValueAsString(std::sqrt(dUnbiasedVariance), buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 }
@@ -259,7 +259,7 @@ void CCluster::DisplayClusterDataNormal(FILE* fp, const CSaTScanData& DataHub, c
 /** Prints observed cases, expected cases and observed/expected, for Ordinal model,
     to file stream is in format required by result output file. */
 void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  std::string                                           work, buffer;
+  std::string                                           work, buffer, work2;
   double                                                dTotalCasesInClusterDataSet=0;
   OrdinalLikelihoodCalculator                           Calculator(DataHub);
   std::vector<OrdinalCombinedCategory>                  vCategoryContainer;
@@ -322,7 +322,8 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        measure_t tExpected=0;
        for (size_t m=0; m < itrCategory->GetNumCombinedCategories(); ++m)
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
-       printString(work, "%s%.2f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tExpected);
+       work2 = getValueAsString(tExpected, work2); 
+       printString(work, "%s%s", (itrCategory == vCategoryContainer.begin() ? "" : ", "), work2.c_str());
        buffer += work;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -336,8 +337,8 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
           tObserved += GetObservedCountOrdinal(*itr_Index, itrCategory->GetCategoryIndex(m));
           tExpected += GetExpectedCountOrdinal(DataHub, *itr_Index, itrCategory->GetCategoryIndex(m));
        }
-       printString(work, "%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "),
-                    (tExpected ? (double)tObserved/tExpected  : 0));
+       work2 = getValueAsString((double)tObserved/tExpected, work2); 
+       printString(work, "%s%s", (itrCategory == vCategoryContainer.begin() ? "" : ", "), work2.c_str());
        buffer += work;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -355,8 +356,10 @@ void CCluster::DisplayClusterDataOrdinal(FILE* fp, const CSaTScanData& DataHub, 
        }
        if ((tRelativeRisk = GetRelativeRisk(tObserved, tExpected, tTotalCategoryCases)) == -1)
          printString(work, "%sinfinity", (itrCategory == vCategoryContainer.begin() ? "" : ", "));
-       else
-         printString(work, "%s%.3f", (itrCategory == vCategoryContainer.begin() ? "" : ", "), tRelativeRisk);
+       else {
+         work2 = getValueAsString(tRelativeRisk, work2); 
+         printString(work, "%s%s", (itrCategory == vCategoryContainer.begin() ? "" : ", "), work2.c_str());
+       }
        buffer += work;
      }
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
@@ -387,7 +390,7 @@ void CCluster::DisplayClusterDataStandard(FILE* fp, const CSaTScanData& DataHub,
      //print expected cases label
      PrintFormat.PrintSectionLabel(fp, "Expected cases", false, true);
      //print expected cases
-     printString(buffer, "%.2f", GetExpectedCount(DataHub, *itr_Index));
+     buffer = getValueAsString(GetExpectedCount(DataHub, *itr_Index), buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      DisplayAnnualCaseInformation(fp, *itr_Index, DataHub, PrintFormat);
      DisplayObservedDivExpected(fp, *itr_Index ,DataHub, PrintFormat);
@@ -429,49 +432,48 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
 
      //print total cluster weight
      PrintFormat.PrintSectionLabel(fp, "Total weights", false, true);
-     printString(buffer, "%.2f", statistics.gtWeight);
+     buffer = getValueAsString(statistics.gtWeight, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print mean inside
      PrintFormat.PrintSectionLabel(fp, "Mean inside", false, true);
-     printString(buffer, "%.2f", statistics.gtMeanIn);
+     buffer = getValueAsString(statistics.gtMeanIn, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print mean outside
      PrintFormat.PrintSectionLabel(fp, "Mean outside", false, true);
-     printString(buffer, "%.2f", statistics.gtMeanOut);
+     buffer = getValueAsString(statistics.gtMeanOut, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print cluster variance
      PrintFormat.PrintSectionLabel(fp, "Variance", false, true);
-     printString(buffer, "%.2f", statistics.gtVariance);
+     buffer = getValueAsString(statistics.gtVariance, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print cluster standard deviation
      PrintFormat.PrintSectionLabel(fp, "Standard deviation", false, true);
-     printString(buffer, "%.2f", std::sqrt(statistics.gtVariance));
+     buffer = getValueAsString(std::sqrt(statistics.gtVariance), buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print weighted mean inside
      PrintFormat.PrintSectionLabel(fp, "Weighted mean inside", false, true);
-     printString(buffer, "%.2f", statistics.gtWeightedMeanIn);
+     buffer = getValueAsString(statistics.gtWeightedMeanIn, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print weighted mean outside
      PrintFormat.PrintSectionLabel(fp, "Weighted mean outside", false, true);
-     printString(buffer, "%.2f", statistics.gtWeightedMeanOut);
+     buffer = getValueAsString(statistics.gtWeightedMeanOut, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print cluster weighted variance
      PrintFormat.PrintSectionLabel(fp, "Weighted variance", false, true);
-     printString(buffer, "%.2f", statistics.gtWeightedVariance);
+     buffer = getValueAsString(statistics.gtWeightedVariance, buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
      //print cluster standard deviation
      PrintFormat.PrintSectionLabel(fp, "Weighted std deviation", false, true);
-     printString(buffer, "%.2f", std::sqrt(statistics.gtWeightedVariance));
+     buffer = getValueAsString(std::sqrt(statistics.gtWeightedVariance), buffer);
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-
   }
 }
 
@@ -479,7 +481,7 @@ void CCluster::DisplayClusterDataWeightedNormal(FILE* fp, const CSaTScanData& Da
     in format required by result output file. */
 void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {
   std::vector<double>   vCoordinates;
-  std::string           buffer, work;
+  std::string           buffer, work, work2;
 
   try {
     Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
@@ -490,9 +492,9 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
          printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          buffer += work;
       }
-      //to keep radius value consistant with previous versions, down cast double to float
-      float radius = static_cast<float>(m_CartesianRadius);
-      printString(work, "%g) / %-5.2f", vCoordinates.back(), radius);
+
+      work2 = getValueAsString(m_CartesianRadius, work2);
+      printString(work, "%g) / %s", vCoordinates.back(), work2.c_str());
       buffer += work;
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
@@ -507,13 +509,17 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
       //print ellipse particulars
       PrintFormat.PrintSectionLabel(fp, "Semiminor axis", false, true);
-      fprintf(fp, "%-g\n", (float)m_CartesianRadius);
+      work = getValueAsString(m_CartesianRadius, work);
+      fprintf(fp, "%s\n", work.c_str());
       PrintFormat.PrintSectionLabel(fp, "Semimajor axis", false, true);
-      fprintf(fp, "%-g\n", (float)m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()));
+      work = getValueAsString(m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()), work);
+      fprintf(fp, "%s\n", work.c_str());
       PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
-      fprintf(fp, "%-g\n", ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)));
+      work = getValueAsString(ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)), work);
+      fprintf(fp, "%s\n", work.c_str());
       PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
-      fprintf(fp, "%-g\n", Data.GetEllipseShape(m_iEllipseOffset));
+      work = getValueAsString(Data.GetEllipseShape(m_iEllipseOffset), work);
+      fprintf(fp, "%s\n", work.c_str());
     }
   }
   catch (prg_exception& x) {
@@ -527,6 +533,7 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
   std::vector<double>           vCoordinates;
   std::pair<double, double>     prLatitudeLongitude;
   char                          cNorthSouth, cEastWest;
+  std::string                   buffer;
 
   try {
     Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
@@ -534,7 +541,8 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
     prLatitudeLongitude.first >= 0 ? cNorthSouth = 'N' : cNorthSouth = 'S';
     prLatitudeLongitude.second >= 0 ? cEastWest = 'E' : cEastWest = 'W';
     PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
-    fprintf(fp, "(%.6f %c, %.6f %c) / %5.2lf km\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest, GetLatLongRadius());
+    buffer = getValueAsString(GetLatLongRadius(), buffer);
+    fprintf(fp, "(%.6f %c, %.6f %c) / %s km\n", fabs(prLatitudeLongitude.first), cNorthSouth, fabs(prLatitudeLongitude.second), cEastWest, buffer.c_str());
   }
   catch (prg_exception& x) {
     x.addTrace("DisplayLatLongCoords()","CCluster");
@@ -674,7 +682,7 @@ void CCluster::DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const C
   if ((dRelativeRisk = GetRelativeRisk(DataHub, iDataSetIndex)) == -1)
     buffer = "infinity";
   else
-    printString(buffer, "%.3f", dRelativeRisk);
+    buffer = getValueAsString(dRelativeRisk, buffer);
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
@@ -683,7 +691,7 @@ void CCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, 
   std::string buffer;
 
   PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
-  printString(buffer, "%.3f", GetObservedDivExpected(DataHub, iDataSetIndex));
+  buffer = getValueAsString(GetObservedDivExpected(DataHub, iDataSetIndex), buffer);
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
