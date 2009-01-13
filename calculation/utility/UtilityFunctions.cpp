@@ -226,3 +226,31 @@ std::string& printString(std::string& destination, const char * format, ...) {
   return destination;
 }
 
+/* Get printf precision format specifer given passed value. 
+   Returns a minimum of 'iSignificant' significant decimal digits. */
+unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
+    unsigned int iPrecision = iSignificant;
+
+    if (value != 0.0 && fabs(value) < 1.0) {
+        //If value less than 1.0, we can use log10 to determine what is the 10 power.
+        //ex. value = 0.0023:
+        //   log10(0.0023) = log10(10^-3) + log10(2.3)
+        //   log10(0.0023) = -3 + 0.36172783601759287886777711225119
+        //   log10(0.0023) = -2.6382721639824071211322228877488
+        //   take ceiling since we really are not interested in log10(2.3) portion
+        double v = log10(value);
+        iPrecision += static_cast<unsigned int>(ceil(fabs(log10(fabs(value))))) - 1;
+    }
+    return iPrecision;
+}
+
+/** Returns value as string with number of 'iSignificant' significant decimals.
+    The 'g' format specifier might have sufficed but Martin wanted this format.
+*/
+std::string& getValueAsString(double value, std::string& s, unsigned int iSignificant) {
+    unsigned int iPrecision = getFormatPrecision(value, iSignificant);
+    std::string format;
+    printString(format, "%%.%dlf", iPrecision);
+    printString(s, format.c_str(), value);
+    return s;
+}
