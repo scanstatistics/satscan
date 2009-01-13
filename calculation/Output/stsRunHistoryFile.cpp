@@ -50,32 +50,32 @@ stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& P
                    gbIterativeScan(Parameters.GetIsIterativeScanning()) {
   SetFileName(Parameters.GetRunHistoryFilename());
   unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
-  AbstractDataFileWriter::CreateField(gvFields, RUN_NUMBER_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, RUN_TIME_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, ANALYSIS_TYPE_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, PROB_MODEL_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, RATES_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, GRID_FILE_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, MAX_GEO_EXTENT_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, MAX_TIME_EXTENT_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, INTERVAL_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, ALIVE_ONLY_FIELD, FieldValue::ALPHA_FLD, 8, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, FieldValue::ALPHA_FLD, 20, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, COVARIATES_FIELD, FieldValue::NUMBER_FLD, 3, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, MONTE_CARLO_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, NUM_GEO_AREAS_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, COORD_TYPE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, START_DATE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, END_DATE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, PRECISION_TIMES_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, NUM_CASES_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, TOTAL_POP_FIELD, FieldValue::NUMBER_FLD, 16, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, P_VALUE_FIELD, FieldValue::NUMBER_FLD, 12, 5, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, NUM_SIGNIF_005_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, CUTOFF_001_FIELD, FieldValue::NUMBER_FLD, 8, 3, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, CUTOFF_005_FIELD, FieldValue::NUMBER_FLD, 8, 3, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, OUTPUT_FILE_FIELD, FieldValue::ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
-  AbstractDataFileWriter::CreateField(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD, FieldValue::ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset);
+  AbstractDataFileWriter::CreateField(gvFields, RUN_NUMBER_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, RUN_TIME_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, ANALYSIS_TYPE_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, PROB_MODEL_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, RATES_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, GRID_FILE_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, MAX_GEO_EXTENT_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, MAX_TIME_EXTENT_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, INTERVAL_FIELD, FieldValue::ALPHA_FLD, 32, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, ALIVE_ONLY_FIELD, FieldValue::ALPHA_FLD, 8, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, TIME_TREND_ADJUSTMENT_FIELD, FieldValue::ALPHA_FLD, 20, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, COVARIATES_FIELD, FieldValue::NUMBER_FLD, 3, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, MONTE_CARLO_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, NUM_GEO_AREAS_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, COORD_TYPE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, START_DATE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, END_DATE_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, PRECISION_TIMES_FIELD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, NUM_CASES_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, TOTAL_POP_FIELD, FieldValue::NUMBER_FLD, 16, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, P_VALUE_FIELD, FieldValue::NUMBER_FLD, 12, 5, uwOffset, 5);
+  AbstractDataFileWriter::CreateField(gvFields, NUM_SIGNIF_005_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, CUTOFF_001_FIELD, FieldValue::NUMBER_FLD, 8, 3, uwOffset, 3);
+  AbstractDataFileWriter::CreateField(gvFields, CUTOFF_005_FIELD, FieldValue::NUMBER_FLD, 8, 3, uwOffset, 3);
+  AbstractDataFileWriter::CreateField(gvFields, OUTPUT_FILE_FIELD, FieldValue::ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset, 0);
+  AbstractDataFileWriter::CreateField(gvFields, ADDITIONAL_OUTPUT_FILES_FIELD, FieldValue::ALPHA_FLD, OUTPUT_FILE_FIELD_LENGTH, 0, uwOffset, 0);
 
   // if we don't have one then create it
   if (access(gsFilename.c_str(), 00))

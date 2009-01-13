@@ -150,9 +150,10 @@ class FieldDef {
     unsigned short    gwLength;                            // Field Length
     short             gwPrecision;                         // Field Precision
     unsigned short    gwOffset;                            // Start position in record buffer for this field.
+    unsigned short    gwAsciiDecimals;                     // Number of significant decimals.
 
   public:
-   FieldDef(const char * sName, char cType, short wLength, short wPrecision, unsigned short wOffset);
+   FieldDef(const char * sName, char cType, short wLength, short wPrecision, unsigned short wOffset, unsigned short wAsciiDecimals=2);
    virtual ~FieldDef() {}
 
    static inline char TypeOf ( bool )                       { return FieldValue::BOOLEAN_FLD; }
@@ -166,6 +167,7 @@ class FieldDef {
    static inline char TypeOf ( const SaTScan::Timestamp & ) { return FieldValue::STAMP_FLD; }
    static inline char TypeOf ( const SaTScan::Time & )      { return FieldValue::TIME_FLD; }
    
+   unsigned short       GetAsciiDecimals() const {return gwAsciiDecimals;}
    short                GetDataLength() const;
    short                GetLength() const {return gwLength;}
    const char  *        GetName() const {return gsName.c_str();}

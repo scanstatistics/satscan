@@ -369,7 +369,7 @@ const char * FieldValue::GetTypeCString(char cType) {
 
 
 // This constructor will setup the field for the parameters passed in.
-FieldDef::FieldDef(const char * sName, char cType, short wLength, short wPrecision, unsigned short wOffset)
+FieldDef::FieldDef(const char * sName, char cType, short wLength, short wPrecision, unsigned short wOffset, unsigned short wAsciiDecimals)
          :gcType(0), gwLength(0), gwPrecision(0), gwOffset(0) {
   gsName = sName;
   gcType = cType;
@@ -378,6 +378,7 @@ FieldDef::FieldDef(const char * sName, char cType, short wLength, short wPrecisi
   if (wPrecision >= 0)
     gwPrecision = wPrecision;
   gwOffset = wOffset;
+  gwAsciiDecimals = wAsciiDecimals;
 }
 
 // This function returns the size of the data for the field.

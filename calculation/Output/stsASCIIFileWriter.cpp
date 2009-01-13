@@ -55,8 +55,17 @@ void ASCIIDataFileWriter::CreateFormatString(std::string& sValue, const FieldDef
       sValue += sTemp;
       break;
     case FieldValue::NUMBER_FLD :
-      printString(sFormat, "%%-0%d.%df", FieldDef.GetLength(), FieldDef.GetPrecision());
-      printString(sValue, sFormat.c_str(), fv.AsDouble());
+        sTemp = getValueAsString(fv.AsDouble(), sTemp ,FieldDef.GetAsciiDecimals());
+        if (sTemp.size() > static_cast<size_t>(FieldDef.GetLength())) {
+            printString(sFormat, "%%-0%dg", FieldDef.GetLength());
+            printString(sValue, sFormat.c_str(), fv.AsDouble());
+        }
+        else {
+            if (sTemp.size() < static_cast<size_t>(FieldDef.GetLength()))
+                for (int i = sTemp.size(); i < FieldDef.GetLength() + 1; ++i)
+                    sTemp += " ";
+            sValue = sTemp;
+        }
       break;
     default : throw prg_error("Unsupported field type %c", "Error!", fv.GetType());
   }

@@ -67,7 +67,8 @@ class AbstractDataFileWriter {
     virtual ~AbstractDataFileWriter();
 
     static void                 CreateField(ptr_vector<FieldDef>& vFields, const std::string& sFieldName, char cType,
-                                            short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex=false);
+                                            short wLength, short wPrecision, unsigned short& uwOffset, 
+                                            unsigned short uwAsciiDecimals, bool bCreateIndex=false);
 };
 //******************************************************************************
 #endif

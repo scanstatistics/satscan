@@ -174,9 +174,10 @@ AbstractDataFileWriter::~AbstractDataFileWriter() {
 
 /** Defines field definition and assigns to accumulation. */
 void AbstractDataFileWriter::CreateField(ptr_vector<FieldDef>& vFields, const std::string& sFieldName, char cType,
-                                         short wLength, short wPrecision, unsigned short& uwOffset, bool bCreateIndex) {
+                                         short wLength, short wPrecision, unsigned short& uwOffset, 
+                                         unsigned short uwAsciiDecimals, bool bCreateIndex) {
   try {
-    vFields.push_back(new FieldDef(sFieldName.c_str(), cType, wLength, wPrecision, uwOffset));
+    vFields.push_back(new FieldDef(sFieldName.c_str(), cType, wLength, wPrecision, uwOffset, uwAsciiDecimals));
     uwOffset += wLength;
     //if (bCreateIndex) vFields.back()->SetIndexCount(1);
   }
