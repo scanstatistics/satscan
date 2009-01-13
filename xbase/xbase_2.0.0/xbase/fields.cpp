@@ -635,8 +635,26 @@ xbDouble xbDbf::GetDoubleField(const char *FieldName) {
 //! Put a double value into the specified field.
 /*!
 */
-xbShort xbDbf::PutDoubleField( const xbShort FieldNo, const xbDouble d) {
-  return PutFloatField(FieldNo, (xbFloat)d);
+xbShort xbDbf::PutDoubleField( const xbShort FldNo, const xbDouble d) {
+  //return PutFloatField(FieldNo, (xbFloat)d);
+   char buf[25];
+   char buf2[12];
+   memset( buf, 0x00, 25 );
+   memset( buf2, 0x00, 12 );
+   sprintf( buf, "%d.%dlf", GetFieldLen( FldNo ), GetFieldDecimal( FldNo ));
+   strcpy( buf2, "%-" );
+   strcat( buf2, buf );
+   sprintf( buf, buf2, d );
+
+   /* remove trailing space */
+   xbShort i = 0;
+   while( i < 25 ) 
+     if( buf[i] == 0x20 ){
+       buf[i] = 0x00;
+       break;
+     } else
+       i++;
+   return PutField( FldNo, buf );
 }
 /************************************************************************/
 //! Put a double value into the specified field.
@@ -645,7 +663,8 @@ xbShort xbDbf::PutDoubleField( const xbShort FieldNo, const xbDouble d) {
 xbShort xbDbf::PutDoubleField(const char *FieldName, const xbDouble d) {
   xbShort fnum;
   if ((fnum = GetFieldNo(FieldName)) != -1)
-    return PutFloatField(fnum, (xbFloat)d);
+    //return PutFloatField(fnum, (xbFloat)d);
+    return PutDoubleField(fnum, d);
   else
     return 0;
 }
