@@ -551,10 +551,6 @@
 						>
 					</File>
 					<File
-						RelativePath="..\calculation\Output\LoglikelihoodRatioWriter.cpp"
-						>
-					</File>
-					<File
 						RelativePath="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp"
 						>
 					</File>
@@ -919,6 +915,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\calculation\Output\LoglikelihoodRatioWriter.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\calculation\Output\stsASCIIFileWriter.cpp"
 						>
 					</File>
@@ -1205,6 +1205,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\calculation\Output\LoglikelihoodRatioWriter.h"
+						>
+					</File>
+					<File
 						RelativePath="..\calculation\Output\stsASCIIFileWriter.h"
 						>
 					</File>
@@ -1246,10 +1250,6 @@
 					</File>
 					<File
 						RelativePath="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.h"
-						>
-					</File>
-					<File
-						RelativePath="..\calculation\Output\LoglikelihoodRatioWriter.h"
 						>
 					</File>
 					<File
