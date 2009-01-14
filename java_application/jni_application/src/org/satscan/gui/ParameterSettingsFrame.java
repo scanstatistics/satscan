@@ -284,10 +284,29 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         enableAnalysisControlForModelType();
     }
 
+    /** 
+     * Enables/diables area scan rate controls.
+     */
+    private void setEnableAreaScanRateControl() {
+        Boolean bEnable = getModelControlType() != Parameters.ProbabilityModelType.CATEGORICAL;
+        Boolean bEnableLowRates = getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+        Boolean bEnableBothRates = getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
+
+        _scanAreasGroup.setEnabled(bEnable);
+        _lowRatesRadioButton.setEnabled(bEnable && bEnableLowRates);
+        _highRatesRadioButton.setEnabled(bEnable);
+        _highOrLowRatesRadioButton.setEnabled(bEnable && bEnableBothRates);
+        if (bEnable && ((bEnableLowRates == false && _lowRatesRadioButton.isSelected()) ||
+                        (bEnableBothRates == false && _highOrLowRatesRadioButton.isSelected()))) {
+            _highRatesRadioButton.setSelected(true);
+        }    
+    }
+    
     /**
      * sets area scan rate type control
      */
     private void setAreaScanRateControl(Parameters.AreaRateType eAreaRateType) {
+        
         switch (eAreaRateType) {
             case LOW:
                 _lowRatesRadioButton.setSelected(true);
@@ -983,6 +1002,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 eAnalysisType != Parameters.AnalysisType.PURELYTEMPORAL &&
                 eAnalysisType != Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL);
         _observableRegionsButton.setEnabled(eModelType == Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
+        setEnableAreaScanRateControl();
         getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();
     }
 
@@ -1118,27 +1138,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Sets captions of TRadioButton controls of 'Scan for Areas with:' group based upon selected probablility model.
      */
     private void setAreaScanRateControlText(Parameters.ProbabilityModelType eProbabilityModelType) {
-        Boolean bEnable = getModelControlType() != Parameters.ProbabilityModelType.CATEGORICAL;
-        Boolean bEnableLowRates = getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
-        Boolean bEnableBothRates = getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
-        
-        _scanAreasGroup.setEnabled(bEnable);
-        _lowRatesRadioButton.setEnabled(bEnable && bEnableLowRates);
-        _highRatesRadioButton.setEnabled(bEnable);
-        _highOrLowRatesRadioButton.setEnabled(bEnable && bEnableBothRates);
-        if (bEnable && ((bEnableLowRates == false && _lowRatesRadioButton.isSelected()) ||
-                        (bEnableBothRates == false && _highOrLowRatesRadioButton.isSelected()))) {
-            _highRatesRadioButton.setSelected(true);
-        }
         switch (eProbabilityModelType) {
-            case POISSON:
-            case HOMOGENEOUSPOISSON:    
-            case BERNOULLI:
-            case SPACETIMEPERMUTATION:
-                _lowRatesRadioButton.setText("Low Rates");
-                _highRatesRadioButton.setText("High Rates");
-                _highOrLowRatesRadioButton.setText("High or Low Rates");
-                break;
             case ORDINAL:
             case NORMAL:
                 _lowRatesRadioButton.setText("Low Values");
@@ -1150,7 +1150,17 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 _highRatesRadioButton.setText("Short Survival");
                 _highOrLowRatesRadioButton.setText("Short or Long Survival");
                 break;
+            case POISSON:
+            case HOMOGENEOUSPOISSON:    
+            case BERNOULLI:
+            case SPACETIMEPERMUTATION:
+            default:    
+                _lowRatesRadioButton.setText("Low Rates");
+                _highRatesRadioButton.setText("High Rates");
+                _highOrLowRatesRadioButton.setText("High or Low Rates");
+                break;
         }
+        setEnableAreaScanRateControl();
     }
 
     /**
