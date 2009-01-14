@@ -231,7 +231,9 @@ std::string& printString(std::string& destination, const char * format, ...) {
 unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
     unsigned int iPrecision = iSignificant;
 
-    if (value != 0.0 && fabs(value) < 1.0) {
+    if (value == 0.0) return 0;
+
+    if (fabs(value) < 1.0) {
         //If value less than 1.0, we can use log10 to determine what is the 10 power.
         //ex. value = 0.0023:
         //   log10(0.0023) = log10(10^-3) + log10(2.3)
