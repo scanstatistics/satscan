@@ -26,11 +26,11 @@ void AbstractBruteForceAnalysis::FindTopClusters(const AbstractDataSetGateway& D
     for (i=0; i < gDataHub.m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++i) {
        const CCluster& TopCluster = CalculateTopCluster(i, DataGateway);
        if (TopCluster.ClusterDefined()) {
-         const_cast<CCluster&>(TopCluster).SetCartesianRadius(gDataHub);
-         const_cast<CCluster&>(TopCluster).SetMostCentralLocationIndex(gDataHub);       
          std::auto_ptr<CentroidNeighbors> pNeighbors(gNeighborInfo[TopCluster.GetEllipseOffset()]);
          gNeighborInfo[TopCluster.GetEllipseOffset()] = 0;
          const_cast<CSaTScanData&>(gDataHub).addStore(pNeighbors);
+         const_cast<CCluster&>(TopCluster).SetCartesianRadius(gDataHub);
+         const_cast<CCluster&>(TopCluster).SetMostCentralLocationIndex(gDataHub);       
          TopClustersContainer.Add(TopCluster);
        }
        if (i==9)
