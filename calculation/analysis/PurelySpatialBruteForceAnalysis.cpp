@@ -79,6 +79,7 @@ double CPurelySpatialBruteForceAnalysis::MonteCarlo(const DataSetInterface& Inte
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidNeighbors centroidDef;
         gCentroidCalculator->CalculateNeighborsAboutCentroid(k, i, centroidDef);
+        centroidDef.SetMaximumClusterSize_SimulatedData();
         pSpatialData->AddMeasureList(centroidDef, locDist,Interface, gMeasureList.get());
      }
      gMeasureList->SetForNextIteration(k);
