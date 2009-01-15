@@ -240,7 +240,6 @@ unsigned int getFormatPrecision(double value, unsigned int iSignificant) {
         //   log10(0.0023) = -3 + 0.36172783601759287886777711225119
         //   log10(0.0023) = -2.6382721639824071211322228877488
         //   take ceiling since we really are not interested in log10(2.3) portion
-        double v = log10(value);
         iPrecision += static_cast<unsigned int>(ceil(fabs(log10(fabs(value))))) - 1;
     }
     return iPrecision;
