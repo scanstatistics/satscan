@@ -565,6 +565,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_neighborsFileTextField.getText().length() == 0);
         bReturn &= (_specifiyMetaLocationsFileCheckBox.isSelected() == false);
         bReturn &= (_metaLocationsFileTextField.getText().length() == 0);
+        bReturn &= (_onePerLocationIdRadioButton.isSelected());
 
         return bReturn;
     }
