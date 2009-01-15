@@ -404,11 +404,13 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
 /** Prints 'Data Checking' parameters to file stream. */
 void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
   fprintf(fp, "\nData Checking\n-------------\n");
-  fprintf(fp, "  Study Period Check             : ");
-  switch (gParameters.GetStudyPeriodDataCheckingType()) {
-    case STRICTBOUNDS     : fprintf(fp, "Check to ensure that cases and controls are within the Study Period.\n"); break;
-    case RELAXEDBOUNDS    : fprintf(fp, "Ignore cases and controls that are outside the Study Period.\n"); break;
-    default : throw prg_error("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
+  if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+    fprintf(fp, "  Study Period Check             : ");
+    switch (gParameters.GetStudyPeriodDataCheckingType()) {
+        case STRICTBOUNDS     : fprintf(fp, "Check to ensure that cases and controls are within the Study Period.\n"); break;
+        case RELAXEDBOUNDS    : fprintf(fp, "Ignore cases and controls that are outside the Study Period.\n"); break;
+        default : throw prg_error("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
+    }
   }
   if (!gParameters.GetIsPurelyTemporalAnalysis()) {
     fprintf(fp, "  Geographical Coordinates Check : ");
@@ -450,11 +452,13 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
      fprintf(fp, "  Prospective Start Date        : %s\n", gParameters.GetProspectiveStartDate().c_str());
   }
   fprintf(fp, "  Report Critical Values        : %s\n", (gParameters.GetReportCriticalValues() ? "Yes" : "No"));
-  fprintf(fp, "  Iterative Scan                : %s\n", (gParameters.GetIsIterativeScanning() ? "Yes" : "No"));
-  if (gParameters.GetIsIterativeScanning()) {
-    fprintf(fp, "  Number of Scans               : %u\n", gParameters.GetNumIterativeScansRequested());
-    fprintf(fp, "  P-value Cutoff                : %g\n", gParameters.GetIterativeCutOffPValue());
-  }  
+  if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+    fprintf(fp, "  Iterative Scan                : %s\n", (gParameters.GetIsIterativeScanning() ? "Yes" : "No"));
+    if (gParameters.GetIsIterativeScanning()) {
+        fprintf(fp, "  Number of Scans               : %u\n", gParameters.GetNumIterativeScansRequested());
+        fprintf(fp, "  P-value Cutoff                : %g\n", gParameters.GetIterativeCutOffPValue());
+    }  
+  }
 }
 
 /** Prints 'Input' tab parameters to file stream. */
@@ -490,22 +494,24 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       fprintf(fp, "  Grid File         %s : %s\n", sBlankDataSetLabel, gParameters.GetSpecialGridFileName().c_str());
     if (gParameters.GetSimulationType() == FILESOURCE)
       fprintf(fp, "  Simulated Data Import File  : %s\n", gParameters.GetSimulationDataSourceFilename().c_str());
-    fprintf(fp, "\n  Time Precision     : ");
-    //Display precision, keeping in mind the v4 behavior.
-    if (gParameters.GetPrecisionOfTimesType() == NONE)
-      ePrecision = NONE;
-    else if (gParameters.GetCreationVersion().iMajor == 4)
-      ePrecision = (gParameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : gParameters.GetTimeAggregationUnitsType());
-    else
-      ePrecision =  gParameters.GetPrecisionOfTimesType();
-    switch (ePrecision) {
-      case YEAR  : fprintf(fp, "Year\n"); break;
-      case MONTH : fprintf(fp, "Month\n"); break;
-      case DAY   : fprintf(fp, "Day\n"); break;
-      default    : fprintf(fp, "None\n"); break;;
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        fprintf(fp, "\n  Time Precision     : ");
+        //Display precision, keeping in mind the v4 behavior.
+        if (gParameters.GetPrecisionOfTimesType() == NONE)
+            ePrecision = NONE;
+        else if (gParameters.GetCreationVersion().iMajor == 4)
+            ePrecision = (gParameters.GetAnalysisType() == PURELYSPATIAL ? YEAR : gParameters.GetTimeAggregationUnitsType());
+        else
+            ePrecision =  gParameters.GetPrecisionOfTimesType();
+        switch (ePrecision) {
+            case YEAR  : fprintf(fp, "Year\n"); break;
+            case MONTH : fprintf(fp, "Month\n"); break;
+            case DAY   : fprintf(fp, "Day\n"); break;
+            default    : fprintf(fp, "None\n"); break;;
+        }
+        fprintf(fp, "  Start Date         : %s\n", gParameters.GetStudyPeriodStartDate().c_str());
+        fprintf(fp, "  End Date           : %s\n", gParameters.GetStudyPeriodEndDate().c_str());
     }
-    fprintf(fp, "  Start Date         : %s\n", gParameters.GetStudyPeriodStartDate().c_str());
-    fprintf(fp, "  End Date           : %s\n", gParameters.GetStudyPeriodEndDate().c_str());
     if ((gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid())) {
       fprintf(fp, "  Coordinates        : ");
       switch (gParameters.GetCoordinatesType()) {
@@ -524,7 +530,9 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
 
 /** Prints 'Multiple Coordinates Per Location' tab parameters to file stream. */
 void ParametersPrint::PrintMultipleCoordinatesParameters(FILE* fp) const {
-  if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
+  if (gParameters.GetIsPurelyTemporalAnalysis() || 
+      gParameters.UseLocationNeighborsFile() ||
+      gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)
     return;
 
   fprintf(fp, "\nMultiple Coordinates Per Location\n---------------------------------\n");
@@ -581,7 +589,7 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
 /** Prints 'Run Options' parameters to file stream. */
 void ParametersPrint::PrintNeighborsFileParameters(FILE* fp) const {
   try {
-    if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+    if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) return;
 
     fprintf(fp, "\nNon-Eucledian Neighbors\n-----------------------\n");
     fprintf(fp, "  Use Neighbors File      : %s\n", (gParameters.UseLocationNeighborsFile() ? "Yes" : "No"));
@@ -830,7 +838,8 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
         default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
     }
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL)
+    if (gParameters.GetAnalysisType() == PURELYSPATIAL &&
+        (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))
       fprintf(fp, "  Isotonic Scan                         : %s\n", (gParameters.GetRiskType() == MONOTONERISK ? "Yes" : "No"));
   }
   catch (prg_exception& x) {

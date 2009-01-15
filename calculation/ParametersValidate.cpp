@@ -63,7 +63,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (! ValidateSpatialParameters(PrintDirection))
       bValid = false;
 
-    if (!ValidateObservableRegionsParameters(PrintDirection))
+    if (!ValidateContinuousPoissonParameters(PrintDirection))
       bValid = false;
 
     //validate input/oupt files
@@ -117,6 +117,9 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
 bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const {
   bool          bValid=true, bStartDateValid=true, bEndDateValid=true, bProspectiveDateValid=true;
   Julian        StudyPeriodStartDate, StudyPeriodEndDate, ProspectiveStartDate;
+
+  // continuous Poisson does not use date parameters
+  if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) return true;
 
   try {
     //validate study period start date based upon 'precision of times' parameter setting
@@ -643,7 +646,7 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
 }
 
 /** Validates observable regions parameters. */
-bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDirection) const {
+bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const {
   bool  bReturn=true;
 
   if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) return true;
@@ -700,7 +703,7 @@ bool ParametersValidate::ValidateObservableRegionsParameters(BasePrint & PrintDi
     bReturn=false;
   } 
   catch (prg_exception& x) {
-    x.addTrace("ValidateObservableRegionsParameters()","ParametersValidate");
+    x.addTrace("ValidateContinuousPoissonParameters()","ParametersValidate");
     throw;
   }
   return bReturn;

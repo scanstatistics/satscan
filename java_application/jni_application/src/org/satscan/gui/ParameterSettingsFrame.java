@@ -452,7 +452,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Validates 'Input Files' tab
      */
     private void ValidateInputFiles() {
-        if (getStudyPeriodStartDateAsCalender().after(getStudyPeriodEndDateAsCalender())) {
+        //validate study period dates
+        if (getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON && 
+            getStudyPeriodStartDateAsCalender().after(getStudyPeriodEndDateAsCalender())) {
             throw new SettingsException("The study period start date can not be greater than the end date.", (Component) _studyPeriodStartDateYearTextField);
         }
         //validate the case file

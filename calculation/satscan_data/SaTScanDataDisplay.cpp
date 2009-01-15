@@ -118,7 +118,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   PrintFormat.PrintSectionSeparatorString(fp, 0, 2);
   fprintf(fp, "%s\n\n", sSummaryText.c_str());
   //print study period
-  if (bPrintPeriod) {
+  if (bPrintPeriod && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
     PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
     fprintf(fp,"%s - %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
   }  

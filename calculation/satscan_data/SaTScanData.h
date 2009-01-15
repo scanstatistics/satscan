@@ -55,8 +55,8 @@ class CSaTScanData {
     double                                      m_nAnnualRatePop;
     std::vector<double>                         gvEllipseAngles;
     std::vector<double>                         gvEllipseShapes;                /* temp storage for the angles, shapes of each "possible" ellipsoid */
-    const Julian                                m_nStartDate;
-    const Julian                                m_nEndDate;                     /* study period start/end dates */
+    Julian                                      m_nStartDate;
+    Julian                                      m_nEndDate;                     /* study period start/end dates */
     std::vector<Julian>                         gvTimeIntervalStartTimes;       /* time interval start times */
     std::vector<measure_t>                      gvMaxCirclePopulation;          /* population by locations */
     tract_t                                     m_nTracts;
@@ -90,7 +90,7 @@ class CSaTScanData {
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
     void                                        setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
     void                                        SetPurelyTemporalCases();
-    void                                        SetTimeIntervalRangeIndexes();
+    virtual void                                SetTimeIntervalRangeIndexes();
 
   public:
     CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection);

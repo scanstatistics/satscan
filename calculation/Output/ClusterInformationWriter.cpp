@@ -102,8 +102,10 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       else
         CreateField(vFieldDefinitions, RADIUS_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
-    CreateField(vFieldDefinitions, START_DATE_FLD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
-    CreateField(vFieldDefinitions, END_DATE_FLD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        CreateField(vFieldDefinitions, START_DATE_FLD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+        CreateField(vFieldDefinitions, END_DATE_FLD, FieldValue::ALPHA_FLD, 16, 0, uwOffset, 0);
+    }
     CreateField(vFieldDefinitions, NUM_LOCATIONS_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION)
       CreateField(vFieldDefinitions, TST_STAT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
@@ -279,8 +281,10 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     }
     if (iNumSimsCompleted >= 99)
       Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
-    Record.GetFieldValue(START_DATE_FLD).AsString() = theCluster.GetStartDate(sBuffer, gDataHub);
-    Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        Record.GetFieldValue(START_DATE_FLD).AsString() = theCluster.GetStartDate(sBuffer, gDataHub);
+        Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
+    }
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
       if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {

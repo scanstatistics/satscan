@@ -15,9 +15,7 @@
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
-             : gParameters(Parameters), gPrint(PrintDirection),
-               m_nStartDate(CharToJulian(Parameters.GetStudyPeriodStartDate().c_str())),
-               m_nEndDate(CharToJulian(Parameters.GetStudyPeriodEndDate().c_str())) {
+             : gParameters(Parameters), gPrint(PrintDirection) {
   Init();
   Setup();
 }
@@ -543,6 +541,8 @@ void CSaTScanData::Init() {
   m_nGridTracts = 0;
   m_nTracts = 0;
   gtTotalMeasureAux = 0;
+  m_nStartDate = 0;
+  m_nEndDate = 0;
 }
 
 /** Randomizes collection of simulation data in concert with passed collection
@@ -994,25 +994,37 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 void CSaTScanData::Setup() {
   int es, ea, lCurrentEllipse=0;
 
-  //For now, compute the angle and store the angle and shape
-  //for each ellipsoid.  Maybe transfer info to a different location in the
-  //application or compute "on the fly" prior to printing.
-  if (gParameters.GetNumTotalEllipses() > 0) {
-    gvEllipseAngles.resize(gParameters.GetNumTotalEllipses());
-    gvEllipseShapes.resize(gParameters.GetNumTotalEllipses());
-    for (es=0; es < gParameters.GetNumRequestedEllipses(); ++es) {
-       for (ea=0; ea < gParameters.GetEllipseRotations()[es]; ++ea) {
-          gvEllipseAngles[lCurrentEllipse] = PI * ea/gParameters.GetEllipseRotations()[es];
-          gvEllipseShapes[lCurrentEllipse] = gParameters.GetEllipseShapes()[es];
-          ++lCurrentEllipse;
-       }
+
+  try {
+    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+        m_nStartDate = CharToJulian(gParameters.GetStudyPeriodStartDate().c_str());
+        m_nEndDate = CharToJulian(gParameters.GetStudyPeriodEndDate().c_str());
     }
+    //For now, compute the angle and store the angle and shape
+    //for each ellipsoid.  Maybe transfer info to a different location in the
+    //application or compute "on the fly" prior to printing.
+    if (gParameters.GetNumTotalEllipses() > 0) {
+        gvEllipseAngles.resize(gParameters.GetNumTotalEllipses());
+        gvEllipseShapes.resize(gParameters.GetNumTotalEllipses());
+        for (es=0; es < gParameters.GetNumRequestedEllipses(); ++es) {
+            for (ea=0; ea < gParameters.GetEllipseRotations()[es]; ++ea) {
+                gvEllipseAngles[lCurrentEllipse] = PI * ea/gParameters.GetEllipseRotations()[es];
+                gvEllipseShapes[lCurrentEllipse] = gParameters.GetEllipseShapes()[es];
+                ++lCurrentEllipse;
+            }
+        }
+    }
+    gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
+    if (gParameters.UseSpecialGrid())
+        gCentroidsHandler.reset(new CentroidHandler());
+    else
+        gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler));
+
   }
-  gTractHandler.reset(new TractHandler(gParameters.GetIsPurelyTemporalAnalysis(), gParameters.GetMultipleCoordinatesType()));
-  if (gParameters.UseSpecialGrid())
-    gCentroidsHandler.reset(new CentroidHandler());
-  else
-    gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler));
+  catch (prg_exception& x) {
+    x.addTrace("Setup()","CSaTScanData");
+    throw;
+  }
 }
 
 /** Throws exception if case(s) were observed for an interval/location

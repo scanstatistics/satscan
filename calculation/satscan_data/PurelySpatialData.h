@@ -13,6 +13,7 @@ class CPurelySpatialData : public CSaTScanData {
   protected:
     virtual void        SetIntervalCut() {m_nIntervalCut = 1;}
     virtual void        SetIntervalStartTimes();
+    virtual void        SetTimeIntervalRangeIndexes() {/* nop */}
 
   public:
     CPurelySpatialData(const CParameters& Parameters, BasePrint& PrintDirection);

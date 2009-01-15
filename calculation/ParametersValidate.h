@@ -11,6 +11,7 @@ class ParametersValidate {
   private:
     const CParameters & gParameters;
 
+    bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
@@ -18,7 +19,6 @@ class ParametersValidate {
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
-    bool                ValidateObservableRegionsParameters(BasePrint & PrintDirection) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
     bool                ValidateProspectiveDate(BasePrint& PrintDirection) const;
