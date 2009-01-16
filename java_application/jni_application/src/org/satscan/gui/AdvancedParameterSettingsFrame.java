@@ -1533,14 +1533,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     /** enables adjustment options controls */
     private void EnableOutputOptions(boolean bEnable) {
-        bEnable &= !_specifiyNeighborsFileCheckBox.isSelected();
+        boolean bUsingNeighbors = _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
         _criteriaSecClustersGroup.setEnabled(bEnable);
         _criteriaSecClustersNoGeoLapRadioButton.setEnabled(bEnable);
-        _criteriaSecClustersNoCentersRadioButton.setEnabled(bEnable);
-        _criteriaSecClustersNoCentersMoreRadioButton.setEnabled(bEnable);
-        _criteriaSecClustersNoCentersLessRadioButton.setEnabled(bEnable);
-        _criteriaSecClustersNoCentersEachRadioButton.setEnabled(bEnable);
+        _criteriaSecClustersNoCentersRadioButton.setEnabled(bEnable && !bUsingNeighbors);
+        _criteriaSecClustersNoCentersMoreRadioButton.setEnabled(bEnable && !bUsingNeighbors);
+        _criteriaSecClustersNoCentersLessRadioButton.setEnabled(bEnable && !bUsingNeighbors);
+        _criteriaSecClustersNoCentersEachRadioButton.setEnabled(bEnable && !bUsingNeighbors);
         _criteriaSecClustersNoRestrictionsRadioButton.setEnabled(bEnable);
+        
+        if (bEnable && bUsingNeighbors && 
+            !(_criteriaSecClustersNoGeoLapRadioButton.isSelected() || _criteriaSecClustersNoRestrictionsRadioButton.isSelected()))
+            _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
     }
 
     /** Set appropriate control for maximum spatial cluster size type. */
