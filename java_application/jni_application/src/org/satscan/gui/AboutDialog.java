@@ -19,7 +19,12 @@ public class AboutDialog extends javax.swing.JDialog {
     public AboutDialog(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
-        versionLabel.setText("SaTScan v" + AppConstants.getVersion());
+        String engineVersion = AppConstants.getVersion();
+        String guiVersion = AppConstants.getGraphicalVersion();
+        if (engineVersion.equals(guiVersion))
+            versionLabel.setText("SaTScan v" + AppConstants.getVersion());
+        else
+            versionLabel.setText("SaTScan v" + AppConstants.getVersion() + "  -- App v"  + guiVersion);
         releaseDateLabel.setText(AppConstants.getReleaseDate());
         setLocationRelativeTo(parent);
     }
