@@ -1354,7 +1354,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _circularRadioButton.setEnabled(bEnable);
         _ellipticRadioButton.setEnabled(bEnable && 
                                         _analysisSettingsWindow.getCoordinatesType() == Parameters.CoordinatesType.CARTESIAN &&
-                                        _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON);
+                                        _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON &&
+                                        (_performIsotonicScanCheckBox.isEnabled() ? !_performIsotonicScanCheckBox.isSelected() : true));
         _nonCompactnessPenaltyLabel.setEnabled(_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected());
         _nonCompactnessPenaltyComboBox.setEnabled(_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected());
         if (!_ellipticRadioButton.isEnabled() && _ellipticRadioButton.isSelected() && _circularRadioButton.isEnabled()) {
