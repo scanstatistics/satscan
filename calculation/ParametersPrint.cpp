@@ -393,46 +393,46 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   SettingContainer_t settings;
   std::string        buffer;
 
+  if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+
   try {
-    if (!gParameters.GetIsPurelyTemporalAnalysis() && !gParameters.UseLocationNeighborsFile()) {
-      buffer = "Criteria for Reporting Secondary Clusters";
-      switch (gParameters.GetCriteriaSecondClustersType()) {
-         case NOGEOOVERLAP          : 
-             settings.push_back(std::make_pair(buffer,"No Geographical Overlap"));
-             break;
-         case NOCENTROIDSINOTHER    : 
-             settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Other Clusters"));
-             break;
-         case NOCENTROIDSINMORELIKE : 
-             settings.push_back(std::make_pair(buffer,"No Cluster Centroids in More Likely Clusters"));
-             break;
-         case NOCENTROIDSINLESSLIKE : 
-             settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Less Likely Clusters"));
-             break;
-         case NOPAIRSINEACHOTHERS   : 
-             settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters"));
-             break;
-         case NORESTRICTIONS        : 
-             settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid"));
-             break;
-         default : throw prg_error("Unknown secondary clusters type '%d'.\n",
-                                   "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
-      }
-      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
-          if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
-              printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
-              settings.push_back(std::make_pair("Reported Clusters",buffer));
-          }
-          if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
-              printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
-              settings.push_back(std::make_pair("Reported Clusters",buffer));
-          }
-          if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
-              printString(buffer, "Only clusters smaller than %g%s reported.", 
-                  gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
-              settings.push_back(std::make_pair("Reported Clusters",buffer));
-          }
-     }
+    buffer = "Criteria for Reporting Secondary Clusters";
+    switch (gParameters.GetCriteriaSecondClustersType()) {
+       case NOGEOOVERLAP          : 
+           settings.push_back(std::make_pair(buffer,"No Geographical Overlap"));
+           break;
+       case NOCENTROIDSINOTHER    : 
+           settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Other Clusters"));
+           break;
+       case NOCENTROIDSINMORELIKE : 
+           settings.push_back(std::make_pair(buffer,"No Cluster Centroids in More Likely Clusters"));
+           break;
+       case NOCENTROIDSINLESSLIKE : 
+           settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Less Likely Clusters"));
+           break;
+       case NOPAIRSINEACHOTHERS   : 
+           settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters"));
+           break;
+       case NORESTRICTIONS        : 
+           settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid"));
+           break;
+       default : throw prg_error("Unknown secondary clusters type '%d'.\n",
+                                 "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
+    }
+    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
+        if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
+            printString(buffer, "Only clusters smaller than %g percent of population at risk reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
+            settings.push_back(std::make_pair("Reported Clusters",buffer));
+        }
+        if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
+            printString(buffer, "Only clusters smaller than %g percent of population defined in max circle file reported.", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true));
+            settings.push_back(std::make_pair("Reported Clusters",buffer));
+        }
+        if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
+            printString(buffer, "Only clusters smaller than %g%s reported.", 
+                gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
+            settings.push_back(std::make_pair("Reported Clusters",buffer));
+        }
     }
     WriteSettingsContainer(settings, "Clusters Reported", fp);
   }
@@ -923,8 +923,6 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     if (gParameters.GetIsPurelyTemporalAnalysis())
       return;
 
-    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
-        settings.push_back(std::make_pair("Max Circle Size File",gParameters.GetMaxCirclePopulationFileName()));
     if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
         printString(buffer, "%g percent of population at risk", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
         settings.push_back(std::make_pair("Maximum Spatial Cluster Size",buffer));
@@ -933,6 +931,8 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
         printString(buffer, "%g percent of population defined in max circle file", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));
         settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));
     }
+    if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) || gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true))
+        settings.push_back(std::make_pair("Max Circle Size File",gParameters.GetMaxCirclePopulationFileName()));
     if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
         printString(buffer, "%g%s", gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, false), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
         settings.push_back(std::make_pair("Maximum Spatial Cluster Size", buffer));
