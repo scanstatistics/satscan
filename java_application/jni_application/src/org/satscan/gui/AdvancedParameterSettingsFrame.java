@@ -287,14 +287,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bEnable &= _analysisSettingsWindow.getModelControlType() != Parameters.ProbabilityModelType.HOMOGENEOUSPOISSON;
         _additionalDataSetsGroup.setEnabled(bEnable);
 
-        EnableDataSetList(_additionalDataSetsGroup.isEnabled());
+        EnableDataSetList();
         EnableNewButton();
         EnableRemoveButton();
-        EnableInputFileEdits(_additionalDataSetsGroup.isEnabled());
-        _caseFileLabel.setEnabled(_additionalDataSetsGroup.isEnabled());
-        _controlFileLabel.setEnabled(_additionalDataSetsGroup.isEnabled());
-        _populationFileLabel.setEnabled(_additionalDataSetsGroup.isEnabled());
-        EnableDataSetPurposeControls(_additionalDataSetsGroup.isEnabled());
+        EnableInputFileEdits();
+        EnableDataSetPurposeControls();
     }
 
     /** Enables neighbors file group. */
@@ -530,8 +527,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Enables/disables TListBox that list defined data sets
      */
-    private void EnableDataSetList(boolean bEnable) {
-        _inputDataSetsList.setEnabled(bEnable && _additionalDataSetsGroup.isEnabled());
+    private void EnableDataSetList() {
+        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
+        _inputDataSetsList.setEnabled(bEnable);
     }
 
     /**
@@ -847,6 +845,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL;
         boolean bFirstDataSetHasPopulationFile = _analysisSettingsWindow.getEdtPopFileNameText().length() > 0;
 
+        if (!_additionalDataSetsGroup.isEnabled()) return;
+        
         for (int i = 0; i < _caseFilenames.size(); i++) {
             //Ensure that controls have this dataset display, should we need to
             //show window regarding an error with settings.
@@ -1149,9 +1149,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * enables input tab case/control/pop files edit boxes
      */
-    private void EnableInputFileEdits(boolean bEnable) {
-        bEnable &= _additionalDataSetsGroup.isEnabled();
-        bEnable &= _inputDataSetsList.getModel().getSize() > 0;
+    private void EnableInputFileEdits() {
+        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _inputDataSetsList.getModel().getSize() > 0;
 
         _caseFileTextField.setEnabled(bEnable);
         _controlFileTextField.setEnabled(bEnable);
@@ -1162,6 +1161,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _controlFileImportButton.setEnabled(bEnable);
         _populationFileBrowseButton.setEnabled(bEnable);
         _populationFileImportButton.setEnabled(bEnable);
+        _caseFileLabel.setEnabled(bEnable);
+        _controlFileLabel.setEnabled(bEnable);
+        _populationFileLabel.setEnabled(bEnable);        
     }
 
     /**
@@ -1185,8 +1187,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /**
      * Enables/disables controls that indicate purpose of additional data sets.
      */
-    private void EnableDataSetPurposeControls(boolean bEnable) {
-        _additionalDataSetsGroup.setEnabled(bEnable);
+    private void EnableDataSetPurposeControls() {
+        boolean bEnable = _additionalDataSetsGroup.isEnabled() && _dataSetsListModel.getSize() > 0;
         _multivariateAdjustmentsRadioButton.setEnabled(bEnable);
         _adjustmentByDataSetsRadioButton.setEnabled(bEnable);
         _multipleDataSetPurposeLabel.setEnabled(bEnable);
@@ -1201,8 +1203,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _controlFileTextField.setText("");
         _populationFileTextField.setText("");
         _dataSetsListModel.removeAllElements();
-        EnableDataSetList(_inputDataSetsList.getModel().getSize() > 0);
-        EnableDataSetPurposeControls(_inputDataSetsList.getModel().getSize() > 0);
+        EnableDataSetList();
+        EnableDataSetPurposeControls();
 
         // clear the non-visual components
         _caseFilenames.clear();
@@ -1210,7 +1212,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _populationFilenames.clear();
         EnableNewButton();
         EnableRemoveButton();
-        EnableInputFileEdits(false);
+        EnableInputFileEdits();
         _multivariateAdjustmentsRadioButton.setSelected(true);
 
         //data checking
@@ -1791,7 +1793,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Input tab
         EnableAdditionalDataSetsGroup(false);
-        EnableInputFileEdits(false);
         for (int i = 1; i < parameters.GetNumDataSets(); i++) { // multiple data sets
             _dataSetsListModel.addElement("Data Set " + Integer.toString(i + 1));
             _caseFilenames.addElement(parameters.GetCaseFileName(i + 1));
@@ -2025,7 +2026,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
-                EnableInputFileEdits(_dataSetsListModel.getSize() > 0);
+                EnableInputFileEdits();
                 if (_dataSetsListModel.getSize() > 0 && _inputDataSetsList.getSelectedIndex() != -1) {
                     _caseFileTextField.setText(AdvancedParameterSettingsFrame.this._caseFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
                     _controlFileTextField.setText(AdvancedParameterSettingsFrame.this._controlFilenames.elementAt(_inputDataSetsList.getSelectedIndex()));
@@ -2039,12 +2040,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _addDataSetButton.setText("Add"); // NOI18N
         _addDataSetButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                EnableDataSetList(true);
-                EnableDataSetPurposeControls(true);
                 _dataSetsListModel.addElement("Data Set " + Integer.toString(_inputDataSetsList.getModel().getSize() + 1));
 
                 // enable and clear the edit boxes
-                EnableInputFileEdits(true);
+                EnableDataSetList();
+                EnableDataSetPurposeControls();
+                EnableInputFileEdits();
                 _caseFilenames.addElement("");
                 _controlFilenames.addElement("");
                 _populationFilenames.addElement("");
@@ -2083,9 +2084,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     _inputDataSetsList.setSelectedIndex(0);
                     _inputDataSetsList.ensureIndexIsVisible(0);
                 }
-                EnableDataSetList(_dataSetsListModel.getSize() > 0);
-                EnableDataSetPurposeControls(_dataSetsListModel.getSize() > 0);
-                EnableInputFileEdits(_dataSetsListModel.getSize() > 0);
+                EnableDataSetList();
+                EnableDataSetPurposeControls();
+                EnableInputFileEdits();
                 EnableNewButton();
                 EnableRemoveButton();
                 enableSetDefaultsButton();
