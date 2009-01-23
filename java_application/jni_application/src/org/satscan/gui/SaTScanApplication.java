@@ -34,6 +34,8 @@ import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.WaitCursor;
 import org.satscan.gui.utils.WindowsMenu;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /*
  * SaTScanApplication.java
@@ -62,7 +64,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private static SaTScanApplication _instance;
     public File lastBrowseDirectory = new File(System.getProperty("user.dir"));
     WindowsMenu windowsMenu = null;
-
+    private final String HEIGHT_KEY = "height";
+    private final String WIDTH_KEY = "width";
+    private final String DEFAULT_HEIGHT = "768";
+    private final String DEFAULT_WIDTH = "1024";
+    
     /**
      * Creates new form SaTScanApplication
      */
@@ -76,6 +82,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _saveSessionAsAction = new SaveSessionAsAction();
         _printResultsAction = new PrintResultsAction();
         initComponents();
+        Preferences _prefs = Preferences.userNodeForPackage(SaTScanApplication.class);
+        setSize(Integer.parseInt(_prefs.get(WIDTH_KEY, DEFAULT_WIDTH)), Integer.parseInt(_prefs.get(HEIGHT_KEY, DEFAULT_HEIGHT)));
         windowsMenu = new WindowsMenu(this.desktopPane);
         windowsMenu.setWindowPositioner(new CascadingWindowPositioner(this.desktopPane));
         menuBar.add(windowsMenu, 2);
@@ -931,6 +939,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             } catch (IOException ex) {
                 Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+        //saving window dimensions
+        Preferences _prefs = Preferences.userNodeForPackage(SaTScanApplication.class);
+        _prefs.put(WIDTH_KEY, Integer.toString(getSize().width));        
+        _prefs.put(HEIGHT_KEY, Integer.toString(getSize().height));        
+        try{
+            _prefs.flush();
+        }
+        catch (BackingStoreException ex) {
         }
         this.dispose();
         System.exit(0);
