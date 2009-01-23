@@ -49,7 +49,7 @@ bool LinearInequality::evaluateForceNonInclusive(double px, double py) const {
 /* Returns the line equation. */
 std::string LinearInequality::toString() const {
     std::stringstream equation;
-    equation << _a << "y + " << _b << "x + " << _c;
+    equation << _a << "y"  << (_b < 0 ? " - ": " + ") << fabs(_b) << "x" << (_c < 0 ? " - ": " + ") << fabs(_c);
     switch (_origSign) {
         case lessThan            : equation << " < 0"; break;
         case lessThanOrEqual     : equation << " <= 0"; break;
