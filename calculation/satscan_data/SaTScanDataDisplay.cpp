@@ -326,7 +326,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print weighted variance for all data sets.
-    PrintFormat.PrintSectionLabel(fp, "Weighted Standard deviation", true, false);
+    PrintFormat.PrintSectionLabel(fp, "Weighted Std deviation", true, false);
     printString(buffer, "%.2f", std::sqrt(dataSetStatistics.front().gtWeightedVariance));
     for (i=1; i < dataSetStatistics.size(); ++i) {
        printString(work, ", %.2f", std::sqrt(dataSetStatistics[i].gtWeightedVariance));
