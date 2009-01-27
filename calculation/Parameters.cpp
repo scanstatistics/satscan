@@ -305,9 +305,9 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
 /** Returns the scanning area type used during execution. For the normal model,
     high and low are reversed. */
 AreaRateType CParameters::GetExecuteScanRateType() const {
-  if (geProbabilityModelType == NORMAL && geAreaScanRate == HIGH)
+    if (geProbabilityModelType == NORMAL && !getIsWeightedNormal() && geAreaScanRate == HIGH)
     return LOW;
-  if (geProbabilityModelType == NORMAL && geAreaScanRate == LOW)
+  if (geProbabilityModelType == NORMAL && !getIsWeightedNormal() && geAreaScanRate == LOW)
     return HIGH;
 
   return geAreaScanRate;
