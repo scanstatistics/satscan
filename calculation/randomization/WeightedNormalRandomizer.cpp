@@ -105,7 +105,9 @@ AbstractWeightedNormalRandomizer::ClusterStatistics AbstractWeightedNormalRandom
   }
 
   statistics.gtVariance = (tVarianceIn + tVarianceOut)/static_cast<measure_t>(gvOriginalPermutedAttribute.size());
+  statistics.gtVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
   statistics.gtWeightedVariance = (tWeightedVarianceIn + tWeightedVarianceOut)/tTotalWeight;
+  statistics.gtWeightedVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
 
   return statistics; 
 }
@@ -183,7 +185,9 @@ AbstractWeightedNormalRandomizer::DataSetStatistics AbstractWeightedNormalRandom
       statistics.gtWeightedVariance += itr_permuted->GetPermutedVariable().second * std::pow(itr_permuted->GetPermutedVariable().first - statistics.gtWeightedMean, 2);
   }
   statistics.gtVariance /= static_cast<measure_t>(gvOriginalPermutedAttribute.size());
+  statistics.gtVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
   statistics.gtWeightedVariance /= statistics.gtTotalWeight;
+  statistics.gtWeightedVariance *= (static_cast<measure_t>(gvOriginalPermutedAttribute.size())/(static_cast<measure_t>(gvOriginalPermutedAttribute.size() - 1)));
 
   return statistics;
 }
