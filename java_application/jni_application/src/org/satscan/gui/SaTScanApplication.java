@@ -51,6 +51,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "SaTScan.jar";
     private static Boolean _debug_url = new Boolean(false);
+    private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
     private final ExecuteSessionAction _executeSessionAction;
     private final ExecuteOptionsAction _executeOptionsAction;
@@ -68,6 +69,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final String WIDTH_KEY = "width";
     private final String DEFAULT_HEIGHT = "768";
     private final String DEFAULT_WIDTH = "1024";
+    private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";    
+    private static String RELAUNCH_TOKEN = "&";
     
     /**
      * Creates new form SaTScanApplication
@@ -124,6 +127,25 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
     }
 
+    /**
+     * Stores run arguments for application update.
+     * @param args -- run parameters
+     */
+    public static void setRunArgs(final String args[]) {
+        _run_args = args;
+    }
+    
+    public static final String getRelaunchArgs() {
+        StringBuilder args = new StringBuilder();
+        if (_run_args.length > 0) {
+            args.append(RELAUNCH_ARGS_OPTION);
+        }
+        for (int i = 0; i < _run_args.length; ++i) {
+            args.append(_run_args[i]).append(RELAUNCH_TOKEN);
+        }     
+        return args.toString();
+    }
+    
     /**
      * Sets flag for debug application update.
      * @param is64bitEnabled
@@ -875,6 +897,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     return;
                 }
                 SaTScanApplication.setDebugURL(debugURL);
+                SaTScanApplication.setRunArgs(args);
                 new SaTScanApplication().setVisible(true);
             }
         });
@@ -932,9 +955,16 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
         CloseRunningAnalysesWindows();
         if (UpdateCheckDialog._runUpdateOnTerminate) {
-            try {
-                //launch updater application and close
-                String[] commandline = new String[]{"java", "-jar", UpdateCheckDialog._updaterFilename.getName(), UpdateCheckDialog._updateArchiveName.getName(), _application};
+            try { //launch updater application and close
+                // Get java path from System
+                StringBuilder java_path = new StringBuilder();
+                java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                
+                String[] commandline = new String[]{java_path.toString(), 
+                                                    "-jar", 
+                                                    UpdateCheckDialog._updaterFilename.getName(), 
+                                                    UpdateCheckDialog._updateArchiveName.getName(), 
+                                                    _application, 
+                                                    getRelaunchArgs()};
                 Runtime.getRuntime().exec(commandline, null, UpdateCheckDialog.getDownloadTempDirectory());
             } catch (IOException ex) {
                 Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);

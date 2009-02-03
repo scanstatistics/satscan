@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -29,13 +30,15 @@ public class InstallerFrame extends javax.swing.JFrame {
 
     private final ZipFile _archive;
     private final File _launchApp;
+    private final Vector<String> _relaunchArgs;
 
     /** Creates new form MainFrame */
-    public InstallerFrame(String archiveFile, String launchApp) {
+    public InstallerFrame(String archiveFile, String launchApp, Vector<String> relaunchArgs) {
         initComponents();
         try {
             _archive = new ZipFile(archiveFile);
             _launchApp = new File(launchApp);
+            _relaunchArgs = relaunchArgs;
             setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/org/satscan/updaterapplication/SaTScan.gif")));
             setLocationRelativeTo(null);
         } catch (IOException e) {//
@@ -44,16 +47,23 @@ public class InstallerFrame extends javax.swing.JFrame {
     }
 
     private void relaunchApplication() {
-        try { // ... what if user has custom invocation script?
-            if (!System.getProperty("os.name").startsWith("Windows")) {
-                Runtime.getRuntime().exec(new String[]{"java", "-jar", "-Djava.library.path=.", _launchApp.getName()}, null, _launchApp.getParentFile());
-            } else {
-                // the Windows jar file is wrapped up in the launch4j executable
-                Runtime.getRuntime().exec(new String[]{_launchApp.getAbsolutePath().replaceAll(".jar", ".exe")}, null, _launchApp.getParentFile());
+        try {
+            // Get java path from System
+            StringBuilder java_path = new StringBuilder();
+            java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                            
+            // Build command to relaunch SaTScan
+            Vector<String> execute = new Vector<String>();
+            execute.add(java_path.toString());
+            execute.add("-jar");
+            execute.add("-Djava.library.path=.");
+            execute.add(_launchApp.getName());
+            for (int i=0; i < _relaunchArgs.size(); ++i) {
+                execute.add(_relaunchArgs.elementAt(i));
             }
+            Runtime.getRuntime().exec(execute.toArray(new String[]{}), null, _launchApp.getParentFile());            
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage() + "\n" + _launchApp.getAbsolutePath()
-                    + "\n" + _launchApp.getName().replaceAll(".jar", ".exe") + "\n" + _launchApp.getParentFile()
+                    + "\n" + _launchApp.getName() + "\n" + _launchApp.getParentFile()
                      , "SaTScan Update Cancelled", JOptionPane.INFORMATION_MESSAGE);
             Logger.getLogger(InstallerFrame.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
@@ -110,9 +120,25 @@ public class InstallerFrame extends javax.swing.JFrame {
          */
         private boolean isExtracted(ZipEntry entry) {
             if (System.getProperty("os.name").startsWith("Windows")) {
-                return entry.getName().endsWith(".so") || entry.getName().endsWith(".sh") || entry.getName().endsWith("_32bit") || entry.getName().endsWith("_64bit") ? false : true;
-            } else {
-                return entry.getName().endsWith(".dll") || entry.getName().endsWith(".chm") || entry.getName().endsWith(".exe") ? false : true;
+                return entry.getName().endsWith(".so") || 
+                       entry.getName().endsWith(".jnilib") || 
+                       entry.getName().endsWith(".sh") || 
+                       entry.getName().endsWith("_32bit") || 
+                       entry.getName().endsWith("_64bit") ? false : true;
+            } else if (System.getProperty("os.name").startsWith("Linux")) {
+                return entry.getName().endsWith(".dll") || 
+                       entry.getName().endsWith(".jnilib") || 
+                       entry.getName().endsWith("_universal_32bit") || 
+                       entry.getName().endsWith("_universal_64bit") || 
+                       entry.getName().endsWith(".exe") ? false : true;
+            } else if (System.getProperty("os.name").startsWith("Mac")) {
+                return entry.getName().endsWith(".dll") || 
+                       entry.getName().endsWith("_x86_32bit") || 
+                       entry.getName().endsWith("_x86_64bit") || 
+                       entry.getName().endsWith(".so") || 
+                       entry.getName().endsWith(".exe") ? false : true;                
+            } else {//Unknown platform - default to true
+                return true;
             }
         }
 
