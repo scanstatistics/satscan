@@ -51,6 +51,7 @@ public class InstallerFrame extends javax.swing.JFrame {
             // Get java path from System
             StringBuilder java_path = new StringBuilder();
             java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                            
+            JOptionPane.showMessageDialog(this, java_path, "Java Path", JOptionPane.INFORMATION_MESSAGE);
             // Build command to relaunch SaTScan
             Vector<String> execute = new Vector<String>();
             execute.add(java_path.toString());
@@ -119,24 +120,32 @@ public class InstallerFrame extends javax.swing.JFrame {
          * For now, this hack will work ...
          */
         private boolean isExtracted(ZipEntry entry) {
-            if (System.getProperty("os.name").startsWith("Windows")) {
-                return entry.getName().endsWith(".so") || 
-                       entry.getName().endsWith(".jnilib") || 
-                       entry.getName().endsWith(".sh") || 
-                       entry.getName().endsWith("_32bit") || 
-                       entry.getName().endsWith("_64bit") ? false : true;
+            if (entry.getName().endsWith(".jar") ||
+                entry.getName().endsWith(".prm") ||
+                entry.getName().endsWith(".cas") ||
+                entry.getName().endsWith(".ctl") ||
+                entry.getName().endsWith(".pop") ||
+                entry.getName().endsWith(".geo") ||
+                entry.getName().endsWith(".grd") ||
+                entry.getName().endsWith(".pdf")) {
+                return true;
+            } else if (System.getProperty("os.name").startsWith("Windows")) {
+                return entry.getName().endsWith(".exe") || 
+                       entry.getName().endsWith(".dll") ? true : false;
             } else if (System.getProperty("os.name").startsWith("Linux")) {
-                return entry.getName().endsWith(".dll") || 
-                       entry.getName().endsWith(".jnilib") || 
-                       entry.getName().endsWith("_universal_32bit") || 
+                return entry.getName().endsWith("_x86_64_32bit") || 
+                       entry.getName().endsWith("_x86_64_64bit") || 
+                       entry.getName().endsWith("_x86_64_32bit.so") || 
+                       entry.getName().endsWith("_x86_64_64bit.so") ? true : false;
+            } else if (System.getProperty("os.name").startsWith("Mac") || System.getProperty("os.name").startsWith("Darwin")) {
+                return entry.getName().endsWith("_universal_32bit") || 
                        entry.getName().endsWith("_universal_64bit") || 
-                       entry.getName().endsWith(".exe") ? false : true;
-            } else if (System.getProperty("os.name").startsWith("Mac")) {
-                return entry.getName().endsWith(".dll") || 
-                       entry.getName().endsWith("_x86_32bit") || 
-                       entry.getName().endsWith("_x86_64bit") || 
-                       entry.getName().endsWith(".so") || 
-                       entry.getName().endsWith(".exe") ? false : true;                
+                       entry.getName().endsWith(".jnilib") ? true : false;
+            } else if (System.getProperty("os.name").startsWith("SunOS") || System.getProperty("os.name").startsWith("Solaris")) {
+                return entry.getName().endsWith("_sparc_32bit") || 
+                       entry.getName().endsWith("_sparc_64bit") || 
+                       entry.getName().endsWith("_sparc_32bit.so") || 
+                       entry.getName().endsWith("_sparc_64bit.so") ? true : false;
             } else {//Unknown platform - default to true
                 return true;
             }
@@ -162,10 +171,12 @@ public class InstallerFrame extends javax.swing.JFrame {
                         if (option != JOptionPane.YES_OPTION) {
                             throw new fileAccessException(f.getAbsolutePath());
                         }
-                    }
-                    attemptAgain = outStream == null;
-                    if (outStream != null) {
-                        outStream.close();
+                    } finally {
+                        attemptAgain = outStream == null;
+                        if (outStream != null) {
+                            outStream.flush();
+                            outStream.close();
+                        }
                     }
                 }
             }
