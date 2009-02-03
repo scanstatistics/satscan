@@ -1066,7 +1066,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Discrete Scan Statistics">
+                    <TitledBorder title="Probability Model">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -1098,7 +1098,7 @@
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace min="10" pref="10" max="10" attributes="0"/>
                                   <Component id="_homogeneouspoissonModelRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="_observableRegionsButton" min="-2" pref="21" max="-2" attributes="0"/>
                               </Group>
                               <Component id="jLabel4" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1144,7 +1144,7 @@
                       <ComponentRef name="_probabilityModelTypeButtonGroup"/>
                     </Property>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Discrete Poission" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Poission" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1277,7 +1277,7 @@
                     <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                       <ComponentRef name="_probabilityModelTypeButtonGroup"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="Continuous Poisson" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Poisson" noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
@@ -1336,7 +1336,7 @@
                               <Component id="_lowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="_highOrLowRatesRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="29" max="32767" attributes="0"/>
+                          <EmptySpace pref="34" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1433,7 +1433,7 @@
                                   <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="12" max="32767" attributes="0"/>
+                          <EmptySpace pref="17" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>

@@ -2222,11 +2222,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addContainerGap(34, Short.MAX_VALUE))
         );
 
-        _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Discrete Scan Statistics", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);
         _poissonModelRadioButton.setSelected(true);
-        _poissonModelRadioButton.setText("Discrete Poission"); // NOI18N
+        _poissonModelRadioButton.setText("Poission"); // NOI18N
         _poissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _poissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _poissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2303,7 +2303,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _probabilityModelTypeButtonGroup.add(_homogeneouspoissonModelRadioButton);
-        _homogeneouspoissonModelRadioButton.setText("Continuous Poisson"); // NOI18N
+        _homogeneouspoissonModelRadioButton.setText("Poisson"); // NOI18N
         _homogeneouspoissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _homogeneouspoissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _homogeneouspoissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
@@ -2346,7 +2346,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addGroup(_probabilityModelGroupLayout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addComponent(_homogeneouspoissonModelRadioButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(18, 18, 18)
                         .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel4))
                 .addContainerGap(25, Short.MAX_VALUE))
@@ -2403,7 +2403,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_highRatesRadioButton)
                     .addComponent(_lowRatesRadioButton)
                     .addComponent(_highOrLowRatesRadioButton))
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addContainerGap(34, Short.MAX_VALUE))
         );
         _scanAreasGroupLayout.setVerticalGroup(
             _scanAreasGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2499,7 +2499,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationLengthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_aggregrationUnitsLabel)))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
         _timeAggregationGroupLayout.setVerticalGroup(
             _timeAggregationGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2805,6 +2805,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel __additionalOutputFilesGroup;
     private javax.swing.JButton _advancedAnalysisButton;
