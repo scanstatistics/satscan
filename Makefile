@@ -5,7 +5,8 @@ CC          := g++
 M_CFLAGS    :=  
 APPLICATION := SaTScan
 MAC_APPLICATION := SaTScan_mac
-LIBRARY     := libsatscan.so
+LINUX_LIBRARY := libsatscan.linux.so
+SOLARIS_LIBRARY := libsatscan.solaris.so
 MAC_LIBRARY := libsatscan.jnilib
 DEBUG       := -ggdb 
 COMPILATION := -m32
@@ -38,9 +39,14 @@ DEFINES     := -D__BATCH_COMPILE \
                               
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
 LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lxbaseg -lm -Wl,-Bdynamic -lrt -lpthread
-DLFLAGS     := -shared $(COMPILATION) -Wl,-soname,$(LIBRARY).x.x -o $(LIBRARY).x.x.0
 # static libgcc flags 
 #LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lpthread 
+
+# Linux link flags
+L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINUX_LIBRARY).x.x.0
+
+# Solaris link flags
+S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
 M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-dynamic -lxbase -lstdc++ -lm
@@ -230,11 +236,11 @@ LIB_OBJS    := $(LIB_SRC:.cpp=.o)
 
 .PHONY: clean all thin
 
-all : $(APPLICATION) $(LIBRARY)
+all : $(APPLICATION) $(LINUX_LIBRARY)
 
 thin : all
 	strip $(APPLICATION)
-	strip $(LIBRARY).x.x.0
+	strip $(LINUX_LIBRARY).x.x.0
 
 $(APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(LFLAGS) -o $@
@@ -242,8 +248,11 @@ $(APPLICATION) : $(OBJS) $(APP_OBJS)
 $(MAC_APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(M_LFLAGS) -o $@
 
-$(LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbaseg -lm -lrt -lpthread
+$(LINUX_LIBRARY) : $(OBJS) $(LIB_OBJS)
+	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbaseg -lm -lrt -lpthread
+
+$(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
+	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbaseg -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
 	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbase -lstdc++ -lm  -o $@
@@ -254,7 +263,8 @@ clean :
 	rm -f core $(OBJS)
 	rm -f $(APPLICATION)
 	rm -f core $(APP_OBJS)
-	rm -f $(LIBRARY).x.x.0
+	rm -f $(LINUX_LIBRARY).x.x.0
+	rm -f $(SOLARIS_LIBRARY).x.x.0
 	rm -f core $(LIB_OBJS)
 	rm -f $(MAC_APPLICATION)
 	rm -f $(MAC_LIBRARY)
