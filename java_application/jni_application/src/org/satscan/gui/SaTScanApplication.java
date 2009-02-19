@@ -876,6 +876,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception e) {
                 }
+                try {
+                    // Window versions prior to 8.0 downloaded updates to application directory.
+                    // Attempt to delete update application.
+                    if (System.getProperty("os.name").startsWith("Windows")) {
+                        String update_app = System.getProperty("user.dir") + System.getProperty("file.separator") + "update_app.exe";
+                        new File(update_app).delete();
+                    }
+                } catch (Throwable e) {
+                }
                 //check and show End User License Agreement if not "unrequested":
                 String ENABLE_64BIT_OPTION_STRING = "-64bit-enabled";
                 String DEBUG_URL_STRING = "-debug-url";
