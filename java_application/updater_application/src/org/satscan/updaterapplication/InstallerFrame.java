@@ -51,7 +51,6 @@ public class InstallerFrame extends javax.swing.JFrame {
             // Get java path from System
             StringBuilder java_path = new StringBuilder();
             java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                            
-            JOptionPane.showMessageDialog(this, java_path, "Java Path", JOptionPane.INFORMATION_MESSAGE);
             // Build command to relaunch SaTScan
             Vector<String> execute = new Vector<String>();
             execute.add(java_path.toString());
