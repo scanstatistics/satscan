@@ -40,6 +40,7 @@ class AnalysisRunner {
     double                              GetAvailablePhysicalMemory() const;
     std::pair<double, double>           GetMemoryApproxiation() const;
     void                                Init();
+    void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                PerformCentric_Parallel();
     void                                PerformCentric_Serial();

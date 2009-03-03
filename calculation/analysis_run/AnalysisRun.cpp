@@ -260,11 +260,8 @@ void AnalysisRunner::ExecuteSuccessively() {
       //update report
       UpdateReport();
       //log history for first analysis run
-      if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
-        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
-        macroRunTimeStopSerial();
+      if (giAnalysisCount == 1) {
+        LogRunHistory();
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
@@ -560,6 +557,21 @@ void AnalysisRunner::Init() {
   gpSignificantRatios=0;
 }
 
+/** Logs run to history file. */
+void  AnalysisRunner::LogRunHistory() {
+    try {
+      if (gParameters.GetIsLoggingHistory()) {
+        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
+        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
+        macroRunTimeStopSerial();
+      }
+    } catch (...) {
+        // If fails for any reason, notify user and continue ...
+        gPrintDirection.Printf("Notice: Logging run history failed.\n", BasePrint::P_NOTICE);
+    }
+}
+
 /** Attempts to open result output file stream and assign to passed file pointer
     address. Open mode is determined to boolean paramter. */
 void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
@@ -724,11 +736,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
       //report clusters
       UpdateReport();
       //log history for first analysis run
-      if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
-        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
-        macroRunTimeStopSerial();
+      if (giAnalysisCount == 1) {
+        LogRunHistory();
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
@@ -871,11 +880,8 @@ void AnalysisRunner::PerformCentric_Serial() {
       //report clusters
       UpdateReport();
       //log history for first analysis run
-      if (gParameters.GetIsLoggingHistory() && giAnalysisCount == 1) {
-        gPrintDirection.Printf("Logging run history...\n", BasePrint::P_STDOUT);
-        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-        stsRunHistoryFile(gParameters, gPrintDirection).LogNewHistory(*this);
-        macroRunTimeStopSerial();
+      if (giAnalysisCount == 1) {
+        LogRunHistory();
       }
       //report additional output file: 'relative risks for each location'
       CreateRelativeRiskFile();
