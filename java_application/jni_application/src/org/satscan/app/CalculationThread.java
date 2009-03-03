@@ -57,7 +57,6 @@ public class CalculationThread extends Thread {
                 } else {
                     AnalysisRun.LoadFromFile(Parameters.GetOutputFileName());
                 }
-                AnalysisRun.PrintIssuesWindndow("No Warnings or Errors.");
             } else {
                 AnalysisRun.enableEmailButton();
                 AnalysisRun.setProgramErrorCallpathExplicit(gsProgramErrorCallPath);
@@ -68,7 +67,7 @@ public class CalculationThread extends Thread {
             AnalysisRun.setCloseButton();
             AnalysisRun.setPrintEnabled();
             if (!AnalysisRun.getErrorsEncountered()) {
-                AnalysisRun.PrintIssuesWindndow("No warnings or errors encountered.");
+                AnalysisRun.PrintIssuesWindndow("No Warnings or Errors.");
             }
         } catch (Throwable t) {
             PrintError(t.getMessage());

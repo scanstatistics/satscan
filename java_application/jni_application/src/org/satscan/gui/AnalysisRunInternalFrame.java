@@ -173,7 +173,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      *
      */
     public void CancelJob() {
-        if (_warningsErrorsTextArea.getLineCount() > 0) {
+        if (getErrorsEncountered() == false) {
             _progressTextArea.append("Job cancelled. Please review 'Warnings/Errors' window below.");
         } else {
             _progressTextArea.append("Job cancelled.");
@@ -207,7 +207,9 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
      *
      */
     public boolean getErrorsEncountered() {
-        return _warningsErrorsTextArea.getLineCount() > 0;
+        try {
+            return _warningsErrorsTextArea.getText().length() > 0;
+        } catch (Throwable t) {return false;}
     }
 
     /** This method is called from within the constructor to
