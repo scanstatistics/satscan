@@ -237,7 +237,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
-  if (gParameters.GetProbabilityModelType() == NORMAL) {
+  if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
     PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
     printString(buffer, "%.2f", gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
