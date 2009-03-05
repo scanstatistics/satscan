@@ -6,7 +6,7 @@ import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollBar;
+import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 import org.satscan.app.AppConstants;
@@ -78,37 +78,46 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     /**
      * Prints progress string to output textarea.
      */
-    synchronized public void PrintProgressWindow(String ProgressString) {
-        if (ProgressString.endsWith("\n")) {
-            _progressTextArea.append(ProgressString);
-        } else {
-            _progressTextArea.append(ProgressString + "\n");
-        }
-        JScrollBar vbar = jScrollPane1.getVerticalScrollBar();
-        vbar.setValue(vbar.getMaximum());
+    synchronized public void PrintProgressWindow(final String ProgressString) {        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                if (ProgressString.endsWith("\n")) {
+                    _progressTextArea.append(ProgressString);
+                } else {
+                    _progressTextArea.append(ProgressString + "\n");
+                }            
+            }
+        });
     }
 
     /**
      * Prints warning/error string to output textarea.
      */
-    synchronized public void PrintIssuesWindndow(String ProgressString) {
-        _warningsErrorsTextArea.append(ProgressString);
+    synchronized public void PrintIssuesWindndow(final String ProgressString) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                _warningsErrorsTextArea.append(ProgressString);
+            }
+        });
     }
 
     /** Loads analysis results from file into memo control */
-    public void LoadFromFile(String sFileName) {
-        _progressTextArea.setText("");
-        try {
-            _progressTextArea.read(new FileReader(sFileName), null);
-            setTitle(sFileName);
-        } catch (IOException e) {
-            setTitle("Job Completed");
-            _progressTextArea.append("\nSaTScan completed successfully but was unable to read results from file.\n" +
-                    "The results have been written to: \n" + _parameters.GetOutputFileName() + "\n\n");
-        }
-        JScrollBar vbar = jScrollPane1.getVerticalScrollBar();
-        vbar.setValue(vbar.getMinimum());
-        OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
+    synchronized public void LoadFromFile(final String sFileName) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                _progressTextArea.setText("");
+                try {
+                    _progressTextArea.read(new FileReader(sFileName), null);
+                    setTitle(sFileName);
+                } catch (IOException e) {
+                    setTitle("Job Completed");
+                    _progressTextArea.append("\nSaTScan completed successfully but was unable to read results from file.\n" +
+                            "The results have been written to: \n" + _parameters.GetOutputFileName() + "\n\n");
+                }
+                _progressTextArea.setCaretPosition(0);
+                OutputFileRegister.getInstance().release(_parameters.GetOutputFileName());
+            }
+        });
     }
 
     /**
@@ -243,7 +252,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
 
         _progressTextArea.setColumns(20);
         _progressTextArea.setEditable(false);
-        _progressTextArea.setFont(new java.awt.Font("Courier New", 0, 11));
+        _progressTextArea.setFont(new java.awt.Font("Monospaced", 0, 11));
         _progressTextArea.setRows(5);
         jScrollPane1.setViewportView(_progressTextArea);
 
@@ -299,7 +308,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 96, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_cancelButton)
@@ -321,7 +330,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
