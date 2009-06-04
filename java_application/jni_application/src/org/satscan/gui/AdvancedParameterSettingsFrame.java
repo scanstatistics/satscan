@@ -1583,6 +1583,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /** Set appropriate control for maximum spatial cluster size type. */
     private void SetMaxTemporalClusterSizeControl(double dMaxSize) {
         Double d = new Double(dMaxSize);
+        double dMaxValue = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ? 50.0 : 90.0;
 
         switch (GetMaxTemporalClusterSizeControlType()) {
             case TIMETYPE:
@@ -1590,7 +1591,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 break;
             case PERCENTAGETYPE:
             default:
-                _maxTemporalClusterSizeTextField.setText(dMaxSize <= 0 || dMaxSize > 50 ? "50" : Double.toString(dMaxSize));
+                _maxTemporalClusterSizeTextField.setText(dMaxSize <= 0 || dMaxSize > dMaxValue ? Double.toString(dMaxValue) : Double.toString(dMaxSize));
                 break;
         }
     }
