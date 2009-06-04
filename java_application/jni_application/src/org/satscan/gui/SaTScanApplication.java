@@ -34,6 +34,7 @@ import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.WaitCursor;
 import org.satscan.gui.utils.WindowsMenu;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
+import java.awt.event.KeyEvent;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -89,6 +90,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         setSize(Integer.parseInt(_prefs.get(WIDTH_KEY, DEFAULT_WIDTH)), Integer.parseInt(_prefs.get(HEIGHT_KEY, DEFAULT_HEIGHT)));
         windowsMenu = new WindowsMenu(this.desktopPane);
         windowsMenu.setWindowPositioner(new CascadingWindowPositioner(this.desktopPane));
+        windowsMenu.setMnemonic(KeyEvent.VK_W);
         menuBar.add(windowsMenu, 2);
         setTitle(AppConstants.getSoftwareTitle());
         setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource("/SaTScan.png")));
@@ -581,7 +583,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     if (!((ParameterSettingsFrame) allOpenFrames.get(i)).QueryWindowCanClose()) {
                         return false;
                     } else {
-                        ((ParameterSettingsFrame) allOpenFrames.get(i)).dispose();
+                        try {                            
+                            ((ParameterSettingsFrame) allOpenFrames.get(i)).setClosed(true);
+                        } catch (PropertyVetoException ex) {
+                            Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
                 }
             }
@@ -592,7 +598,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 if (!((ParameterSettingsFrame) allOpenFrames.get(i)).QueryWindowCanClose()) {
                     return false;
                 } else {
-                    ((ParameterSettingsFrame) allOpenFrames.get(i)).dispose();
+                    try {
+                        ((ParameterSettingsFrame) allOpenFrames.get(i)).setClosed(true);
+                    } catch (PropertyVetoException ex) {
+                        Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 }
             }
         }
@@ -756,6 +766,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         helpSystemToolButton.setHideActionText(true);
         _ToolBar.add(helpSystemToolButton);
 
+        _fileMenu.setMnemonic(KeyEvent.VK_F);
         _fileMenu.setText("File"); // NOI18N
 
         _newSessionMenuItem.setAction(new NewSessionFileAction());
@@ -800,6 +811,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         menuBar.add(_fileMenu);
 
+        _sessionMenu.setMnemonic(KeyEvent.VK_S);
         _sessionMenu.setText("Session"); // NOI18N
 
         _executeSessionMenuItem.setAction(_executeSessionAction);
@@ -812,6 +824,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         menuBar.add(_sessionMenu);
 
+        _helpMenu.setMnemonic(KeyEvent.VK_H);
         _helpMenu.setText("Help"); // NOI18N
 
         _helpContentMenuItem.setAction(new HelpSystemAction());
