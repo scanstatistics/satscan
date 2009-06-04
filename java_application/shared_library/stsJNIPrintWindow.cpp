@@ -36,6 +36,7 @@ JNIPrintWindow::~JNIPrintWindow(){
 /** Returns whether analysis has been cancelled through run analysis window via calculation thread . */
 bool JNIPrintWindow::GetIsCanceled() const {
   bool bReturn=false;
+
   JNIEnv *env;
   if (pJVM->AttachCurrentThread((void**)&env, NULL) < 0)
      jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
@@ -51,6 +52,7 @@ void JNIPrintWindow::PrintError(const char * sMessage) {
      jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
   jstring jMessage= env->NewStringUTF(sMessage);
   env->CallVoidMethod(gProgressWindowObj, gPrintErrorMethodId, jMessage);
+  env->DeleteLocalRef(jMessage);
   //jni_error::_detectError(&env);
   pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
 }
@@ -61,6 +63,7 @@ void JNIPrintWindow::PrintNotice(const char * sMessage) {
      jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
   jstring jMessage= env->NewStringUTF(sMessage);
   env->CallVoidMethod(gProgressWindowObj, gPrintNoticeMethodId, jMessage);
+  env->DeleteLocalRef(jMessage);
   //jni_error::_detectError(&env);
   pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
 }
@@ -71,6 +74,7 @@ void JNIPrintWindow::PrintStandard(const char * sMessage) {
      jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
   jstring jMessage= env->NewStringUTF(sMessage);
   env->CallVoidMethod(gProgressWindowObj, gPrintStandardMethodId, jMessage);
+  env->DeleteLocalRef(jMessage);
   //jni_error::_detectError(&env);
   pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
 }
@@ -81,6 +85,7 @@ void JNIPrintWindow::PrintWarning(const char * sMessage) {
      jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
   jstring jMessage= env->NewStringUTF(sMessage);
   env->CallVoidMethod(gProgressWindowObj, gPrintWarningMethodId, jMessage);
+  env->DeleteLocalRef(jMessage);
   //jni_error::_detectError(&env);
   pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
 }
@@ -116,6 +121,7 @@ void JNIPrintWindow::RecordCallpath(const char * sCallpath) {
      jni_error::_throwByName(gJNI_Env, jni_error::_javaRuntimeExceptionClassName, "Unable to attach current thread to JVM.");
   jstring jMessage= env->NewStringUTF(sCallpath);
   env->CallVoidMethod(gProgressWindowObj, gSetCallpathMethodId, jMessage);
+  env->DeleteLocalRef(jMessage);
   //jni_error::_detectError(&env);
   pJVM->DetachCurrentThread(); //if (pJVM->DetachCurrentThread() < 0) printf("Unable to detach current thread from JVM.\n");
 }
