@@ -41,10 +41,6 @@ const char * RunTimeComponentManager::GetLabel(FocusRunTimeComponent::Type eComp
   switch (eComponent) {
     case FocusRunTimeComponent::MeasureListScanningAdding   : return "MeasureList - Scan/Add";
     case FocusRunTimeComponent::MeasureListRatioCalculation : return "MeasureList - Ratio Calculation";
-    case FocusRunTimeComponent::BetaCalculation : return "Beta Calculation";
-    case FocusRunTimeComponent::BetaCalculation_part1 : return "Beta Calculation Part 1";
-    case FocusRunTimeComponent::BetaCalculation_part2 : return "Beta Calculation Part 2";
-    case FocusRunTimeComponent::BetaCalculation_combine : return "Beta Calculation Combine";
   }
   return "?";
 }

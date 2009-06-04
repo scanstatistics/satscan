@@ -46,7 +46,6 @@ void CSaTScanData::AdjustForKnownRelativeRisks(RealDataSet& Set, const TwoDimMea
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
 
-
   //apply adjustments to relative risks
   for (itr=gRelativeRiskAdjustments.GetAdjustments().begin(); itr != gRelativeRiskAdjustments.GetAdjustments().end(); ++itr) {
      const TractContainer_t & tract_deque = itr->second;
@@ -341,55 +340,52 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
   // calculate date index for prospective surveillance start date
   if (gParameters.GetIsProspectiveAnalysis()) {
     m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
-    if (gParameters.GetProbabilityModelType() != POISSON ||
-        (gParameters.GetProbabilityModelType() == POISSON && !gParameters.UseAdjustmentForRelativeRisksFile())) {
-        // If analysis performs simulations and adjusts for earlier analyses, then we can potentially
-        // collapse unused time intervals into one based upon the prospective start date and maximum
-        // temporal cluster size.
-        if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetAdjustForEarlierAnalyses()) {
-          // For prospective analyses, not all time intervals may be evaluated; consequently some of the
-          // initial intervals can be combined into one interval. When evaluating real data, we will only
-          // consider 'alive' clusters (clusters where the end date range equals the study period end date). For
-          // the simulated data, we will consider historical clusters from prospective start date.
-          if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
-            // If the maximum temporal cluster size is defined as a percentage of the population at risk,
-            // then the maximum cluster size must be calculated for each prospective period.
-            for (int iWindowEnd=m_nProspectiveIntervalStart; iWindowEnd <= m_nTimeIntervals; ++iWindowEnd) {
-               dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
-                                                                         gParameters.GetTimeAggregationUnitsType(), 1);
-               dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
-               //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
-               gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
-            }
-            // Now we know the index of the earliest accessed time interval, we can determine the
-            // number of time intervals that can be collapsed.
-            iNumCollapsibleIntervals = m_nProspectiveIntervalStart - *(gvProspectiveIntervalCuts.begin());
-          }
-          else
-            // When the maximum temporal cluster size is a fixed period, the number of intervals
-            // to collapse is simplier to calculate.
-            iNumCollapsibleIntervals = m_nProspectiveIntervalStart - m_nIntervalCut;
+    // If analysis performs simulations and adjusts for earlier analyses, then we can potentially
+    // collapse unused time intervals into one based upon the prospective start date and maximum
+    // temporal cluster size.
+    if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetAdjustForEarlierAnalyses()) {
+      // For prospective analyses, not all time intervals may be evaluated; consequently some of the
+      // initial intervals can be combined into one interval. When evaluating real data, we will only
+      // consider 'alive' clusters (clusters where the end date range equals the study period end date). For
+      // the simulated data, we will consider historical clusters from prospective start date.
+      if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE) {
+        // If the maximum temporal cluster size is defined as a percentage of the population at risk,
+        // then the maximum cluster size must be calculated for each prospective period.
+        for (int iWindowEnd=m_nProspectiveIntervalStart; iWindowEnd <= m_nTimeIntervals; ++iWindowEnd) {
+           dProspectivePeriodLength = CalculateNumberOfTimeIntervals(m_nStartDate, gvTimeIntervalStartTimes[iWindowEnd] - 1,
+                                                                     gParameters.GetTimeAggregationUnitsType(), 1);
+           dMaxTemporalLengthInUnits = floor(dProspectivePeriodLength * gParameters.GetMaximumTemporalClusterSize()/100.0);
+           //now calculate number of those time units a cluster can contain with respects to the specified aggregation length
+           gvProspectiveIntervalCuts.push_back(static_cast<int>(floor(dMaxTemporalLengthInUnits / gParameters.GetTimeAggregationLength())));
         }
-        else
-          // Else we are either not performing simulations, and therefore not evaluating prospective clusters,
-          // or we are not adjusting for previous analyses, and therefore only evaluating 'alive' clusters
-          // in both real data and simulated data.
-          iNumCollapsibleIntervals = m_nTimeIntervals - m_nIntervalCut;
-        
-        // If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
-        // iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
-        // first time interval, which will be the bucket for the collapsed intervals.
-        if (iNumCollapsibleIntervals > 1) {
-          // Removes collaped intervals from the data structure which details time interval start times.
-          // When input data is read, what would have gone into the respective second interval, third, etc.
-          // will be cummulated into first interval.
-          gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iNumCollapsibleIntervals);
-          // Re-calculate number of time intervals.
-          m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
-          // Re-calculate index of prospective start date
-          m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
-        } 
-    } 
+        // Now we know the index of the earliest accessed time interval, we can determine the
+        // number of time intervals that can be collapsed.
+        iNumCollapsibleIntervals = m_nProspectiveIntervalStart - *(gvProspectiveIntervalCuts.begin());
+      }
+      else
+        // When the maximum temporal cluster size is a fixed period, the number of intervals
+        // to collapse is simplier to calculate.
+        iNumCollapsibleIntervals = m_nProspectiveIntervalStart - m_nIntervalCut;
+    }
+    else
+      // Else we are either not performing simulations, and therefore not evaluating prospective clusters,
+      // or we are not adjusting for previous analyses, and therefore only evaluating 'alive' clusters
+      // in both real data and simulated data.
+      iNumCollapsibleIntervals = m_nTimeIntervals - m_nIntervalCut;
+
+    // If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
+    // iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
+    // first time interval, which will be the bucket for the collapsed intervals.
+    if (iNumCollapsibleIntervals > 1) {
+      // Removes collaped intervals from the data structure which details time interval start times.
+      // When input data is read, what would have gone into the respective second interval, third, etc.
+      // will be cummulated into first interval.
+      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iNumCollapsibleIntervals);
+      // Re-calculate number of time intervals.
+      m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
+      // Re-calculate index of prospective start date
+      m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+    }  
   }
 }
 
