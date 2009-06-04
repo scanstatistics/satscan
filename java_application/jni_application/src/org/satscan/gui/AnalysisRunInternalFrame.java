@@ -9,6 +9,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import org.satscan.app.AppConstants;
 import org.satscan.app.CalculationThread;
 import org.satscan.utils.EmailClientLauncher;
@@ -27,6 +29,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     private boolean gbCanPrint;
     private final Parameters _parameters;
     private String gsProgramErrorCallPath = "";
+    private final int MAXLINES = 999;
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -76,27 +79,55 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
     }
 
     /**
+     * This method returns a new String object, ensuring it ends in newline.
+     * The intended use for this method is to append text to the JTextArea
+     * controls from originating JNI method. The reason for creating a new
+     * object is that the JNI method uses NewStringUTF(JNIENV*, const char*)
+     * and many repeated calls exhaust Java heap. The solution appears to be
+     * use of method DeleteLocalRef(JNIENV*,jobject) after JNI callbacl using
+     * created string. What I'm not sure about here is the behavior between
+     * delayed SwingUtilities.invokeLater() call and DeleteLocalRef(JNIENV*,jobject).
+     * What does it mean to possibly first call DeleteLocalRef call then invokeLater()
+     * on same String object?
+     */
+    private String getNewInvokeLaterString(final String s) {
+        return new String(s + (s.endsWith("\n") ? "" : "\n"));
+    }
+    
+    /**
      * Prints progress string to output textarea.
      */
-    synchronized public void PrintProgressWindow(final String ProgressString) {        
+    synchronized public void PrintProgressWindow(final String ProgressString) {
+        final String progress = getNewInvokeLaterString(ProgressString);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (ProgressString.endsWith("\n")) {
-                    _progressTextArea.append(ProgressString);
-                } else {
-                    _progressTextArea.append(ProgressString + "\n");
-                }            
+                _progressTextArea.append(progress);
             }
-        });
+        }); 
+        
+        //Limit number of lines to specified maximum. The JTextArea control is a real
+        //memory hog once the number of lines gets large. With default java heap, memory
+        //exhausts around the 143,000 line appended. When printing simulations to window, 
+        //it's had to believe anyone would be interested in more than MAXLINES lines.
+        Element root = _progressTextArea.getDocument().getDefaultRootElement();
+        if (root.getElementCount() > MAXLINES) {
+           Element firstLine = root.getElement(0);
+           try {
+             _progressTextArea.getDocument().remove(0, firstLine.getEndOffset());
+           } catch(BadLocationException e) {
+             gbCanClose = true; 
+           }                
+        }
     }
 
     /**
      * Prints warning/error string to output textarea.
      */
     synchronized public void PrintIssuesWindndow(final String ProgressString) {
+        final String progress = getNewInvokeLaterString(ProgressString);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                _warningsErrorsTextArea.append(ProgressString);
+                _warningsErrorsTextArea.append(progress);
             }
         });
     }
@@ -260,6 +291,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
 
         jLabel1.setText("Warnings/Errors:");
 
+        _warningsErrorsTextArea.setEditable(false);
         jScrollPane2.setViewportView(_warningsErrorsTextArea);
 
         _cancelButton.setText("Cancel");
@@ -308,7 +340,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_cancelButton)
@@ -330,7 +362,7 @@ public class AnalysisRunInternalFrame extends javax.swing.JInternalFrame impleme
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
