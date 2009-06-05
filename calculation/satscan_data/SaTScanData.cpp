@@ -340,6 +340,8 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
   // calculate date index for prospective surveillance start date
   if (gParameters.GetIsProspectiveAnalysis()) {
     m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+    if (gParameters.GetProbabilityModelType() != POISSON ||
+        (gParameters.GetProbabilityModelType() == POISSON && !gParameters.UseAdjustmentForRelativeRisksFile())) {
     // If analysis performs simulations and adjusts for earlier analyses, then we can potentially
     // collapse unused time intervals into one based upon the prospective start date and maximum
     // temporal cluster size.
@@ -385,6 +387,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
       m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
       // Re-calculate index of prospective start date
       m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
+        } 
     }  
   }
 }

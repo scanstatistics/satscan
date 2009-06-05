@@ -809,6 +809,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         return _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
     }
 
+    public boolean isAdjustedRelativeRisksSelected() {
+        return _adjustForKnownRelativeRisksCheckBox.isEnabled() && _adjustForKnownRelativeRisksCheckBox.isSelected();
+    }
+            
     /** returns maximum temporal cluster size type for control */
     public Parameters.TemporalSizeType GetMaxTemporalClusterSizeControlType() {
         Parameters.TemporalSizeType eReturn = null;
