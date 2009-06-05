@@ -117,7 +117,9 @@ void SaTScanDataReader::Read() {
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
 bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
-  bool          bValid=true, bRestrictedLocations(gDataHub.GetParameters().GetIsPurelyTemporalAnalysis()), bEmpty=true;
+  bool          bValid=true, bEmpty=true,
+                bRestrictedLocations(gParameters.GetIsPurelyTemporalAnalysis() &&
+                                     gParameters.GetCoordinatesFileName().size() == 0);
   tract_t       TractIndex, iMaxTract;
   double        dRelativeRisk;
   Julian        StartDate, EndDate;
@@ -288,7 +290,11 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
   bool          bReturn;
 
   try {
-    if (gParameters.GetIsPurelyTemporalAnalysis()) {
+      bool bNoPT_Coordinates = gParameters.GetIsPurelyTemporalAnalysis() &&
+                               (!gParameters.UseAdjustmentForRelativeRisksFile() ||
+                               (gParameters.UseAdjustmentForRelativeRisksFile() && gParameters.GetCoordinatesFileName().size() == 0));
+
+      if (bNoPT_Coordinates) {
       gDataHub.m_nTracts = gTractHandler.getLocations().size();
       bReturn = true;
     }

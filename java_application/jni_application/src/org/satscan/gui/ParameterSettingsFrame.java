@@ -491,9 +491,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         }
         Parameters.AnalysisType eAnalysisType = getAnalysisControlType();
+        boolean bCheckCoordinatesFile = true;
+        if (eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL) {
+            bCheckCoordinatesFile = getAdvancedParameterInternalFrame().isAdjustedRelativeRisksSelected() &&
+                                    _coordiantesFileTextField.getText().length() != 0;
+        } else {
+            bCheckCoordinatesFile = !getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected();
+        }
         //validate coordinates and grid file -- ignore validation if using neighbors file or purely temporal analysis
-        if (!getAdvancedParameterInternalFrame().isNonEucledianNeighborsSelected() &&
-            !(eAnalysisType == Parameters.AnalysisType.PURELYTEMPORAL || eAnalysisType == Parameters.AnalysisType.PROSPECTIVEPURELYTEMPORAL)) {
+        if (bCheckCoordinatesFile) {
             if (_coordiantesFileTextField.getText().length() == 0) {
                 throw new SettingsException("Please specify a coordinates file.", (Component) _coordiantesFileTextField);
             } else if (!FileAccess.ValidateFileAccess(_coordiantesFileTextField.getText(), false)) {

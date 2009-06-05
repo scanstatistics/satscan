@@ -997,6 +997,19 @@ void CParameters::SetVersion(const CreationVersion& vVersion) {
   gCreationVersion = vVersion;
 }
 
+/** Returns indication of whether to use coordinates file. */
+bool CParameters::UseCoordinatesFile() const {
+    if (GetIsPurelyTemporalAnalysis()) {
+        //When executing a purely temporal analysis, the coordinates file is ignored unless
+        //the user is adjusting for relative risks and has defined a coordinates file. This
+        //allows the user to use an adjustments file that defines adjustments for all
+        //locations or adjustments at the locations level.
+        return UseAdjustmentForRelativeRisksFile() && GetCoordinatesFileName().size() != 0;
+    } else {
+        return !UseLocationNeighborsFile();
+    }
+}
+
 /** Returns indication of whether current parameter settings indicate that the max circle file should be read. */
 bool CParameters::UseMaxCirclePopulationFile() const {
   bool  bAskForByUser;

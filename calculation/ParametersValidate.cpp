@@ -350,7 +350,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
       }
     }
     //validate coordinates file
-    if (!(gParameters.UseLocationNeighborsFile() || gParameters.GetIsPurelyTemporalAnalysis())) {
+    if (gParameters.UseCoordinatesFile()) {
       if (gParameters.GetCoordinatesFileName().empty()) {
          bValid = false;
          PrintDirection.Printf("Invalid Parameter Setting:\nNo coordinates file specified.\n", BasePrint::P_PARAMERROR);

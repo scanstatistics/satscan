@@ -404,7 +404,7 @@ class CParameters {
     void                                SetVersion(const CreationVersion& vVersion);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
     bool                                UseMaxCirclePopulationFile() const;
-    bool                                UseCoordinatesFile() const {return !GetIsPurelyTemporalAnalysis() && !UseLocationNeighborsFile();}
+    bool                                UseCoordinatesFile() const;
     bool                                UsingMultipleCoordinatesMetaLocations() const;
     bool                                UseMetaLocationsFile() const;
     bool                                UseLocationNeighborsFile() const;
