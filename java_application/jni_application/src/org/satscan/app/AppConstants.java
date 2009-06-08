@@ -14,7 +14,7 @@ public final class AppConstants {
     public static final int MAX_YEAR = 9999;
     public static final int VERSION_MAJOR = 8;
     public static final int VERSION_MINOR = 0;
-    public static final int VERSION_RELEASE = 0;
+    public static final int VERSION_RELEASE = 1;
 
     public static final String getSoftwareTitle() {
         return APP_TITLE;
@@ -23,7 +23,7 @@ public final class AppConstants {
     static public final String getGraphicalVersion() {
         StringBuilder version = new StringBuilder();
         version.append(VERSION_MAJOR).append(".").append(VERSION_MINOR);
-        if (VERSION_RELEASE > 0) version.append(VERSION_RELEASE);
+        if (VERSION_RELEASE > 0) version.append(".").append(VERSION_RELEASE);
         return version.toString();
     }
     
