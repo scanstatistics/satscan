@@ -495,7 +495,7 @@ public class Parameters implements Cloneable {
     	      case NORMAL               : sProbabilityModel = "Normal"; break;
     	      case RANK                 : sProbabilityModel = "Rank"; break;
     	      case HOMOGENEOUSPOISSON   : sProbabilityModel = "Homogeneous Poisson"; break;
-    	      case CATEGORICAL          : sProbabilityModel = "Categorical"; break;
+    	      case CATEGORICAL          : sProbabilityModel = "Multinomial"; break;
     	      //default : ZdException::Generate("Unknown probability model type '%d'.\n", "GetProbabilityModelTypeAsString()", geProbabilityModelType);
     	    }
     	  //}

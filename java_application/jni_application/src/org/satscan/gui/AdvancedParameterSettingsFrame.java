@@ -899,7 +899,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if ((_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL ||
              _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL)
             && _adjustmentByDataSetsRadioButton.isEnabled() && _adjustmentByDataSetsRadioButton.isSelected()) {
-            throw new AdvFeaturesExpection("For the ordinal and categorical probability models with input data defined in multiple data sets,\n" + 
+            throw new AdvFeaturesExpection("For the ordinal and multinomial probability models with input data defined in multiple data sets,\n" + 
                                             "the adjustment option has not been implemented.", FocusedTabSet.INPUT, (Component) _adjustmentByDataSetsRadioButton);
         }
     }
