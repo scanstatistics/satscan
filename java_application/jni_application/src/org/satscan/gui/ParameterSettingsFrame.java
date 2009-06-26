@@ -2232,7 +2232,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _probabilityModelTypeButtonGroup.add(_poissonModelRadioButton);
         _poissonModelRadioButton.setSelected(true);
-        _poissonModelRadioButton.setText("Poission"); // NOI18N
+        _poissonModelRadioButton.setText("Poisson"); // NOI18N
         _poissonModelRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _poissonModelRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _poissonModelRadioButton.addItemListener(new java.awt.event.ItemListener() {
