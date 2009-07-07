@@ -2838,7 +2838,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxSpatialRadiusTextField.setText("1"); // NOI18N
         _maxSpatialRadiusTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_maxSpatialRadiusTextField, e, 20);
+                Utils.validatePostiveFloatKeyTyped(_maxSpatialRadiusTextField, e, 20);
             }
         });
         _maxSpatialRadiusTextField.addFocusListener(new java.awt.event.FocusAdapter() {
