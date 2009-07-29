@@ -2652,7 +2652,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
 
         _onePerLocationIdRadioButton.setSelected(true);
-        _onePerLocationIdRadioButton.setText("Allow only set of coordinates per location ID."); // NOI18N
+        _onePerLocationIdRadioButton.setText("Allow only one set of coordinates per location ID."); // NOI18N
         _onePerLocationIdRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         _onePerLocationIdRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
         _onePerLocationIdRadioButton.addItemListener(new java.awt.event.ItemListener() {
