@@ -884,7 +884,7 @@
                 <Component class="javax.swing.JRadioButton" name="_onePerLocationIdRadioButton">
                   <Properties>
                     <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Allow only set of coordinates per location ID." noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Allow only one set of coordinates per location ID." noResource="true"/>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
                         <EmptyBorder bottom="0" left="0" right="0" top="0"/>
