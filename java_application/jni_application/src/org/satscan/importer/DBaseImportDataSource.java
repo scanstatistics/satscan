@@ -121,10 +121,10 @@ public class DBaseImportDataSource implements ImportDataSource {
                         str.append("/");
                     }
                     int month = date.get(GregorianCalendar.MONTH);
-                    if (month < 10) {
+                    if (month < 9) {
                         str.append("0");
                     }
-                    str.append(month);
+                    str.append(month + 1);
                     if (_formatDates) {
                         str.append("/");
                     }
