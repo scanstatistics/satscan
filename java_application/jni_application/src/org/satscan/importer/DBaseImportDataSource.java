@@ -146,6 +146,7 @@ public class DBaseImportDataSource implements ImportDataSource {
                     values.add(record[i].toString());
                 }
             }
+            ++_currentRowNumber;
         } catch (ParseException e) {
             throw new RuntimeException(e.getMessage(), e);
         } catch (DBFException e) {
