@@ -210,15 +210,19 @@ std::string& printString(std::string& destination, const char * format, ...) {
     vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
     va_end(varArgs);
 #else
-    std::vector<char> temp(1);
-    va_list varArgs;
-    va_start (varArgs, format);
-    size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, varArgs);
-    va_end(varArgs);
+    std::vector<char> temp(1);    
+	va_list varArgs_static;
+    va_start (varArgs_static, format);
+
+	std::va_list arglist_test; 
+	macro_va_copy(arglist_test, varArgs_static);
+    size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, arglist_test);
     temp.resize(iStringLength + 1);
-    va_start (varArgs, format);
-    vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
-    va_end(varArgs);
+
+	std::va_list arglist;
+	macro_va_copy(arglist, varArgs_static);
+    vsnprintf(&temp[0], iStringLength + 1, format, arglist);
+    va_end(varArgs_static);
 #endif
     destination = &temp[0];
   }

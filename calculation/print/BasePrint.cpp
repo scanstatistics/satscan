@@ -54,14 +54,19 @@ void BasePrint::Printf(const char * sMessage, PrintType ePrintType, ...) {
     vsnprintf(&gsMessage[0], gsMessage.size() - 1, sMessage, varArgs);
     va_end(varArgs);
 #else
-    va_list varArgs;
-    va_start(varArgs, ePrintType);
-    size_t iStringLength = vsnprintf(&gsMessage[0], gsMessage.size(), sMessage, varArgs);
-    va_end(varArgs);
+    va_list varArgs_static;
+    va_start(varArgs_static, ePrintType);
+
+	std::va_list arglist_test; 
+	macro_va_copy(arglist_test, varArgs_static);
+    size_t iStringLength = vsnprintf(&gsMessage[0], gsMessage.size(), sMessage, arglist_test);
     gsMessage.resize(iStringLength + 1);
-    va_start(varArgs, ePrintType);
-    vsnprintf(&gsMessage[0], iStringLength + 1, sMessage, varArgs);
-    va_end(varArgs);
+
+	std::va_list arglist;
+	macro_va_copy(arglist, varArgs_static);
+	vsnprintf(&gsMessage[0], iStringLength + 1, sMessage, arglist);
+
+    va_end(varArgs_static);
 #endif
   }
   catch (...) {}
