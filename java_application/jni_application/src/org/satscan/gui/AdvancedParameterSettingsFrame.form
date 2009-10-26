@@ -1280,7 +1280,7 @@
                 </Component>
                 <Component class="java.awt.Choice" name="_nonCompactnessPenaltyComboBox">
                   <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_nonCompactnessPenaltyComboBox.add(&quot;None&quot;);&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;Medium&quot;);&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;Strong&quot;);"/>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_nonCompactnessPenaltyComboBox.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;None&quot;);&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;Medium&quot;);&#xd;&#xa;_nonCompactnessPenaltyComboBox.add(&quot;Strong&quot;);"/>
                   </AuxValues>
                 </Component>
               </SubComponents>

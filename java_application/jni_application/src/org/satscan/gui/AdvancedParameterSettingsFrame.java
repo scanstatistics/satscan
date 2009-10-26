@@ -2960,6 +2960,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         _nonCompactnessPenaltyLabel.setText("Non-compactness penalty:"); // NOI18N
 
+        _nonCompactnessPenaltyComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
         _nonCompactnessPenaltyComboBox.add("None");
         _nonCompactnessPenaltyComboBox.add("Medium");
         _nonCompactnessPenaltyComboBox.add("Strong");
