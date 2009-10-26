@@ -388,6 +388,14 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
+	if (gParameters.getIsWeightedNormal() && nCount > 1) { 
+		// For weighted normal data, the count column can only be zero or one. This was decided due to
+		// users incorrectly using this column in their data.
+        gPrint.Printf("Error: The case count for the Normal model with weights can be either 0 or 1. Incorrect value of '%s' in record %ld of %s.\n",
+                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
+                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        return DataSetHandler::Rejected;
+	}
     if (nCount == 0) return DataSetHandler::Ignored;
     DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
     if (eDateStatus != DataSetHandler::Accepted)
