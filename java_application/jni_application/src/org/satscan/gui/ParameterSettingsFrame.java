@@ -514,24 +514,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         }
     }
 
-    /**
-     * Checks Monte Carlo replications
-     */
-    private void CheckReplicas() {
-        //double        dNumReplications/*, dMaxReplications*/;
-        int dNumReplications;
-
-        if (_montCarloReplicationsTextField.getText().length() == 0) {
-            throw new SettingsException("Please specify a number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.",
-                    (Component) _montCarloReplicationsTextField);
-        }
-        dNumReplications = Integer.parseInt(_montCarloReplicationsTextField.getText());
-        if (!((dNumReplications == 0 || dNumReplications == 9 || dNumReplications == 19 || (dNumReplications + 1) % 1000 == 0))) {
-            throw new SettingsException("Invalid number of Monte Carlo replications.\nChoices are: 0, 9, 999, or value ending in 999.",
-                    (Component) _montCarloReplicationsTextField);
-        }
-    }
-
     /** Returns date precision as string. */
     public String GetDatePrecisionAsString(Parameters.DatePrecisionType eType, boolean bPlural, boolean bCapitalizeFirstLetter) {
         String sString;
@@ -629,7 +611,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Checks all the parameters on the 'Analysis' tab. Returns whether tab is valid.
      */
     private void CheckAnalysisParams() {
-        CheckReplicas();
         CheckTimeAggregationLength();
     }
 
@@ -700,7 +681,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         setAreaScanRateControl(parameters.GetAreaScanRateType());
         Utils.parseDateStringToControls(parameters.GetStudyPeriodStartDate(), _studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, false);
         Utils.parseDateStringToControls(parameters.GetStudyPeriodEndDate(), _studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, true);
-        _montCarloReplicationsTextField.setText(Integer.toString(parameters.GetNumReplicationsRequested()));
         if (parameters.GetTimeAggregationUnitsType().equals(Parameters.DatePrecisionType.NONE)) {
             parameters.SetTimeAggregationUnitsType(Parameters.DatePrecisionType.YEAR.ordinal());
         }
@@ -803,7 +783,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetStudyPeriodStartDate(sString);
         sString = _studyPeriodEndDateYearTextField.getText() + "/" + _studyPeriodEndDateMonthTextField.getText() + "/" + _studyPeriodEndDateDayTextField.getText();
         parameters.SetStudyPeriodEndDate(sString);
-        parameters.SetNumberMonteCarloReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));
         parameters.SetTimeAggregationUnitsType(getTimeAggregationControlType().ordinal());
         parameters.SetTimeAggregationLength(Integer.parseInt(_timeAggregationLengthTextField.getText()));
 
@@ -1358,9 +1337,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationLengthTextField = new javax.swing.JTextField();
         _aggregrationUnitsLabel = new javax.swing.JLabel();
         _advancedAnalysisButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
-        _montCarloReplicationsTextField = new javax.swing.JTextField();
         _outputTab = new javax.swing.JPanel();
         _resultsFileLabel = new javax.swing.JLabel();
         _resultsFileTextField = new javax.swing.JTextField();
@@ -2532,47 +2508,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
-        jLabel3.setText("Monte Carlo Replications (0, 9, 999, or value ending in 999):"); // NOI18N
-
-        _montCarloReplicationsTextField.setText("999"); // NOI18N
-        _montCarloReplicationsTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                while (_montCarloReplicationsTextField.getText().length() == 0)
-                if (undo.canUndo()) undo.undo(); else _montCarloReplicationsTextField.setText("999");
-            }
-        });
-        _montCarloReplicationsTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_montCarloReplicationsTextField, e, 10);
-            }
-        });
-        _montCarloReplicationsTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(165, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
-                    .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         javax.swing.GroupLayout _analysisTabLayout = new javax.swing.GroupLayout(_analysisTab);
         _analysisTab.setLayout(_analysisTabLayout);
         _analysisTabLayout.setHorizontalGroup(
@@ -2588,8 +2523,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addGroup(_analysisTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(_scanAreasGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addComponent(_advancedAnalysisButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_advancedAnalysisButton, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addContainerGap())
         );
         _analysisTabLayout.setVerticalGroup(
@@ -2603,9 +2537,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_scanAreasGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(67, 67, 67)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 120, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2867,7 +2799,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JPanel _inputTab;
     private javax.swing.JRadioButton _latLongRadioButton;
     private javax.swing.JRadioButton _lowRatesRadioButton;
-    private javax.swing.JTextField _montCarloReplicationsTextField;
     private javax.swing.JRadioButton _normalModelRadioButton;
     private javax.swing.JButton _observableRegionsButton;
     private javax.swing.JRadioButton _ordinalModelRadioButton;
@@ -2926,10 +2857,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JRadioButton _timePrecisionYear;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel1;
     // End of variables declaration//GEN-END:variables
     public void internalFrameOpened(InternalFrameEvent e) {
     }

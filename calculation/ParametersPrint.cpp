@@ -244,8 +244,6 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
       printString(buffer, "%i", gParameters.GetTimeAggregationLength());      
       settings.push_back(std::make_pair("Time Aggregation Length",buffer));
     }
-    printString(buffer, "%u", gParameters.GetNumReplicationsRequested());   
-    settings.push_back(std::make_pair("Number of Replications",buffer));
     WriteSettingsContainer(settings, "Analysis", fp);
   }
   catch (prg_exception& x) {
@@ -529,6 +527,8 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
           settings.push_back(std::make_pair("Stop when p-value greater",buffer));
         }  
      }
+     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());   
+     settings.push_back(std::make_pair("Number of Replications",buffer));
      WriteSettingsContainer(settings, "Inference", fp);
   }
   catch (prg_exception& x) {
