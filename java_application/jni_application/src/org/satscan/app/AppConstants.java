@@ -14,7 +14,7 @@ public final class AppConstants {
     public static final int MAX_YEAR = 9999;
     public static final int VERSION_MAJOR = 8;
     public static final int VERSION_MINOR = 0;
-    public static final int VERSION_RELEASE = 1;
+    public static final int VERSION_RELEASE = 2;
 
     public static final String getSoftwareTitle() {
         return APP_TITLE;
