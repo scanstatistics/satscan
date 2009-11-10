@@ -15,6 +15,9 @@
 		<Platform
 			Name="x64"
 		/>
+		<Platform
+			Name="Itanium"
+		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
@@ -44,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_34_1;C:\prj\satscan.development\boost\boost_1_34_1\libs\thread\src;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -65,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
@@ -123,7 +126,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_34_1;C:\prj\satscan.development\boost\boost_1_34_1\libs\thread\src;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -144,7 +147,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch64.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
@@ -153,6 +156,85 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Itanium"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="0"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="2"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
+				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="0"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				WarningLevel="2"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
+				OutputFile="$(OutDir)\SaTScanBatch.exe"
+				LinkIncremental="2"
+				IgnoreAllDefaultLibraries="false"
+				GenerateDebugInformation="true"
+				SubSystem="1"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="5"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -205,7 +287,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_34_1;C:\prj\satscan.development\boost\boost_1_34_1\libs\thread\src;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -224,7 +306,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
@@ -287,7 +369,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_34_1;C:\prj\satscan.development\boost\boost_1_34_1\libs\thread\src;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
 				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -306,7 +388,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch64.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
@@ -316,6 +398,88 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Itanium"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="0"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="2"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0"
+				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
+				WarningLevel="2"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib $(NOINHERIT)"
+				OutputFile="$(OutDir)\SaTScanBatch.exe"
+				LinkIncremental="1"
+				GenerateDebugInformation="false"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="5"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -351,106 +515,90 @@
 			<Filter
 				Name="boost"
 				>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\c_regex_traits.cpp"
+				<Filter
+					Name="regex"
 					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\condition.cpp"
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\c_regex_traits.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\cpp_regex_traits.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\cregex.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\fileiter.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\icu.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\instances.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\posix_api.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\regex.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\regex_debug.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\regex_raw_buffer.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\regex_traits_defaults.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\static_mutex.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\usinstances.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\w32_regex_traits.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\wc_regex_traits.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\wide_posix_api.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\regex\src\winstances.cpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="threads"
 					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\cpp_regex_traits.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\cregex.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\exceptions.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\fileiter.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\icu.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\instances.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\mutex.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\once.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\posix_api.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\recursive_mutex.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex_debug.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex_raw_buffer.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\regex_traits_defaults.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\static_mutex.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\thread.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\tss_hooks.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\usinstances.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\w32_regex_traits.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\wc_regex_traits.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\wide_posix_api.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\regex\src\winstances.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\boost\boost_1_34_1\libs\thread\src\xtime.cpp"
-					>
-				</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\thread\src\win32\exceptions.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\boost\boost_1_39_0\libs\thread\src\win32\thread.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="batch_application"
@@ -1246,6 +1394,10 @@
 					</File>
 					<File
 						RelativePath="..\calculation\analysis_run\MostLikelyClustersContainer.h"
+						>
+					</File>
+					<File
+						RelativePath="..\calculation\analysis_run\SimulationVariables.h"
 						>
 					</File>
 				</Filter>

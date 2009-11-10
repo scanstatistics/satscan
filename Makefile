@@ -198,14 +198,9 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(CALCULATION)/IniParameterFileAccess.cpp \
                $(CALCULATION)/RunTimeComponents.cpp \
-               $(BOOSTDIR)/libs/thread/src/xtime.cpp \
-               $(BOOSTDIR)/libs/thread/src/exceptions.cpp \
-               $(BOOSTDIR)/libs/thread/src/mutex.cpp \
-               $(BOOSTDIR)/libs/thread/src/once.cpp \
-               $(BOOSTDIR)/libs/thread/src/recursive_mutex.cpp \
-               $(BOOSTDIR)/libs/thread/src/thread.cpp \
-               $(BOOSTDIR)/libs/thread/src/condition.cpp \
-               $(BOOSTDIR)/libs/thread/src/tss_hooks.cpp \
+               $(BOOSTDIR)/libs/thread/src/pthread/exceptions.cpp \
+               $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
+               $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
                $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/cpp_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/cregex.cpp \

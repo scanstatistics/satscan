@@ -2,7 +2,7 @@
 #include "SaTScan.h"
 #pragma hdrstop
 #include "contractor.h"
-
+extern "C" void tss_cleanup_implemented(void) {} 
 //---------------------------------------------------------------------------
 //ClassDesc Begin contractor
 //A contractor object manages the repeated execution of a process with different

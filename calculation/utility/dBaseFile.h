@@ -2,9 +2,9 @@
 #ifndef dBaseFileH
 #define dBaseFileH
 //******************************************************************************
-using std::ostream;
-using std::cout;
-using std::endl;
+//using std::ostream;
+//using std::cout;
+//using std::endl;
 #include "xbase/xbase.h"
 #include "FileName.h"
 #include "SSException.h"
