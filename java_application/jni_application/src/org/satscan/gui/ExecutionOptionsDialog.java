@@ -24,6 +24,7 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
     public ExecutionOptionsDialog(java.awt.Frame parent, Parameters parameters) {
         super(parent, true);
         initComponents();
+        _allProcessorsRadioButton.setText(_allProcessorsRadioButton.getText() + " (" + Runtime.getRuntime().availableProcessors() + ")");
         _parameters = parameters;
         if (_parameters.GetNumRequestedParallelProcesses() != 0) {
             _atMostProcessesTextField.setText(Integer.toString(_parameters.GetNumRequestedParallelProcesses()));

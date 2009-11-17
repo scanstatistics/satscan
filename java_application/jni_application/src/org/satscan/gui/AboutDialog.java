@@ -21,10 +21,14 @@ public class AboutDialog extends javax.swing.JDialog {
         initComponents();
         String engineVersion = AppConstants.getVersion();
         String guiVersion = AppConstants.getGraphicalVersion();
-        if (engineVersion.equals(guiVersion))
-            versionLabel.setText("SaTScan v" + AppConstants.getVersion());
-        else
-            versionLabel.setText("SaTScan v" + AppConstants.getVersion() + "  -- App v"  + guiVersion);
+        StringBuilder version = new StringBuilder("SaTScan v" + AppConstants.getVersion());        
+        if (!engineVersion.equals(guiVersion)) {
+            version.append("  -- App v").append(guiVersion);
+        }       
+        if (System.getProperty("java.vm.name").toLowerCase().indexOf("64") >= 0) {
+           version.append(" 64-bit");
+        }
+        versionLabel.setText(version.toString());
         releaseDateLabel.setText(AppConstants.getReleaseDate());
         setLocationRelativeTo(parent);
     }

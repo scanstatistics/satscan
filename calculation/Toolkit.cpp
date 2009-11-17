@@ -154,10 +154,10 @@ void AppToolkit::closeDebugFile() {
 /** Returns acknowledgment statement indicating program version, website, and
     brief declaration of usage agreement. */
 const char * AppToolkit::GetAcknowledgment(std::string & Acknowledgment) const {
-  printString(Acknowledgment, "You are running SaTScan v%s.\n\nSaTScan is free, available for download from %s"
+  printString(Acknowledgment, "You are running SaTScan v%s%s.\n\nSaTScan is free, available for download from %s"
                               ".\nIt may be used free of charge as long as proper "
                               "citations are given\nto both the SaTScan software and the underlying "
-                              "statistical methodology.\n\n", GetVersion(), GetWebSite());
+                              "statistical methodology.\n\n", GetVersion(), is64Bit() ? " (64-bit)" : "",GetWebSite());
   return Acknowledgment.c_str();
 }
 
@@ -359,6 +359,11 @@ void AppToolkit::InsureSessionStructure() {
     x.addTrace("InsureSessionStructure()", "AppToolkit");
     throw;
   }
+}
+
+/** Returns whether binary is 64-bit. */
+bool AppToolkit::is64Bit() const {
+  return sizeof(int *) == 8;
 }
 
 /** Returns file handle to global debug file. */
