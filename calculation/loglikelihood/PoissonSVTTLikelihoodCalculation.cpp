@@ -15,7 +15,6 @@ bool IncreasingTrend(const CTimeTrend& InsideTrend, const CTimeTrend& GlobalTren
     case CTimeTrend::UNDEFINED         : return false;
     case CTimeTrend::NEGATIVE_INFINITY : return false;
     case CTimeTrend::POSITIVE_INFINITY : return true;
-    default : if (InsideTrend.GetBeta() < 0) return false;
   };
   return InsideTrend.GetBeta() > GlobalTrend.GetBeta();
 }
@@ -25,7 +24,6 @@ bool DecreasingTrend(const CTimeTrend& InsideTrend, const CTimeTrend& GlobalTren
     case CTimeTrend::UNDEFINED         : return false;
     case CTimeTrend::NEGATIVE_INFINITY : return true;
     case CTimeTrend::POSITIVE_INFINITY : return false;
-    default : if (InsideTrend.GetBeta() >= 0) return false;
   };
   return InsideTrend.GetBeta() < GlobalTrend.GetBeta();
 }
