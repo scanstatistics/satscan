@@ -50,20 +50,22 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID      "20"  /** incremental version identifier - this value must
+#define VERSION_ID      "22"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "8"
-#define VERSION_MINOR   "0"
-#define VERSION_RELEASE "1"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "June 8, 2009"
+#define VERSION_MINOR   "1"
+#define VERSION_RELEASE "0"
+#define VERSION_PHASE   "Alpha 1" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "Not Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
 #define PI 3.1415926535897932384626433832795028841972
 /*radius of earth in km*/
 #define EARTH_RADIUS_km 6367
+/* Euler constant */
+#define EULER 0.5772156649
 /** comparision tolerance for double precision numbers */
 #define DBL_CMP_TOLERANCE 1.0E-9
 #ifdef _MSC_VER
@@ -86,5 +88,13 @@ enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY };
 #else
   #define macro_va_copy(dst,src) va_copy(dst,src);
 #endif
+/** average days in year */
+#define AVERAGE_DAYS_IN_YEAR 365.25
+/** average days in month */
+#define AVERAGE_DAYS_IN_MONTH 30.42
+/** round macro */
+#define macro_round(x) (x<0?ceil((x)-0.5):floor((x)+0.5))
+/** minimum number of simulations to report pvalues */
+#define MIN_SIMULATION_RPT_PVALUE 99
 //*****************************************************************************
 #endif

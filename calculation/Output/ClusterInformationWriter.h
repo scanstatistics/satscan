@@ -3,6 +3,7 @@
 #define ClusterInformationWriterH
 //******************************************************************************
 #include "AbstractDataFileWriter.h"
+#include "SimulationVariables.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -45,7 +46,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       void                      DefineClusterCaseInformationFields();
       std::string             & GetAreaID(std::string& sAreaId, const CCluster& thisCluster) const;
       void                      WriteClusterCaseInformation(const CCluster& theCluster, int iClusterNumber);
-      void                      WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
+      void                      WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars);
       void                      WriteCoordinates(RecordBuffer& Record, const CCluster& pCluster);
       void                      WriteCountData(const CCluster& thisCluster, int iClusterNumber) const;
       void                      WriteCountOrdinalData(const CCluster& thisCluster, int iClusterNumber) const;
@@ -56,7 +57,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
     ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~ClusterInformationWriter();
 
-      void                      Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted);
+      void                      Write(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars);
 };
 //******************************************************************************
 #endif

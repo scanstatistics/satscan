@@ -117,7 +117,12 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
         CreateField(vFieldDefinitions, TST_STAT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     }
     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
-    CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, std::min(17,(int)buffer.size()), uwOffset, buffer.size());
+    if (gParameters.getIsReportingStandardPValue())
+        CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, std::min(17,(int)buffer.size()), uwOffset, buffer.size());
+    if (gParameters.getIsReportingGumbelPValue())
+        CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
+    if (gParameters.GetIsProspectiveAnalysis())
+        CreateField(vFieldDefinitions, RECURRENCE_INTERVAL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -226,10 +231,10 @@ std::string& ClusterInformationWriter::GetAreaID(std::string& sAreaId, const CCl
     the values in the global vector of cluster records.
     pre: pCluster has been initialized with calculated data
     post: function will record the appropriate data into the cluster record   */
-void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
+void ClusterInformationWriter::Write(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars) {
   try {
     if (gParameters.GetOutputClusterLevelFiles())
-      WriteClusterInformation(theCluster, iClusterNumber, iNumSimsCompleted);
+      WriteClusterInformation(theCluster, iClusterNumber, simVars);
     if (gParameters.GetOutputClusterCaseFiles())
       WriteClusterCaseInformation(theCluster, iClusterNumber);
   }
@@ -254,7 +259,7 @@ void ClusterInformationWriter::WriteClusterCaseInformation(const CCluster& theCl
   }
 }
 
-void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, unsigned int iNumSimsCompleted) {
+void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluster, int iClusterNumber, const SimulationVariables& simVars) {
   std::string       sBuffer;
   RecordBuffer      Record(vFieldDefinitions);
   double            dObserved, dExpected, dCasesOutside, dUnbiasedVariance, dRelativeRisk;
@@ -281,8 +286,14 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
       if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
-    if (iNumSimsCompleted >= 99)
-      Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
+    if (theCluster.reportablePValue(gParameters, simVars))
+        Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(gParameters, simVars, iClusterNumber == 1);
+    if (theCluster.reportableGumbelPValue(gParameters))
+        Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = theCluster.GetGumbelPValue(simVars);
+    if (theCluster.reportableRecurrenceInterval(gParameters, simVars)) {
+        Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(gDataHub, iClusterNumber, simVars).second;
+    }
+
     if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
         Record.GetFieldValue(START_DATE_FLD).AsString() = theCluster.GetStartDate(sBuffer, gDataHub);
         Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);

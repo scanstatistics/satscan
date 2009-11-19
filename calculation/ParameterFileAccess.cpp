@@ -112,7 +112,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case NON_COMPACTNESS_PENALTY  : return " elliptic non-compactness penalty (0=NoPenalty, 1=MediumPenalty, 2=StrongPenalty)";
       case INTERVAL_STARTRANGE      : return " flexible temporal window start range (YYYY/MM/DD,YYYY/MM/DD)";
       case INTERVAL_ENDRANGE        : return " flexible temporal window end range (YYYY/MM/DD,YYYY/MM/DD)";
-      case TIMETRENDCONVRG	    : return " time trend convergence for SVTT analysis (> 0)";
+      case TIMETRENDCONVRG	        : return " time trend convergence for SVTT analysis (> 0)";
       case MAXCIRCLEPOPFILE         : return " maximum circle size filename";
       case EARLY_SIM_TERMINATION    : return " terminate simulations early for large p-values? (y/n)";
       case REPORTED_GEOSIZE         : return " max reported geographic size (< max geographical cluster size%)";
@@ -155,6 +155,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case META_LOCATIONS_FILE      : return " meta locations file";
       case USE_META_LOCATIONS_FILE  : return " use meta locations file (y/n)";
       case OBSERVABLE_REGIONS       : return " polygon inequalities (comma separated decimal values)";
+      case EARLY_TERM_THRESHOLD     : return " early termination threshold";
+      case PVALUE_REPORT_TYPE       : return " p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) ";
+      case REPORT_GUMBEL            : return " report Gumbel p-values";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -237,7 +240,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
                                       return s;
       case TIMETRENDCONVRG	        : return AsString(s, gParameters.GetTimeTrendConvergence());
       case MAXCIRCLEPOPFILE         : s = gParameters.GetMaxCirclePopulationFileName(); return s;
-      case EARLY_SIM_TERMINATION    : return AsString(s, gParameters.GetTerminateSimulationsEarly());
+      case EARLY_SIM_TERMINATION    : return AsString(s, gParameters.GetPValueReportingType() == TERMINATION_PVALUE);
       case REPORTED_GEOSIZE         : s = "0"; return s;
       case USE_REPORTED_GEOSIZE     : return AsString(s, gParameters.GetRestrictingMaximumReportedGeoClusterSize());
       case SIMULATION_TYPE          : return AsString(s, gParameters.GetSimulationType());
@@ -278,6 +281,9 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case META_LOCATIONS_FILE      : s = gParameters.getMetaLocationsFilename(); return s;
       case USE_META_LOCATIONS_FILE  : return AsString(s, gParameters.UseMetaLocationsFile());
       case OBSERVABLE_REGIONS       : s = "n/a"; return s;
+      case EARLY_TERM_THRESHOLD     : return AsString(s, gParameters.GetEarlyTermThreshold());
+      case PVALUE_REPORT_TYPE       : return AsString(s, gParameters.GetPValueReportingType());
+      case REPORT_GUMBEL            : return AsString(s, gParameters.GetReportGumbelPValue());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -349,9 +355,9 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
                                       break;
       case INTERVAL_ENDRANGE        : printString(default_value, "%s,%s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
                                       break;
-      case TIMETRENDCONVRG	    : AsString(default_value, gParameters.GetTimeTrendConvergence()); break;
+      case TIMETRENDCONVRG	        : AsString(default_value, gParameters.GetTimeTrendConvergence()); break;
       case MAXCIRCLEPOPFILE         : default_value = "<blank>"; break;
-      case EARLY_SIM_TERMINATION    : default_value = (gParameters.GetTerminateSimulationsEarly() ? "y" : "n"); break;
+      case EARLY_SIM_TERMINATION    : /* no longer used */ break;
       case REPORTED_GEOSIZE         : /* no longer used */ break;
       case USE_REPORTED_GEOSIZE     : default_value = (gParameters.GetRestrictingMaximumReportedGeoClusterSize() ? "y" : "n"); break;
       case SIMULATION_TYPE          : AsString(default_value, gParameters.GetSimulationType()); break;
@@ -393,6 +399,9 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case META_LOCATIONS_FILE      : default_value = "<blank>"; break;
       case USE_META_LOCATIONS_FILE  : default_value = (gParameters.UseMetaLocationsFile() ? "y" : "n"); break;
       case OBSERVABLE_REGIONS       : default_value = "<blank>"; break;
+      case EARLY_TERM_THRESHOLD     : AsString(default_value, gParameters.GetEarlyTermThreshold()); break;
+      case PVALUE_REPORT_TYPE       : AsString(default_value, gParameters.GetPValueReportingType()); break;
+      case REPORT_GUMBEL            : default_value = (gParameters.GetReportGumbelPValue() ? "y" : "n"); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -675,7 +684,9 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.SetEndRangeEndDate(Range.second.c_str()); break;
       case TIMETRENDCONVRG           : /*gParameters.SetTimeTrendConvergence(ReadDouble(sParameter, eParameterType));*/ break;
       case MAXCIRCLEPOPFILE          : gParameters.SetMaxCirclePopulationFileName(sParameter.c_str(), true); break;
-      case EARLY_SIM_TERMINATION     : gParameters.SetTerminateSimulationsEarly(ReadBoolean(sParameter, eParameterType)); break;
+      case EARLY_SIM_TERMINATION     : if (ReadBoolean(sParameter, eParameterType))
+                                           gParameters.SetPValueReportingType(TERMINATION_PVALUE); 
+                                       break;
       case REPORTED_GEOSIZE          : gdMaxReportedSpatialClusterSize = ReadDouble(sParameter, eParameterType); break;
       case USE_REPORTED_GEOSIZE      : gParameters.SetRestrictReportedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case SIMULATION_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, STANDARD, FILESOURCE);
@@ -729,6 +740,10 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case META_LOCATIONS_FILE       : gParameters.setMetaLocationsFilename(sParameter.c_str(), true); break;
       case USE_META_LOCATIONS_FILE   : gParameters.UseMetaLocationsFile(ReadBoolean(sParameter, eParameterType)); break;
       case OBSERVABLE_REGIONS        : break;
+      case EARLY_TERM_THRESHOLD      : gParameters.SetEarlyTermThreshold(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case PVALUE_REPORT_TYPE        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, DEFAULT_PVALUE, GUMBEL_PVALUE);
+                                       gParameters.SetPValueReportingType((PValueReportingType)iValue); break;
+      case REPORT_GUMBEL             : gParameters.SetReportGumbelPValue(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

@@ -41,7 +41,7 @@
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
-               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection), giNumSimsExecuted(0),
+               :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection),
                 geExecutingType(Parameters.GetExecutionType()) {
   try {
     macroRunTimeManagerInit();
@@ -102,13 +102,9 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     Indication returned is false if:
     - the number of simulations requested is have been completed
     - the user did not request early termination option
-    - the number of simulations completed is not 99, 199, 499, or 999
     - no 'most likely clusters' were retained
-    - the p-value of most likely cluster is not greater than defined cutoff,
-      given the current number of simulations completed
     Indication returned is true if:
-    - the p-value of most likely cluster is greater than defined cutoff,
-      given the current number of simulations completed */
+    - number of simulation llr values greater than mlc llr is more than defined threshold. */
 bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsCompleted) const {
   double fCutOff;
 
@@ -116,17 +112,7 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     return false;
   if (!gParameters.GetTerminateSimulationsEarly())
     return false;
-  if (gTopClustersContainer.GetNumClustersRetained() > 0) {
-    switch (iNumSimulationsCompleted) {
-      case 99   : fCutOff = .5; break;
-      case 199  : fCutOff = .4; break;
-      case 499  : fCutOff = .2; break;
-      case 999  : fCutOff = .1; break;
-      default   : return false;
-    }
-    return (gTopClustersContainer.GetTopRankedCluster().GetPValue(iNumSimulationsCompleted) > fCutOff);
-  }
-  return false;
+  return  gSimVars.get_greater_llr_count() >= gParameters.GetExecuteEarlyTermThreshold();
 }
 
 /** Creates 'relative risks' output file(s) if requested by user through
@@ -243,7 +229,6 @@ void AnalysisRunner::ExecuteSuccessively() {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
       giPower_X_Count = giPower_Y_Count = 0;
-      giNumSimsExecuted = 0;
       //calculate most likely clusters
       macroRunTimeStartSerial(SerialRunTimeComponent::RealDataAnalysis);
       CalculateMostLikelyClusters();
@@ -251,6 +236,7 @@ void AnalysisRunner::ExecuteSuccessively() {
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
+      gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && gTopClustersContainer.GetNumClustersRetained() > 0 ? gTopClustersContainer.GetTopRankedCluster().GetRatio() : 0.0);
       //Do Monte Carlo replications.
       if (gTopClustersContainer.GetNumClustersRetained())
         PerformSuccessiveSimulations();
@@ -316,7 +302,7 @@ void AnalysisRunner::FinalizeReport() {
                "zero, no hypothesis testing was done and no p-values are reported.";
       PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
-    if (giClustersReported && gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetNumReplicationsRequested() <= 98) {
+    if (giClustersReported && gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE) {
       fprintf(fp, "\n");
       buffer = "Note: The number of Monte Carlo replications was set too low, "
                "and a meaningful hypothesis test cannot be done. Consequently, "
@@ -604,7 +590,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
       giPower_X_Count = giPower_Y_Count = 0;
-      giNumSimsExecuted = 0;
+      gSimVars.reset(0.0);
 
       //simualtion data randomizer
       RandomizerContainer_t                       RandomizationContainer;
@@ -687,7 +673,9 @@ void AnalysisRunner::PerformCentric_Parallel() {
         }
         tg.join_all();
 
-        giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
+        // Since we are evaluating real and simulation data simultaneuosly, there is no early termination option. 
+        gSimVars.set_sim_count_explicit(gParameters.GetNumReplicationsRequested());
+
         //propagate exceptions if needed:
         if (gParameters.GetIncludePurelyTemporalClusters() && purelyTemporalExecutionExceptionStatus.bExceptional) {
           if (purelyTemporalExecutionExceptionStatus.eException_type == stsCentricAlgoJobSource::result_type::memory)
@@ -728,6 +716,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
           UpdateSignificantRatiosList(*itr);
           //update power calculations
           UpdatePowerCounts(*itr);
+          //update simulation variables
+          gSimVars.add_llr(*itr);
           //update simulated loglikelihood record buffer
           if(RatioWriter.get()) RatioWriter->Write(*itr);
         }
@@ -767,7 +757,7 @@ void AnalysisRunner::PerformCentric_Serial() {
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
       giPower_X_Count = giPower_Y_Count = 0;
-      giNumSimsExecuted = 0;
+      gSimVars.reset(0.0);
 
       //simualtion data randomizer
       RandomizerContainer_t                       RandomizationContainer;
@@ -848,7 +838,10 @@ void AnalysisRunner::PerformCentric_Serial() {
       //retrieve top clusters and simulated loglikelihood ratios from analysis object
       CentricAnalysis->RetrieveClusters(gTopClustersContainer);
       CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
-      giNumSimsExecuted = gParameters.GetNumReplicationsRequested();
+
+      // Since we are evaluating real and simulation data simultaneuosly, there is no early termination option. 
+      gSimVars.set_sim_count_explicit(gParameters.GetNumReplicationsRequested());
+
       //free memory of objects that will no longer be used
       // - we might need the memory for recalculating neighbors in geographical overlap code
       vRandomizedDataSets.clear();
@@ -872,6 +865,8 @@ void AnalysisRunner::PerformCentric_Serial() {
           UpdateSignificantRatiosList(*itr);
           //update power calculations
           UpdatePowerCounts(*itr);
+          //update simulation variables
+          gSimVars.add_llr(*itr);
           //update simulated loglikelihood record buffer
           if(RatioWriter.get()) RatioWriter->Write(*itr);
         }
@@ -909,7 +904,6 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
   unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.GetNumReplicationsRequested());
 
   try {
-    giNumSimsExecuted = 0;
     if (gParameters.GetNumReplicationsRequested() == 0)
       return;
     //set print message format string
@@ -936,8 +930,6 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
         tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
       }
       tg.join_all();
-
-      giNumSimsExecuted = jobSource.GetSuccessfullyCompletedJobCount();
 
       //propagate exceptions if needed:
       jobSource.Assert_NoExceptionsCaught();
@@ -968,7 +960,6 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
   std::auto_ptr<AbstractDataSetWriter>    DataSetWriter;
 
   try {
-    giNumSimsExecuted = 0;
     if (gParameters.GetNumReplicationsRequested() == 0)
       return;
     //set print message format string
@@ -1005,7 +996,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
       PrintQueue SimulationPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
 
       for (iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
-        ++giNumSimsExecuted;
+        gSimVars.increment_sim_count();
         //randomize data
         macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
         GetDataHub().RandomizeData(RandomizationContainer, SimulationDataContainer, iSimulationNumber);
@@ -1017,6 +1008,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
         //perform simulation to get loglikelihood ratio
         macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
         dSimulatedRatio = pAnalysis->ExecuteSimulation(*pDataGateway);
+        gSimVars.add_llr(dSimulatedRatio);
         macroRunTimeStopSerial();
         //update most likely clusters given latest simulated loglikelihood ratio
         gTopClustersContainer.UpdateTopClustersRank(dSimulatedRatio);
@@ -1027,7 +1019,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
         //update simulated loglikelihood record buffer
         if(RatioWriter.get()) RatioWriter->Write(dSimulatedRatio);
         //if first simulation, report approximate time to complete simulations and print queue threshold
-        if (giNumSimsExecuted==1) {
+        if (gSimVars.get_sim_count()==1) {
           //***** time to complete approximate will need modified with incorporation of thread code ******
           ReportTimeEstimate(StartTime, gParameters.GetNumReplicationsRequested(), iSimulationNumber, &SimulationPrintDirection);
           SaTScan::Timestamp tsReleaseTime;
@@ -1078,26 +1070,25 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
   AsciiPrintFormat      PrintFormat;
   std::string           buffer;
 
-  if (GetIsCalculatingSignificantRatios() && giNumSimsExecuted >= 19) {
+  if (GetIsCalculatingSignificantRatios() && gSimVars.get_sim_count() >= 19) {
     PrintFormat.SetMarginsAsOverviewSection();
     fprintf(fp,"\n");
     printString(buffer, "A cluster is statistically significant when its %s "
                         "is greater than the critical value, which is, for significance level:",
                         (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    if (giNumSimsExecuted >= 99)
+    if (gSimVars.get_sim_count() >= 99)
       fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
-    if (giNumSimsExecuted >= 19)
+    if (gSimVars.get_sim_count() >= 19)
       fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
   }
 }
 
 /** Prints early termination status to report file. */
 void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
-  if (gTopClustersContainer.GetNumClustersRetained() && giNumSimsExecuted < gParameters.GetNumReplicationsRequested()) {
-    fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate the\n");
-    fprintf(fp, "      simulations early for large p-values. This means that the\n");
-    fprintf(fp, "      reported p-values are slightly conservative.\n");
+  if (gTopClustersContainer.GetNumClustersRetained() && gSimVars.get_sim_count() < gParameters.GetNumReplicationsRequested()) {
+    fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate\n");
+    fprintf(fp, "      the simulations early for large p-values.\n");
   }
 }
 
@@ -1123,12 +1114,12 @@ void AnalysisRunner::PrintPowerCalculationsStatus(FILE* fp) {
   AsciiPrintFormat      PrintFormat;
   std::string           buffer;
 
-  if (gParameters.GetIsPowerCalculated() && giNumSimsExecuted) {
+  if (gParameters.GetIsPowerCalculated() && gSimVars.get_sim_count()) {
     fprintf(fp, "\n");
     buffer = "Percentage of Monte Carlo replications with a likelihood greater than";
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(), ((double)giPower_X_Count)/giNumSimsExecuted);
-    fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(), ((double)giPower_Y_Count)/giNumSimsExecuted);
+    fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(), ((double)giPower_X_Count)/gSimVars.get_sim_count());
+    fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(), ((double)giPower_Y_Count)/gSimVars.get_sim_count());
   }
 }
 
@@ -1210,14 +1201,14 @@ void AnalysisRunner::PrintTopClusters() {
   try {
     //if creating 'location information' files, create record data buffers
     if (gParameters.GetOutputAreaSpecificFiles())
-      ClusterLocationWriter.reset(new LocationInformationWriter(*gpDataHub, giNumSimsExecuted < 99));
+      ClusterLocationWriter.reset(new LocationInformationWriter(*gpDataHub, giAnalysisCount > 1));
 
     //if creating 'cluster information' files, create record data buffers
     if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
       ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
 
     //if  no replications requested, attempt to display up to top 10 clusters
-    tract_t tNumClustersToDisplay(giNumSimsExecuted == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
+    tract_t tNumClustersToDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, gTopClustersContainer.GetNumClustersRetained()) : gTopClustersContainer.GetNumClustersRetained());
     //open result output file
     OpenReportFile(fp, true);
 
@@ -1230,10 +1221,10 @@ void AnalysisRunner::PrintTopClusters() {
        const CCluster& TopCluster = gTopClustersContainer.GetCluster(i);
        //write cluster details to 'cluster information' file
        if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
-         ClusterWriter->Write(TopCluster, i+1, giNumSimsExecuted);
+         ClusterWriter->Write(TopCluster, i+1, gSimVars);
        //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
        //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-       if (i == 0 || (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (giNumSimsExecuted == 0 || TopCluster.GetRank() <= giNumSimsExecuted))) {
+       if (i == 0 || (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || TopCluster.GetRank() <= gSimVars.get_sim_count()))) {
            ++giClustersReported;
            switch (giClustersReported) {
              case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
@@ -1241,13 +1232,13 @@ void AnalysisRunner::PrintTopClusters() {
              default : fprintf(fp, "\n"); break;
            }
            //print cluster definition to file stream
-           TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+           TopCluster.Display(fp, *gpDataHub, giClustersReported, gSimVars);
            //check track of whether this cluster was significant in top five percentage
            if (GetIsCalculatingSignificantRatios() && std::fabs(TopCluster.m_nRatio - gpSignificantRatios->GetAlpha05()) > DBL_CMP_TOLERANCE && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
              ++guwSignificantAt005;
            //print cluster definition to 'location information' record buffer
            if (gParameters.GetOutputAreaSpecificFiles())
-             TopCluster.Write(*ClusterLocationWriter, *gpDataHub, giClustersReported, giNumSimsExecuted);
+             TopCluster.Write(*ClusterLocationWriter, *gpDataHub, giClustersReported, gSimVars);
        }
        //we no longer will be requesting neighbor information for this centroid - we can delete
        //neighbor information - which might have been just calculated at beginning of this loop
@@ -1305,14 +1296,14 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
                  }
        }
       //print cluster definition to file stream
-      TopCluster.Display(fp, *gpDataHub, giClustersReported, giNumSimsExecuted);
+      TopCluster.Display(fp, *gpDataHub, giClustersReported, gSimVars);
       //print cluster definition to 'cluster information' record buffer
       if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
-        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giClustersReported, giNumSimsExecuted);
+        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, giClustersReported, gSimVars);
       //print cluster definition to 'location information' record buffer
       if (gParameters.GetOutputAreaSpecificFiles()) {
-        LocationInformationWriter Writer(*gpDataHub, giNumSimsExecuted < 99, giAnalysisCount > 1);
-        TopCluster.Write(Writer, *gpDataHub, giClustersReported, giNumSimsExecuted);
+        LocationInformationWriter Writer(*gpDataHub, giAnalysisCount > 1);
+        TopCluster.Write(Writer, *gpDataHub, giClustersReported, gSimVars);
       }
       //check track of whether this cluster was significant in top five percentage
       if (GetIsCalculatingSignificantRatios() && std::fabs(TopCluster.m_nRatio - gpSignificantRatios->GetAlpha05()) > DBL_CMP_TOLERANCE && TopCluster.m_nRatio > gpSignificantRatios->GetAlpha05())
@@ -1356,9 +1347,13 @@ bool AnalysisRunner::RepeatAnalysis() {
       //determine whether a top cluster was found and it's p-value mets cutoff
       if (!gTopClustersContainer.GetNumClustersRetained())
         return false;
-      //if user requested replications, validate that p-value does not exceed user defined cutoff  
-      if (gParameters.GetNumReplicationsRequested() && gTopClustersContainer.GetTopRankedCluster().GetPValue(giNumSimsExecuted) > gParameters.GetIterativeCutOffPValue())
-         return false;
+      //if user requested replications, validate that p-value does not exceed user defined cutoff 
+      if (gParameters.GetNumReplicationsRequested()) {
+          const CCluster& topCluster = gTopClustersContainer.GetTopRankedCluster();
+          double p_value = gParameters.GetPValueReportingType() == GUMBEL_PVALUE ? topCluster.GetGumbelPValue(gSimVars) : topCluster.GetPValue(gParameters, gSimVars, true);
+          if (p_value > gParameters.GetIterativeCutOffPValue())
+             return false;
+      }
 
       //now we need to modify the data sets - removing data of locations in top cluster
       gpDataHub->RemoveClusterSignificance(gTopClustersContainer.GetTopRankedCluster());

@@ -4,11 +4,6 @@
 //******************************************************************************
 #include "stsMCSimJobSource.h"
 
-const unsigned stsMCSimJobSource::guaAutoAbortCheckPoints[] = { 99, 199, 499, 999 };
-const float stsMCSimJobSource::guaAutoAbortCheckCutoffValues[] = { (float)0.5, (float)0.4, (float)0.2, (float)0.1 };
-//BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckPoints)/sizeof(unsigned))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
-//BOOST_STATIC_ASSERT(((sizeof(stsMCSimJobSource::guaAutoAbortCheckCutoffValues)/sizeof(float))==stsMCSimJobSource::guMaxAutoAbortCheckCount));
-
 //constructor
 stsMCSimJobSource::stsMCSimJobSource(
   CParameters const & rParameters
@@ -21,22 +16,16 @@ stsMCSimJobSource::stsMCSimJobSource(
  : guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
  , gfnRegisterResult(&stsMCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
- , guAutoAbortCheckIdx(0)
- , guPreviousAutoAbortCheckPoint(0)
  , gConstructionTime(CurrentTime)
  , grMLCs(rMLCs)
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)
  , grRunner(rRunner)
+ , guiJobCount(rParameters.GetNumReplicationsRequested())
+ , guiNextProcessingJobId(1)
 {
-  guiJobCount = rParameters.GetNumReplicationsRequested();
-  guAutoAbortCheckCount = 0;
   if (rParameters.GetTerminateSimulationsEarly()) {
     gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbort;
-    gAutoAbortResultsRegistered.resize(guaAutoAbortCheckPoints[guAutoAbortCheckIdx]);//contains bits for only the first guaAutoAbortCheckPoints[guAutoAbortCheckIndex] jobs.
-    while ((guAutoAbortCheckCount < guMaxAutoAbortCheckCount) && (guaAutoAbortCheckPoints[guAutoAbortCheckCount] < guiJobCount)) {
-      ++guAutoAbortCheckCount;
-    }
   }
   else {
     gfnRegisterResult = &stsMCSimJobSource::RegisterResult_NoAutoAbort;
@@ -59,16 +48,8 @@ void stsMCSimJobSource::acquire(job_id_type & dst_job_id, param_type & dst_param
   ++guiNextJobParam;
 }
 
-//Have all the results needed for the current auto-abort check been collected?
-bool stsMCSimJobSource::AllResultsCollectedForAutoAbortCheck() const
-{
-  return (gAutoAbortResultsRegistered.count() == gAutoAbortResultsRegistered.size());
-}
-
 void stsMCSimJobSource::Assert_NoExceptionsCaught() const
 {
-  typedef std::pair<job_id_type,std::pair<param_type,result_type> > exception_type;
-  typedef std::deque<exception_type> exception_sequence_type;
   static const char * szExceptionIntroFormatString = "An exception was thrown from simulation #%d.";
   static const char * szExceptionMessageTitle = "\nException message: ";
   static const char * szExceptionCallPathTitle = "\nException call path:\n";
@@ -116,7 +97,7 @@ unsigned int stsMCSimJobSource::GetSuccessfullyCompletedJobCount() const
 {
   unsigned int uiResult = guiUnregisteredJobLowerBound-1;
   if (AutoAbortConditionExists())
-    uiResult = guaAutoAbortCheckPoints[guAutoAbortCheckIdx];
+     uiResult = grRunner.gSimVars.get_sim_count();
   else
     uiResult += (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) - gvExceptions.size();
   return uiResult;
@@ -144,8 +125,7 @@ unsigned int stsMCSimJobSource::GetExceptionCount() const
   return gvExceptions.size();
 }
 
-std::deque<std::pair<stsMCSimJobSource::job_id_type,std::pair<stsMCSimJobSource::param_type,stsMCSimJobSource::result_type> > >
-stsMCSimJobSource::GetExceptions() const
+stsMCSimJobSource::exception_sequence_type stsMCSimJobSource::GetExceptions() const
 {
   return gvExceptions;
 }
@@ -230,52 +210,20 @@ void stsMCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, par
       return;
     }
 
-    if (rJobID <= guaAutoAbortCheckPoints[guAutoAbortCheckIdx])
-    {
-      gAutoAbortResultsRegistered.set(rJobID-guPreviousAutoAbortCheckPoint-1);
-      RegisterResult_NoAutoAbort(rJobID, rParam, rResult);
-      //process overflow results until there aren't enough results to make the next check point:
-      while ((guAutoAbortCheckIdx < guAutoAbortCheckCount) && (!AutoAbortConditionExists()) && AllResultsCollectedForAutoAbortCheck())
-      {
-        if (grMLCs.GetTopRankedCluster().GetPValue(guaAutoAbortCheckPoints[guAutoAbortCheckIdx]) > guaAutoAbortCheckCutoffValues[guAutoAbortCheckIdx])
-        {//auto-abort is triggered:
-          gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbortConditionExists;
-          ReleaseAutoAbortCheckResources();
-        }
-        else
-        {
-          guPreviousAutoAbortCheckPoint = guaAutoAbortCheckPoints[guAutoAbortCheckIdx];
-          ++guAutoAbortCheckIdx;
-          if (guAutoAbortCheckIdx == guAutoAbortCheckCount)
-          {//this is the last check, and it passed, so we're not in auto-abort mode anymore:
-            //register all overflow jobs...
-            for (overflow_jobs_container_type::const_iterator itrCur=gmapOverflowResults.begin(), itrEnd=gmapOverflowResults.end(); itrCur!=itrEnd; ++itrCur)
-              RegisterResult_NoAutoAbort(itrCur->first, itrCur->second.first, itrCur->second.second);
-            gmapOverflowResults.clear();
-
-            gfnRegisterResult = &stsMCSimJobSource::RegisterResult_NoAutoAbort;
+    // Add this job to the cache of results.
+    gmapOverflowResults.insert(std::make_pair(rJobID,std::make_pair(rParam,rResult)));
+    // process cached completed jobs sequencely
+    while (!gmapOverflowResults.empty() && guiNextProcessingJobId == gmapOverflowResults.begin()->first) {
+         //gAutoAbortResultsRegistered.set(gmapOverflowResults.begin()->first - guPreviousAutoAbortCheckPoint - 1);
+         RegisterResult_NoAutoAbort(gmapOverflowResults.begin()->first, gmapOverflowResults.begin()->second.first, gmapOverflowResults.begin()->second.second);
+         gmapOverflowResults.erase(gmapOverflowResults.begin());
+         ++guiNextProcessingJobId;
+         if (grRunner.gSimVars.get_greater_llr_count() >= grRunner.gParameters.GetExecuteEarlyTermThreshold()) {
+            //auto-abort is triggered
+            gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbortConditionExists;
             ReleaseAutoAbortCheckResources();
-          }
-          else
-          {//this is not the last check.  Process overflow results to prepare for the next check:
-            //resize the results-registered bitset for the next check:
-            gAutoAbortResultsRegistered.resize(guaAutoAbortCheckPoints[guAutoAbortCheckIdx]-guaAutoAbortCheckPoints[guAutoAbortCheckIdx-1]);
-            gAutoAbortResultsRegistered.reset();
-            //process just the results that apply to this check; the rest remain "overflow" results:
-            while ((!gmapOverflowResults.empty()) && (gmapOverflowResults.begin()->first <= guaAutoAbortCheckPoints[guAutoAbortCheckIdx]))
-            {
-              gAutoAbortResultsRegistered.set(gmapOverflowResults.begin()->first - guPreviousAutoAbortCheckPoint - 1);
-              RegisterResult_NoAutoAbort(gmapOverflowResults.begin()->first, gmapOverflowResults.begin()->second.first, gmapOverflowResults.begin()->second.second);
-              gmapOverflowResults.erase(gmapOverflowResults.begin());
-            }
-          }
-        }
-      }
-    }
-    else
-    {//this is an "overflow" result.  save it to be posted after the next auto-abort
-     //check has been run:
-      gmapOverflowResults.insert(std::make_pair(rJobID,std::make_pair(rParam,rResult)));
+            return;
+         }
     }
   }
   catch (prg_exception & e)
@@ -336,15 +284,12 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
       return;
     }
 
-    //update ratios, significance, etc.:
+    //update ratios, significance, etc.
     WriteResultToStructures(rResult.dSuccessfulResult);
 
     //if appropriate, estimate time required to complete all jobs and report it.
-    unsigned int uiJobsProcessedCount =
-      (guAutoAbortCheckIdx < guAutoAbortCheckCount)//auto-abort checking
-     ? guPreviousAutoAbortCheckPoint + gAutoAbortResultsRegistered.count()
-     : (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound;//this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, uiJobsProcessedCount, guiJobCount, rResult.dSuccessfulResult);
+    unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
+    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, rJobID, guiJobCount, rResult.dSuccessfulResult);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
@@ -363,7 +308,6 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
 //auto-abort checking is active.)
 void stsMCSimJobSource::ReleaseAutoAbortCheckResources()
 {
-  gAutoAbortResultsRegistered.clear();
   gmapOverflowResults.clear();
 }
 
@@ -378,6 +322,8 @@ void stsMCSimJobSource::WriteResultToStructures(successful_result_type const & r
     if (gRatioWriter.get()) gRatioWriter->Write(rResult);
     //update power calculations
     grRunner.UpdatePowerCounts(rResult);
+    grRunner.gSimVars.add_llr(rResult);
+    grRunner.gSimVars.increment_sim_count();
   }
   catch (prg_exception & e)
   {

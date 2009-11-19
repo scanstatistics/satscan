@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "AbstractDataFileWriter.h"
 #include "WeightedNormalRandomizer.h"
+#include "SimulationVariables.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -29,18 +30,17 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_TIME_TREND_IN_FIELD;
       static const char       * CLU_TIME_TREND_OUT_FIELD;
       static const char       * CLU_TIME_TREND_DIFF_FIELD;
-      bool                      gbExcludePValueField;
 
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
 
       void                      DefineFields(const CSaTScanData& DataHub);
 
   public:
-    LocationInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend=false);
+    LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend=false);
     virtual ~LocationInformationWriter();
 
       virtual void              Write(const CCluster& theCluster, const CSaTScanData& theData,
-                                      int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted);
+                                      int iClusterNumber, tract_t tTract, const SimulationVariables& simVars);
       void                      WritePrep(const CCluster& theCluster, const CSaTScanData& DataHub);
 };
 //******************************************************************************

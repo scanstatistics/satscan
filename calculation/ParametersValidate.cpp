@@ -90,6 +90,9 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     if (! ValidateIterativeScanParameters(PrintDirection))
       bValid = false;
 
+    if (! ValidateInferenceParameters(PrintDirection))
+      bValid = false;
+
     //validate power calculation parameters
     if (! ValidatePowerCalculationParameters(PrintDirection))
       bValid = false;
@@ -234,7 +237,8 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
     }
     if (gParameters.GetExecutionType() == CENTRICALLY &&
         (gParameters.GetIsPurelyTemporalAnalysis() ||
-         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
+         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK) ||
+         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
                             "The centric analysis execution is not available for:\n"
@@ -400,14 +404,14 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) {
-      if (gParameters.UseMetaLocationsFile() && !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false)) {
+      if (gParameters.UseLocationNeighborsFile() && !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false)) {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "For a prospective space-time analysis adjusting for ealier analyses and defining "
                               "non-eucledian neighbors, the maximum spatial cluster size must be defined as a "
                               "percentage of the population as defined in a max circle size file.\n", BasePrint::P_PARAMERROR);
       }
-      else if (!gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+      else if (!gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial "
@@ -481,6 +485,27 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
   }
   catch (prg_exception& x) {
     x.addTrace("ValidateFileParameters()","ParametersValidate");
+    throw;
+  }
+  return bValid;
+}
+
+/** Validates inference parameters.
+    Prints errors to print direction and returns whether values are vaild.*/
+bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection) const {
+  bool  bValid=true;
+
+  try {
+    if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetPValueReportingType() == TERMINATION_PVALUE && 
+        (gParameters.GetEarlyTermThreshold() < 1 || gParameters.GetEarlyTermThreshold() > gParameters.GetNumReplicationsRequested())) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\n"
+                            "The threshold for early termination of simulations must be from 1 to "
+                            "number of replications.\n", BasePrint::P_PARAMERROR);
+    }
+  }
+  catch (prg_exception& x) {
+    x.addTrace("ValidateInferenceParameters()","ParametersValidate");
     throw;
   }
   return bValid;

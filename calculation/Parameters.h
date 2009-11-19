@@ -31,7 +31,8 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     MAXGEOPOPATRISK_REPORTED, MAXGEOPOPFILE_REPORTED, MAXGEODISTANCE_REPORTED,
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
-                                    MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS};
+                                    MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
+                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -75,6 +76,8 @@ enum StudyPeriodDataCheckingType   {STRICTBOUNDS=0, RELAXEDBOUNDS};
 enum CoordinatesDataCheckingType   {STRICTCOORDINATES=0, RELAXEDCOORDINATES};
 /** multiple coordinates type */
 enum MultipleCoordinatesType       {ONEPERLOCATION=0, ATLEASTONELOCATION, ALLLOCATIONS};
+/** p-values reporting type */
+enum PValueReportingType           {DEFAULT_PVALUE=0, STANDARD_PVALUE, TERMINATION_PVALUE, GUMBEL_PVALUE};
 
 class CParameters {
   public:
@@ -93,7 +96,6 @@ class CParameters {
     unsigned int                        giReplications;                         /** number of MonteCarlo replicas */
     CriteriaSecondaryClustersType       geCriteriaSecondClustersType;           /** Criteria for Reporting Secondary Clusters */
     double                              gdTimeTrendConverge;                    /** time trend convergence value for SVTT */
-    bool                                gbEarlyTerminationSimulations;          /** indicates whether to stop simulations if large p-values */
     SimulationType                      geSimulationType;                       /** indicates simulation procedure - Poisson only */
     bool                                gbOutputSimulationData;                 /** indicates whether to output simulation data to file */
     bool                                gbAdjustForEarlierAnalyses;             /** indicates whether to adjust for earlier analyses,
@@ -190,8 +192,11 @@ class CParameters {
     SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
     std::vector<std::string>            gvObservableRegions;                    /** collection of observable regions */
     bool                                gbWeightedNormal;                       /** convieniance variable - is normal model is weighted*/
+    unsigned int                        giEarlyTermThreshold;                   /** early termination threshold */
+    PValueReportingType                 gePValueReportingType;                  /** p-value reporting type */
+    bool                                gbReportGumbelPValue;                   /** report Gumbel p-value */
 
-    void                                ConvertRelativePath(std::string & sInputFilename);
+    void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
 
@@ -216,6 +221,7 @@ class CParameters {
     AnalysisType                        GetAnalysisType() const {return geAnalysisType;}
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
     AreaRateType                        GetExecuteScanRateType() const;
+    unsigned int                        GetExecuteEarlyTermThreshold() const;
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;
@@ -230,6 +236,7 @@ class CParameters {
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}
     const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
+    unsigned int                        GetEarlyTermThreshold() const {return giEarlyTermThreshold;}
     ExecutionType                       GetExecutionType() const {return geExecutionType;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
@@ -290,8 +297,10 @@ class CParameters {
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
     ProbabilityModelType                GetProbabilityModelType() const {return geProbabilityModelType;}
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
+    PValueReportingType                 GetPValueReportingType() const {return gePValueReportingType;}
     long                                GetRandomizationSeed() const {return glRandomizationSeed;}
     bool                                GetReportCriticalValues() const {return gbReportCriticalValues;}
+    bool                                GetReportGumbelPValue() const {return gbReportGumbelPValue;}
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
     bool                                GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const;
     RiskType                            GetRiskType() const {return geRiskFunctionType;}
@@ -310,13 +319,15 @@ class CParameters {
     const std::string                 & GetStudyPeriodEndDate() const {return gsStudyPeriodEndDate;}
     const std::string                 & GetStudyPeriodStartDate() const {return gsStudyPeriodStartDate;}
     bool                                GetSuppressingWarnings() const {return gbSuppressWarnings;}
-    bool                                GetTerminateSimulationsEarly() const {return gbEarlyTerminationSimulations;}
+    bool                                GetTerminateSimulationsEarly() const;
     long                                GetTimeAggregationLength() const {return glTimeAggregationLength;}
     DatePrecisionType                   GetTimeAggregationUnitsType() const {return geTimeAggregationUnitsType;}
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
     bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
+    bool                                getIsReportingGumbelPValue() const;
+    bool                                getIsReportingStandardPValue() const;
     void                                RequestAllAdditionalOutputFiles();
     void                                SetAdjustForEarlierAnalyses(bool b) {gbAdjustForEarlierAnalyses = b;}
     void                                SetAdjustmentsByRelativeRisksFilename(const char * sAdjustmentsByRelativeRisksFileName, bool bCorrectForRelativePath=false);  
@@ -325,6 +336,7 @@ class CParameters {
     void                                SetAsDefaulted();
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
+    void                                SetEarlyTermThreshold(unsigned int i) {giEarlyTermThreshold = i;}
     void                                SetExecutionType(ExecutionType eExecutionType);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
@@ -369,8 +381,10 @@ class CParameters {
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
     void                                SetProbabilityModelType(ProbabilityModelType eProbabilityModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
+    void                                SetPValueReportingType(PValueReportingType eType);
     void                                SetRandomizationSeed(long lSeed);
     void                                SetReportCriticalValues(bool b) {gbReportCriticalValues = b;}
+    void                                SetReportGumbelPValue(bool b) {gbReportGumbelPValue = b;}
     void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
@@ -390,7 +404,6 @@ class CParameters {
     void                                SetStudyPeriodEndDate(const char * sStudyPeriodEndDate);
     void                                SetStudyPeriodStartDate(const char * sStudyPeriodStartDate);
     void                                SetSuppressingWarnings(bool b) {gbSuppressWarnings=b;}
-    void                                SetTerminateSimulationsEarly(bool b) {gbEarlyTerminationSimulations = b;}
     void                                SetTimeAggregationLength(long lTimeAggregationLength);
     void                                SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits);
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);

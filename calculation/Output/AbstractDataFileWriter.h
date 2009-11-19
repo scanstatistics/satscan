@@ -44,6 +44,7 @@ class AbstractDataFileWriter {
     static const char         * CLUST_NUM_FIELD;
     static const char         * LOC_ID_FIELD;
     static const char         * P_VALUE_FLD;
+    static const char         * GUMBEL_P_VALUE_FLD;
     static const char         * OBSERVED_FIELD;
     static const char         * EXPECTED_FIELD;
     static const char         * LOG_LIKL_RATIO_FIELD;
@@ -59,6 +60,7 @@ class AbstractDataFileWriter {
     static const char         * MEAN_VALUE_FIELD;
     static const size_t         DEFAULT_LOC_FIELD_SIZE;
     static const size_t         MAX_LOC_FIELD_SIZE;
+    static const char         * RECURRENCE_INTERVAL_FLD;
 
     size_t                      GetLocationIdentiferFieldLength(const CSaTScanData& DataHub) const;
 

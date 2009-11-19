@@ -8,7 +8,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 96;
+const int CParameters::giNumParameters 	              = 99;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -86,7 +86,6 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gsStartRangeStartDate                  != rhs.gsStartRangeStartDate) return false;
   if (gsStartRangeEndDate                    != rhs.gsStartRangeEndDate) return false;
   if (gdTimeTrendConverge		             != rhs.gdTimeTrendConverge) return false;
-  if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
   if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
   if (geSimulationType                       != rhs.geSimulationType) return false;
   if (gsSimulationDataSourceFileName         != rhs.gsSimulationDataSourceFileName) return false;
@@ -126,6 +125,9 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbUseMetaLocationsFile                 != rhs.gbUseMetaLocationsFile) return false;
   if (gvObservableRegions                    != rhs.gvObservableRegions) return false;
   if (gbWeightedNormal                       != rhs.gbWeightedNormal) return false;
+  if (giEarlyTermThreshold                   != rhs.giEarlyTermThreshold) return false;
+  if (gePValueReportingType                  != rhs.gePValueReportingType) return false;
+  if (gbReportGumbelPValue                   != rhs.gbReportGumbelPValue) return false;
 
   return true;
 }
@@ -254,7 +256,6 @@ void CParameters::Copy(const CParameters &rhs) {
   gsStartRangeStartDate                  = rhs.gsStartRangeStartDate;
   gsStartRangeEndDate                    = rhs.gsStartRangeEndDate;
   gdTimeTrendConverge			         = rhs.gdTimeTrendConverge;
-  gbEarlyTerminationSimulations          = rhs.gbEarlyTerminationSimulations;
   gbRestrictReportedClusters             = rhs.gbRestrictReportedClusters;
   geSimulationType                       = rhs.geSimulationType;
   gsSimulationDataSourceFileName         = rhs.gsSimulationDataSourceFileName;
@@ -294,6 +295,9 @@ void CParameters::Copy(const CParameters &rhs) {
   gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
   gvObservableRegions                    = rhs.gvObservableRegions;
   gbWeightedNormal                       = rhs.gbWeightedNormal;
+  giEarlyTermThreshold                   = rhs.giEarlyTermThreshold;
+  gePValueReportingType                  = rhs.gePValueReportingType;
+  gbReportGumbelPValue                   = rhs.gbReportGumbelPValue;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -308,6 +312,15 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
     throw prg_error("Index %d out of range [%d,%d].","GetControlFileName()", iSetIndex,
                     (gvControlFilenames.size() ? 1 : -1), (gvControlFilenames.size() ? (int)gvControlFilenames.size() : -1));
   return gvControlFilenames[iSetIndex - 1];
+}
+
+/** Returns threshold for early termination. If reporting default p-value, then
+    threshold is determined by number of replications requested. */
+unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
+  if (GetPValueReportingType() == DEFAULT_PVALUE) {
+      return (GetNumReplicationsRequested() + 1)/20;
+  }
+  return giEarlyTermThreshold;
 }
 
 /** Returns the scanning area type used during execution. For the normal model,
@@ -401,7 +414,7 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
 bool CParameters::GetPermitsCentricExecution() const {
  return  !(GetIsPurelyTemporalAnalysis() || GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
           (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
-          (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||
+          (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||          
            GetTerminateSimulationsEarly() || UseLocationNeighborsFile() || UsingMultipleCoordinatesMetaLocations());
 }
 
@@ -467,6 +480,24 @@ void CParameters::SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, dou
     case PERCENTOFMAXCIRCLEFILE : bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = d : gdMaxSpatialSizeInMaxCirclePopulationFile = d; break;
     default : throw prg_error("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
   };
+}
+
+/** Returns whether early termination option is set. */
+bool CParameters::GetTerminateSimulationsEarly() const {
+   return (GetPValueReportingType() == DEFAULT_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE) && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
+}
+
+/** Returns indication of Gumbel value is reported. */
+bool CParameters::getIsReportingGumbelPValue() const {
+    return GetPValueReportingType() == DEFAULT_PVALUE ||  // clusters with rank < 10 report Gumbel p-value
+          (GetPValueReportingType() == STANDARD_PVALUE && GetReportGumbelPValue()) ||
+          (GetPValueReportingType() == TERMINATION_PVALUE && GetReportGumbelPValue()) ||           
+           GetPValueReportingType() == GUMBEL_PVALUE;
+}
+
+/** Returns indication of standard value is reported. */
+bool CParameters::getIsReportingStandardPValue() const {
+    return GetPValueReportingType() != GUMBEL_PVALUE;
 }
 
 /** Selects additional output file parameters - for current parameters state. */
@@ -657,8 +688,7 @@ void CParameters::SetAsDefaulted() {
   gsEndRangeEndDate                        = gsStudyPeriodEndDate;
   gsStartRangeStartDate                    = gsStudyPeriodStartDate;
   gsStartRangeEndDate                      = gsStudyPeriodEndDate;
-  gdTimeTrendConverge			   = 0.0000001;
-  gbEarlyTerminationSimulations            = false;
+  gdTimeTrendConverge			           = 0.0000001;
   gbRestrictReportedClusters               = false;
   geSimulationType                         = STANDARD;
   gsSimulationDataSourceFileName           = "";
@@ -700,6 +730,9 @@ void CParameters::SetAsDefaulted() {
   gbUseMetaLocationsFile = false;
   gvObservableRegions.clear();
   gbWeightedNormal = false;
+  giEarlyTermThreshold = 50;
+  gePValueReportingType = DEFAULT_PVALUE;
+  gbReportGumbelPValue = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -838,6 +871,13 @@ void CParameters::SetProbabilityModelType(ProbabilityModelType eProbabilityModel
 /** Sets prospective start date. Throws exception if out of range. */
 void CParameters::SetProspectiveStartDate(const char * sProspectiveStartDate) {
   gsProspectiveStartDate = sProspectiveStartDate;
+}
+
+/** Sets p-value reporting type. Throws exception if out of range. */
+void CParameters::SetPValueReportingType(PValueReportingType eType) {
+  if (eType < DEFAULT_PVALUE || eType > GUMBEL_PVALUE)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetPValueReportingType()", eType, DEFAULT_PVALUE, GUMBEL_PVALUE);
+  gePValueReportingType = eType;
 }
 
 /** Set seed used by randomization process. */

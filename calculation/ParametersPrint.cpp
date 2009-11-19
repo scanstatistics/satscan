@@ -512,9 +512,27 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
    std::string        buffer;
 
    try {
-     settings.push_back(std::make_pair("Early Termination",(gParameters.GetTerminateSimulationsEarly() ? "Yes" : "No")));
+     buffer = "P-Value Reporting";
+     switch (gParameters.GetPValueReportingType()) {
+           case DEFAULT_PVALUE :
+               settings.push_back(std::make_pair(buffer,"Default Combination"));
+               break;
+           case STANDARD_PVALUE :
+               settings.push_back(std::make_pair(buffer,"Standard Monte Carlo"));
+               settings.push_back(std::make_pair("Report Gumbel Based P-Values",(gParameters.GetReportGumbelPValue() ? "Yes" : "No")));
+               break;
+           case TERMINATION_PVALUE :
+               settings.push_back(std::make_pair(buffer,"Sequential Monte Carlo Early Termination"));
+               printString(buffer, "%u", gParameters.GetEarlyTermThreshold());
+               settings.push_back(std::make_pair("Termination Cutoff",buffer));
+               settings.push_back(std::make_pair("Report Gumbel Based P-Values",(gParameters.GetReportGumbelPValue() ? "Yes" : "No")));
+               break;
+           case GUMBEL_PVALUE :
+               settings.push_back(std::make_pair(buffer,"Gumbel Approximation"));
+               break;
+     }
      if (gParameters.GetIsProspectiveAnalysis()) {
-         settings.push_back(std::make_pair("Adjusted for Earlier Analyses",(gParameters.GetTerminateSimulationsEarly() ? "Yes" : "No")));
+         settings.push_back(std::make_pair("Adjusted for Earlier Analyses",(gParameters.GetAdjustForEarlierAnalyses() ? "Yes" : "No")));
          if (gParameters.GetAdjustForEarlierAnalyses())
              settings.push_back(std::make_pair("Prospective Start Date",gParameters.GetProspectiveStartDate()));
      }

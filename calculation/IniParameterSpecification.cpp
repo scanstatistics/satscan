@@ -355,6 +355,9 @@ void IniParameterSpecification::Build_8_1_x_ParameterList() {
 
   // number of replications moved to inference tab
   gvParameterInfo[REPLICAS - 1] = std::make_pair(Inference, (const char*)"MonteCarloReps");
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlyTerminationThreshold"));
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"PValueReportType"));
+  gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"ReportGumbel"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

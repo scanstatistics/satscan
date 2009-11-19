@@ -275,7 +275,9 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
 
   try {
     WriteIniParameter(WriteFile, START_PROSP_SURV, GetParameterString(START_PROSP_SURV, s).c_str(), GetParameterComment(START_PROSP_SURV));
-    WriteIniParameter(WriteFile, EARLY_SIM_TERMINATION, GetParameterString(EARLY_SIM_TERMINATION, s).c_str(), GetParameterComment(EARLY_SIM_TERMINATION));
+    WriteIniParameter(WriteFile, PVALUE_REPORT_TYPE, GetParameterString(PVALUE_REPORT_TYPE, s).c_str(), GetParameterComment(PVALUE_REPORT_TYPE));
+    WriteIniParameter(WriteFile, REPORT_GUMBEL, GetParameterString(REPORT_GUMBEL, s).c_str(), GetParameterComment(REPORT_GUMBEL));
+    WriteIniParameter(WriteFile, EARLY_TERM_THRESHOLD, GetParameterString(EARLY_TERM_THRESHOLD, s).c_str(), GetParameterComment(EARLY_TERM_THRESHOLD));
     WriteIniParameter(WriteFile, ADJ_FOR_EALIER_ANALYSES, GetParameterString(ADJ_FOR_EALIER_ANALYSES, s).c_str(), GetParameterComment(ADJ_FOR_EALIER_ANALYSES));
     WriteIniParameter(WriteFile, ITERATIVE, GetParameterString(ITERATIVE, s).c_str(), GetParameterComment(ITERATIVE));
     WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s).c_str(), GetParameterComment(ITERATIVE_NUM));

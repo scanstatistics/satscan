@@ -9,6 +9,7 @@
 #include "MostLikelyClustersContainer.h"
 #include "AbstractCentricAnalysis.h"
 #include "ptr_vector.h"
+#include "SimulationVariables.h"
 
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
@@ -25,10 +26,11 @@ class AnalysisRunner {
     unsigned int                        giAnalysisCount;
     int                                 giPower_X_Count;
     int                                 giPower_Y_Count;
-    unsigned int                        giNumSimsExecuted;
+    //unsigned int                        giNumSimsExecuted;
     unsigned int                        giClustersReported;
     MostLikelyClustersContainer         gTopClustersContainer;
     ExecutionType                       geExecutingType;
+	SimulationVariables                 gSimVars;
 
     void                                Execute();
     void                                ExecuteCentrically();
@@ -74,9 +76,10 @@ class AnalysisRunner {
     AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
                                                                     const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;
     unsigned short                      GetNumSignificantAt005() const {return guwSignificantAt005;}
-    unsigned int                        GetNumSimulationsExecuted() const {return giNumSimsExecuted;}
+    unsigned int                        GetNumSimulationsExecuted() const {return gSimVars.get_sim_count();}
     double                              GetSimRatio01() const;
     double                              GetSimRatio05() const;
+    const SimulationVariables         & GetSimVariables() const {return gSimVars;}
     const time_t                      * GetStartTime() const {return &gStartTime;}
 };
 

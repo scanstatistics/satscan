@@ -142,9 +142,10 @@ void RecordBuffer::SetFieldIsBlank(unsigned int iFieldNumber, bool bBlank) {
 
 const char * AbstractDataFileWriter::CLUST_NUM_FIELD                    = "CLUSTER";
 const char * AbstractDataFileWriter::LOC_ID_FIELD   	                = "LOC_ID";
-const char * AbstractDataFileWriter::P_VALUE_FLD  	                = "P_VALUE";
-const char * AbstractDataFileWriter::OBSERVED_FIELD	                = "OBSERVED";
-const char * AbstractDataFileWriter::EXPECTED_FIELD	                = "EXPECTED";
+const char * AbstractDataFileWriter::P_VALUE_FLD  	                    = "P_VALUE";
+const char * AbstractDataFileWriter::GUMBEL_P_VALUE_FLD                 = "GBL_PVALUE";
+const char * AbstractDataFileWriter::OBSERVED_FIELD	                    = "OBSERVED";
+const char * AbstractDataFileWriter::EXPECTED_FIELD	                    = "EXPECTED";
 const char * AbstractDataFileWriter::LOG_LIKL_RATIO_FIELD               = "LLR";
 const char * AbstractDataFileWriter::TST_STAT_FIELD                     = "TEST_STAT";
 const char * AbstractDataFileWriter::DATASET_FIELD                      = "DATASET";
@@ -158,6 +159,8 @@ const char * AbstractDataFileWriter::STD_FIELD                          = "STD";
 const char * AbstractDataFileWriter::MEAN_VALUE_FIELD                   = "MEAN";
 const size_t AbstractDataFileWriter::DEFAULT_LOC_FIELD_SIZE             = 30;
 const size_t AbstractDataFileWriter::MAX_LOC_FIELD_SIZE                 = 254;
+const char * AbstractDataFileWriter::RECURRENCE_INTERVAL_FLD            = "RECURR_INT";
+
 
 /** constructor */
 AbstractDataFileWriter::AbstractDataFileWriter(const CParameters& Parameters)

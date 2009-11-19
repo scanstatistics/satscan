@@ -16,6 +16,7 @@ class ParametersValidate {
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
+    bool                ValidateInferenceParameters(BasePrint & PrintDirection) const;
     bool                ValidateIterativeScanParameters(BasePrint & PrintDirection) const;
     bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;

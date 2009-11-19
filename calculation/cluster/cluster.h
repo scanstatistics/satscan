@@ -9,6 +9,8 @@
 #include "UtilityFunctions.h"
 #include "ClusterDataFactory.h"
 #include "AsciiPrintFormat.h"
+#include "SimulationVariables.h"
+#include "boost/tuple/tuple.hpp"
 
 class LocationInformationWriter; /** forward class declaration */
 
@@ -16,6 +18,10 @@ class LocationInformationWriter; /** forward class declaration */
     functionality for printing cluster properties to file stream in predefined
     format. */
 class CCluster {
+  public:
+    typedef std::pair<double,double> RecurrenceInterval_t;
+    static unsigned int           MIN_RANK_RPT_GUMBEL;
+
   protected:
     tract_t                       m_Center;                // Center of cluster (index to grid)
     tract_t                       m_MostCentralLocation;   // Index of most central location
@@ -47,7 +53,7 @@ class CCluster {
     virtual bool                  ClusterDefined() const {return m_nTracts > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();
-    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
+    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual void                  DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex,
                                                                const CSaTScanData& DataHub,
                                                                const AsciiPrintFormat& PrintFormat) const;
@@ -70,10 +76,13 @@ class CCluster {
     virtual void                  DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data,
                                                        const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
+                                                               unsigned int iReportedCluster, 
                                                                const AsciiPrintFormat& PrintFormat,
-                                                               unsigned int iNumSimsCompleted) const;
-    virtual void                  DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations,
-                                                        const AsciiPrintFormat& PrintFormat) const;
+                                                               const SimulationVariables& simVars) const;
+    virtual void                  DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, 
+                                                            unsigned int iReportedCluster, 
+                                                            const SimulationVariables& simVars,
+                                                            const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayPopulation(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual void                  DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
@@ -87,6 +96,7 @@ class CCluster {
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
+    double                        GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
     std::vector<tract_t>        & getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
     tract_t                       GetMostCentralLocationIndex() const;
@@ -98,7 +108,7 @@ class CCluster {
     double                        GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual double                GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
-    double                        GetPValue(unsigned int uiNumSimulationsCompleted) const;
+    double                        GetPValue(const CParameters& parameters, const SimulationVariables& simVars, bool bMLC) const;
     double                        GetCartesianRadius() const {return m_CartesianRadius;}
     bool                          GetRadiusDefined() const {return m_CartesianRadius != -1;}
     unsigned int                  GetRank() const {return m_nRank;}
@@ -106,10 +116,14 @@ class CCluster {
     double                        GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const;
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    RecurrenceInterval_t          GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
+    bool                          reportableGumbelPValue(const CParameters& parameters) const;
+    bool                          reportablePValue(const CParameters& parameters, const SimulationVariables& simVars) const;
+    bool                          reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars) const;
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
@@ -117,7 +131,7 @@ class CCluster {
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);
     virtual void                  Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
-                                        unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const;
+                                        unsigned int iReportedCluster, const SimulationVariables& simVars) const;
 };
 
 /** Attempts to dynamically cast AbstractClusterData object to class type T.

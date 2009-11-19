@@ -61,6 +61,8 @@ public class Parameters implements Cloneable {
     }    
     /** multiple coordinates type */
     public enum MultipleCoordinatesType       {ONEPERLOCATION, ATLEASTONELOCATION, ALLLOCATIONS};
+    /** p-values reporting type */
+    public enum PValueReportingType           {DEFAULT_PVALUE, STANDARD_PVALUE, TERMINATION_PVALUE, GUMBEL_PVALUE};
 
     private int                         	giNumRequestedParallelProcesses=0; /** number of parallel processes to run */
     private ExecutionType               	geExecutionType=ExecutionType.AUTOMATIC; /** execution process type */
@@ -73,7 +75,6 @@ public class Parameters implements Cloneable {
     private int                         	giReplications=999; /** number of MonteCarlo replicas */
     private CriteriaSecondaryClustersType 	geCriteriaSecondClustersType=CriteriaSecondaryClustersType.NOGEOOVERLAP; /** Criteria for Reporting Secondary Clusters */
     private double                          gdTimeTrendConverge=0.0000001; /** time trend convergence value for SVTT */
-    private boolean                         gbEarlyTerminationSimulations=false; /** indicates whether to stop simulations if large p-values */
     private SimulationType                  geSimulationType=SimulationType.STANDARD; /** indicates simulation procedure - Poisson only */
     private boolean                         gbOutputSimulationData=false; /** indicates whether to output simulation data to file */
     private boolean                         gbAdjustForEarlierAnalyses=false; /** indicates whether to adjust for earlier analyses,
@@ -82,6 +83,10 @@ public class Parameters implements Cloneable {
     private StudyPeriodDataCheckingType     geStudyPeriodDataCheckingType=StudyPeriodDataCheckingType.STRICTBOUNDS; /** study period data checking type */
     private CoordinatesDataCheckingType     geCoordinatesDataCheckingType=CoordinatesDataCheckingType.STRICTCOORDINATES; /** geographical coordinates data checking type */
     private MultipleCoordinatesType         geMultipleCoordinatesType=MultipleCoordinatesType.ONEPERLOCATION; /** multiple locations type */
+    /* PValue Reporting variables */
+    private PValueReportingType             gePValueReportingType=PValueReportingType.DEFAULT_PVALUE; /** PValue reporting type */
+    private int                             giEarlyTermThreshold=50; /** early termination threshold */
+    private boolean                         gbReportGumbelPValue=false;                   /** report Gumbel p-value */
         /* Power Calcution variables */
     private boolean                         gbPowerCalculation=false; /** indicator of whether to perform power calculations */
     private double                          gdPower_X=0.0, gdPower_Y=0.0; /** power calculation variables */
@@ -240,6 +245,13 @@ public class Parameters implements Cloneable {
     }
     
     public MultipleCoordinatesType GetMultipleCoordinatesType() {return geMultipleCoordinatesType;}
+    public PValueReportingType GetPValueReportingType() {return gePValueReportingType;}
+    
+    public int GetEarlyTermThreshold() {return giEarlyTermThreshold;}
+    public void SetEarlyTermThreshold(int i) {giEarlyTermThreshold = i;}
+    
+    public boolean GetReportGumbelPValue() {return gbReportGumbelPValue;}
+    public void SetReportGumbelPValue(boolean b) {gbReportGumbelPValue = b;}
     
     /** Add ellipsoid shape to collection of spatial shapes evaluated. */
     public void  AddEllipsoidShape(double dShape, boolean bEmptyFirst) {
@@ -321,7 +333,6 @@ public class Parameters implements Cloneable {
     	  if (!gsStartRangeStartDate.equals(rhs.gsStartRangeStartDate)) return false;
     	  if (!gsStartRangeEndDate.equals(rhs.gsStartRangeEndDate)) return false;
     	  if (gdTimeTrendConverge		             != rhs.gdTimeTrendConverge) return false;
-    	  if (gbEarlyTerminationSimulations          != rhs.gbEarlyTerminationSimulations) return false;
     	  if (gbRestrictReportedClusters             != rhs.gbRestrictReportedClusters) return false;
     	  if (geSimulationType                       != rhs.geSimulationType) return false;
     	  if (!gsSimulationDataSourceFileName.equals(rhs.gsSimulationDataSourceFileName)) return false;
@@ -357,6 +368,9 @@ public class Parameters implements Cloneable {
     	  if (!gsMetaLocationsFilename.equals(rhs.gsMetaLocationsFilename)) return false;
     	  if (gbUseMetaLocationsFile != rhs.gbUseMetaLocationsFile) return false;
     	  if (!gvObservableRegions.equals(rhs.gvObservableRegions)) return false;
+          if (gePValueReportingType != rhs.gePValueReportingType) return false;          
+          if (giEarlyTermThreshold != rhs.giEarlyTermThreshold) return false;
+          if (gbReportGumbelPValue != rhs.gbReportGumbelPValue) return false;
 
     	  return true;
     }
@@ -541,7 +555,6 @@ public class Parameters implements Cloneable {
     public final String GetStudyPeriodEndDate() {return gsStudyPeriodEndDate;}
     public final String GetStudyPeriodStartDate() {return gsStudyPeriodStartDate;}
     public boolean GetSuppressingWarnings() {return gbSuppressWarnings;}
-    public boolean GetTerminateSimulationsEarly() {return gbEarlyTerminationSimulations;}
     public int GetTimeAggregationLength() {return glTimeAggregationLength;}
     public DatePrecisionType GetTimeAggregationUnitsType() {return geTimeAggregationUnitsType;}
     public double GetTimeTrendAdjustmentPercentage() {return gdTimeTrendAdjustPercentage;}
@@ -566,6 +579,14 @@ public class Parameters implements Cloneable {
   	  }
   	  catch (ArrayIndexOutOfBoundsException e) {
   		  ThrowOrdinalIndexException(iOrdinal, MultipleCoordinatesType.values());
+  	  }
+    }
+    public void SetPValueReportingType(int iOrdinal) {
+  	  try {
+  		gePValueReportingType = PValueReportingType.values()[iOrdinal];
+  	  }
+  	  catch (ArrayIndexOutOfBoundsException e) {
+  		  ThrowOrdinalIndexException(iOrdinal, gePValueReportingType.values());
   	  }
     }
     public void SetAreaRateType(int iOrdinal) {
@@ -809,7 +830,6 @@ public class Parameters implements Cloneable {
     public void SetStudyPeriodEndDate(final String sStudyPeriodEndDate) {gsStudyPeriodEndDate = sStudyPeriodEndDate;}
     public void SetStudyPeriodStartDate(final String sStudyPeriodStartDate) {gsStudyPeriodStartDate = sStudyPeriodStartDate;}
     public void SetSuppressingWarnings(boolean b) {gbSuppressWarnings=b;}
-    public void SetTerminateSimulationsEarly(boolean b) {gbEarlyTerminationSimulations = b;}
     public void SetTimeAggregationLength(int lTimeAggregationLength) {glTimeAggregationLength = lTimeAggregationLength;}
     public void SetTimeAggregationUnitsType(int iOrdinal) {
       try {

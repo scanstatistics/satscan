@@ -226,8 +226,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
-				OutputFile="$(OutDir)\SaTScanBatch.exe"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Itanium\Debug\vc.xbase.lib $(NOINHERIT)"
+				OutputFile="$(OutDir)\SaTScanBatchIA64.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
 				GenerateDebugInformation="true"
@@ -470,7 +470,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Itanium\Release\vc.xbase.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"

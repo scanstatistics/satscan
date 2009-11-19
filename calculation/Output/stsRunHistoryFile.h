@@ -38,10 +38,9 @@ class AnalysisRunner;
 
 class stsRunHistoryFile {
    private:
-      std::string                       gsFilename;
+      std::string                   gsFilename;
       ptr_vector<FieldDef>	        gvFields;
-      BasePrint*                        gpPrintDirection;
-      bool                              gbPrintPVal, gbIterativeScan;
+      BasePrint*                    gpPrintDirection;
 
       void      GetAnalysisTypeString(std::string& sTempValue, AnalysisType eAnalysisType);
       void      GetCasePrecisionString(std::string& sTempValue, int iPrecision);

@@ -13,6 +13,8 @@
 #include <fstream>
 #include "WeightedNormalRandomizer.h"
 
+unsigned int CCluster::MIN_RANK_RPT_GUMBEL = 10;
+
 /** constructor */
 CCluster::CCluster() {
   Initialize();
@@ -69,7 +71,7 @@ void CCluster::DeallocateEvaluationAssistClassMembers() {
 }
 
 /** Writes cluster properties to file stream in format required by result output file  */
-void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const {
+void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, const SimulationVariables& simVars) const {
   try {
     AsciiPrintFormat PrintFormat;
     PrintFormat.SetMarginsAsClusterSection(iReportedCluster);
@@ -96,8 +98,7 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     else
       DisplayClusterDataStandard(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);
-    DisplayMonteCarloInformation(fp, DataHub, PrintFormat, iNumSimsCompleted);
-    DisplayNullOccurrence(fp, DataHub, iNumSimsCompleted, PrintFormat);
+    DisplayMonteCarloInformation(fp, DataHub, iReportedCluster, PrintFormat, simVars);
     DisplayTimeTrend(fp, PrintFormat);
   }
   catch (prg_exception& x) {
@@ -552,74 +553,79 @@ void CCluster::DisplayLatLongCoords(FILE* fp, const CSaTScanData& Data, const As
 
 /** Writes clusters monte carlo rank and p-value in format required by result output file. */
 void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHub,
+                                            unsigned int iReportedCluster,
                                             const AsciiPrintFormat& PrintFormat,
-                                            unsigned int iNumSimsCompleted) const {
-  std::string   format, replicas;
-  float         fPValue;  
-                                            
-  if (iNumSimsCompleted) {
-    PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
-    fprintf(fp, "%u/%ld\n", m_nRank, iNumSimsCompleted+1);
+                                            const SimulationVariables& simVars) const {
+  std::string                      format, replicas, buffer;
+  const CParameters & parameters = DataHub.GetParameters();
+      
+  if (simVars.get_sim_count() == 0)
+      return;
+
+  PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
+  fprintf(fp, "%u/%ld\n", m_nRank, simVars.get_sim_count() + 1);
+
+  if (reportablePValue(parameters,simVars)) {
+    if (reportableGumbelPValue(parameters)) {
+      PrintFormat.PrintSectionLabel(fp, "Monte Carlo P-value", false, true);
+    } else {
+      PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
+    }
+    printString(replicas, "%u", simVars.get_sim_count());
+    printString(format, "%%.%dlf\n", replicas.size());
+    fprintf(fp, format.c_str(), GetPValue(parameters,simVars, iReportedCluster == 1));
   }
-  if (iNumSimsCompleted > 98) {
-    PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
-    fPValue = (float)GetPValue(iNumSimsCompleted);
-    printString(replicas, "%u", iNumSimsCompleted);
-    printString(format, "%%.%df\n", replicas.size());
-    fprintf(fp, format.c_str(), fPValue);
+  if (DataHub.GetParameters().GetPValueReportingType() != GUMBEL_PVALUE)
+    DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
+  
+  if (reportableGumbelPValue(parameters)) {
+    PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
+    PrintFormat.PrintAlignedMarginsDataString(fp, getValueAsString(GetGumbelPValue(simVars), buffer));
+  }
+  if (DataHub.GetParameters().GetPValueReportingType() == GUMBEL_PVALUE)
+    DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
+}
+
+/** Returns recurrence interval interms of years and interms of days. */
+CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanData& Data, 
+                                                               unsigned int iReportedCluster, 
+                                                               const SimulationVariables& simVars) const {
+  double        dIntervals, dPValue, dAdjustedP_Value, dUnitsInOccurrence;
+
+  if (!Data.GetParameters().GetIsProspectiveAnalysis())
+     throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.","GetRecurrenceInterval()");
+
+  dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);           
+  dPValue = Data.GetParameters().GetPValueReportingType() == GUMBEL_PVALUE ? GetGumbelPValue(simVars) : GetPValue(Data.GetParameters(), simVars, iReportedCluster == 1);
+  dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
+  dUnitsInOccurrence = static_cast<double>(Data.GetParameters().GetTimeAggregationLength())/dAdjustedP_Value;
+  
+  switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
+      case YEAR   : return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR,1.0));
+      case MONTH  : return std::make_pair(dUnitsInOccurrence/12.0, std::max((dUnitsInOccurrence/12.0) * AVERAGE_DAYS_IN_YEAR,1.0));
+      case DAY    : return std::make_pair(dUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence,1.0));
+      default     : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.",
+                                    "GetRecurrenceInterval()", Data.GetParameters().GetTimeAggregationUnitsType());
   }
 }
 
 /** Writes clusters null occurance rate in format required by result output file. */
-void CCluster::DisplayNullOccurrence(FILE* fp, const CSaTScanData& Data, unsigned int iNumSimulations, const AsciiPrintFormat& PrintFormat) const {
-  float         fUnitsInOccurrence, fYears, fMonths, fDays, fIntervals, fAdjustedP_Value;
+void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars, const AsciiPrintFormat& PrintFormat) const {
   std::string   buffer;
-  const float   AVERAGE_DAYS_IN_YEAR(365.25);
 
   try {
-    if (Data.GetParameters().GetIsProspectiveAnalysis() && Data.GetParameters().GetNumReplicationsRequested() > 98) {
-      PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
-      fIntervals = static_cast<float>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
-      fAdjustedP_Value = static_cast<float>(1 - pow(static_cast<double>(1 - GetPValue(iNumSimulations)), static_cast<int>(1/fIntervals)));
-      fUnitsInOccurrence = (float)Data.GetParameters().GetTimeAggregationLength()/fAdjustedP_Value;
-      switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
-        case YEAR   : printString(buffer, "%.1f year%s\n", fUnitsInOccurrence, (fUnitsInOccurrence > 1 ? "s" : ""));
-                      break;
-        case MONTH  : fYears = floor(fUnitsInOccurrence/12);
-                      fMonths = fUnitsInOccurrence - (fYears * 12);
-                      //we don't want to print "Once in 5 years and 12 months", so round months for it
-                      if (fMonths >= 11.5) {
-                        ++fYears;
-                        fMonths = 0;
-                      }
-                      else if (fMonths < .5)
-                        fMonths = 0;
-                      //Print correctly formatted statement.
-                      if (fMonths == 0)
-                        printString(buffer, "%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
-                      else if (fYears == 0)
-                        printString(buffer, "%.0f month%s", fMonths, (fMonths < 1.5 ? "" : "s"));
-                      else /*Having both zero month and year should never happen.*/
-                        printString(buffer, "%.0f year%s %0.f month%s", fYears, (fYears == 1 ? "" : "s"), fMonths, (fMonths < 1.5 ? "" : "s"));
-                      break;
-        case DAY    : fYears = floor(fUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR);
-                      fDays = fUnitsInOccurrence - (fYears * AVERAGE_DAYS_IN_YEAR);
-                      //we don't want to print "Once in 5 years and 0 days", so round days for it
-                      if (fDays < .5)
-                        fDays = 0;
-                      //Print correctly formatted statement.
-                      if (fDays == 0)
-                        printString(buffer, "%.0f year%s", fYears, (fYears == 1 ? "" : "s"));
-                      else if (fYears == 0)
-                        printString(buffer, "%.0f day%s", fDays, (fDays < 1.5 ? "" : "s"));
-                      else /*Having both zero day and year should never happen.*/
-                        printString(buffer, "%.0f year%s %.0f day%s", fYears, (fYears == 1 ? "" : "s"), fDays, (fDays < 1.5 ? "" : "s"));
-                      break;
-        default     : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.",
-                                      "DisplayNullOccurrence()", Data.GetParameters().GetTimeAggregationUnitsType());
-      }
-      //print data to file stream
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      if (reportableRecurrenceInterval(Data.GetParameters(), simVars)) {
+         PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
+         RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
+         if (ri.first < 1.0) {
+            printString(buffer, "%.0lf day%s", ri.second, (ri.second < 1.5 ? "" : "s"));
+         } else if (ri.first <= 10.0) {
+            printString(buffer, "%.1lf year%s", ri.first, (ri.first < 1.05 ? "" : "s"));
+         } else {
+            printString(buffer, "%.0lf years", ri.first);
+         }
+         //print data to file stream
+         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     }
   }
   catch (prg_exception& x) {
@@ -803,6 +809,15 @@ double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size
    return (tExpected ? GetObservedCountOrdinal(tSetIndex, iCategoryIndex) / tExpected : 0);
 }
 
+/** Returns Gumbel p-value. */
+double CCluster::GetGumbelPValue(const SimulationVariables& simVars) const {
+    double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
+    double mu = simVars.get_mean() - EULER * beta;
+	double p = 1 - std::exp(-std::exp((mu - GetRatio())/beta));
+	//double llr = mu - beta * std::log(std::log( 1 /( 1 - p )));
+    return p;
+}
+
 /** Returns population as string with varied precision, based upon value. */
 std::string & CCluster::GetPopulationAsString(std::string& sString, double dPopulation) const {
   if (dPopulation < .5)
@@ -815,9 +830,16 @@ std::string & CCluster::GetPopulationAsString(std::string& sString, double dPopu
   return sString;
 }
 
-/** Returns p-value, rank / (number of simulations completed + 1), of cluster. */
-double CCluster::GetPValue(unsigned int uiNumSimulationsCompleted) const {
-  return (double)m_nRank/(double)(uiNumSimulationsCompleted+1);
+/** Returns cluster p-value. */
+double CCluster::GetPValue(const CParameters& parameters, const SimulationVariables& simVars, bool bMLC) const {
+  if (simVars.get_sim_count() < parameters.GetNumReplicationsRequested()) {
+    if (bMLC)
+      return static_cast<double>(parameters.GetExecuteEarlyTermThreshold())/static_cast<double>(simVars.get_sim_count());
+    else
+      return static_cast<double>(GetRank() - 1)/static_cast<double>(simVars.get_sim_count());
+  }
+  else
+    return static_cast<double>(m_nRank)/static_cast<double>(simVars.get_sim_count() + 1);
 }
 
 /** Returns relative risk for Bernoulli, ordinal and Poisson models given parameter data. */
@@ -890,6 +912,40 @@ void CCluster::PrintClusterLocationsToFile(const CSaTScanData& DataHub, const st
     x.addTrace("PrintClusterLocationsToFile()","CCluster");
     throw;
   }
+}
+
+/** Returns indication whether this cluster can report Gumbel p-value. */
+bool CCluster::reportableGumbelPValue(const CParameters& parameters) const {
+  //Require at least 99 simulations requested.
+  if (parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE)
+      return false;
+
+  //If default combination, report only if rank meets threshold.
+  if (parameters.GetPValueReportingType() == DEFAULT_PVALUE)
+      return m_nRank < MIN_RANK_RPT_GUMBEL;
+
+  //Otherwise default to CParameters::getIsReportingGumbel()
+  return parameters.getIsReportingGumbelPValue();
+}
+
+/** Returns indication whether this cluster can report p-value. */
+bool CCluster::reportablePValue(const CParameters& parameters, const SimulationVariables& simVars) const {
+  //Require at least 99 simulations requested.
+  if (parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE)
+      return false;
+
+  //Otherwise not reportable with Gumbel Approximation.
+  return parameters.getIsReportingStandardPValue();
+}
+
+/** Returns indication whether this cluster can report recurrence interval. */
+bool CCluster::reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars) const {
+  //Require at least 99 simulations requested.
+  if (parameters.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE)
+      return false;
+
+  //Otherwise only reportable for prospective analyses
+  return parameters.GetIsProspectiveAnalysis();
 }
 
 /** Set class member 'm_CartesianRadius' from neighbor information obtained from
@@ -967,7 +1023,7 @@ void CCluster::SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const C
 /** Writes location information to stsAreaSpecificData object for each tract
     contained in cluster. */
 void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanData& DataHub,
-                     unsigned int iReportedCluster, unsigned int iNumSimsCompleted) const {
+                     unsigned int iReportedCluster, const SimulationVariables& simVars) const {
   tract_t       tTract;
   int           i;
 
@@ -981,10 +1037,10 @@ void CCluster::Write(LocationInformationWriter& LocationWriter, const CSaTScanDa
          std::vector<tract_t> indexes;
          DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(tTract - DataHub.GetNumTracts(), indexes);
          for (size_t t=0; t < indexes.size(); ++t)
-            LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], iNumSimsCompleted);
+            LocationWriter.Write(*this, DataHub, iReportedCluster, indexes[t], simVars);
        }
        else
-         LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, iNumSimsCompleted);
+         LocationWriter.Write(*this, DataHub, iReportedCluster, tTract, simVars);
     }   
   }
   catch (prg_exception& x) {

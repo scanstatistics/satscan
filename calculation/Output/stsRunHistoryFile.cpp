@@ -45,9 +45,7 @@ const char* ADDITIONAL_OUTPUT_FILES_FIELD        = "ADDIT_OUT";
 
 // constructor
 stsRunHistoryFile::stsRunHistoryFile(const CParameters& Parameters, BasePrint& PrintDirection)
-                  :gpPrintDirection(&PrintDirection),
-                   gbPrintPVal(Parameters.GetNumReplicationsRequested() > 98),
-                   gbIterativeScan(Parameters.GetIsIterativeScanning()) {
+                  :gpPrintDirection(&PrintDirection) {
   SetFileName(Parameters.GetRunHistoryFilename());
   unsigned short   uwOffset(0);     // offset is altered by the CreateNewField function
   AbstractDataFileWriter::CreateField(gvFields, RUN_NUMBER_FIELD, FieldValue::NUMBER_FLD, 8, 0, uwOffset, 0);
@@ -351,16 +349,20 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       SetStringField(*pRecord, sTempValue, GetFieldNumber(gvFields, INTERVAL_FIELD));
 
       // p-value field
-      if(gbPrintPVal) {
-         if (AnalysisRun.GetClusterContainer().GetNumClustersRetained())
-          dTopClusterRatio = AnalysisRun.GetClusterContainer().GetTopRankedCluster().GetPValue(AnalysisRun.GetNumSimulationsExecuted());
+      bool bPrintPValue = params.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
+      if(bPrintPValue) {
+         if (AnalysisRun.GetClusterContainer().GetNumClustersRetained()) {
+            const CCluster & topCluster = AnalysisRun.GetClusterContainer().GetTopRankedCluster();
+            double p_value = params.GetPValueReportingType() == GUMBEL_PVALUE ? topCluster.GetGumbelPValue(AnalysisRun.GetSimVariables()) : topCluster.GetPValue(params, AnalysisRun.GetSimVariables(), true);
+            dTopClusterRatio = p_value;
+         }
          SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
       }
       else
          pRecord->PutBlank(GetFieldNumber(gvFields, P_VALUE_FIELD));
       SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSimulationsExecuted(), GetFieldNumber(gvFields, MONTE_CARLO_FIELD));  // monte carlo  replications field
 
-      if(!gbIterativeScan && gbPrintPVal && AnalysisRun.GetIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
+      if(!params.GetIsIterativeScanning() && bPrintPValue && AnalysisRun.GetIsCalculatingSignificantRatios()) {    // only print 0.01 and 0.05 cutoffs if pVals are printed, else this would result in access underrun - AJV
          SetDoubleField(*pRecord, AnalysisRun.GetSimRatio01(), GetFieldNumber(gvFields, CUTOFF_001_FIELD)); // 0.01 cutoff field
          SetDoubleField(*pRecord, AnalysisRun.GetSimRatio05(), GetFieldNumber(gvFields, CUTOFF_005_FIELD)); // 0.05 cutoff field
          SetDoubleField(*pRecord, (double)AnalysisRun.GetNumSignificantAt005(), GetFieldNumber(gvFields, NUM_SIGNIF_005_FIELD));  // number of clusters significant at tthe .05 llr cutoff field

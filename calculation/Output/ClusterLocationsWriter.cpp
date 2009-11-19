@@ -28,8 +28,8 @@ const char * LocationInformationWriter::CLU_TIME_TREND_OUT_FIELD    = "CLU_TT_OU
 const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD   = "CLU_TT_DIF";
 
 /** class constructor */
-LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bExcludePValueField, bool bAppend)
-                          :AbstractDataFileWriter(DataHub.GetParameters()), gbExcludePValueField(bExcludePValueField) {
+LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
+                          :AbstractDataFileWriter(DataHub.GetParameters()) {
   try {
     DefineFields(DataHub);
     if (gParameters.GetOutputAreaSpecificAscii())
@@ -51,16 +51,20 @@ LocationInformationWriter::~LocationInformationWriter() {}
 // sets up the vector of field structs so that the FieldDef Vector can be created
 void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
   unsigned short uwOffset = 0;
+  std::string buffer;
 
   try {
     CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset, 0);
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 
-    if (!gbExcludePValueField) {
-      std::string buffer;
-      printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
+    printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
+    if (DataHub.GetParameters().getIsReportingStandardPValue())
       CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, std::min(17,(int)buffer.size()), uwOffset, buffer.size());
-    }
+    if (DataHub.GetParameters().getIsReportingGumbelPValue())
+      CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
+    if (gParameters.GetIsProspectiveAnalysis())
+      CreateField(vFieldDefinitions, RECURRENCE_INTERVAL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+
 
     //defined cluster level fields to report -- none of these are reported
     // for multiple data sets nor the ordinal probability model
@@ -115,7 +119,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
 // records the calculated data from the cluster into the dBase file
 // pre: pCluster has been initialized with calculated data
 // post: function will record the appropraite data into the dBase record
-void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScanData& DataHub, int iClusterNumber, tract_t tTract, unsigned int iNumSimsCompleted) {
+void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScanData& DataHub, int iClusterNumber, tract_t tTract, const SimulationVariables& simVars) {
   TractHandler::Location::StringContainer_t     vIdentifiers;
   double                                        dRelativeRisk;
   RecordBuffer                                  Record(vFieldDefinitions);
@@ -131,8 +135,13 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
        if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
          Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
-       if (!gbExcludePValueField)
-         Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(iNumSimsCompleted);
+       if (theCluster.reportablePValue(gParameters,simVars))
+           Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(gParameters, simVars, iClusterNumber == 1);
+       if (theCluster.reportableGumbelPValue(gParameters))
+           Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = theCluster.GetGumbelPValue(simVars);
+       if (theCluster.reportableRecurrenceInterval(gParameters, simVars))
+           Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(DataHub, iClusterNumber, simVars).second;
+
        //location information fields are only present for one dataset and not ordinal model
        if (Handler.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
          //When there is more than one identifiers for a tract, this indicates

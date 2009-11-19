@@ -246,7 +246,8 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
           fprintf(pFile, "           Rank:  %u\n", gvTopClusterList[i]->GetRank());
           fprintf(pFile, "   Cart. Radius:  %lf\n", gvTopClusterList[i]->GetCartesianRadius());
           */
-          gvTopClusterList[i]->Display(pFile, DataHub, i + 1, 0);
+          SimulationVariables simTemp; 
+          gvTopClusterList[i]->Display(pFile, DataHub, i + 1, simTemp);
           fprintf(pFile, " \n");
           fprintf(pFile, " \n");
         }

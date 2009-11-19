@@ -42,7 +42,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual void                        SetMostCentralLocationIndex(const CSaTScanData& DataHub) {/*nop*/}
     virtual void                        SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors) {/*nop*/}
     virtual void                        Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
-                                              unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const {/*nop*/}
+                                              unsigned int iClusterNumber, const SimulationVariables& simVars) const {/*nop*/}
 };
 //*****************************************************************************
 #endif

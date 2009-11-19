@@ -125,8 +125,14 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetTimeTrendConvergence());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "SetTerminateSimulationsEarly", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.GetTerminateSimulationsEarly());
+  mid = _getMethodId_Checked(Env, clazz, "SetPValueReportingType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.GetPValueReportingType());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "SetEarlyTermThreshold", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.GetEarlyTermThreshold());
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "SetReportGumbelPValue", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.GetReportGumbelPValue());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "SetSimulationType", "(I)V");
@@ -488,8 +494,12 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetTimeTrendConvergence(Env.CallDoubleMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "GetTerminateSimulationsEarly", "()Z");
-  Parameters.SetTerminateSimulationsEarly(Env.CallBooleanMethod(jParameters, mid));
+  Parameters.SetPValueReportingType((PValueReportingType)getEnumTypeOrdinalIndex(Env, jParameters, "GetPValueReportingType", "Lorg/satscan/app/Parameters$PValueReportingType;"));
+  mid = _getMethodId_Checked(Env, clazz, "GetEarlyTermThreshold", "()I");
+  Parameters.SetEarlyTermThreshold(static_cast<unsigned int>(Env.CallIntMethod(jParameters, mid)));
+  jni_error::_detectError(Env);
+  mid = _getMethodId_Checked(Env, clazz, "GetReportGumbelPValue", "()Z");
+  Parameters.SetReportGumbelPValue(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   Parameters.SetSimulationType((SimulationType)getEnumTypeOrdinalIndex(Env, jParameters, "GetSimulationType", "Lorg/satscan/app/Parameters$SimulationType;"));

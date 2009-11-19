@@ -48,7 +48,7 @@ class CPSMonotoneCluster : public CCluster {
     virtual void                PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     void                        SetTotalTracts();
     virtual void                Write(LocationInformationWriter& LocationWriter, const CSaTScanData& Data,
-                                      unsigned int iClusterNumber, unsigned int iNumSimsCompleted) const;
+                                      unsigned int iClusterNumber, const SimulationVariables& simVars) const;
 };
 //*****************************************************************************
 #endif
