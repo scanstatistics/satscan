@@ -109,7 +109,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      * Loads shared object libray.
      * @param is64bitEnabled
      */
-    public static void loadSharedLibray(boolean is64bitEnabled) {
+    public static void loadSharedLibray() {
         boolean is64BitVM = false;
         try {
             int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
@@ -122,7 +122,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         } catch (Throwable t) {
         }
 
-        if (is64BitVM && is64bitEnabled) {
+        if (is64BitVM) {
             System.loadLibrary("satscan64");
         } else {
             System.loadLibrary("satscan32");
@@ -899,19 +899,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 } catch (Throwable e) {
                 }
                 //check and show End User License Agreement if not "unrequested":
-                String ENABLE_64BIT_OPTION_STRING = "-64bit-enabled";
                 String DEBUG_URL_STRING = "-debug-url";
-                boolean is64bitEnabled = false;
                 boolean debugURL = false;
                 for (int i = 0; i < args.length; ++i) {
-                    if (args[i].startsWith(ENABLE_64BIT_OPTION_STRING)) {
-                        is64bitEnabled = true;
-                    } else if (args[i].startsWith(DEBUG_URL_STRING)) {
+                    if (args[i].startsWith(DEBUG_URL_STRING)) {
                         debugURL = true;
                     }
                 }
                 try {
-                    SaTScanApplication.loadSharedLibray(is64bitEnabled);
+                    SaTScanApplication.loadSharedLibray();
                 } catch (java.lang.UnsatisfiedLinkError e) {
                     JOptionPane.showMessageDialog(null,
                             "SaTScan could not locate required library. Please review error message:\n\n" + e.getMessage() + "\n",

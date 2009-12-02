@@ -21,9 +21,9 @@ public:
     mutex_type & grMutex;
     scoped_lock_type gLock;
     LockWrapper(T & rValue, mutex_type & rMutex) : grValue(rValue), grMutex(rMutex), gLock(rMutex) {  }
-    LockWrapper(T & rValue, mutex_type & rMutex, bool bLock) : grValue(rValue), grMutex(rMutex), gLock(rMutex, bLock) {  }
+    LockWrapper(T & rValue, mutex_type & rMutex, bool bLock) : grValue(rValue), grMutex(rMutex), gLock(rMutex, boost::defer_lock) {  }
   public:
-    LockWrapper(LockWrapper const & rhs) : grValue(rhs.grValue), grMutex(rhs.grMutex), gLock(rhs.grMutex, rhs.gLock.locked()) {  }
+    LockWrapper(LockWrapper const & rhs) : grValue(rhs.grValue), grMutex(rhs.grMutex), gLock(rhs.grMutex) {  }
 
     T & Value() { return grValue; }
     T const & Value() const { return grValue; }

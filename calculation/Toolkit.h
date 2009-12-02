@@ -88,6 +88,7 @@ class AppToolkit {
    const char                 * GetUpdateArchiveFilename() const {return gsUpdateArchiveFilename.c_str();}
    const char                 * GetVersion() const {return gsVersion.c_str();}
    const char                 * GetWebSite() const;
+   bool                         is64Bit() const;
    FILE                       * openDebugFile(); 
    void                         SetLastImportDirectory(const char * sLastDirectory);
    void                         SetRunUpdateOnTerminate(bool b) {gbRunUpdateOnTerminate = b;}
