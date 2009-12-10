@@ -43,6 +43,7 @@ import java.util.prefs.Preferences;
  *
  * Created on December 5, 2007, 11:14 AM
  */
+import org.satscan.gui.utils.MacOSApplication;
 
 /**
  *
@@ -72,6 +73,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final String DEFAULT_WIDTH = "1024";
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";    
     private static String RELAUNCH_TOKEN = "&";
+    private MacOSApplication _mac_os_app = new MacOSApplication();
     
     /**
      * Creates new form SaTScanApplication
