@@ -741,8 +741,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     // for situations that don't allow it. 
     if (gParameters.GetOutputRelativeRisksFiles() &&
         (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
-         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
-         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
+         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
@@ -750,7 +749,8 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING, 
                             ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
-    if (gParameters.GetOutputRelativeRisksFiles() && gParameters.GetIsPurelyTemporalAnalysis()) {
+    if (gParameters.GetOutputRelativeRisksFiles() && 
+        (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"

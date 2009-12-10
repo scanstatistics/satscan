@@ -42,8 +42,8 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
       case POISSON :  
          if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             switch (gParameters.GetAreaScanRateType()) {
-                case HIGH       : return "Increasing Rates";
-                case LOW        : return "Decreasing Rates";
+                case HIGH       : return "More Increasing or Less Decreasing Rates";
+                case LOW        : return "More Decreasing or Less Increasing Rates";
                 case HIGHANDLOW : return "Increasing or Decreasing Rates";
                 default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
             }
