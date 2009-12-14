@@ -260,11 +260,9 @@ void IniSection::Read(std::ifstream& readstream) {
   std::string                   buffer, sKey, sValue;
   bool     bDoneSection = false;
 
-  while (!bDoneSection && std::getline(readstream, buffer)) {
+
+  while (!bDoneSection && getlinePortable(readstream, buffer)) {
        trimString(buffer);
-#ifndef _WINDOWS_
-       trimString(buffer, "\r"); //std::getline is leaving carriage return on DOS text files
-#endif
        if (buffer.size() == 0) {
          filePos = readstream.tellg();
          continue;
@@ -567,11 +565,8 @@ bool IniFile::SeekToNextSection(std::ifstream& readstream) const {
   std::istream::pos_type        Pos = readstream.tellg();
   std::string                   buffer;
 
-  while (std::getline(readstream, buffer)) {
+  while (getlinePortable(readstream, buffer)) {
        trimString(buffer);
-#ifndef _WINDOWS_
-       trimString(buffer, "\r"); //std::getline is leaving carriage return on DOS text files
-#endif
        if (buffer.size() && buffer[0] == '[' && buffer[buffer.size()-1] == ']') {
          readstream.clear();
          readstream.seekg(Pos, std::ios::beg);
@@ -587,15 +582,12 @@ void IniFile::Read(const std::string& file) {
   std::string    buffer;
 
   //open file stream
-  readstream.open(file.c_str());
+  readstream.open(file.c_str(), std::ios::binary);
   if (!readstream) throw resolvable_error("Error: Could not open file '%s'.\n", file.c_str());
 
   while (SeekToNextSection(readstream)) {
-      std::getline(readstream, buffer);
+      getlinePortable(readstream, buffer);
       trimString(buffer);
-#ifndef _WINDOWS_
-      trimString(buffer, "\r"); //std::getline is leaving carriage return on DOS text files
-#endif
       std::auto_ptr<IniSection> pIniSection(new IniSection(buffer.c_str()));
       pIniSection->Read(readstream);
       gaSections.push_back(pIniSection.release());

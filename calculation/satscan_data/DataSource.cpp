@@ -91,9 +91,6 @@ const char * AsciiFileDataSource::StringParser::GetWord(long wWordIndex) {
 /** sets current parsing string -- returns indication of whether string contains any words. */
 bool AsciiFileDataSource::StringParser::SetString(std::string& sParseLine) {
    gwCurrentWordIndex=-1; //clear word index
-#ifndef _WINDOWS_
-   trimString(sParseLine, "\r"); //std::getline is leaving carriage return on DOS text files
-#endif
    gpParseLine = &sParseLine;
    gcp = gpParseLine->c_str();
    return HasWords();
@@ -146,7 +143,7 @@ bool AsciiFileDataSource::ReadRecord() {
     gSourceFile.seekg(0L, std::ios::beg);
   }
   gsReadBuffer.clear();
-  while (std::getline(gSourceFile, gsReadBuffer) && !gStringParser->SetString(gsReadBuffer)) ++glReadCount;
+  while (getlinePortable(gSourceFile, gsReadBuffer) && !gStringParser->SetString(gsReadBuffer)) ++glReadCount;
   ++glReadCount;
   return (gsReadBuffer.size() > 0 && gStringParser->HasWords());
 }

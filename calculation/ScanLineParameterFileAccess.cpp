@@ -143,7 +143,7 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
     gParameters.SetVersion(Version);
 
     while (iLinesRead < (size_t)gParameters.GetNumReadParameters() && !bEOF) {
-         bEOF = !std::getline(SourceFile, sLineBuffer);
+         bEOF = !getlinePortable(SourceFile, sLineBuffer);
          if (!bEOF) {
            ++iLinesRead;
            //Pre-process parameters that have descriptions, strip decription off.
@@ -157,9 +157,6 @@ bool ScanLineParameterFileAccess::Read(const char* sFileName) {
                 sLineBuffer.resize(iPos);
            }
            trimString(sLineBuffer);
-#ifndef _WINDOWS_
-           trimString(sLineBuffer, "\r"); //std::getline is leaving carriage return on DOS text files
-#endif
            SetParameter((ParameterType)iLinesRead, sLineBuffer, gPrintDirection);
          }
     }
