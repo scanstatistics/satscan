@@ -685,6 +685,13 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
                               "of population defined in maximum circle file. This feature is not implemented for %s model.\n", 
                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
+    if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
+      bReturn = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for %s analysis.\n", 
+                            BasePrint::P_PARAMERROR, 
+                            ParametersPrint(gParameters).GetProbabilityModelTypeAsString(),
+                            ParametersPrint(gParameters).GetAnalysisTypeAsString());
+    }
     if (gParameters.GetExecutionType() == CENTRICALLY) {
       bReturn = false;
       PrintDirection.Printf("Invalid Parameter Setting:\nCentric analysis execution is not a valid settings for %s model.\n", 
@@ -1355,7 +1362,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
 
   try {
     //validate temporal options only for analyses that are temporal
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
+    if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
       //default these options - Not sure why orignal programmers did this. When
       //there is more time, we want to examine code so that we don't need to.
       //Instead, code related to these variables just shouldn't be executed.
