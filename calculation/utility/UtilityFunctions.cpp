@@ -5,6 +5,8 @@
 #include "UtilityFunctions.h"
 #include "SSException.h"
 #include <cmath>
+#include <iostream>
+#include <fstream>
 
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
@@ -294,3 +296,33 @@ std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defau
   return s;
 }    
 #endif
+
+/** Attempt to readline for stream giving consideration to DOS, UNIX (or Mac Os X) and Mac 9 (or earlier) line ends. 
+    Returns whether data was read or end of file encountered. */
+bool getlinePortable(std::ifstream& readstream, std::string& line) {
+  std::ifstream::char_type nextChar;
+  std::stringstream        readStream;
+
+  while (!readstream.eof()) {
+
+	  if (!readstream.get(nextChar)) {//Does reading next char bring us to end of file?
+         break;
+      }
+      if (nextChar == readstream.widen('\r')) {
+          // could be either DOS or Mac 9 end of line -- peek at next char
+          nextChar = readstream.peek();
+          if (nextChar == readstream.widen('\n')) {
+		      //DOS end of line characters -- read it.
+              readstream.get(nextChar);
+          }
+          break;
+      }
+      if (nextChar == readstream.widen('\n')) {
+	      //UNIX or Mac OS X end of line character.
+          break;
+      }
+      readStream << nextChar;
+  }
+  line = readStream.str();
+  return line.size() > 0 ? true : readstream.eof() == false;
+}
