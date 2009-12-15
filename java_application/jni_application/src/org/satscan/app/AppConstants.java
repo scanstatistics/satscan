@@ -4,6 +4,10 @@
  */
 package org.satscan.app;
 
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Properties;
+
 /**
  * 
  */
@@ -13,7 +17,7 @@ public final class AppConstants {
     public static final int MIN_YEAR = 1753;
     public static final int MAX_YEAR = 9999;
     public static final int VERSION_MAJOR = 8;
-    public static final int VERSION_MINOR = 1;
+    public static final int VERSION_MINOR = 2;
     public static final int VERSION_RELEASE = 0;
 
     public static final String getSoftwareTitle() {
@@ -27,6 +31,19 @@ public final class AppConstants {
         return version.toString();
     }
     
+    static public final HashMap getEnviromentVariables() {
+        HashMap variables = new HashMap();
+        variables.put("SaTScan Application Version", getGraphicalVersion());
+        variables.put("SaTScan Engine Version", getVersion()); 
+        variables.put("SaTScan Version Id", getVersionId()); 
+        Properties sysprops = System.getProperties();
+        for ( Enumeration e = sysprops.propertyNames(); e.hasMoreElements(); ) {
+            String key = (String)e.nextElement();
+            variables.put(key, sysprops.getProperty( key )); 
+        } 
+        return variables;
+    }
+
     native static public final String getVersion();
 
     native static public final String getWebSite();
