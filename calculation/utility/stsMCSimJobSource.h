@@ -55,6 +55,7 @@ private://data members
   boost::dynamic_bitset<>                   gbsUnregisteredJobs;
   exception_sequence_type                   gvExceptions;
   job_id_type                               guiNextProcessingJobId;
+  job_id_type                               guiJobsReported;
   result_registration_fn_type               gfnRegisterResult;
   overflow_jobs_container_type              gmapOverflowResults;//contains unprocesed results for jobs, sorted by jobid.
   const boost::posix_time::ptime            gConstructionTime;

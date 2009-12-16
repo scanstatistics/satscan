@@ -23,6 +23,7 @@ stsMCSimJobSource::stsMCSimJobSource(
  , grRunner(rRunner)
  , guiJobCount(rParameters.GetNumReplicationsRequested())
  , guiNextProcessingJobId(1)
+ , guiJobsReported(0)
 {
   if (rParameters.GetTerminateSimulationsEarly()) {
     gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbort;
@@ -286,10 +287,11 @@ void stsMCSimJobSource::RegisterResult_NoAutoAbort(job_id_type const & rJobID, p
 
     //update ratios, significance, etc.
     WriteResultToStructures(rResult.dSuccessfulResult);
+    ++guiJobsReported;
 
     //if appropriate, estimate time required to complete all jobs and report it.
     unsigned int uiJobsProcessedCount = (gbsUnregisteredJobs.size()-gbsUnregisteredJobs.count()) + guiUnregisteredJobLowerBound; //this one hasn't been reset in gbsUnregisteredJobs yet.
-    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, rJobID, guiJobCount, rResult.dSuccessfulResult);
+    grPrintDirection.Printf(gszReplicationFormatString, BasePrint::P_STDOUT, guiJobsReported, guiJobCount, rResult.dSuccessfulResult);
     if (uiJobsProcessedCount==10) {
       ::ReportTimeEstimate(gConstructionTime, guiJobCount, rParam, &grPrintDirection);
       SaTScan::Timestamp tsReleaseTime; tsReleaseTime.Now(); tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
