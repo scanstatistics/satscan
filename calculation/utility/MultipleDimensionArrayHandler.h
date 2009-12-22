@@ -17,6 +17,7 @@ class MinimalGrowthArray {
 
    public:
      MinimalGrowthArray(const std::vector<T>& v);
+     MinimalGrowthArray(const MinimalGrowthArray& a);
      MinimalGrowthArray() : giSize(0), gpArray(0) {}
      ~MinimalGrowthArray();
 
@@ -32,6 +33,12 @@ template <class T>
 MinimalGrowthArray<T>::MinimalGrowthArray(const std::vector<T>& v) : giSize(v.size()) {
    gpArray = new T[giSize];
    for (unsigned int i=0; i < giSize; ++i) gpArray[i] = v[i];
+}
+
+template <class T>
+MinimalGrowthArray<T>::MinimalGrowthArray(const MinimalGrowthArray<T>& a) : giSize(a.giSize) {
+   gpArray = new T[giSize];
+   for (unsigned int i=0; i < giSize; ++i) gpArray[i] = a.gpArray[i];
 }
 
 template <class T>

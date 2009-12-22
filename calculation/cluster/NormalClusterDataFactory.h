@@ -14,8 +14,10 @@
           thus only the functions with 'const AbstractDataSetGateway&' are of
           us at this time.                                                    */
 class NormalClusterDataFactory : public AbstractClusterDataFactory {
+ bool _covariates;
+
  public:
-   NormalClusterDataFactory();
+   NormalClusterDataFactory(const CSaTScanData& Data);
    virtual ~NormalClusterDataFactory();
 
    //spatial cluster data
@@ -51,7 +53,7 @@ class MultiSetNormalClusterDataFactory : public AbstractClusterDataFactory {
    NormalClusterDataFactory             gClusterDataFactory;   /** cluster factory object */
 
  public:
-   MultiSetNormalClusterDataFactory();
+   MultiSetNormalClusterDataFactory(const CSaTScanData& Data);
    virtual ~MultiSetNormalClusterDataFactory();
 
    //spatial cluster data

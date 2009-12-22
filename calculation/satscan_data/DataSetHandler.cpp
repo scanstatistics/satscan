@@ -326,20 +326,9 @@ bool DataSetHandler::RetrieveCovariatesIndex(PopulationData & thePopulation, int
       }
     }
     else if (gParameters.GetProbabilityModelType() == BERNOULLI) {
-      //For the Bernoulli model, verify that no covariates exist in the case and control files.            
-      while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iCovariatesOffset)) != 0) {
-           vCategoryCovariates.push_back(pCovariate);
-           iNumCovariatesScanned++;
-      }
-	  if (iNumCovariatesScanned > 0) {
-        gPrint.Printf("Error: Record %ld of %s contains %d extra column%s assumed to be covariate\n"
-                      "       but the Bernoulli model does not permit covariates.\n", BasePrint::P_READERROR,
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(),
-                      iNumCovariatesScanned, (iNumCovariatesScanned == 1 ? "" : "s"),
-                      thePopulation.GetNumCovariatesPerCategory());
-        return false;            
-	  }
-      iCategoryIndex = 0; //All population categories are aggregated in one category.
+      //For the Bernoulli model, ignore covariates in the case and control files
+      //All population categories are aggregated in one category.
+      iCategoryIndex = 0;
     }
     else if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION) {
         //First category created sets precedence as to how many covariates remaining records must have.

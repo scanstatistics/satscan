@@ -294,7 +294,7 @@ bool SaTScanDataReader::ReadCoordinatesFile() {
                                (!gParameters.UseAdjustmentForRelativeRisksFile() ||
                                (gParameters.UseAdjustmentForRelativeRisksFile() && gParameters.GetCoordinatesFileName().size() == 0));
 
-      if (bNoPT_Coordinates) {
+    if (bNoPT_Coordinates) {
       gDataHub.m_nTracts = gTractHandler.getLocations().size();
       bReturn = true;
     }

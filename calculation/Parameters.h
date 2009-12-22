@@ -191,7 +191,8 @@ class CParameters {
     bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
     SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
     std::vector<std::string>            gvObservableRegions;                    /** collection of observable regions */
-    bool                                gbWeightedNormal;                       /** convieniance variable - is normal model is weighted*/
+    bool                                gbWeightedNormal;                       /** convieniance variable - normal model is weighted*/
+    bool                                gbWeightedNormalCovariates;             /** convieniance variable - normal model is weighted with covariates */
     unsigned int                        giEarlyTermThreshold;                   /** early termination threshold */
     PValueReportingType                 gePValueReportingType;                  /** p-value reporting type */
     bool                                gbReportGumbelPValue;                   /** report Gumbel p-value */
@@ -326,6 +327,7 @@ class CParameters {
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
     bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
+    bool                                getIsWeightedNormalCovariates() const {return gbWeightedNormalCovariates;}    
     bool                                getIsReportingGumbelPValue() const;
     bool                                getIsReportingStandardPValue() const;
     void                                RequestAllAdditionalOutputFiles();
@@ -411,6 +413,7 @@ class CParameters {
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetIsWeightedNormal(bool b) {gbWeightedNormal = b;}
+    void                                SetIsWeightedNormalCovariates(bool b) {gbWeightedNormalCovariates = b;}    
     void                                UseMetaLocationsFile(bool b) {gbUseMetaLocationsFile = b;}
     void                                UseLocationNeighborsFile(bool b) {gbUseLocationNeighborsFile = b;}
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}

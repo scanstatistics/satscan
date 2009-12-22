@@ -15,6 +15,7 @@
 #include "NormalLikelihoodCalculation.h"
 #include "OrdinalLikelihoodCalculation.h"
 #include "WeightedNormalLikelihoodCalculation.h"
+#include "WeightedNormalCovariatesLikelihoodCalculation.h"
 #include "MeasureList.h"
 #include "SSException.h"
 
@@ -52,8 +53,12 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);
     case BERNOULLI            : return new BernoulliLikelihoodCalculator(DataHub);
-    case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) 
-                                    return new WeightedNormalLikelihoodCalculator(DataHub);
+    case NORMAL               : if (DataHub.GetParameters().getIsWeightedNormal()) { 
+                                    if (DataHub.GetParameters().getIsWeightedNormalCovariates()) 
+                                       return new WeightedNormalCovariatesLikelihoodCalculator(DataHub);
+                                    else 
+                                       return new WeightedNormalLikelihoodCalculator(DataHub);
+                                }
                                 return new NormalLikelihoodCalculator(DataHub);
     case CATEGORICAL          : /*** may or may not implement separate class ***/
     case ORDINAL              : return new OrdinalLikelihoodCalculator(DataHub);
@@ -103,9 +108,9 @@ void AbstractAnalysis::Setup() {
     if (gParameters.GetProbabilityModelType() == NORMAL) {
       geReplicationsProcessType = ClusterEvaluation;
       if (gParameters.GetNumDataSets() == 1)
-        gpClusterDataFactory = new NormalClusterDataFactory();
+        gpClusterDataFactory = new NormalClusterDataFactory(gDataHub);
       else
-        gpClusterDataFactory = new MultiSetNormalClusterDataFactory();
+        gpClusterDataFactory = new MultiSetNormalClusterDataFactory(gDataHub);
     }
     else if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
       geReplicationsProcessType = ClusterEvaluation;

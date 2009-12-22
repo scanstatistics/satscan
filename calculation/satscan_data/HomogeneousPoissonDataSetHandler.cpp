@@ -83,7 +83,7 @@ RandomizerContainer_t& HomogeneousPoissonDataSetHandler::GetRandomizerContainer(
     utilized in performing simulations (Monte Carlo) for the Poisson
     probablity model, analysis type and possibly inclusion purely temporal
     clusters. Caller is responsible for destructing returned object. */
-AbstractDataSetGateway & HomogeneousPoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & HomogeneousPoissonDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {

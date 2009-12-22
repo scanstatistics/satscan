@@ -3,11 +3,73 @@
 #define WeightedNormalRandomizerH
 //******************************************************************************
 #include "PermutationDataRandomizer.h"
+#include "MultipleDimensionArrayHandler.h"
+
 
 class CSaTScanData;  /** forward class declaration */
+class ColumnVector;  /** forward class declaration */
+class Matrix;        /** forward class declaration */
+
+class WeightedNormalVariables {
+    public:
+        const double & first;
+        const double & second;
+
+    private:
+        std::pair<double, double>    gtStandard;
+        MinimalGrowthArray<double> * gpAdditional; 
+
+        void init() {gpAdditional=0;gtStandard.first=0;gtStandard.second=0;}
+
+    public:
+        WeightedNormalVariables(double dWeight, double dRate)
+            :first(gtStandard.first), second(gtStandard.second) {
+            init();
+            gtStandard.first = dWeight;
+            gtStandard.second = dRate;
+        }
+        WeightedNormalVariables(double dWeight, double dRate, const std::vector<double>& additional)
+            :first(gtStandard.first), second(gtStandard.second) {
+            init();
+            gtStandard.first = dWeight;
+            gtStandard.second = dRate;
+            gpAdditional = new MinimalGrowthArray<double>(additional);
+        }
+        WeightedNormalVariables(const WeightedNormalVariables& rhs)
+            :first(gtStandard.first), second(gtStandard.second) {
+            init();
+            gtStandard = rhs.gtStandard;
+            if (rhs.gpAdditional) gpAdditional = new MinimalGrowthArray<double>(*rhs.gpAdditional);
+        }
+        virtual ~WeightedNormalVariables() { try {delete gpAdditional;} catch(...){} }
+
+        WeightedNormalVariables & operator=(const WeightedNormalVariables& rhs) {
+            try {
+                gtStandard = rhs.gtStandard;
+                delete gpAdditional; gpAdditional = 0;
+                gpAdditional = new MinimalGrowthArray<double>(*rhs.gpAdditional);
+            } catch (prg_exception& x) {
+                x.addTrace("operator=()","WeightedNormalVariables");
+                throw;
+            }
+            return *this;          
+        }
+
+        const MinimalGrowthArray<double> * getAdditional() const {return gpAdditional;}
+};
 
 typedef StationaryAttribute<std::pair<int, tract_t> >   WeightedNormalStationary_t;
-typedef PermutedAttribute<std::pair<double, double> >   WeightedNormalPermuted_t;
+typedef PermutedAttribute<WeightedNormalVariables >   WeightedNormalPermuted_t;
+
+/** Function object used to compare LocationIdentifier::gsIndentifier. */
+class CompareWeightedNormalStationary {
+  public:
+     bool operator() (const WeightedNormalStationary_t & lhs, const WeightedNormalStationary_t & rhs) {
+         if (lhs.GetStationaryVariable().first == rhs.GetStationaryVariable().first)
+             return lhs.GetStationaryVariable().second < rhs.GetStationaryVariable().second;
+         return lhs.GetStationaryVariable().first == rhs.GetStationaryVariable().first;
+     }
+};
 
 /** */
 class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<WeightedNormalStationary_t, WeightedNormalPermuted_t>{
@@ -82,14 +144,20 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
      virtual ~AbstractWeightedNormalRandomizer() {}
 
     virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight);
+    virtual void               AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates);
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
+    void                       get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const;
+    void                       get_xg(std::auto_ptr<Matrix>& xp, bool bExcludeSelectColumn=false) const;
     ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
     ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
+    bool                       getHasCovariates() const;
     DataSetStatistics          getDataSetStatistics() const;
     measure_t                  getFirstRatioConstant() const {return gtFirstRatioConstant;}
     RiskEstimateStatistics     getRiskEstimateStatistics(const CSaTScanData& DataHub) const;
     measure_t                  getSecondRatioConstant() const {return gtSecondRatioConstant;}
     virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
+    bool                       hasUniqueLocationsCoverage(const CSaTScanData& DataHub) const;
+    //boost::dynamic_bitset<>    hasUniqueLocationsCoverage(const CSaTScanData& DataHub) const;
 };
 
 /** Randomizes data of dataset for a 'normal' probablility model.

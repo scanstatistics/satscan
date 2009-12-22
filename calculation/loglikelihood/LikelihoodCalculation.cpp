@@ -6,6 +6,7 @@
 #include "SaTScanData.h"
 #include "LoglikelihoodRatioUnifier.h"
 #include "SSException.h"
+#include "newmat.h"
 
 /** class constructor */
 AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& DataHub)
@@ -25,16 +26,21 @@ AbstractLikelihoodCalculator::AbstractLikelihoodCalculator(const CSaTScanData& D
         case HIGH       :
         default         : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateNormal;
       };
-    }
-    else if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL && gDataHub.GetParameters().getIsWeightedNormal()) {
+    } else if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL && gDataHub.GetParameters().getIsWeightedNormalCovariates()) {
+      switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
+        case LOW        : 
+        case HIGHANDLOW : 
+        case HIGH       :
+        default         : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::AllRatesWeightedNormalCovariates;
+      };
+    } else if (gDataHub.GetParameters().GetProbabilityModelType() == NORMAL && gDataHub.GetParameters().getIsWeightedNormal()) {
       switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
         case LOW        : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::LowRateWeightedNormal; break;
         case HIGHANDLOW : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal; break;
         case HIGH       :
         default         : gpRateOfInterestNormal = &AbstractLikelihoodCalculator::HighRateWeightedNormal;
       };
-    }
-    else {
+    } else {
       switch (gDataHub.GetParameters().GetExecuteScanRateType()) {
         case LOW        : gpRateOfInterest = &AbstractLikelihoodCalculator::LowRate; break;
         case HIGHANDLOW : gpRateOfInterest = &AbstractLikelihoodCalculator::HighOrLowRate; break;
@@ -96,6 +102,16 @@ double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioOrdinal(const std::ve
 /** Throws exception. Not implemented in base class */
 double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex) const {
   throw prg_error("CalcLogLikelihoodRatioNormal(count_t,measure_t,measure_t,count_t,measure_t,measure_t) not implementated.","AbstractLikelihoodCalculator");
+}
+
+/** Throws exception. Not implemented in base class */
+double AbstractLikelihoodCalculator::CalcLogLikelihoodRatioNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex) const {
+  throw prg_error("CalcLogLikelihoodRatioNormal(Matrix&,Matrix&,Matrix&,size_t) not implementated.","AbstractLikelihoodCalculator");
+}
+
+/** Throws exception. Not implemented in base class */
+double AbstractLikelihoodCalculator::CalculateMaximizingValueNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex) const {
+  throw prg_error("CalcLogLikelihoodRatioNormal(Matrix&,Matrix&,Matrix&,size_t) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */

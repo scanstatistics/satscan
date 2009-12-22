@@ -9,6 +9,9 @@
 
 /** Class representing accumulated data of spatial clustering. */
 class SpatialData : public AbstractSpatialClusterData {
+protected:
+    SpatialData(): AbstractSpatialClusterData() {}
+
   public:
     SpatialData(const DataSetInterface& Interface);
     SpatialData(const AbstractDataSetGateway& DataGateway);

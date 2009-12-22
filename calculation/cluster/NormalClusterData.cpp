@@ -2,11 +2,16 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //******************************************************************************
+#include "SaTScanData.h"
 #include "NormalClusterData.h"
 #include "SSException.h"
-#include "SaTScanData.h"
+#include "newmat.h"
+#include "WeightedNormalRandomizer.h"
 
 //************** class NormalSpatialData ***************************************
+
+/** class constructor */
+NormalSpatialData::NormalSpatialData() : SpatialData(), gtMeasureAux(0) {}
 
 /** class constructor */
 NormalSpatialData::NormalSpatialData(const DataSetInterface& Interface)
@@ -465,3 +470,236 @@ void NormalSpaceTimeData::Setup(const DataSetInterface& Interface) {
   }
 }
 
+//************** class NormalCovariateSpatialData ***************************************
+
+/** class constructor */
+NormalCovariateSpatialData::NormalCovariateSpatialData(const DataSetInterface& Interface)
+                  :NormalSpatialData(Interface), geEvaluationAssistDataStatus(Allocated),
+                   _deltag(0), _w_div_delta(0), _xg(0), _tobeinversed(0), _xgsigmaw(0) {
+    try {
+        Setup(Interface);
+    } catch (prg_exception& x) {
+        x.addTrace("NormalCovariateSpatialData(const DataSetInterface&)","NormalCovariateSpatialData");
+        throw;
+    }
+}
+
+/** class constructor */
+NormalCovariateSpatialData::NormalCovariateSpatialData(const AbstractDataSetGateway& DataGateway)
+                  :NormalSpatialData(DataGateway), geEvaluationAssistDataStatus(Allocated),
+                   _deltag(0), _w_div_delta(0), _xg(0), _tobeinversed(0), _xgsigmaw(0){
+    try {
+        Setup(DataGateway.GetDataSetInterface());
+    } catch (prg_exception& x) {
+        x.addTrace("NormalCovariateSpatialData(const AbstractDataSetGateway&)","NormalCovariateSpatialData");
+        throw;
+    }
+}
+
+/**  Copy constructor */
+NormalCovariateSpatialData::NormalCovariateSpatialData(const NormalCovariateSpatialData& rhs)
+                  :_deltag(0), _w_div_delta(0), _xg(0), _tobeinversed(0), _xgsigmaw(0) {
+   try {
+    *this = rhs;
+  }
+  catch (prg_exception& x) {
+    x.addTrace("constructor(const NormalCovariateSpatialData&)","NormalCovariateSpatialData");
+    throw;
+  }
+}
+
+/** Destructor */
+NormalCovariateSpatialData::~NormalCovariateSpatialData() {
+    try {
+      delete _deltag; _deltag=0;
+      delete _w_div_delta; _w_div_delta=0;
+      delete _xg; _xg=0;
+      delete _tobeinversed; _tobeinversed=0;
+      delete _xgsigmaw; _xgsigmaw=0;
+    } catch (...) { }
+}
+
+/** Adds neighbor data to accumulation  - caller is responsible for ensuring that 'tNeighborIndex' and 'tSetIndex' are valid indexes. */
+void NormalCovariateSpatialData::AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  //update case and measure totals
+  gtCases += DataGateway.GetDataSetInterface(tSetIndex).GetPSCaseArray()[tNeighborIndex];
+  gtMeasure += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureArray()[tNeighborIndex];
+  gtMeasureAux += DataGateway.GetDataSetInterface(tSetIndex).GetPSMeasureAuxArray()[tNeighborIndex];
+
+  //NOTE: There is a major assumption that is expected to be enforced in other parts of the program.
+  //      When adding each neighbor's data, the number of cases should increase by exactly one. That
+  //      assumption is carried forward with the operations to the matrices below.
+  //      This iss how the algorithm was designed -- each location must have exactly one case record,
+  //      not allowing missing data.
+
+  //update matrices for addition of location
+  _xg->element(tNeighborIndex,0) = 1;
+  _tobeinversed->element(0,0) = _tobeinversed->element(0,0) + (1/_deltag->element(tNeighborIndex));
+  for (int k=1; k < _tobeinversed->Ncols(); ++k) {
+    _tobeinversed->element(0,k) = _tobeinversed->element(0,k) + _xg->element(tNeighborIndex,k)/_deltag->element(tNeighborIndex);
+    _tobeinversed->element(k,0) = _tobeinversed->element(0,k);
+  }
+  _xgsigmaw->element(0,0) = _xgsigmaw->element(0,0) + _w_div_delta->element(tNeighborIndex);
+}
+
+/** overloaded assignement operator */
+NormalCovariateSpatialData & NormalCovariateSpatialData::operator=(const NormalCovariateSpatialData& rhs) {
+  gtCases = rhs.gtCases;
+  gtMeasure = rhs.gtMeasure;
+  gtMeasureAux = rhs.gtMeasureAux;
+  if (rhs.geEvaluationAssistDataStatus == Allocated) {
+      if (_deltag)
+          *_deltag = *rhs._deltag;
+      else
+          _deltag = new ColumnVector(*rhs._deltag);
+      if (_w_div_delta)
+          *_w_div_delta = *rhs._w_div_delta;
+      else
+          _w_div_delta = new ColumnVector(*rhs._w_div_delta);
+      if (_xg)
+          *_xg = *rhs._xg;
+      else
+          _xg = new Matrix(*rhs._xg);
+      if (_tobeinversed)
+          *_tobeinversed = *rhs._tobeinversed;
+      else
+          _tobeinversed = new Matrix(*rhs._tobeinversed);
+      if (_xgsigmaw)
+          *_xgsigmaw = *rhs._xgsigmaw;
+      else
+          _xgsigmaw = new Matrix(*rhs._xgsigmaw);
+  } else {
+    delete _xg; _xg=0;
+    delete _tobeinversed; _tobeinversed=0;
+    delete _xgsigmaw; _xgsigmaw=0;
+    delete _deltag; _deltag=0;
+    delete _w_div_delta; _w_div_delta=0;
+  }
+  geEvaluationAssistDataStatus = rhs.geEvaluationAssistDataStatus;
+  return *this;
+}
+
+/** Assigns cluster data of passed object to 'this' object. Caller of function
+    is responsible for ensuring that passed AbstractSpatialClusterData object
+    can be casted to 'NormalSpatialData' object. */
+void NormalCovariateSpatialData::Assign(const AbstractSpatialClusterData& rhs) {
+  *this = (const NormalCovariateSpatialData&)rhs;
+}
+
+/** Calculates loglikelihood ratio, given current accumulated cluster data, if
+    it is determined that data fits scanning area of interest (high, low, both).
+    Returns zero if rate not of interest else returns loglikelihood ratio as
+    calculated by probability model. */
+double NormalCovariateSpatialData::CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator) {
+   assert(geEvaluationAssistDataStatus == Allocated);
+   if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0)) {
+      double ratio = Calculator.CalcLogLikelihoodRatioNormal(*_xg, *_tobeinversed,*_xgsigmaw);
+      return ratio;
+   }
+   return 0;
+}
+
+/** Returns newly cloned NormalSpatialData object. Caller is responsible for deletion of object. */
+NormalCovariateSpatialData * NormalCovariateSpatialData::Clone() const {
+  return new NormalCovariateSpatialData(*this);
+}
+
+/** Copies class data members that reflect the number of cases, expected, and expected
+    squared values, which is the data we are interested in for possiblely reporting. */
+void NormalCovariateSpatialData::CopyEssentialClassMembers(const AbstractClusterData& rhs) {
+  gtCases = ((const NormalCovariateSpatialData&)rhs).gtCases;
+  gtMeasure = ((const NormalCovariateSpatialData&)rhs).gtMeasure;
+  gtMeasureAux = ((const NormalCovariateSpatialData&)rhs).gtMeasureAux;
+}
+
+/** Deallocates data members that assist with evaluation of temporal data.
+    Once this function is called various class member functions become invalid
+    and an assertion will fail if called. */
+void NormalCovariateSpatialData::DeallocateEvaluationAssistClassMembers() {
+  try {
+    delete _deltag; _deltag=0;
+    delete _xg; _xg=0;
+    delete _w_div_delta; _w_div_delta=0;
+    geEvaluationAssistDataStatus = Deallocated;
+  }
+  catch (...){}
+}
+
+/** Calculates and returns maximizing value given accumulated cluster data. If data
+    is not significant given scanning rate, negation of maximum double returned. */
+double NormalCovariateSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& Calculator) {
+  assert(geEvaluationAssistDataStatus == Allocated);
+  if ((Calculator.*Calculator.gpRateOfInterestNormal)(gtCases, gtMeasure, gtMeasureAux, 0))
+    return Calculator.CalculateMaximizingValueNormal(*_xg, *_tobeinversed,*_xgsigmaw);   
+  return -std::numeric_limits<double>::max();
+}
+
+/** Initializes data given passed data gateway. Accesses randomizer of data interface to
+    retrieve initial data structures. */
+void NormalCovariateSpatialData::InitializeData(const AbstractDataSetGateway& DataGateway) {
+   try {
+     delete _deltag; _deltag=0;
+     delete _xg; _xg=0;
+     delete _w_div_delta; _w_div_delta=0;
+
+     const DataSetInterface& Interface = DataGateway.GetDataSetInterface();
+     const AbstractWeightedNormalRandomizer* randomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Interface.GetRandomizer());
+     if (randomizer == 0)
+        throw prg_error("Unable to cast pointer to AbstractWeightedNormalRandomizer object.","InitializeData(const AbstractDataSetGateway&)");
+
+     std::auto_ptr<ColumnVector> wg, deltag;
+     randomizer->get_wg_deltag(wg, deltag);
+     _deltag = deltag.release();
+
+     _w_div_delta = new ColumnVector(_deltag->Nrows());
+     for (int r=0; r < _w_div_delta->Nrows(); ++r)
+        _w_div_delta->element(r) = wg->element(r)/_deltag->element(r);
+
+     std::auto_ptr<Matrix> xg;
+     randomizer->get_xg(xg,false);
+     _xg = xg.release();
+     geEvaluationAssistDataStatus = Allocated;
+     InitializeData();
+   } catch (prg_exception& x) {
+       x.addTrace("InitializeData(const AbstractDataSetGateway&)","NormalCovariateSpatialData");
+       throw;
+   }
+}
+
+/** Initializes data such that no observations are in data. */
+void NormalCovariateSpatialData::InitializeData() {
+    assert(geEvaluationAssistDataStatus == Allocated);
+    gtCases=0;gtMeasure=0;gtMeasureAux=0;
+    //set all elements of first column to zero -- meaing no tract in data
+    for (int r=0; r < _xg->Nrows(); ++r) {
+      _xg->element(r,0) = 0;
+    }
+    //initialize the the matrix that will be inversed
+    Matrix temp(*_xg);
+    for (int r=0; r < temp.Nrows(); ++r)
+       for (int c=0; c < temp.Ncols(); ++c) {
+           temp.element(r,c) = temp.element(r,c)/_deltag->element(r);
+       }
+    if (_tobeinversed)
+        *_tobeinversed = _xg->t() * temp;
+    else
+        _tobeinversed = new Matrix(_xg->t() * temp);
+    //initialize xg sigma w matrix
+    if (_xgsigmaw)
+        *_xgsigmaw = _xg->t() * (*_w_div_delta);
+    else 
+        _xgsigmaw = new Matrix(_xg->t() * (*_w_div_delta));
+}
+
+/** internal setup function */
+void NormalCovariateSpatialData::Setup(const DataSetInterface& Interface) {
+    try {
+        DataSetGateway gateway;
+        gateway.AddDataSetInterface(const_cast<DataSetInterface&>(Interface));
+        InitializeData(gateway);
+    } catch (prg_exception& x) {
+        x.addTrace("NormalCovariateSpatialData(const AbstractDataSetGateway&)","Setup()");
+        throw;
+    }
+}

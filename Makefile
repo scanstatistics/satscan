@@ -27,20 +27,21 @@ LOGLIKELIHOOD  := $(SATSCAN)/calculation/loglikelihood
 
 XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
-BOOSTDIR    := $(SATSCAN)/../boost/boost_1_34_1
+BOOSTDIR    := $(SATSCAN)/../boost/boost_1_39_0
+NEWMAT      := $(SATSCAN)/newmat/newmat10
 #JNI         :=
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
-               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL)\
+               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT)\
 	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI)
 
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
                               
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
-LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lxbaseg -lm -Wl,-Bdynamic -lrt -lpthread
+LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-Bstatic -lxbaseg -lnewmat -lm -Wl,-Bdynamic -lrt -lpthread
 # static libgcc flags 
-#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lm -lpthread 
+#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lm -lpthread 
 
 # Linux link flags
 L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINUX_LIBRARY).x.x.0
@@ -49,7 +50,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -Wl,-dynamic -lxbase -lstdc++ -lm
+M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-dynamic -lxbase -lnewmat -lstdc++ -lm
 M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(ANALYSIS)/Analysis.cpp \
@@ -244,13 +245,13 @@ $(MAC_APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(M_LFLAGS) -o $@
 
 $(LINUX_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbaseg -lm -lrt -lpthread
+	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -lxbaseg -lnewmat  -lm -lrt -lpthread
 
 $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbaseg -lm -lrt -lpthread
+	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -lxbaseg -lnewmat -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -lxbase -lstdc++ -lm  -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -lxbase -lnewmat -lstdc++ -lm  -o $@
 %.o : %.cpp 
 	$(CC) $(CFLAGS) $< -o $@ 
 

@@ -132,7 +132,7 @@ void CPurelySpatialCluster::Initialize(tract_t nCenter) {
   m_Center = nCenter;
   m_MostCentralLocation = -1;
   m_nTracts = 0;
-  m_nRatio = 0;
+  m_nRatio = -std::numeric_limits<double>::max();
   m_CartesianRadius = -1;
   gpClusterData->InitializeData();
 }

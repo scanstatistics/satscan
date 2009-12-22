@@ -125,6 +125,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbUseMetaLocationsFile                 != rhs.gbUseMetaLocationsFile) return false;
   if (gvObservableRegions                    != rhs.gvObservableRegions) return false;
   if (gbWeightedNormal                       != rhs.gbWeightedNormal) return false;
+  if (gbWeightedNormalCovariates             != rhs.gbWeightedNormalCovariates) return false;  
   if (giEarlyTermThreshold                   != rhs.giEarlyTermThreshold) return false;
   if (gePValueReportingType                  != rhs.gePValueReportingType) return false;
   if (gbReportGumbelPValue                   != rhs.gbReportGumbelPValue) return false;
@@ -295,6 +296,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gbUseMetaLocationsFile                 = rhs.gbUseMetaLocationsFile;
   gvObservableRegions                    = rhs.gvObservableRegions;
   gbWeightedNormal                       = rhs.gbWeightedNormal;
+  gbWeightedNormalCovariates             = rhs.gbWeightedNormalCovariates;
   giEarlyTermThreshold                   = rhs.giEarlyTermThreshold;
   gePValueReportingType                  = rhs.gePValueReportingType;
   gbReportGumbelPValue                   = rhs.gbReportGumbelPValue;
@@ -646,7 +648,7 @@ void CParameters::SetAsDefaulted() {
   gbOutputRelativeRisksDBase               = false;
   gbOutputSimLogLikeliRatiosDBase          = false;
   gsRunHistoryFilename                     = "";
-  gbLogRunHistory                          = true;
+  gbLogRunHistory                          = false;
   geProbabilityModelType                   = POISSON;
   geRiskFunctionType                       = STANDARDRISK;
   gbPowerCalculation                       = false;
@@ -730,6 +732,7 @@ void CParameters::SetAsDefaulted() {
   gbUseMetaLocationsFile = false;
   gvObservableRegions.clear();
   gbWeightedNormal = false;
+  gbWeightedNormalCovariates = false;
   giEarlyTermThreshold = 50;
   gePValueReportingType = DEFAULT_PVALUE;
   gbReportGumbelPValue = false;

@@ -4,6 +4,9 @@
 //******************************************************************************
 #include "ClusterData.h"
 
+class ColumnVector;
+class Matrix;
+
 /**Abstract base class for all normal cluster data. */
 class AbstractNormalClusterData {
   public:
@@ -14,6 +17,9 @@ class AbstractNormalClusterData {
 };
 /** Class representing accumulated data of spatial clustering of a normal probability model. */
 class NormalSpatialData : public SpatialData, public AbstractNormalClusterData {
+  protected:
+    NormalSpatialData();
+
   public:
     NormalSpatialData(const DataSetInterface& Interface);
     NormalSpatialData(const AbstractDataSetGateway& DataGateway);
@@ -116,6 +122,39 @@ class NormalSpaceTimeData : public NormalTemporalData {
     virtual void             Reassociate(const DataSetInterface& Interface) {/*nop*/}
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway) {/*nop*/}
 };
+
+/** Class representing accumulated data of spatial clustering of a normal probability model
+    with data that specifies weight and covariates of observations. */
+class NormalCovariateSpatialData : public NormalSpatialData {
+  private:
+     void                Setup(const DataSetInterface& Interface);
+
+public:
+    NormalCovariateSpatialData(const DataSetInterface& Interface);
+    NormalCovariateSpatialData(const AbstractDataSetGateway& DataGateway);
+    NormalCovariateSpatialData(const NormalCovariateSpatialData& rhs);
+    virtual ~NormalCovariateSpatialData();
+
+    //public data memebers
+    Matrix       * _xg;
+    Matrix       * _tobeinversed;
+    Matrix       * _xgsigmaw;
+    ColumnVector * _deltag;
+    ColumnVector * _w_div_delta;
+    EvaluationAssistDataStatus   geEvaluationAssistDataStatus;
+
+    virtual void             AddNeighborData(tract_t tNeighborIndex, const AbstractDataSetGateway& DataGateway, size_t tSetIndex=0);
+    virtual void             Assign(const AbstractSpatialClusterData& rhs);
+    virtual double           CalculateLoglikelihoodRatio(AbstractLikelihoodCalculator& Calculator);
+    virtual NormalCovariateSpatialData * Clone() const;
+    virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
+    virtual void             DeallocateEvaluationAssistClassMembers();
+    virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
+    virtual void             InitializeData();
+    virtual void             InitializeData(const AbstractDataSetGateway& DataGateway);
+    NormalCovariateSpatialData    & operator=(const NormalCovariateSpatialData& rhs);
+};
+
 //******************************************************************************
 #endif
 

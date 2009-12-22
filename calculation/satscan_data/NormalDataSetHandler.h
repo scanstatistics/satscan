@@ -12,7 +12,10 @@ class NormalDataSetHandler : public DataSetHandler {
 
   protected:
     virtual bool                        ReadCounts(RealDataSet& DataSet, DataSource& Source);
-    virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pRateVariable);
+    virtual RecordStatusType            RetrieveCaseRecordData(DataSource& Source, tract_t& tid, 
+                                                               count_t& nCount, Julian& nDate, 
+                                                               measure_t& tContinuousVariable, double * pRateVariable,
+                                                               std::vector<double> * pvCovariates);
     bool                                setIsWeighted();
     virtual void                        SetRandomizers();
 
@@ -23,7 +26,7 @@ class NormalDataSetHandler : public DataSetHandler {
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const;
     virtual void                        assignMetaLocationData(RealDataContainer_t& Container) const;
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const;
-    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const;
     virtual void                        RandomizeData(RandomizerContainer_t& Container, SimulationDataContainer_t& SimDataContainer, unsigned int iSimulationNumber) const;
     virtual bool                        ReadData();
     virtual void                        SetPurelyTemporalMeasureData(RealDataSet & DataSet);

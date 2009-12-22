@@ -50,7 +50,7 @@ class DataSetHandler {
     virtual SimulationDataContainer_t & AllocateSimulationData(SimulationDataContainer_t& Container) const = 0;
     virtual void                        assignMetaLocationData(RealDataContainer_t& Container) const = 0;
     virtual AbstractDataSetGateway    & GetDataGateway(AbstractDataSetGateway& DataGatway) const = 0;
-    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const = 0;
+    virtual AbstractDataSetGateway    & GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const = 0;
     virtual bool                        ReadData() = 0;
 
     AbstractDataSetGateway            * GetNewDataGatewayObject() const;

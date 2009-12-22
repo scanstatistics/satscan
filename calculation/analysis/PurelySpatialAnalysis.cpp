@@ -68,6 +68,10 @@ double CPurelySpatialAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSet
   std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
   std::vector<double>::iterator itr, itr_end;
 
+  // for weighted normal model with covariates, we need to reload matrix data at the beginning of each simulation
+  if (tCenter == 0 && gParameters.getIsWeightedNormalCovariates()) 
+      gAbstractClusterData->InitializeData(DataGateway);
+
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractClusterData->InitializeData();

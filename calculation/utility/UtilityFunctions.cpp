@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "UtilityFunctions.h"
 #include "SSException.h"
+#include "Toolkit.h"
+#include "newmat.h"
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -325,4 +327,17 @@ bool getlinePortable(std::ifstream& readstream, std::string& line) {
   }
   line = readStream.str();
   return line.size() > 0 ? true : readstream.eof() == false;
+}
+
+void printoutMatrix(const std::string& s, Matrix& m, FILE * fp) {
+  fp = fp ? fp : AppToolkit::getToolkit().openDebugFile();
+  fprintf(fp, "%s\n", s.c_str());
+  for (int r=0; r < m.Nrows(); ++r) {
+      fprintf(fp, "row %d\t", r + 1);
+      for (int c=0; c < m.Ncols(); ++c)
+         fprintf(fp, "%lf\t", m.element(r,c));
+      fprintf(fp, "\n");
+  }
+  fprintf(fp, "\n");
+  fflush(fp);
 }

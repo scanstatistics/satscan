@@ -5,6 +5,7 @@
 #include "DataSet.h"
 #include "Parameters.h"
 
+class AbstractRandomizer;
 typedef std::vector<count_t**>    CategoryCasesArrays_t;
 
 /** Interface for accessing dataset structures. Whether looking for most
@@ -23,6 +24,7 @@ class DataSetInterface {
     measure_t                   gTotalMeasure;          /** number of expected cases in dataset */
     measure_t                   gTotalMeasureAux;        /** number of auxillary entries in dataset */
     unsigned int                giNumOrdinalCategories; /** number of ordinal categories in dataset */
+    const AbstractRandomizer  * _randomizer;            /** pointer to data set randomizer */
 
     void                        Init();
 
@@ -61,6 +63,7 @@ class DataSetInterface {
     inline measure_t                  ** GetMeasureAuxArray() const {return gppMeasureAuxArray;}
     inline measure_t                   * GetPSMeasureAuxArray() const {return gpPSMeasureAuxArray;}
     inline measure_t                   * GetPTMeasureAuxArray() const {return gpPTMeasureAuxArray;}
+    inline const AbstractRandomizer    * GetRandomizer() const {return _randomizer;}
     inline const CTimeTrend            * GetTimeTrend() const {return gpTimeTrend;}
     inline count_t                       GetTotalCasesCount() const {return gTotalCases;}
     inline count_t                       GetTotalControlsCount() const {return gTotalControls;}
@@ -78,6 +81,7 @@ class DataSetInterface {
     void                                 SetPTMeasureArray(measure_t * pMeasure) {gpPTMeasureArray = pMeasure;}
     void                                 SetPTMeasureAuxArray(measure_t * pPTMeasureAux) {gpPTMeasureAuxArray = pPTMeasureAux;}
     void                                 SetMeasureAuxArray(measure_t ** ppMeasureAux) {gppMeasureAuxArray = ppMeasureAux;gpPSMeasureAuxArray = ppMeasureAux[0];}
+    void                                 SetRandomizer(const AbstractRandomizer& randomizer) {_randomizer = &randomizer;}
     void                                 SetTimeTrend(const CTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
     void                                 SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
     void                                 SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}

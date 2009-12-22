@@ -9,6 +9,7 @@ class CSaTScanData;       /** forward class declaration */
 class SVTTClusterData;    /** forward class declaration */
 class CTimeTrend;         /** forward class declaration */
 class AbstractLoglikelihoodRatioUnifier; /** forward class declaration */
+class Matrix; /** forward class declaration */
 
 /** Abstract interface for which to calculate log likelihoods and log likelihood ratios. */
 class AbstractLikelihoodCalculator {
@@ -35,11 +36,13 @@ class AbstractLikelihoodCalculator {
     virtual double                      CalcLogLikelihoodRatio(count_t tCases, measure_t tMeasure, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     virtual double                      CalcLogLikelihoodRatioNormal(count_t tCases, measure_t tMeasure, measure_t tMeasure2, size_t tSetIndex=0) const;
+    virtual double                      CalcLogLikelihoodRatioNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex=0) const;
     virtual double                      CalcMonotoneLogLikelihood(tract_t tSteps, const std::vector<count_t>& vCasesList, const std::vector<measure_t>& vMeasureList) const;
     virtual double                      CalcSVTTLogLikelihood(size_t tSetIndex, SVTTClusterData& ClusterData, const CTimeTrend& GlobalTimeTrend) const;
     virtual double                      CalculateFullStatistic(double dMaximizingValue, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValue(count_t n, measure_t u, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValueNormal(count_t n, measure_t u, measure_t u2, size_t tDataSetIndex=0) const;
+    virtual double                      CalculateMaximizingValueNormal(Matrix& xg, Matrix& tobeinversed, Matrix& xgsigmaw, size_t tDataSetIndex=0) const;
     virtual double                      CalculateMaximizingValueOrdinal(const std::vector<count_t>& vOrdinalCases, size_t tSetIndex=0) const;
     const CSaTScanData                & GetDataHub() const {return gDataHub;}
     virtual double                      GetLogLikelihoodForTotal(size_t tSetIndex=0) const;
@@ -59,6 +62,8 @@ class AbstractLikelihoodCalculator {
     inline bool                         HighRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
     inline bool                         LowRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
     inline bool                         MultipleSetsHighRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex) const;
+
+    inline bool                         AllRatesWeightedNormalCovariates(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex=0) const;
 };
 
 /** Indicates whether an area has lower than expected cases for a clustering
@@ -147,6 +152,12 @@ inline bool AbstractLikelihoodCalculator::HighOrLowRateWeightedNormal(count_t nC
 inline bool AbstractLikelihoodCalculator::MultipleSetsHighRateWeightedNormal(count_t nCases, measure_t nMeasure, measure_t nMeasureAux,size_t tSetIndex) const {
    if (nMeasure == 0) return false;
    return (nMeasure/nMeasureAux > gvDataSetTotals[tSetIndex].second/gvDataSetMeasureAuxTotals[tSetIndex]);
+}
+
+/** Indicates whether an area has enough cases cases for a clustering within a single dataset for normal model
+    with weights and covariates. */
+inline bool AbstractLikelihoodCalculator::AllRatesWeightedNormalCovariates(count_t nCases, measure_t nMeasure, measure_t nMeasureAux, size_t tSetIndex) const {
+   return nCases >= gtMinLowRateCases;
 }
 //******************************************************************************
 #endif

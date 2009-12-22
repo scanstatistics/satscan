@@ -15,6 +15,7 @@
 #include "SSException.h"
 #include "ParametersPrint.h"
 #include "Toolkit.h"
+#include "newmat.h"
 
 /** Validates arguments of argument list. Throws UsageException if invalid.
     Returns whether options suppress execution of analysis. */
@@ -120,6 +121,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   catch (std::exception& x) {
+    Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
+                   "Please contact technical support with the following information:\n"
+                   "%s\n%s\n", BasePrint::P_ERROR, x.what(), "Callpath not available.");
+    __SaTScanExit();
+    return 1;
+  }
+  catch (BaseException& x) {
     Console.Printf("\n\nJob cancelled due to an unexpected program error.\n\n"
                    "Please contact technical support with the following information:\n"
                    "%s\n%s\n", BasePrint::P_ERROR, x.what(), "Callpath not available.");

@@ -6,22 +6,29 @@
 #include "NormalClusterData.h"
 #include "MultiSetNormalClusterData.h"
 #include "SSException.h"
+#include "WeightedNormalRandomizer.h"
+#include "SaTScanData.h"
 
 /** class constructor */
-NormalClusterDataFactory::NormalClusterDataFactory() : AbstractClusterDataFactory() {}
+NormalClusterDataFactory::NormalClusterDataFactory(const CSaTScanData& Data) : AbstractClusterDataFactory() {
+  const AbstractWeightedNormalRandomizer* randomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Data.GetDataSetHandler().GetRandomizer(0));
+  if (!randomizer)
+    throw prg_error("Could not dynamic cast randomizer to AbstractWeightedNormalRandomizer.","NormalClusterDataFactory()");
+  _covariates = randomizer ? randomizer->getHasCovariates() : false;
+}
 
 /** class destructor */
 NormalClusterDataFactory::~NormalClusterDataFactory() {}
 
 /** Not implemented. Throws prg_error. */
 AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const DataSetInterface& Interface) const {
-  return new NormalSpatialData(Interface);
+  return _covariates ? new NormalCovariateSpatialData(Interface) : new NormalSpatialData(Interface);
 }
 
 /** Returns newly created NormalSpatialData object as AbstractSpatialClusterData
     pointer. Caller is responsible for object destruction.*/
 AbstractSpatialClusterData * NormalClusterDataFactory::GetNewSpatialClusterData(const AbstractDataSetGateway& DataGateway) const {
-  return new NormalSpatialData(DataGateway);
+  return _covariates ? new NormalCovariateSpatialData(DataGateway) : new NormalSpatialData(DataGateway);
 }
 
 /** Not implemented. Throws prg_error. */
@@ -60,7 +67,8 @@ AbstractTemporalClusterData * NormalClusterDataFactory::GetNewSpaceTimeClusterDa
 //***************** class MultiSetNormalClusterDataFactory *********************
 
 /** class constructor */
-MultiSetNormalClusterDataFactory::MultiSetNormalClusterDataFactory() : AbstractClusterDataFactory() {}
+MultiSetNormalClusterDataFactory::MultiSetNormalClusterDataFactory(const CSaTScanData& Data) 
+                                 :gClusterDataFactory(Data), AbstractClusterDataFactory() {}
 
 /** class destructor */
 MultiSetNormalClusterDataFactory::~MultiSetNormalClusterDataFactory() {}

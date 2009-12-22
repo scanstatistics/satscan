@@ -90,7 +90,7 @@ AbstractDataSetGateway & OrdinalDataSetHandler::GetDataGateway(AbstractDataSetGa
 }
 
 /** returns data gateway for simulation data */
-AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & OrdinalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {

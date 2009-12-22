@@ -86,8 +86,8 @@ double PoissonSVTTLikelihoodCalculator::CalcSVTTLogLikelihood(count_t*   pCases,
 
     for (i=0; i < (gDataHub.m_nTimeIntervals); i++)
     {
-      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i);
-      nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i);
+      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + (nBeta)*i); // (beta1 *1) - Paula new SVTT 
+      nSum2 += pMeasure[i] * exp(nAlpha + (nBeta)*i); // (beta2 * i^2) - Paula new SVTT
       /**nSum3 += ((CSVTTData&)gData).m_pSumLogs[pCases[i]]; // Modified 990916 GG**/
     }
     nLL = nSum1-nSum2-nSum3;

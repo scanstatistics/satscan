@@ -33,6 +33,7 @@ class AbstractClusterData {
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const = 0;
     virtual void        InitializeData() = 0;
+    virtual void        InitializeData(const AbstractDataSetGateway& DataGateway) {InitializeData();}
 };
 
 /** Abstract class representing accumulated data of spatial clustering. */

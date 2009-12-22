@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "WeightedNormalRandomizer.h"
 #include "SaTScanData.h"
+#include "newmat.h"
 
 /** Adds new randomization entry with passed attrbiute values. */
 void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight) {
@@ -11,9 +12,28 @@ void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, int iTimeInterval
     //add stationary values
     gvStationaryAttribute.push_back(WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
     //add permutated value
-    gvPermutedAttribute.push_back(WeightedNormalPermuted_t(std::make_pair(tContinuousVariable,dWeight)));
+    gvPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight)));
     //add to vector which maintains original order
-    gvOriginalPermutedAttribute.push_back(WeightedNormalPermuted_t(std::make_pair(tContinuousVariable,dWeight)));
+    gvOriginalPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight)));
+  }
+}
+
+/** Adds new randomization entry with passed attrbiute values. */
+void AbstractWeightedNormalRandomizer::AddCase(count_t tCount, int iTimeInterval, tract_t tTractIndex, measure_t tContinuousVariable, double dWeight, const std::vector<double>& covariates) {
+  StationaryContainer_t::iterator itr;
+  itr = std::lower_bound(gvStationaryAttribute.begin(), gvStationaryAttribute.end(), WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)), CompareWeightedNormalStationary());
+  size_t tPosReturn = std::distance(gvStationaryAttribute.begin(), itr);
+
+  for (count_t t=0; t < tCount; ++t) {
+    //add stationary values
+    gvStationaryAttribute.insert(gvStationaryAttribute.begin() + tPosReturn, WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
+    //gvStationaryAttribute.push_back(WeightedNormalStationary_t(std::make_pair(iTimeInterval, tTractIndex)));
+    //add permutated value
+    gvPermutedAttribute.insert(gvPermutedAttribute.begin() + tPosReturn, WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
+    //gvPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
+    //add to vector which maintains original order
+    gvOriginalPermutedAttribute.insert(gvOriginalPermutedAttribute.begin() + tPosReturn, WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
+    //gvOriginalPermutedAttribute.push_back(WeightedNormalPermuted_t(WeightedNormalVariables(tContinuousVariable,dWeight,covariates)));
   }
 }
 
@@ -59,6 +79,37 @@ void AbstractWeightedNormalRandomizer::AssignFromAttributes(RealDataSet& RealSet
         ppMeasure[i][tTract] = ppMeasure[i+1][tTract] + ppMeasure[i][tTract];
         ppMeasureAux[i][tTract] = ppMeasureAux[i+1][tTract] + ppMeasureAux[i][tTract];
      }
+}
+
+/** Sets Column vectors that are the weight and rate records as read from file. */
+void AbstractWeightedNormalRandomizer::get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const {
+  wg.reset(new ColumnVector(gvPermutedAttribute.size()));
+  deltag.reset(new ColumnVector(gvPermutedAttribute.size()));
+  for (size_t t=0; t < gvPermutedAttribute.size(); ++t) {
+      wg->element(t) = gvPermutedAttribute[t].GetPermutedVariable().first;
+      deltag->element(t) = gvPermutedAttribute[t].GetPermutedVariable().second;
+  }
+}
+
+/** Sets matrix that has (# of observations rows) by (2 plus # of covariates columns) 
+    -- if bExcludeSelectColumn is true; columns is (1 plus # of covariates). 
+    column 1: selection column indicating observation in cluster 
+    column 2: all rows set to 1
+    column 3: first covariate
+    column 4: second covariate
+    etc. 
+*/
+void AbstractWeightedNormalRandomizer::get_xg(std::auto_ptr<Matrix>& xg, bool bExcludeSelectColumn) const {
+  size_t numFixed = (bExcludeSelectColumn ? 1 : 2);
+  xg.reset(new Matrix(gvPermutedAttribute.size(), numFixed + gvPermutedAttribute.front().GetPermutedVariable().getAdditional()->size()));
+  for (size_t t=0; t < gvPermutedAttribute.size(); ++t) {
+      if (!bExcludeSelectColumn) xg->element(t, 0) = 0;
+      xg->element(t, bExcludeSelectColumn ? 0 : 1) = 1;
+      const MinimalGrowthArray<double>& covariates = *gvPermutedAttribute[t].GetPermutedVariable().getAdditional();
+      for (size_t tt=0; tt < covariates.size(); ++tt) {
+          xg->element(t, numFixed + tt) = covariates[tt];
+      }
+  }
 }
 
 /** Calculates statistics about cluster from internal structures. */
@@ -192,6 +243,13 @@ AbstractWeightedNormalRandomizer::DataSetStatistics AbstractWeightedNormalRandom
   return statistics;
 }
 
+/** Returns whether covariates are present in randomizer entries. */
+bool AbstractWeightedNormalRandomizer::getHasCovariates() const {
+    if (gvOriginalPermutedAttribute.size()) {
+        return gvOriginalPermutedAttribute.front().GetPermutedVariable().getAdditional() != 0;
+    } else return false;
+}
+
 AbstractWeightedNormalRandomizer::RiskEstimateStatistics AbstractWeightedNormalRandomizer::getRiskEstimateStatistics(const CSaTScanData& DataHub) const {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator itr_permuted=gvOriginalPermutedAttribute.begin();
@@ -237,6 +295,20 @@ void AbstractWeightedNormalRandomizer::RemoveCase(int iTimeInterval, tract_t tTr
        gvOriginalPermutedAttribute.erase(gvOriginalPermutedAttribute.begin() + t);
        gvStationaryAttribute.erase(itr);
   }
+}
+
+/** Returns whether every defined location has one and onle only observation. */
+bool AbstractWeightedNormalRandomizer::hasUniqueLocationsCoverage(const CSaTScanData& DataHub) const {
+  boost::dynamic_bitset<> locationsSet(DataHub.GetNumTracts());
+
+  StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
+  for (; itr_stationary != itr_end; ++itr_stationary) {
+      if (locationsSet.test(itr_stationary->GetStationaryVariable().second))
+         return false;
+      else
+         locationsSet.set(itr_stationary->GetStationaryVariable().second);
+  }
+  return locationsSet.size() == locationsSet.count();
 }
 
 //******************************************************************************

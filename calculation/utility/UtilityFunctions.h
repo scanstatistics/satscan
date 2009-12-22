@@ -4,6 +4,8 @@
 //******************************************************************************
 #include "SaTScan.h"
 
+class Matrix; // forward declaration
+
 void 	                        ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
 std::pair<double, double>       ConvertToLatLong(const std::vector<double>& vCoordinates);
 double                          CalculateNonCompactnessPenalty(double dEllipseShape, double dPower);
@@ -21,6 +23,7 @@ unsigned int                    getFormatPrecision(double value, unsigned int iS
 std::string                   & getValueAsString(double value, std::string& s, unsigned int iSignificant=2);
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
+void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
 //******************************************************************************
 #endif
 

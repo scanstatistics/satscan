@@ -633,7 +633,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
               DataSetWriter->write(*thisDataCollection[t], gParameters);
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
-         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
+         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection, RandomizationContainer);
       }
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled()) return;
@@ -806,7 +806,7 @@ void AnalysisRunner::PerformCentric_Serial() {
              DataSetWriter->write(*thisDataCollection[t], gParameters);
          //allocate and set data gateway object
          vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
-         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection);
+         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection, RandomizationContainer);
       }
 
       //detect user cancellation
@@ -977,7 +977,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
     GetDataHub().GetDataSetHandler().GetRandomizerContainer(RandomizationContainer);
     //get data gateway given dataset handler's real data and simulated data structures
     pDataGateway = GetDataHub().GetDataSetHandler().GetNewDataGatewayObject();
-    GetDataHub().GetDataSetHandler().GetSimulationDataGateway(*pDataGateway, SimulationDataContainer);
+    GetDataHub().GetDataSetHandler().GetSimulationDataGateway(*pDataGateway, SimulationDataContainer, RandomizationContainer);
     //get new analysis object for which to defined simulation algorithm
     pAnalysis = GetNewAnalysisObject();
     //allocate appropriate data members for simulation algorithm

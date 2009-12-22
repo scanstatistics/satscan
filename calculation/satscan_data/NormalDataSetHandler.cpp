@@ -59,6 +59,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
       Interface.SetTotalCasesCount(DataSet.getTotalCases());
       Interface.SetTotalMeasureCount(DataSet.getTotalMeasure());
       Interface.SetTotalMeasureAuxCount(DataSet.getTotalMeasureAux());
+      Interface.SetRandomizer(*gvDataSetRandomizers.at(t)); // really only needed for purely spatial analysis
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -100,7 +101,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
 
 /** Creates a new collection of DataSetInterface objects that reference appropriate
     data structures contained in passed simulation data collection. */
-AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container) const {
+AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(AbstractDataSetGateway& DataGatway, const SimulationDataContainer_t& Container, const RandomizerContainer_t& rContainer) const {
   DataSetInterface Interface(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts() + gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations());
 
   try {
@@ -113,6 +114,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetSimulationDataGateway(Abstract
       Interface.SetTotalCasesCount(R_DataSet.getTotalCases());
       Interface.SetTotalMeasureCount(R_DataSet.getTotalMeasure());
       Interface.SetTotalMeasureAuxCount(R_DataSet.getTotalMeasureAux());
+      Interface.SetRandomizer(*rContainer.at(t)); // really only needed for purely spatial analysis
       //set pointers to data structures
       switch (gParameters.GetAnalysisType()) {
         case PURELYSPATIAL              :
@@ -188,7 +190,7 @@ bool NormalDataSetHandler::ReadCountsStandard(RealDataSet& DataSet, DataSource& 
       throw prg_error("Data set randomizer not AbstractNormalRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0);
+           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tContinuousVariable, 0, 0);
            if (eRecordStatus == DataSetHandler::Accepted) {
              bEmpty = false;
              pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tContinuousVariable);
@@ -246,17 +248,38 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
   double                                tTotalMeasure=0, tTotalMeasureAux=0, dRateVariable;
   AbstractWeightedNormalRandomizer    * pRandomizer=0;
   DataSetHandler::RecordStatusType      eRecordStatus;
+  std::vector<double>                   vCovariates;
+  size_t                                tCovariatesFirst=0;
 
   try {
     if ((pRandomizer = dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(DataSet.getSetIndex() - 1))) == 0)
       throw prg_error("Data set randomizer not AbstractWeightedNormalRandomizer type.", "ReadCounts()");
     //Read data, parse and if no errors, increment count for tract at date.
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source.ReadRecord()) {
-           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tWeightVariable, &dRateVariable);
+           eRecordStatus = RetrieveCaseRecordData(Source, TractIndex, Count, Date, tWeightVariable, &dRateVariable, &vCovariates);
            if (eRecordStatus == DataSetHandler::Accepted) {
+             if (bEmpty) {
+                 tCovariatesFirst = vCovariates.size();
+                 const_cast<CParameters&>(gParameters).SetIsWeightedNormalCovariates(tCovariatesFirst > 0);
+             } else {
+               //if not first record, check covariates count against first record
+               if (tCovariatesFirst != vCovariates.size())
+                throw resolvable_error("Error: The number of covariates is not consistant in all case records.\n"
+                                       "        First record has %ld covariates while %ld record contains %ld covariates." ,
+                                       tCovariatesFirst, Source.GetCurrentRecordIndex(), vCovariates.size());
+             }
              bEmpty = false;
+
+             //TODO: Doing this to make same as SAS program for now!
+             double var = dRateVariable * dRateVariable;
+             dRateVariable = 1/var;
+
              // -- input is expected to be actual weight variable; not variance -- dRateVariable = 1/dRateVariable;
-             pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable);
+             if (vCovariates.size())
+                pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable, vCovariates);
+             else
+                pRandomizer->AddCase(Count, gDataHub.GetTimeIntervalOfDate(Date), TractIndex, tWeightVariable, dRateVariable);
+
              tTotalCases += Count;
              //check that addition did not exceed data type limitations
              if (tTotalCases < 0)
@@ -342,8 +365,43 @@ bool NormalDataSetHandler::ReadData() {
          gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else
          gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
+       if (gParameters.getIsWeightedNormalCovariates()) {
+         gPrint.Printf("Error: The Normal model with weights permits only one data set when covariates are specified.\n", BasePrint::P_READERROR);
+         return false;
+       }
        if (!ReadCaseFile(GetDataSet(t)))
          return false;
+
+       if (gParameters.getIsWeightedNormalCovariates()) {
+          //Check that analysis type is purely spatial.
+          if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
+            gPrint.Printf("Error: The Normal model with weights is implemented only for the\npurely spatial analysis when covariates are specified.\n", BasePrint::P_READERROR);
+            return false;
+          }
+           
+          //Meta locations are not implemented with covariates. Inorder for meta locations to function
+          //properly, the current process would have to be significantly refactored from what I can tell.
+          //Would probably need to:
+          // - check for overlapping meta locations
+          // - refactor how cluster data 'AddNeighborData' works for NormalCovariateSpatialData
+          // - probably more that I can't think of at the moment
+          if (gParameters.UseMetaLocationsFile()) {
+            gPrint.Printf("Error: The Normal model with weights does not permit meta locations when covariates are specified.\n", BasePrint::P_READERROR);
+            return false;
+          }
+
+          //When case data has covariates, we need to verify that every location defined in coordinates file is represented in case file, but only once.
+          // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major TractHandler updates:
+          //        - changes to CentroidHandlerPassThrough (not special grid file) 
+          //        - changes to non-Euclidian neighbors (structures already allocated)
+          AbstractWeightedNormalRandomizer * pRandomizer=dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(t));
+          if (pRandomizer && !pRandomizer->hasUniqueLocationsCoverage(gDataHub)) {
+            gPrint.Printf("Error: The Normal model with weights requires every location defined in the coordinates\n"
+                          "       file to be defined once, only only once, in the case file when covariates are specified.\n"
+                          "       Verify that your coordinates file locations are one to one with the case file locations.\n", BasePrint::P_READERROR);
+            return false;
+          }
+       }
     }
   }
   catch (prg_exception& x) {
@@ -356,9 +414,11 @@ bool NormalDataSetHandler::ReadData() {
 /** Reads the count data source, storing data in RealDataSet object. As a
     means to help user clean-up their data, continues to read records as errors
     are encountered. Returns boolean indication of read success. */
-DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pRateVariable) {
-  const short   uContinuousVariableIndex=3, uWeightVariableIndex=4;
+DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(DataSource& Source, tract_t& tid, count_t& nCount, Julian& nDate, measure_t& tContinuousVariable, double * pRateVariable, std::vector<double> * pvCovariates) {
+  const short   uContinuousVariableIndex=3, uWeightVariableIndex=4, uCovariatesIndex=5;
   short         uOffset;
+  const char  * pCovariate;
+  double        dCovariate;
 
   try {
     //read and validate that tract identifier exists in coordinates file
@@ -431,6 +491,20 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
          gPrint.Printf("Error: The rate variable value '%s' in record %ld, of %s, is less than zero.\n",
                        BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
          return DataSetHandler::Rejected;
+      }
+    }
+
+    if (pvCovariates) {
+      pvCovariates->clear();
+      uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uCovariatesIndex - 1 : uCovariatesIndex);
+      while ((pCovariate = Source.GetValueAt(static_cast<short>(pvCovariates->size()) + uOffset)) != 0) {
+        if (!sscanf(pCovariate, "%lf", &dCovariate)) {
+            gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as covariate.\n"
+                          "       Case covariate must be numeric.\n", BasePrint::P_READERROR,
+                          pCovariate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+            return DataSetHandler::Rejected;
+        } 
+        pvCovariates->push_back(dCovariate);
       }
     }
   }
