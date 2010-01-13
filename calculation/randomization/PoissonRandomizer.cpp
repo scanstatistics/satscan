@@ -150,7 +150,7 @@ AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(CSaTScanData& DataH
 /** copy constructor */
 AlternateHypothesisRandomizer::AlternateHypothesisRandomizer(const AlternateHypothesisRandomizer& rhs)
                               :PoissonRandomizer(rhs), gDataHub(rhs.gDataHub),
-                               gAlternativeMeasure(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), 0) {
+                               gAlternativeMeasure(rhs.gDataHub.GetNumTimeIntervals(), rhs.gDataHub.GetNumTracts(), 0) {
   gvRelativeRisks = rhs.gvRelativeRisks;
   gvMeasure = rhs.gvMeasure;
   gAlternativeMeasure = rhs.gAlternativeMeasure;
