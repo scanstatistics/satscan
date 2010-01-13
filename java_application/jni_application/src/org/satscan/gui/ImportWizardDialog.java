@@ -275,15 +275,17 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
 
         switch (_fileType) {
             case Case:
+                model.hideAll();
                 for (int t = 0; t < _importVariables.size(); ++t) {
                     if (t >= 1 && t <= 2) {//show '# cases' and 'date time'  variables
                         model.setShowing(_importVariables.get(t), true);                        
-                    } else if (t >= 3 && t <= 12) //show 'covariate' variables for Poisson and space-time permutation models only
+                    } else if (t >= 6 && t <= 15) //show 'covariate' variables for Poisson,space-time permutation and normal models only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.POISSON ||
-                                _modelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION);
-                    } else if (t == 13) //show 'attribute' variable for ordinal, exponential, normal and rank models only
+                                _modelType == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION ||
+                                _modelType == Parameters.ProbabilityModelType.NORMAL);
+                    } else if (t == 3) //show 'attribute' variable for ordinal, exponential, normal and rank models only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.ORDINAL ||
@@ -291,11 +293,11 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL ||
                                 _modelType == Parameters.ProbabilityModelType.NORMAL ||
                                 _modelType == Parameters.ProbabilityModelType.RANK);
-                    } else if (t == 14) //show 'censored' variable for exponential model only
+                    } else if (t == 4) //show 'censored' variable for exponential model only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.EXPONENTIAL);
-                    } else if (t == 15) //show 'weight' variable for normal model only
+                    } else if (t == 5) //show 'weight' variable for normal model only
                     {
                         model.setShowing(_importVariables.get(t),
                                 _modelType == Parameters.ProbabilityModelType.NORMAL);
@@ -789,19 +791,19 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
         _importVariables.addElement(new ImportVariable("Location ID", 0, true, null));
         _importVariables.addElement(new ImportVariable("Number of Cases", 1, true, null));
         _importVariables.addElement(new ImportVariable("Date/Time", 2, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate1", 3, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate2", 4, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate3", 5, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate4", 6, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate5", 7, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate6", 8, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate7", 9, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate8", 10, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate9", 11, false, null));
-        _importVariables.addElement(new ImportVariable("Covariate10", 12, false, null));
         _importVariables.addElement(new ImportVariable("Attribute (value)", 3, true, null));
         _importVariables.addElement(new ImportVariable("Censored", 4, false, null));
         _importVariables.addElement(new ImportVariable("Weight", 4, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate1", 5, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate2", 6, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate3", 7, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate4", 8, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate5", 9, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate6", 10, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate7", 11, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate8", 12, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate9", 13, false, null));
+        _importVariables.addElement(new ImportVariable("Covariate10", 14, false, null));    
     }
 
     /**
@@ -1539,6 +1541,10 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             }
         }
 
+        public void hideAll() {
+            variables_visible.clear();
+        }        
+        
         @Override
         public void setValueAt(Object value, int row, int col) {
             if (value == null) {
