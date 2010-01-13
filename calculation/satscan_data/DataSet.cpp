@@ -8,11 +8,12 @@
 #include "MetaTractManager.h" 
 
 /** constructor */
-DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex)
+DataSet::DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)
            : giIntervalsDimensions(iNumTimeIntervals), giLocationDimensions(iNumTracts), giMetaLocations(iMetaLocations), giSetIndex(iSetIndex),
              gpCaseData_PT(0), gpCaseData(0), gpCaseData_NC(0), gpMeasureData(0), gpMeasureData_NC(0),
              gpMeasureData_Aux(0), gpMeasureData_PT(0), gpMeasureData_PT_Aux(0), gpCaseData_PT_NC(0),
-             gpMeasureData_PT_NC(0), gpCaseData_PT_Cat(0) {}
+             gpMeasureData_PT_NC(0), gpCaseData_PT_Cat(0), 
+			 gpTimeTrend(AbstractTimeTrend::getTimeTrend(parameters)) {}
 
 /** copy constructor */
 DataSet::DataSet(const DataSet& thisSet) {
@@ -33,6 +34,7 @@ DataSet::~DataSet() {
     delete[] gpMeasureData_PT;
     delete[] gpMeasureData_PT_Aux;
     delete[] gpMeasureData_PT_NC;
+	delete gpTimeTrend;
   }
   catch(...){}
 }
@@ -584,8 +586,8 @@ void DataSet::setMeasureDataToCumulative() {
 ////////////////////////////////////////////////////////////////////////////////
 
 /** constructor */
-RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex)
-            :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, iSetIndex),
+RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex)
+            :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
              gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
              gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0) {

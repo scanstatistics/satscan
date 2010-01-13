@@ -476,6 +476,7 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
     WriteIniParameter(WriteFile, ADJ_BY_RR_FILE, GetParameterString(ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(ADJ_BY_RR_FILE));
     WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(USE_ADJ_BY_RR_FILE));
     WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));
+    WriteIniParameter(WriteFile, TIME_TREND_TYPE, GetParameterString(TIME_TREND_TYPE, s).c_str(), GetParameterComment(TIME_TREND_TYPE));
   }
   catch (prg_exception& x) {
     x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");

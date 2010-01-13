@@ -71,7 +71,7 @@ const char * AppToolkit::gsLastDirectoryPathProperty = "Path";
 /** last import destination directory browsed */
 const char * AppToolkit::gsLastImportDestinationDirectoryProperty = "ImportDestination";
 /** debug file name */
-const char * AppToolkit::gsDebugFileName = "_debug";
+const char * AppToolkit::gsDebugFileName = "_debug_";
 
 /** analysis history filename */
 const char * AppToolkit::gsDefaultRunHistoryFileName = "AnalysisHistory";
@@ -373,7 +373,7 @@ FILE * AppToolkit::openDebugFile() {
       std::string filename;
       filename = FileName(gsApplicationFullPath.c_str()).getLocation(filename);
       filename += gsDebugFileName;
-      filename += gsVersion;
+      filename += ".log";
       if ((gpDebugLog = fopen(filename.c_str(), /*"a"*/"w")) == NULL)
         throw resolvable_error("Error: Debug file '%s' could not be created.\n", filename.c_str());
 	}

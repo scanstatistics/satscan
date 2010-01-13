@@ -1350,6 +1350,10 @@ bool ParametersValidate::ValidateSVTTAnalysisSettings(BasePrint& PrintDirection)
       PrintDirection.Printf("Invalid Parameter Setting:\nTime trend convergence value of '%2g' is less than zero.\n",
                             BasePrint::P_PARAMERROR, gParameters.GetTimeTrendConvergence());
     }
+    if (gParameters.getTimeTrendType() == QUADRATIC && gParameters.GetExecuteScanRateType() != HIGHANDLOW) {
+      bValid = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe quadtratic time trend is only implemented for simulantienous high and low scanning.\n", BasePrint::P_PARAMERROR);
+    }
   }
   return bValid;
 }

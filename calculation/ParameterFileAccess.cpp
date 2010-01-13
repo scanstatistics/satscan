@@ -84,7 +84,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POWERCALC                : return " p-values for 2 pre-specified log likelihood ratios? (y/n)";
       case POWERX                   : return " power calculation log likelihood ratio (no. 1)";
       case POWERY                   : return " power calculation log likelihood ratio (no. 2)";
-      case TIMETREND                : return " time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization)";
+      case TIMETREND                : return " time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadraticPercentage)";
       case TIMETRENDPERC            : return " time trend adjustment percentage (>-100)";
       case PURETEMPORAL             : return " include purely temporal clusters? (y/n)";
       case CONTROLFILE              : return " control data filename";
@@ -158,6 +158,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case EARLY_TERM_THRESHOLD     : return " early termination threshold";
       case PVALUE_REPORT_TYPE       : return " p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) ";
       case REPORT_GUMBEL            : return " report Gumbel p-values";
+      case TIME_TREND_TYPE          : return " time trend type - SVTT only (Linear=0, Quadratic=1)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -284,6 +285,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case EARLY_TERM_THRESHOLD     : return AsString(s, gParameters.GetEarlyTermThreshold());
       case PVALUE_REPORT_TYPE       : return AsString(s, gParameters.GetPValueReportingType());
       case REPORT_GUMBEL            : return AsString(s, gParameters.GetReportGumbelPValue());
+      case TIME_TREND_TYPE          : return AsString(s, gParameters.getTimeTrendType());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -402,6 +404,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case EARLY_TERM_THRESHOLD     : AsString(default_value, gParameters.GetEarlyTermThreshold()); break;
       case PVALUE_REPORT_TYPE       : AsString(default_value, gParameters.GetPValueReportingType()); break;
       case REPORT_GUMBEL            : default_value = (gParameters.GetReportGumbelPValue() ? "y" : "n"); break;
+      case TIME_TREND_TYPE          : AsString(default_value, gParameters.getTimeTrendType()); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -744,6 +747,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PVALUE_REPORT_TYPE        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, DEFAULT_PVALUE, GUMBEL_PVALUE);
                                        gParameters.SetPValueReportingType((PValueReportingType)iValue); break;
       case REPORT_GUMBEL             : gParameters.SetReportGumbelPValue(ReadBoolean(sParameter, eParameterType)); break;
+      case TIME_TREND_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, LINEAR, QUADRATIC);
+                                       gParameters.setTimeTrendType((TimeTrendType)iValue); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

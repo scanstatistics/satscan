@@ -11,7 +11,7 @@
 SVTTClusterData::SVTTClusterData(const AbstractDataSetGateway& DataGateway) : giAllocationSize(DataGateway.GetDataSetInterface().GetNumTimeIntervals()) {
   try {
     Init();
-    Setup();
+    Setup(DataGateway.GetDataSetInterface());
   }
   catch (prg_exception& x) {
     x.addTrace("constructor()","SVTTClusterData");
@@ -23,7 +23,7 @@ SVTTClusterData::SVTTClusterData(const AbstractDataSetGateway& DataGateway) : gi
 SVTTClusterData::SVTTClusterData(const DataSetInterface & Interface) : giAllocationSize(Interface.GetNumTimeIntervals()) {
   try {
     Init();
-    Setup();
+    Setup(Interface);
   }
   catch (prg_exception& x) {
     x.addTrace("constructor()","SVTTClusterData");
@@ -46,6 +46,8 @@ SVTTClusterData::SVTTClusterData(const SVTTClusterData& rhs) {
 /** destructor */
 SVTTClusterData::~SVTTClusterData() {
   try {
+    delete gpTimeTrendInside;
+    delete gpTimeTrendOutside;
     delete[] gpCasesInsideCluster;
     delete[] gpCasesOutsideCluster;
     delete[] gpMeasureInsideCluster;
@@ -71,8 +73,17 @@ SVTTClusterData & SVTTClusterData::operator=(const SVTTClusterData& rhs) {
   gtTotalCasesInsideCluster = rhs.gtTotalCasesInsideCluster;
   gtTotalMeasureInsideCluster = rhs.gtTotalMeasureInsideCluster;
   gtTotalMeasureOutsideCluster = rhs.gtTotalMeasureOutsideCluster;
-  gTimeTrendInside = rhs.gTimeTrendInside;
-  gTimeTrendOutside = rhs.gTimeTrendOutside;
+
+  //How will this conditional allocation occur?
+  if (!gpTimeTrendInside) 
+    gpTimeTrendInside = rhs.gpTimeTrendInside->clone();
+  else
+    *gpTimeTrendInside = *(rhs.gpTimeTrendInside);
+
+  if (!gpTimeTrendOutside) 
+    gpTimeTrendOutside = rhs.gpTimeTrendOutside->clone();
+  else
+    *gpTimeTrendOutside = *(rhs.gpTimeTrendOutside);
   return *this;
 }
 
@@ -114,8 +125,8 @@ void SVTTClusterData::CopyEssentialClassMembers(const AbstractClusterData& rhs) 
   gtTotalCasesInsideCluster = ((const SVTTClusterData&)rhs).gtTotalCasesInsideCluster;
   gtTotalMeasureInsideCluster = ((const SVTTClusterData&)rhs).gtTotalMeasureInsideCluster;
   gtTotalMeasureOutsideCluster = ((const SVTTClusterData&)rhs).gtTotalMeasureOutsideCluster;
-  gTimeTrendInside = ((const SVTTClusterData&)rhs).gTimeTrendInside;
-  gTimeTrendOutside = ((const SVTTClusterData&)rhs).gTimeTrendOutside;
+  *gpTimeTrendInside = *(((const SVTTClusterData&)rhs).gpTimeTrendInside);
+  *gpTimeTrendOutside = *(((const SVTTClusterData&)rhs).gpTimeTrendOutside);
 }
 
 /** Deallocates data members that assist with evaluation of temporal data.
@@ -153,6 +164,8 @@ void SVTTClusterData::Init() {
   gpMeasureInsideCluster=0;
   gpMeasureOutsideCluster=0;
   gtTotalMeasureOutsideCluster=0;
+  gpTimeTrendInside=0;
+  gpTimeTrendOutside=0;
 }
 
 /** re-intialize data */
@@ -172,19 +185,23 @@ void SVTTClusterData::InitializeSVTTData(const DataSetInterface & Interface) {
   gtTotalCasesOutsideCluster = Interface.GetTotalCasesCount();
   gtTotalMeasureOutsideCluster = Interface.GetTotalMeasureCount();
 
-  gTimeTrendInside.Initialize();
-  gTimeTrendOutside.Initialize();
+  gpTimeTrendInside->Initialize();
+  gpTimeTrendOutside->Initialize();
 }
 
 /** internal setup function */
-void SVTTClusterData::Setup() {
+void SVTTClusterData::Setup(const DataSetInterface& Interface) {
   try {
     gpCasesInsideCluster = new count_t[giAllocationSize];
     gpCasesOutsideCluster = new count_t[giAllocationSize];
     gpMeasureInsideCluster = new measure_t[giAllocationSize];
     gpMeasureOutsideCluster = new measure_t[giAllocationSize];
+    gpTimeTrendInside = Interface.GetTimeTrend()->clone();
+    gpTimeTrendOutside = Interface.GetTimeTrend()->clone();
   }
   catch (prg_exception& x) {
+    delete gpTimeTrendInside;
+    delete gpTimeTrendOutside;
     delete[] gpCasesInsideCluster;
     delete[] gpCasesOutsideCluster;
     delete[] gpMeasureInsideCluster;
@@ -193,7 +210,6 @@ void SVTTClusterData::Setup() {
     throw;
   }
 }
-
 
 ///////////////////////////// MultiSetSVTTClusterData //////////////////////////
 
@@ -259,23 +275,23 @@ void MultiSetSVTTClusterData::DeallocateEvaluationAssistClassMembers() {
 }
 
 /** Returns inside time trend for data at index. */
-CTimeTrend  * MultiSetSVTTClusterData::getInsideTrend(size_t tSetIndex) {
-  return &(gvSetClusterData[tSetIndex]->gTimeTrendInside);
+AbstractTimeTrend & MultiSetSVTTClusterData::getInsideTrend(size_t tSetIndex) {
+  return *(gvSetClusterData[tSetIndex]->gpTimeTrendInside);
 }
 
 /** Returns outside time trend for data at index. */
-CTimeTrend  * MultiSetSVTTClusterData::getOutsideTrend(size_t tSetIndex) {
-  return &(gvSetClusterData[tSetIndex]->gTimeTrendOutside);
+AbstractTimeTrend & MultiSetSVTTClusterData::getOutsideTrend(size_t tSetIndex) {
+  return *(gvSetClusterData[tSetIndex]->gpTimeTrendOutside);
 }
 
 /** Returns inside time trend for data at index. */
-const CTimeTrend  * MultiSetSVTTClusterData::getInsideTrend(size_t tSetIndex) const {
-  return &(gvSetClusterData[tSetIndex]->gTimeTrendInside);
+const AbstractTimeTrend & MultiSetSVTTClusterData::getInsideTrend(size_t tSetIndex) const {
+  return *(gvSetClusterData[tSetIndex]->gpTimeTrendInside);
 }
 
 /** Returns outside time trend for data at index. */
-const CTimeTrend  * MultiSetSVTTClusterData::getOutsideTrend(size_t tSetIndex) const {
-  return &(gvSetClusterData[tSetIndex]->gTimeTrendOutside);
+const AbstractTimeTrend & MultiSetSVTTClusterData::getOutsideTrend(size_t tSetIndex) const {
+  return *(gvSetClusterData[tSetIndex]->gpTimeTrendOutside);
 }
 
 /** re-intialize data */
@@ -371,21 +387,47 @@ CSVTTCluster * CSVTTCluster::Clone() const {
 }
 
 void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
-  fprintf(fp, "      %.3f", gClusterData->getInsideTrend()->GetAnnualTimeTrend());
+  fprintf(fp, "      %.3f", gClusterData->getInsideTrend().GetAnnualTimeTrend());
 }
 
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
 
   PrintFormat.PrintSectionLabel(fp, "Inside Time trend", false, true);
-  GetFormattedTimeTrend(buffer, *gClusterData->getInsideTrend());
+  GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend());
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   PrintFormat.PrintSectionLabel(fp, "Outside Time trend", false, true);
-  GetFormattedTimeTrend(buffer, *gClusterData->getOutsideTrend());
+  GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend());
   PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   //PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);
   //buffer = "?";
   //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
+  // TODO: These statements are for testing and will be removed eventually.  
+  const QuadraticTimeTrend * pTrend = dynamic_cast<const QuadraticTimeTrend *>(&gClusterData->getInsideTrend());
+  if (pTrend) {
+     PrintFormat.PrintSectionLabel(fp, "alpha Inside", false, true);
+     printString(buffer, "%g", pTrend->GetAlpha());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "beta1 Inside", false, true);
+     printString(buffer, "%g", pTrend->GetBeta());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "beta2 Inside", false, true);
+     printString(buffer, "%g", pTrend->GetBeta2());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
+  pTrend = dynamic_cast<const QuadraticTimeTrend *>(&gClusterData->getOutsideTrend());
+  if (pTrend) {
+     PrintFormat.PrintSectionLabel(fp, "alpha Outside", false, true);
+     printString(buffer, "%g", pTrend->GetAlpha());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "beta1 Outside", false, true);
+     printString(buffer, "%g", pTrend->GetBeta());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "beta2 Outside", false, true);
+     printString(buffer, "%g", pTrend->GetBeta2());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
 }
 
 AbstractClusterData * CSVTTCluster::GetClusterData() {
@@ -412,14 +454,15 @@ measure_t CSVTTCluster::GetExpectedCountForTract(tract_t tTractIndex, const CSaT
 }
 
 /** Returns formatted time trend string. */
-void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const CTimeTrend& Trend) const {
+void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const AbstractTimeTrend& Trend) const {
   try {
     switch (Trend.GetStatus()) {
-     case CTimeTrend::UNDEFINED          : buffer = "undefined"; break;
-     case CTimeTrend::NEGATIVE_INFINITY  : buffer = "-infinity"; break;
-     case CTimeTrend::POSITIVE_INFINITY  : buffer = "+infinity"; break;
-     case CTimeTrend::NOT_CONVERGED      : throw prg_error("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
-     case CTimeTrend::CONVERGED          : printString(buffer, "%.3f%% %s", fabs(Trend.GetAnnualTimeTrend()),
+     case AbstractTimeTrend::UNDEFINED          : buffer = "undefined"; break;
+     case AbstractTimeTrend::NEGATIVE_INFINITY  : buffer = "-infinity"; break;
+     case AbstractTimeTrend::POSITIVE_INFINITY  : buffer = "+infinity"; break;
+	 case AbstractTimeTrend::SINGULAR_MATRIX    : throw prg_error("Calling GetFormattedTimeTrend() with time trend that was not calculated because matrix A is singular.", "GetFormattedTimeTrend()");
+     case AbstractTimeTrend::NOT_CONVERGED      : throw prg_error("Calling GetFormattedTimeTrend() with time trend that has not converged.", "GetFormattedTimeTrend()");
+     case AbstractTimeTrend::CONVERGED          : printString(buffer, "%.3f%% %s", fabs(Trend.GetAnnualTimeTrend()),
                                                        (Trend.GetAnnualTimeTrend() < 0 ? "annual decrease" : "annual increase")); break;
      default : throw prg_error("Unknown time trend status type '%d'.", "GetFormattedTimeTrend()", Trend.GetStatus());
     }
@@ -460,7 +503,6 @@ void CSVTTCluster::InitializeSVTT(tract_t nCenter, const DataSetInterface & Inte
 }
 
 void CSVTTCluster::SetTimeTrend(DatePrecisionType eDatePrecision, double nIntervalLen) {
-  gClusterData->getInsideTrend()->SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
-  gClusterData->getOutsideTrend()->SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
+  gClusterData->getInsideTrend().SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
+  gClusterData->getOutsideTrend().SetAnnualTimeTrend(eDatePrecision, nIntervalLen);
 }
-

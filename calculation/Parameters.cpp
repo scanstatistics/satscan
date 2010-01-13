@@ -8,7 +8,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 99;
+const int CParameters::giNumParameters 	              = 100;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -129,6 +129,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (giEarlyTermThreshold                   != rhs.giEarlyTermThreshold) return false;
   if (gePValueReportingType                  != rhs.gePValueReportingType) return false;
   if (gbReportGumbelPValue                   != rhs.gbReportGumbelPValue) return false;
+  if (geTimeTrendType                        != rhs.geTimeTrendType) return false;
 
   return true;
 }
@@ -300,6 +301,7 @@ void CParameters::Copy(const CParameters &rhs) {
   giEarlyTermThreshold                   = rhs.giEarlyTermThreshold;
   gePValueReportingType                  = rhs.gePValueReportingType;
   gbReportGumbelPValue                   = rhs.gbReportGumbelPValue;
+  geTimeTrendType                        = rhs.geTimeTrendType;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -690,7 +692,7 @@ void CParameters::SetAsDefaulted() {
   gsEndRangeEndDate                        = gsStudyPeriodEndDate;
   gsStartRangeStartDate                    = gsStudyPeriodStartDate;
   gsStartRangeEndDate                      = gsStudyPeriodEndDate;
-  gdTimeTrendConverge			           = 0.0000001;
+  gdTimeTrendConverge			           = 0.00001; //0.0000001;
   gbRestrictReportedClusters               = false;
   geSimulationType                         = STANDARD;
   gsSimulationDataSourceFileName           = "";
@@ -736,6 +738,7 @@ void CParameters::SetAsDefaulted() {
   giEarlyTermThreshold = 50;
   gePValueReportingType = DEFAULT_PVALUE;
   gbReportGumbelPValue = false;
+  geTimeTrendType = LINEAR;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -1032,15 +1035,23 @@ void CParameters::SetTimeTrendAdjustmentPercentage(double dPercentage) {
 
 /** Sets time rend adjustment type. Throws exception if out of range. */
 void CParameters::SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType) {
-  if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > STRATIFIED_RANDOMIZATION)
+  if (eTimeTrendAdjustmentType < NOTADJUSTED || eTimeTrendAdjustmentType > CALCULATED_QUADRATIC_PERC)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetTimeTrendAdjustmentType()",
-                    eTimeTrendAdjustmentType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
+                    eTimeTrendAdjustmentType, NOTADJUSTED, CALCULATED_QUADRATIC_PERC);
   geTimeTrendAdjustType = eTimeTrendAdjustmentType;
 }
 
 /** Sets time trend convergence variable. */
 void CParameters::SetTimeTrendConvergence(double dTimeTrendConvergence) {
   gdTimeTrendConverge = dTimeTrendConvergence;
+}
+
+/** Sets time trend calculation type. */
+void CParameters::setTimeTrendType(TimeTrendType eTimeTrendType) {
+  if (eTimeTrendType < LINEAR || eTimeTrendType > QUADRATIC)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "setTimeTrendType()",
+                    eTimeTrendType, LINEAR, QUADRATIC);
+  geTimeTrendType = eTimeTrendType;
 }
 
 /** Set version number that indicates what version of SaTScan created these parameters. */

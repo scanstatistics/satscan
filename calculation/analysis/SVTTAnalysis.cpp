@@ -18,7 +18,7 @@ CSpatialVarTempTrendAnalysis::~CSpatialVarTempTrendAnalysis() {}
     NOTE: This analysis has not been optimized to 'pre' allocate objects used in
           simulation process. This function is only a shell.                     */
 void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) {
-  gClusterData.reset(new SVTTClusterData(gDataHub.GetNumTimeIntervals()));
+  gClusterData.reset(new SVTTClusterData(DataGateway));
 }
 
 /** Allocates objects used during calculation of most likely clusters, instead

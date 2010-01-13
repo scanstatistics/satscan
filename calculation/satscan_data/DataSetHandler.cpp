@@ -66,7 +66,7 @@ RandomizerContainer_t& DataSetHandler::GetRandomizerContainer(RandomizerContaine
 SimulationDataContainer_t& DataSetHandler::GetSimulationDataContainer(SimulationDataContainer_t& Container) const {
   Container.clear();
   for (unsigned int t=0; t < gParameters.GetNumDataSets(); ++t)
-    Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(), t + 1));
+	  Container.push_back(new DataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetTInfo()->getMetaManagerProxy().getNumMetaLocations(), gParameters, t + 1));
   return AllocateSimulationData(Container);
 }
 
@@ -385,7 +385,7 @@ void DataSetHandler::SetPurelyTemporalSimulationData(SimulationDataContainer_t& 
 void DataSetHandler::Setup() {
   try {
     for (unsigned int i=0; i < gParameters.GetNumDataSets(); ++i)
-      gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), i + 1));
+		gvDataSets.push_back(new RealDataSet(gDataHub.GetNumTimeIntervals(), gDataHub.GetNumTracts(), gDataHub.GetNumMetaTracts(), gParameters, i + 1));
   }
   catch (prg_exception& x) {
     x.addTrace("Setup()","DataSetHandler");

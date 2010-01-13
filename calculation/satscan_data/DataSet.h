@@ -48,14 +48,14 @@ class DataSet {
                                                                             - cases are distributed in time intervals cumulatively */
     TwoDimCountArray_t        * gpCaseData_PT_Cat;               /** number of cases stratified with respect to time intervals by category index
                                                                             - cases are distributed in time intervals cumulatively */
-    CTimeTrend                  gTimeTrend;                             /** time trend data */
+    AbstractTimeTrend         * gpTimeTrend;                             /** time trend data */
     unsigned int                giSetIndex;
 
                                 DataSet(const DataSet& thisSet);
     DataSet                   & operator=(const DataSet& rhs);
 
   public:
-    DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations,unsigned int iSetIndex);
+    DataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
     virtual ~DataSet();
 
     virtual DataSet           * Clone() const;
@@ -88,8 +88,8 @@ class DataSet {
     TwoDimMeasureArray_t      & getMeasureData_Aux() const;
     unsigned int                getIntervalDimension() const {return giIntervalsDimensions;}
     unsigned int                getLocationDimension() const {return giLocationDimensions;}
-    CTimeTrend                & getTimeTrend() {return gTimeTrend;}
-    const CTimeTrend          & getTimeTrend() const {return gTimeTrend;}
+    AbstractTimeTrend         & getTimeTrend() {return *gpTimeTrend;}
+    const AbstractTimeTrend   & getTimeTrend() const {return *gpTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
     virtual void                reassignMetaLocationData(const MetaManagerProxy& MetaLocations);
     void                        setCaseData_MetaLocations(const MetaManagerProxy& MetaProxy);
@@ -130,7 +130,7 @@ class RealDataSet : public DataSet {
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
 
   public:
-    RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, unsigned int iSetIndex);
+    RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
     virtual ~RealDataSet();
 
     TwoDimCountArray_t        & allocateCaseData_Censored();

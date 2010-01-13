@@ -620,7 +620,7 @@ void AnalysisRunner::PerformCentric_Parallel() {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(),  gpDataHub->GetNumMetaTractsReferenced(), j + 1));
+			 thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(),  gpDataHub->GetNumMetaTractsReferenced(), gParameters, j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -793,7 +793,7 @@ void AnalysisRunner::PerformCentric_Serial() {
          SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
          //create new simulation data set object for each data set of this simulation
          for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-            thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), gpDataHub->GetNumMetaTractsReferenced(), j + 1));
+			 thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), gpDataHub->GetNumMetaTractsReferenced(), gParameters, j + 1));
          //allocate appropriate data structure for given data set handler (probablility model)
          DataHandler.AllocateSimulationData(thisDataCollection);
          //randomize data
@@ -1361,7 +1361,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       //for SVTT analyses, are data set global time trends converging?
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
          for (unsigned int i=0; i < gpDataHub->GetDataSetHandler().GetNumDataSets(); ++i)
-            if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != CTimeTrend::CONVERGED)
+            if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTimeTrend().GetStatus() != AbstractTimeTrend::CONVERGED)
               return false;   
       }
 

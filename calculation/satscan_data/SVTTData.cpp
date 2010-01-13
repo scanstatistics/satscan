@@ -133,7 +133,7 @@ void CSVTTData::RandomizeData(RandomizerContainer_t& RandomizerContainer,
                                                            gDataSets->GetDataSet(t).getMeasureData_PT_NC(),
                                                            m_nTimeIntervals,
                                                            gParameters.GetTimeTrendConvergence());
-      if (SimDataContainer[t]->getTimeTrend().GetStatus() == CTimeTrend::NOT_CONVERGED)
+      if (SimDataContainer[t]->getTimeTrend().GetStatus() == AbstractTimeTrend::NOT_CONVERGED)
         throw prg_error("Randomized data set time trend does not converge.\n", "RandomizeData()");
     }
   }
@@ -156,18 +156,18 @@ void CSVTTData::ReadDataFromFiles() {
       (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
                                              m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
        switch ((*itr)->getTimeTrend().GetStatus()) {
-          case CTimeTrend::UNDEFINED         :
+          case AbstractTimeTrend::UNDEFINED         :
             throw resolvable_error("Error: The number of cases in data set %d is less than 2.\n"
                                    "       Time trend can not be calculated.", 
                                    std::distance(gDataSets->getDataSets().begin(), itr) + 1);
-          case CTimeTrend::NEGATIVE_INFINITY :
-          case CTimeTrend::POSITIVE_INFINITY :
+          case AbstractTimeTrend::NEGATIVE_INFINITY :
+          case AbstractTimeTrend::POSITIVE_INFINITY :
             throw resolvable_error("Error: All cases in data set %d are either in first or last time interval.\n"
                                    "       Time trend is infinite.", 
                                    std::distance(gDataSets->getDataSets().begin(), itr) + 1);
-          case CTimeTrend::NOT_CONVERGED :
+          case AbstractTimeTrend::NOT_CONVERGED :
             throw prg_error("The time trend in real data did not converge.\n","ReadDataFromFiles()");
-          case CTimeTrend::CONVERGED          :
+          case AbstractTimeTrend::CONVERGED          :
           default                             : break; 
        }
     }
@@ -190,7 +190,7 @@ void CSVTTData::RemoveClusterSignificance(const CCluster& Cluster) {
      //calculate time trend for dataset data set
     (*itr)->getTimeTrend().CalculateAndSet((*itr)->getCaseData_PT_NC(), (*itr)->getMeasureData_PT_NC(),
                                            m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
-    if ((*itr)->getTimeTrend().GetStatus() == CTimeTrend::NOT_CONVERGED)
+    if ((*itr)->getTimeTrend().GetStatus() == AbstractTimeTrend::NOT_CONVERGED)
     throw prg_error("The time trend does not converge after removing cluster data.\n", "RemoveClusterSignificance()");
   }
 }

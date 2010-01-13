@@ -47,8 +47,12 @@ AbstractAnalysis::~AbstractAnalysis() {
 AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(const CSaTScanData& DataHub) {
   //create likelihood calculator
   switch (DataHub.GetParameters().GetProbabilityModelType()) {
-    case POISSON              : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND)
-                                  return new PoissonSVTTLikelihoodCalculator(DataHub);
+	case POISSON              : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND) {
+		                          if (DataHub.GetParameters().getTimeTrendType() == QUADRATIC)
+                                    return new QuadraticPoissonSVTTLikelihoodCalculator(DataHub);
+								  else
+                                    return new PoissonSVTTLikelihoodCalculator(DataHub);
+								}
     case HOMOGENEOUSPOISSON   :
     case SPACETIMEPERMUTATION :
     case EXPONENTIAL          : return new PoissonLikelihoodCalculator(DataHub);

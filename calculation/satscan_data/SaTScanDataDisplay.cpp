@@ -342,6 +342,16 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       buffer = "Annual increase";
     PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
     fprintf(fp, "%.3lf%%\n", fabs(nAnnualTT));
+
+    if (gParameters.getTimeTrendType() == QUADRATIC) {
+      // TODO: These statements are for testing and will be removed eventually.  
+      PrintFormat.PrintSectionLabel(fp, "alpha Global", false, false);
+      fprintf(fp, "%g\n", gDataSets->GetDataSet(0/*for now*/).getTimeTrend().GetAlpha());
+      PrintFormat.PrintSectionLabel(fp, "beta1 Global", false, false);
+      fprintf(fp, "%g\n", gDataSets->GetDataSet(0/*for now*/).getTimeTrend().GetBeta());
+      PrintFormat.PrintSectionLabel(fp, "beta2 Global", false, false);
+      fprintf(fp, "%g\n", ((const QuadraticTimeTrend&)(gDataSets->GetDataSet(0/*for now*/).getTimeTrend())).GetBeta2());
+    }
   }
   PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
 }

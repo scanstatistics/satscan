@@ -46,7 +46,7 @@ class DataSetInterface {
     measure_t                ** gppMeasureAuxArray;      /** */
     measure_t                 * gpPTMeasureAuxArray;      /** */
     measure_t                 * gpPSMeasureAuxArray;     /** spatial */
-    const CTimeTrend          * gpTimeTrend;            /** pointer to dataset time trend structure */
+    const AbstractTimeTrend   * gpTimeTrend;            /** pointer to dataset time trend structure */
 
     inline count_t                    ** GetCaseArray() const {return gppCaseArray;}
     inline count_t                    ** GetNCCaseArray() const {return gppNCCaseArray;}
@@ -64,7 +64,7 @@ class DataSetInterface {
     inline measure_t                   * GetPSMeasureAuxArray() const {return gpPSMeasureAuxArray;}
     inline measure_t                   * GetPTMeasureAuxArray() const {return gpPTMeasureAuxArray;}
     inline const AbstractRandomizer    * GetRandomizer() const {return _randomizer;}
-    inline const CTimeTrend            * GetTimeTrend() const {return gpTimeTrend;}
+    inline const AbstractTimeTrend     * GetTimeTrend() const {return gpTimeTrend;}
     inline count_t                       GetTotalCasesCount() const {return gTotalCases;}
     inline count_t                       GetTotalControlsCount() const {return gTotalControls;}
     inline measure_t                     GetTotalMeasureCount() const {return gTotalMeasure;}
@@ -82,7 +82,7 @@ class DataSetInterface {
     void                                 SetPTMeasureAuxArray(measure_t * pPTMeasureAux) {gpPTMeasureAuxArray = pPTMeasureAux;}
     void                                 SetMeasureAuxArray(measure_t ** ppMeasureAux) {gppMeasureAuxArray = ppMeasureAux;gpPSMeasureAuxArray = ppMeasureAux[0];}
     void                                 SetRandomizer(const AbstractRandomizer& randomizer) {_randomizer = &randomizer;}
-    void                                 SetTimeTrend(const CTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
+    void                                 SetTimeTrend(const AbstractTimeTrend * pTimeTrend) {gpTimeTrend = pTimeTrend;}
     void                                 SetTotalCasesCount(count_t tCases) {gTotalCases = tCases;}
     void                                 SetTotalControlsCount(count_t tControls) {gTotalControls = tControls;}
     void                                 SetTotalMeasureCount(measure_t tMeasure) {gTotalMeasure = tMeasure;}

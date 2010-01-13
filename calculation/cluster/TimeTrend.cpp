@@ -2,39 +2,98 @@
 #include "SaTScan.h"
 #pragma hdrstop
 //*****************************************************************************
+#include "Toolkit.h"
 #include "TimeTrend.h"
 #include "SSException.h"
+#include "newmat.h"
+#include "UtilityFunctions.h"
+#include <numeric>
+
+//----------------------- AbstractTimeTrend ------------------------------------------
 
 /** constructor */
-CTimeTrend::CTimeTrend() {
+AbstractTimeTrend::AbstractTimeTrend() {
   Initialize();
 }
 
 /** destructor */
-CTimeTrend::~CTimeTrend(){}
+AbstractTimeTrend::~AbstractTimeTrend(){}
 
 /** static variable define - beta variable that defines cutoff for trend being negative. */
-const double CTimeTrend::TREND_ZERO = 0.00000001;
+const double AbstractTimeTrend::TREND_ZERO = 0.00000001;
 
 /** static variable - maximum number of loop iterations before attempt to estimate start beta quits. */
-const unsigned int CTimeTrend::MAX_BETA_TEST_ITERATIONS = 1000;
+const unsigned int AbstractTimeTrend::MAX_BETA_TEST_ITERATIONS = 1000;
 
 /** static variable - maximum number of loop iterations before attempt to estimate beta quits. */
-const unsigned int CTimeTrend::MAX_CONVERGENCE_ITERATIONS = 1000000;
+const unsigned int AbstractTimeTrend::MAX_CONVERGENCE_ITERATIONS = 1000000;
 
 /** static variable - Time trend negative infinity */
-const double CTimeTrend::NEGATIVE_INFINITY_INDICATOR = -999999.0;
+const double AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR = -999999.0;
 
 /** static variable - Time trend positive infinity  */
-const double CTimeTrend::POSITIVE_INFINITY_INDICATOR = 999999.0;
+const double AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR = 999999.0;
+
+/** initializes/re-initializes class data members */
+void AbstractTimeTrend::Initialize() {
+  gdAlpha           = 0;
+  gdBeta            = 0;
+  gdAnnualTimeTrend = 0;
+  gStatus           = AbstractTimeTrend::NOT_CONVERGED;
+}
+
+/** Calculates annual time trend given specfied time interval precision and length. */
+double AbstractTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength) {
+  double nUnits;
+
+  switch (gStatus) {
+   case NOT_CONVERGED     : throw prg_error("Unable to call SetAnnualTimeTrend with non-converged time trend.", "SetAnnualTimeTrend()");
+   case UNDEFINED         : gdAnnualTimeTrend = 0; return gdAnnualTimeTrend;
+   case NEGATIVE_INFINITY : gdAnnualTimeTrend = NEGATIVE_INFINITY_INDICATOR;  return gdAnnualTimeTrend;
+   case POSITIVE_INFINITY : gdAnnualTimeTrend = POSITIVE_INFINITY_INDICATOR;  return gdAnnualTimeTrend;
+   case CONVERGED         : break;
+   default : throw prg_error("Unknown time trend status '%d'.", "SetAnnualTimeTrend()", gStatus);
+  }
+
+  switch (eAggregationPrecision) {
+    case YEAR  : gdAnnualTimeTrend = 100 * (exp(gdBeta/dTimeAggregationLength) - 1); break;
+    case MONTH : gdAnnualTimeTrend = 100 * (exp(gdBeta * 12/dTimeAggregationLength) - 1); break;
+    case DAY   : gdAnnualTimeTrend = 100 * (exp(gdBeta * 365.25/dTimeAggregationLength) - 1); break;
+    default    : throw prg_error("SetAnnualTimeTrend() called with unknown aggregation precision '%d'.",
+                                 "SetAnnualTimeTrend()", eAggregationPrecision);
+  }
+  //If the time trend is very small, then the value assigned above is more likely the
+  //result of round-off. In this case, set trend to zero.
+  if (-TREND_ZERO < gdAnnualTimeTrend && gdAnnualTimeTrend < TREND_ZERO)
+    gdAnnualTimeTrend = 0;
+  return gdAnnualTimeTrend;
+}
+
+/** Returns instance of time trend objects get type specified in parameters. */
+AbstractTimeTrend * AbstractTimeTrend::getTimeTrend(const CParameters& parameters) {
+  switch (parameters.getTimeTrendType()) {
+    case LINEAR    : return new LinearTimeTrend();
+    case QUADRATIC : return new QuadraticTimeTrend();
+    default        : throw prg_error("getTimeTrend() called with unknown time trend '%d'.",
+                                     "getTimeTrend()", parameters.getTimeTrendType());
+  }
+}
+
+//----------------------- LinearTimeTrend -------------------------------------
+
+/** constructor */
+LinearTimeTrend::LinearTimeTrend() : AbstractTimeTrend() {}
+
+/** destructor */
+LinearTimeTrend::~LinearTimeTrend(){}
 
 /** Returns the natural log of (nSc/nSME). */
-double CTimeTrend::Alpha(double nSC, double nSME) const {
+double LinearTimeTrend::Alpha(double nSC, double nSME) const {
   return log(nSC/nSME);
 }
 
 /* Calculates alpha given a specific beta. Required sums are recalculated */
-double CTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta) const {
+double LinearTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta) const {
   double rval;
   //Set local array with new nSumMeasure_ExpBeta values
   double nNewSME = 0; // using new Beta actually
@@ -43,7 +102,7 @@ double CTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeInt
     rval = 0;
   else {
     for (int i=0; i < nTimeIntervals; i++)
-      nNewSME += pMeasure[i] * exp(nBeta * i); // How to access pMeasure?
+      nNewSME += pMeasure[i] * exp(nBeta * i);
     rval = log(nCases / nNewSME);
   }
 
@@ -61,7 +120,7 @@ double CTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeInt
 // is not accounted for in the calculations. 
 // The value of nConverge should be very small. 
 // ******************************************************************************
-CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) {
+LinearTimeTrend::Status LinearTimeTrend::CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) {
   double nSumCases = 0;
   double nSumTime_Cases = 0;
   double nSumMsr_ExpBeta = 0;
@@ -88,14 +147,14 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
   // Eliminates situations when the time trend is undefined.
   // *******************************************************
   if (nSumCases < 2)
-    return  (gStatus = CTimeTrend::UNDEFINED);
+    return  (gStatus = LinearTimeTrend::UNDEFINED);
   else if ((pCases[0] == nSumCases)) {
     gdBeta = 0; /* What if don't set Beta at all??? */
-    return (gStatus = CTimeTrend::NEGATIVE_INFINITY);
+    return (gStatus = LinearTimeTrend::NEGATIVE_INFINITY);
   }
   else if (pCases[nTimeIntervals-1] == nSumCases) {
     gdBeta = 0; /* What if don't set Beta at all??? */
-    return (gStatus = CTimeTrend::POSITIVE_INFINITY);
+    return (gStatus = LinearTimeTrend::POSITIVE_INFINITY);
   }
 
   // Calculates the start value of beta for the subsequent Newton-Raphson iterations.
@@ -137,7 +196,7 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
      nIterations++;  
   }
   if (bGoodBetaStart == false)
-    return (gStatus = CTimeTrend::NOT_CONVERGED);
+    return (gStatus = LinearTimeTrend::NOT_CONVERGED);
 
   // Estimates the time trend beta usisng Newton-Raphson's iterative method.
   // Maximum number of iterations increased from 100 to 1,000,000 by MK's request 1999.
@@ -192,58 +251,143 @@ CTimeTrend::Status CTimeTrend::CalculateAndSet(const count_t* pCases, const meas
       nSumMsr_ExpBeta += pMeasure[t] * exp(nBetaNew * t);
     gdAlpha = Alpha(nSumCases,nSumMsr_ExpBeta);
     gdBeta = nBetaNew;
-    gStatus = CTimeTrend::CONVERGED;
+    gStatus = LinearTimeTrend::CONVERGED;
   }
   else
-    gStatus = CTimeTrend::NOT_CONVERGED;
+    gStatus = LinearTimeTrend::NOT_CONVERGED;
 
   return gStatus;
 }
 
 /** Calculates first derivative. */
-double CTimeTrend::F(double nSC, double nSTC, double nSME, double nSTME) const {
+double LinearTimeTrend::F(double nSC, double nSTC, double nSME, double nSTME) const {
   return (nSTC * nSME) - (nSC * nSTME);
 }
 
-/** initializes/re-initializes class data members */
-void CTimeTrend::Initialize() {
-  gdAlpha           = 0;
-  gdBeta            = 0;
-  gdAnnualTimeTrend = 0;
-  gStatus           = CTimeTrend::NOT_CONVERGED;
-}
-
 /** Calculates second derivative. */
-double CTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) const {
+double LinearTimeTrend::S(double nSC, double nSTC, double nSTME, double nST2ME) const {
   return (nSTC * nSTME) - (nSC * nST2ME);
 }
 
-/** Calculates annual time trend given specfied time interval precision and length. */
-double CTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength) {
-  double nUnits;
+//----------------------- QuadraticTimeTrend ------------------------------------
 
-  switch (gStatus) {
-   case NOT_CONVERGED     : throw prg_error("Unable to call SetAnnualTimeTrend with non-converged time trend.", "SetAnnualTimeTrend()");
-   case UNDEFINED         : gdAnnualTimeTrend = 0; return gdAnnualTimeTrend;
-   case NEGATIVE_INFINITY : gdAnnualTimeTrend = NEGATIVE_INFINITY_INDICATOR;  return gdAnnualTimeTrend;
-   case POSITIVE_INFINITY : gdAnnualTimeTrend = POSITIVE_INFINITY_INDICATOR;  return gdAnnualTimeTrend;
-   case CONVERGED         : break;
-   default : throw prg_error("Unknown time trend status '%d'.", "SetAnnualTimeTrend()", gStatus);
-  }
-
-  switch (eAggregationPrecision) {
-    case YEAR  : gdAnnualTimeTrend = 100 * (exp(gdBeta/dTimeAggregationLength) - 1); break;
-    case MONTH : gdAnnualTimeTrend = 100 * (exp(gdBeta * 12/dTimeAggregationLength) - 1); break;
-    case DAY   : gdAnnualTimeTrend = 100 * (exp(gdBeta * 365.25/dTimeAggregationLength) - 1); break;
-    default    : throw prg_error("SetAnnualTimeTrend() called with unknown aggregation precision '%d'.",
-                                 "SetAnnualTimeTrend()", eAggregationPrecision);
-  }
-  //If the time trend is very small, then the value assigned above is more likely the
-  //result of round-off. In this case, set trend to zero.
-  if (-TREND_ZERO < gdAnnualTimeTrend && gdAnnualTimeTrend < TREND_ZERO)
-    gdAnnualTimeTrend = 0;
-  return gdAnnualTimeTrend;
+/** constructor */
+QuadraticTimeTrend::QuadraticTimeTrend() : AbstractTimeTrend() {
+  Initialize();
 }
 
+/** destructor */
+QuadraticTimeTrend::~QuadraticTimeTrend(){}
 
+QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) {
+  bool bConvergence = false;
+  unsigned int        nIterations=0;
+  measure_t           tMean=0;
 
+  //nTimeIntervals = 20;
+  //double Cases[20] = {10.0,9.526316,9.052632,8.578947,8.105263,7.631579,7.157895,6.68421,6.210526,5.736842,5.263158,4.789474,4.315789,3.842105,3.368421,2.894737,2.421053,1.947368,1.473684,1.0};
+  //double Measure[20] = {1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0};
+
+  // Eliminates situations when the time trend is undefined.
+  // *******************************************************
+  count_t nSumCases = 0;//std::accumulate(pCases, pCases + nTimeIntervals, 0, plus<count_t>());
+  int iIntervalsWithCases=0;
+  for (int i=0; i < nTimeIntervals; ++i) {
+  nSumCases += pCases[i];
+    if (pCases[i]) ++iIntervalsWithCases;
+  }
+
+  if (nSumCases < 2 || iIntervalsWithCases < 3) {
+    gdAlpha = gdBeta = gdBeta2 = 0;
+    return  (gStatus = QuadraticTimeTrend::UNDEFINED);
+  } else if ((pCases[0] == nSumCases)) {
+    gdAlpha = gdBeta = gdBeta2 = 0;
+    return (gStatus = QuadraticTimeTrend::NEGATIVE_INFINITY);
+  } else if (pCases[nTimeIntervals-1] == nSumCases) {
+    gdAlpha = gdBeta = gdBeta2 = 0;
+    return (gStatus = QuadraticTimeTrend::POSITIVE_INFINITY);
+  } // else ready to calculate
+    
+  // copy cases in column vector
+  ColumnVector y(nTimeIntervals);
+  for (int r=0; r < y.Nrows(); ++r) {
+     y.element(r) = pCases[r];
+     tMean += pCases[r];
+  }
+  tMean /= (measure_t)nTimeIntervals;
+    
+  // copy measure in column vector
+  ColumnVector m(nTimeIntervals);
+  for (int r=0; r < m.Nrows(); ++r)
+     m.element(r) = pMeasure[r];
+   
+  //column vector: alpha, beta1, beta2
+  ColumnVector b(3);
+  b.element(0) = log(tMean);
+  b.element(1) = 0.0;
+  b.element(2) = 0.0;
+    
+  Matrix X(nTimeIntervals,3);
+  for (int r=0; r < X.Nrows(); ++r) {
+    for (int c=0; c < X.Ncols(); ++c) {
+      if (c == 0)
+        X.element(r,c) = 1;
+      else if (c == 1)
+        X.element(r,c) = r + 1;
+      else
+        X.element(r,c) = pow(r + 1,2.0);
+    }
+  }
+
+  try {
+    while (!bConvergence && nIterations < MAX_CONVERGENCE_ITERATIONS) {
+        Matrix mu(X * b);
+        for (int r=0; r < mu.Nrows(); ++r) {
+            for (int c=0; c < mu.Ncols(); ++c) {
+                mu.element(r,c) = exp(mu.element(r,c)) * m.element(r);
+            }
+        }
+        Matrix A = (X.t() * mu.AsDiagonal()) * X;
+        Matrix bnew = b - ((A.i() * ((X * -1.0).t())) * (y - mu));
+        double dif=0;
+        for (int r=0; r < b.Nrows(); ++r) { //Norm of the difference of 2 column vectors
+           dif += pow(b.element(r) - bnew.element(r,0), 2.0);
+        }
+        bConvergence = std::sqrt(dif) <= nConverge;
+        b = bnew;
+        ++nIterations;
+    }
+    
+    if (bConvergence) {
+      //printoutMatrix("b", b, stdout);
+      gdAlpha = b.element(0);
+      gdBeta = b.element(1);
+      gdBeta2 = b.element(2);
+      gStatus = QuadraticTimeTrend::CONVERGED;
+    } else {
+      gdAlpha = gdBeta = gdBeta2 = 0;
+      gStatus = QuadraticTimeTrend::NOT_CONVERGED;
+    }
+  } catch (SingularException& x) {
+    gdAlpha = gdBeta = gdBeta2 = 0;
+	gStatus = QuadraticTimeTrend::SINGULAR_MATRIX;
+  }
+
+  //TODO: Remove these debug statements later.
+  if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
+    fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
+        (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));
+    printoutMatrix("y", y, AppToolkit::getToolkit().openDebugFile());
+    printoutMatrix("m", m, AppToolkit::getToolkit().openDebugFile());
+    printoutMatrix("b", b, AppToolkit::getToolkit().openDebugFile());
+    printoutMatrix("X", X, AppToolkit::getToolkit().openDebugFile());
+  }
+
+  return gStatus;
+}
+
+/** initializes/re-initializes class data members */
+void QuadraticTimeTrend::Initialize() {
+  AbstractTimeTrend::Initialize();
+  gdBeta2           = 0;
+}

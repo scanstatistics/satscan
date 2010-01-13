@@ -120,8 +120,8 @@ double AbstractLikelihoodCalculator::CalcMonotoneLogLikelihood(tract_t, const st
 }
 
 /** Throws exception. Not implemented in base class */
-double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t, SVTTClusterData&, const CTimeTrend&) const {
-  throw prg_error("CalcSVTTLogLikelihood(size_t, CSVTTCluster*, const CTimeTrend&) not implementated.","AbstractLikelihoodCalculator");
+double AbstractLikelihoodCalculator::CalcSVTTLogLikelihood(size_t, SVTTClusterData&, const AbstractTimeTrend&) const {
+  throw prg_error("CalcSVTTLogLikelihood(size_t, CSVTTCluster*, const AbstractTimeTrend&) not implementated.","AbstractLikelihoodCalculator");
 }
 
 /** Throws exception. Not implemented in base class */

@@ -7,11 +7,8 @@
 #include "DataSet.h"
 #include "DataSetInterface.h"
 
-//class CPSMonotoneCluster;
 class CSaTScanData;
 class CCluster;
-//class CSVTTCluster;
-//class CTimeTrend;
 
 class CModel {
   public:

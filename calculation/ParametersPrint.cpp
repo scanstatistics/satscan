@@ -923,7 +923,10 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
     settings.push_back(std::make_pair("Adjust for known relative risks",(bPrintingAdjustmentsFileParameters ? "Yes" : "No")));
     if (bPrintingAdjustmentsFileParameters)
         settings.push_back(std::make_pair("Adjustments File",gParameters.GetAdjustmentsByRelativeRisksFilename()));
-
+    //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == QUADRATIC) {
+       settings.push_back(std::make_pair("Time Trend Type (SVTT)","Quadratic"));
+    }
     WriteSettingsContainer(settings, "Space And Time Adjustments", fp);
   }
   catch (prg_exception& x) {
@@ -1018,6 +1021,7 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
           printString(buffer, "%g %s", 
               gParameters.GetMaximumTemporalClusterSize(),
               GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.GetMaximumTemporalClusterSize() != 1, true)); 
+          settings.push_back(std::make_pair("Maximum Temporal Cluster Size", buffer)); break;
           break;
       default : throw prg_error("Unknown maximum temporal cluster size type '%d'.\n",
                                 "PrintTemporalWindowParameters()", gParameters.GetMaximumTemporalClusterSizeType());

@@ -335,7 +335,7 @@ void printoutMatrix(const std::string& s, Matrix& m, FILE * fp) {
   for (int r=0; r < m.Nrows(); ++r) {
       fprintf(fp, "row %d\t", r + 1);
       for (int c=0; c < m.Ncols(); ++c)
-         fprintf(fp, "%lf\t", m.element(r,c));
+         fprintf(fp, "%g\t", m.element(r,c));
       fprintf(fp, "\n");
   }
   fprintf(fp, "\n");

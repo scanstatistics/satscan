@@ -32,7 +32,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
                                     MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
-                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL};
+                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -49,7 +49,7 @@ enum RiskType                      {STANDARDRISK=0, MONOTONERISK};
 enum AreaRateType                  {HIGH=1, LOW, HIGHANDLOW};
 /** time trend adjustment types */
 enum TimeTrendAdjustmentType       {NOTADJUSTED=0, NONPARAMETRIC, LOGLINEAR_PERC,
-                                    CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION};
+                                    CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION, CALCULATED_QUADRATIC_PERC};
 /** spatial adjustment types */
 enum SpatialAdjustmentType         {NO_SPATIAL_ADJUSTMENT=0, SPATIALLY_STRATIFIED_RANDOMIZATION};
 enum CoordinatesType               {CARTESIAN=0, LATLON};
@@ -78,6 +78,8 @@ enum CoordinatesDataCheckingType   {STRICTCOORDINATES=0, RELAXEDCOORDINATES};
 enum MultipleCoordinatesType       {ONEPERLOCATION=0, ATLEASTONELOCATION, ALLLOCATIONS};
 /** p-values reporting type */
 enum PValueReportingType           {DEFAULT_PVALUE=0, STANDARD_PVALUE, TERMINATION_PVALUE, GUMBEL_PVALUE};
+/** time trend calculation type */
+enum TimeTrendType                 {LINEAR=0,QUADRATIC};
 
 class CParameters {
   public:
@@ -196,6 +198,7 @@ class CParameters {
     unsigned int                        giEarlyTermThreshold;                   /** early termination threshold */
     PValueReportingType                 gePValueReportingType;                  /** p-value reporting type */
     bool                                gbReportGumbelPValue;                   /** report Gumbel p-value */
+    TimeTrendType                       geTimeTrendType;                        /** time trend type */
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
@@ -326,6 +329,7 @@ class CParameters {
     double                              GetTimeTrendAdjustmentPercentage() const {return gdTimeTrendAdjustPercentage;}
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
+	TimeTrendType                       getTimeTrendType() const {return geTimeTrendType;}
     bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
     bool                                getIsWeightedNormalCovariates() const {return gbWeightedNormalCovariates;}    
     bool                                getIsReportingGumbelPValue() const;
@@ -411,6 +415,7 @@ class CParameters {
     void                                SetTimeTrendAdjustmentPercentage(double dPercentage);
     void                                SetTimeTrendAdjustmentType(TimeTrendAdjustmentType eTimeTrendAdjustmentType);
     void                                SetTimeTrendConvergence(double dTimeTrendConvergence);
+	void                                setTimeTrendType(TimeTrendType eTimeTrendType);
     void                                SetUseAdjustmentForRelativeRisksFile(bool b) {gbUseAdjustmentsForRRFile = b;}
     void                                SetIsWeightedNormal(bool b) {gbWeightedNormal = b;}
     void                                SetIsWeightedNormalCovariates(bool b) {gbWeightedNormalCovariates = b;}    

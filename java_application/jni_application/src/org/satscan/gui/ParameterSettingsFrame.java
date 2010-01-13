@@ -400,7 +400,15 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _parameters.AddEllipsoidShape(4, false);
         _parameters.AddEllipsoidRotations(12, false);
         _parameters.AddEllipsoidShape(5, false);
-        _parameters.AddEllipsoidRotations(15, false);
+        _parameters.AddEllipsoidRotations(15, false);        
+        //quadratic time trend for svtt not exposed in GUI
+        if (_parameters.getTimeTrendType() == Parameters.TimeTrendType.QUADRATIC) {
+            _parameters.SetTimeTrendType(Parameters.TimeTrendType.LINEAR.ordinal());
+        }
+        //calculated quadratic temporal adjustment not exposed in GUI
+        if (_parameters.GetTimeTrendAdjustmentType() == Parameters.TimeTrendAdjustmentType.CALCULATED_QUADRATIC_PERC) {
+          _parameters.SetTimeTrendAdjustmentType(Parameters.TimeTrendAdjustmentType.CALCULATED_LOGLINEAR_PERC.ordinal());
+        }
     }
 
     /**

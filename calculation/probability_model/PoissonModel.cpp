@@ -112,28 +112,30 @@ void CPoissonModel::AdjustForLogLinear(RealDataSet& Set) {
         vMeasure_PT_NC[i] += ppMeasure[i][j];
 
   //Calculate time trend for whole dataset
-  CTimeTrend TimeTrend;
-  TimeTrend.CalculateAndSet(Set.getCaseData_PT_NC(), &vMeasure_PT_NC[0], Set.getIntervalDimension(), gTimeTrendConvergence);
+  std::auto_ptr<AbstractTimeTrend> TimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
+  TimeTrend->CalculateAndSet(Set.getCaseData_PT_NC(), &vMeasure_PT_NC[0], Set.getIntervalDimension(), gTimeTrendConvergence);
 
   //Cancel analysis execution if calculation of time trend fails for various reasons.
-  switch (TimeTrend.GetStatus()) {
-    case CTimeTrend::UNDEFINED         :
+  switch (TimeTrend->GetStatus()) {
+    case AbstractTimeTrend::UNDEFINED         :
       throw resolvable_error("Note: The time trend is undefined and the temporal adjustment could not be performed.\n"
                              "      Please run analysis without automatic adjustment of time trends.");
-    case CTimeTrend::NEGATIVE_INFINITY :
-    case CTimeTrend::POSITIVE_INFINITY :
+    case AbstractTimeTrend::NEGATIVE_INFINITY :
+    case AbstractTimeTrend::POSITIVE_INFINITY :
       throw resolvable_error("Note: The time trend is infinite and the temporal adjustment could not be performed.\n"
                              "      Please run analysis without automatic adjustment of time trends.");
-    case CTimeTrend::NOT_CONVERGED     :
+	case AbstractTimeTrend::SINGULAR_MATRIX   :
+      throw prg_error("The time trend of cluster was not calculated because matrix A is singular.\n","AdjustForLogLinear()");
+    case AbstractTimeTrend::NOT_CONVERGED     :
       throw prg_error("The time trend did not converge.\n", "AdjustForLogLinear()");
-    case CTimeTrend::CONVERGED         : break;
-    default : throw prg_error("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend.GetStatus());
+    case AbstractTimeTrend::CONVERGED         : break;
+    default : throw prg_error("Unknown time trend status type '%d'.", "AdjustForLogLinear()", TimeTrend->GetStatus());
   };
 
-  TimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-  AdjustForLLPercentage(Set, TimeTrend.GetAnnualTimeTrend());
+  TimeTrend->SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+  AdjustForLLPercentage(Set, TimeTrend->GetAnnualTimeTrend());
   //store calculated time trend adjustment for reporting later
-  Set.setCalculatedTimeTrendPercentage(TimeTrend.GetAnnualTimeTrend());
+  Set.setCalculatedTimeTrendPercentage(TimeTrend->GetAnnualTimeTrend());
 }
 
 /** Adjusts passed non-cumulative measure for parameter specified temporal,
@@ -152,6 +154,7 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
         case NOTADJUSTED               : break;
         case NONPARAMETRIC             : AdjustForNonParameteric(DataSet); break;
         case LOGLINEAR_PERC            : AdjustForLLPercentage(DataSet, gParameters.GetTimeTrendAdjustmentPercentage()); break;
+        case CALCULATED_QUADRATIC_PERC :
         case CALCULATED_LOGLINEAR_PERC : AdjustForLogLinear(DataSet); break;
         case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(DataSet); break;//this adjustment occurs during randomization also
         default : throw prg_error("Unknown time trend adjustment type: '%d'.",

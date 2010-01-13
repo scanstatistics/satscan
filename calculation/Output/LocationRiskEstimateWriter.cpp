@@ -258,7 +258,8 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
   measure_t                   * pMeasure, ** ppMeasureNC;
   std::vector<measure_t>        vTemporalTractObserved(DataHub.GetNumTimeIntervals());
   double                        dExpected, dDenominator, dNumerator;
-  CTimeTrend                    TractTimeTrend;
+
+  std::auto_ptr<AbstractTimeTrend> TractTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
   RecordBuffer                  Record(vFieldDefinitions);
 
   try {
@@ -290,23 +291,25 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
              vTemporalTractCases[j] = ppCasesNC[j][t];
              vTemporalTractObserved[j] = ppMeasureNC[j][t];
           }
-          TractTimeTrend.CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
-                                         DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
-          switch (TractTimeTrend.GetStatus()) {
-            case CTimeTrend::UNDEFINED : break;
-            case CTimeTrend::NEGATIVE_INFINITY :
-               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = CTimeTrend::NEGATIVE_INFINITY_INDICATOR;
+          TractTimeTrend->CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
+                                          DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
+          switch (TractTimeTrend->GetStatus()) {
+            case AbstractTimeTrend::UNDEFINED : break;
+            case AbstractTimeTrend::NEGATIVE_INFINITY :
+               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR;
                break;
-            case CTimeTrend::POSITIVE_INFINITY :
-               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = CTimeTrend::POSITIVE_INFINITY_INDICATOR;
+            case AbstractTimeTrend::POSITIVE_INFINITY :
+               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR;
                break;
-            case CTimeTrend::NOT_CONVERGED     :
+			case AbstractTimeTrend::SINGULAR_MATRIX :
+				throw prg_error("The time trend of location '%s' in cluster was not calculated because matrix A is singular.\n","Write()",Record.GetFieldValue(LOC_ID_FIELD).AsCString());
+            case AbstractTimeTrend::NOT_CONVERGED     :
                throw prg_error("The time trend did not converge.\n","Write()");
-            case CTimeTrend::CONVERGED         :
-               TractTimeTrend.SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend.GetAnnualTimeTrend();
+            case AbstractTimeTrend::CONVERGED         :
+               TractTimeTrend->SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend->GetAnnualTimeTrend();
                break;
-            default : throw prg_error("Unknown time trend status type '%d'.", "Write()", TractTimeTrend.GetStatus());
+            default : throw prg_error("Unknown time trend status type '%d'.", "Write()", TractTimeTrend->GetStatus());
           };
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);

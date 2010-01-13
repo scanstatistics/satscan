@@ -461,6 +461,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
     jni_error::_detectError(Env);
   }
 
+  mid = _getMethodId_Checked(Env, clazz, "SetTimeTrendType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTimeTrendType());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -903,6 +907,8 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
       Parameters.AddObservableRegion(sFilename, i, i == 0);
       if (iscopy == JNI_TRUE) Env.ReleaseStringUTFChars(str_object, sFilename);
   }
+
+  Parameters.setTimeTrendType((TimeTrendType)getEnumTypeOrdinalIndex(Env, jParameters, "getTimeTrendType", "Lorg/satscan/app/Parameters$TimeTrendType;"));
 
   return Parameters;
 }

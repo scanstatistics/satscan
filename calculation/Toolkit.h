@@ -75,7 +75,6 @@ class AppToolkit {
    void                         closeDebugFile();
    const char                 * GetAcknowledgment(std::string & Acknowledgment) const;
    const char                 * GetApplicationFullPath() const;
-   FILE                       * getDebugFile();
    const char                 * GetLastDirectory() /*const*/;
    const char                 * GetLastImportDirectory() /*const*/;
    const ParameterHistory_t   & GetParameterHistory() const {return gvParameterHistory;}

@@ -117,8 +117,9 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case USE_META_LOCATIONS_FILE   : return "Use meta locations file (line 95)";
     case OBSERVABLE_REGIONS        : return "Inequalities (line 96)";
     case EARLY_TERM_THRESHOLD      : return "Early Termination Threshold (line 97)";
-    case PVALUE_REPORT_TYPE       : return " p-value reporting type (line 98)";
-    case REPORT_GUMBEL            : return " report Gumbel p-values (line 99)";
+    case PVALUE_REPORT_TYPE        : return " p-value reporting type (line 98)";
+    case REPORT_GUMBEL             : return " report Gumbel p-values (line 99)";
+    case TIME_TREND_TYPE           : return " time trend type (line 100)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

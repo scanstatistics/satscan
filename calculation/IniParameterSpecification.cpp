@@ -37,7 +37,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_8_1_x_ParameterList();
+  Build_8_2_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -83,10 +83,10 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     Build_6_1_x_ParameterList();
   else if (Version.iMajor == 7 && Version.iMinor == 0)
     Build_7_0_x_ParameterList();
-  else if (Version.iMajor == 8 && Version.iMinor == 0)
+  else if (Version.iMajor == 8 && (Version.iMinor == 0 || Version.iMinor == 1))
     Build_8_0_x_ParameterList();
   else 
-    Build_8_1_x_ParameterList();
+    Build_8_2_x_ParameterList();
 }
 
 /** destructor */
@@ -350,7 +350,7 @@ void IniParameterSpecification::Build_8_0_x_ParameterList() {
 }
 
 /** Version 8.1.x */
-void IniParameterSpecification::Build_8_1_x_ParameterList() {
+void IniParameterSpecification::Build_8_2_x_ParameterList() {
   Build_8_0_x_ParameterList();
 
   // number of replications moved to inference tab
@@ -358,6 +358,8 @@ void IniParameterSpecification::Build_8_1_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlyTerminationThreshold"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"PValueReportType"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"ReportGumbel"));
+  // time trend type
+  gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendType"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -22,7 +22,7 @@ public class Parameters implements Cloneable {
     public enum AreaRateType                  {HIGH, LOW, HIGHANDLOW};
     /** time trend adjustment types */
     public enum TimeTrendAdjustmentType       {NOTADJUSTED, NONPARAMETRIC, LOGLINEAR_PERC,
-                                               CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION};
+                                               CALCULATED_LOGLINEAR_PERC, STRATIFIED_RANDOMIZATION, CALCULATED_QUADRATIC_PERC};
     /** spatial adjustment types */
     public enum SpatialAdjustmentType         {NO_SPATIAL_ADJUSTMENT, SPATIALLY_STRATIFIED_RANDOMIZATION};
     public enum CoordinatesType               {CARTESIAN, LATLON};
@@ -63,17 +63,19 @@ public class Parameters implements Cloneable {
     public enum MultipleCoordinatesType       {ONEPERLOCATION, ATLEASTONELOCATION, ALLLOCATIONS};
     /** p-values reporting type */
     public enum PValueReportingType           {DEFAULT_PVALUE, STANDARD_PVALUE, TERMINATION_PVALUE, GUMBEL_PVALUE};
-
-    private int                         	giNumRequestedParallelProcesses=0; /** number of parallel processes to run */
-    private ExecutionType               	geExecutionType=ExecutionType.AUTOMATIC; /** execution process type */
-    private MultipleDataSetPurposeType  	geMultipleSetPurposeType=MultipleDataSetPurposeType.MULTIVARIATE; /** purpose for multiple data sets */
-    private AnalysisType                	geAnalysisType=AnalysisType.PURELYSPATIAL; /** analysis type */
-    private ProbabilityModelType        	geProbabilityModelType=ProbabilityModelType.POISSON; /** probability model type */
-    private AreaRateType                	geAreaScanRate=AreaRateType.HIGH; /** areas incidence rate type of interest */
-    private RiskType                    	geRiskFunctionType=RiskType.STANDARDRISK; /**  */
-    private IncludeClustersType         	geIncludeClustersType=IncludeClustersType.ALLCLUSTERS;
-    private int                         	giReplications=999; /** number of MonteCarlo replicas */
-    private CriteriaSecondaryClustersType 	geCriteriaSecondClustersType=CriteriaSecondaryClustersType.NOGEOOVERLAP; /** Criteria for Reporting Secondary Clusters */
+    /** time trend calculation type */
+    public enum TimeTrendType                 {LINEAR,QUADRATIC};
+    
+    private int                             giNumRequestedParallelProcesses=0; /** number of parallel processes to run */
+    private ExecutionType                   geExecutionType=ExecutionType.AUTOMATIC; /** execution process type */
+    private MultipleDataSetPurposeType      geMultipleSetPurposeType=MultipleDataSetPurposeType.MULTIVARIATE; /** purpose for multiple data sets */
+    private AnalysisType                    geAnalysisType=AnalysisType.PURELYSPATIAL; /** analysis type */
+    private ProbabilityModelType            geProbabilityModelType=ProbabilityModelType.POISSON; /** probability model type */
+    private AreaRateType                    geAreaScanRate=AreaRateType.HIGH; /** areas incidence rate type of interest */
+    private RiskType                        geRiskFunctionType=RiskType.STANDARDRISK; /**  */
+    private IncludeClustersType            geIncludeClustersType=IncludeClustersType.ALLCLUSTERS;
+    private int                             giReplications=999; /** number of MonteCarlo replicas */
+    private CriteriaSecondaryClustersType   geCriteriaSecondClustersType=CriteriaSecondaryClustersType.NOGEOOVERLAP; /** Criteria for Reporting Secondary Clusters */
     private double                          gdTimeTrendConverge=0.0000001; /** time trend convergence value for SVTT */
     private SimulationType                  geSimulationType=SimulationType.STANDARD; /** indicates simulation procedure - Poisson only */
     private boolean                         gbOutputSimulationData=false; /** indicates whether to output simulation data to file */
@@ -179,10 +181,11 @@ public class Parameters implements Cloneable {
     private int                            	glRandomizationSeed=12345678; /** randomization seed */
     private boolean                         gbReportCriticalValues=false; /** indicates whether to report critical llr values */
     private boolean                         gbSuppressWarnings=false; /** indicates whether to suppres warnings printed during execution */
-    private SpatialWindowType        		    geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
+    private SpatialWindowType        	        geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
+    private TimeTrendType                       geTimeTrendType;                        /** time trend type */
 
 //**    public static final int             	  giNumParameters=79; /** number enumerated parameters */
-    public static final int             	MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
+    public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
     
     
@@ -371,7 +374,9 @@ public class Parameters implements Cloneable {
           if (gePValueReportingType != rhs.gePValueReportingType) return false;          
           if (giEarlyTermThreshold != rhs.giEarlyTermThreshold) return false;
           if (gbReportGumbelPValue != rhs.gbReportGumbelPValue) return false;
-
+          if (gbReportGumbelPValue != rhs.gbReportGumbelPValue) return false;
+          if (geTimeTrendType != rhs.geTimeTrendType) return false;
+          
     	  return true;
     }
     public boolean GetAdjustForEarlierAnalyses() {return gbAdjustForEarlierAnalyses;}
@@ -380,21 +385,14 @@ public class Parameters implements Cloneable {
     public String GetAnalysisTypeAsString() {
     	  String sAnalysisType = null;
 
-    	  //try {
-    	    switch (geAnalysisType) {
+  	    switch (geAnalysisType) {
     	      case PURELYSPATIAL             : sAnalysisType = "Purely Spatial"; break;
     	      case PURELYTEMPORAL            : sAnalysisType = "Retrospective Purely Temporal"; break;
     	      case SPACETIME                 : sAnalysisType = "Retrospective Space-Time"; break;
     	      case PROSPECTIVESPACETIME      : sAnalysisType = "Prospective Space-Time"; break;
     	      case SPATIALVARTEMPTREND       : sAnalysisType = "Spatial Variation in Temporal Trends"; break;
     	      case PROSPECTIVEPURELYTEMPORAL : sAnalysisType = "Prospective Purely Temporal"; break;
-    	      //default : ZdException::Generate("Unknown analysis type '%d'.\n", "GetAnalysisTypeAsString()", geAnalysisType);
     	    }
-    	  //}
-    	  //catch (ZdException & x) {
-    	  //  x.AddCallpath("GetAnalysisTypeAsString()","CParameters");
-    	  //  throw;
-    	  //}
     	  return sAnalysisType;    	
     }    
     public AreaRateType GetAreaScanRateType() {return geAreaScanRate;}
@@ -806,16 +804,17 @@ public class Parameters implements Cloneable {
           ThrowOrdinalIndexException(iOrdinal, SpatialWindowType.values());
       }      	
     }
+    public TimeTrendType getTimeTrendType() {return geTimeTrendType;}
+    public void SetTimeTrendType(int iOrdinal) {
+      try {
+    	  geTimeTrendType = TimeTrendType.values()[iOrdinal];
+      }
+      catch (ArrayIndexOutOfBoundsException e) {
+          ThrowOrdinalIndexException(iOrdinal, SpatialWindowType.values());
+      }      	
+    }
     public void SetSpecialGridFileName(final String sSpecialGridFileName/*, boolean bSetUsingFlag*//*=false*/) {
       gsSpecialGridFileName = sSpecialGridFileName;
-     //** if (gsSpecialGridFileName.length() == 0) 
-     //**	gbUseSpecialGridFile = false; //If empty, then definately not using special grid.
-     //** else if (bSetUsingFlag)
-     //**	gbUseSpecialGridFile = true;  //Permits setting special grid filename in GUI interface
-     //**                              //where obviously the use of special grid file is the desire.
-     //**		                          //else gbUseSpecialGridFile is as set from parameters read. This permits the situation
-     //**		                          //where user has modified the paramters file manually so that there is a named
-     //**		                          //special grid file but they turned off option to use it. 
     }
     public void SetStartRangeEndDate(final String sStartRangeEndDate) {gsStartRangeEndDate = sStartRangeEndDate;}
     public void SetStartRangeStartDate(final String sStartRangeStartDate) {gsStartRangeStartDate = sStartRangeStartDate;}
