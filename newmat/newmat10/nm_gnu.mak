@@ -17,6 +17,10 @@ libnewmat.a:   	$(newmat_lobj)
 		$(AR) -cr $@ $(newmat_lobj)
 		ranlib $@
 
+libnewmat.dylib:   $(newmat_lobj)
+		$(AR) -cr $@ $(newmat_lobj)
+		ranlib $@
+
 tmt_obj = tmt.o tmt1.o tmt2.o tmt3.o tmt4.o tmt5.o tmt6.o tmt7.o tmt8.o tmt9.o tmta.o tmtb.o tmtc.o tmtd.o tmte.o tmtf.o tmtg.o tmth.o tmti.o tmtj.o tmtk.o tmtl.o tmtm.o
 
 tmt:           	$(tmt_obj) libnewmat.a
@@ -175,3 +179,7 @@ garch.txx:     	garch
 		$(PRE)garch > garch.txx
 		$(DIFF) garch.txt garch.txx
 
+clean :
+	rm -f *.o
+	rm -f *.a
+	rm -f *.dylib

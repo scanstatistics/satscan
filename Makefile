@@ -143,6 +143,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(LOGLIKELIHOOD)/WilcoxonLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/OrdinalLikelihoodCalculation.cpp \
                $(LOGLIKELIHOOD)/WeightedNormalLikelihoodCalculation.cpp \
+               $(LOGLIKELIHOOD)/WeightedNormalCovariatesLikelihoodCalculation.cpp \
                $(SATDATA)/GridTractCoordinates.cpp \
                $(SATDATA)/CentroidNeighbors.cpp \
                $(SATDATA)/MakeNeighbors.cpp \
