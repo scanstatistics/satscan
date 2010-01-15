@@ -279,6 +279,23 @@ QuadraticTimeTrend::QuadraticTimeTrend() : AbstractTimeTrend() {
 /** destructor */
 QuadraticTimeTrend::~QuadraticTimeTrend(){}
 
+
+/* Calculates alpha given a specific beta and beta2. Required sums are recalculated */
+double QuadraticTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta, double nBeta2) const {
+  double rval;
+  double nNewSME = 0;
+
+  if (nCases == 0)
+    rval = 0;
+  else {
+    for (int i=0; i < nTimeIntervals; ++i)
+       nNewSME += pMeasure[i] * exp(nBeta * i + std::pow(nBeta2, 2.0)); 
+    rval = log(nCases / nNewSME);
+  }
+
+  return rval;
+}
+
 QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) {
   bool bConvergence = false;
   unsigned int        nIterations=0;
@@ -335,7 +352,7 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
       else if (c == 1)
         X.element(r,c) = r + 1;
       else
-        X.element(r,c) = pow(r + 1,2.0);
+        X.element(r,c) = std::pow(r + 1,2.0);
     }
   }
 
@@ -351,7 +368,7 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
         Matrix bnew = b - ((A.i() * ((X * -1.0).t())) * (y - mu));
         double dif=0;
         for (int r=0; r < b.Nrows(); ++r) { //Norm of the difference of 2 column vectors
-           dif += pow(b.element(r) - bnew.element(r,0), 2.0);
+           dif += std::pow(b.element(r) - bnew.element(r,0), 2.0);
         }
         bConvergence = std::sqrt(dif) <= nConverge;
         b = bnew;

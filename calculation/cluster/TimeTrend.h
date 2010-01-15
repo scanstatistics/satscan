@@ -73,6 +73,8 @@ class QuadraticTimeTrend : public AbstractTimeTrend {
     virtual ~QuadraticTimeTrend();
 
     virtual QuadraticTimeTrend* clone() const {return new QuadraticTimeTrend(*this);}
+
+    double                      Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta, double nBeta2) const;
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge=0.00001);
     double                      GetBeta2() const {return gdBeta2;}
     virtual void                Initialize();

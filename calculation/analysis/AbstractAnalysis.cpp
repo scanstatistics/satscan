@@ -49,9 +49,9 @@ AbstractLikelihoodCalculator * AbstractAnalysis::GetNewLikelihoodCalculator(cons
   switch (DataHub.GetParameters().GetProbabilityModelType()) {
 	case POISSON              : if (DataHub.GetParameters().GetAnalysisType() == SPATIALVARTEMPTREND) {
 		                          if (DataHub.GetParameters().getTimeTrendType() == QUADRATIC)
-                                    return new QuadraticPoissonSVTTLikelihoodCalculator(DataHub);
+                                    return new PoissonQuadraticTrendLikelihoodCalculator(DataHub);
 								  else
-                                    return new PoissonSVTTLikelihoodCalculator(DataHub);
+                                    return new PoissonLinearTrendLikelihoodCalculator(DataHub);
 								}
     case HOMOGENEOUSPOISSON   :
     case SPACETIMEPERMUTATION :
