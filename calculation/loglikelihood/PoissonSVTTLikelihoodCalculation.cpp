@@ -8,7 +8,7 @@
 /** Compares inside trend to outside trend; checking for more increasing or less descreasing trends. */
 bool IncreasingOrDecreasingTrend(const AbstractTimeTrend& InsideTrend, const AbstractTimeTrend& GlobalTrend) {
   if (InsideTrend.GetStatus() == AbstractTimeTrend::UNDEFINED) return false;
-  return InsideTrend.GetBeta() != GlobalTrend.GetBeta();
+  return !macro_equal(InsideTrend.GetBeta(), GlobalTrend.GetBeta(), DBL_CMP_TOLERANCE);
 }
 
 /** Compares inside trend to outside trend; checking for increasing trends. */
@@ -18,7 +18,7 @@ bool IncreasingTrend(const AbstractTimeTrend& InsideTrend, const AbstractTimeTre
     case AbstractTimeTrend::NEGATIVE_INFINITY : return false;
     case AbstractTimeTrend::POSITIVE_INFINITY : return true;
   };
-  return InsideTrend.GetBeta() > GlobalTrend.GetBeta();
+  return macro_less_than(GlobalTrend.GetBeta(), InsideTrend.GetBeta(), DBL_CMP_TOLERANCE);
 }
 
 /** Compares inside trend to outside trend; checking for descreasing trends. */
@@ -28,15 +28,17 @@ bool DecreasingTrend(const AbstractTimeTrend& InsideTrend, const AbstractTimeTre
     case AbstractTimeTrend::NEGATIVE_INFINITY : return true;
     case AbstractTimeTrend::POSITIVE_INFINITY : return false;
   };
-  return InsideTrend.GetBeta() < GlobalTrend.GetBeta();
+  return macro_less_than(InsideTrend.GetBeta(), GlobalTrend.GetBeta(), DBL_CMP_TOLERANCE);
 }
 
-/** Compares inside trend to outside trend; checking for more increasing or less descreasing trends. 
-    Custom comparison tfor quadratic trend. */
+/** Compares inside trend to outside trend; checking for more increasing or less decreasing trends. 
+    Custom comparison for quadratic trend. */
 bool IncreasingOrDecreasingTrendQuadratic(const QuadraticTimeTrend& InsideTrend, const QuadraticTimeTrend& GlobalTrend) {
   if (InsideTrend.GetStatus() == AbstractTimeTrend::UNDEFINED ||
-      (InsideTrend.GetBeta() == GlobalTrend.GetBeta() && InsideTrend.GetBeta2() == GlobalTrend.GetBeta2())) return false;
-  return InsideTrend.GetBeta() != GlobalTrend.GetBeta() || InsideTrend.GetBeta2() != GlobalTrend.GetBeta2(); 
+      (macro_equal(InsideTrend.GetBeta(), GlobalTrend.GetBeta(), DBL_CMP_TOLERANCE) && 
+       macro_equal(InsideTrend.GetBeta2(), GlobalTrend.GetBeta2(), DBL_CMP_TOLERANCE))) return false;
+  return !macro_equal(InsideTrend.GetBeta(), GlobalTrend.GetBeta(), DBL_CMP_TOLERANCE) || 
+         !macro_equal(InsideTrend.GetBeta2(), GlobalTrend.GetBeta2(), DBL_CMP_TOLERANCE);
 }
 
 //--------------------- AbstractPoissonTrendLikelihoodCalculator ----------------------------------
