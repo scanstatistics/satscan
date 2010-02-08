@@ -157,9 +157,15 @@ void CSVTTData::ReadDataFromFiles() {
                                              m_nTimeIntervals, gParameters.GetTimeTrendConvergence());
        switch ((*itr)->getTimeTrend().GetStatus()) {
           case AbstractTimeTrend::UNDEFINED         :
-            throw resolvable_error("Error: The number of cases in data set %d is less than 2.\n"
-                                   "       Time trend can not be calculated.", 
-                                   std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+            if (gParameters.getTimeTrendType() == QUADRATIC) {
+              throw resolvable_error("Error: Time trend can not be calculated for data set %d.\n"
+                                     "       There must exist at least 3 cases in 3 separate time intervals to calculate quadratic trend.", 
+                                     std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+            } else {
+              throw resolvable_error("Error: The number of cases in data set %d is less than 2.\n"
+                                     "       Time trend can not be calculated.", 
+                                     std::distance(gDataSets->getDataSets().begin(), itr) + 1);
+            }
           case AbstractTimeTrend::NEGATIVE_INFINITY :
           case AbstractTimeTrend::POSITIVE_INFINITY :
             throw resolvable_error("Error: All cases in data set %d are either in first or last time interval.\n"

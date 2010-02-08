@@ -56,7 +56,7 @@
 #define VERSION_MAJOR   "8"
 #define VERSION_MINOR   "2"
 #define VERSION_RELEASE "0"
-#define VERSION_PHASE   "Alpha 2" /** testing phase name - leave blank for release */
+#define VERSION_PHASE   "Alpha 4" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "Not Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause
@@ -68,6 +68,10 @@
 #define EULER 0.5772156649
 /** comparision tolerance for double precision numbers */
 #define DBL_CMP_TOLERANCE 1.0E-9
+/** determines equality between two numbers given some tolerance */
+#define macro_equal(x,y,tolerance) (std::fabs(x - y) < tolerance)
+/** determines whether number x is less than number y given some tolerance */
+#define macro_less_than(x,y,tolerance) (!macro_equal(x,y,tolerance) && x < y)
 #ifdef _MSC_VER
   /** default string buffer size for vsnprintf call */
   #define MSC_VSNPRINTF_DEFAULT_BUFFER_SIZE 1000
