@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
  *
  * Created on December 5, 2007, 11:14 AM
  */
+import javax.help.SwingHelpUtilities;
 import org.satscan.gui.utils.MacOSApplication;
 
 /**
@@ -435,6 +436,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         public void actionPerformed(ActionEvent e) {
             try {
+                SwingHelpUtilities.setContentViewerUI("org.satscan.gui.utils.ExternalLinkContentViewerUI");
                 ClassLoader cl = SaTScanApplication.class.getClassLoader();
                 URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
                 if (url == null) {
