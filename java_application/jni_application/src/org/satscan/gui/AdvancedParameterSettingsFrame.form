@@ -86,7 +86,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="444" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="452" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -128,7 +128,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="137" max="32767" attributes="0"/>
+                      <EmptySpace pref="145" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -253,7 +253,7 @@
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="_caseFileTextField" min="-2" pref="307" max="-2" attributes="0"/>
@@ -513,7 +513,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="193" max="32767" attributes="0"/>
+                      <EmptySpace pref="201" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -713,7 +713,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="128" max="32767" attributes="0"/>
+                      <EmptySpace pref="136" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -976,7 +976,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="94" max="32767" attributes="0"/>
+                      <EmptySpace pref="102" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1021,12 +1021,13 @@
                                           <Component id="_spatialPopulationFileCheckBox" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Group type="102" alignment="0" attributes="0">
+                                              <Group type="102" alignment="1" attributes="0">
                                                   <Component id="_maxCirclePopulationFilenameTextField" min="-2" pref="375" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="_maxCirclePopFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="_maxCirclePopFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                                  <EmptySpace min="28" pref="28" max="28" attributes="0"/>
                                               </Group>
                                               <Group type="102" alignment="0" attributes="0">
                                                   <Component id="_maxSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
@@ -1342,7 +1343,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="149" max="32767" attributes="0"/>
+                      <EmptySpace pref="157" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1515,7 +1516,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_startRangeStartYearTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                          <Component id="_startRangeStartYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_startRangeStartMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
@@ -1523,10 +1524,10 @@
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                           <Component id="_startRangeToLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                          <Component id="_startRangeEndYearTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                          <Component id="_startRangeEndYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_endRangeStartYearTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                          <Component id="_endRangeStartYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_endRangeStartMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
@@ -1534,7 +1535,7 @@
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                           <Component id="_endRangeToLabel" min="-2" max="-2" attributes="0"/>
                                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
-                                          <Component id="_endRangeEndYearTextField" min="-2" pref="45" max="-2" attributes="0"/>
+                                          <Component id="_endRangeEndYearTextField" min="-2" pref="50" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -1552,7 +1553,7 @@
                                   </Group>
                               </Group>
                           </Group>
-                          <EmptySpace pref="167" max="32767" attributes="0"/>
+                          <EmptySpace pref="157" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1759,7 +1760,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="45" max="32767" attributes="0"/>
+                      <EmptySpace pref="53" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1996,7 +1997,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" alignment="1" attributes="0">
                                   <EmptySpace min="-2" pref="27" max="-2" attributes="0"/>
                                   <Component id="_adjustmentsByRelativeRisksFileLabel" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -2005,6 +2006,7 @@
                                   <Component id="_adjustmentsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="_adjustmentsFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                  <EmptySpace min="62" pref="62" max="62" attributes="0"/>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
@@ -2115,7 +2117,7 @@
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="52" max="32767" attributes="0"/>
+                      <EmptySpace pref="60" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2553,7 +2555,7 @@
                       <Component id="_criteriaSecClustersGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="42" max="32767" attributes="0"/>
+                      <EmptySpace pref="50" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2911,7 +2913,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportCriticalValuesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="323" max="32767" attributes="0"/>
+                      <EmptySpace pref="331" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

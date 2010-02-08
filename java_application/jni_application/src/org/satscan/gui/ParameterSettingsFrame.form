@@ -361,7 +361,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="_startDateYearLabel" alignment="0" max="32767" attributes="1"/>
-                                  <Component id="_studyPeriodStartDateYearTextField" alignment="0" pref="45" max="32767" attributes="1"/>
+                                  <Component id="_studyPeriodStartDateYearTextField" alignment="0" pref="50" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -378,7 +378,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="1" max="-2" attributes="0">
                                   <Component id="_endDateYearLabel" max="32767" attributes="1"/>
-                                  <Component id="_studyPeriodEndDateYearTextField" alignment="1" pref="45" max="32767" attributes="1"/>
+                                  <Component id="_studyPeriodEndDateYearTextField" alignment="1" pref="50" max="32767" attributes="1"/>
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
@@ -390,7 +390,7 @@
                                   <Component id="_endDateDayLabel" max="32767" attributes="1"/>
                                   <Component id="_studyPeriodEndDateDayTextField" alignment="0" pref="30" max="32767" attributes="1"/>
                               </Group>
-                              <EmptySpace pref="83" max="32767" attributes="0"/>
+                              <EmptySpace pref="73" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
