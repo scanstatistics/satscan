@@ -248,12 +248,12 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(Populati
     if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount)) {
-       gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
-                     "       Case count must be an integer.\n", BasePrint::P_READERROR,
-                     Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
-      }
+        if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount) || strstr(Source.GetValueAt(guCountIndex), ".")) {
+           gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
+                          "       Case count must be a whole number.\n", BasePrint::P_READERROR,
+                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+           return DataSetHandler::Rejected;
+        } 
     }
     else {
       gPrint.Printf("Error: Record %ld in %s does not contain case count.\n",
