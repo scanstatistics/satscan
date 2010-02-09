@@ -17,6 +17,7 @@ class MinimalGrowthArray {
 
    public:
      MinimalGrowthArray(const std::vector<T>& v);
+     MinimalGrowthArray(const MinimalGrowthArray& a);
      MinimalGrowthArray() : giSize(0), gpArray(0) {}
      ~MinimalGrowthArray();
 
@@ -25,6 +26,7 @@ class MinimalGrowthArray {
      void            add(const T& x, bool bSort);
      void            clear() {delete[] gpArray; gpArray=0; giSize=0;}
      bool            exists(const T& x) const;
+     std::vector<T>& get(std::vector<T>& v) const;
      unsigned int    size() const {return giSize;}
 };
 
@@ -32,6 +34,12 @@ template <class T>
 MinimalGrowthArray<T>::MinimalGrowthArray(const std::vector<T>& v) : giSize(v.size()) {
    gpArray = new T[giSize];
    for (unsigned int i=0; i < giSize; ++i) gpArray[i] = v[i];
+}
+
+template <class T>
+MinimalGrowthArray<T>::MinimalGrowthArray(const MinimalGrowthArray<T>& a) : giSize(a.giSize) {
+   gpArray = new T[giSize];
+   for (unsigned int i=0; i < giSize; ++i) gpArray[i] = a.gpArray[i];
 }
 
 template <class T>
@@ -50,6 +58,14 @@ void MinimalGrowthArray<T>::add(const T& x, bool bSort) {
   for (unsigned int i=0; i < giSize; ++i) p[i] = gpArray[i];
   std::swap(p, gpArray); delete[] p;
   gpArray[giSize] = x; ++giSize; if (bSort) std::sort(gpArray, gpArray + giSize);
+}
+
+template <class T>
+std::vector<T>& MinimalGrowthArray<T>::get(std::vector<T>& v) const {
+  v.resize(giSize);
+  for (unsigned int i=0; i < giSize; ++i) 
+      v[i] = gpArray[i];
+  return v;
 }
 
 template <class T>

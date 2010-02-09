@@ -321,7 +321,7 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         private final static String _baseDebugURL = "http://www118.imsweb.com/";
         private final static String _baseURL = "http://www.satscan.org/";
-        private final static String _URLFormat = "%scgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info&form_current_version_id=%s&form_current_version_number=%s&os=%s";
+        private final static String _URLFormat = "%scgi-bin/satscan/update/satscan_version_update.pl?todo=return_update_version_info";
         private final static int _updateTokenCount = 9;
         private final static int _updateIndicatorIndex = 0;
         private final static int _updateVersionIdIndex = 3;
@@ -334,10 +334,19 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
 
         protected Void doInBackground() throws Exception {
             try {
-                String dir = String.format(_URLFormat, 
-                                           (SaTScanApplication.getDebugURL().booleanValue() ? _baseDebugURL: _baseURL),
-                                           AppConstants.getVersionId(), AppConstants.getVersion(), System.getProperty("os.name"));
-                dir = dir.replace(" ", "%20");
+                String getParams = "&form_current_version_id=" + AppConstants.getVersionId() + 
+                                   "&form_current_version_number=" + AppConstants.getVersion() +                                    
+                                   "&os=" + System.getProperty("os.name") + 
+                                   "&java.vm.version=" + System.getProperty("java.vm.version") + 
+                                   "&java.runtime.version=" + System.getProperty("java.runtime.version") + 
+                                   "&java.specification.version=" + System.getProperty("java.specification.version") + 
+                                   "&java.vm.vendor=" + System.getProperty("java.vm.vendor") + 
+                                   "&java.class.version=" + System.getProperty("java.class.version") +                                           
+                                   "&os.arch=" + System.getProperty("os.arch") + 
+                                   "&os.arch.data.model=" + System.getProperty("os.arch.data.model");
+                getParams = getParams.replace(" ", "%20");
+                String dir = String.format(_URLFormat, (SaTScanApplication.getDebugURL().booleanValue() ? _baseDebugURL: _baseURL));
+                dir = dir.replace(" ", "%20") + getParams;
                 URL u = new URL(dir);
                 HttpURLConnection huc = (HttpURLConnection) u.openConnection();
                 /*GET will be our method to download a file*/
@@ -360,12 +369,12 @@ public class UpdateCheckDialog extends javax.swing.JDialog {
                         _updateExists = true;
                         //get update information
                         _updateVersion = sHTTP_Body[_updateVersionIndex];
-                        _updateApplication = new FileInfo(getFile(sHTTP_Body[_updateAppNameIndex]), new URL(sHTTP_Body[_updateAppUrlIndex]));
+                        _updateApplication = new FileInfo(getFile(sHTTP_Body[_updateAppNameIndex]), new URL(sHTTP_Body[_updateAppUrlIndex] + getParams));
                         String updateArchiveUrl = sHTTP_Body[_updateDataUrlIndex];
                         if (updateArchiveUrl.endsWith("\n")) {
                             updateArchiveUrl = updateArchiveUrl.split("\n")[0];
                         }
-                        _updateArchive = new FileInfo(getFile(sHTTP_Body[_updateDataNameIndex]), new URL(updateArchiveUrl));
+                        _updateArchive = new FileInfo(getFile(sHTTP_Body[_updateDataNameIndex]), new URL(updateArchiveUrl + getParams));
                     }
                 }
                 huc.disconnect();

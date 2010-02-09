@@ -53,12 +53,18 @@ public class InstallerFrame extends javax.swing.JFrame {
             java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                            
             // Build command to relaunch SaTScan
             Vector<String> execute = new Vector<String>();
-            execute.add(java_path.toString());
-            execute.add("-jar");
-            execute.add("-Djava.library.path=.");
-            execute.add(_launchApp.getName());
-            for (int i=0; i < _relaunchArgs.size(); ++i) {
-                execute.add(_relaunchArgs.elementAt(i));
+            if (System.getProperty("os.name").startsWith("Mac")) {
+                execute.add("open");
+                //change from likely name 'SaTScan.jar' to 'SaTScan.app'
+                execute.add(_launchApp.getName().replace(".jar", ".app"));
+            } else {
+                execute.add(java_path.toString());
+                execute.add("-jar");
+                execute.add("-Djava.library.path=.");
+                execute.add(_launchApp.getName());
+                for (int i=0; i < _relaunchArgs.size(); ++i) {
+                    execute.add(_relaunchArgs.elementAt(i));
+                }
             }
             Runtime.getRuntime().exec(execute.toArray(new String[]{}), null, _launchApp.getParentFile());            
         } catch (IOException ex) {

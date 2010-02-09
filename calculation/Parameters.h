@@ -191,7 +191,7 @@ class CParameters {
     std::vector<std::string>            gvObservableRegions;                    /** collection of observable regions */
     bool                                gbWeightedNormal;                       /** convieniance variable - is normal model is weighted*/
 
-    void                                ConvertRelativePath(std::string & sInputFilename);
+    void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
 

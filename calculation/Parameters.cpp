@@ -172,7 +172,7 @@ void CParameters::AddObservableRegion(const char * sRegions, size_t iIndex, bool
     implementing this feature was to permit the program to be installed in any
     location and sample parameter files run immediately without having to edit
     input file paths. */
-void CParameters::ConvertRelativePath(std::string & sInputFilename) {
+void CParameters::AssignMissingPath(std::string & sInputFilename, bool bCheckWritable) {
   FileName      fParameterFilename, fFilename;
   std::string   buffer;
 
@@ -182,8 +182,16 @@ void CParameters::ConvertRelativePath(std::string & sInputFilename) {
     if (sInputFilename.find(FileName::SLASH) == sInputFilename.npos) {
       //If no slashes, then this file is assumed to be in same directory as parameters file.
       fParameterFilename.setFullPath(GetSourceFileName().c_str());
+
       fFilename.setFullPath(sInputFilename.c_str());
       fFilename.setLocation(fParameterFilename.getLocation(buffer).c_str());
+
+      if (bCheckWritable && !ValidateFileAccess(fFilename.getFullPath(buffer), true)) {
+        // if writability fails, then try setting to user documents directory
+        std::string temp;
+        fFilename.setLocation(GetUserDocumentsDirectory(buffer, fParameterFilename.getLocation(temp)).c_str());
+      }
+
       fFilename.getFullPath(sInputFilename);
     }
   }
@@ -393,7 +401,7 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
 bool CParameters::GetPermitsCentricExecution() const {
  return  !(GetIsPurelyTemporalAnalysis() || GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
           (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
-          (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||
+          (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||          
            GetTerminateSimulationsEarly() || UseLocationNeighborsFile() || UsingMultipleCoordinatesMetaLocations());
 }
 
@@ -531,7 +539,7 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
 
   gvCaseFilenames[iSetIndex - 1] = sCaseFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gvCaseFilenames[iSetIndex - 1]);
+    AssignMissingPath(gvCaseFilenames[iSetIndex - 1]);
 }
 
 /** Sets control data file name.
@@ -546,7 +554,7 @@ void CParameters::SetControlFileName(const char * sControlFileName, bool bCorrec
 
   gvControlFilenames[iSetIndex - 1] = sControlFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gvControlFilenames[iSetIndex - 1]);
+    AssignMissingPath(gvControlFilenames[iSetIndex - 1]);
 }
 
 /** Sets geographical coordinates data checking type. Throws exception if out of range. */
@@ -563,7 +571,7 @@ void CParameters::SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCo
 void CParameters::SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath) {
   gsCoordinatesFileName = sCoordinatesFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsCoordinatesFileName);
+    AssignMissingPath(gsCoordinatesFileName);
 }
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
@@ -607,7 +615,7 @@ void CParameters::SetAsDefaulted() {
   gbOutputRelativeRisksDBase               = false;
   gbOutputSimLogLikeliRatiosDBase          = false;
   gsRunHistoryFilename                     = "";
-  gbLogRunHistory                          = true;
+  gbLogRunHistory                          = false;
   geProbabilityModelType                   = POISSON;
   geRiskFunctionType                       = STANDARDRISK;
   gbPowerCalculation                       = false;
@@ -738,7 +746,7 @@ void CParameters::SetMaximumTemporalClusterSizeType(TemporalSizeType eTemporalSi
 void CParameters::setMetaLocationsFilename(const char * sMetaLocationsFileName, bool bCorrectForRelativePath) {
   gsMetaLocationsFilename = sMetaLocationsFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsMetaLocationsFilename);
+    AssignMissingPath(gsMetaLocationsFilename);
 }
 
 /** Set ellipse non-compactness penalty type. */
@@ -776,7 +784,7 @@ void CParameters::SetNumIterativeScans(int iNumIterativeScans) {
 void CParameters::SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath) {
   gsOutputFileName = sOutPutFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsOutputFileName);
+    AssignMissingPath(gsOutputFileName, true);
 }
 
 /** Sets population data file name.
@@ -791,7 +799,7 @@ void CParameters::SetPopulationFileName(const char * sPopulationFileName, bool b
 
   gvPopulationFilenames[tSetIndex - 1] = sPopulationFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gvPopulationFilenames[tSetIndex - 1]);
+    AssignMissingPath(gvPopulationFilenames[tSetIndex - 1]);
 }
 
 /** Sets X variable for power calculation. Throws exception if out of range. */
@@ -810,7 +818,7 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
 void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, bool bCorrectForRelativePath) {
   gsAdjustmentsByRelativeRisksFileName = sFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsAdjustmentsByRelativeRisksFileName);
+    AssignMissingPath(gsAdjustmentsByRelativeRisksFileName);
 }
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
@@ -857,7 +865,7 @@ void CParameters::SetSimulationType(SimulationType eSimulationType) {
 void CParameters::SetSimulationDataOutputFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
   gsSimulationDataOutputFilename = sSourceFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsSimulationDataOutputFilename);
+    AssignMissingPath(gsSimulationDataOutputFilename);
 }
 
 /** Sets simulation data source file name.
@@ -866,7 +874,7 @@ void CParameters::SetSimulationDataOutputFileName(const char * sSourceFileName, 
 void CParameters::SetSimulationDataSourceFileName(const char * sSourceFileName, bool bCorrectForRelativePath) {
   gsSimulationDataSourceFileName = sSourceFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsSimulationDataSourceFileName);
+    AssignMissingPath(gsSimulationDataSourceFileName);
 }
 
 /** Set spatial adjustment type. Throws exception if out of range. */
@@ -901,7 +909,7 @@ void CParameters::SetSourceFileName(const char * sParametersSourceFileName) {
 void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool bCorrectForRelativePath, bool bSetUsingFlag) {
   gsSpecialGridFileName = sSpecialGridFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsSpecialGridFileName);
+    AssignMissingPath(gsSpecialGridFileName);
 
   if (gsSpecialGridFileName.empty())
     gbUseSpecialGridFile = false; //If empty, then definately not using special grid.
@@ -919,7 +927,7 @@ void CParameters::SetSpecialGridFileName(const char * sSpecialGridFileName, bool
 void CParameters::SetMaxCirclePopulationFileName(const char * sMaxCirclePopulationFileName, bool bCorrectForRelativePath) {
   gsMaxCirclePopulationFileName = sMaxCirclePopulationFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsMaxCirclePopulationFileName);
+    AssignMissingPath(gsMaxCirclePopulationFileName);
 }
 
 /** Set multiple dataset purpose type. Throws exception if out of range. */
@@ -942,7 +950,7 @@ void CParameters::SetMultipleCoordinatesType(MultipleCoordinatesType eMultipleCo
 void CParameters::SetLocationNeighborsFileName(const char * sLocationNeighborsFileName, bool bCorrectForRelativePath) {
   gsLocationNeighborsFilename = sLocationNeighborsFileName;
   if (bCorrectForRelativePath)
-    ConvertRelativePath(gsLocationNeighborsFilename);
+    AssignMissingPath(gsLocationNeighborsFilename);
 }
 
 /** Sets study period data checking type. Throws exception if out of range. */

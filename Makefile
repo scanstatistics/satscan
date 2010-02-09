@@ -27,7 +27,7 @@ LOGLIKELIHOOD  := $(SATSCAN)/calculation/loglikelihood
 
 XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
-BOOSTDIR    := $(SATSCAN)/../boost/boost_1_34_1
+BOOSTDIR    := $(SATSCAN)/../boost/boost_1_39_0
 #JNI         :=
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\

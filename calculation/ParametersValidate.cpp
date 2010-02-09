@@ -234,7 +234,8 @@ bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirect
     }
     if (gParameters.GetExecutionType() == CENTRICALLY &&
         (gParameters.GetIsPurelyTemporalAnalysis() ||
-         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK))) {
+         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK) ||
+         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
                             "The centric analysis execution is not available for:\n"
@@ -400,14 +401,14 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
     //validate maximum circle population file for a prospective space-time analysis w/ maximum geographical cluster size
     //defined as a percentage of the population and adjusting for earlier analyses.
     if (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) {
-      if (gParameters.UseMetaLocationsFile() && !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false)) {
+      if (gParameters.UseLocationNeighborsFile() && !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false)) {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "For a prospective space-time analysis adjusting for ealier analyses and defining "
                               "non-eucledian neighbors, the maximum spatial cluster size must be defined as a "
                               "percentage of the population as defined in a max circle size file.\n", BasePrint::P_PARAMERROR);
       }
-      else if (!gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
+      else if (!gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) && !gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial "
@@ -660,6 +661,13 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
                               "of population defined in maximum circle file. This feature is not implemented for %s model.\n", 
                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
+    if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
+      bReturn = false;
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for %s analysis.\n", 
+                            BasePrint::P_PARAMERROR, 
+                            ParametersPrint(gParameters).GetProbabilityModelTypeAsString(),
+                            ParametersPrint(gParameters).GetAnalysisTypeAsString());
+    }
     if (gParameters.GetExecutionType() == CENTRICALLY) {
       bReturn = false;
       PrintDirection.Printf("Invalid Parameter Setting:\nCentric analysis execution is not a valid settings for %s model.\n", 
@@ -716,8 +724,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
     // for situations that don't allow it. 
     if (gParameters.GetOutputRelativeRisksFiles() &&
         (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
-         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
-         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
+         gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
@@ -725,7 +732,8 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING, 
                             ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
-    if (gParameters.GetOutputRelativeRisksFiles() && gParameters.GetIsPurelyTemporalAnalysis()) {
+    if (gParameters.GetOutputRelativeRisksFiles() && 
+        (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
@@ -1330,7 +1338,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
 
   try {
     //validate temporal options only for analyses that are temporal
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL) {
+    if (gParameters.GetAnalysisType() == PURELYSPATIAL || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
       //default these options - Not sure why orignal programmers did this. When
       //there is more time, we want to examine code so that we don't need to.
       //Instead, code related to these variables just shouldn't be executed.

@@ -37,7 +37,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_8_0_x_ParameterList();
+  Build_8_2_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -83,8 +83,10 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     Build_6_1_x_ParameterList();
   else if (Version.iMajor == 7 && Version.iMinor == 0)
     Build_7_0_x_ParameterList();
-  else
+  else if (Version.iMajor == 8 && (Version.iMinor == 0 || Version.iMinor == 1))
     Build_8_0_x_ParameterList();
+  else 
+    Build_8_2_x_ParameterList();
 }
 
 /** destructor */
@@ -345,6 +347,14 @@ void IniParameterSpecification::Build_8_0_x_ParameterList() {
   gvParameterInfo[USE_LOCATION_NEIGHBORS_FILE - 1] = std::make_pair(SpatialNeighbors, (const char*)"UseNeighborsFile");
   //critical values parameter moved to new to additional output tab
   gvParameterInfo[REPORT_CRITICAL_VALUES - 1] = std::make_pair(AdditionalOutput, (const char*)"CriticalValue");
+}
+
+/** Version 8.2.x */
+void IniParameterSpecification::Build_8_2_x_ParameterList() {
+  Build_8_0_x_ParameterList();
+
+  // number of replications moved to inference tab
+  gvParameterInfo[REPLICAS - 1] = std::make_pair(Inference, (const char*)"MonteCarloReps");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

@@ -42,8 +42,8 @@ const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
       case POISSON :  
          if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             switch (gParameters.GetAreaScanRateType()) {
-                case HIGH       : return "Increasing Rates";
-                case LOW        : return "Decreasing Rates";
+                case HIGH       : return "More Increasing or Less Decreasing Rates";
+                case LOW        : return "More Decreasing or Less Increasing Rates";
                 case HIGHANDLOW : return "Increasing or Decreasing Rates";
                 default : throw prg_error("Unknown area scan rate type '%d'.\n", "GetAreaScanRateTypeAsString()", gParameters.GetAreaScanRateType());
             }
@@ -244,8 +244,6 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
       printString(buffer, "%i", gParameters.GetTimeAggregationLength());      
       settings.push_back(std::make_pair("Time Aggregation Length",buffer));
     }
-    printString(buffer, "%u", gParameters.GetNumReplicationsRequested());   
-    settings.push_back(std::make_pair("Number of Replications",buffer));
     WriteSettingsContainer(settings, "Analysis", fp);
   }
   catch (prg_exception& x) {
@@ -516,7 +514,7 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
    try {
      settings.push_back(std::make_pair("Early Termination",(gParameters.GetTerminateSimulationsEarly() ? "Yes" : "No")));
      if (gParameters.GetIsProspectiveAnalysis()) {
-         settings.push_back(std::make_pair("Adjusted for Earlier Analyses",(gParameters.GetTerminateSimulationsEarly() ? "Yes" : "No")));
+         settings.push_back(std::make_pair("Adjusted for Earlier Analyses",(gParameters.GetAdjustForEarlierAnalyses() ? "Yes" : "No")));
          if (gParameters.GetAdjustForEarlierAnalyses())
              settings.push_back(std::make_pair("Prospective Start Date",gParameters.GetProspectiveStartDate()));
      }
@@ -529,6 +527,8 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
           settings.push_back(std::make_pair("Stop when p-value greater",buffer));
         }  
      }
+     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());   
+     settings.push_back(std::make_pair("Number of Replications",buffer));
      WriteSettingsContainer(settings, "Inference", fp);
   }
   catch (prg_exception& x) {
@@ -1000,6 +1000,7 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
           printString(buffer, "%g %s", 
               gParameters.GetMaximumTemporalClusterSize(),
               GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.GetMaximumTemporalClusterSize() != 1, true)); 
+          settings.push_back(std::make_pair("Maximum Temporal Cluster Size", buffer)); break;
           break;
       default : throw prg_error("Unknown maximum temporal cluster size type '%d'.\n",
                                 "PrintTemporalWindowParameters()", gParameters.GetMaximumTemporalClusterSizeType());

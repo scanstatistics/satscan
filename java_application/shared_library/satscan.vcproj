@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0;c:\prj\satscan.development\b_8_2\calculation\utility;c:\prj\satscan.development\b_8_2\calculation\satscan_data;c:\prj\satscan.development\b_8_2\calculation\randomization;c:\prj\satscan.development\b_8_2\calculation\probability_model;c:\prj\satscan.development\b_8_2\calculation\print;c:\prj\satscan.development\b_8_2\calculation\Output;c:\prj\satscan.development\b_8_2\calculation\loglikelihood;c:\prj\satscan.development\b_8_2\calculation\cluster;c:\prj\satscan.development\b_8_2\calculation\analysis_run;C:\prj\satscan.development\b_8_2\calculation;c:\prj\satscan.development\b_8_2\calculation\analysis"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
+				AdditionalDependencies="shell32.lib C:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\satscan32.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0;c:\prj\satscan.development\b_8_2\calculation\utility;c:\prj\satscan.development\b_8_2\calculation\satscan_data;c:\prj\satscan.development\b_8_2\calculation\randomization;c:\prj\satscan.development\b_8_2\calculation\probability_model;c:\prj\satscan.development\b_8_2\calculation\print;c:\prj\satscan.development\b_8_2\calculation\Output;c:\prj\satscan.development\b_8_2\calculation\loglikelihood;c:\prj\satscan.development\b_8_2\calculation\cluster;c:\prj\satscan.development\b_8_2\calculation\analysis_run;C:\prj\satscan.development\b_8_2\calculation;c:\prj\satscan.development\b_8_2\calculation\analysis"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -141,8 +141,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
-				OutputFile="$(OutDir)\satscan32.dll"
+				AdditionalDependencies="shell32.lib C:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib $(NOINHERIT)"
+				OutputFile="$(OutDir)\satscan64.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -201,7 +201,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0;c:\prj\satscan.development\b_8_2\calculation\utility;c:\prj\satscan.development\b_8_2\calculation\satscan_data;c:\prj\satscan.development\b_8_2\calculation\randomization;c:\prj\satscan.development\b_8_2\calculation\probability_model;c:\prj\satscan.development\b_8_2\calculation\print;c:\prj\satscan.development\b_8_2\calculation\Output;c:\prj\satscan.development\b_8_2\calculation\loglikelihood;c:\prj\satscan.development\b_8_2\calculation\cluster;c:\prj\satscan.development\b_8_2\calculation\analysis_run;C:\prj\satscan.development\b_8_2\calculation;c:\prj\satscan.development\b_8_2\calculation\analysis"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/verbose:lib "
-				AdditionalDependencies="C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib"
+				AdditionalDependencies="shell32.lib C:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib"
 				OutputFile="$(OutDir)\satscan32.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -283,8 +283,8 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0;c:\prj\satscan.development\b_8_2\calculation\utility;c:\prj\satscan.development\b_8_2\calculation\satscan_data;c:\prj\satscan.development\b_8_2\calculation\randomization;c:\prj\satscan.development\b_8_2\calculation\probability_model;c:\prj\satscan.development\b_8_2\calculation\print;c:\prj\satscan.development\b_8_2\calculation\Output;c:\prj\satscan.development\b_8_2\calculation\loglikelihood;c:\prj\satscan.development\b_8_2\calculation\cluster;c:\prj\satscan.development\b_8_2\calculation\analysis_run;C:\prj\satscan.development\b_8_2\calculation;c:\prj\satscan.development\b_8_2\calculation\analysis"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_WIN64"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -303,7 +303,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/verbose:lib "
-				AdditionalDependencies="C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib"
+				AdditionalDependencies="shell32.lib C:\prj\satscan.development\b_8_2\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib"
 				OutputFile="$(OutDir)\satscan64.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"

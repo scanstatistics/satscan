@@ -212,15 +212,19 @@ std::string& printString(std::string& destination, const char * format, ...) {
     vsnprintf(&temp[0], temp.size() - 1, format, varArgs);
     va_end(varArgs);
 #else
-    std::vector<char> temp(1);
-    va_list varArgs;
-    va_start (varArgs, format);
-    size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, varArgs);
-    va_end(varArgs);
+    std::vector<char> temp(1);    
+	va_list varArgs_static;
+    va_start (varArgs_static, format);
+
+	std::va_list arglist_test; 
+	macro_va_copy(arglist_test, varArgs_static);
+    size_t iStringLength = vsnprintf(&temp[0], temp.size(), format, arglist_test);
     temp.resize(iStringLength + 1);
-    va_start (varArgs, format);
-    vsnprintf(&temp[0], iStringLength + 1, format, varArgs);
-    va_end(varArgs);
+
+	std::va_list arglist;
+	macro_va_copy(arglist, varArgs_static);
+    vsnprintf(&temp[0], iStringLength + 1, format, arglist);
+    va_end(varArgs_static);
 #endif
     destination = &temp[0];
   }
@@ -257,6 +261,41 @@ std::string& getValueAsString(double value, std::string& s, unsigned int iSignif
     printString(s, format.c_str(), value);
     return s;
 }
+
+#ifdef _WINDOWS_
+#include "shlobj.h"
+
+std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath) {
+  TCHAR szPath[MAX_PATH];
+
+  if(SUCCEEDED(SHGetFolderPath(NULL, CSIDL_PERSONAL|CSIDL_FLAG_CREATE, NULL, 0, szPath))) {
+    //if (!DirectoryExists(szPath)) {
+    //  if (!CreateDir(szPath))
+    //    throw prg_error("Unable to create My Documents.", "GetMyDocumentsDirectory()");
+    //}
+    s = szPath;
+  } else {
+    s = defaultPath; 
+  }  
+  return s;
+}
+#else
+#include <sys/types.h>
+#include <pwd.h>
+   
+std::string & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath) {
+  uid_t           uid;
+  struct passwd * pwd;
+  uid = getuid();
+  if (!(pwd = getpwuid(uid))) {
+    s = defaultPath; 
+  } else {
+    s = pwd->pw_dir;
+  }
+  endpwent();
+  return s;
+}    
+#endif
 
 /** Attempt to readline for stream giving consideration to DOS, UNIX (or Mac Os X) and Mac 9 (or earlier) line ends. 
     Returns whether data was read or end of file encountered. */

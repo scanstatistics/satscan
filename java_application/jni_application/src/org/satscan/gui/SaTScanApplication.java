@@ -1,6 +1,8 @@
 package org.satscan.gui;
 
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -34,6 +36,8 @@ import org.satscan.gui.utils.InputFileFilter;
 import org.satscan.gui.utils.WaitCursor;
 import org.satscan.gui.utils.WindowsMenu;
 import ca.guydavis.swing.desktop.CascadingWindowPositioner;
+import java.awt.Desktop;
+import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -43,14 +47,17 @@ import java.util.prefs.Preferences;
  *
  * Created on December 5, 2007, 11:14 AM
  */
+import javax.help.SwingHelpUtilities;
+import org.satscan.gui.utils.MacOSApplication;
 
 /**
  *
  * @author  Hostovic
  */
-public class SaTScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener {
+public class SaTScanApplication extends javax.swing.JFrame implements WindowFocusListener, WindowListener, InternalFrameListener, ClipboardOwner {
 
     private static final String _application = System.getProperty("user.dir") + System.getProperty("file.separator") + "SaTScan.jar";
+    private static final String _user_guide = System.getProperty("user.dir") + System.getProperty("file.separator") + "SaTScan_Users_Guide.pdf";
     private static Boolean _debug_url = new Boolean(false);
     private static String _run_args[] = new String[]{};
     private static final long serialVersionUID = 1L;
@@ -72,6 +79,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final String DEFAULT_WIDTH = "1024";
     private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";    
     private static String RELAUNCH_TOKEN = "&";
+    private MacOSApplication _mac_os_app = new MacOSApplication();
     
     /**
      * Creates new form SaTScanApplication
@@ -428,6 +436,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         public void actionPerformed(ActionEvent e) {
             try {
+                SwingHelpUtilities.setContentViewerUI("org.satscan.gui.utils.ExternalLinkContentViewerUI");
                 ClassLoader cl = SaTScanApplication.class.getClassLoader();
                 URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
                 if (url == null) {
@@ -461,11 +470,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         public void actionPerformed(ActionEvent e) {
             try {
-                File path = new File("SaTScan_Users_Guide.pdf");
-                String userGuide = "file://localhost/" + path.getAbsolutePath();
-                userGuide = userGuide.replace('\\', '/');
-                System.out.println(userGuide);
-                BareBonesBrowserLaunch.openURL(userGuide);
+                File path = new File(_user_guide);
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(path);    
+                } else {
+                    String userGuide = "file://localhost/" + path.getAbsolutePath();
+                    userGuide = userGuide.replace('\\', '/');
+                    System.out.println(userGuide);
+                    BareBonesBrowserLaunch.openURL(userGuide);                
+                }                                
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
             }
@@ -1060,6 +1073,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
         enableActions(false, false);
     }
+
+    public void lostOwnership(Clipboard clipboard, Transferable contents) {
+        //throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar _ToolBar;
     private javax.swing.JMenuItem _aboutMenuItem;
@@ -1101,4 +1119,5 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar.Separator jSeparator5;
     private javax.swing.JMenuBar menuBar;
     // End of variables declaration//GEN-END:variables
+
 }

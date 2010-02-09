@@ -19,6 +19,7 @@ std::string                   & lowerString(std::string &source);
 std::string                   & printString(std::string& s, const char * format, ...);
 unsigned int                    getFormatPrecision(double value, unsigned int iSignificant=2);
 std::string                   & getValueAsString(double value, std::string& s, unsigned int iSignificant=2);
+std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
 //******************************************************************************
 #endif
