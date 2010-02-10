@@ -347,7 +347,7 @@ void AppToolkit::InsureSessionStructure() {
     //Write to same directory as executable, when needed.
     if (bNeedsWrite) {
       try {
-        gSession.write(gsSystemFileName.c_str());
+        gSession.write(gsSystemFileName);
       }
       catch (prg_exception& x){
       /* If we are unable to write to file, that's fine; we'll just use defaults
@@ -459,7 +459,7 @@ void AppToolkit::WriteParametersHistory() {
        printString(sParameterSectionName, "%s%i", gsParameterNameProperty, iItem++);
        gSession.set(gsParameterHistory, sParameterSectionName.c_str(), itr->c_str());
     }
-    gSession.write(gsSystemFileName.c_str());
+    gSession.write(gsSystemFileName);
   }
   catch (prg_exception& x) {
     x.addTrace("WriteParametersHistory()","AppToolkit");
