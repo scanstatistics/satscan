@@ -48,6 +48,7 @@ import java.util.prefs.Preferences;
  * Created on December 5, 2007, 11:14 AM
  */
 import javax.help.SwingHelpUtilities;
+import javax.swing.KeyStroke;
 import org.satscan.gui.utils.MacOSApplication;
 
 /**
@@ -815,15 +816,15 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         _fileMenu.setText("File"); // NOI18N
 
         _newSessionMenuItem.setAction(new NewSessionFileAction());
-        _newSessionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         _newSessionMenuItem.setText("New Session"); // NOI18N
         _newSessionMenuItem.setIcon(null);
+        _newSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _fileMenu.add(_newSessionMenuItem);
 
         _openSessionMenuItem.setAction(new OpenSessionFileAction());
-        _openSessionMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         _openSessionMenuItem.setText("Open Session File"); // NOI18N
         _openSessionMenuItem.setIcon(null);
+        _openSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _fileMenu.add(_openSessionMenuItem);
 
         _reopenSessionMenu.setText("Reopen Session File"); // NOI18N
@@ -832,20 +833,24 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         _closeSessionMenuItem.setAction(_closeSessionAction);
         _closeSessionMenuItem.setIcon(null);
+        _closeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _fileMenu.add(_closeSessionMenuItem);
         _fileMenu.add(_fileMenuSeparator1);
 
         _saveSessionMenuItem.setAction(_saveSessionAction);
         _saveSessionMenuItem.setIcon(null);
+        _saveSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _fileMenu.add(_saveSessionMenuItem);
 
         _saveSessionAsMenuItem.setAction(_saveSessionAsAction);
         _saveSessionAsMenuItem.setIcon(null);
+        _saveSessionAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         _fileMenu.add(_saveSessionAsMenuItem);
         _fileMenu.add(_fileMenuSeparator2);
 
         _printMenuItem.setAction(_printResultsAction);
         _printMenuItem.setIcon(null);
+        _printMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _fileMenu.add(_printMenuItem);
         _fileMenu.add(_fileMenuSeparator3);
 
@@ -861,10 +866,12 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
 
         _executeSessionMenuItem.setAction(_executeSessionAction);
         _executeSessionMenuItem.setIcon(null);
+        _executeSessionMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         _sessionMenu.add(_executeSessionMenuItem);
 
         _executeOptionsMenuItem.setAction(_executeOptionsAction);
         _executeOptionsMenuItem.setIcon(null);
+        _executeOptionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, (java.awt.event.InputEvent.SHIFT_MASK | (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()))));
         _sessionMenu.add(_executeOptionsMenuItem);
 
         menuBar.add(_sessionMenu);
