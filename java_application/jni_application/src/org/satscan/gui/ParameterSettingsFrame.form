@@ -714,7 +714,7 @@
               <SubComponents>
                 <Component class="javax.swing.JLabel" name="_coordinatesFileLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Coordiantes File:" noResource="true"/>
+                    <Property name="text" type="java.lang.String" value="Coordinates File:" noResource="true"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_coordiantesFileTextField">
