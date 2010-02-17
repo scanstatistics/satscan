@@ -134,19 +134,17 @@ public class InstallerFrame extends javax.swing.JFrame {
                 entry.getName().endsWith(".grd") ||
                 entry.getName().endsWith(".pdf")) {
                 return true;
-            } else if (System.getProperty("os.name").startsWith("Windows")) {
+            } else if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
                 return entry.getName().endsWith(".exe") || 
                        entry.getName().endsWith(".dll") ? true : false;
-            } else if (System.getProperty("os.name").startsWith("Linux")) {
+            } else if (System.getProperty("os.name").toLowerCase().startsWith("linux")) {
                 return entry.getName().endsWith("_x86_64_32bit") || 
                        entry.getName().endsWith("_x86_64_64bit") || 
                        entry.getName().endsWith("_x86_64_32bit.so") || 
                        entry.getName().endsWith("_x86_64_64bit.so") ? true : false;
-            } else if (System.getProperty("os.name").startsWith("Mac") || System.getProperty("os.name").startsWith("Darwin")) {
-                return entry.getName().endsWith("_universal_32bit") || 
-                       entry.getName().endsWith("_universal_64bit") || 
-                       entry.getName().endsWith(".jnilib") ? true : false;
-            } else if (System.getProperty("os.name").startsWith("SunOS") || System.getProperty("os.name").startsWith("Solaris")) {
+            } else if (System.getProperty("os.name").toLowerCase().startsWith("mac") || System.getProperty("os.name").toLowerCase().startsWith("darwin")) {
+                return true; // Mac update should never be bundled with other platform updates ... so extract all files.
+            } else if (System.getProperty("os.name").toLowerCase().startsWith("sunos") || System.getProperty("os.name").toLowerCase().startsWith("solaris")) {
                 return entry.getName().endsWith("_sparc_32bit") || 
                        entry.getName().endsWith("_sparc_64bit") || 
                        entry.getName().endsWith("_sparc_32bit.so") || 
