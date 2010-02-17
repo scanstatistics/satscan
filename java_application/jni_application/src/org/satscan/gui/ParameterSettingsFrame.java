@@ -1920,7 +1920,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _geographicalInputPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        _coordinatesFileLabel.setText("Coordiantes File:"); // NOI18N
+        _coordinatesFileLabel.setText("Coordinates File:"); // NOI18N
 
         _coordinatesFileBrowseButton.setText("..."); // NOI18N
         _coordinatesFileBrowseButton.setToolTipText("Browse for coordinates file ..."); // NOI18N
