@@ -1327,19 +1327,11 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                                  <Component id="_highRatesRadioButton" pref="132" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                                  <Component id="_lowRatesRadioButton" pref="132" max="32767" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" max="-2" attributes="0"/>
-                                  <Component id="_highOrLowRatesRadioButton" pref="132" max="32767" attributes="0"/>
-                              </Group>
+                              <Component id="_highRatesRadioButton" alignment="0" pref="132" max="32767" attributes="0"/>
+                              <Component id="_lowRatesRadioButton" alignment="0" pref="132" max="32767" attributes="0"/>
+                              <Component id="_highOrLowRatesRadioButton" alignment="0" pref="132" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
@@ -1613,7 +1605,7 @@
                 <Property name="text" type="java.lang.String" value="..." noResource="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Results File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        if (fc.showOpenDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;    }&#xa;});&#xa;"/>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Results File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION) {&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;        }&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
             <Container class="javax.swing.JPanel" name="__additionalOutputFilesGroup">

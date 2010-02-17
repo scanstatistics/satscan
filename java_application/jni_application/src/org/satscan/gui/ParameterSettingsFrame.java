@@ -98,7 +98,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
         fc.setDialogTitle("Save Parameter Settings As");
         fc.addChoosableFileFilter(new InputFileFilter("prm", "Parameter Files (*.prm)"));
-        int returnVal = fc.showOpenDialog(this);
+        int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
             String filename = fc.getSelectedFile().getAbsolutePath();
@@ -2387,16 +2387,11 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _scanAreasGroupLayout.setHorizontalGroup(
             _scanAreasGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_scanAreasGroupLayout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(_scanAreasGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_scanAreasGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_highRatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
-                    .addGroup(_scanAreasGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_lowRatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
-                    .addGroup(_scanAreasGroupLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(_highOrLowRatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)))
+                    .addComponent(_highRatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                    .addComponent(_lowRatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                    .addComponent(_highOrLowRatesRadioButton, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _scanAreasGroupLayout.setVerticalGroup(
@@ -2564,9 +2559,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Results File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
-                if (fc.showOpenDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
-                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
+                    _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+                }
             }
         });
 
