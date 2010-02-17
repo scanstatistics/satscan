@@ -98,7 +98,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
         fc.setDialogTitle("Save Parameter Settings As");
         fc.addChoosableFileFilter(new InputFileFilter("prm", "Parameter Files (*.prm)"));
-        int returnVal = fc.showOpenDialog(this);
+        int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
             String filename = fc.getSelectedFile().getAbsolutePath();
@@ -2637,7 +2637,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
                 fc.setDialogTitle("Select Results File");
                 fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
-                if (fc.showOpenDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
+                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
                 SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
                 _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
             }
