@@ -77,10 +77,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private final String WIDTH_KEY = "width";
     private final String DEFAULT_HEIGHT = "768";
     private final String DEFAULT_WIDTH = "1024";
-    private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";    
+    private static String RELAUNCH_ARGS_OPTION = "relaunch_args=";
     private static String RELAUNCH_TOKEN = "&";
     private MacOSApplication _mac_os_app = new MacOSApplication();
-    
+
     /**
      * Creates new form SaTScanApplication
      */
@@ -118,22 +118,54 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
      * @param is64bitEnabled
      */
     public static void loadSharedLibray() {
-        boolean is64BitVM = false;
-        try {
-            int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
-            if (bits != 0) {
-                is64BitVM = bits == 64;
-            } else // fallback if sun.arch.data.model isn't available
-            {
-                is64BitVM = System.getProperty("java.vm.name").toLowerCase().indexOf("64") >= 0;
-            }
-        } catch (Throwable t) {
-        }
-
-        if (is64BitVM) {
-            System.loadLibrary("satscan64");
+        if (System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+          // JNI library combined into one universal binary on Mac
+            System.out.println("Loading libsatscan");
+            System.loadLibrary("satscan");
         } else {
-            System.loadLibrary("satscan32");
+          // other platforms require checking to determine whether VM is 32 or 64 bit
+          // in order to load appropriate JNI library
+        
+          boolean is64BitVM = false;
+          String bits = null;
+          String vm_name = null;
+          String os_arch = null;
+                
+          try { // first try to get VM type from 'sun.arch.data.model' property
+            bits = System.getProperty("sun.arch.data.model");
+          } catch (Throwable t) {System.out.println("'sun.arch.data.model' property not avaiable");}
+          try { // second try to get VM type from 'java.vm.name' property
+            vm_name = System.getProperty("java.vm.name");
+          } catch (Throwable t) {System.out.println("'java.vm.name' property not avaiable");}
+          try { // lastly try to get VM type from 'os.arch' property, this is the least best choice
+            // since OS arch could be 64-bit but VM 32-bit
+            os_arch = System.getProperty("os.arch");
+          } catch (Throwable t) {System.out.println("'os.arch' property not avaiable");}
+        
+          if (bits != null) {
+            is64BitVM = (bits.indexOf("64") >= 0);
+            System.out.println("'sun.arch.data.model' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
+          } else if (vm_name != null) {
+            is64BitVM = vm_name.indexOf("64") >= 0; 
+            System.out.println("'java.vm.name' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
+          } else if (os_arch != null) {
+            is64BitVM = os_arch.indexOf("64") >= 0; 
+            System.out.println("'os.arch' property indicating VM data model is " + (is64BitVM ? "64" : "32") + "-bit");
+          } else {
+            is64BitVM = false; 
+            System.out.println("Assuming VM data model is 32-bit.");
+          }
+
+          // educated guess has been determined 
+          String firstTryLibrary = is64BitVM ? "satscan64" : "satscan32";
+          String secondTryLibrary = is64BitVM ? "satscan32" : "satscan64";        
+          try {
+            System.out.println("Loading " + firstTryLibrary);
+            System.loadLibrary(firstTryLibrary);
+          } catch (Throwable t) { // last-ditch effort                
+            System.out.println("Loading " + secondTryLibrary);
+            System.loadLibrary(secondTryLibrary);
+          } 
         }
     }
 
@@ -144,7 +176,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     public static void setRunArgs(final String args[]) {
         _run_args = args;
     }
-    
+
     public static final String getRelaunchArgs() {
         StringBuilder args = new StringBuilder();
         if (_run_args.length > 0) {
@@ -152,10 +184,10 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
         for (int i = 0; i < _run_args.length; ++i) {
             args.append(_run_args[i]).append(RELAUNCH_TOKEN);
-        }     
+        }
         return args.toString();
     }
-    
+
     /**
      * Sets flag for debug application update.
      * @param is64bitEnabled
@@ -472,13 +504,13 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             try {
                 File path = new File(_user_guide);
                 if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
-                    Desktop.getDesktop().open(path);    
+                    Desktop.getDesktop().open(path);
                 } else {
                     String userGuide = "file://localhost/" + path.getAbsolutePath();
                     userGuide = userGuide.replace('\\', '/');
                     System.out.println(userGuide);
-                    BareBonesBrowserLaunch.openURL(userGuide);                
-                }                                
+                    BareBonesBrowserLaunch.openURL(userGuide);
+                }
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
             }
@@ -596,7 +628,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                     if (!((ParameterSettingsFrame) allOpenFrames.get(i)).QueryWindowCanClose()) {
                         return false;
                     } else {
-                        try {                            
+                        try {
                             ((ParameterSettingsFrame) allOpenFrames.get(i)).setClosed(true);
                         } catch (PropertyVetoException ex) {
                             Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
@@ -921,10 +953,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
                 }
                 try {
                     SaTScanApplication.loadSharedLibray();
-                } catch (java.lang.UnsatisfiedLinkError e) {
-                    JOptionPane.showMessageDialog(null,
-                            "SaTScan could not locate required library. Please review error message:\n\n" + e.getMessage() + "\n",
-                            "Start Failure", JOptionPane.ERROR_MESSAGE); 
+                } catch (Throwable e) {
+                    new ExceptionDialog(null, e).setVisible(true);
                     return;
                 }
                 SaTScanApplication.setDebugURL(debugURL);
@@ -989,13 +1019,14 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
             try { //launch updater application and close
                 // Get java path from System
                 StringBuilder java_path = new StringBuilder();
-                java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");                
-                String[] commandline = new String[]{java_path.toString(), 
-                                                    "-jar", 
-                                                    UpdateCheckDialog._updaterFilename.getName(), 
-                                                    UpdateCheckDialog._updateArchiveName.getName(), 
-                                                    _application, 
-                                                    getRelaunchArgs()};
+                java_path.append(System.getProperty("java.home")).append(System.getProperty("file.separator")).append("bin").append(System.getProperty("file.separator")).append("java");
+                String[] commandline = new String[]{java_path.toString(),
+                    "-jar",
+                    UpdateCheckDialog._updaterFilename.getName(),
+                    UpdateCheckDialog._updateArchiveName.getName(),
+                    _application,
+                    getRelaunchArgs()
+                };
                 Runtime.getRuntime().exec(commandline, null, UpdateCheckDialog.getDownloadTempDirectory());
             } catch (IOException ex) {
                 Logger.getLogger(SaTScanApplication.class.getName()).log(Level.SEVERE, null, ex);
@@ -1003,12 +1034,11 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
         //saving window dimensions
         Preferences _prefs = Preferences.userNodeForPackage(SaTScanApplication.class);
-        _prefs.put(WIDTH_KEY, Integer.toString(getSize().width));        
-        _prefs.put(HEIGHT_KEY, Integer.toString(getSize().height));        
-        try{
+        _prefs.put(WIDTH_KEY, Integer.toString(getSize().width));
+        _prefs.put(HEIGHT_KEY, Integer.toString(getSize().height));
+        try {
             _prefs.flush();
-        }
-        catch (BackingStoreException ex) {
+        } catch (BackingStoreException ex) {
         }
         this.dispose();
         System.exit(0);
@@ -1075,9 +1105,8 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     }
 
     public void lostOwnership(Clipboard clipboard, Transferable contents) {
-        //throw new UnsupportedOperationException("Not supported yet.");
+    //throw new UnsupportedOperationException("Not supported yet.");
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar _ToolBar;
     private javax.swing.JMenuItem _aboutMenuItem;
@@ -1119,5 +1148,4 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     private javax.swing.JToolBar.Separator jSeparator5;
     private javax.swing.JMenuBar menuBar;
     // End of variables declaration//GEN-END:variables
-
 }

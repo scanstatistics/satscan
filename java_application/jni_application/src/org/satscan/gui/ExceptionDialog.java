@@ -44,8 +44,20 @@ public class ExceptionDialog extends javax.swing.JDialog {
      */
     private void launchDefaultClientEmail() {
         EmailClientLauncher launcher = new EmailClientLauncher();
-        if (!launcher.launchDefaultClientEmail(AppConstants.getTechnicalSupportEmail(), "Automated Error Message", _errorMessage.getText()))
+        if (!launcher.launchDefaultClientEmail(getEmailAddress(), "Automated Error Message", _errorMessage.getText()))
             JOptionPane.showMessageDialog(this,  "Unable to launch default email application.", "Operation Failed", JOptionPane.INFORMATION_MESSAGE);
+    }
+    
+    /** 
+     * Attempts to get tech support email address; defaults to last known tech address.
+     */
+    private String getEmailAddress() {
+        String emailAddress = "techsupport@satscan.org"; // default value
+        try {
+            emailAddress = AppConstants.getTechnicalSupportEmail();
+        } catch (Throwable e) {
+        }
+        return emailAddress;
     }
     
     /**
@@ -154,7 +166,9 @@ public class ExceptionDialog extends javax.swing.JDialog {
     private void _emailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__emailButtonActionPerformed
         try {
             launchDefaultClientEmail();
-        } catch (Throwable e) {}
+        } catch (Throwable e) {
+            System.out.println(e.toString());
+        }
     }//GEN-LAST:event__emailButtonActionPerformed
     
     private void _OkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event__OkButtonActionPerformed
