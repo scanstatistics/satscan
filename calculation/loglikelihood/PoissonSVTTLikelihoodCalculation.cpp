@@ -254,9 +254,10 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcLogLikelihood(const count_
     double nSum2 = 0;
 
     for (int i=0; i < gDataHub.m_nTimeIntervals; ++i) {
-      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + nBeta * i + nBeta2 * std::pow((double)i,2.0)); 
-      nSum2 += pMeasure[i] * exp(nAlpha + nBeta * i + nBeta2 * std::pow((double)i,2.0));
+      nSum1 += pCases[i] * (log(pMeasure[i]) + nAlpha + nBeta * (i + 1) + nBeta2 * std::pow((double)( i + 1), 2.0));
+      nSum2 += pMeasure[i] * exp(nAlpha + nBeta * (i+1) + nBeta2 * std::pow((double)(i + 1), 2.0));
     }
+
     nLL = nSum1 - nSum2;
   }
   #if DEBUGMODEL
@@ -319,7 +320,7 @@ double PoissonQuadraticTrendLikelihoodCalculator::CalcSVTTLogLikelihood(size_t t
                                                                                ClusterData.gpMeasureInsideCluster,
                                                                                gDataHub.m_nTimeIntervals, 
                                                                                GlobalTimeTrend.GetBeta(),
-                                                                               ((QuadraticTimeTrend&)ClusterData.getInsideTrend()).GetBeta2());
+                                                                               ((QuadraticTimeTrend&)GlobalTimeTrend).GetBeta2());
     nLogLikelihoodInside -= CalcLogLikelihood(ClusterData.gpCasesInsideCluster, 
                                               ClusterData.gpMeasureInsideCluster,
                                               ClusterData.gtTotalCasesInsideCluster, 

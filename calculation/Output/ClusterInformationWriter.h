@@ -42,6 +42,8 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * ALPHA_GLOBAL_FIELD;
       static const char       * BETA1_GLOBAL_FIELD;
       static const char       * BETA2_GLOBAL_FIELD;
+      static const char       * FUNC_ALPHA_IN_FIELD;
+      static const char       * FUNC_ALPHA_OUT_FIELD;
 
       static const char       * WEIGHTED_VARIANCE_FIELD;
       static const char       * WEIGHTED_STD_FIELD;

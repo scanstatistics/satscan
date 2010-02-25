@@ -20,6 +20,7 @@ class AbstractTimeTrend {
     double                      gdAnnualTimeTrend;
     double                      gdAlpha;
     double                      gdBeta;
+    mutable double              gbGlobalAlpha;
     Status                      gStatus;
     static const double         TREND_ZERO;
     static const unsigned int   MAX_BETA_TEST_ITERATIONS;
@@ -38,7 +39,9 @@ class AbstractTimeTrend {
     double                      GetAnnualTimeTrend() const {return gdAnnualTimeTrend;}
     double                      GetAlpha() const {return gdAlpha;}
     double                      GetBeta() const {return gdBeta;}
+    double                      GetGlobalAlpha() const {return gbGlobalAlpha;}
     Status                      GetStatus() const {return gStatus;}
+    virtual TimeTrendType       getType() const = 0;
     virtual void                Initialize();
     double                      SetAnnualTimeTrend(DatePrecisionType eAggregationPrecision, double dTimeAggregationLength);
 
@@ -60,6 +63,7 @@ class LinearTimeTrend : public AbstractTimeTrend {
 
     double                      Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta) const;
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge);
+    virtual TimeTrendType       getType() const {return LINEAR;};
 };
 
 
@@ -77,6 +81,7 @@ class QuadraticTimeTrend : public AbstractTimeTrend {
     double                      Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta, double nBeta2) const;
     virtual Status              CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge=0.00001);
     double                      GetBeta2() const {return gdBeta2;}
+    virtual TimeTrendType       getType() const {return QUADRATIC;};
     virtual void                Initialize();
 };
 //*****************************************************************************

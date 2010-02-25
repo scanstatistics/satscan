@@ -148,15 +148,15 @@ class AbstractWeightedNormalRandomizer : public AbstractPermutedDataRandomizer<W
     virtual void               AssignFromAttributes(RealDataSet& RealSet);
     void                       get_wg_deltag(std::auto_ptr<ColumnVector>& wg, std::auto_ptr<ColumnVector>& deltag) const;
     void                       get_xg(std::auto_ptr<Matrix>& xp, bool bExcludeSelectColumn=false) const;
-    ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
-    ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const;
+    ClusterStatistics          getClusterStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
+    ClusterLocationStatistics  getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const;
     bool                       getHasCovariates() const;
     DataSetStatistics          getDataSetStatistics() const;
     measure_t                  getFirstRatioConstant() const {return gtFirstRatioConstant;}
     RiskEstimateStatistics     getRiskEstimateStatistics(const CSaTScanData& DataHub) const;
     measure_t                  getSecondRatioConstant() const {return gtSecondRatioConstant;}
     virtual void               RemoveCase(int iTimeInterval, tract_t tTractIndex);
-    bool                       hasUniqueLocationsCoverage(const CSaTScanData& DataHub) const;
+    bool                       hasUniqueLocationsCoverage(CSaTScanData& DataHub);
     //boost::dynamic_bitset<>    hasUniqueLocationsCoverage(const CSaTScanData& DataHub) const;
 };
 

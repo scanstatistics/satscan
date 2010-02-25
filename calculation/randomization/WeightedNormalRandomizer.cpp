@@ -113,7 +113,7 @@ void AbstractWeightedNormalRandomizer::get_xg(std::auto_ptr<Matrix>& xg, bool bE
 }
 
 /** Calculates statistics about cluster from internal structures. */
-AbstractWeightedNormalRandomizer::ClusterStatistics AbstractWeightedNormalRandomizer::getClusterStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const {
+AbstractWeightedNormalRandomizer::ClusterStatistics AbstractWeightedNormalRandomizer::getClusterStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator   itr_permuted=gvOriginalPermutedAttribute.begin();
   ClusterStatistics statistics;
@@ -164,7 +164,7 @@ AbstractWeightedNormalRandomizer::ClusterStatistics AbstractWeightedNormalRandom
 }
 
 /** Calculates statistics about cluster from internal structures. */
-AbstractWeightedNormalRandomizer::ClusterLocationStatistics AbstractWeightedNormalRandomizer::getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, std::vector<tract_t>& vTracts) const {
+AbstractWeightedNormalRandomizer::ClusterLocationStatistics AbstractWeightedNormalRandomizer::getClusterLocationStatistics(int iIntervalStart, int iIntervalEnd, const std::vector<tract_t>& vTracts) const {
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
   PermutedContainer_t::const_iterator   itr_permuted=gvOriginalPermutedAttribute.begin();
   ClusterLocationStatistics statistics;
@@ -298,7 +298,7 @@ void AbstractWeightedNormalRandomizer::RemoveCase(int iTimeInterval, tract_t tTr
 }
 
 /** Returns whether every defined location has one and onle only observation. */
-bool AbstractWeightedNormalRandomizer::hasUniqueLocationsCoverage(const CSaTScanData& DataHub) const {
+bool AbstractWeightedNormalRandomizer::hasUniqueLocationsCoverage(CSaTScanData& DataHub) {
   boost::dynamic_bitset<> locationsSet(DataHub.GetNumTracts());
 
   StationaryContainer_t::const_iterator itr_stationary=gvStationaryAttribute.begin(), itr_end=gvStationaryAttribute.end();
@@ -308,6 +308,24 @@ bool AbstractWeightedNormalRandomizer::hasUniqueLocationsCoverage(const CSaTScan
       else
          locationsSet.set(itr_stationary->GetStationaryVariable().second);
   }
+
+/*  
+  //For all 'off' bits, add location as no
+  std::vector<double> v;
+  for (boost::dynamic_bitset<>::size_type i=0; i < locationsSet.size(); ++i) {
+      if (!locationsSet[i]) {
+         // set location not evaluated
+         DataHub.setLocationNotEvaluated(i);
+         // Even though we are not evaluating this location, we need to add a dummy record.
+         // This record is needed because we rely on relative tract index in many places and
+         // to pretend to one does not exist cause major problems.
+         AddCase(1,0,i,
+                 gvPermutedAttribute.back().GetPermutedVariable().first, 
+                 gvPermutedAttribute.back().GetPermutedVariable().second, 
+                 gvPermutedAttribute.back().GetPermutedVariable().getAdditional()->get(v));
+      }
+  }
+*/
   return locationsSet.size() == locationsSet.count();
 }
 

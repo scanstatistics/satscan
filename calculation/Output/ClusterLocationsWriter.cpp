@@ -37,6 +37,8 @@ const char * LocationInformationWriter::CLU_BETA2_OUT_FIELD         = "BETA2_OUT
 const char * LocationInformationWriter::CLU_ALPHA_GLOBAL_FIELD      = "ALPHA_GBL";
 const char * LocationInformationWriter::CLU_BETA1_GLOBAL_FIELD      = "BETA1_GBL";
 const char * LocationInformationWriter::CLU_BETA2_GLOBAL_FIELD      = "BETA2_GBL";
+const char * LocationInformationWriter::CLU_FUNC_ALPHA_IN_FIELD     = "FUNC_A_IN";
+const char * LocationInformationWriter::CLU_FUNC_ALPHA_OUT_FIELD    = "FUNC_A_OUT";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -96,22 +98,25 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
         CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-        CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-        CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-        //CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-
-        // TODO: These statements are for testing and will be removed eventually.
-        if (gParameters.getTimeTrendType() == QUADRATIC) {
-           CreateField(vFieldDefinitions, CLU_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_ALPHA_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_BETA1_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-           CreateField(vFieldDefinitions, CLU_BETA2_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-        }
+          if (gParameters.getTimeTrendType() == LINEAR) {
+            CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+            //CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+          }
+          // TODO: These statements are for testing and will be removed eventually ???
+          CreateField(vFieldDefinitions, CLU_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_ALPHA_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_BETA1_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          CreateField(vFieldDefinitions, CLU_FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          if (gParameters.getTimeTrendType() == QUADRATIC) {
+            CreateField(vFieldDefinitions, CLU_BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, CLU_BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+            CreateField(vFieldDefinitions, CLU_BETA2_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          }
       }
     }
     //defined location level fields to report -- none of these are reported
@@ -130,7 +135,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       }
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
         CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == LINEAR)
         CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
   }
@@ -186,7 +191,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
            if ((gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI) &&
                (dRelativeRisk = theCluster.GetRelativeRiskForTract(tTract, DataHub)) != -1)
              Record.GetFieldValue(LOC_REL_RISK_FIELD).AsDouble() = dRelativeRisk;
-           if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+           if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == LINEAR) {
              std::auto_ptr<AbstractTimeTrend> TractTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
              std::vector<count_t> vTemporalTractCases(DataHub.GetNumTimeIntervals());
              std::vector<measure_t> vTemporalTractObserved(DataHub.GetNumTimeIntervals());
@@ -245,53 +250,59 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
            const AbtractSVTTClusterData * pClusterData=0;
            if ((pClusterData = dynamic_cast<const AbtractSVTTClusterData*>(theCluster.GetClusterData())) == 0)
              throw prg_error("Dynamic cast to AbtractSVTTClusterData failed.\n", "Write()");
-           switch (pClusterData->getInsideTrend().GetStatus()) {
-             case AbstractTimeTrend::UNDEFINED         : break;
-             case AbstractTimeTrend::CONVERGED         :
-               Record.GetFieldValue(CLU_TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend().GetAnnualTimeTrend(); break;
-             case AbstractTimeTrend::NEGATIVE_INFINITY :
-               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
-             case AbstractTimeTrend::POSITIVE_INFINITY :
-               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
-		     case AbstractTimeTrend::SINGULAR_MATRIX :
-               throw prg_error("The time trend inside of cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
-             case AbstractTimeTrend::NOT_CONVERGED     :
-               throw prg_error("The time trend did not converge.\n","Write()");
-             default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getInsideTrend().GetStatus());
+           if (gParameters.getTimeTrendType() == LINEAR) {
+             switch (pClusterData->getInsideTrend().GetStatus()) {
+               case AbstractTimeTrend::UNDEFINED         : break;
+               case AbstractTimeTrend::CONVERGED         :
+                 Record.GetFieldValue(CLU_TIME_TREND_IN_FIELD).AsDouble() = pClusterData->getInsideTrend().GetAnnualTimeTrend(); break;
+               case AbstractTimeTrend::NEGATIVE_INFINITY :
+                 Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+               case AbstractTimeTrend::POSITIVE_INFINITY :
+                 Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+		       case AbstractTimeTrend::SINGULAR_MATRIX :
+                 throw prg_error("The time trend inside of cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
+               case AbstractTimeTrend::NOT_CONVERGED     :
+                 throw prg_error("The time trend did not converge.\n","Write()");
+               default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getInsideTrend().GetStatus());
+             }
+             switch (pClusterData->getOutsideTrend().GetStatus()) {
+               case AbstractTimeTrend::UNDEFINED         : break;
+               case AbstractTimeTrend::CONVERGED         :
+                 Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend().GetAnnualTimeTrend(); break;
+               case AbstractTimeTrend::NEGATIVE_INFINITY :
+                 Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
+               case AbstractTimeTrend::POSITIVE_INFINITY :
+                 Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
+		       case AbstractTimeTrend::SINGULAR_MATRIX :
+                 throw prg_error("The time trend outside of cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
+               case AbstractTimeTrend::NOT_CONVERGED     :
+                 throw prg_error("The time trend did not converge.\n","Write()");
+               default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getOutsideTrend().GetStatus());
+             }
            }
-           switch (pClusterData->getOutsideTrend().GetStatus()) {
-             case AbstractTimeTrend::UNDEFINED         : break;
-             case AbstractTimeTrend::CONVERGED         :
-               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = pClusterData->getOutsideTrend().GetAnnualTimeTrend(); break;
-             case AbstractTimeTrend::NEGATIVE_INFINITY :
-               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR; break;
-             case AbstractTimeTrend::POSITIVE_INFINITY :
-               Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
-		     case AbstractTimeTrend::SINGULAR_MATRIX :
-               throw prg_error("The time trend outside of cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
-             case AbstractTimeTrend::NOT_CONVERGED     :
-               throw prg_error("The time trend did not converge.\n","Write()");
-             default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getOutsideTrend().GetStatus());
-           }
-
-           // TODO: These statements are for testing and will be removed eventually.  
-           const QuadraticTimeTrend * pTrend = dynamic_cast<const QuadraticTimeTrend *>(&pClusterData->getInsideTrend());
+           // TODO: These statements are for testing and will be removed eventually ???  
+           const AbstractTimeTrend * pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getInsideTrend());
            if (pTrend) {
               Record.GetFieldValue(CLU_ALPHA_IN_FIELD).AsDouble() = pTrend->GetAlpha();
               Record.GetFieldValue(CLU_BETA1_IN_FIELD).AsDouble() = pTrend->GetBeta();
-              Record.GetFieldValue(CLU_BETA2_IN_FIELD).AsDouble() = pTrend->GetBeta2();
+              Record.GetFieldValue(CLU_FUNC_ALPHA_IN_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
+              const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
+              if (pQTrend) Record.GetFieldValue(CLU_BETA2_IN_FIELD).AsDouble() = pQTrend->GetBeta2();
            }
-           pTrend = dynamic_cast<const QuadraticTimeTrend *>(&pClusterData->getOutsideTrend());
+           pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getOutsideTrend());
            if (pTrend) {
               Record.GetFieldValue(CLU_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetAlpha();
-              Record.GetFieldValue(CLU_BETA1_OUT_FIELD).AsDouble() = pTrend->GetBeta();
-              Record.GetFieldValue(CLU_BETA2_OUT_FIELD).AsDouble() = pTrend->GetBeta2();
+              Record.GetFieldValue(CLU_BETA1_OUT_FIELD).AsDouble() = pTrend->GetBeta();              
+              Record.GetFieldValue(CLU_FUNC_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
+              const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
+              if (pQTrend) Record.GetFieldValue(CLU_BETA2_OUT_FIELD).AsDouble() = pQTrend->GetBeta2();
           }
-          pTrend = dynamic_cast<const QuadraticTimeTrend *>(&Handler.GetDataSet(0/*for now*/).getTimeTrend());
+          pTrend = dynamic_cast<const AbstractTimeTrend *>(&Handler.GetDataSet(0/*for now*/).getTimeTrend());
           if (pTrend) {
               Record.GetFieldValue(CLU_ALPHA_GLOBAL_FIELD).AsDouble() = pTrend->GetAlpha();
               Record.GetFieldValue(CLU_BETA1_GLOBAL_FIELD).AsDouble() = pTrend->GetBeta();
-              Record.GetFieldValue(CLU_BETA2_GLOBAL_FIELD).AsDouble() = pTrend->GetBeta2();
+              const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);              
+              if (pQTrend) Record.GetFieldValue(CLU_BETA2_GLOBAL_FIELD).AsDouble() = pQTrend->GetBeta2();
           }
 
         }

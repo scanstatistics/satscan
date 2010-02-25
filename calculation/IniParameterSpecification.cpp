@@ -37,7 +37,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_8_2_x_ParameterList();
+  Build_8_3_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -85,8 +85,10 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     Build_7_0_x_ParameterList();
   else if (Version.iMajor == 8 && (Version.iMinor == 0 || Version.iMinor == 1))
     Build_8_0_x_ParameterList();
-  else 
+  else if (Version.iMajor == 8  && Version.iMinor == 2)
     Build_8_2_x_ParameterList();
+  else
+    Build_8_3_x_ParameterList();
 }
 
 /** destructor */
@@ -349,12 +351,18 @@ void IniParameterSpecification::Build_8_0_x_ParameterList() {
   gvParameterInfo[REPORT_CRITICAL_VALUES - 1] = std::make_pair(AdditionalOutput, (const char*)"CriticalValue");
 }
 
-/** Version 8.1.x */
+/** Version 8.2.x */
 void IniParameterSpecification::Build_8_2_x_ParameterList() {
   Build_8_0_x_ParameterList();
 
   // number of replications moved to inference tab
   gvParameterInfo[REPLICAS - 1] = std::make_pair(Inference, (const char*)"MonteCarloReps");
+}
+
+/** Version 8.3.x */
+void IniParameterSpecification::Build_8_3_x_ParameterList() {
+  Build_8_2_x_ParameterList();
+
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlyTerminationThreshold"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"PValueReportType"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"ReportGumbel"));

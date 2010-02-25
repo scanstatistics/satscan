@@ -40,6 +40,7 @@ void AbstractTimeTrend::Initialize() {
   gdBeta            = 0;
   gdAnnualTimeTrend = 0;
   gStatus           = AbstractTimeTrend::NOT_CONVERGED;
+  gbGlobalAlpha     = 0;
 }
 
 /** Calculates annual time trend given specfied time interval precision and length. */
@@ -94,19 +95,18 @@ double LinearTimeTrend::Alpha(double nSC, double nSME) const {
 
 /* Calculates alpha given a specific beta. Required sums are recalculated */
 double LinearTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta) const {
-  double rval;
   //Set local array with new nSumMeasure_ExpBeta values
   double nNewSME = 0; // using new Beta actually
 
   if (nCases == 0)
-    rval = 0;
+    gbGlobalAlpha = 0;
   else {
     for (int i=0; i < nTimeIntervals; i++)
       nNewSME += pMeasure[i] * exp(nBeta * i);
-    rval = log(nCases / nNewSME);
+    gbGlobalAlpha = log(nCases / nNewSME);
   }
 
-  return rval;
+  return gbGlobalAlpha;
 }
 
 // ******************************************************************************
@@ -282,18 +282,18 @@ QuadraticTimeTrend::~QuadraticTimeTrend(){}
 
 /* Calculates alpha given a specific beta and beta2. Required sums are recalculated */
 double QuadraticTimeTrend::Alpha(count_t nCases, const measure_t* pMeasure, int nTimeIntervals, double nBeta, double nBeta2) const {
-  double rval;
   double nNewSME = 0;
 
   if (nCases == 0)
-    rval = 0;
+    gbGlobalAlpha = 0;
   else {
-    for (int i=0; i < nTimeIntervals; ++i)
-       nNewSME += pMeasure[i] * exp(nBeta * i + std::pow(nBeta2, 2.0)); 
-    rval = log(nCases / nNewSME);
+    for (int i=0; i < nTimeIntervals; ++i) {
+       nNewSME += pMeasure[i] * exp(nBeta * (i + 1) + nBeta2 * std::pow(i + 1, 2.0));
+       gbGlobalAlpha = log (nCases / nNewSME);
+    }
   }
 
-  return rval;
+  return gbGlobalAlpha;
 }
 
 QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pCases, const measure_t* pMeasure, int nTimeIntervals, double nConverge) {

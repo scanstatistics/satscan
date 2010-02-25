@@ -393,15 +393,17 @@ void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
 void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
 
-  PrintFormat.PrintSectionLabel(fp, "Inside Time trend", false, true);
-  GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  PrintFormat.PrintSectionLabel(fp, "Outside Time trend", false, true);
-  GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  //PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);
-  //buffer = "?";
-  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  if (gClusterData->getInsideTrend().getType() == LINEAR) {
+     PrintFormat.PrintSectionLabel(fp, "Inside Time trend", false, true);
+     GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "Outside Time trend", false, true);
+     GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);
+     //buffer = "?";
+     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
 
   // TODO: These statements are for testing and will be removed eventually.  
   const QuadraticTimeTrend * pTrend = dynamic_cast<const QuadraticTimeTrend *>(&gClusterData->getInsideTrend());
