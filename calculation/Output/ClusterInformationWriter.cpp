@@ -334,8 +334,10 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     }
     if (theCluster.reportablePValue(gParameters, simVars))
         Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(gParameters, simVars, iClusterNumber == 1);
-    if (theCluster.reportableGumbelPValue(gParameters))
-        Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = theCluster.GetGumbelPValue(simVars);
+    if (theCluster.reportableGumbelPValue(gParameters)) {
+        std::pair<double,double> p = theCluster.GetGumbelPValue(simVars);
+        Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
+    }
     if (theCluster.reportableRecurrenceInterval(gParameters, simVars)) {
         Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(gDataHub, iClusterNumber, simVars).second;
     }

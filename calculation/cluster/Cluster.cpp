@@ -580,7 +580,13 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
   
   if (reportableGumbelPValue(parameters)) {
     PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
-    PrintFormat.PrintAlignedMarginsDataString(fp, getValueAsString(GetGumbelPValue(simVars), buffer));
+    std::pair<double,double> p = GetGumbelPValue(simVars);
+    if (p.first == 0.0) {
+        getValueAsString(p.second, buffer).insert(0, "< ");
+    } else {
+        getValueAsString(p.first, buffer);
+    }
+    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   if (DataHub.GetParameters().GetPValueReportingType() == GUMBEL_PVALUE)
     DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
@@ -595,9 +601,15 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
   if (!Data.GetParameters().GetIsProspectiveAnalysis())
      throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.","GetRecurrenceInterval()");
 
-  dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);           
-  dPValue = Data.GetParameters().GetPValueReportingType() == GUMBEL_PVALUE ? GetGumbelPValue(simVars) : GetPValue(Data.GetParameters(), simVars, iReportedCluster == 1);
-  dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
+  dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
+  if (Data.GetParameters().GetPValueReportingType() == GUMBEL_PVALUE) {
+      std::pair<double,double> p = GetGumbelPValue(simVars);
+      dPValue = std::max(p.first, p.second);
+      dAdjustedP_Value = std::max(1.0 - pow(1.0 - dPValue, 1.0/dIntervals),p.second);
+  } else {
+      dPValue = GetPValue(Data.GetParameters(), simVars, iReportedCluster == 1);
+      dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
+  }
   dUnitsInOccurrence = static_cast<double>(Data.GetParameters().GetTimeAggregationLength())/dAdjustedP_Value;
   
   switch (Data.GetParameters().GetTimeAggregationUnitsType()) {
@@ -810,12 +822,18 @@ double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size
 }
 
 /** Returns Gumbel p-value. */
-double CCluster::GetGumbelPValue(const SimulationVariables& simVars) const {
+std::pair<double,double> CCluster::GetGumbelPValue(const SimulationVariables& simVars) const {
     double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
     double mu = simVars.get_mean() - EULER * beta;
+
 	double p = 1 - std::exp(-std::exp((mu - GetRatio())/beta));
 	//double llr = mu - beta * std::log(std::log( 1 /( 1 - p )));
-    return p;
+
+    // Determine the alternative minimum p-value. Very strong clusters will cause 
+    // the calculated p-value to be computed as zero in above statement.
+    double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
+
+    return std::make_pair(p,min);
 }
 
 /** Returns population as string with varied precision, based upon value. */
