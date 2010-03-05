@@ -1433,7 +1433,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationButtonGroup.add(_timeAggregationMonthRadioButton);
         _timeAggregationButtonGroup.add(_timeAggregationDayRadioButton);
 
-        setBorder(null);
         setClosable(true);
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setIconifiable(true);
