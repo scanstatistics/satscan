@@ -130,13 +130,13 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
       if (gParameters.GetSpatialWindowType() == ELLIPTIC)
         CreateField(vFieldDefinitions, TST_STAT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 6);
     }
+
     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
-    if (gParameters.getIsReportingStandardPValue())
-        CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, std::min(17,(int)buffer.size()), uwOffset, buffer.size());
-    if (gParameters.getIsReportingGumbelPValue())
-        CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
+    CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
     if (gParameters.GetIsProspectiveAnalysis())
         CreateField(vFieldDefinitions, RECURRENCE_INTERVAL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue())  
+        CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
 
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       CreateField(vFieldDefinitions, OBSERVED_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
@@ -333,8 +333,8 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
     if (theCluster.reportablePValue(gParameters, simVars))
-        Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(gParameters, simVars, iClusterNumber == 1);
-    if (theCluster.reportableGumbelPValue(gParameters)) {
+        Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, iClusterNumber == 1);
+    if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue()) {
         std::pair<double,double> p = theCluster.GetGumbelPValue(simVars);
         Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
     }

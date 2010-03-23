@@ -62,7 +62,7 @@ void ASCIIDataFileWriter::CreateFormatString(std::string& sValue, const FieldDef
         }
         else {
             if (sTemp.size() < static_cast<size_t>(FieldDef.GetLength()))
-                for (int i = sTemp.size(); i < FieldDef.GetLength() + 1; ++i)
+                for (int i = sTemp.size(); i < FieldDef.GetLength(); ++i)
                     sTemp += " ";
             sValue = sTemp;
         }

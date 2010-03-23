@@ -580,16 +580,24 @@ void dBaseRecord::PutNumber(unsigned short uwFieldNumber, double dFieldValue) {
     if (GetAssociatedDbf().GetFieldType(uwFieldNumber) == XB_NUMERIC_FLD) {
       xbShort code = GetAssociatedDbf().PutDoubleField(uwFieldNumber, dFieldValue);
       if (code == XB_INVALID_DATA) {
-          // If return code is XB_INVALID_DATA, it is likely because whole number portion
-          // of value exceeds defined field width. In that case, specifiy largest whole number
-          // that will fit into field as opposed to blank.
-		  
-          double mult=1.0;
-          int len = GetFieldLength(uwFieldNumber) - GetAssociatedDbf().GetFieldDecimal(uwFieldNumber) - 2;
-          for (int i=0; i <  len; ++i) {
-             mult = mult + pow(10.0,(double)i+1);
-          }
-          code = GetAssociatedDbf().PutDoubleField(uwFieldNumber, (double)(mult * 9));
+         // When value is >= 1.0, it is likely because whole number portion of value exceeds defined field width. 
+         // Report largest possible value that will fit into field as opposed to leaving it blank.
+         double mult=1.0;
+         int len = GetFieldLength(uwFieldNumber) - GetAssociatedDbf().GetFieldDecimal(uwFieldNumber) - 2;
+         if (dFieldValue < 0.0) --len; // consider negative sign
+         for (int i=0; i < len; ++i)
+            mult = mult + pow(10.0,(double)i+1);
+         if (dFieldValue < 0.0) mult *= -1.0; // consider negative sign
+         code = GetAssociatedDbf().PutDoubleField(uwFieldNumber, (double)(mult * 9));
+      } else if (code == XB_NO_ERROR) {
+         // The flip side is that if value is too small, the put to record will fail silently. The value will be zero.
+         double putValue = GetAssociatedDbf().GetDoubleField(uwFieldNumber);
+         if (putValue == 0.0 && dFieldValue != 0.0) {
+            // Report smallest possible value that will fit into field as opposed to leaving it blank.
+            double len = (double)GetAssociatedDbf().GetFieldDecimal(uwFieldNumber);
+            if (dFieldValue < 0.0) --len; // consider negative sign
+            code = GetAssociatedDbf().PutDoubleField(uwFieldNumber, (dFieldValue < 0.0 ? -1.0 : 1.0)/std::pow(10.0,len));
+         }
       }
     }
     else

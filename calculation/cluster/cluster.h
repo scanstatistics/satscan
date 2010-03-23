@@ -108,7 +108,8 @@ class CCluster {
     double                        GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual double                GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
-    double                        GetPValue(const CParameters& parameters, const SimulationVariables& simVars, bool bMLC) const;
+    double                        GetMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars, bool bMLC) const;
+    double                        getReportingPValue(const CParameters& parameters, const SimulationVariables& simVars, bool bMLC) const;
     double                        GetCartesianRadius() const {return m_CartesianRadius;}
     bool                          GetRadiusDefined() const {return m_CartesianRadius != -1;}
     unsigned int                  GetRank() const {return m_nRank;}
@@ -121,7 +122,8 @@ class CCluster {
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
-    bool                          reportableGumbelPValue(const CParameters& parameters) const;
+    bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
+    bool                          reportableMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportablePValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportableRecurrenceInterval(const CParameters& parameters, const SimulationVariables& simVars) const;
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);

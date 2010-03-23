@@ -1350,14 +1350,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       //if user requested replications, validate that p-value does not exceed user defined cutoff 
       if (gParameters.GetNumReplicationsRequested()) {
           const CCluster& topCluster = gTopClustersContainer.GetTopRankedCluster();
-          double p_value = 0.0;
-          if (gParameters.GetPValueReportingType() == GUMBEL_PVALUE) {
-              std::pair<double,double> p = topCluster.GetGumbelPValue(gSimVars);
-              p_value = std::max(p.first, p.second);
-          } else {
-              p_value = topCluster.GetPValue(gParameters, gSimVars, true);
-          }
-          if (p_value > gParameters.GetIterativeCutOffPValue())
+          if (topCluster.getReportingPValue(gParameters, gSimVars, true) > gParameters.GetIterativeCutOffPValue())
              return false;
       }
 

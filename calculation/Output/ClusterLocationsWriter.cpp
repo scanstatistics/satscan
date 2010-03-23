@@ -71,12 +71,11 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
     CreateField(vFieldDefinitions, CLUST_NUM_FIELD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
 
     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
-    if (DataHub.GetParameters().getIsReportingStandardPValue())
-      CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, std::min(17,(int)buffer.size()), uwOffset, buffer.size());
-    if (DataHub.GetParameters().getIsReportingGumbelPValue())
-      CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
+    CreateField(vFieldDefinitions, P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17/*std::min(17,(int)buffer.size())*/, uwOffset, buffer.size());
     if (gParameters.GetIsProspectiveAnalysis())
       CreateField(vFieldDefinitions, RECURRENCE_INTERVAL_FLD, FieldValue::NUMBER_FLD, 19, 0, uwOffset, 0);
+    if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue())  
+      CreateField(vFieldDefinitions, GUMBEL_P_VALUE_FLD, FieldValue::NUMBER_FLD, 19, 17, uwOffset, 2);
 
 
     //defined cluster level fields to report -- none of these are reported
@@ -165,8 +164,8 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
          Record.GetFieldValue(LOC_ID_FIELD).AsString().resize(Record.GetFieldDefinition(LOC_ID_FIELD).GetLength());
        Record.GetFieldValue(CLUST_NUM_FIELD).AsDouble() = iClusterNumber;
        if (theCluster.reportablePValue(gParameters,simVars))
-           Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.GetPValue(gParameters, simVars, iClusterNumber == 1);
-       if (theCluster.reportableGumbelPValue(gParameters)) {
+           Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, iClusterNumber == 1);
+       if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue()) {
            std::pair<double,double> p = theCluster.GetGumbelPValue(simVars);
            Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first,p.second);
        }

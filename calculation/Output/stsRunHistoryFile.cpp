@@ -353,14 +353,7 @@ void stsRunHistoryFile::LogNewHistory(const AnalysisRunner& AnalysisRun) {
       if(bPrintPValue) {
          if (AnalysisRun.GetClusterContainer().GetNumClustersRetained()) {
             const CCluster & topCluster = AnalysisRun.GetClusterContainer().GetTopRankedCluster();
-            double p_value = 0.0;
-            if (params.GetPValueReportingType() == GUMBEL_PVALUE) {
-                std::pair<double,double> p = topCluster.GetGumbelPValue(AnalysisRun.GetSimVariables());
-                p_value = std::max(p.first,p.second);
-            } else {
-                p_value = topCluster.GetPValue(params, AnalysisRun.GetSimVariables(), true);
-            }
-            dTopClusterRatio = p_value;
+            dTopClusterRatio = topCluster.getReportingPValue(params, AnalysisRun.GetSimVariables(), true);
          }
          SetDoubleField(*pRecord, dTopClusterRatio, GetFieldNumber(gvFields, P_VALUE_FIELD));
       }
