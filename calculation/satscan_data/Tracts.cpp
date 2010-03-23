@@ -115,6 +115,8 @@ TractHandler::TractHandler(bool bAggregatingTracts, MultipleCoordinatesType eMul
 /** This method should be called once all insertions are completed. Scans internal
     collection of location identifiers, looking for duplicates locations. */
 void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
+  std::string buffer;
+
   gAdditionStatus = Closed;
   gMetaLocationsManager.getMetaLocationPool().assignAtomicIndexes(*this);
   gMetaLocationsManager.setStateFixed(bReportingRiskEstimates);
@@ -132,8 +134,9 @@ void TractHandler::additionsCompleted(bool bReportingRiskEstimates) {
         //since we sorted by the first coordinate pointer, we know that duplicates will be adjacent
         if (gvLocations[tOuter]->getCoordinates() != gvLocations[tInner]->getCoordinates()) break;
         //add identifier of tInner to tOuter, they reference the same coordinate sets
-        gvLocations[tOuter]->addSecondaryIdentifier(gvLocations[tInner]->getIndentifier());
-        gmAggregateTracts[gvLocations[tInner]->getIndentifier()] = gvLocations[tOuter]->getIndentifier();
+		buffer = gvLocations[tInner]->getIndentifier();
+        gvLocations[tOuter]->addSecondaryIdentifier(buffer);
+        gmAggregateTracts[buffer] = gvLocations[tOuter]->getIndentifier();
         gvLocations.erase(gvLocations.begin() + tInner);
         tInner = tInner - 1;
         tSize = gvLocations.size();

@@ -47,7 +47,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
     gParameters.SetSourceFileName(sFilename);
 
     IniFile SourceFile;
-    SourceFile.Read(sFilename);
+	SourceFile.Read(gParameters.GetSourceFileName());
     gpSpecifications = new IniParameterSpecification(SourceFile, gParameters);
 
     for (ParameterType eType=ANALYSISTYPE; eType <= gParameters.giNumParameters; eType = ParameterType(eType + 1))
@@ -184,7 +184,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteRunOptionSettings(WriteFile);
     WriteSystemSettings(WriteFile);
 
-    WriteFile.Write(sFilename);
+	WriteFile.Write(gParameters.GetSourceFileName());
   }
   catch (prg_exception& x) {
     x.addTrace("Write()", "IniParameterFileAccess");
