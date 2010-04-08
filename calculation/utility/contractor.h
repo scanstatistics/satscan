@@ -8,7 +8,18 @@
 #include "boost/thread/thread.hpp"
 #include "boost/thread/recursive_mutex.hpp"
 #include "boost/dynamic_bitset.hpp"
+#include "SSException.h"
 //---------------------------------------------------------------------------
+
+namespace satscan {
+  struct unhandled_exception {
+    enum                        exception_type {unknown=0, std, prg, memory};
+
+    bool                        bUnExceptional;
+    exception_type              eException_type;
+    prg_exception               Exception;
+  };
+}
 
 template <typename JobSource>
 class contractor
@@ -26,16 +37,39 @@ private:
   JobSource & m_jobs;
   mutable access_mutex_t m_access_mutex;
 
+public:
+    satscan::unhandled_exception m_unhandled_exception;
 
 public:
   contractor(JobSource & jobs)
    : m_jobs(jobs)
   {// setup();
+   m_unhandled_exception.bUnExceptional = true;
+  }
+
+  void set_unhandled_exception(const prg_exception &e, satscan::unhandled_exception::exception_type except_type) {
+      access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
+      m_unhandled_exception.eException_type = except_type;
+      m_unhandled_exception.Exception = e;
+      m_unhandled_exception.bUnExceptional = false;
+  }
+
+  void throw_unhandled_exception() const {
+      access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
+      if (!m_unhandled_exception.bUnExceptional) {
+          switch (m_unhandled_exception.eException_type) {
+              case satscan::unhandled_exception::memory  : throw memory_exception(m_unhandled_exception.Exception.what());
+              case satscan::unhandled_exception::std     : 
+              case satscan::unhandled_exception::prg     : 
+              case satscan::unhandled_exception::unknown : 
+              default                                    : throw m_unhandled_exception.Exception;
+          }
+      }
   }
 
   bool is_finished() const
   { access_mutex_t::scoped_lock lcl_lock(m_access_mutex);
-    return m_jobs.is_exhausted();
+    return !m_unhandled_exception.bUnExceptional || m_jobs.is_exhausted();
   }
 
 
@@ -96,14 +130,27 @@ public:
 
   void operator() ()
   {
-    while (!m_contractor.is_finished())
-    {
-      typename ContractorType::job_param_type param;
-      if (m_contractor.job_acquired(*this, param))
-      {
-        typename ContractorType::job_result_type result(m_function(param));
-        m_contractor.register_result(*this, param, result);
-      }
+    try {
+        while (!m_contractor.is_finished())
+        {
+            typename ContractorType::job_param_type param;
+            if (m_contractor.job_acquired(*this, param))
+            {
+            typename ContractorType::job_result_type result(m_function(param));
+            m_contractor.register_result(*this, param, result);
+            }
+        }
+    } catch (memory_exception & e) {
+      prg_exception x(e.what(), "subcontractor::operator()");
+      m_contractor.set_unhandled_exception(x, satscan::unhandled_exception::memory);
+    } catch (prg_exception & e) {
+      m_contractor.set_unhandled_exception(e, satscan::unhandled_exception::prg);
+    } catch (std::exception & e) {
+      prg_exception x(e.what(), "subcontractor::operator()");
+      m_contractor.set_unhandled_exception(x, satscan::unhandled_exception::std);
+    } catch (...) {
+      prg_exception x("(...) -- unknown error", "subcontractor::operator()");
+      m_contractor.set_unhandled_exception(x, satscan::unhandled_exception::unknown);
     }
   }
 
