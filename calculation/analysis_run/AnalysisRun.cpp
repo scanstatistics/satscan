@@ -209,7 +209,7 @@ void AnalysisRunner::Execute() {
                             ExecuteSuccessively(); break;
       };
     }
-    catch (std::bad_alloc&) {
+    catch (std::bad_alloc &b) {
       throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
                              "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
                              "Note that memory needs are on the order of %.0lf MB.\n",
@@ -932,14 +932,33 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
       boost::thread_group tg;
       boost::mutex        thread_mutex;
       for (unsigned u=0; u < ulParallelProcessCount; ++u) {
-        stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
-        tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
+         try {
+            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
+            tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
+         } catch (std::bad_alloc &b) {             
+             if (u == 0) throw; // if this is the first thread, re-throw exception
+             gPrintDirection.Printf("Notice: Insufficient memory to create %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", 
+                                    BasePrint::P_NOTICE, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+             break;
+         } catch (prg_exception& x) {
+             if (u == 0) throw; // if this is the first thread, re-throw exception
+             gPrintDirection.Printf("Error: Program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\nException:%s\n", 
+                                    BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u, x.what());
+             break;
+         } catch (...) {
+             if (u == 0) throw prg_error("Unknown program error occurred.\n","PerformSuccessiveSimulations_Parallel()"); // if this is the first thread, throw exception
+             gPrintDirection.Printf("Error: Unknown program exception occurred creating %u%s parallel simulation ... continuing analysis with %u parallel simulations.\n", 
+                                    BasePrint::P_ERROR, u + 1, (u == 1 ? "nd" : (u == 2 ? "rd" : "th")), u);
+             break;
+         }
       }
+
       tg.join_all();
 
       giNumSimsExecuted = jobSource.GetSuccessfullyCompletedJobCount();
 
       //propagate exceptions if needed:
+      theContractor.throw_unhandled_exception();
       jobSource.Assert_NoExceptionsCaught();
       if (jobSource.GetUnregisteredJobCount() > 0)
         throw prg_error("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
