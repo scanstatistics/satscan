@@ -137,6 +137,8 @@ LinearTimeTrend::Status LinearTimeTrend::CalculateAndSet(const count_t* pCases, 
   bool bGoodBetaStart = false;
   unsigned int nIterations;
 
+  Initialize();
+
   // Preliminary calculations that only need to be done once.
   // ********************************************************
   for (t=0; t < nTimeIntervals; t++) {
@@ -149,11 +151,11 @@ LinearTimeTrend::Status LinearTimeTrend::CalculateAndSet(const count_t* pCases, 
   if (nSumCases < 2)
     return  (gStatus = LinearTimeTrend::UNDEFINED);
   else if ((pCases[0] == nSumCases)) {
-    gdBeta = 0; /* What if don't set Beta at all??? */
+    gdAlpha = gdBeta = 0; /* What if don't set Beta at all??? */
     return (gStatus = LinearTimeTrend::NEGATIVE_INFINITY);
   }
   else if (pCases[nTimeIntervals-1] == nSumCases) {
-    gdBeta = 0; /* What if don't set Beta at all??? */
+    gdAlpha = gdBeta = 0; /* What if don't set Beta at all??? */
     return (gStatus = LinearTimeTrend::POSITIVE_INFINITY);
   }
 
@@ -301,6 +303,8 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
   unsigned int        nIterations=0;
   measure_t           tMean=0;
 
+  Initialize();
+
   //nTimeIntervals = 20;
   //double Cases[20] = {10.0,9.526316,9.052632,8.578947,8.105263,7.631579,7.157895,6.68421,6.210526,5.736842,5.263158,4.789474,4.315789,3.842105,3.368421,2.894737,2.421053,1.947368,1.473684,1.0};
   //double Measure[20] = {1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0,1000.0};
@@ -394,10 +398,10 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
   if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
     fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
         (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));
-    printoutMatrix("y", y, AppToolkit::getToolkit().openDebugFile());
-    printoutMatrix("m", m, AppToolkit::getToolkit().openDebugFile());
-    printoutMatrix("b", b, AppToolkit::getToolkit().openDebugFile());
-    printoutMatrix("X", X, AppToolkit::getToolkit().openDebugFile());
+    //printoutMatrix("y", y, AppToolkit::getToolkit().openDebugFile());
+    //printoutMatrix("m", m, AppToolkit::getToolkit().openDebugFile());
+    //printoutMatrix("b", b, AppToolkit::getToolkit().openDebugFile());
+    //printoutMatrix("X", X, AppToolkit::getToolkit().openDebugFile());
   }
 
   return gStatus;

@@ -10,7 +10,16 @@ class CSVTTData;     /** forward class declaration */
 class LocationRiskEstimateWriter : public AbstractDataFileWriter {
   protected:
       static const char       * REL_RISK_EXT;
-      static const char       * TIME_TREND_FIELD;
+      static const char       * TREND_IN_FIELD;
+      static const char       * TREND_OUT_FIELD;
+      static const char       * ALPHA_IN_FIELD;
+      static const char       * BETA1_IN_FIELD;
+      static const char       * BETA2_IN_FIELD;
+      static const char       * ALPHA_OUT_FIELD;
+      static const char       * BETA1_OUT_FIELD;
+      static const char       * BETA2_OUT_FIELD;
+      //static const char       * FUNC_ALPHA_IN_FIELD;
+      //static const char       * FUNC_ALPHA_OUT_FIELD;
       static const char       * WEIGHTED_MEAN_VALUE_FIELD;
 
       void                      DefineFields(const CSaTScanData& DataHub);

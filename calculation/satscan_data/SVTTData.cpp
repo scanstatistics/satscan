@@ -176,6 +176,14 @@ void CSVTTData::ReadDataFromFiles() {
           case AbstractTimeTrend::CONVERGED          :
           default                             : break; 
        }
+       const LinearTimeTrend * pLinearTimeTrend = dynamic_cast<const LinearTimeTrend *>(&((*itr)->getTimeTrend()));
+       if (pLinearTimeTrend) {
+           pLinearTimeTrend->Alpha((*itr)->getTotalCases(), (*itr)->getMeasureData_PT_NC(), GetNumTimeIntervals(), pLinearTimeTrend->GetBeta());
+       }
+       const QuadraticTimeTrend * pQuadraticTimeTrend = dynamic_cast<const QuadraticTimeTrend *>(&((*itr)->getTimeTrend()));
+       if (pQuadraticTimeTrend) {
+           pQuadraticTimeTrend->Alpha((*itr)->getTotalCases(), (*itr)->getMeasureData_PT_NC(), GetNumTimeIntervals(), pQuadraticTimeTrend->GetBeta(), pQuadraticTimeTrend->GetBeta2());
+       }
     }
   }
   catch (prg_exception& x) {

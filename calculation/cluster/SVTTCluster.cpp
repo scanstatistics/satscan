@@ -405,31 +405,38 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintForma
      //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
 
-  // TODO: These statements are for testing and will be removed eventually.  
-  const QuadraticTimeTrend * pTrend = dynamic_cast<const QuadraticTimeTrend *>(&gClusterData->getInsideTrend());
-  if (pTrend) {
-     PrintFormat.PrintSectionLabel(fp, "alpha Inside", false, true);
-     printString(buffer, "%g", pTrend->GetAlpha());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     PrintFormat.PrintSectionLabel(fp, "beta1 Inside", false, true);
-     printString(buffer, "%g", pTrend->GetBeta());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     PrintFormat.PrintSectionLabel(fp, "beta2 Inside", false, true);
-     printString(buffer, "%g", pTrend->GetBeta2());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  }
-  pTrend = dynamic_cast<const QuadraticTimeTrend *>(&gClusterData->getOutsideTrend());
-  if (pTrend) {
-     PrintFormat.PrintSectionLabel(fp, "alpha Outside", false, true);
-     printString(buffer, "%g", pTrend->GetAlpha());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     PrintFormat.PrintSectionLabel(fp, "beta1 Outside", false, true);
-     printString(buffer, "%g", pTrend->GetBeta());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     PrintFormat.PrintSectionLabel(fp, "beta2 Outside", false, true);
-     printString(buffer, "%g", pTrend->GetBeta2());
+  const AbstractTimeTrend& InTrend = gClusterData->getInsideTrend();
+  PrintFormat.PrintSectionLabel(fp, "Inside Intercept", false, true);
+  printString(buffer, "%g", InTrend.GetAlpha());
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  PrintFormat.PrintSectionLabel(fp, "Inside Linear", false, true);
+  printString(buffer, "%g", InTrend.GetBeta());
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&InTrend);
+  if (pQTrend) {
+     PrintFormat.PrintSectionLabel(fp, "Inside Quadratic", false, true);
+     printString(buffer, "%g", pQTrend->GetBeta2());
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
+  PrintFormat.PrintSectionLabel(fp, "Inside Function", false, true);
+  printString(buffer, "%g", InTrend.GetGlobalAlpha());
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  const AbstractTimeTrend& OutTrend = gClusterData->getOutsideTrend();
+  PrintFormat.PrintSectionLabel(fp, "Outside Intercept", false, true);
+  printString(buffer, "%g", OutTrend.GetAlpha());
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  PrintFormat.PrintSectionLabel(fp, "Outside Linear", false, true);
+  printString(buffer, "%g", OutTrend.GetBeta());
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&OutTrend);
+  if (pQTrend) {
+     PrintFormat.PrintSectionLabel(fp, "Outside Quadratic", false, true);
+     printString(buffer, "%g", pQTrend->GetBeta2());
+     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  }
+  PrintFormat.PrintSectionLabel(fp, "Outside Function", false, true);
+  printString(buffer, "%g", OutTrend.GetGlobalAlpha());
+  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 AbstractClusterData * CSVTTCluster::GetClusterData() {

@@ -756,8 +756,7 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING, 
                             ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
-    if (gParameters.GetOutputRelativeRisksFiles() && 
-        (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
+    if (gParameters.GetOutputRelativeRisksFiles() && gParameters.GetIsPurelyTemporalAnalysis()) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"

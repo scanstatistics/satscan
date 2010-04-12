@@ -516,8 +516,7 @@ void CParameters::RequestAllAdditionalOutputFiles() {
         GetProbabilityModelType() != SPACETIMEPERMUTATION &&
         GetProbabilityModelType() != HOMOGENEOUSPOISSON &&
         GetProbabilityModelType() != ORDINAL &&
-        GetProbabilityModelType() != CATEGORICAL &&
-        GetAnalysisType() != SPATIALVARTEMPTREND) {
+        GetProbabilityModelType() != CATEGORICAL) {
      SetOutputRelativeRisksAscii(true);
      SetOutputRelativeRisksDBase(true);
    } else {

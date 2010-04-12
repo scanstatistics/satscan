@@ -26,19 +26,17 @@ const char * LocationInformationWriter::CLU_WEIGHTED_MEAN_OUT_FIELD = "CL_WMEAN_
 const char * LocationInformationWriter::CLU_TIME_TREND_IN_FIELD     = "CLU_TT_IN";
 const char * LocationInformationWriter::CLU_TIME_TREND_OUT_FIELD    = "CLU_TT_OUT";
 const char * LocationInformationWriter::CLU_TIME_TREND_DIFF_FIELD   = "CLU_TT_DIF";
-
-// TODO: These statements are for testing and will be removed eventually.  
-const char * LocationInformationWriter::CLU_ALPHA_IN_FIELD          = "ALPHA_IN";
-const char * LocationInformationWriter::CLU_BETA1_IN_FIELD          = "BETA1_IN";
-const char * LocationInformationWriter::CLU_BETA2_IN_FIELD          = "BETA2_IN";
-const char * LocationInformationWriter::CLU_ALPHA_OUT_FIELD         = "ALPHA_OUT";
-const char * LocationInformationWriter::CLU_BETA1_OUT_FIELD         = "BETA1_OUT";
-const char * LocationInformationWriter::CLU_BETA2_OUT_FIELD         = "BETA2_OUT";
-const char * LocationInformationWriter::CLU_ALPHA_GLOBAL_FIELD      = "ALPHA_GBL";
-const char * LocationInformationWriter::CLU_BETA1_GLOBAL_FIELD      = "BETA1_GBL";
-const char * LocationInformationWriter::CLU_BETA2_GLOBAL_FIELD      = "BETA2_GBL";
-const char * LocationInformationWriter::CLU_FUNC_ALPHA_IN_FIELD     = "FUNC_A_IN";
-const char * LocationInformationWriter::CLU_FUNC_ALPHA_OUT_FIELD    = "FUNC_A_OUT";
+//const char * LocationInformationWriter::CLU_ALPHA_IN_FIELD          = "IN_ITRCPT";
+//const char * LocationInformationWriter::CLU_BETA1_IN_FIELD          = "IN_LINEAR";
+//const char * LocationInformationWriter::CLU_BETA2_IN_FIELD          = "IN_QUAD";
+//const char * LocationInformationWriter::CLU_ALPHA_OUT_FIELD         = "OUT_ITRCPT";
+//const char * LocationInformationWriter::CLU_BETA1_OUT_FIELD         = "OUT_LINEAR";
+//const char * LocationInformationWriter::CLU_BETA2_OUT_FIELD         = "OUT_QUAD";
+//const char * LocationInformationWriter::CLU_ALPHA_GLOBAL_FIELD      = "GBL_ITRCPT";
+//const char * LocationInformationWriter::CLU_BETA1_GLOBAL_FIELD      = "GBL_LINEAR";
+//const char * LocationInformationWriter::CLU_BETA2_GLOBAL_FIELD      = "GBL_QUAD";
+//const char * LocationInformationWriter::CLU_FUNC_ALPHA_IN_FIELD     = "IN_FUNC_A";
+//const char * LocationInformationWriter::CLU_FUNC_ALPHA_OUT_FIELD    = "OUT_FUNC_A";
 
 /** class constructor */
 LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub, bool bAppend)
@@ -97,25 +95,20 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
         CreateField(vFieldDefinitions, CLU_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
-          if (gParameters.getTimeTrendType() == LINEAR) {
-            CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-            //CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-          }
-          // TODO: These statements are for testing and will be removed eventually ???
-          CreateField(vFieldDefinitions, CLU_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_ALPHA_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_BETA1_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          CreateField(vFieldDefinitions, CLU_FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          if (gParameters.getTimeTrendType() == QUADRATIC) {
-            CreateField(vFieldDefinitions, CLU_BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-            CreateField(vFieldDefinitions, CLU_BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-            CreateField(vFieldDefinitions, CLU_BETA2_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
-          }
+          CreateField(vFieldDefinitions, CLU_TIME_TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+          CreateField(vFieldDefinitions, CLU_TIME_TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+          ////CreateField(vFieldDefinitions, CLU_TIME_TREND_DIFF_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+          //CreateField(vFieldDefinitions, CLU_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_ALPHA_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_BETA1_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          //CreateField(vFieldDefinitions, CLU_BETA2_GLOBAL_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          ////CreateField(vFieldDefinitions, CLU_FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+          ////CreateField(vFieldDefinitions, CLU_FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
       }
     }
     //defined location level fields to report -- none of these are reported
@@ -134,7 +127,7 @@ void LocationInformationWriter::DefineFields(const CSaTScanData& DataHub) {
       }
       if (gParameters.GetProbabilityModelType() == POISSON  || gParameters.GetProbabilityModelType() == BERNOULLI)
         CreateField(vFieldDefinitions, LOC_REL_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
-      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == LINEAR)
+      if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
         CreateField(vFieldDefinitions, LOC_TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
   }
@@ -214,7 +207,7 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
                    Record.GetFieldValue(LOC_TIME_TREND_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR;
                    break;
                 case AbstractTimeTrend::NOT_CONVERGED     :
-                   throw prg_error("The time trend did not converge.\n","Write()");
+                   throw prg_error("The time trend did not converge for location '%s'.\n","Write()",vIdentifiers[i].c_str());
 				case AbstractTimeTrend::SINGULAR_MATRIX :
                    throw prg_error("The time trend of location '%s' in cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
                 case AbstractTimeTrend::CONVERGED         :
@@ -261,9 +254,9 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
                case AbstractTimeTrend::POSITIVE_INFINITY :
                  Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
 		       case AbstractTimeTrend::SINGULAR_MATRIX :
-                 throw prg_error("The time trend inside of cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
+                 throw prg_error("The time trend inside of cluster was not calculated because matrix A is singular.\n","Write()");
                case AbstractTimeTrend::NOT_CONVERGED     :
-                 throw prg_error("The time trend did not converge.\n","Write()");
+                 throw prg_error("The time trend inside of cluster did not converge.\n","Write()");
                default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getInsideTrend().GetStatus());
              }
              switch (pClusterData->getOutsideTrend().GetStatus()) {
@@ -275,37 +268,35 @@ void LocationInformationWriter::Write(const CCluster& theCluster, const CSaTScan
                case AbstractTimeTrend::POSITIVE_INFINITY :
                  Record.GetFieldValue(CLU_TIME_TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR; break;
 		       case AbstractTimeTrend::SINGULAR_MATRIX :
-                 throw prg_error("The time trend outside of cluster was not calculated because matrix A is singular.\n","Write()",vIdentifiers[i].c_str());
+                 throw prg_error("The time trend outside of cluster was not calculated because matrix A is singular.\n","Write()");
                case AbstractTimeTrend::NOT_CONVERGED     :
-                 throw prg_error("The time trend did not converge.\n","Write()");
+                 throw prg_error("The time trend outside of cluster did not converge.\n","Write()");
                default : throw prg_error("Unknown time trend status type '%d'.", "Write()", pClusterData->getOutsideTrend().GetStatus());
              }
            }
-           // TODO: These statements are for testing and will be removed eventually ???  
-           const AbstractTimeTrend * pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getInsideTrend());
-           if (pTrend) {
-              Record.GetFieldValue(CLU_ALPHA_IN_FIELD).AsDouble() = pTrend->GetAlpha();
-              Record.GetFieldValue(CLU_BETA1_IN_FIELD).AsDouble() = pTrend->GetBeta();
-              Record.GetFieldValue(CLU_FUNC_ALPHA_IN_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
-              const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
-              if (pQTrend) Record.GetFieldValue(CLU_BETA2_IN_FIELD).AsDouble() = pQTrend->GetBeta2();
-           }
-           pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getOutsideTrend());
-           if (pTrend) {
-              Record.GetFieldValue(CLU_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetAlpha();
-              Record.GetFieldValue(CLU_BETA1_OUT_FIELD).AsDouble() = pTrend->GetBeta();              
-              Record.GetFieldValue(CLU_FUNC_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
-              const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
-              if (pQTrend) Record.GetFieldValue(CLU_BETA2_OUT_FIELD).AsDouble() = pQTrend->GetBeta2();
-          }
-          pTrend = dynamic_cast<const AbstractTimeTrend *>(&Handler.GetDataSet(0/*for now*/).getTimeTrend());
-          if (pTrend) {
-              Record.GetFieldValue(CLU_ALPHA_GLOBAL_FIELD).AsDouble() = pTrend->GetAlpha();
-              Record.GetFieldValue(CLU_BETA1_GLOBAL_FIELD).AsDouble() = pTrend->GetBeta();
-              const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);              
-              if (pQTrend) Record.GetFieldValue(CLU_BETA2_GLOBAL_FIELD).AsDouble() = pQTrend->GetBeta2();
-          }
-
+           //const AbstractTimeTrend * pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getInsideTrend());
+           //if (pTrend) {
+           //   Record.GetFieldValue(CLU_ALPHA_IN_FIELD).AsDouble() = pTrend->GetAlpha();
+           //   Record.GetFieldValue(CLU_BETA1_IN_FIELD).AsDouble() = pTrend->GetBeta();
+           //   //Record.GetFieldValue(CLU_FUNC_ALPHA_IN_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
+           //   const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
+           //   if (pQTrend) Record.GetFieldValue(CLU_BETA2_IN_FIELD).AsDouble() = pQTrend->GetBeta2();
+           //}
+           //pTrend = dynamic_cast<const AbstractTimeTrend *>(&pClusterData->getOutsideTrend());
+           //if (pTrend) {
+           //   Record.GetFieldValue(CLU_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetAlpha();
+           //  Record.GetFieldValue(CLU_BETA1_OUT_FIELD).AsDouble() = pTrend->GetBeta();              
+           //   //Record.GetFieldValue(CLU_FUNC_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
+           //   const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
+           //   if (pQTrend) Record.GetFieldValue(CLU_BETA2_OUT_FIELD).AsDouble() = pQTrend->GetBeta2();
+          //}
+          //pTrend = dynamic_cast<const AbstractTimeTrend *>(&Handler.GetDataSet(0/*for now*/).getTimeTrend());
+          //if (pTrend) {
+          //    Record.GetFieldValue(CLU_ALPHA_GLOBAL_FIELD).AsDouble() = pTrend->GetAlpha();
+          //    Record.GetFieldValue(CLU_BETA1_GLOBAL_FIELD).AsDouble() = pTrend->GetBeta();
+          //    const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);              
+          //    if (pQTrend) Record.GetFieldValue(CLU_BETA2_GLOBAL_FIELD).AsDouble() = pQTrend->GetBeta2();
+          //}
         }
        }
 

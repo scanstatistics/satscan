@@ -32,7 +32,6 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * TIME_TREND_OUT_FIELD;
       static const char       * TIME_TREND_DIFF_FIELD;
 
-      // TODO: These statements are for testing and will be removed eventually.  
       static const char       * ALPHA_IN_FIELD;
       static const char       * BETA1_IN_FIELD;
       static const char       * BETA2_IN_FIELD;
@@ -42,8 +41,8 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * ALPHA_GLOBAL_FIELD;
       static const char       * BETA1_GLOBAL_FIELD;
       static const char       * BETA2_GLOBAL_FIELD;
-      static const char       * FUNC_ALPHA_IN_FIELD;
-      static const char       * FUNC_ALPHA_OUT_FIELD;
+      //static const char       * FUNC_ALPHA_IN_FIELD;
+      //static const char       * FUNC_ALPHA_OUT_FIELD;
 
       static const char       * WEIGHTED_VARIANCE_FIELD;
       static const char       * WEIGHTED_STD_FIELD;

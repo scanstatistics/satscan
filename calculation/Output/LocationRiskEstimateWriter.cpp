@@ -10,7 +10,16 @@
 #include "WeightedNormalRandomizer.h"
 
 const char * LocationRiskEstimateWriter::REL_RISK_EXT                     = ".rr";
-const char * LocationRiskEstimateWriter::TIME_TREND_FIELD                 = "TIME_TREND";
+const char * LocationRiskEstimateWriter::TREND_IN_FIELD                   = "IN_TREND";
+const char * LocationRiskEstimateWriter::TREND_OUT_FIELD                  = "OUT_TREND";
+const char * LocationRiskEstimateWriter::ALPHA_IN_FIELD                   = "IN_ITRCPT";
+const char * LocationRiskEstimateWriter::BETA1_IN_FIELD                   = "IN_LINEAR";
+const char * LocationRiskEstimateWriter::BETA2_IN_FIELD                   = "IN_QUAD";
+const char * LocationRiskEstimateWriter::ALPHA_OUT_FIELD                  = "OUT_ITRCPT";
+const char * LocationRiskEstimateWriter::BETA1_OUT_FIELD                  = "OUT_LINEAR";
+const char * LocationRiskEstimateWriter::BETA2_OUT_FIELD                  = "OUT_QUAD";
+//const char * LocationRiskEstimateWriter::FUNC_ALPHA_IN_FIELD              = "IN_FUNC_A";
+//const char * LocationRiskEstimateWriter::FUNC_ALPHA_OUT_FIELD             = "OUT_FUNC_A";
 const char * LocationRiskEstimateWriter::WEIGHTED_MEAN_VALUE_FIELD        = "W_MEAN";
 
 /** class constructor */
@@ -44,8 +53,7 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
     if (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ||
         gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || 
         gParameters.GetProbabilityModelType() == ORDINAL || 
-        gParameters.GetProbabilityModelType() == CATEGORICAL || 
-        gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
+        gParameters.GetProbabilityModelType() == CATEGORICAL /*|| gParameters.GetAnalysisType() == SPATIALVARTEMPTREND*/)
       throw prg_error("Risk estimates file not implemented for %s model.",
                       "SetupFields()", ParametersPrint(DataHub.GetParameters()).GetProbabilityModelTypeAsString());
     CreateField(vFieldDefinitions, LOC_ID_FIELD, FieldValue::ALPHA_FLD, GetLocationIdentiferFieldLength(DataHub), 0, uwOffset, 0);
@@ -67,8 +75,18 @@ void LocationRiskEstimateWriter::DefineFields(const CSaTScanData& DataHub) {
       CreateField(vFieldDefinitions, OBSERVED_DIV_EXPECTED_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
       CreateField(vFieldDefinitions, RELATIVE_RISK_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
     }
-    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)
-      CreateField(vFieldDefinitions, TIME_TREND_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+    if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+      CreateField(vFieldDefinitions, TREND_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+      CreateField(vFieldDefinitions, TREND_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 2);
+      CreateField(vFieldDefinitions, ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      CreateField(vFieldDefinitions, BETA1_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      CreateField(vFieldDefinitions, BETA2_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      CreateField(vFieldDefinitions, ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      CreateField(vFieldDefinitions, BETA1_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      CreateField(vFieldDefinitions, BETA2_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      //CreateField(vFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+      //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
+    }
   }
   catch (prg_exception& x) {
     x.addTrace("DefineFields()","LocationRiskEstimateWriter");
@@ -253,13 +271,14 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
   unsigned int                  i, j;
   tract_t                       t;
   std::string                   sBuffer;
-  count_t                     * pCases, ** ppCasesNC;
-  std::vector<count_t>          vTemporalTractCases(DataHub.GetNumTimeIntervals());
-  measure_t                   * pMeasure, ** ppMeasureNC;
-  std::vector<measure_t>        vTemporalTractObserved(DataHub.GetNumTimeIntervals());
+  count_t                     * pCases, ** ppCasesNC, * pPTCasesNC;
+  std::vector<count_t>          vTemporalTractCases(DataHub.GetNumTimeIntervals()), vTemporalGlobalCases(DataHub.GetNumTimeIntervals(), 0);
+  measure_t                   * pMeasure, ** ppMeasureNC, * pPTMeasureNC;
+  std::vector<measure_t>        vTemporalTractObserved(DataHub.GetNumTimeIntervals()), vTemporalGlobalObserved(DataHub.GetNumTimeIntervals(), 0.0);
   double                        dExpected, dDenominator, dNumerator;
 
   std::auto_ptr<AbstractTimeTrend> TractTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
+  std::auto_ptr<AbstractTimeTrend> GlobalTimeTrend(AbstractTimeTrend::getTimeTrend(gParameters));
   RecordBuffer                  Record(vFieldDefinitions);
 
   try {
@@ -269,7 +288,12 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
        ppCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_NC().GetArray();
        ppMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_NC().GetArray();
        tract_t tTotalLocations = DataHub.GetNumTracts() + DataHub.GetNumMetaTracts();
+       pPTCasesNC = DataHub.GetDataSetHandler().GetDataSet(i).getCaseData_PT_NC();
+       pPTMeasureNC = DataHub.GetDataSetHandler().GetDataSet(i).getMeasureData_PT_NC();
+
+       // now calculate the trends for each defined location
        for (t=0; t < tTotalLocations; ++t) {
+          // reset all fields to blank
           Record.SetAllFieldsBlank(true);
           Record.GetFieldValue(LOC_ID_FIELD).AsString() = getLocationId(sBuffer, t, DataHub);
           if (Record.GetFieldValue(LOC_ID_FIELD).AsString().size() > (unsigned long)Record.GetFieldDefinition(LOC_ID_FIELD).GetLength())
@@ -286,31 +310,77 @@ void LocationRiskEstimateWriter::Write(const CSVTTData& DataHub) {
             if (dDenominator && dNumerator/dDenominator)
               Record.GetFieldValue(RELATIVE_RISK_FIELD).AsDouble() = (((double)pCases[t])/dExpected)/(dNumerator/dDenominator);
           }
-          //calculate total cases by time intervals for this tract
+          //isolate cases/measure for this location
           for (j=0; j < (unsigned int)DataHub.GetNumTimeIntervals(); ++j) {
+             // location cases/measure
              vTemporalTractCases[j] = ppCasesNC[j][t];
              vTemporalTractObserved[j] = ppMeasureNC[j][t];
+             // all other cases/measure
+             vTemporalGlobalCases[j] = pPTCasesNC[j] - ppCasesNC[j][t];
+             vTemporalGlobalObserved[j] = pPTMeasureNC[j] - ppMeasureNC[j][t];
           }
+          
+          // calculate trends for location and global trend
           TractTimeTrend->CalculateAndSet(&vTemporalTractCases[0], &vTemporalTractObserved[0],
                                           DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
-          switch (TractTimeTrend->GetStatus()) {
-            case AbstractTimeTrend::UNDEFINED : break;
-            case AbstractTimeTrend::NEGATIVE_INFINITY :
-               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR;
-               break;
-            case AbstractTimeTrend::POSITIVE_INFINITY :
-               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR;
-               break;
-			case AbstractTimeTrend::SINGULAR_MATRIX :
-				throw prg_error("The time trend of location '%s' in cluster was not calculated because matrix A is singular.\n","Write()",Record.GetFieldValue(LOC_ID_FIELD).AsCString());
-            case AbstractTimeTrend::NOT_CONVERGED     :
-               throw prg_error("The time trend did not converge.\n","Write()");
-            case AbstractTimeTrend::CONVERGED         :
-               TractTimeTrend->SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-               Record.GetFieldValue(TIME_TREND_FIELD).AsDouble() = TractTimeTrend->GetAnnualTimeTrend();
-               break;
-            default : throw prg_error("Unknown time trend status type '%d'.", "Write()", TractTimeTrend->GetStatus());
-          };
+          GlobalTimeTrend->CalculateAndSet(&vTemporalGlobalCases[0], &vTemporalGlobalObserved[0],
+                                           DataHub.GetNumTimeIntervals(), gParameters.GetTimeTrendConvergence());
+
+          if (gParameters.getTimeTrendType() == LINEAR) {
+            switch (TractTimeTrend->GetStatus()) {
+                case AbstractTimeTrend::UNDEFINED : break;
+                case AbstractTimeTrend::NEGATIVE_INFINITY :
+                    Record.GetFieldValue(TREND_IN_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR;
+                    break;
+                case AbstractTimeTrend::POSITIVE_INFINITY :
+                    Record.GetFieldValue(TREND_IN_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR;
+                    break;
+			    case AbstractTimeTrend::SINGULAR_MATRIX :
+				    throw prg_error("The time trend of location '%s' in cluster was not calculated because matrix A is singular.\n","Write()",Record.GetFieldValue(LOC_ID_FIELD).AsCString());
+                case AbstractTimeTrend::NOT_CONVERGED     :
+                    throw prg_error("The time trend did not converge.\n","Write()");
+                case AbstractTimeTrend::CONVERGED         :
+                    TractTimeTrend->SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+                    Record.GetFieldValue(TREND_IN_FIELD).AsDouble() = TractTimeTrend->GetAnnualTimeTrend();
+                    break;
+                default : throw prg_error("Unknown time trend status type '%d'.", "Write()", TractTimeTrend->GetStatus());
+            };
+            switch (GlobalTimeTrend->GetStatus()) {
+                case AbstractTimeTrend::UNDEFINED : break;
+                case AbstractTimeTrend::NEGATIVE_INFINITY :
+                    Record.GetFieldValue(TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::NEGATIVE_INFINITY_INDICATOR;
+                    break;
+                case AbstractTimeTrend::POSITIVE_INFINITY :
+                    Record.GetFieldValue(TREND_OUT_FIELD).AsDouble() = AbstractTimeTrend::POSITIVE_INFINITY_INDICATOR;
+                    break;
+			    case AbstractTimeTrend::SINGULAR_MATRIX :
+				    throw prg_error("The time trend of location '%s' in cluster was not calculated because matrix A is singular.\n","Write()",Record.GetFieldValue(LOC_ID_FIELD).AsCString());
+                case AbstractTimeTrend::NOT_CONVERGED     :
+                    throw prg_error("The time trend did not converge.\n","Write()");
+                case AbstractTimeTrend::CONVERGED         :
+                    GlobalTimeTrend->SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+                    Record.GetFieldValue(TREND_OUT_FIELD).AsDouble() = GlobalTimeTrend->GetAnnualTimeTrend();
+                    break;
+                default : throw prg_error("Unknown time trend status type '%d'.", "Write()", GlobalTimeTrend->GetStatus());
+            };
+          }
+          const AbstractTimeTrend * pTrend = dynamic_cast<const AbstractTimeTrend *>(TractTimeTrend.get());
+          if (pTrend) {
+            Record.GetFieldValue(ALPHA_IN_FIELD).AsDouble() = pTrend->GetAlpha();
+            Record.GetFieldValue(BETA1_IN_FIELD).AsDouble() = pTrend->GetBeta();
+            //Record.GetFieldValue(FUNC_ALPHA_IN_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
+            const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
+            if (pQTrend) Record.GetFieldValue(BETA2_IN_FIELD).AsDouble() = pQTrend->GetBeta2();
+          }
+          pTrend = dynamic_cast<const AbstractTimeTrend *>(GlobalTimeTrend.get());
+          if (pTrend) {
+            Record.GetFieldValue(ALPHA_OUT_FIELD).AsDouble() = pTrend->GetAlpha();
+            Record.GetFieldValue(BETA1_OUT_FIELD).AsDouble() = pTrend->GetBeta();
+            //Record.GetFieldValue(FUNC_ALPHA_OUT_FIELD).AsDouble() = pTrend->GetGlobalAlpha();
+            const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(pTrend);
+            if (pQTrend) Record.GetFieldValue(BETA2_OUT_FIELD).AsDouble() = pQTrend->GetBeta2();
+          }
+
           if (gpASCIIFileWriter) gpASCIIFileWriter->WriteRecord(Record);
           if (gpDBaseFileWriter) gpDBaseFileWriter->WriteRecord(Record);
        }

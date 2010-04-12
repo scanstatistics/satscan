@@ -31,18 +31,17 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       static const char       * CLU_TIME_TREND_OUT_FIELD;
       static const char       * CLU_TIME_TREND_DIFF_FIELD;
 
-      // TODO: These statements are for testing and will be removed eventually.  
-      static const char       * CLU_ALPHA_IN_FIELD;
-      static const char       * CLU_BETA1_IN_FIELD;
-      static const char       * CLU_BETA2_IN_FIELD;
-      static const char       * CLU_ALPHA_OUT_FIELD;
-      static const char       * CLU_BETA1_OUT_FIELD;
-      static const char       * CLU_BETA2_OUT_FIELD;
-      static const char       * CLU_ALPHA_GLOBAL_FIELD;
-      static const char       * CLU_BETA1_GLOBAL_FIELD;
-      static const char       * CLU_BETA2_GLOBAL_FIELD;
-      static const char       * CLU_FUNC_ALPHA_IN_FIELD;
-      static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
+      //static const char       * CLU_ALPHA_IN_FIELD;
+      //static const char       * CLU_BETA1_IN_FIELD;
+      //static const char       * CLU_BETA2_IN_FIELD;
+      //static const char       * CLU_ALPHA_OUT_FIELD;
+      //static const char       * CLU_BETA1_OUT_FIELD;
+      //static const char       * CLU_BETA2_OUT_FIELD;
+      //static const char       * CLU_ALPHA_GLOBAL_FIELD;
+      //static const char       * CLU_BETA1_GLOBAL_FIELD;
+      //static const char       * CLU_BETA2_GLOBAL_FIELD;
+      //static const char       * CLU_FUNC_ALPHA_IN_FIELD;
+      //static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
 
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
 
