@@ -23,11 +23,14 @@ class AsciiPrintFormat {
      static const unsigned int  giRightMargin;
      static const unsigned int  giVersionHeaderWidth;
 
+     static void                putChar(char c, FILE* fp);
+
    public:
      AsciiPrintFormat(bool bOneDataSet=true);
      virtual ~AsciiPrintFormat();
 
      void                       PrintAlignedMarginsDataString(FILE* fp, std::string& sDataString, unsigned int iPostNewlines=1) const;
+     void                       PrintNonRightMarginedDataString(FILE* fp, std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines=1) const;
      void                       PrintSectionLabel(FILE* fp, const char* sText, bool bDataSetParticular, bool bPadLeftMargin) const;
      void                       PrintSectionLabelAtDataColumn(FILE* fp, const char* sText, unsigned int iPostNewlines=1) const;
      static void                PrintSectionSeparatorString(FILE* fp, unsigned int iPreNewlines=0, unsigned int iPostNewlines=1, char cSeparator='_');

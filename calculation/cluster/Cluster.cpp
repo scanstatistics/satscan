@@ -99,7 +99,7 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
       DisplayClusterDataStandard(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);
     DisplayMonteCarloInformation(fp, DataHub, iReportedCluster, PrintFormat, simVars);
-    DisplayTimeTrend(fp, PrintFormat);
+    DisplayTimeTrend(fp, DataHub, PrintFormat);
   }
   catch (prg_exception& x) {
     x.addTrace("Display()","CCluster");

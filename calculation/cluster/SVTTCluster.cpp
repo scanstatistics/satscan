@@ -390,8 +390,8 @@ void CSVTTCluster::DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const {
   fprintf(fp, "      %.3f", gClusterData->getInsideTrend().GetAnnualTimeTrend());
 }
 
-void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const {
-  std::string buffer;
+void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  std::string buffer, buffer2;
 
   if (gClusterData->getInsideTrend().getType() == LINEAR) {
      PrintFormat.PrintSectionLabel(fp, "Inside Time trend", false, true);
@@ -406,37 +406,40 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintForma
   }
 
   const AbstractTimeTrend& InTrend = gClusterData->getInsideTrend();
-  PrintFormat.PrintSectionLabel(fp, "Inside Intercept", false, true);
-  printString(buffer, "%g", InTrend.GetAlpha());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  PrintFormat.PrintSectionLabel(fp, "Inside Linear", false, true);
-  printString(buffer, "%g", InTrend.GetBeta());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintSectionLabel(fp, "Inside Intercept", false, true);
+  //printString(buffer, "%g", InTrend.GetAlpha());
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintSectionLabel(fp, "Inside Linear", false, true);
+  //printString(buffer, "%g", InTrend.GetBeta());
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&InTrend);
   if (pQTrend) {
-     PrintFormat.PrintSectionLabel(fp, "Inside Quadratic", false, true);
-     printString(buffer, "%g", pQTrend->GetBeta2());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //PrintFormat.PrintSectionLabel(fp, "Inside Quadratic", false, true);
+     //printString(buffer, "%g", pQTrend->GetBeta2());
+     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "Inside Risk Function", false, true);
+     pQTrend->getRiskFunction(buffer, buffer2, DataHub);
+     PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
+     PrintFormat.PrintNonRightMarginedDataString(fp, buffer2, true);
   }
-  PrintFormat.PrintSectionLabel(fp, "Inside Function", false, true);
-  printString(buffer, "%g", InTrend.GetGlobalAlpha());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+
   const AbstractTimeTrend& OutTrend = gClusterData->getOutsideTrend();
-  PrintFormat.PrintSectionLabel(fp, "Outside Intercept", false, true);
-  printString(buffer, "%g", OutTrend.GetAlpha());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-  PrintFormat.PrintSectionLabel(fp, "Outside Linear", false, true);
-  printString(buffer, "%g", OutTrend.GetBeta());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintSectionLabel(fp, "Outside Intercept", false, true);
+  //printString(buffer, "%g", OutTrend.GetAlpha());
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintSectionLabel(fp, "Outside Linear", false, true);
+  //printString(buffer, "%g", OutTrend.GetBeta());
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&OutTrend);
   if (pQTrend) {
-     PrintFormat.PrintSectionLabel(fp, "Outside Quadratic", false, true);
-     printString(buffer, "%g", pQTrend->GetBeta2());
-     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     //PrintFormat.PrintSectionLabel(fp, "Outside Quadratic", false, true);
+     //printString(buffer, "%g", pQTrend->GetBeta2());
+     //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+     PrintFormat.PrintSectionLabel(fp, "Outside Risk Function", false, true);
+     pQTrend->getRiskFunction(buffer, buffer2, DataHub);
+     PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
+     PrintFormat.PrintNonRightMarginedDataString(fp, buffer2, true);
   }
-  PrintFormat.PrintSectionLabel(fp, "Outside Function", false, true);
-  printString(buffer, "%g", OutTrend.GetGlobalAlpha());
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 }
 
 AbstractClusterData * CSVTTCluster::GetClusterData() {

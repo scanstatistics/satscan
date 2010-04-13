@@ -120,12 +120,17 @@ char* JulianToChar(char* szDateString, Julian JNum) {
 }
 
 /** Converts Julian into date string. */
-std::string& JulianToString(std::string& sDate, Julian JNum) {
+std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint) {
   UInt month, day, year;
 
   JulianToMDY(&month, &day, &year, JNum);
-  printString(sDate, "%u/%u/%u", year, month, day);
-
+  switch (eDatePrint) {
+      case YEAR  : printString(sDate, "%u", year); break;
+      case MONTH : printString(sDate, "%u/%u", year, month); break;
+      case DAY   : printString(sDate, "%u/%u/%u", year, month, day); break;
+      case NONE  :
+      default    : throw prg_error("Wrong date precision specified '%d'.","JulianToString()", eDatePrint);
+  }
   return sDate;
 }
 

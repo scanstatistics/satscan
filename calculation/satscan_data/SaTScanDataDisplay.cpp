@@ -342,17 +342,19 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
          PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
          fprintf(fp, "%.3lf%%\n", fabs(nAnnualTT));
       }
-      //if (gParameters.getTimeTrendType() == QUADRATIC) {
-      //   PrintFormat.PrintSectionLabel(fp, "alpha Global", false, false);
-      //   fprintf(fp, "%g\n", globalTrend.GetAlpha());
-      //   PrintFormat.PrintSectionLabel(fp, "beta1 Global", false, false);
-      //   fprintf(fp, "%g\n", globalTrend.GetBeta());
-      //   PrintFormat.PrintSectionLabel(fp, "beta2 Global", false, false);
-      //   fprintf(fp, "%g\n", ((const QuadraticTimeTrend&)(globalTrend)).GetBeta2());
-      //}
-      PrintFormat.PrintSectionLabel(fp, "Global temporal trend function", false, true);
-      printString(buffer, "%g", globalTrend.GetGlobalAlpha());
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      //PrintFormat.PrintSectionLabel(fp, "Global Intercept", false, false);
+      //fprintf(fp, "%g\n", globalTrend.GetAlpha());
+      //PrintFormat.PrintSectionLabel(fp, "Global Linear", false, false);
+      //fprintf(fp, "%g\n", globalTrend.GetBeta());
+      const QuadraticTimeTrend * pQTrend = dynamic_cast<const QuadraticTimeTrend *>(&globalTrend);
+      if (pQTrend) {
+        //PrintFormat.PrintSectionLabel(fp, "Global Quadratic", false, false);
+        //fprintf(fp, "%g\n", pQTrend->GetBeta2());
+        PrintFormat.PrintSectionLabel(fp, "Global Risk Function", false, true);
+        pQTrend->getRiskFunction(buffer, work, *this);
+        PrintFormat.PrintNonRightMarginedDataString(fp, buffer, false);
+        PrintFormat.PrintNonRightMarginedDataString(fp, work, true);
+      }
   }
   PrintFormat.PrintSectionSeparatorString(fp, 0, 1);
 }

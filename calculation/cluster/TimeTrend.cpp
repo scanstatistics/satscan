@@ -7,6 +7,7 @@
 #include "SSException.h"
 #include "newmat.h"
 #include "UtilityFunctions.h"
+#include "SaTScanData.h"
 #include <numeric>
 
 //----------------------- AbstractTimeTrend ------------------------------------------
@@ -406,6 +407,31 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
 
   return gStatus;
 }
+
+/** Returns temporal trend expressed as a function of date precision. */
+void QuadraticTimeTrend::getRiskFunction(std::string& functionStr, std::string& definitionStr, const CSaTScanData& DataHub) const {
+  std::string buffer, buffer2, buffer3("");
+  const CParameters& params(DataHub.GetParameters());
+
+  printString(functionStr, "e^(%g + %g t + %g t^2)", GetAlpha(), GetBeta(), GetBeta2());
+
+  switch (params.GetTimeAggregationUnitsType()) {
+    case YEAR  : buffer = "year"; break;
+    case MONTH : buffer = "month"; break;
+    case DAY   : buffer = "day"; break;
+    default    : buffer = "none";
+  }
+  double constant = static_cast<double>(params.GetTimeAggregationLength() - 1)/2.0;
+  if (constant != 0.0)
+      printString(buffer3, " + %g", constant);
+
+  printString(definitionStr, "where t=(%s - %s)/%u%s",
+              buffer.c_str(),
+              JulianToString(buffer2, DataHub.GetTimeIntervalStartTimes()[0], params.GetTimeAggregationUnitsType()).c_str(),
+              DataHub.GetNumTimeIntervals(),
+              buffer3.c_str());
+}
+
 
 /** initializes/re-initializes class data members */
 void QuadraticTimeTrend::Initialize() {

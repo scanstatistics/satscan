@@ -126,7 +126,7 @@ class CSVTTCluster : public CCluster  {
     virtual CSVTTCluster      * Clone() const;
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};
-    virtual void                DisplayTimeTrend(FILE* fp, const AsciiPrintFormat& PrintFormat) const;
+    virtual void                DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;
     virtual AbstractClusterData * GetClusterData();
     virtual const AbstractClusterData * GetClusterData() const;
     virtual ClusterType         GetClusterType() const {return SPATIALVARTEMPTRENDCLUSTER;}

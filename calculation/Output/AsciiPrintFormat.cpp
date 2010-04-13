@@ -6,6 +6,7 @@
 #include "Toolkit.h"
 #include "UtilityFunctions.h"
 #include "SSException.h"
+#include <errno.h>
 
 /** width of label with one dataset for cluster section */
 const unsigned int AsciiPrintFormat::giOneDataSetClusterLabelWidth   = 22;
@@ -32,6 +33,15 @@ AsciiPrintFormat::AsciiPrintFormat(bool bOneDataSet) : gbOneDataSet(bOneDataSet)
 /** destructor */
 AsciiPrintFormat::~AsciiPrintFormat() {}
 
+/** Calls std::putc(char,FILE*) and checks for error. */
+void AsciiPrintFormat::putChar(char c, FILE* fp) {
+  putc(c, fp);
+  if (ferror(fp)) {
+    perror("Write to file stream failed!");
+    throw prg_error("Write to file stream failed: %s!","putChar()", strerror(errno));
+  }
+}
+
 /** Prints data supplied by sDataString parameter to file in a manner
     such that data is aligned with left margin of section label and wraps when
     data will exceed right margin.
@@ -54,12 +64,12 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, std::string& sDat
            if (sDataString[iScan] == ' ' || sDataString[iScan] == '\n') {
              //found insertion point - first print characters up to iScan
              for (iPrint=iStart; iPrint < iScan; ++iPrint)
-               putc(sDataString[iPrint], fp);
+               putChar(sDataString[iPrint], fp);
              //print newline character - wrap
-             putc('\n', fp);
+             putChar('\n', fp);
              //pad with blanks to align data
              for (iPrint=0; iPrint < giDataLeftMargin; ++iPrint)
-               putc(' ', fp);
+               putChar(' ', fp);
              iStart = iScan + 1/*replaced blank character*/;
              break;
            }
@@ -69,21 +79,37 @@ void AsciiPrintFormat::PrintAlignedMarginsDataString(FILE* fp, std::string& sDat
       if (iScan == iStart) {
         //print characters up to iDataPrintWidth
         for (iPrint=iStart; iPrint < iStart + iDataPrintWidth; ++iPrint)
-           putc(sDataString[iPrint], fp);
+           putChar(sDataString[iPrint], fp);
         //print newline - wrap
-        putc('\n', fp);
+        putChar('\n', fp);
         //pad with blanks to align data
         for (iPrint=0; iPrint < giDataLeftMargin; ++iPrint)
-           putc(' ', fp);
+           putChar(' ', fp);
         iStart += iDataPrintWidth;
       }
   }
   //print remaining characters of sDataString
   for (iPrint=iStart; iPrint < sDataString.size(); ++iPrint)
-     putc(sDataString[iPrint], fp);
+     putChar(sDataString[iPrint], fp);
   //append newlines as requested
   while (iPostNewlines-- > 0)
-     putc('\n', fp);
+     putChar('\n', fp);
+}
+
+/** Prints data string to file stream without consideration to right margin. */
+void AsciiPrintFormat::PrintNonRightMarginedDataString(FILE* fp, std::string& sDataString, bool bPadLeftMargin, unsigned int iPostNewlines) const {
+  unsigned int  iPrint;
+
+  //pad with blanks to align data
+  for (iPrint=0; bPadLeftMargin && iPrint < giDataLeftMargin; ++iPrint)
+    putChar(' ', fp);
+
+  for (iPrint=0; iPrint < sDataString.size(); ++iPrint)
+       putChar(sDataString[iPrint], fp);
+
+  //append newlines as requested
+  while (iPostNewlines-- > 0)
+     putChar('\n', fp);
 }
 
 /** Prints section label to file stream. */
@@ -93,7 +119,7 @@ void AsciiPrintFormat::PrintSectionLabel(FILE* fp, const char * sText, bool bDat
   iStringLength = 0;
   //add left margin spacing if requested
   while (bPadLeftMargin && iPad++ < giLeftMargin) {
-       putc(' ', fp);
+       putChar(' ', fp);
        ++iStringLength;
   }
   //add label
@@ -120,7 +146,7 @@ void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText
 
   //add left margin spacing til data column left margin
   while (iPad++ < giDataLeftMargin) {
-       putc(' ', fp);
+       putChar(' ', fp);
        ++iStringLength;
   }
   //add label
@@ -130,7 +156,7 @@ void AsciiPrintFormat::PrintSectionLabelAtDataColumn(FILE* fp, const char* sText
     throw prg_error("Label text extended beyond defined max length is %u.\n", "PrintSectionLabelAtDataColumn()", giRightMargin);
   //append newlines as requested
   while (iPostNewlines-- > 0)
-     putc('\n', fp);
+     putChar('\n', fp);
 }
 
 /** Prints character cSeparator giRightMargin'th times. Prefixes/postfixes separator
@@ -139,13 +165,13 @@ void AsciiPrintFormat::PrintSectionSeparatorString(FILE* fp, unsigned int iPreNe
   unsigned int iPrint = 0;
 
   while (iPreNewlines-- > 0)
-     putc('\n', fp);
+     putChar('\n', fp);
 
   while (iPrint++ < giRightMargin)
-     putc(cSeparator, fp);
+     putChar(cSeparator, fp);
 
   while (iPostNewlines-- > 0)
-     putc('\n', fp);
+     putChar('\n', fp);
 }
 
 /** Prints version header to file stream */
@@ -158,25 +184,25 @@ void AsciiPrintFormat::PrintVersionHeader(FILE* fp) {
 
   iPrint=0;
   while (iPrint++ < iSeparatorsMargin)
-     putc(' ', fp);
+     putChar(' ', fp);
   iPrint=0;
   while (iPrint++ < giVersionHeaderWidth)
-     putc('_', fp);
+     putChar('_', fp);
   fprintf(fp, "\n\n");
 
   printString(buffer, "SaTScan v%s", AppToolkit::getToolkit().GetVersion());
   iTextMargin = (giRightMargin - buffer.size())/2;
   iPrint=0;
   while (iPrint++ < iTextMargin)
-     putc(' ', fp);
+     putChar(' ', fp);
   fprintf(fp, "%s\n", buffer.c_str());
 
   iPrint=0;
   while (iPrint++ < iSeparatorsMargin)
-     putc(' ', fp);
+     putChar(' ', fp);
   iPrint=0;
   while (iPrint++ < giVersionHeaderWidth)
-     putc('_', fp);
+     putChar('_', fp);
   fprintf(fp, "\n\n");
 }
 

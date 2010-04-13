@@ -31,7 +31,7 @@ bool            IsDateValid(UInt month, UInt day, UInt year);
 bool            IsLeapYear(UInt year);
 char          * JulianToChar(char* szDateString, Julian JNum);
 void            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
-std::string   & JulianToString(std::string& sDate, Julian JNum);
+std::string   & JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint=DAY);
 void            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
 Julian          MDYToJulian(UInt m, UInt d, UInt y);
 void            PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFilename);
