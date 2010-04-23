@@ -10,6 +10,7 @@
 #include <boost/random/linear_congruential.hpp>
 #include <boost/random/uniform_int.hpp>
 #include "ObservableRegion.h"
+#include "TimeStamp.h"
 
 /** constructor */
 ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -136,15 +137,16 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
       bEndDateValid = false;
     }
     //validate prospective start date based upon precision of times parameter setting
-    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && !ValidateProspectiveDate(PrintDirection)) {
+    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && 
+        !ValidateDateString(PrintDirection, START_PROSP_SURV, gParameters.GetProspectiveStartDate())) {
       bValid = false;
       bProspectiveDateValid = false;
     }
 
     if (bStartDateValid && bEndDateValid) {
       //check that study period start and end dates are chronologically correct
-      StudyPeriodStartDate = CharToJulian(gParameters.GetStudyPeriodStartDate().c_str());
-      StudyPeriodEndDate = CharToJulian(gParameters.GetStudyPeriodEndDate().c_str());
+      StudyPeriodStartDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str());
+      StudyPeriodEndDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str());
       if (StudyPeriodStartDate > StudyPeriodEndDate) {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -152,7 +154,7 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
       }
       if (bValid && gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && bProspectiveDateValid) {
         //validate prospective start date
-        ProspectiveStartDate = CharToJulian(gParameters.GetProspectiveStartDate().c_str());
+        ProspectiveStartDate = gParameters.getDateAsJulian(gParameters.GetProspectiveStartDate().c_str());
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -162,6 +164,53 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
     }
   }
   catch (prg_exception& x) {
+    x.addTrace("ValidateDateParameters()","ParametersValidate");
+    throw;
+  }
+  return bValid;
+}
+
+/** Validates that date parameter string is in correct format. */
+bool ParametersValidate::ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const {
+  bool          bValid=true;
+  const char  * sName = 0;
+  UInt          nYear, nMonth, nDay;
+
+  try {
+      // determine label for date field - in the event that we have to throw an error
+      switch (eParameterType) {
+        case STARTDATE                : sName = "study period start date"; break;
+        case ENDDATE                  : sName = "study period end date"; break;
+        case START_PROSP_SURV         : sName = "prospective surveillance start date"; break;
+        case INTERVAL_STARTRANGE      : sName = "flexible temporal window definition start range date"; break;
+        case INTERVAL_ENDRANGE        : sName = "flexible temporal window definition end range date"; break;
+        default                       :
+            throw prg_error("Unknown parameter enumeration %d.","ValidateDateString()", eParameterType);
+      }
+
+      // validate date field conditionally based upon precision of times specification
+      if (gParameters.GetPrecisionOfTimesType() == GENERIC) {
+        long dateInteger;
+        if (sscanf(value.c_str(), "%i", &dateInteger) != 1) {
+          PrintDirection.Printf("Invalid Parameter Setting:\nThe %s, '%s', is not valid. Please specify an integer.\n",
+                                BasePrint::P_PARAMERROR, sName, value.c_str());
+          return false;
+        }
+      } else {
+        //parse date in parts
+        if (CharToMDY(&nMonth, &nDay, &nYear, value.c_str()) != 3) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe %s '%s' is not valid. Please specify as YYYY/MM/DD.\n",
+                                  BasePrint::P_PARAMERROR, sName, value.c_str());
+            return false;
+        }
+        //validate date
+        if (!IsDateValid(nMonth, nDay, nYear)) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe %s '%s' is not a valid date.\n",
+                                  BasePrint::P_PARAMERROR, sName, value.c_str());
+            return false;
+        }
+      }
+  } catch (prg_exception& x) {
     x.addTrace("ValidateDateParameters()","ParametersValidate");
     throw;
   }
@@ -587,8 +636,8 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         return false;
       }
       //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
-      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                                      CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()),
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
+                                                                      gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
       if (dMaxTemporalLengthInUnits < 1) {
@@ -612,8 +661,8 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         return false;
       }
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                                      CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()),
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
+                                                                      gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
@@ -805,37 +854,6 @@ bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDire
   return bValid;
 }
 
-/** Validates prospective surveillance start date by:
-    - if not adjusting for earlier analyses, ensures that prospective start
-      date equals the study period end date.
-    - calls method ValidateEndDate(...)                                       */
-bool ParametersValidate::ValidateProspectiveDate(BasePrint& PrintDirection) const {
-  UInt          uiYear, uiMonth, uiDay;
-  bool          bReturnValue=true;
-
-  try {
-    //validate study period end date based upon precision of times parameter setting
-    //parse date in parts
-    if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetProspectiveStartDate().c_str()) != 3) {
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The specified prospective surveillance start date, '%s', is not valid. "
-                            "Please specify as YYYY/MM/DD.\n", BasePrint::P_PARAMERROR, gParameters.GetProspectiveStartDate().c_str());
-      return false;
-    }
-    //validate date
-    if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-      PrintDirection.Printf("Invalid Parameter Setting:\nThe specified prospective surveillance start date, %s, is not a valid date.\n",
-                            BasePrint::P_PARAMERROR, gParameters.GetProspectiveStartDate().c_str());
-      bReturnValue = false;
-    }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ValidateProspectiveDate()","ParametersValidate");
-    throw;
-  }
-  return bReturnValue;
-}
-
 /** Validates parameters parameters related to randomization seed.
     Prints errors to print direction and returns whether values are vaild. */
 bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) const {
@@ -925,60 +943,24 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
   try {
     if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE && (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == SPACETIME)) {
       //validate start range start date
-      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetStartRangeStartDate().c_str()) != 3) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of start range in flexible temporal window definition, "
-                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetStartRangeStartDate().c_str());
-        bValid = false;
-      }
-      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of start range in flexible temporal window definition, "
-                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetStartRangeStartDate().c_str());
-        bValid = false;
-      }
+      if (!ValidateDateString(PrintDirection, INTERVAL_STARTRANGE, gParameters.GetStartRangeStartDate()))
+        return false;
       //validate start range end date
-      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetStartRangeEndDate().c_str()) != 3) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of start range in flexible temporal window definition, "
-                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetStartRangeEndDate().c_str());
-        bValid = false;
-      }
-      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of start range in flexible temporal window definition, "
-                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetStartRangeEndDate().c_str());
-        bValid = false;
-      }
+      if (!ValidateDateString(PrintDirection, INTERVAL_STARTRANGE, gParameters.GetStartRangeEndDate()))
+        return false;
       //validate end range start date
-      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetEndRangeStartDate().c_str()) != 3) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of end range in flexible temporal window definition, "
-                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
-        bValid = false;
-      }
-      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe start date of end range in flexible temporal window definition, "
-                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
-        bValid = false;
-      }
+      if (!ValidateDateString(PrintDirection, INTERVAL_ENDRANGE, gParameters.GetEndRangeStartDate()))
+        return false;
       //validate end range end date
-      if (CharToMDY(&uiMonth, &uiDay, &uiYear, gParameters.GetEndRangeStartDate().c_str()) != 3) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of end range in flexible temporal window definition, "
-                              "'%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                              BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
-        bValid = false;
-      }
-      if (!IsDateValid(uiMonth, uiDay, uiYear)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe end date of end range in flexible temporal window definition, "
-                              "%s, is not a valid date.\n", BasePrint::P_PARAMERROR, gParameters.GetEndRangeStartDate().c_str());
-        bValid = false;
-      }
+      if (!ValidateDateString(PrintDirection, INTERVAL_ENDRANGE, gParameters.GetEndRangeStartDate()))
+        return false;
       //now valid that range dates are within study period start and end dates
       if (bValid) {
-        StudyPeriodStartDate = CharToJulian(gParameters.GetStudyPeriodStartDate().c_str());
-        StudyPeriodEndDate = CharToJulian(gParameters.GetStudyPeriodEndDate().c_str());
+        StudyPeriodStartDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str());
+        StudyPeriodEndDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str());
 
-        EndRangeStartDate = CharToJulian(gParameters.GetEndRangeStartDate().c_str());
-        EndRangeEndDate = CharToJulian(gParameters.GetEndRangeEndDate().c_str());
+        EndRangeStartDate = gParameters.getDateAsJulian(gParameters.GetEndRangeStartDate().c_str());
+        EndRangeEndDate = gParameters.getDateAsJulian(gParameters.GetEndRangeEndDate().c_str());
         if (EndRangeStartDate > EndRangeEndDate) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nInvalid scanning window end range. Range date '%s' occurs after date '%s'.\n",
@@ -999,8 +981,8 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
           }
         }
 
-        StartRangeStartDate = CharToJulian(gParameters.GetStartRangeStartDate().c_str());
-        StartRangeEndDate = CharToJulian(gParameters.GetStartRangeEndDate().c_str());
+        StartRangeStartDate = gParameters.getDateAsJulian(gParameters.GetStartRangeStartDate().c_str());
+        StartRangeEndDate = gParameters.getDateAsJulian(gParameters.GetStartRangeEndDate().c_str());
         if (StartRangeStartDate > StartRangeEndDate) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nInvalid scanning window start range. The range date '%s' occurs after date '%s'.\n",
@@ -1221,18 +1203,15 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
   DatePrecisionType     ePrecision;
 
   try {
+    if (!ValidateDateString(PrintDirection, ENDDATE, gParameters.GetStudyPeriodEndDate()))
+        return false;
+
+    // remainder of checks are for non-generic dates
+    if (gParameters.GetPrecisionOfTimesType() == GENERIC)
+        return true;
+
     //parse date in parts
-    if (CharToMDY(&nMonth, &nDay, &nYear, gParameters.GetStudyPeriodEndDate().c_str()) != 3) {
-      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period end date '%s' is not valid. Please specify as YYYY/MM/DD.\n",
-                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodEndDate().c_str());
-      return false;
-    }
-    //validate date
-    if (!IsDateValid(nMonth, nDay, nYear)) {
-      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period end date '%s' is not a valid date.\n",
-                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodEndDate().c_str());
-      return false;
-    }
+    CharToMDY(&nMonth, &nDay, &nYear, gParameters.GetStudyPeriodEndDate().c_str());
 
     //validate against precision of times
     if (gParameters.GetCreationVersion().iMajor == 4)
@@ -1240,6 +1219,7 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
       ePrecision = (gParameters.GetAnalysisType() == PURELYSPATIAL ? NONE : gParameters.GetTimeAggregationUnitsType());
     else
       ePrecision = gParameters.GetPrecisionOfTimesType();
+
     switch (ePrecision) {
       case YEAR  :
         if (nMonth != 12 || nDay != 31) {
@@ -1263,7 +1243,7 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
     };
   }
   catch (prg_exception& x) {
-    x.addTrace("ValidateEndDate()","ParametersValidate");
+    x.addTrace("ValidateStudyPeriodEndDate()","ParametersValidate");
     throw;
   }
   return true;
@@ -1282,42 +1262,40 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
   DatePrecisionType     ePrecision;
 
   try {
-    //parse date in parts
-    if (CharToMDY(&nMonth, &nDay, &nYear, gParameters.GetStudyPeriodStartDate().c_str()) != 3) {
-      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. Please specify as YYYY/MM/DD.\n",
-                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str());
-      return false;
-    }
-    //validate date
-    if (!IsDateValid(nMonth, nDay, nYear)) {
-      PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid date.\n",
-                            BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str());
-      return false;
-    }
-    //validate against precision of times
+    if (!ValidateDateString(PrintDirection, STARTDATE, gParameters.GetStudyPeriodStartDate()))
+        return false;
+
+    // remainder of checks are for non-generic dates
+    if (gParameters.GetPrecisionOfTimesType() == GENERIC)
+        return true;
+
     if (gParameters.GetCreationVersion().iMajor == 4)
       // no date precision validation needed for purely spatial
       ePrecision = (gParameters.GetAnalysisType() == PURELYSPATIAL ? NONE : gParameters.GetTimeAggregationUnitsType());
     else
       ePrecision = gParameters.GetPrecisionOfTimesType();
+
+    //parse date in parts
+    CharToMDY(&nMonth, &nDay, &nYear, gParameters.GetStudyPeriodStartDate().c_str());
+    //validate against precision of times
     switch (ePrecision) {
       case YEAR  :
-        if (nMonth != 1 || nDay != 1) {
-          PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. "
-                                "With the setting for %s as years, the date must be the first day of respective year.\n",
-                                BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str(),
-                                (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
-          return false;
-        }
-        break;
+         if (nMonth != 1 || nDay != 1) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. "
+                                  "With the setting for %s as years, the date must be the first day of respective year.\n",
+                                  BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str(),
+                                  (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
+            return false;
+         }
+         break;
       case MONTH :
-        if (nDay != 1) {
-          PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. "
-                                "With the setting for %s as months, the date must be the first day of respective month.\n",
-                                BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str(),
-                                (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
-          return false;
-        }
+         if (nDay != 1) {
+             PrintDirection.Printf("Invalid Parameter Setting:\nThe study period start date, '%s', is not valid. "
+                                   "With the setting for %s as months, the date must be the first day of respective month.\n",
+                                   BasePrint::P_PARAMERROR, gParameters.GetStudyPeriodStartDate().c_str(),
+                                   (gParameters.GetCreationVersion().iMajor == 4 ? "time aggregation" : "time precision"));
+            return false;
+         }
       case DAY   :
       case NONE  : break;
     };
@@ -1517,8 +1495,8 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
     return false;
   }
   //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
-  dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(CharToJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                                  CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()),
+  dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
+                                                                  gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()),
                                                                   gParameters.GetTimeAggregationUnitsType(), 1));
   if (dStudyPeriodLengthInUnits < static_cast<double>(gParameters.GetTimeAggregationLength()))  {
     PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation of %d %s%s is greater than the %d %s study period.\n",

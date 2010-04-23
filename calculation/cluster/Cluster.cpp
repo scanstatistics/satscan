@@ -726,12 +726,12 @@ void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const Asc
   std::string  sStart, sEnd;
 
   PrintFormat.PrintSectionLabel(fp, "Time frame", false, true);
-  fprintf(fp, "%s - %s\n", GetStartDate(sStart, DataHub).c_str(), GetEndDate(sEnd, DataHub).c_str());
+  fprintf(fp, "%s to %s\n", GetStartDate(sStart, DataHub).c_str(), GetEndDate(sEnd, DataHub).c_str());
 }
 
 /** returns end date of defined cluster as formated string */
 std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, DataHub.GetParameters().GetPrecisionOfTimesType());
 }
 
 /** Returns number of expected cases in accumulated data. */
@@ -928,7 +928,7 @@ double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData
 
 /** returns start date of defined cluster as formated string */
 std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval]);
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], DataHub.GetParameters().GetPrecisionOfTimesType());
 }
 
 /** Prints name and coordinates of locations contained in cluster to ASCII file.

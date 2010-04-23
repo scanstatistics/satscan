@@ -47,7 +47,7 @@ void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Containe
 bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateString, int iRecordNumber,
                                                              std::pair<Julian, DatePrecisionType>& PopulationDate) {
   bool                                  bValidDate=true;
-  DateStringParser                      DateParser;
+  DateStringParser                      DateParser(gDataHub.GetParameters().GetPrecisionOfTimesType());
   DateStringParser::ParserStatus        eStatus;
 
   try {
@@ -313,8 +313,8 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
       DataSet.getPopulationData().SetPopulationDates(vprPopulationDates,
-                                                        CharToJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                        CharToJulian(gParameters.GetStudyPeriodEndDate().c_str()));
+                                                     gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
+                                                     gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()));
       vprPopulationDates.clear(); //dump memory
       Source->GotoFirstRecord();
       bEmpty = true;

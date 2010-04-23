@@ -32,6 +32,19 @@ public class Utils {
         }
     }
 
+        /**
+     * Validates that key typed is an integer or back space; otherwise consumes key.
+     */
+    public static void validateNumericKeyTyped(JTextField thisField, java.awt.event.KeyEvent e, int maxFieldLength) {
+        if (!(Character.isDigit(e.getKeyChar()) || e.getKeyChar() == java.awt.event.KeyEvent.VK_BACK_SPACE || e.getKeyChar() == '-')) {
+            e.consume();
+            return;
+        }
+        if (thisField.getSelectedText() == null && thisField.getText().length() >= maxFieldLength) {
+            e.consume();
+        }
+    }
+
     /**
      * Validates that key typed is a positive integer, period or back space; otherwise consumes key.
      */

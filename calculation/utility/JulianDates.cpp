@@ -3,6 +3,7 @@
 #include "JulianDates.h"
 #include "SSException.h"
 #include "UtilityFunctions.h"
+#include "TimeStamp.h"
 
 /* Date module - SaTScan                                  */
 /*                                                        */
@@ -70,6 +71,20 @@ Julian CharToJulian(const char* szDateString) {
   return MDYToJulian(month, day, year);
 }
 
+Julian relativeDateToJulian(const char* szDateString) {
+  SaTScan::Timestamp initialDate;
+  long relativeDate;
+
+  if (sscanf(szDateString, "%i", &relativeDate) != 1) 
+    throw prg_error("Failed to convert relative date '%s' to integer.\n", "relativeDateToJulian()", szDateString);
+
+  initialDate.Now();
+  initialDate.AddDays( relativeDate );
+
+  return static_cast<Julian>(initialDate.GetJulianDate());
+}
+
+
 /** Returns number of days in this month for year. */
 UInt DaysThisMonth(UInt nYear, UInt nMonth) {
   int nMax;
@@ -125,11 +140,16 @@ std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType e
 
   JulianToMDY(&month, &day, &year, JNum);
   switch (eDatePrint) {
-      case YEAR  : printString(sDate, "%u", year); break;
-      case MONTH : printString(sDate, "%u/%u", year, month); break;
-      case DAY   : printString(sDate, "%u/%u/%u", year, month, day); break;
-      case NONE  :
-      default    : throw prg_error("Wrong date precision specified '%d'.","JulianToString()", eDatePrint);
+      case YEAR    : printString(sDate, "%u", year); break;
+      case MONTH   : printString(sDate, "%u/%u", year, month); break;
+      case DAY     : printString(sDate, "%u/%u/%u", year, month, day); break;
+      case GENERIC : {
+                     SaTScan::Timestamp initialDate;
+                     initialDate.Now();
+                     printString(sDate, "%ld", JNum - static_cast<long>(initialDate.GetJulianDate())); break;
+                     }
+      case NONE    :
+      default      : throw prg_error("Wrong date precision specified '%d'.","JulianToString()", eDatePrint);
   }
   return sDate;
 }
@@ -256,6 +276,7 @@ Julian DecrementableEndDate::Decrement(unsigned long ulLength) {
  
   switch (geDecrementUnits) {
     case DAY   :
+    case GENERIC :
       DecrementedDate = gCurrentDate - ulLength;
       JulianToMDY(&nMon1, &nDay1, &nYear1, DecrementedDate);
       giCurrentDateTargetMonth = nMon1;

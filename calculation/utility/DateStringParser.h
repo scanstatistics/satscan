@@ -21,6 +21,7 @@ class DateStringParser {
     enum                                DateFormat {MDY=0, YMD};
 
   protected:
+    DatePrecisionType                   geTimePrecision;
     static const unsigned int           DEFAULT_DAY;
     static const unsigned int           DEFAULT_MONTH;
     static const unsigned int           POP_PRECISION_MONTH_DEFAULT_DAY;
@@ -35,7 +36,7 @@ class DateStringParser {
                                                    DatePrecisionType& ePrecision, DateFormat& eDateFormat);
 
   public:
-    DateStringParser();
+    DateStringParser(DatePrecisionType eTimePrecision);
     ~DateStringParser();
 
     DateStringParser::ParserStatus      ParseAdjustmentDateString(const char * sDateString, const Julian& PeriodStart,

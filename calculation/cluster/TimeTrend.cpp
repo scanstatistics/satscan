@@ -396,14 +396,14 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
   }
 
   //TODO: Remove these debug statements later.
-  if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
-    fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
-        (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));
+  //if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
+  //  fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
+  //      (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));
     //printoutMatrix("y", y, AppToolkit::getToolkit().openDebugFile());
     //printoutMatrix("m", m, AppToolkit::getToolkit().openDebugFile());
     //printoutMatrix("b", b, AppToolkit::getToolkit().openDebugFile());
     //printoutMatrix("X", X, AppToolkit::getToolkit().openDebugFile());
-  }
+  //}
 
   return gStatus;
 }
@@ -416,10 +416,11 @@ void QuadraticTimeTrend::getRiskFunction(std::string& functionStr, std::string& 
   printString(functionStr, "e^(%g + %g t + %g t^2)", GetAlpha(), GetBeta(), GetBeta2());
 
   switch (params.GetTimeAggregationUnitsType()) {
-    case YEAR  : buffer = "year"; break;
-    case MONTH : buffer = "month"; break;
-    case DAY   : buffer = "day"; break;
-    default    : buffer = "none";
+    case YEAR    : buffer = "year"; break;
+    case MONTH   : buffer = "month"; break;
+    case DAY     : buffer = "day"; break;
+    case GENERIC : buffer = "unit"; break;
+    default      : buffer = "none";
   }
   double constant = static_cast<double>(params.GetTimeAggregationLength() - 1)/2.0;
   if (constant != 0.0)

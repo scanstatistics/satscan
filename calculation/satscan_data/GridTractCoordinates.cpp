@@ -6,9 +6,10 @@
 #include "SSException.h"
 
 /** Prints coordinates to file stream. */
-void GInfo::displayGridPoints(FILE* pDisplay) {
+void GInfo::displayGridPoints(FILE* pDisplay) const {
   std::vector<double> vRepository;
   
+  fprintf(pDisplay, "Grid Points: %u\n", getNumGridPoints());
   for (tract_t tPoint=0; tPoint < getNumGridPoints(); ++tPoint) {
     retrieveCoordinates(tPoint, vRepository);
     for (size_t c=0; c < vRepository.size(); ++c) fprintf(pDisplay, "%lf\t", vRepository[c]);

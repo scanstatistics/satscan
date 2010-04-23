@@ -47,7 +47,7 @@ public class Parameters implements Cloneable {
     public enum StudyPeriodDataCheckingType   {STRICTBOUNDS, RELAXEDBOUNDS};
     /** geographical coordinates data checking type  */
     public enum CoordinatesDataCheckingType   {STRICTCOORDINATES, RELAXEDCOORDINATES};
-    public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY };    
+    public enum DatePrecisionType             { NONE, YEAR, MONTH, DAY, GENERIC };    
     public class CreationVersion {
     	public int giMajor;
     	public int giMinor;

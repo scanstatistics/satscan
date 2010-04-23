@@ -1,5 +1,6 @@
 package org.satscan.gui;
 
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.util.Calendar;
@@ -51,6 +52,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private Vector<String> _populationFilenames = new Vector<String>();
     private FocusedTabSet _focusedTabSet = FocusedTabSet.INPUT;
     private final int MAXIMUM_ADDITIONAL_SETS = 11;
+    final static String FLEXIBLE_COMPLETE = "flexible_complete";
+    final static String FLEXIBLE_GENERIC = "flexible_generic";
+    final static String PROSPECTIVE_COMPLETE = "prospectiveCompleteDate";
+    final static String PROSPECTIVE_GENERIC = "prospectiveGenericDate";
+
 
     /**
      * Creates new form ParameterSettingsFrame
@@ -208,13 +214,47 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
+
+    /**
+     * enabled study period and prospective date precision based on time interval unit
+     */
+    public void enableDatesByTimePrecisionUnits() {
+        CardLayout cl_flexible = (CardLayout)(_flexible_window_cards.getLayout());
+        CardLayout cl_prospective = (CardLayout)(_prospectiveStartDateCards.getLayout());
+        switch (_analysisSettingsWindow.getPrecisionOfTimesControlType()) {
+            case NONE:
+            case DAY:
+                enableDates();
+                cl_flexible.show(_flexible_window_cards, FLEXIBLE_COMPLETE);
+                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_COMPLETE);
+                break;
+            case YEAR:
+                enableDates();
+                cl_flexible.show(_flexible_window_cards, FLEXIBLE_COMPLETE);
+                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_COMPLETE);
+                break;
+            case MONTH:
+                enableDates();
+                cl_flexible.show(_flexible_window_cards, FLEXIBLE_COMPLETE);
+                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_COMPLETE);
+                break;
+            case GENERIC:
+                enableDates();
+                cl_flexible.show(_flexible_window_cards, FLEXIBLE_GENERIC);
+                cl_prospective.show(_prospectiveStartDateCards, PROSPECTIVE_GENERIC);
+                break;
+            default:
+                throw new UnknownEnumException(_analysisSettingsWindow.getPrecisionOfTimesControlType());
+        }
+    }
+
     /** Enables dates of flexible temporal window and prospective surveillance groups.
      * Enabling is determined through:
      * - querying the 'precision of time' control contained in the analysis window
      * - the Enabled property of the TGroupBox of which dates are contained
      * - the Enabled and Checked properties of the TCheckBox that indicates whether
      * user wishes to adjust for earlier analyses. */
-    public void EnableDatesByTimePrecisionUnits() {
+    public void enableDates() {
         boolean bYears = true, bMonths = true, bDays = true,
                 bEnable = _flexibleTemporalWindowDefinitionGroup.isEnabled() &&
                 _restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected();
@@ -233,6 +273,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 bDays = false;
                 break;
         }
+
+        //enable generic ranges
+        _startRangeStartGenericTextField.setEnabled(bEnable);
+        _startRangeEndGenericTextField.setEnabled(bEnable);
+        _endRangeStartGenericTextField.setEnabled(bEnable);
+        _endRangeEndGenericTextField.setEnabled(bEnable);
 
         //enable start range dates
         _startRangeStartYearTextField.setEnabled(bYears);
@@ -545,6 +591,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case DAY:
                 _maxTemporalTimeUnitsLabel.setText("days");
                 break;
+            case GENERIC:
+                _maxTemporalTimeUnitsLabel.setText("units");
+                break;
         }
     }
 
@@ -802,16 +851,22 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         } else {
             parameters.SetIncludeClustersType(Parameters.IncludeClustersType.ALLCLUSTERS.ordinal());
         }
-        sString = _startRangeStartYearTextField.getText() + "/" + _startRangeStartMonthTextField.getText() + "/" + _startRangeStartDayTextField.getText();
-        parameters.SetStartRangeStartDate(sString);
-        sString = _startRangeEndYearTextField.getText() + "/" + _startRangeEndMonthTextField.getText() + "/" + _startRangeEndDayTextField.getText();
-        parameters.SetStartRangeEndDate(sString);
-        sString = _endRangeStartYearTextField.getText() + "/" + _endRangeStartMonthTextField.getText() + "/" + _endRangeStartDayTextField.getText();
-        parameters.SetEndRangeStartDate(sString);
-        sString = _endRangeEndYearTextField.getText() + "/" + _endRangeEndMonthTextField.getText() + "/" + _endRangeEndDayTextField.getText();
-        parameters.SetEndRangeEndDate(sString);
-        parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
-
+        if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+            parameters.SetStartRangeStartDate(_startRangeStartGenericTextField.getText());
+            parameters.SetStartRangeEndDate(_startRangeEndGenericTextField.getText());
+            parameters.SetEndRangeStartDate(_endRangeStartGenericTextField.getText());
+            parameters.SetEndRangeEndDate(_endRangeEndGenericTextField.getText());
+        } else {
+            sString = _startRangeStartYearTextField.getText() + "/" + _startRangeStartMonthTextField.getText() + "/" + _startRangeStartDayTextField.getText();
+            parameters.SetStartRangeStartDate(sString);
+            sString = _startRangeEndYearTextField.getText() + "/" + _startRangeEndMonthTextField.getText() + "/" + _startRangeEndDayTextField.getText();
+            parameters.SetStartRangeEndDate(sString);
+            sString = _endRangeStartYearTextField.getText() + "/" + _endRangeStartMonthTextField.getText() + "/" + _endRangeStartDayTextField.getText();
+            parameters.SetEndRangeStartDate(sString);
+            sString = _endRangeEndYearTextField.getText() + "/" + _endRangeEndMonthTextField.getText() + "/" + _endRangeEndDayTextField.getText();
+            parameters.SetEndRangeEndDate(sString);
+            parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
+        }
         // save the input files on Input tab
         if (!_additionalDataSetsGroup.isEnabled()) {
             parameters.SetNumDataSets(1);
@@ -833,9 +888,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetCoordinatesDataCheckingType(getCoordinatesDataCheckingTypeFromControl().ordinal());
         parameters.SetAdjustForEarlierAnalyses(_adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected());
         if (_adjustForEarlierAnalysesCheckBox.isEnabled() && !_adjustForEarlierAnalysesCheckBox.isSelected()) {
-            sString = _analysisSettingsWindow.getEdtStudyPeriodEndDateYearText() + "/" + _analysisSettingsWindow.getEdtStudyPeriodEndDateMonthText() + "/" + _analysisSettingsWindow.getEdtStudyPeriodEndDateDayText();
+            if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+                sString = _analysisSettingsWindow.getEdtStudyPeriodEndDateYearText();
+            } else {
+                sString = _analysisSettingsWindow.getEdtStudyPeriodEndDateYearText() + "/" + _analysisSettingsWindow.getEdtStudyPeriodEndDateMonthText() + "/" + _analysisSettingsWindow.getEdtStudyPeriodEndDateDayText();
+            }
         } else {
-            sString = _prospectiveStartDateYearTextField.getText() + "/" + _prospectiveStartDateMonthTextField.getText() + "/" + _prospectiveStartDateDayTextField.getText();
+            if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+                sString = _prospectiveStartDateGenericTextField.getText();
+            } else {
+                sString = _prospectiveStartDateYearTextField.getText() + "/" + _prospectiveStartDateMonthTextField.getText() + "/" + _prospectiveStartDateDayTextField.getText();
+            }
         }
         parameters.SetProspectiveStartDate(sString);
         parameters.SetNumberMonteCarloReplications(Integer.parseInt(_montCarloReplicationsTextField.getText()));        
@@ -1076,22 +1139,29 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         if (_restrictTemporalRangeCheckBox.isEnabled() && _restrictTemporalRangeCheckBox.isSelected()) {
             GregorianCalendar StudyPeriodStartDate = _analysisSettingsWindow.getStudyPeriodStartDateAsCalender();
             GregorianCalendar StudyPeriodEndDate = _analysisSettingsWindow.getStudyPeriodEndDateAsCalender();
-            GregorianCalendar StartRangeStartDate = new GregorianCalendar();
-            StartRangeStartDate.set(Calendar.YEAR, Integer.parseInt(_startRangeStartYearTextField.getText()));
-            StartRangeStartDate.set(Calendar.MONTH, Integer.parseInt(_startRangeStartMonthTextField.getText()) - 1);
-            StartRangeStartDate.set(Calendar.DAY_OF_MONTH, Integer.parseInt(_startRangeStartDayTextField.getText()));
-            GregorianCalendar StartRangeEndDate = new GregorianCalendar();
-            StartRangeEndDate.set(Calendar.YEAR, Integer.parseInt(_startRangeEndYearTextField.getText()));
-            StartRangeEndDate.set(Calendar.MONTH, Integer.parseInt(_startRangeEndMonthTextField.getText()) - 1);
-            StartRangeEndDate.set(Calendar.DAY_OF_MONTH, Integer.parseInt(_startRangeEndDayTextField.getText()));
-            GregorianCalendar EndRangeStartDate = new GregorianCalendar();
-            EndRangeStartDate.set(Calendar.YEAR, Integer.parseInt(_endRangeStartYearTextField.getText()));
-            EndRangeStartDate.set(Calendar.MONTH, Integer.parseInt(_endRangeStartMonthTextField.getText()) - 1);
-            EndRangeStartDate.set(Calendar.DAY_OF_MONTH, Integer.parseInt(_endRangeStartDayTextField.getText()));
-            GregorianCalendar EndRangeEndDate = new GregorianCalendar();
-            EndRangeEndDate.set(Calendar.YEAR, Integer.parseInt(_endRangeEndYearTextField.getText()));
-            EndRangeEndDate.set(Calendar.MONTH, Integer.parseInt(_endRangeEndMonthTextField.getText()) - 1);
-            EndRangeEndDate.set(Calendar.DAY_OF_MONTH, Integer.parseInt(_endRangeEndDayTextField.getText()));
+            GregorianCalendar StartRangeStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
+                                                                                                           _startRangeStartYearTextField.getText(), 
+                                                                                                           _startRangeStartMonthTextField.getText(), 
+                                                                                                           _startRangeStartDayTextField.getText(), 
+                                                                                                           _startRangeStartGenericTextField.getText());
+
+            GregorianCalendar StartRangeEndDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
+                                                                                                         _startRangeEndYearTextField.getText(),
+                                                                                                         _startRangeEndMonthTextField.getText(),
+                                                                                                         _startRangeEndDayTextField.getText(),
+                                                                                                         _startRangeEndGenericTextField.getText());
+
+            GregorianCalendar EndRangeStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
+                                                                                                         _endRangeStartYearTextField.getText(),
+                                                                                                         _endRangeStartMonthTextField.getText(),
+                                                                                                         _endRangeStartDayTextField.getText(),
+                                                                                                         _endRangeStartGenericTextField.getText());
+
+            GregorianCalendar EndRangeEndDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
+                                                                                                       _endRangeEndYearTextField.getText(),
+                                                                                                       _endRangeEndMonthTextField.getText(),
+                                                                                                       _endRangeEndDayTextField.getText(),
+                                                                                                       _endRangeEndGenericTextField.getText());
 
             //check that scanning ranges are within study period
             if (StartRangeStartDate.before(StudyPeriodStartDate) || StartRangeStartDate.after(StudyPeriodEndDate)) {
@@ -1146,10 +1216,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
         GregorianCalendar StudyPeriodStartDate = _analysisSettingsWindow.getStudyPeriodStartDateAsCalender();
         GregorianCalendar StudyPeriodEndDate = _analysisSettingsWindow.getStudyPeriodEndDateAsCalender();
-        GregorianCalendar ProspectiveStartDate = new GregorianCalendar();
-        ProspectiveStartDate.set(Calendar.YEAR, Integer.parseInt(_prospectiveStartDateYearTextField.getText()));
-        ProspectiveStartDate.set(Calendar.MONTH, Integer.parseInt(_prospectiveStartDateMonthTextField.getText()) - 1);
-        ProspectiveStartDate.set(Calendar.DAY_OF_MONTH, Integer.parseInt(_prospectiveStartDateDayTextField.getText()));
+        GregorianCalendar ProspectiveStartDate = ParameterSettingsFrame.getStudyPeriodEndDateAsCalender(_analysisSettingsWindow.getPrecisionOfTimesControlType(),
+                                                                                                        _prospectiveStartDateYearTextField.getText(), 
+                                                                                                        _prospectiveStartDateMonthTextField.getText(), 
+                                                                                                        _prospectiveStartDateDayTextField.getText(), 
+                                                                                                        _prospectiveStartDateGenericTextField.getText());
         if (ProspectiveStartDate.before(StudyPeriodStartDate) || ProspectiveStartDate.after(StudyPeriodEndDate)) {
             throw new AdvFeaturesExpection("The prospective start date must be between the study period start and end dates.",
                     FocusedTabSet.ANALYSIS, (Component) _prospectiveStartDateYearTextField);
@@ -1581,6 +1652,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _startRangeToLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
         _endWindowRangeLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
         _endRangeToLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
+
+        _startGenericWindowRangeLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
+        _startGenericRangeToLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
+        _endGenericWindowRangeLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
+        _endGenericRangeToLabel.setEnabled(bEnable && bEnableRanges && _restrictTemporalRangeCheckBox.isSelected());
     }
 
     /** enables or disables the temporal options group control */
@@ -1621,6 +1697,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 bDays = false;
                 break;
         }
+
+        _prospectiveStartDateGenericTextField.setEnabled(bEnable);
+        _prospectiveStartGenericLabel.setEnabled(bEnable);
 
         _prospectiveStartYearLabel.setEnabled(bYears);
         _prospectiveStartDateYearTextField.setEnabled(bYears);
@@ -1875,11 +1954,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         SetMaxTemporalClusterSizeControl(parameters.GetMaximumTemporalClusterSize());
         _includePureSpacClustCheckBox.setSelected(parameters.GetIncludePurelySpatialClusters());
         _restrictTemporalRangeCheckBox.setSelected(parameters.GetIncludeClustersType() == Parameters.IncludeClustersType.CLUSTERSINRANGE);
-        Utils.parseDateStringToControls(parameters.GetStartRangeStartDate(), _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, false);
-        Utils.parseDateStringToControls(parameters.GetStartRangeEndDate(), _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, false);
-        Utils.parseDateStringToControls(parameters.GetEndRangeStartDate(), _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, true);
-        Utils.parseDateStringToControls(parameters.GetEndRangeEndDate(), _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, true);
-
+        if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+            _startRangeStartGenericTextField.setText(parameters.GetStartRangeStartDate());
+            _startRangeEndGenericTextField.setText(parameters.GetStartRangeEndDate());
+            _endRangeStartGenericTextField.setText(parameters.GetEndRangeStartDate());
+            _endRangeEndGenericTextField.setText(parameters.GetEndRangeEndDate());
+        } else {
+            Utils.parseDateStringToControls(parameters.GetStartRangeStartDate(), _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, false);
+            Utils.parseDateStringToControls(parameters.GetStartRangeEndDate(), _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, false);
+            Utils.parseDateStringToControls(parameters.GetEndRangeStartDate(), _endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, true);
+            Utils.parseDateStringToControls(parameters.GetEndRangeEndDate(), _endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, true);
+        }
         // Risk tab
         SetSpatialAdjustmentTypeControl(parameters.GetSpatialAdjustmentType());
         _adjustForKnownRelativeRisksCheckBox.setSelected(parameters.UseAdjustmentForRelativeRisksFile());
@@ -1893,7 +1978,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _earlyTerminationThreshold.setText(Integer.toString(parameters.GetEarlyTermThreshold()));
         _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());
         _adjustForEarlierAnalysesCheckBox.setSelected(parameters.GetAdjustForEarlierAnalyses());
-        ParseProspectiveDate(parameters.GetProspectiveStartDate(), _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField);
+        if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
+           _prospectiveStartDateGenericTextField.setText(parameters.GetProspectiveStartDate());
+        } else {
+            ParseProspectiveDate(parameters.GetProspectiveStartDate(), _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField);
+        }
         _performIterativeScanCheckBox.setSelected(parameters.GetIsIterativeScanning());
         _numIterativeScansTextField.setText(parameters.GetNumIterativeScansRequested() < 1 || parameters.GetNumIterativeScansRequested() > Parameters.MAXIMUM_ITERATIVE_ANALYSES ? "10" : Integer.toString(parameters.GetNumIterativeScansRequested()));
         _iterativeScanCutoffTextField.setText(parameters.GetIterativeCutOffPValue() <= 0 || parameters.GetIterativeCutOffPValue() > 1 ? "0.05" : Double.toString(parameters.GetIterativeCutOffPValue()));
@@ -2028,22 +2117,33 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includePureSpacClustCheckBox = new javax.swing.JCheckBox();
         _flexibleTemporalWindowDefinitionGroup = new javax.swing.JPanel();
         _restrictTemporalRangeCheckBox = new javax.swing.JCheckBox();
+        _flexible_window_cards = new javax.swing.JPanel();
+        _windowCompletePanel = new javax.swing.JPanel();
         _startWindowRangeLabel = new javax.swing.JLabel();
-        _endWindowRangeLabel = new javax.swing.JLabel();
         _startRangeStartYearTextField = new javax.swing.JTextField();
-        _endRangeStartYearTextField = new javax.swing.JTextField();
         _startRangeStartMonthTextField = new javax.swing.JTextField();
-        _endRangeStartMonthTextField = new javax.swing.JTextField();
         _startRangeStartDayTextField = new javax.swing.JTextField();
-        _endRangeStartDayTextField = new javax.swing.JTextField();
         _startRangeToLabel = new javax.swing.JLabel();
-        _endRangeToLabel = new javax.swing.JLabel();
         _startRangeEndYearTextField = new javax.swing.JTextField();
-        _endRangeEndYearTextField = new javax.swing.JTextField();
         _startRangeEndMonthTextField = new javax.swing.JTextField();
         _startRangeEndDayTextField = new javax.swing.JTextField();
-        _endRangeEndMonthTextField = new javax.swing.JTextField();
         _endRangeEndDayTextField = new javax.swing.JTextField();
+        _endRangeEndMonthTextField = new javax.swing.JTextField();
+        _endRangeEndYearTextField = new javax.swing.JTextField();
+        _endRangeToLabel = new javax.swing.JLabel();
+        _endRangeStartDayTextField = new javax.swing.JTextField();
+        _endRangeStartMonthTextField = new javax.swing.JTextField();
+        _endRangeStartYearTextField = new javax.swing.JTextField();
+        _endWindowRangeLabel = new javax.swing.JLabel();
+        _windowGenericPanel = new javax.swing.JPanel();
+        _startGenericWindowRangeLabel = new javax.swing.JLabel();
+        _startRangeStartGenericTextField = new javax.swing.JTextField();
+        _startGenericRangeToLabel = new javax.swing.JLabel();
+        _startRangeEndGenericTextField = new javax.swing.JTextField();
+        _endRangeEndGenericTextField = new javax.swing.JTextField();
+        _endGenericRangeToLabel = new javax.swing.JLabel();
+        _endRangeStartGenericTextField = new javax.swing.JTextField();
+        _endGenericWindowRangeLabel = new javax.swing.JLabel();
         _spaceTimeAjustmentsTab = new javax.swing.JPanel();
         _temporalTrendAdjGroup = new javax.swing.JPanel();
         _temporalTrendAdjNoneRadioButton = new javax.swing.JRadioButton();
@@ -2071,19 +2171,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _earlyTerminationThreshold = new javax.swing.JTextField();
         _prospectiveSurveillanceGroup = new javax.swing.JPanel();
         _adjustForEarlierAnalysesCheckBox = new javax.swing.JCheckBox();
-        _prospectiveStartDateYearTextField = new javax.swing.JTextField();
-        _prospectiveStartDateMonthTextField = new javax.swing.JTextField();
-        _prospectiveStartDateDayTextField = new javax.swing.JTextField();
+        _prospectiveStartDateCards = new javax.swing.JPanel();
+        _prospectiveCompleteCard = new javax.swing.JPanel();
         _prospectiveStartYearLabel = new javax.swing.JLabel();
+        _prospectiveStartDateYearTextField = new javax.swing.JTextField();
         _prospectiveStartMonthLabel = new javax.swing.JLabel();
         _prospectiveStartDayLabel = new javax.swing.JLabel();
+        _prospectiveStartDateDayTextField = new javax.swing.JTextField();
+        _prospectiveStartDateMonthTextField = new javax.swing.JTextField();
+        _prospectiveGenericDate = new javax.swing.JPanel();
+        _prospectiveStartGenericLabel = new javax.swing.JLabel();
+        _prospectiveStartDateGenericTextField = new javax.swing.JTextField();
         _iterativeScanGroup = new javax.swing.JPanel();
         _performIterativeScanCheckBox = new javax.swing.JCheckBox();
         _maxIterativeScansLabel = new javax.swing.JLabel();
         _numIterativeScansTextField = new javax.swing.JTextField();
         _iterativeCutoffLabel = new javax.swing.JLabel();
         _iterativeScanCutoffTextField = new javax.swing.JTextField();
-        jPanel1 = new javax.swing.JPanel();
+        _monteCarloGroup = new javax.swing.JPanel();
         _labelMonteCarloReplications = new javax.swing.JLabel();
         _montCarloReplicationsTextField = new javax.swing.JTextField();
         _clustersReportedTab = new javax.swing.JPanel();
@@ -2147,7 +2252,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
 
-        _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -2545,12 +2650,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(145, Short.MAX_VALUE))
+                .addContainerGap(112, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
 
-        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _strictStudyPeriodCheckRadioButton.setSelected(true);
         _strictStudyPeriodCheckRadioButton.setText("Check to ensure that all cases and controls are within the specified temporal study period."); // NOI18N
@@ -2592,7 +2697,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _strictCoordinatesRadioButton.setSelected(true);
         _strictCoordinatesRadioButton.setText("Check to ensure that all observations (cases, controls and populations) are within the specified"); // NOI18N
@@ -2659,12 +2764,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(201, Short.MAX_VALUE))
+                .addContainerGap(168, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
 
-        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidian Neighbors", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidian Neighbors", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidian neighbors file"); // NOI18N
         _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -2769,7 +2874,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _onePerLocationIdRadioButton.setSelected(true);
         _onePerLocationIdRadioButton.setText("Allow only one set of coordinates per location ID."); // NOI18N
@@ -2841,12 +2946,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(136, Short.MAX_VALUE))
+                .addContainerGap(103, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
 
-        _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _maxSpatialClusterSizeTextField.setText("50"); // NOI18N
         _maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -2988,31 +3093,28 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_percentageOfPopulationLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
                     .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                        .addComponent(_spatialDistanceCheckBox)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_distancePrefixLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_maxRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
+                    .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
+                        .addComponent(_spatialPopulationFileCheckBox)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _spatialOptionsGroupLayout.createSequentialGroup()
+                                .addComponent(_maxCirclePopulationFilenameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_maxCirclePopFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(_maxCirclePopFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(28, 28, 28))
                             .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_spatialDistanceCheckBox)
+                                .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_distancePrefixLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxSpatialRadiusTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_maxRadiusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE))
-                            .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                .addComponent(_spatialPopulationFileCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(_spatialOptionsGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _spatialOptionsGroupLayout.createSequentialGroup()
-                                        .addComponent(_maxCirclePopulationFilenameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_maxCirclePopFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_maxCirclePopFileImportButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGap(28, 28, 28))
-                                    .addGroup(_spatialOptionsGroupLayout.createSequentialGroup()
-                                        .addComponent(_maxSpatialPercentFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)))))))
+                                .addComponent(_percentageOfPopFileLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         _spatialOptionsGroupLayout.setVerticalGroup(
@@ -3052,7 +3154,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _circularRadioButton.setSelected(true);
         _circularRadioButton.setText("Circular"); // NOI18N
@@ -3156,12 +3258,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(102, Short.MAX_VALUE))
+                .addContainerGap(69, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
 
-        _temporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _temporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _percentageTemporalRadioButton.setSelected(true);
         _percentageTemporalRadioButton.setText("is"); // NOI18N
@@ -3283,7 +3385,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
         _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -3291,14 +3393,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());
-                EnableDatesByTimePrecisionUnits();
+                enableDatesByTimePrecisionUnits();
+                EnableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());
                 enableSetDefaultsButton();
             }
         });
 
-        _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
+        _flexible_window_cards.setLayout(new java.awt.CardLayout());
 
-        _endWindowRangeLabel.setText("End time in range:"); // NOI18N
+        _startWindowRangeLabel.setText("Start time in range:"); // NOI18N
 
         _startRangeStartYearTextField.setText("2000"); // NOI18N
         _startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -3314,24 +3417,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _startRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
-
-        _endRangeStartYearTextField.setText("2000"); // NOI18N
-        _endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);
-            }
-        });
-        _endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
                 enableSetDefaultsButton();
             }
         });
@@ -3354,24 +3439,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeStartMonthTextField.setText("12"); // NOI18N
-        _endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);
-            }
-        });
-        _endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
-
         _startRangeStartDayTextField.setText("01"); // NOI18N
         _startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
@@ -3390,27 +3457,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeStartDayTextField.setText("31"); // NOI18N
-        _endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);
-            }
-        });
-        _endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
-
         _startRangeToLabel.setText("to"); // NOI18N
-
-        _endRangeToLabel.setText("to"); // NOI18N
 
         _startRangeEndYearTextField.setText("2000"); // NOI18N
         _startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -3426,24 +3473,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _startRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
-
-        _endRangeEndYearTextField.setText("2000"); // NOI18N
-        _endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);
-            }
-        });
-        _endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
                 enableSetDefaultsButton();
             }
         });
@@ -3484,24 +3513,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _endRangeEndMonthTextField.setText("12"); // NOI18N
-        _endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
-            public void undoableEditHappened(UndoableEditEvent evt) {
-                undo.addEdit(evt.getEdit());
-            }
-        });
-        _endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);
-            }
-        });
-        _endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
-            public void focusLost(java.awt.event.FocusEvent e) {
-                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
-                enableSetDefaultsButton();
-            }
-        });
-
         _endRangeEndDayTextField.setText("31"); // NOI18N
         _endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
@@ -3520,60 +3531,148 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        javax.swing.GroupLayout _flexibleTemporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_flexibleTemporalWindowDefinitionGroup);
-        _flexibleTemporalWindowDefinitionGroup.setLayout(_flexibleTemporalWindowDefinitionGroupLayout);
-        _flexibleTemporalWindowDefinitionGroupLayout.setHorizontalGroup(
-            _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
+        _endRangeEndMonthTextField.setText("12"); // NOI18N
+        _endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);
+            }
+        });
+        _endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _endRangeEndYearTextField.setText("2000"); // NOI18N
+        _endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);
+            }
+        });
+        _endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _endRangeToLabel.setText("to"); // NOI18N
+
+        _endRangeStartDayTextField.setText("31"); // NOI18N
+        _endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);
+            }
+        });
+        _endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _endRangeStartMonthTextField.setText("12"); // NOI18N
+        _endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);
+            }
+        });
+        _endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _endRangeStartYearTextField.setText("2000"); // NOI18N
+        _endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);
+            }
+        });
+        _endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _endWindowRangeLabel.setText("End time in range:"); // NOI18N
+
+        javax.swing.GroupLayout _windowCompletePanelLayout = new javax.swing.GroupLayout(_windowCompletePanel);
+        _windowCompletePanel.setLayout(_windowCompletePanelLayout);
+        _windowCompletePanelLayout.setHorizontalGroup(
+            _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowCompletePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_restrictTemporalRangeCheckBox)
-                    .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_startWindowRangeLabel)
-                            .addComponent(_endWindowRangeLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                                .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10)
-                                .addComponent(_startRangeToLabel)
-                                .addGap(10, 10, 10)
-                                .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                                .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(10, 10, 10)
-                                .addComponent(_endRangeToLabel)
-                                .addGap(10, 10, 10)
-                                .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                                .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                                .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(157, Short.MAX_VALUE))
-        );
-        _flexibleTemporalWindowDefinitionGroupLayout.setVerticalGroup(
-            _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_restrictTemporalRangeCheckBox)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_startWindowRangeLabel)
+                    .addComponent(_endWindowRangeLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_startRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(_startRangeToLabel)
+                        .addGap(10, 10, 10)
+                        .addComponent(_startRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_endRangeStartDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(_endRangeToLabel)
+                        .addGap(10, 10, 10)
+                        .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                        .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(154, Short.MAX_VALUE))
+        );
+        _windowCompletePanelLayout.setVerticalGroup(
+            _windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowCompletePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_startWindowRangeLabel)
                     .addComponent(_startRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_startRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3583,7 +3682,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_startRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_startRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(_windowCompletePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_endWindowRangeLabel)
                     .addComponent(_endRangeStartYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_endRangeStartMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -3592,6 +3691,130 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_endRangeEndYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_endRangeEndMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(_endRangeEndDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(17, Short.MAX_VALUE))
+        );
+
+        _flexible_window_cards.add(_windowCompletePanel, "flexible_complete");
+
+        _startGenericWindowRangeLabel.setText("Start time in range:"); // NOI18N
+
+        _startRangeStartGenericTextField.setText("0"); // NOI18N
+        _startRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _startRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validateNumericKeyTyped(_startRangeStartGenericTextField, e, 10);
+            }
+        });
+
+        _startGenericRangeToLabel.setText("to"); // NOI18N
+
+        _startRangeEndGenericTextField.setText("31"); // NOI18N
+        _startRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _startRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_startRangeEndGenericTextField, e, 10);
+            }
+        });
+
+        _endRangeEndGenericTextField.setText("31"); // NOI18N
+        _endRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeEndGenericTextField, e, 10);
+            }
+        });
+
+        _endGenericRangeToLabel.setText("to"); // NOI18N
+
+        _endRangeStartGenericTextField.setText("0"); // NOI18N
+        _endRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _endRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_endRangeStartGenericTextField, e, 10);
+            }
+        });
+
+        _endGenericWindowRangeLabel.setText("End time in range:"); // NOI18N
+
+        javax.swing.GroupLayout _windowGenericPanelLayout = new javax.swing.GroupLayout(_windowGenericPanel);
+        _windowGenericPanel.setLayout(_windowGenericPanelLayout);
+        _windowGenericPanelLayout.setHorizontalGroup(
+            _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_startGenericWindowRangeLabel)
+                    .addComponent(_endGenericWindowRangeLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                        .addComponent(_startGenericRangeToLabel)
+                        .addGap(10, 10, 10)
+                        .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                        .addComponent(_endGenericRangeToLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(_endRangeEndGenericTextField)))
+                .addContainerGap(162, Short.MAX_VALUE))
+        );
+        _windowGenericPanelLayout.setVerticalGroup(
+            _windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_windowGenericPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_startGenericWindowRangeLabel)
+                    .addComponent(_startRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_startGenericRangeToLabel)
+                    .addComponent(_startRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_windowGenericPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_endGenericWindowRangeLabel)
+                    .addComponent(_endRangeStartGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endRangeEndGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_endGenericRangeToLabel))
+                .addContainerGap(17, Short.MAX_VALUE))
+        );
+
+        _flexible_window_cards.add(_windowGenericPanel, "flexible_generic");
+
+        javax.swing.GroupLayout _flexibleTemporalWindowDefinitionGroupLayout = new javax.swing.GroupLayout(_flexibleTemporalWindowDefinitionGroup);
+        _flexibleTemporalWindowDefinitionGroup.setLayout(_flexibleTemporalWindowDefinitionGroupLayout);
+        _flexibleTemporalWindowDefinitionGroupLayout.setHorizontalGroup(
+            _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_flexible_window_cards, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                    .addComponent(_restrictTemporalRangeCheckBox))
+                .addContainerGap())
+        );
+        _flexibleTemporalWindowDefinitionGroupLayout.setVerticalGroup(
+            _flexibleTemporalWindowDefinitionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_flexibleTemporalWindowDefinitionGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_restrictTemporalRangeCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_flexible_window_cards, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -3616,12 +3839,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(157, Short.MAX_VALUE))
+                .addContainerGap(96, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
 
-        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _temporalTrendAdjNoneRadioButton.setSelected(true);
         _temporalTrendAdjNoneRadioButton.setText("None"); // NOI18N
@@ -3727,7 +3950,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _spatialAdjustmentsNoneRadioButton.setSelected(true);
         _spatialAdjustmentsNoneRadioButton.setText("None"); // NOI18N
@@ -3771,7 +3994,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
         _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -3885,12 +4108,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
 
-        _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _pValueButtonGroup.add(_radioDefaultPValues);
         _radioDefaultPValues.setSelected(true);
@@ -3998,7 +4221,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_radioGumbelPValues))
         );
 
-        _prospectiveSurveillanceGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Prospective Surveillance", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _prospectiveSurveillanceGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Prospective Surveillance", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _adjustForEarlierAnalysesCheckBox.setText("Adjust for earlier analyses performed since:"); // NOI18N
         _adjustForEarlierAnalysesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4009,6 +4232,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSetDefaultsButton();
             }
         });
+
+        _prospectiveStartDateCards.setLayout(new java.awt.CardLayout());
+
+        _prospectiveStartYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _prospectiveStartYearLabel.setText("Year"); // NOI18N
 
         _prospectiveStartDateYearTextField.setText("2000"); // NOI18N
         _prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
@@ -4022,6 +4251,32 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
         _prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
+                enableSetDefaultsButton();
+            }
+        });
+
+        _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _prospectiveStartMonthLabel.setText("Month"); // NOI18N
+
+        _prospectiveStartDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _prospectiveStartDayLabel.setText("Day"); // NOI18N
+
+        _prospectiveStartDateDayTextField.setText("31"); // NOI18N
+        _prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+        _prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);
+            }
+        });
+        _prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
                 enableSetDefaultsButton();
@@ -4046,35 +4301,89 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _prospectiveStartDateDayTextField.setText("31"); // NOI18N
-        _prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
+        javax.swing.GroupLayout _prospectiveCompleteCardLayout = new javax.swing.GroupLayout(_prospectiveCompleteCard);
+        _prospectiveCompleteCard.setLayout(_prospectiveCompleteCardLayout);
+        _prospectiveCompleteCardLayout.setHorizontalGroup(
+            _prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_prospectiveStartYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_prospectiveStartDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_prospectiveStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_prospectiveStartMonthLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_prospectiveStartDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(175, Short.MAX_VALUE))
+        );
+        _prospectiveCompleteCardLayout.setVerticalGroup(
+            _prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
+                .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
+                        .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_prospectiveStartMonthLabel)
+                            .addComponent(_prospectiveStartYearLabel))
+                        .addGap(0, 0, 0)
+                        .addGroup(_prospectiveCompleteCardLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(_prospectiveStartDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_prospectiveStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(_prospectiveCompleteCardLayout.createSequentialGroup()
+                        .addComponent(_prospectiveStartDayLabel)
+                        .addGap(0, 0, 0)
+                        .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
+
+        _prospectiveStartDateCards.add(_prospectiveCompleteCard, "prospectiveCompleteDate");
+
+        _prospectiveStartGenericLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
+        _prospectiveStartGenericLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        _prospectiveStartGenericLabel.setText("Generic Unit"); // NOI18N
+
+        _prospectiveStartDateGenericTextField.setText("31"); // NOI18N
+        _prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
             public void undoableEditHappened(UndoableEditEvent evt) {
                 undo.addEdit(evt.getEdit());
             }
         });
-        _prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+        _prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
-                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);
+                Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);
             }
         });
-        _prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+        _prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent e) {
                 Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);
                 enableSetDefaultsButton();
             }
         });
 
-        _prospectiveStartYearLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
-        _prospectiveStartYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartYearLabel.setText("Year"); // NOI18N
+        javax.swing.GroupLayout _prospectiveGenericDateLayout = new javax.swing.GroupLayout(_prospectiveGenericDate);
+        _prospectiveGenericDate.setLayout(_prospectiveGenericDateLayout);
+        _prospectiveGenericDateLayout.setHorizontalGroup(
+            _prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospectiveGenericDateLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_prospectiveStartGenericLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_prospectiveStartDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(178, Short.MAX_VALUE))
+        );
+        _prospectiveGenericDateLayout.setVerticalGroup(
+            _prospectiveGenericDateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_prospectiveGenericDateLayout.createSequentialGroup()
+                .addComponent(_prospectiveStartGenericLabel)
+                .addGap(0, 0, 0)
+                .addComponent(_prospectiveStartDateGenericTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(18, Short.MAX_VALUE))
+        );
 
-        _prospectiveStartMonthLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
-        _prospectiveStartMonthLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartMonthLabel.setText("Month"); // NOI18N
-
-        _prospectiveStartDayLabel.setFont(new java.awt.Font("Tahoma", 0, 10));
-        _prospectiveStartDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        _prospectiveStartDayLabel.setText("Day"); // NOI18N
+        _prospectiveStartDateCards.add(_prospectiveGenericDate, "prospectiveGenericDate");
 
         javax.swing.GroupLayout _prospectiveSurveillanceGroupLayout = new javax.swing.GroupLayout(_prospectiveSurveillanceGroup);
         _prospectiveSurveillanceGroup.setLayout(_prospectiveSurveillanceGroupLayout);
@@ -4084,36 +4393,18 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(_adjustForEarlierAnalysesCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_prospectiveStartYearLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospectiveStartDateYearTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 45, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(_prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_prospectiveStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_prospectiveStartMonthLabel))
-                .addGap(2, 2, 2)
-                .addGroup(_prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(_prospectiveStartDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
-                .addContainerGap(199, Short.MAX_VALUE))
+                .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                .addContainerGap())
         );
         _prospectiveSurveillanceGroupLayout.setVerticalGroup(
             _prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_prospectiveSurveillanceGroupLayout.createSequentialGroup()
-                .addGroup(_prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_prospectiveStartMonthLabel)
-                    .addComponent(_prospectiveStartDayLabel)
-                    .addComponent(_prospectiveStartYearLabel))
-                .addGap(0, 0, 0)
-                .addGroup(_prospectiveSurveillanceGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_prospectiveStartDateYearTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_prospectiveStartDateMonthTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_prospectiveStartDateDayTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_adjustForEarlierAnalysesCheckBox))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(13, 13, 13)
+                .addComponent(_adjustForEarlierAnalysesCheckBox))
+            .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
         _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4204,7 +4495,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _labelMonteCarloReplications.setText("Number of Replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
@@ -4227,21 +4518,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout _monteCarloGroupLayout = new javax.swing.GroupLayout(_monteCarloGroup);
+        _monteCarloGroup.setLayout(_monteCarloGroupLayout);
+        _monteCarloGroupLayout.setHorizontalGroup(
+            _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_monteCarloGroupLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_labelMonteCarloReplications)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(201, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+        _monteCarloGroupLayout.setVerticalGroup(
+            _monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_monteCarloGroupLayout.createSequentialGroup()
+                .addGroup(_monteCarloGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_labelMonteCarloReplications)
                     .addComponent(_montCarloReplicationsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -4254,10 +4545,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_inferenceTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_inferenceTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_monteCarloGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _inferenceTabLayout.setVerticalGroup(
@@ -4267,16 +4558,16 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_pValueOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(1, 1, 1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(60, Short.MAX_VALUE))
+                .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
 
-        _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
         _criteriaSecClustersNoGeoLapRadioButton.setText("No Geographical Overlap"); // NOI18N
@@ -4366,7 +4657,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
         _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4537,12 +4828,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(50, Short.MAX_VALUE))
+                .addContainerGap(17, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
 
-        _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0)));
+        _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
 
         _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
         _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4584,7 +4875,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_additionalOutputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(331, Short.MAX_VALUE))
+                .addContainerGap(298, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -4618,7 +4909,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 452, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -4667,16 +4958,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _distancePrefixLabel;
     private javax.swing.JTextField _earlyTerminationThreshold;
     private javax.swing.JRadioButton _ellipticRadioButton;
+    private javax.swing.JLabel _endGenericRangeToLabel;
+    private javax.swing.JLabel _endGenericWindowRangeLabel;
     private javax.swing.JTextField _endRangeEndDayTextField;
+    private javax.swing.JTextField _endRangeEndGenericTextField;
     private javax.swing.JTextField _endRangeEndMonthTextField;
     private javax.swing.JTextField _endRangeEndYearTextField;
     private javax.swing.JTextField _endRangeStartDayTextField;
+    private javax.swing.JTextField _endRangeStartGenericTextField;
     private javax.swing.JTextField _endRangeStartMonthTextField;
     private javax.swing.JTextField _endRangeStartYearTextField;
     private javax.swing.JLabel _endRangeToLabel;
     private javax.swing.JLabel _endWindowRangeLabel;
     private javax.swing.JPanel _fileInputGroup;
     private javax.swing.JPanel _flexibleTemporalWindowDefinitionGroup;
+    private javax.swing.JPanel _flexible_window_cards;
     private javax.swing.ButtonGroup _geographicalCoordinatesCheckButtonGroup;
     private javax.swing.JPanel _geographicalCoordinatesCheckGroup;
     private javax.swing.JCheckBox _inclPureTempClustCheckBox;
@@ -4708,6 +5004,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _metaLocationsFileBrowseButton;
     private javax.swing.JTextField _metaLocationsFileTextField;
     private javax.swing.JTextField _montCarloReplicationsTextField;
+    private javax.swing.JPanel _monteCarloGroup;
     private javax.swing.JLabel _multipleDataSetPurposeLabel;
     private javax.swing.JPanel _multipleDataSetsTab;
     private javax.swing.ButtonGroup _multipleSetButtonGroup;
@@ -4733,10 +5030,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _populationFileImportButton;
     private javax.swing.JLabel _populationFileLabel;
     private javax.swing.JTextField _populationFileTextField;
+    private javax.swing.JPanel _prospectiveCompleteCard;
+    private javax.swing.JPanel _prospectiveGenericDate;
+    private javax.swing.JPanel _prospectiveStartDateCards;
     private javax.swing.JTextField _prospectiveStartDateDayTextField;
+    private javax.swing.JTextField _prospectiveStartDateGenericTextField;
     private javax.swing.JTextField _prospectiveStartDateMonthTextField;
     private javax.swing.JTextField _prospectiveStartDateYearTextField;
     private javax.swing.JLabel _prospectiveStartDayLabel;
+    private javax.swing.JLabel _prospectiveStartGenericLabel;
     private javax.swing.JLabel _prospectiveStartMonthLabel;
     private javax.swing.JLabel _prospectiveStartYearLabel;
     private javax.swing.JPanel _prospectiveSurveillanceGroup;
@@ -4773,10 +5075,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _specialNeighborFilesGroup;
     private javax.swing.JCheckBox _specifiyMetaLocationsFileCheckBox;
     private javax.swing.JCheckBox _specifiyNeighborsFileCheckBox;
+    private javax.swing.JLabel _startGenericRangeToLabel;
+    private javax.swing.JLabel _startGenericWindowRangeLabel;
     private javax.swing.JTextField _startRangeEndDayTextField;
+    private javax.swing.JTextField _startRangeEndGenericTextField;
     private javax.swing.JTextField _startRangeEndMonthTextField;
     private javax.swing.JTextField _startRangeEndYearTextField;
     private javax.swing.JTextField _startRangeStartDayTextField;
+    private javax.swing.JTextField _startRangeStartGenericTextField;
     private javax.swing.JTextField _startRangeStartMonthTextField;
     private javax.swing.JTextField _startRangeStartYearTextField;
     private javax.swing.JLabel _startRangeToLabel;
@@ -4796,7 +5102,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JRadioButton _temporalTrendAdjTimeStratifiedRadioButton;
     private javax.swing.JPanel _temporalWindowTab;
     private javax.swing.JRadioButton _timeTemporalRadioButton;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel _windowCompletePanel;
+    private javax.swing.JPanel _windowGenericPanel;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     // End of variables declaration//GEN-END:variables

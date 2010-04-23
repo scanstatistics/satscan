@@ -181,6 +181,17 @@ void CSaTScanData::AllocateSortedArray() {
   }
 }
 
+/** Calls down to tract handler class to set location at index to not evaluating; meaning that 
+    this location will not be considered during neighbors calculating. */
+//void CSaTScanData::setLocationNotEvaluated(tract_t tTractIndex) {
+//  try {
+//    //gTractHandler->setLocationNotEvaluating(tTractIndex);
+//  } catch (prg_exception& x) {
+//    x.addTrace("setLocationNotEvaluated()","CSaTScanData");
+//    throw;
+//  }
+//}
+
 /** Set the number of neighbors about ellipse/circle at centroid index. Care must be taken
     when calling this function since it sets the variables which detail the size of the sorted arrays.*/
 void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
@@ -899,8 +910,7 @@ int CSaTScanData::CalculateProspectiveIntervalStart() const {
 
   try {
   	if (gParameters.GetAdjustForEarlierAnalyses()) {
-      iDateIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetProspectiveStartDate().c_str()));
-
+      iDateIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetProspectiveStartDate().c_str())));
       if (iDateIndex < 0)
         throw resolvable_error("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
                                gParameters.GetProspectiveStartDate().c_str(), gParameters.GetStudyPeriodStartDate().c_str());
@@ -941,11 +951,11 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
-    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeStartDate().c_str()));
-    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeEndDate().c_str()));
+    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeStartDate().c_str())));
+    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeEndDate().c_str())));
     //find end range date indexes
-    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
-    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
+    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeStartDate().c_str())));
+    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeEndDate().c_str())));
     //validate windows will be evaluated - check that there will be clusters evaluated...
     iMaxEndWindow = std::min(m_nFlexibleWindowEndRangeEndIndex, m_nFlexibleWindowStartRangeEndIndex + m_nIntervalCut);
     iWindowStart = std::max(m_nFlexibleWindowEndRangeStartIndex - m_nIntervalCut, m_nFlexibleWindowStartRangeStartIndex);
@@ -986,10 +996,10 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
       gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iWindowStart);
     m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
     // recalculate flexable window indexes
-    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeStartDate().c_str()));
-    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(CharToJulian(gParameters.GetStartRangeEndDate().c_str()));
-    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeStartDate().c_str()));
-    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(CharToJulian(gParameters.GetEndRangeEndDate().c_str()));
+    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeStartDate().c_str())));
+    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeEndDate().c_str())));
+    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeStartDate().c_str())));
+    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeEndDate().c_str())));
   }
 }
 
@@ -999,10 +1009,9 @@ void CSaTScanData::Setup() {
 
 
   try {
-    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
-        m_nStartDate = CharToJulian(gParameters.GetStudyPeriodStartDate().c_str());
-        m_nEndDate = CharToJulian(gParameters.GetStudyPeriodEndDate().c_str());
-    }
+    m_nStartDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str());
+    m_nEndDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str());
+
     //For now, compute the angle and store the angle and shape
     //for each ellipsoid.  Maybe transfer info to a different location in the
     //application or compute "on the fly" prior to printing.

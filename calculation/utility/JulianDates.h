@@ -25,6 +25,7 @@ typedef unsigned long Julian;
 double          CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrecisionType eUnits, int iIntervalLength);
 int             CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
 Julian          CharToJulian(const char* szDateString);
+Julian          relativeDateToJulian(const char* szDateString);
 UInt            DaysThisMonth(UInt nYear, UInt nMonth);
 double          IntervalInYears(DatePrecisionType eUnits, long nLength);
 bool            IsDateValid(UInt month, UInt day, UInt year);

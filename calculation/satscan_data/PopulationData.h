@@ -96,7 +96,7 @@ class PopulationData {
     void                                CheckCasesHavePopulations(const count_t * pCases, const CSaTScanData& Data) const;
     bool                                CheckZeroPopulations(BasePrint& PrintDirection) const;
     int                                 CreateCovariateCategory(DataSource& Source, short iScanOffset, BasePrint& PrintDirection);
-    void                                Display(BasePrint& PrintDirection) const;
+    void                                Display(FILE* pFile) const;
     double                              GetAlphaAdjustedPopulation(double& dPopulation, tract_t t, int iCategoryIndex,
                                                                    int iStartPopulationDateIndex, int iEndPopulationDateIndex,
                                                                    const std::vector<double>& vAlpha) const;

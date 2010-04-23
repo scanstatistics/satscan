@@ -62,6 +62,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
@@ -86,7 +87,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="452" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="419" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -128,7 +129,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="145" max="32767" attributes="0"/>
+                      <EmptySpace pref="112" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -513,7 +514,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="201" max="32767" attributes="0"/>
+                      <EmptySpace pref="168" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -713,7 +714,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="136" max="32767" attributes="0"/>
+                      <EmptySpace pref="103" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -976,7 +977,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="102" max="32767" attributes="0"/>
+                      <EmptySpace pref="69" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1006,35 +1007,30 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="_percentageOfPopulationLabel" alignment="0" pref="484" max="32767" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_spatialDistanceCheckBox" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_distancePrefixLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_maxSpatialRadiusTextField" min="-2" pref="72" max="-2" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Component id="_maxRadiusLabel" pref="301" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_spatialPopulationFileCheckBox" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_spatialDistanceCheckBox" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="1" attributes="0">
+                                          <Component id="_maxCirclePopulationFilenameTextField" min="-2" pref="375" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_distancePrefixLabel" min="-2" max="-2" attributes="0"/>
+                                          <Component id="_maxCirclePopFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_maxSpatialRadiusTextField" min="-2" pref="72" max="-2" attributes="0"/>
-                                          <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="_maxRadiusLabel" pref="301" max="32767" attributes="0"/>
+                                          <Component id="_maxCirclePopFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
+                                          <EmptySpace min="28" pref="28" max="28" attributes="0"/>
                                       </Group>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <Component id="_spatialPopulationFileCheckBox" min="-2" max="-2" attributes="0"/>
+                                          <Component id="_maxSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Group type="103" groupAlignment="0" attributes="0">
-                                              <Group type="102" alignment="1" attributes="0">
-                                                  <Component id="_maxCirclePopulationFilenameTextField" min="-2" pref="375" max="-2" attributes="0"/>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="_maxCirclePopFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="_maxCirclePopFileImportButton" min="-2" pref="25" max="-2" attributes="0"/>
-                                                  <EmptySpace min="28" pref="28" max="28" attributes="0"/>
-                                              </Group>
-                                              <Group type="102" alignment="0" attributes="0">
-                                                  <Component id="_maxSpatialPercentFileTextField" min="-2" pref="45" max="-2" attributes="0"/>
-                                                  <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="_percentageOfPopFileLabel" pref="416" max="32767" attributes="0"/>
-                                              </Group>
-                                          </Group>
+                                          <Component id="_percentageOfPopFileLabel" pref="416" max="32767" attributes="0"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -1343,7 +1339,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="157" max="32767" attributes="0"/>
+                      <EmptySpace pref="96" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1506,9 +1502,58 @@
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_flexible_window_cards" alignment="0" pref="535" max="32767" attributes="0"/>
                               <Component id="_restrictTemporalRangeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+                <DimensionLayout dim="1">
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_restrictTemporalRangeCheckBox" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="_flexible_window_cards" min="-2" pref="74" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
+                </DimensionLayout>
+              </Layout>
+              <SubComponents>
+                <Component class="javax.swing.JCheckBox" name="_restrictTemporalRangeCheckBox">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Include only windows with:" noResource="true"/>
+                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
+                      </Border>
+                    </Property>
+                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
+                      <Insets value="[0, 0, 0, 0]"/>
+                    </Property>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        enableDatesByTimePrecisionUnits();&#xa;        EnableTemporalOptionsGroup(_temporalOptionsGroup.isEnabled(), _includePureSpacClustCheckBox.isEnabled(), _restrictTemporalRangeCheckBox.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Container class="javax.swing.JPanel" name="_flexible_window_cards">
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
+                  <SubComponents>
+                    <Container class="javax.swing.JPanel" name="_windowCompletePanel">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                          <CardConstraints cardName="flexible_complete"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="17" pref="17" max="17" attributes="0"/>
+                                  <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_startWindowRangeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_endWindowRangeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1540,188 +1585,287 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Group type="102" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
                                           <Component id="_startRangeEndMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_startRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                       </Group>
-                                      <Group type="102" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
                                           <Component id="_endRangeEndMonthTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Component id="_endRangeEndDayTextField" min="-2" pref="30" max="-2" attributes="0"/>
                                       </Group>
                                   </Group>
+                                  <EmptySpace pref="154" max="32767" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="157" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_restrictTemporalRangeCheckBox" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_startWindowRangeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeStartYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeStartMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeStartDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeEndYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeEndMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_startRangeEndDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_startWindowRangeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeEndYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeEndMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeEndDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_endWindowRangeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeStartYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeStartMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeStartDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeEndYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeEndMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeEndDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace pref="17" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_endWindowRangeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeStartYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeStartMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeStartDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeEndYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeEndMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_endRangeEndDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_startWindowRangeLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Start time in range:" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeStartYearTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeStartMonthTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="01" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeStartDayTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="01" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_startRangeToLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="to" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeEndYearTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeEndMonthTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="01" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeEndDayTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="01" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeEndDayTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="31" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeEndMonthTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="12" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeEndYearTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_endRangeToLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="to" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeStartDayTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="31" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);        &#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeStartMonthTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="12" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeStartYearTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="End time in range:" noResource="true"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="_windowGenericPanel">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                          <CardConstraints cardName="flexible_generic"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_startGenericWindowRangeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endGenericWindowRangeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_endRangeStartGenericTextField" alignment="1" max="32767" attributes="1"/>
+                                      <Component id="_startRangeStartGenericTextField" alignment="1" pref="114" max="32767" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_startGenericRangeToLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                                          <Component id="_startRangeEndGenericTextField" min="-2" pref="114" max="-2" attributes="0"/>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="1">
+                                          <Component id="_endGenericRangeToLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                          <Component id="_endRangeEndGenericTextField" max="32767" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace pref="162" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JCheckBox" name="_restrictTemporalRangeCheckBox">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Include only windows with:" noResource="true"/>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
-                        <EmptyBorder bottom="0" left="0" right="0" top="0"/>
-                      </Border>
-                    </Property>
-                    <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-                      <Insets value="[0, 0, 0, 0]"/>
-                    </Property>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_restrictTemporalRangeCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableReportedSpatialOptionsGroup(_spatialOptionsGroup.isEnabled());&#xa;        EnableDatesByTimePrecisionUnits();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_startWindowRangeLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Start time in range:" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_endWindowRangeLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="End time in range:" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_startRangeStartYearTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_endRangeStartYearTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeStartYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_startRangeStartMonthTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="01" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_endRangeStartMonthTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="12" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_startRangeStartDayTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="01" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_endRangeStartDayTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="31" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeStartDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeStartYearTextField, _endRangeStartMonthTextField, _endRangeStartDayTextField, undo);        &#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_startRangeToLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="to" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_endRangeToLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="to" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_startRangeEndYearTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_startRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_endRangeEndYearTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_endRangeEndYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_startRangeEndMonthTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="01" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_startRangeEndDayTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="01" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_startRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_endRangeEndMonthTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="12" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_endRangeEndDayTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="31" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_endRangeEndDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_endRangeEndYearTextField, _endRangeEndMonthTextField, _endRangeEndDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_startGenericWindowRangeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeStartGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startGenericRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_startRangeEndGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="_endGenericWindowRangeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeStartGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endRangeEndGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="_endGenericRangeToLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace pref="17" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_startGenericWindowRangeLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="Start time in range:" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeStartGenericTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="0" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateNumericKeyTyped(_startRangeStartGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_startGenericRangeToLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="to" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_startRangeEndGenericTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="31" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_startRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_startRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_startRangeEndGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeEndGenericTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="31" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeEndGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeEndGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeEndGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_endGenericRangeToLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="to" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_endRangeStartGenericTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="0" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_endRangeStartGenericTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_endRangeStartGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_endRangeStartGenericTextField, e, 10);&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_endGenericWindowRangeLabel">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="End time in range:" noResource="true"/>
+                          </Properties>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
           </SubComponents>
@@ -1760,7 +1904,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="53" max="32767" attributes="0"/>
+                      <EmptySpace pref="20" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2097,10 +2241,10 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_iterativeScanGroup" alignment="1" max="32767" attributes="0"/>
-                          <Component id="_pValueOptionsGroup" alignment="1" max="32767" attributes="0"/>
                           <Component id="_prospectiveSurveillanceGroup" alignment="1" max="32767" attributes="0"/>
-                          <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_pValueOptionsGroup" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_iterativeScanGroup" alignment="1" max="32767" attributes="0"/>
+                          <Component id="_monteCarloGroup" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -2113,11 +2257,11 @@
                       <Component id="_pValueOptionsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="60" max="32767" attributes="0"/>
+                      <Component id="_monteCarloGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="15" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2263,41 +2407,18 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_adjustForEarlierAnalysesCheckBox" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_prospectiveStartYearLabel" max="32767" attributes="1"/>
-                              <Component id="_prospectiveStartDateYearTextField" alignment="0" pref="45" max="32767" attributes="1"/>
-                          </Group>
+                          <Component id="_prospectiveStartDateCards" pref="302" max="32767" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_prospectiveStartDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
-                              <Component id="_prospectiveStartMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Component id="_prospectiveStartDayLabel" max="32767" attributes="1"/>
-                              <Component id="_prospectiveStartDateDayTextField" alignment="0" pref="30" max="32767" attributes="1"/>
-                          </Group>
-                          <EmptySpace pref="199" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_prospectiveStartMonthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_prospectiveStartDayLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_prospectiveStartYearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_prospectiveStartDateYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_prospectiveStartDateMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_prospectiveStartDateDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_adjustForEarlierAnalysesCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="-2" pref="13" max="-2" attributes="0"/>
+                          <Component id="_adjustForEarlierAnalysesCheckBox" min="-2" max="-2" attributes="0"/>
                       </Group>
+                      <Component id="_prospectiveStartDateCards" alignment="0" min="-2" pref="51" max="-2" attributes="0"/>
                   </Group>
                 </DimensionLayout>
               </Layout>
@@ -2318,57 +2439,173 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_adjustForEarlierAnalysesCheckBox.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        EnableSettingsForAnalysisModelCombination();&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
                   </AuxValues>
                 </Component>
-                <Component class="javax.swing.JTextField" name="_prospectiveStartDateYearTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_prospectiveStartDateMonthTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="12" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JTextField" name="_prospectiveStartDateDayTextField">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="31" noResource="true"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_prospectiveStartYearLabel">
-                  <Properties>
-                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Tahoma" size="10" style="0"/>
-                    </Property>
-                    <Property name="horizontalAlignment" type="int" value="0"/>
-                    <Property name="text" type="java.lang.String" value="Year" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_prospectiveStartMonthLabel">
-                  <Properties>
-                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Tahoma" size="10" style="0"/>
-                    </Property>
-                    <Property name="horizontalAlignment" type="int" value="0"/>
-                    <Property name="text" type="java.lang.String" value="Month" noResource="true"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_prospectiveStartDayLabel">
-                  <Properties>
-                    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-                      <Font name="Tahoma" size="10" style="0"/>
-                    </Property>
-                    <Property name="horizontalAlignment" type="int" value="0"/>
-                    <Property name="text" type="java.lang.String" value="Day" noResource="true"/>
-                  </Properties>
-                </Component>
+                <Container class="javax.swing.JPanel" name="_prospectiveStartDateCards">
+
+                  <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
+                  <SubComponents>
+                    <Container class="javax.swing.JPanel" name="_prospectiveCompleteCard">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                          <CardConstraints cardName="prospectiveCompleteDate"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_prospectiveStartYearLabel" max="32767" attributes="1"/>
+                                      <Component id="_prospectiveStartDateYearTextField" alignment="0" min="-2" pref="45" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="_prospectiveStartDateMonthTextField" alignment="0" min="-2" pref="30" max="-2" attributes="0"/>
+                                      <Component id="_prospectiveStartMonthLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_prospectiveStartDayLabel" max="32767" attributes="1"/>
+                                      <Component id="_prospectiveStartDateDayTextField" alignment="0" min="-2" pref="30" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace pref="175" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="_prospectiveStartMonthLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_prospectiveStartYearLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="3" attributes="0">
+                                              <Component id="_prospectiveStartDateYearTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                              <Component id="_prospectiveStartDateMonthTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Component id="_prospectiveStartDayLabel" min="-2" max="-2" attributes="0"/>
+                                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                          <Component id="_prospectiveStartDateDayTextField" min="-2" max="-2" attributes="0"/>
+                                      </Group>
+                                  </Group>
+                                  <EmptySpace pref="18" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_prospectiveStartYearLabel">
+                          <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Tahoma" size="10" style="0"/>
+                            </Property>
+                            <Property name="horizontalAlignment" type="int" value="0"/>
+                            <Property name="text" type="java.lang.String" value="Year" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_prospectiveStartDateYearTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="2000" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_prospectiveStartMonthLabel">
+                          <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Tahoma" size="10" style="0"/>
+                            </Property>
+                            <Property name="horizontalAlignment" type="int" value="0"/>
+                            <Property name="text" type="java.lang.String" value="Month" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JLabel" name="_prospectiveStartDayLabel">
+                          <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Tahoma" size="10" style="0"/>
+                            </Property>
+                            <Property name="horizontalAlignment" type="int" value="0"/>
+                            <Property name="text" type="java.lang.String" value="Day" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_prospectiveStartDateDayTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="31" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateDayTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateDayTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateDayTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_prospectiveStartDateMonthTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="12" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateMonthTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateMonthTextField, e, 2);&#xa;    }&#xa;});&#xa;_prospectiveStartDateMonthTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                          </AuxValues>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                    <Container class="javax.swing.JPanel" name="_prospectiveGenericDate">
+                      <Constraints>
+                        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
+                          <CardConstraints cardName="prospectiveGenericDate"/>
+                        </Constraint>
+                      </Constraints>
+
+                      <Layout>
+                        <DimensionLayout dim="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_prospectiveStartGenericLabel" alignment="0" max="32767" attributes="1"/>
+                                      <Component id="_prospectiveStartDateGenericTextField" alignment="0" min="-2" pref="114" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace pref="178" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                        <DimensionLayout dim="1">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <Component id="_prospectiveStartGenericLabel" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                                  <Component id="_prospectiveStartDateGenericTextField" min="-2" max="-2" attributes="0"/>
+                                  <EmptySpace pref="18" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                        </DimensionLayout>
+                      </Layout>
+                      <SubComponents>
+                        <Component class="javax.swing.JLabel" name="_prospectiveStartGenericLabel">
+                          <Properties>
+                            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+                              <Font name="Tahoma" size="10" style="0"/>
+                            </Property>
+                            <Property name="horizontalAlignment" type="int" value="0"/>
+                            <Property name="text" type="java.lang.String" value="Generic Unit" noResource="true"/>
+                          </Properties>
+                        </Component>
+                        <Component class="javax.swing.JTextField" name="_prospectiveStartDateGenericTextField">
+                          <Properties>
+                            <Property name="text" type="java.lang.String" value="31" noResource="true"/>
+                          </Properties>
+                          <AuxValues>
+                            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveStartDateYearTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_prospectiveStartDateYearTextField, e, 4);&#xa;    }&#xa;});&#xa;_prospectiveStartDateYearTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        Utils.validateDateControlGroup(_prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField, undo);&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                          </AuxValues>
+                        </Component>
+                      </SubComponents>
+                    </Container>
+                  </SubComponents>
+                </Container>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="_iterativeScanGroup">
@@ -2468,7 +2705,7 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JPanel" name="jPanel1">
+            <Container class="javax.swing.JPanel" name="_monteCarloGroup">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
@@ -2555,7 +2792,7 @@
                       <Component id="_criteriaSecClustersGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="50" max="32767" attributes="0"/>
+                      <EmptySpace pref="17" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2913,7 +3150,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportCriticalValuesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="331" max="32767" attributes="0"/>
+                      <EmptySpace pref="298" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

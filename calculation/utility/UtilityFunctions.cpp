@@ -96,10 +96,11 @@ boost::posix_time::ptime GetCurrentTime_HighResolution()
 const char * GetDatePrecisionAsString(DatePrecisionType eType, std::string& sString, bool bPlural, bool bCapitalizeFirstLetter) {
   sString.clear();
   switch (eType) {
-    case YEAR  : sString = (bCapitalizeFirstLetter ? "Y" : "y"); sString += "ear"; break;
-    case MONTH : sString = (bCapitalizeFirstLetter ? "M" : "m"); sString += "onth"; break;
-    case DAY   : sString = (bCapitalizeFirstLetter ? "D" : "d"); sString += "ay"; break;
-    default    : sString = "none"; break;
+    case YEAR    : sString = (bCapitalizeFirstLetter ? "Y" : "y"); sString += "ear"; break;
+    case MONTH   : sString = (bCapitalizeFirstLetter ? "M" : "m"); sString += "onth"; break;
+    case DAY     : sString = (bCapitalizeFirstLetter ? "D" : "d"); sString += "ay"; break;
+    case GENERIC : sString = (bCapitalizeFirstLetter ? "G" : "g"); sString += "eneric"; break;
+    default      : sString = "none"; break;
   };
   if (bPlural)
     sString += "s";

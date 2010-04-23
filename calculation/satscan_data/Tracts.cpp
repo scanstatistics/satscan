@@ -285,13 +285,13 @@ tract_t TractHandler::getLocationIndex(const char *sIdentifier) const {
 }
 
 /** Print locations to ASCII file. */
-void TractHandler::printLocations(const char * sFilename) {
-   FILE* pFile;
+void TractHandler::printLocations(FILE * pFile) const {
+   //FILE* pFile;
 
    try {
-      if ((pFile = fopen(sFilename, "w")) == NULL)
-        throw resolvable_error("Error: Unable to open top clusters file.\n");
-      else {
+      //if ((pFile = fopen(sFilename, "w")) == NULL)
+      //  throw resolvable_error("Error: Unable to open top clusters file.\n");
+      //else {
         ptr_vector<Location>::const_iterator itr;
         for (itr=gvLocations.begin(); itr != gvLocations.end(); ++itr) {
             fprintf(pFile,"Identifier: %s\n",(*itr)->getIndentifier());
@@ -308,11 +308,11 @@ void TractHandler::printLocations(const char * sFilename) {
             }
             fprintf(pFile, " \n\n");
         }
-      }
-      fclose(pFile); pFile=0;
+      //}
+      //fclose(pFile); pFile=0;
    }
   catch (prg_exception& x) {
-    if (pFile) fclose(pFile);
+    //if (pFile) fclose(pFile);
     x.addTrace("printLocations()","TractHandler");
     throw;
   }

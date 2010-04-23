@@ -318,6 +318,11 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
   return gvControlFilenames[iSetIndex - 1];
 }
 
+/** Returns date as Julian. */
+Julian CParameters::getDateAsJulian(const char * sDate) const {
+  return GetPrecisionOfTimesType() == GENERIC ? relativeDateToJulian(sDate) : CharToJulian(sDate);
+}
+
 /** Returns threshold for early termination. If reporting default p-value, then
     threshold is determined by number of replications requested. */
 unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
@@ -861,8 +866,8 @@ void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, 
 
 /** Sets precision of input file dates type. Throws exception if out of range. */
 void CParameters::SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType) {
-  if (eDatePrecisionType < NONE || eDatePrecisionType > DAY)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, DAY);
+  if (eDatePrecisionType < NONE || eDatePrecisionType > GENERIC)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetPrecisionOfTimesType()", eDatePrecisionType, NONE, GENERIC);
   gePrecisionOfTimesType = eDatePrecisionType;
 }
 
@@ -1022,8 +1027,8 @@ void CParameters::SetTimeAggregationLength(long lTimeAggregationLength) {
 
 /** Sets precision of time interval units type. Throws exception if out of range. */
 void CParameters::SetTimeAggregationUnitsType(DatePrecisionType eTimeAggregationUnits) {
-  if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > DAY)
-    throw prg_error("Enumeration %d out of range [%d,%d].","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, DAY);
+  if (eTimeAggregationUnits < NONE || eTimeAggregationUnits > GENERIC)
+    throw prg_error("Enumeration %d out of range [%d,%d].","SetTimeAggregationUnitsType()", eTimeAggregationUnits, NONE, GENERIC);
   geTimeAggregationUnitsType = eTimeAggregationUnits;
 }
 

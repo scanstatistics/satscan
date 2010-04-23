@@ -65,7 +65,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POPFILE                  : return " population data filename";
       case COORDFILE                : return " coordinate data filename";
       case OUTPUTFILE               : return " analysis results output filename";
-      case PRECISION                : return " time precision (0=None, 1=Year, 2=Month, 3=Day)";
+      case PRECISION                : return " time precision (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)";
       case DIMENSION                : return " n/a";
       case SPECIALGRID              : return " use grid file? (y/n)";
       case GRIDFILE                 : return " grid data filename";
@@ -603,7 +603,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case POPFILE                   : gParameters.SetPopulationFileName(sParameter.c_str(), true); break;
       case COORDFILE                 : gParameters.SetCoordinatesFileName(sParameter.c_str(), true); break;
       case OUTPUTFILE                : gParameters.SetOutputFileName(sParameter.c_str(), true); break;
-      case PRECISION                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, DAY);
+      case PRECISION                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
                                        gParameters.SetPrecisionOfTimesType((DatePrecisionType)iValue); break;
       case DIMENSION                 : //Dimensions no longer read from file.
                                        break;
@@ -615,7 +615,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case CLUSTERS                  : gParameters.SetIncludeClustersType((IncludeClustersType)ReadInt(sParameter, eParameterType)); break;
       case EXACTTIMES                : //No longer used. No documentation as to previous usage.
                                        break;
-      case TIME_AGGREGATION_UNITS    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, DAY);
+      case TIME_AGGREGATION_UNITS    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NONE, GENERIC);
                                        gParameters.SetTimeAggregationUnitsType((DatePrecisionType)iValue); break;
       case TIME_AGGREGATION          : gParameters.SetTimeAggregationLength((long)ReadInt(sParameter, eParameterType)); break;
       case PURESPATIAL               : gParameters.SetIncludePurelySpatialClusters(ReadBoolean(sParameter, eParameterType)); break;

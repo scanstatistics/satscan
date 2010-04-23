@@ -159,7 +159,7 @@ void DataSetHandler::ReportZeroPops(CSaTScanData & Data, FILE *pDisplay, BasePri
     period be ignored, prints warning message to BasePrint object when situation encountered
     and returns DataSetHandler::Ignored. */
 DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& Source, Julian & JulianDate) {
-  DateStringParser                      DateParser;
+  DateStringParser                      DateParser(gParameters.GetPrecisionOfTimesType());
   DateStringParser::ParserStatus        eStatus;
   DatePrecisionType                     ePrecision;
 

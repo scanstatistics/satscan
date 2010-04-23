@@ -65,6 +65,7 @@ class TractHandler {
          char                         * gsIndentifier;
          CoordsContainer_t              gvCoordinatesContainer;
          StringContainer_t              gvSecondaryIdentifiers;
+         //bool                           gbEvaluated;
 
        public:
          Location(const char * sIdentifier, const Coordinates& aCoordinates);
@@ -72,10 +73,12 @@ class TractHandler {
 
          void                           addCoordinates(const Coordinates& aCoordinates, MultipleCoordinatesType eMultipleCoordinatesType);
          void                           addSecondaryIdentifier(const std::string & sIdentifier);
+         //bool                           isEvaluatedLocation() const {return gbEvaluated;}
          StringContainer_t            & retrieveAllIdentifiers(StringContainer_t& Identifiers) const;
          const CoordsContainer_t      & getCoordinates() const {return gvCoordinatesContainer;}
          const char                   * getIndentifier() const {return gsIndentifier;}
          const StringContainer_t      & getSecondaryIdentifiers() const {return gvSecondaryIdentifiers;}
+         //void                           setEvaluatedLocation(bool b) {gbEvaluated = b;}
     };
     /** Function object used to compare LocationIdentifier::gsIndentifier. */
     class CompareIdentifiers {
@@ -136,10 +139,11 @@ class TractHandler {
     MetaNeighborManager               & getMetaNeighborManager() {return gMetaNeighborManager;}
     const MetaManagerProxy            & getMetaManagerProxy() const {return *gMetaManagerProxy;}
     size_t                              getNumLocationCoordinates() const {return giNumLocationCoordinates;}
-    void                                printLocations(const char * sFilename);
+    void                                printLocations(FILE * pFile) const;
     void                                reportCombinedLocations(FILE * fDisplay) const;
     Location::StringContainer_t       & retrieveAllIdentifiers(tract_t tIndex, Location::StringContainer_t& Identifiers) const;
     void                                setCoordinateDimensions(size_t iDimensions);
+    //void                                setLocationNotEvaluating(tract_t tIndex) {gvLocations.at(tIndex)->setEvaluatedLocation(false);}
 };
 //*****************************************************************************
 #endif

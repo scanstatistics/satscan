@@ -13,6 +13,7 @@ class ParametersValidate {
 
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
+    bool                ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const;
     bool                ValidateEllipseParameters(BasePrint & PrintDirection) const;
     bool                ValidateExecutionTypeParameters(BasePrint & PrintDirection) const;
     bool                ValidateFileParameters(BasePrint & PrintDirection) const;
@@ -22,7 +23,6 @@ class ParametersValidate {
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
     bool                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
-    bool                ValidateProspectiveDate(BasePrint& PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool                ValidateRangeParameters(BasePrint & PrintDirection) const;
     bool                ValidateSimulationDataParameters(BasePrint & PrintDirection) const;

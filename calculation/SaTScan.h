@@ -85,7 +85,7 @@ typedef int             tract_t;
 /** unsigned int type declaration */
 typedef unsigned int    UInt;
 /** date precision units */
-enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY };
+enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 /** va_copy not defined on all compilers */
 #if defined(__BORLANDC__) || defined (_MSC_VER) || ( defined(__GNUC__) && (__GNUC__ < 3) )
   #define macro_va_copy(dst,src) dst = src

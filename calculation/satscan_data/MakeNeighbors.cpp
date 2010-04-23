@@ -464,6 +464,10 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
   if (tEllipseOffsetIndex == 0) {
     //calculate distances from centroid to each location
     for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+       //if (!(*itr)->isEvaluatedLocation())
+       //    //skip locations that are marked as not evaluated in cluster expansion
+       //    continue;
+
        for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
          (*itr)->getCoordinates()[c]->retrieve(vLocationCoordinates);
          gvCentroidToLocationDistances[i].Set(k, std::sqrt(gLocationInfo.getDistanceSquared(vCentroidCoordinates, vLocationCoordinates)), c);
@@ -479,6 +483,10 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
     CalculateEllipticCoordinates(tEllipseOffsetIndex);
     //calculate distances from centroid to each location
     for (tract_t k=0, i=0; itr != itr_end; ++itr, ++k) {
+       //if (!(*itr)->isEvaluatedLocation())
+       //    //skip locations that are marked as not evaluated in cluster expansion
+       //    continue;
+
        for (unsigned int c=0; c < (*itr)->getCoordinates().size(); ++c) {
           unsigned int iPosition = (*itr)->getCoordinates()[c]->getInsertionOrdinal();
           vLocationCoordinates[0] = gvLocationEllipticCoordinates[iPosition].first;

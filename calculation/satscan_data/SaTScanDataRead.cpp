@@ -33,7 +33,7 @@ SaTScanDataReader::SaTScanDataReader(CSaTScanData& DataHub)
     indication of a bad date is returned and any messages sent to print direction. */
 bool SaTScanDataReader::ConvertAdjustmentDateToJulian(DataSource& Source, Julian & JulianDate, bool bStartDate) {
   long                                  iDateIndex;
-  DateStringParser                      DateParser;
+  DateStringParser                      DateParser(gDataHub.GetParameters().GetPrecisionOfTimesType());
   DateStringParser::ParserStatus        eStatus;
 
   if (gParameters.GetPrecisionOfTimesType() == NONE)

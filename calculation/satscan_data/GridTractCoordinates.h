@@ -8,7 +8,7 @@
 /** Abstract base class which manages centroid grid points. */
 class GInfo {
   public:
-    virtual void        displayGridPoints(FILE* pDisplay);
+    virtual void        displayGridPoints(FILE* pDisplay) const;
     virtual int         getGridPointDimensions() const = 0;
     virtual tract_t     getNumGridPoints() const = 0;
     virtual void        retrieveCoordinates(tract_t tPoint, std::vector<double> & vRepository) const = 0;

@@ -11,7 +11,7 @@ const unsigned int DateStringParser::POP_PRECISION_YEAR_DEFAULT_DAY    = 1;
 const unsigned int DateStringParser::POP_PRECISION_YEAR_DEFAULT_MONTH  = 7;
 
 /** constructor */
-DateStringParser::DateStringParser() {}
+DateStringParser::DateStringParser(DatePrecisionType eTimePrecision) : geTimePrecision(eTimePrecision) {}
 
 /** destructor */
 DateStringParser::~DateStringParser() {}
@@ -122,6 +122,11 @@ DateStringParser::ParserStatus DateStringParser::ParseAdjustmentDateString(const
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
 
+  if (geTimePrecision == GENERIC) {
+     theDate = relativeDateToJulian(sDateString);
+     return VALID_DATE;
+  }
+
   eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, ePrecision, eDateFormat);
   if (eParserStatus != VALID_DATE)
     return eParserStatus;
@@ -160,6 +165,11 @@ DateStringParser::ParserStatus DateStringParser::ParseCountDateString(const char
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
 
+  if (geTimePrecision == GENERIC) {
+     theDate = relativeDateToJulian(sDateString);
+     return VALID_DATE;
+  }
+
   eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, ePrecision, eDateFormat);
   if (eParserStatus != VALID_DATE)
     return eParserStatus;
@@ -192,6 +202,12 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
   ParserStatus          eParserStatus;
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
+
+  if (geTimePrecision == GENERIC) {
+     theDate = relativeDateToJulian(sDateString);
+     eReadPrecision = GENERIC;
+     return VALID_DATE;
+  }
 
   eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, eReadPrecision, eDateFormat);
   if (eParserStatus != VALID_DATE)

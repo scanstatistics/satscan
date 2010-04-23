@@ -120,7 +120,7 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   //print study period
   if (bPrintPeriod && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
     PrintFormat.PrintSectionLabel(fp, "Study period", false, false);
-    fprintf(fp,"%s - %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+    fprintf(fp,"%s to %s\n", gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
   }  
   if (gParameters.UseCoordinatesFile() || gParameters.UseLocationNeighborsFile()) {
     //print number locations scanned

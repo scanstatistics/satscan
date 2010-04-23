@@ -238,6 +238,7 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
         case YEAR  : settings.push_back(std::make_pair(buffer,"Year")); break;
         case MONTH : settings.push_back(std::make_pair(buffer,"Month")); break;
         case DAY   : settings.push_back(std::make_pair(buffer,"Day")); break;
+        case GENERIC : settings.push_back(std::make_pair(buffer,"Generic"));  break;
         default : throw prg_error("Unknown date precision type '%d'.\n",
                                   "PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
       }
@@ -534,7 +535,7 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
      if (gParameters.GetIsProspectiveAnalysis()) {
          settings.push_back(std::make_pair("Adjusted for Earlier Analyses",(gParameters.GetAdjustForEarlierAnalyses() ? "Yes" : "No")));
          if (gParameters.GetAdjustForEarlierAnalyses())
-             settings.push_back(std::make_pair("Prospective Start Date",gParameters.GetProspectiveStartDate()));
+             settings.push_back(std::make_pair("Prospective Start Time",gParameters.GetProspectiveStartDate()));
      }
      if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
         settings.push_back(std::make_pair("Adjusting for More Likely Clusters",(gParameters.GetIsIterativeScanning() ? "Yes" : "No")));
@@ -602,13 +603,14 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
             ePrecision =  gParameters.GetPrecisionOfTimesType();
         buffer = "Time Precision";
         switch (ePrecision) {
-            case YEAR  : settings.push_back(std::make_pair(buffer,"Year")); break;
-            case MONTH : settings.push_back(std::make_pair(buffer,"Month")); break;
-            case DAY   : settings.push_back(std::make_pair(buffer,"Day")); break;
-            default    : settings.push_back(std::make_pair(buffer,"None")); break;
+            case YEAR    : settings.push_back(std::make_pair(buffer,"Year")); break;
+            case MONTH   : settings.push_back(std::make_pair(buffer,"Month")); break;
+            case DAY     : settings.push_back(std::make_pair(buffer,"Day")); break;
+            case GENERIC : settings.push_back(std::make_pair(buffer,"Generic")); break;
+            default      : settings.push_back(std::make_pair(buffer,"None")); break;
         }
-        settings.push_back(std::make_pair("Start Date",gParameters.GetStudyPeriodStartDate()));
-        settings.push_back(std::make_pair("End Date",gParameters.GetStudyPeriodEndDate()));
+        settings.push_back(std::make_pair("Start Time",gParameters.GetStudyPeriodStartDate()));
+        settings.push_back(std::make_pair("End Time",gParameters.GetStudyPeriodEndDate()));
     }
     if ((gParameters.UseCoordinatesFile() || gParameters.UseSpecialGrid())) {
       buffer = "Coordinates";

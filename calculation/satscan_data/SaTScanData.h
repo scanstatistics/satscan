@@ -168,6 +168,8 @@ class CSaTScanData {
     inline unsigned short                    ** GetSortedArrayAsUShort_T(int iEllipse) const;
 
     inline void                                 addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo);
+
+    //virtual void                                setLocationNotEvaluated(tract_t tTractIndex);
 };
 
 inline void CSaTScanData::addStore(std::auto_ptr<CentroidNeighbors>& NeighborInfo) {

@@ -493,19 +493,47 @@ int PopulationData::CreateCovariateCategory(DataSource& Source, short iScanOffse
 }
 
 /** Prints formatted text depicting state of population categories. */
-void PopulationData::Display(BasePrint& PrintDirection) const {
+void PopulationData::Display(FILE* pFile) const {
+  const CovariateCategory     * pCategoryDescriptor;
   size_t        t, j;
+  int           i, k, nPEndIndex, nPStartIndex = 0;
+  UInt          month, day, year;
 
   try {
-    PrintDirection.Printf("DISPLAY: Number of categories = %i\n", BasePrint::P_STDOUT, gvCovariateCategories.size());
-    PrintDirection.Printf("\n#   Category Combination\n", BasePrint::P_STDOUT);
+    if (gbStartAsPopDt)
+      nPStartIndex = 1;
+    if (gbEndAsPopDt)
+      nPEndIndex = (int)gvPopulationDates.size()-2;
+    else
+      nPEndIndex = (int)gvPopulationDates.size()-1;
+
+    fprintf(pFile, "DISPLAY: Number of categories = %i\n", gvCovariateCategories.size());
+    fprintf(pFile, "\n#   Category Combination\n");
     for (t=0; t < gvCovariateCategories.size(); t++) {
-       PrintDirection.Printf("%d     ", BasePrint::P_STDOUT, t);
-       for (j=0; j < gvCovariateCategories[t].size(); j++)
-          PrintDirection.Printf("%s  ", BasePrint::P_STDOUT, gvCovariateNames[gvCovariateCategories[t][j]].c_str());
-       PrintDirection.Printf("\n", BasePrint::P_STDOUT);
+       fprintf(pFile, "%d     ", t);
+       for (j=0; j < gvCovariateCategories[t].size(); j++) {
+          fprintf(pFile, "%s  ", gvCovariateNames[gvCovariateCategories[t][j]].c_str());
+       }
+       fprintf(pFile, "\n");
     }
-    PrintDirection.Printf("\n", BasePrint::P_STDOUT);
+    fprintf(pFile, "\n");
+
+    fprintf(pFile, "DISPLAY: Number of Population Dates = %i (%d,%d, %u)\n", gvPopulationDates.size(), nPStartIndex, nPEndIndex, gCovariateCategoriesPerLocation.size());
+    for (i=0; i < (int)gCovariateCategoriesPerLocation.size(); i++) {
+       pCategoryDescriptor = gCovariateCategoriesPerLocation[i];
+       std::vector<float> PopTotalsArray(gvPopulationDates.size(), 0);
+       while (pCategoryDescriptor) {
+           for (k=nPStartIndex; k <= nPEndIndex; k++) {
+              PopTotalsArray[k] += pCategoryDescriptor->GetPopulationAtDateIndex(k, *this);
+           }
+           for (k=nPStartIndex; k <= nPEndIndex; k++) {
+             JulianToMDY(&month, &day, &year, gvPopulationDates[k]);
+             fprintf(pFile, "The population is %g on %d/%d/%d.\n", PopTotalsArray[k], year, month, day);
+           }
+           pCategoryDescriptor = pCategoryDescriptor->GetNextDescriptor();
+       }
+    }
+    fflush(pFile);
   }
   catch (prg_exception& x) {
     x.addTrace("Display()", "PopulationData");
