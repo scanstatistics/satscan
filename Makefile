@@ -30,16 +30,19 @@ XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 BOOSTDIR    := $(SATSCAN)/../boost/boost_1_39_0
 NEWMAT      := $(SATSCAN)/newmat/newmat10
 #JNI         :=
+PYTHON      := /usr/local/python-2.5.2/include/python2.5
+PYTHONLIB   := /usr/local/python-2.5.2/lib
+#PYTHONFLAG  := -lpython
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
-               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT)\
-	       -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI)
+               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT) -I$(PYTHON)\
+	           -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI)
 
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
                               
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
-LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-Bstatic -lxbaseg -lnewmat -lm -Wl,-Bdynamic -lrt -lpthread
+LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -Wl,-Bstatic -lxbaseg -lnewmat -lm -Wl,-Bdynamic -lrt -lpthread $(PYTHONFLAG)
 # static libgcc flags 
 #LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lm -lpthread 
 
@@ -50,7 +53,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-dynamic -lxbase -lnewmat -lstdc++ -lm
+M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -Wl,-dynamic -lxbase -lnewmat -lstdc++ -lm $(PYTHONFLAG)
 M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(ANALYSIS)/Analysis.cpp \
@@ -225,7 +228,8 @@ APP_SRC     := $(SATSCAN)/batch_application/Main.cpp
 LIB_SRC     := $(SATSCAN)/java_application/shared_library/SharedLibrary.cpp \
                $(SATSCAN)/java_application/shared_library/stsJNIPrintWindow.cpp \
                $(SATSCAN)/java_application/shared_library/stsParametersUtility.cpp \
-               $(SATSCAN)/java_application/shared_library/JNIException.cpp
+               $(SATSCAN)/java_application/shared_library/JNIException.cpp \
+               $(SATSCAN)/java_application/shared_library/PrintCallback.cpp
 
 OBJS        := $(SRC:.cpp=.o)
 APP_OBJS    := $(APP_SRC:.cpp=.o)
@@ -246,13 +250,13 @@ $(MAC_APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(M_LFLAGS) -o $@
 
 $(LINUX_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -lxbaseg -lnewmat  -lm -lrt -lpthread
+	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -lxbaseg -lnewmat  -lm -lrt -lpthread $(PYTHONFLAG)
 
 $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -lxbaseg -lnewmat -lm -lrt -lpthread
+	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -lxbaseg -lnewmat -lm -lrt -lpthread $(PYTHONFLAG)
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -lxbase -lnewmat -lstdc++ -lm  -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -lxbase -lnewmat -lstdc++ -lm $(PYTHONFLAG) -o $@
 %.o : %.cpp 
 	$(CC) $(CFLAGS) $< -o $@ 
 

@@ -201,7 +201,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
+				AdditionalIncludeDirectories="C:\Python25\include;&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
@@ -221,7 +221,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/verbose:lib "
-				AdditionalDependencies="shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib C:\prj\satscan.development\satscan\newmat\Release\newmat.lib"
+				AdditionalDependencies="shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib C:\prj\satscan.development\satscan\newmat\Release\newmat.lib C:\Python25\libs\python25.lib"
 				OutputFile="$(OutDir)\satscan32.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -283,7 +283,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
+				AdditionalIncludeDirectories="C:\Python25\include;&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_WIN64"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
@@ -303,7 +303,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/verbose:lib "
-				AdditionalDependencies="shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib C:\prj\satscan.development\satscan\newmat\x64\Release\newmat.lib"
+				AdditionalDependencies="shell32.lib C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib C:\prj\satscan.development\satscan\newmat\x64\Release\newmat.lib C:\Python25\libs\python25.lib"
 				OutputFile="$(OutDir)\satscan64.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -1094,6 +1094,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="library"
+				>
+				<File
+					RelativePath=".\PrintCallback.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1781,6 +1789,14 @@
 				</File>
 				<File
 					RelativePath=".\stsParametersUtility.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="library"
+				>
+				<File
+					RelativePath=".\PrintCallback.h"
 					>
 				</File>
 			</Filter>

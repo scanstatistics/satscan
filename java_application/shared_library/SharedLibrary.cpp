@@ -27,6 +27,8 @@
 #include "FileName.h"
 #include "JNIException.h"
 #include "ObservableRegion.h"
+#include "PrintCallback.h"
+#include "ParameterFileAccess.h"
 
 //#pragma argsused
 
@@ -85,6 +87,26 @@ int WINAPI DllEntryPoint(HINSTANCE hinst, unsigned long reason, void* lpReserved
    return 1;
 }
 #endif
+
+/** Run execution function given passed parameter file and base print. */
+void _runAnalysis(const CParameters& Parameters, BasePrint& Console) {
+  int                   i;
+  time_t                RunTime;
+  std::string           sMessage;
+
+  Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
+  time(&RunTime); //get start time
+  Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
+  const_cast<CParameters&>(Parameters).SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
+  //validate parameters - print errors to console
+  if (! ParametersValidate(Parameters).Validate(Console))
+    throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+                           "Please review above message(s) and modify parameter settings accordingly.");
+  //create analysis runner object and execute analysis
+  AnalysisRunner(Parameters, RunTime, Console);
+}
+
+///////////////////////////////// JNI Shared Library Methods ///////////////////////////////////////////
 
 JNIEXPORT jstring JNICALL Java_org_satscan_app_AppConstants_getVersion(JNIEnv *pEnv, jclass) {
    return pEnv->NewStringUTF(AppToolkit::getToolkit().GetVersion());
@@ -239,56 +261,155 @@ JNIEXPORT jdouble JNICALL Java_org_satscan_gui_ParameterSettingsFrame_CalculateN
 
 JNIEXPORT jint JNICALL Java_org_satscan_app_CalculationThread_RunAnalysis(JNIEnv *pEnv, jobject JCalculationThread, jobject JParameters) {
   try {
-     int                   i;
-     time_t                RunTime;
-     CParameters           Parameters;
-     std::string           sMessage;
-     JNIPrintWindow        Console(*pEnv, JCalculationThread, false);
+    CParameters           Parameters;
+    JNIPrintWindow        Console(*pEnv, JCalculationThread, false);
      
-     try {
-       ParametersUtility::copyJParametersToCParameters(*pEnv, JParameters, Parameters);
-       Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
-       time(&RunTime); //get start time
-       Console.SetSuppressWarnings(Parameters.GetSuppressingWarnings());
-       Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
-       //validate parameters - print errors to console
-       if (! ParametersValidate(Parameters).Validate(Console))
-         throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
-                                "Please review above message(s) and modify parameter settings accordingly.");
-       //create analysis runner object and execute analysis
-       AnalysisRunner(Parameters, RunTime, Console);
-     }
-     catch (resolvable_error & x) {
-       Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
-       return 1;
-     }
-     catch (prg_exception & x) {
-       Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
-       Console.RecordCallpath(x.trace());
-       return 1;
-     }
-     catch (std::bad_alloc &x) {
-       Console.Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
-                      "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
-                      "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
-       return 1;
-     }
-     catch (std::exception& x) {
-       Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
-       return 1;
-     }
-     catch (...) {
-       Console.Printf("\nUnknown Program Error Encountered\n\nEnd of Warnings and Errors", BasePrint::P_ERROR);
-       return 1;
-     }
-  }
-  catch (jni_error & x) {
+    try {
+      ParametersUtility::copyJParametersToCParameters(*pEnv, JParameters, Parameters);
+      _runAnalysis(Parameters, Console);
+    } catch (resolvable_error & x) {
+      Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+      return 1;
+    } catch (jni_error & x) {
+      // Let the Java exception to be handled in the caller of JNI function.
+      // It is preferable to report the error through the JNIPrintWindow
+      // object but once a java error exists, our options are limited.
+      return 1; 
+    } catch (prg_exception & x) {
+      Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+      Console.RecordCallpath(x.trace());
+      return 1;
+    } catch (std::bad_alloc &x) {
+      Console.Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
+                     "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                     "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+      return 1;
+    } catch (std::exception& x) {
+      Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+      return 1;
+    }  
+  } catch (jni_error & x) {
     // Let the Java exception to be handled in the caller of JNI function.
     // It is preferable to report the error through the JNIPrintWindow
     // object but once a java error exists, our options are limited.
     return 1; 
+  } catch (...) {
+    jni_error::_throwByName(*pEnv, jni_error::_javaRuntimeExceptionClassName, "Unknown Program Error Encountered.");
+    return 1;
+  } 
+
+  return 0;
+}
+
+///////////////////////////////// C Shared Library Methods ///////////////////////////////////////////
+
+/* Alternative ways of doing this.
+1) The good old functionpointers.
+2) Functionobjects (these are classes that define the operator () ()
+3) The template way:
+      template<typename Callable>
+      void registerCallback(Callable const &call_back);
+4) The Functors of the Lokilibrary.
+*/
+
+int DLL_EXP C_RunAnalysis(const char * filename, C_Callback* call_back) {
+  CParameters           Parameters;
+  C_PrintCallback       Console(call_back, false);
+     
+  try {
+    ParameterAccessCoordinator reader(Parameters);
+    reader.Read(filename, Console);
+    _runAnalysis(Parameters, Console);
+  } catch (resolvable_error & x) {
+    Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (prg_exception & x) {
+    Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (std::bad_alloc &x) {
+    Console.Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
+                   "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                   "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    return 1;
+  } catch (std::exception& x) {
+    Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (...) {
+    Console.Printf("\nUnknown Program Error Encountered\n\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    return 1;
   }
   
   return 0;
 }
+
+///////////////////////////////// Python Shared Library Methods ///////////////////////////////////////////
+
+#ifdef _PYTHON_CALLBACK_
+int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
+
+  //(C_Callback(call_back))("hello");
+  //return 978;
+  CParameters           Parameters;
+  PY_PrintCallback       Console(call_back, false);
+     
+  try {
+    ParameterAccessCoordinator reader(Parameters);
+    reader.Read(filename, Console);
+    _runAnalysis(Parameters, Console);
+  } catch (resolvable_error & x) {
+    Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (prg_exception & x) {
+    Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (std::bad_alloc &x) {
+    Console.Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
+                   "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                   "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    return 1;
+  } catch (std::exception& x) {
+    Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (...) {
+    Console.Printf("\nUnknown Program Error Encountered\n\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    return 1;
+  }
+  
+  return 0;
+}
+#endif
+
+///////////////////////////////// VB Shared Library Methods ///////////////////////////////////////////
+
+#ifdef _WINDOWS_
+#include <comutil.h>
+int DLL_EXP VB_RunAnalysis(const char * filename, long cbAddress) {
+  CParameters       Parameters;
+  VB_PrintCallback  Console(cbAddress, false);
+     
+  try {
+    ParameterAccessCoordinator reader(Parameters);
+    reader.Read(filename, Console);
+    _runAnalysis(Parameters, Console);
+  } catch (resolvable_error & x) {
+    Console.Printf("%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (prg_exception & x) {
+    Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (std::bad_alloc &x) {
+    Console.Printf("\nSaTScan is unable to perform analysis due to insuffient memory.\n"
+                   "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                   "\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    return 1;
+  } catch (std::exception& x) {
+    Console.Printf("\nProgram Error Detected:\n%s\nEnd of Warnings and Errors", BasePrint::P_ERROR, x.what());
+    return 1;
+  } catch (...) {
+    Console.Printf("\nUnknown Program Error Encountered\n\nEnd of Warnings and Errors", BasePrint::P_ERROR);
+    return 1;
+  }  
+  return 0;
+}
+#endif
 //******************************************************************************
