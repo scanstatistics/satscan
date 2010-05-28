@@ -198,6 +198,7 @@ void IniParameterFileAccess::WriteAdditionalOutputSettings(IniFile& WriteFile) {
 
   try {
     WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
+    WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
   }
   catch (prg_exception& x) {
     x.addTrace("WriteAdditionalOutputSettings()","IniParameterFileAccess");

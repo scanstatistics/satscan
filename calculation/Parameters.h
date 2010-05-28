@@ -32,7 +32,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
                                     MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
-                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE};
+                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE, REPORT_RANK};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -199,6 +199,7 @@ class CParameters {
     PValueReportingType                 gePValueReportingType;                  /** p-value reporting type */
     bool                                gbReportGumbelPValue;                   /** report Gumbel p-value */
     TimeTrendType                       geTimeTrendType;                        /** time trend type */
+    bool                                gbReportRank;                           /** report cluster rank */
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
@@ -304,6 +305,7 @@ class CParameters {
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     PValueReportingType                 GetPValueReportingType() const {return gePValueReportingType;}
     long                                GetRandomizationSeed() const {return glRandomizationSeed;}
+    bool                                getReportClusterRank() const {return gbReportRank;}
     bool                                GetReportCriticalValues() const {return gbReportCriticalValues;}
     bool                                GetReportGumbelPValue() const {return gbReportGumbelPValue;}
     bool                                GetRestrictingMaximumReportedGeoClusterSize() const {return gbRestrictReportedClusters;}
@@ -390,6 +392,7 @@ class CParameters {
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
     void                                SetPValueReportingType(PValueReportingType eType);
     void                                SetRandomizationSeed(long lSeed);
+    void                                setReportClusterRank(bool b) {gbReportRank = b;}
     void                                SetReportCriticalValues(bool b) {gbReportCriticalValues = b;}
     void                                SetReportGumbelPValue(bool b) {gbReportGumbelPValue = b;}
     void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);

@@ -366,8 +366,9 @@ void IniParameterSpecification::Build_8_3_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlyTerminationThreshold"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"PValueReportType"));
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"ReportGumbel"));
-  // time trend type
+
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendType"));
+  gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"ReportClusterRank"));  
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

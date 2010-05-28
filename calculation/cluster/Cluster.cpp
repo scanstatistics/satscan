@@ -562,8 +562,10 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
   if (simVars.get_sim_count() == 0)
       return;
 
-  PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
-  fprintf(fp, "%u/%ld\n", m_nRank, simVars.get_sim_count() + 1);
+  if (DataHub.GetParameters().getReportClusterRank()) {
+     PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
+     fprintf(fp, "%u/%ld\n", m_nRank, simVars.get_sim_count() + 1);
+  }
 
   if (reportablePValue(parameters,simVars)) {
     // conditionally report cluster p-value as monte carlo or gumbel

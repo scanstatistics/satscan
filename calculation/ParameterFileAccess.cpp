@@ -159,6 +159,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case PVALUE_REPORT_TYPE       : return " p-value reporting type (Default p-value=0, Standard Monte Carlo=1, Early Termination=2, Gumbel p-value=3) ";
       case REPORT_GUMBEL            : return " report Gumbel p-values";
       case TIME_TREND_TYPE          : return " time trend type - SVTT only (Linear=0, Quadratic=1)";
+      case REPORT_RANK              : return " report cluster rank (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -286,6 +287,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case PVALUE_REPORT_TYPE       : return AsString(s, gParameters.GetPValueReportingType());
       case REPORT_GUMBEL            : return AsString(s, gParameters.GetReportGumbelPValue());
       case TIME_TREND_TYPE          : return AsString(s, gParameters.getTimeTrendType());
+      case REPORT_RANK              : return AsString(s, gParameters.getReportClusterRank()); 
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -405,6 +407,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case PVALUE_REPORT_TYPE       : AsString(default_value, gParameters.GetPValueReportingType()); break;
       case REPORT_GUMBEL            : default_value = (gParameters.GetReportGumbelPValue() ? "y" : "n"); break;
       case TIME_TREND_TYPE          : AsString(default_value, gParameters.getTimeTrendType()); break;
+      case REPORT_RANK              : default_value = (gParameters.getReportClusterRank() ? "y" : "n"); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -749,6 +752,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case REPORT_GUMBEL             : gParameters.SetReportGumbelPValue(ReadBoolean(sParameter, eParameterType)); break;
       case TIME_TREND_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, LINEAR, QUADRATIC);
                                        gParameters.setTimeTrendType((TimeTrendType)iValue); break;
+      case REPORT_RANK               : gParameters.setReportClusterRank(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

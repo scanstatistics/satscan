@@ -120,6 +120,7 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case PVALUE_REPORT_TYPE        : return " p-value reporting type (line 98)";
     case REPORT_GUMBEL             : return " report Gumbel p-values (line 99)";
     case TIME_TREND_TYPE           : return " time trend type (line 100)";
+    case REPORT_RANK               : return " report cluster rank (line 101)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

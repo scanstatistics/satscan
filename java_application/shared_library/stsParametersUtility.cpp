@@ -465,6 +465,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getTimeTrendType());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setReportClusterRank", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportClusterRank());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -909,6 +913,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   }
 
   Parameters.setTimeTrendType((TimeTrendType)getEnumTypeOrdinalIndex(Env, jParameters, "getTimeTrendType", "Lorg/satscan/app/Parameters$TimeTrendType;"));
+
+  mid = _getMethodId_Checked(Env, clazz, "getReportClusterRank", "()Z");
+  Parameters.setReportClusterRank(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
 
   return Parameters;
 }

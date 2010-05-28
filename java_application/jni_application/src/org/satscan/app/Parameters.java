@@ -183,6 +183,7 @@ public class Parameters implements Cloneable {
     private boolean                         gbSuppressWarnings=false; /** indicates whether to suppres warnings printed during execution */
     private SpatialWindowType        	        geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
     private TimeTrendType                       geTimeTrendType;                        /** time trend type */
+    private boolean                             gbReportRank;  /** report cluster rank */
 
 //**    public static final int             	  giNumParameters=79; /** number enumerated parameters */
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
@@ -376,6 +377,7 @@ public class Parameters implements Cloneable {
           if (gbReportGumbelPValue != rhs.gbReportGumbelPValue) return false;
           if (gbReportGumbelPValue != rhs.gbReportGumbelPValue) return false;
           if (geTimeTrendType != rhs.geTimeTrendType) return false;
+          if (gbReportRank != rhs.gbReportRank) return false;
           
     	  return true;
     }
@@ -520,6 +522,7 @@ public class Parameters implements Cloneable {
     public final String GetProspectiveStartDate() {return gsProspectiveStartDate;}
     public int GetRandomizationSeed() {return glRandomizationSeed;}
     public boolean GetReportCriticalValues() {return gbReportCriticalValues;}
+    public boolean getReportClusterRank() {return gbReportRank;}
     public boolean GetRestrictingMaximumReportedGeoClusterSize() {return gbRestrictReportedClusters;}
     public boolean GetRestrictMaxSpatialSizeForType(int iOrdinal, boolean bReported) {
       SpatialSizeType eSpatialSizeType=SpatialSizeType.PERCENTOFPOPULATION;
@@ -748,6 +751,7 @@ public class Parameters implements Cloneable {
     public void SetProspectiveStartDate(final String  sProspectiveStartDate) {gsProspectiveStartDate = sProspectiveStartDate;}
     public void SetRandomizationSeed(int lSeed) {glRandomizationSeed = lSeed;}
     public void SetReportCriticalValues(boolean b) {gbReportCriticalValues = b;}
+    public void setReportClusterRank(boolean b) {gbReportRank = b;}
     public void SetRestrictReportedClusters(boolean b) {gbRestrictReportedClusters = b;}
     public void SetRestrictMaxSpatialSizeForType(int iOrdinal, boolean b, boolean bReported) {
         SpatialSizeType eSpatialSizeType=SpatialSizeType.PERCENTOFPOPULATION;

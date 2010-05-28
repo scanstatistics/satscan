@@ -161,6 +161,7 @@ void ParametersPrint::PrintAdditionalOutputParameters(FILE* fp) const {
 
   try {
     settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
+    settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
     WriteSettingsContainer(settings, "Additional Output", fp);
   }
   catch (prg_exception& x) {
