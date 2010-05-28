@@ -1049,6 +1049,9 @@ void CCluster::SetMostCentralLocationIndex(const CSaTScanData& DataHub) {
        if (!DataHub.GetIsNullifiedLocation(tLocation))
          m_MostCentralLocation = tLocation;
     }
+    //special case -- when most central location is still equal to '-1', 
+    //that means all locations in cluster have been nullified, reset cluster to not defined
+    if (m_MostCentralLocation == -1) m_nTracts = 0;
   }
 }
 
