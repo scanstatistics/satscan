@@ -351,8 +351,6 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
   // calculate date index for prospective surveillance start date
   if (gParameters.GetIsProspectiveAnalysis()) {
     m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
-    if (gParameters.GetProbabilityModelType() != POISSON ||
-        (gParameters.GetProbabilityModelType() == POISSON && !gParameters.UseAdjustmentForRelativeRisksFile())) {
     // If analysis performs simulations and adjusts for earlier analyses, then we can potentially
     // collapse unused time intervals into one based upon the prospective start date and maximum
     // temporal cluster size.
@@ -389,7 +387,7 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
     // If iNumCollapsedIntervals is at least two, them collapse intervals. The reason we don't collapse when
     // iNumCollapsedIntervals is one is because iNumCollapsedIntervals does not take into account the
     // first time interval, which will be the bucket for the collapsed intervals.
-    if (iNumCollapsibleIntervals > 1) {
+    if (iNumCollapsibleIntervals > 1 && !(gParameters.GetProbabilityModelType() == POISSON && gParameters.UseAdjustmentForRelativeRisksFile())) {
       // Removes collaped intervals from the data structure which details time interval start times.
       // When input data is read, what would have gone into the respective second interval, third, etc.
       // will be cummulated into first interval.
@@ -398,7 +396,6 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
       m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
       // Re-calculate index of prospective start date
       m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
-        } 
     }  
   }
 }
