@@ -373,6 +373,34 @@ unsigned long SaTScan::Timestamp::GetTimeInMilliseconds() const
    return ulRetVal;
 }
 
+SaTScan::Timestamp SaTScan::Timestamp::min() {
+  SaTScan::Timestamp timestamp;
+
+  timestamp.SetYear( 0 );
+  timestamp.SetMonth( 1 );
+  timestamp.SetDay( 1 );
+  timestamp.SetHour( 0 );
+  timestamp.SetMinute( 0 );
+  timestamp.SetSecond( 0 );
+  timestamp.SetMillisecond( 0 );
+
+  return timestamp;
+}
+
+SaTScan::Timestamp SaTScan::Timestamp::max() {
+  SaTScan::Timestamp timestamp;
+
+  timestamp.SetYear( 9999 );
+  timestamp.SetMonth( 12 );
+  timestamp.SetDay( 31 );
+  timestamp.SetHour( 23 );
+  timestamp.SetMinute( 59 );
+  timestamp.SetSecond( 59 );
+  timestamp.SetMillisecond( 999 );
+
+  return timestamp;
+}
+
 #ifdef _WINDOWS_
 void SaTScan::Timestamp::MakeLocalTime()
 {

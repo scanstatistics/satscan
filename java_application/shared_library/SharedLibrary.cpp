@@ -210,12 +210,14 @@ JNIEXPORT jdouble JNICALL Java_org_satscan_gui_ParameterSettingsFrame_CalculateN
                                                                                       jstring startYear, jstring startMonth, jstring startDay,
                                                                                       jstring endYear, jstring endMonth, jstring endDay, jint iTimeAggregationType) {
    
-  jboolean iscopy;
-  UInt     iYear, iMonth, iDay;
-  Julian startDate(0), endDate(0);
+  jboolean     iscopy;
+  UInt         iYear, iMonth, iDay;
+  Julian       startDate(0), endDate(0);
+  std::string  yearBuffer;
 
   try {
      const char *sDateField = pEnv->GetStringUTFChars(startYear, &iscopy);
+     yearBuffer = sDateField;
      iYear = static_cast<UInt>(atoi(sDateField));
 	 if (sDateField == NULL) jni_error::_throwException(*pEnv);
      if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(startYear, sDateField);
@@ -228,9 +230,14 @@ JNIEXPORT jdouble JNICALL Java_org_satscan_gui_ParameterSettingsFrame_CalculateN
      iDay = static_cast<UInt>(atoi(sDateField));
      if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(startDay, sDateField);
 
-     startDate = MDYToJulian(iMonth, iDay, iYear);
+     if (iTimeAggregationType == GENERIC) {
+       startDate = relativeDateToJulian(yearBuffer.c_str());
+     } else {
+        startDate = MDYToJulian(iMonth, iDay, iYear);
+     }
 
      sDateField = pEnv->GetStringUTFChars(endYear, &iscopy);
+     yearBuffer = sDateField;
 	 if (sDateField == NULL) jni_error::_throwException(*pEnv);
      iYear = static_cast<UInt>(atoi(sDateField));
      if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(endYear, sDateField);
@@ -243,7 +250,12 @@ JNIEXPORT jdouble JNICALL Java_org_satscan_gui_ParameterSettingsFrame_CalculateN
      iDay = static_cast<UInt>(atoi(sDateField));
      if (iscopy == JNI_TRUE) pEnv->ReleaseStringUTFChars(endDay, sDateField);
 
-     endDate = MDYToJulian(iMonth, iDay, iYear);
+     if (iTimeAggregationType == GENERIC) {
+       endDate = relativeDateToJulian(yearBuffer.c_str());
+     } else {
+        endDate = MDYToJulian(iMonth, iDay, iYear);
+     }
+
      return CalculateNumberOfTimeIntervals(startDate, endDate, (DatePrecisionType)iTimeAggregationType, 1);
   }
   catch (jni_error & x) {

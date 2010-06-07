@@ -4,6 +4,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.beans.PropertyVetoException;
+import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import javax.swing.ImageIcon;
@@ -556,6 +557,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             case DAY:
                 sString = (bCapitalizeFirstLetter ? "D" : "d") + "ay";
                 break;
+            case GENERIC:
+                sString = (bCapitalizeFirstLetter ? "U" : "u") + "nit";
+                break;
             default:
                 sString = "none";
                 break;
@@ -577,16 +581,23 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
      * Calculates number of time aggregation units in study period.
      */
     public double CalculateTimeAggregationUnitsInStudyPeriod() {
-        GregorianCalendar startDate = getStudyPeriodStartDateAsCalender();
-        GregorianCalendar endDate = getStudyPeriodEndDateAsCalender();
+        if (getTimeAggregationControlType() == Parameters.DatePrecisionType.GENERIC) {
+            return Math.ceil(CalculateNumberOfTimeIntervals(_studyPeriodStartDateGenericTextField.getText(), "", "",
+                                                            _studyPeriodEndDateGenericTextField.getText(), "", "",
+                                                            getTimeAggregationControlType().ordinal()));
 
-        return Math.ceil(CalculateNumberOfTimeIntervals(Integer.toString(startDate.get(GregorianCalendar.YEAR)),
-                                                        Integer.toString(startDate.get(GregorianCalendar.MONTH) + 1),
-                                                        Integer.toString(startDate.get(GregorianCalendar.DAY_OF_MONTH)),
-                                                        Integer.toString(endDate.get(GregorianCalendar.YEAR)),
-                                                        Integer.toString(endDate.get(GregorianCalendar.MONTH) + 1),
-                                                        Integer.toString(endDate.get(GregorianCalendar.DAY_OF_MONTH)),
-                                                        getTimeAggregationControlType().ordinal()));
+        } else {
+            GregorianCalendar startDate = getStudyPeriodStartDateAsCalender();
+            GregorianCalendar endDate = getStudyPeriodEndDateAsCalender();
+
+            return Math.ceil(CalculateNumberOfTimeIntervals(Integer.toString(startDate.get(GregorianCalendar.YEAR)),
+                                                            Integer.toString(startDate.get(GregorianCalendar.MONTH) + 1),
+                                                            Integer.toString(startDate.get(GregorianCalendar.DAY_OF_MONTH)),
+                                                            Integer.toString(endDate.get(GregorianCalendar.YEAR)),
+                                                            Integer.toString(endDate.get(GregorianCalendar.MONTH) + 1),
+                                                            Integer.toString(endDate.get(GregorianCalendar.DAY_OF_MONTH)),
+                                                            getTimeAggregationControlType().ordinal()));
+        }
     }
 
     /**
@@ -716,8 +727,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         setModelControl(parameters.GetProbabilityModelType());
         setAreaScanRateControl(parameters.GetAreaScanRateType());
         if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
-            _studyPeriodStartDateGenericTextField.setText(parameters.GetStudyPeriodStartDate());
-            _studyPeriodEndDateGenericTextField.setText(parameters.GetStudyPeriodEndDate());
+            Utils.parseDateStringToControl(parameters.GetStudyPeriodStartDate(), _studyPeriodStartDateGenericTextField);
+            Utils.parseDateStringToControl(parameters.GetStudyPeriodEndDate(), _studyPeriodEndDateGenericTextField);
         } else {
             Utils.parseDateStringToControls(parameters.GetStudyPeriodStartDate(), _studyPeriodStartDateYearTextField, _studyPeriodStartDateMonthTextField, _studyPeriodStartDateDayTextField, false);
             Utils.parseDateStringToControls(parameters.GetStudyPeriodEndDate(), _studyPeriodEndDateYearTextField, _studyPeriodEndDateMonthTextField, _studyPeriodEndDateDayTextField, true);
@@ -1843,6 +1854,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 Utils.validateNumericKeyTyped(_studyPeriodStartDateGenericTextField, e, 10);
             }
         });
+        _studyPeriodStartDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {
+                    Utils.validateGenericDateField(_studyPeriodStartDateGenericTextField, undo);
+                }
+            }
+        });
 
         _endDateLabel1.setText("End Date:"); // NOI18N
 
@@ -1855,6 +1873,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _studyPeriodEndDateGenericTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
                 Utils.validateNumericKeyTyped(_studyPeriodEndDateGenericTextField, e, 10);
+            }
+        });
+        _studyPeriodEndDateGenericTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (ParameterSettingsFrame.this.getPrecisionOfTimesControlType() == Parameters.DatePrecisionType.GENERIC) {
+                    Utils.validateGenericDateField(_studyPeriodEndDateGenericTextField, undo);
+                }
             }
         });
 
@@ -2289,7 +2314,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 27, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 22, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2415,9 +2440,9 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(jLabel2)
                 .addGap(10, 10, 10)
                 .addComponent(_prospectivePurelyTemporalRadioButton)
-                .addGap(20, 20, 20)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_prospectiveSpaceTimeRadioButton)
-                .addContainerGap(58, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
         _probabilityModelGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Probability Model", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
@@ -2567,13 +2592,13 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_exponentialModelRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_normalModelRadioButton)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(_probabilityModelGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_homogeneouspoissonModelRadioButton)
                     .addComponent(_observableRegionsButton, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
 
         _scanAreasGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Scan For Areas With:", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
@@ -2639,7 +2664,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_highOrLowRatesRadioButton)
                 .addGap(1, 1, 1)
                 .addComponent(_highOrLowRatesRadioLabel)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         _timeAggregationGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Time Aggregation", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
@@ -2967,7 +2992,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                     .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(__additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 195, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2982,7 +3007,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
         );
 
         pack();

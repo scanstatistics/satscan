@@ -74,7 +74,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case ENDDATE                  : return " study period end date (YYYY/MM/DD)";
       case CLUSTERS                 : return " temporal clusters evaluated (0=All, 1=Alive, 2=Flexible Window)";
       case EXACTTIMES               : return " n/a";
-      case TIME_AGGREGATION_UNITS   : return " time aggregation units (0=None, 1=Year, 2=Month, 3=Day)";
+      case TIME_AGGREGATION_UNITS   : return " time aggregation units (0=None, 1=Year, 2=Month, 3=Day, 4=Generic)";
       case TIME_AGGREGATION         : return " time aggregation length (Positive Integer)";
       case PURESPATIAL              : return " include purely spatial clusters? (y/n)";
       case TIMESIZE                 : return " maximum temporal cluster size (<=90%)";

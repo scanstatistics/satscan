@@ -76,9 +76,22 @@ Julian relativeDateToJulian(const char* szDateString) {
   long relativeDate;
 
   if (sscanf(szDateString, "%i", &relativeDate) != 1) 
-    throw prg_error("Failed to convert relative date '%s' to integer.\n", "relativeDateToJulian()", szDateString);
+    throw resolvable_error("Failed to convert relative date '%s' to integer.\n", szDateString);
 
-  initialDate.Now();
+  initialDate.SetYear(2000);
+  initialDate.SetMonth(1);
+  initialDate.SetDay(1);
+
+  SaTScan::Timestamp minDate(SaTScan::Timestamp::min());
+  SaTScan::Timestamp maxDate(SaTScan::Timestamp::max());  
+
+  long init = static_cast<long>(initialDate.GetJulianDate());
+  long min = static_cast<long>(minDate.GetJulianDate());
+  long max = static_cast<long>(maxDate.GetJulianDate());
+
+  if (init + relativeDate < min || init + relativeDate >= max)
+    throw resolvable_error("Generic date '%s' is outside of valid range of values [%d, %d].\n", szDateString, -1 * (init - min), max - init - 1);
+
   initialDate.AddDays( relativeDate );
 
   return static_cast<Julian>(initialDate.GetJulianDate());
@@ -145,7 +158,9 @@ std::string& JulianToString(std::string& sDate, Julian JNum, DatePrecisionType e
       case DAY     : printString(sDate, "%u/%u/%u", year, month, day); break;
       case GENERIC : {
                      SaTScan::Timestamp initialDate;
-                     initialDate.Now();
+                     initialDate.SetYear(2000);
+                     initialDate.SetMonth(1);
+                     initialDate.SetDay(1);
                      printString(sDate, "%ld", JNum - static_cast<long>(initialDate.GetJulianDate())); break;
                      }
       case NONE    :
@@ -355,4 +370,3 @@ void DecrementableEndDate::Setup() {
   else
     gbHuggingMonthEnd = false;
 }
-

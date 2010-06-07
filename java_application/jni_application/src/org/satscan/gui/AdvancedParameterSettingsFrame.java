@@ -1958,10 +1958,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _includePureSpacClustCheckBox.setSelected(parameters.GetIncludePurelySpatialClusters());
         _restrictTemporalRangeCheckBox.setSelected(parameters.GetIncludeClustersType() == Parameters.IncludeClustersType.CLUSTERSINRANGE);
         if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
-            _startRangeStartGenericTextField.setText(parameters.GetStartRangeStartDate());
-            _startRangeEndGenericTextField.setText(parameters.GetStartRangeEndDate());
-            _endRangeStartGenericTextField.setText(parameters.GetEndRangeStartDate());
-            _endRangeEndGenericTextField.setText(parameters.GetEndRangeEndDate());
+            Utils.parseDateStringToControl(parameters.GetStartRangeStartDate(), _startRangeStartGenericTextField);
+            Utils.parseDateStringToControl(parameters.GetStartRangeEndDate(), _startRangeEndGenericTextField);
+            Utils.parseDateStringToControl(parameters.GetEndRangeStartDate(), _endRangeStartGenericTextField);
+            Utils.parseDateStringToControl(parameters.GetEndRangeEndDate(), _endRangeEndGenericTextField);
         } else {
             Utils.parseDateStringToControls(parameters.GetStartRangeStartDate(), _startRangeStartYearTextField, _startRangeStartMonthTextField, _startRangeStartDayTextField, false);
             Utils.parseDateStringToControls(parameters.GetStartRangeEndDate(), _startRangeEndYearTextField, _startRangeEndMonthTextField, _startRangeEndDayTextField, false);
@@ -1982,7 +1982,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportCriticalValuesCheckBox.setSelected(parameters.GetReportCriticalValues());
         _adjustForEarlierAnalysesCheckBox.setSelected(parameters.GetAdjustForEarlierAnalyses());
         if (parameters.GetPrecisionOfTimesType().equals(Parameters.DatePrecisionType.GENERIC)) {
-           _prospectiveStartDateGenericTextField.setText(parameters.GetProspectiveStartDate());
+            Utils.parseDateStringToControl(parameters.GetProspectiveStartDate(), _prospectiveStartDateGenericTextField);
         } else {
             ParseProspectiveDate(parameters.GetProspectiveStartDate(), _prospectiveStartDateYearTextField, _prospectiveStartDateMonthTextField, _prospectiveStartDateDayTextField);
         }

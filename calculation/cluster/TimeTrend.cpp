@@ -58,6 +58,7 @@ double AbstractTimeTrend::SetAnnualTimeTrend(DatePrecisionType eAggregationPreci
   }
 
   switch (eAggregationPrecision) {
+    case GENERIC : /* is this correct? */
     case YEAR  : gdAnnualTimeTrend = 100 * (exp(gdBeta/dTimeAggregationLength) - 1); break;
     case MONTH : gdAnnualTimeTrend = 100 * (exp(gdBeta * 12/dTimeAggregationLength) - 1); break;
     case DAY   : gdAnnualTimeTrend = 100 * (exp(gdBeta * 365.25/dTimeAggregationLength) - 1); break;

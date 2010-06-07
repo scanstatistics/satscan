@@ -16,6 +16,8 @@ public final class AppConstants {
     private final static String APP_TITLE = "SaTScan - Software for the Spatial and Space-Time Scan Statistic";
     public static final int MIN_YEAR = 1753;
     public static final int MAX_YEAR = 9999;
+    public static final int MIN_GENERIC = -714593;
+    public static final int MAX_GENERIC = 2921939;
     public static final int VERSION_MAJOR = 8;
     public static final int VERSION_MINOR = 3;
     public static final int VERSION_RELEASE = 0;

@@ -70,7 +70,30 @@ public class Utils {
             e.consume();
         }
     }    
-    
+
+    /**
+     *
+     * Validates that generic date value is within allowable ranges.
+     */
+    public static void validateGenericDateField(JTextField genericControl, UndoManager undo) {
+        if (genericControl.getText().length() == 0) {
+            if (undo.canUndo()) {
+                undo.undo();
+            } else {
+                genericControl.setText(Integer.toString(AppConstants.MAX_GENERIC));
+            }
+        }
+        else {
+            //set value to a valid setting if out of valid range
+            if (Integer.parseInt(genericControl.getText()) < AppConstants.MIN_GENERIC) {
+                genericControl.setText(Integer.toString(AppConstants.MIN_GENERIC));
+            } else if (Integer.parseInt(genericControl.getText()) > AppConstants.MAX_GENERIC) {
+                genericControl.setText(Integer.toString(AppConstants.MAX_GENERIC));
+            }
+        }
+
+    }
+
     /**
      * validates date controls represented by three passed edit controls - prevents an invalid date
      */
@@ -127,6 +150,23 @@ public class Utils {
             } else if (Integer.parseInt(DayControl.getText()) > iDaysInMonth) {
                 DayControl.setText(Integer.toString(iDaysInMonth));
             }
+        }
+    }
+
+    /**
+     * Parses date string and validates integer range.
+     */
+    public static void parseDateStringToControl(String sDateString, JTextField genericControl) {
+        try {
+            int iGeneric = Integer.parseInt(sDateString);
+            if (iGeneric < AppConstants.MIN_GENERIC) {
+                genericControl.setText(Integer.toString(AppConstants.MIN_GENERIC));
+            } else if (iGeneric > AppConstants.MAX_GENERIC) {
+                genericControl.setText(Integer.toString(AppConstants.MAX_GENERIC));
+            } else {
+                genericControl.setText(sDateString);
+            }
+        } catch (NumberFormatException e) {       
         }
     }
 

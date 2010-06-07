@@ -103,6 +103,9 @@ public:
    static bool     IsValidDate ( const char *sRawDate, bool bAllowZeroMonth = false, bool bAllowZeroDay = false );
    static bool     ValuesIndicateValidDate ( unsigned short uwYear, unsigned short uwMonth, unsigned short uwDay );
    static bool     IsLeapYear(unsigned short uwYear);
+
+   static Timestamp min();
+   static Timestamp max();
 };
 
 inline bool Timestamp::IsValidDate ( const char *sRawDate, bool bAllowZeroMonth, bool bAllowZeroDay )

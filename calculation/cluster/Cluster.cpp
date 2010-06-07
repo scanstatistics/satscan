@@ -660,10 +660,11 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
   dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength())/dAdjustedP_Value;
   
   switch (parameters.GetTimeAggregationUnitsType()) {
-      case YEAR   : return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR,1.0));
-      case MONTH  : return std::make_pair(dUnitsInOccurrence/12.0, std::max((dUnitsInOccurrence/12.0) * AVERAGE_DAYS_IN_YEAR,1.0));
-      case DAY    : return std::make_pair(dUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence,1.0));
-      default     : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.",
+      case YEAR    : return std::make_pair(dUnitsInOccurrence, std::max(dUnitsInOccurrence * AVERAGE_DAYS_IN_YEAR,1.0));
+      case MONTH   : return std::make_pair(dUnitsInOccurrence/12.0, std::max((dUnitsInOccurrence/12.0) * AVERAGE_DAYS_IN_YEAR,1.0));
+      case DAY     : return std::make_pair(dUnitsInOccurrence/AVERAGE_DAYS_IN_YEAR, std::max(dUnitsInOccurrence,1.0));
+      case GENERIC : return std::make_pair(std::max(dUnitsInOccurrence,1.0), std::max(dUnitsInOccurrence,1.0));
+      default      : throw prg_error("Invalid time interval index \"%d\" for prospective analysis.",
                                     "GetRecurrenceInterval()", parameters.GetTimeAggregationUnitsType());
   }
 }
@@ -677,11 +678,15 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
          //PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
          RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
          if (ri.first < 1.0) {
-            printString(buffer, "%.0lf day%s", ri.second, (ri.second < 1.5 ? "" : "s"));
+            printString(buffer, "%.0lf %s%s", ri.second, 
+                                              Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "day",
+                                              (ri.second < 1.5 ? "" : "s"));
          } else if (ri.first <= 10.0) {
-            printString(buffer, "%.1lf year%s", ri.first, (ri.first < 1.05 ? "" : "s"));
+            printString(buffer, "%.1lf %s%s", ri.first, 
+                                              Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "unit" : "year",
+                                              (ri.first < 1.05 ? "" : "s"));
          } else {
-            printString(buffer, "%.0lf years", ri.first);
+            printString(buffer, "%.0lf %s", ri.first, Data.GetParameters().GetTimeAggregationUnitsType() == GENERIC ? "units" : "years");
          }
          //print data to file stream
          //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
