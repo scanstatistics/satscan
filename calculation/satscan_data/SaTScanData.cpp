@@ -985,18 +985,20 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
                              sDateMaxWET.c_str(), m_nIntervalCut * gParameters.GetTimeAggregationLength(), sTimeIntervalType.c_str());
     }
 
-    // Collapse unused time intervals at end of study period, if possible.
-    if (m_nTimeIntervals - iMaxEndWindow > 1)
-      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.end() - (m_nTimeIntervals - iMaxEndWindow), gvTimeIntervalStartTimes.end() - 1);
-    // Collapse unused time intervals at beginning of study period, if possible.
-    if (iWindowStart > 1)
-      gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iWindowStart);
-    m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
-    // recalculate flexable window indexes
-    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeStartDate().c_str())));
-    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeEndDate().c_str())));
-    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeStartDate().c_str())));
-    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeEndDate().c_str())));
+    if (!(gParameters.GetProbabilityModelType() == POISSON && gParameters.UseAdjustmentForRelativeRisksFile())) {
+        // Collapse unused time intervals at end of study period, if possible.
+        if (m_nTimeIntervals - iMaxEndWindow > 1)
+            gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.end() - (m_nTimeIntervals - iMaxEndWindow), gvTimeIntervalStartTimes.end() - 1);
+        // Collapse unused time intervals at beginning of study period, if possible.
+        if (iWindowStart > 1)
+            gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iWindowStart);
+        m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
+        // recalculate flexable window indexes
+        m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeStartDate().c_str())));
+        m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeEndDate().c_str())));
+        m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeStartDate().c_str())));
+        m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeEndDate().c_str())));
+    }
   }
 }
 
