@@ -55,7 +55,7 @@ const char * ClusterInformationWriter::WEIGHT_INSIDE_FIELD          = "WEIGHT_IN
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
-                gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0) {
+                gpASCIIFileDataWriter(0), gpDBaseFileDataWriter(0), gpShapeDataFileWriter(0) {
   try {
     if (gParameters.GetOutputClusterLevelFiles())
       DefineClusterInformationFields();
@@ -65,8 +65,10 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
       gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
     if (gParameters.GetOutputClusterCaseAscii())
       gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, CLUSTERCASE_FILE_EXT, bAppend);
-    if (gParameters.GetOutputClusterLevelDBase())
+    if (gParameters.GetOutputClusterLevelDBase()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
+      //gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
+    }
     if (gParameters.GetOutputClusterCaseDBase())
       gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
   }
@@ -83,6 +85,9 @@ ClusterInformationWriter::~ClusterInformationWriter() {
   try {
     delete gpASCIIFileDataWriter;
     delete gpDBaseFileDataWriter;
+
+    delete gpShapeDataFileWriter;
+
   }
   catch (...){}
 }
@@ -468,6 +473,7 @@ void ClusterInformationWriter::WriteCoordinates(RecordBuffer& Record, const CClu
          case LATLON    : prLatitudeLongitude = ConvertToLatLong(vCoordinates);
                           Record.GetFieldValue(iFirstCoordIndex).AsDouble() = prLatitudeLongitude.first;
                           Record.GetFieldValue(iSecondCoordIndex).AsDouble() = prLatitudeLongitude.second;
+                          if (gpShapeDataFileWriter) gpShapeDataFileWriter->writeCoordinates(prLatitudeLongitude.second, prLatitudeLongitude.first);
                           dRadius = 2 * EARTH_RADIUS_km * asin(thisCluster.GetCartesianRadius()/(2 * EARTH_RADIUS_km));
                           Record.GetFieldValue(RADIUS_FIELD).AsDouble() = dRadius;
                           break;

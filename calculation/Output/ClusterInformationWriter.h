@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "AbstractDataFileWriter.h"
 #include "SimulationVariables.h"
+#include "ShapeFileWriter.h"
 
 class CCluster;       /** forward class declaration */
 class CSaTScanData;   /** forward class declaration */
@@ -53,6 +54,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;
       DBaseDataFileWriter     * gpDBaseFileDataWriter;
+      ShapeDataFileWriter     * gpShapeDataFileWriter;
       ptr_vector<FieldDef>      vDataFieldDefinitions;
 
       void                      DefineClusterInformationFields();

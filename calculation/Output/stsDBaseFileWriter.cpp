@@ -22,6 +22,7 @@ DBaseDataFileWriter::DBaseDataFileWriter(const CParameters& Parameters, ptr_vect
 /** destructor */
 DBaseDataFileWriter::~DBaseDataFileWriter() {
   try {
+    gFile.PackData();
     gFile.Close();
   }
   catch (...){}

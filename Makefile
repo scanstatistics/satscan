@@ -29,22 +29,20 @@ XBASEDIR    := $(SATSCAN)/xbase/xbase_2.0.0/xbase
 XBASEDIR2   := $(SATSCAN)/xbase/xbase_2.0.0
 BOOSTDIR    := $(SATSCAN)/../boost/boost_1_39_0
 NEWMAT      := $(SATSCAN)/newmat/newmat10
+SHAPELIB    := $(SATSCAN)/shapelib/shapelib_1.2.10
 #JNI         :=
-PYTHON      := /usr/local/python-2.5.2/include/python2.5
-PYTHONLIB   := /usr/local/python-2.5.2/lib
-#PYTHONFLAG  := -lpython
 
 INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBASEDIR) -I$(XBASEDIR2)\
-               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT) -I$(PYTHON)\
+               -I$(OUTPUT) -I$(PRINT) -I$(PROBMODEL) -I$(NEWMAT) -I$(SHAPELIB)\
 	           -I$(SATDATA) -I$(UTILITY) -I$(RANDOMIZER) -I$(LOGLIKELIHOOD) -I$(ANALYSISRUN) -I$(BOOSTDIR) -I$(JNI)
 
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
                               
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
-LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -Wl,-Bstatic -lxbaseg -lnewmat -lm -Wl,-Bdynamic -lrt -lpthread $(PYTHONFLAG)
+LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lxbaseg -lnewmat -lshape -lm -Wl,-Bdynamic -lrt -lpthread
 # static libgcc flags 
-#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lm -lpthread 
+#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lshape -lm -lpthread 
 
 # Linux link flags
 L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINUX_LIBRARY).x.x.0
@@ -53,7 +51,7 @@ L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINU
 S_DLFLAGS   := -shared $(COMPILATION) -z text -o $(SOLARIS_LIBRARY).x.x.0
 
 # Mac OS X flags
-M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -Wl,-dynamic -lxbase -lnewmat -lstdc++ -lm $(PYTHONFLAG)
+M_LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-dynamic -lxbase -lnewmat -lshape -lstdc++ -lm
 M_DLFLAGS     := -shared $(COMPILATION) -install_name $(MAC_LIBRARY)
 
 SRC         := $(ANALYSIS)/Analysis.cpp \
@@ -113,6 +111,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(OUTPUT)/stsRunHistoryFile.cpp \
                $(OUTPUT)/AsciiPrintFormat.cpp \
                $(OUTPUT)/ClusterScatterChart.cpp \
+               $(OUTPUT)/ShapeFileWriter.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \
@@ -195,6 +194,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(UTILITY)/Ini.cpp \
                $(UTILITY)/TimeStamp.cpp \
                $(UTILITY)/FieldDef.cpp \
+               $(UTILITY)/ShapeFile.cpp \
                $(CALCULATION)/Parameters.cpp \
                $(CALCULATION)/ParametersPrint.cpp \
                $(CALCULATION)/ParametersValidate.cpp \
@@ -251,13 +251,13 @@ $(MAC_APPLICATION) : $(OBJS) $(APP_OBJS)
 	$(CC) $(OBJS) $(APP_OBJS) $(M_LFLAGS) -o $@
 
 $(LINUX_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -lxbaseg -lnewmat  -lm -lrt -lpthread $(PYTHONFLAG)
+	$(CC) $(L_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbaseg -lnewmat -lshape -lm -lrt -lpthread
 
 $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -lxbaseg -lnewmat -lm -lrt -lpthread $(PYTHONFLAG)
+	$(CC) $(S_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbaseg -lnewmat -lshape -lm -lrt -lpthread
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
-	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(PYTHONLIB) -lxbase -lnewmat -lstdc++ -lm $(PYTHONFLAG) -o $@
+	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbase -lnewmat -lshape -lstdc++ -lm -o $@
 %.o : %.cpp 
 	$(CC) $(CFLAGS) $< -o $@ 
 
