@@ -112,6 +112,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(OUTPUT)/LocationRiskEstimateWriter.cpp \
                $(OUTPUT)/stsRunHistoryFile.cpp \
                $(OUTPUT)/AsciiPrintFormat.cpp \
+               $(OUTPUT)/ClusterScatterChart.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \

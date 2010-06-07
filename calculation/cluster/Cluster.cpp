@@ -35,6 +35,7 @@ void CCluster::Initialize(tract_t nCenter) {
   m_nFirstInterval = 0;
   m_nLastInterval  = 0;
   m_iEllipseOffset = 0;
+  gpCachedReportLines = 0;
 }
 
 /** overloaded assignment operator */
@@ -49,8 +50,31 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   m_nFirstInterval        = rhs.m_nFirstInterval;
   m_nLastInterval         = rhs.m_nLastInterval;
   m_iEllipseOffset        = rhs.m_iEllipseOffset;
-
+  if (rhs.gpCachedReportLines) {
+      gpCachedReportLines = new ReportCache_t(*rhs.gpCachedReportLines);
+  }
   return *this;
+}
+
+/** Adds report line to cluster report cache. */
+void CCluster::cacheReportLine(std::string& label, std::string& value) const {
+  if (!gpCachedReportLines)
+      gpCachedReportLines = new ReportCache_t();
+  gpCachedReportLines->push_back(std::make_pair(label,value));
+}
+
+CCluster::ReportCache_t & CCluster::getReportLinesCache() const {
+  if (!gpCachedReportLines)
+      gpCachedReportLines = new ReportCache_t();
+  return *gpCachedReportLines;
+}
+
+/** TODO: Document Me! */
+void CCluster::printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value) const {
+   PrintFormat.PrintSectionLabel(fp, label, false, true);
+   PrintFormat.PrintAlignedMarginsDataString(fp, value);
+   std::string s(label);
+   cacheReportLine(s, value);
 }
 
 /** */
@@ -109,13 +133,14 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
 
 /** Prints annual cases to file stream is in format required by result output file. */
 void CCluster::DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  std::string buffer;
+  std::string buffer, buffer2;
 
   if (DataHub.GetParameters().GetProbabilityModelType() == POISSON && DataHub.GetParameters().UsePopulationFile()) {
     printString(buffer, "Annual cases / %.0f", DataHub.GetAnnualRatePop());
-    PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, true);
-    buffer = getValueAsString(DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex), buffer, 1);
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+    //PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, true);
+    buffer2 = getValueAsString(DataHub.GetAnnualRateAtStart(iDataSetIndex) * GetObservedDivExpected(DataHub, iDataSetIndex), buffer2, 1);
+    //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+    printClusterData(fp, PrintFormat, buffer.c_str(), buffer2);
   }
 }
 
@@ -488,39 +513,45 @@ void CCluster::DisplayCoordinates(FILE* fp, const CSaTScanData& Data, const Asci
     Data.GetGInfo()->retrieveCoordinates(m_Center, vCoordinates);
     //print coordinates differently when ellipses are requested
     if (Data.GetParameters().GetSpatialWindowType() == CIRCULAR)  {
-      PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
+      //--PrintFormat.PrintSectionLabel(fp, "Coordinates / radius", false, true);
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
          printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          buffer += work;
       }
-
       work2 = getValueAsString(m_CartesianRadius, work2);
       printString(work, "%g) / %s", vCoordinates.back(), work2.c_str());
       buffer += work;
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      //--PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      printClusterData(fp, PrintFormat, "Coordinates / radius", buffer);
     }
     else {//print ellipse settings
-      PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
+      //--PrintFormat.PrintSectionLabel(fp, "Coordinates", false, true);
       for (size_t i=0; i < vCoordinates.size() - 1; ++i) {
          printString(work, "%s%g,", (i == 0 ? "(" : "" ), vCoordinates[i]);
          buffer += work;
       }
       printString(work, "%g)", vCoordinates.back());
       buffer += work;
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      //--PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      printClusterData(fp, PrintFormat, "Coordinates", buffer);
       //print ellipse particulars
-      PrintFormat.PrintSectionLabel(fp, "Semiminor axis", false, true);
+      //--PrintFormat.PrintSectionLabel(fp, "Semiminor axis", false, true);
       work = getValueAsString(m_CartesianRadius, work);
-      fprintf(fp, "%s\n", work.c_str());
-      PrintFormat.PrintSectionLabel(fp, "Semimajor axis", false, true);
+      //--fprintf(fp, "%s\n", work.c_str());
+      printClusterData(fp, PrintFormat, "Semiminor axis", work);
+      //PrintFormat.PrintSectionLabel(fp, "Semimajor axis", false, true);
       work = getValueAsString(m_CartesianRadius * Data.GetEllipseShape(GetEllipseOffset()), work);
-      fprintf(fp, "%s\n", work.c_str());
-      PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
+      //--fprintf(fp, "%s\n", work.c_str());
+      printClusterData(fp, PrintFormat, "Semimajor axis", work);
+      //--PrintFormat.PrintSectionLabel(fp, "Angle (degrees)", false, true);
       work = getValueAsString(ConvertAngleToDegrees(Data.GetEllipseAngle(m_iEllipseOffset)), work);
-      fprintf(fp, "%s\n", work.c_str());
-      PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
+      //--fprintf(fp, "%s\n", work.c_str());
+      printClusterData(fp, PrintFormat, "Angle (degrees)", work);
+
+      //PrintFormat.PrintSectionLabel(fp, "Shape", false, true);
       work = getValueAsString(Data.GetEllipseShape(m_iEllipseOffset), work);
-      fprintf(fp, "%s\n", work.c_str());
+      //fprintf(fp, "%s\n", work.c_str());
+      printClusterData(fp, PrintFormat, "Shape", work);
     }
   }
   catch (prg_exception& x) {
@@ -563,13 +594,15 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
       return;
 
   if (DataHub.GetParameters().getReportClusterRank()) {
-     PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
-     fprintf(fp, "%u/%ld\n", m_nRank, simVars.get_sim_count() + 1);
+    //PrintFormat.PrintSectionLabel(fp, "Monte Carlo rank", false, true);
+    printString(buffer, "%u/%ld", m_nRank, simVars.get_sim_count() + 1);
+    //fprintf(fp, buffer.c_str());
+    printClusterData(fp, PrintFormat, "Monte Carlo rank", buffer);
   }
 
   if (reportablePValue(parameters,simVars)) {
     // conditionally report cluster p-value as monte carlo or gumbel
-    PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
+    //PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
     if (parameters.GetPValueReportingType() == GUMBEL_PVALUE ||
         (parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
@@ -578,24 +611,28 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
       } else {
         getValueAsString(p.first, buffer);
       }
-      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+      printClusterData(fp, PrintFormat, "P-value", buffer);
     } else {
       printString(replicas, "%u", simVars.get_sim_count());
-      printString(format, "%%.%dlf\n", replicas.size());
-      fprintf(fp, format.c_str(), GetMonteCarloPValue(parameters,simVars, iReportedCluster == 1));
+      printString(format, "%%.%dlf", replicas.size());
+      printString(buffer, format.c_str(), GetMonteCarloPValue(parameters,simVars, iReportedCluster == 1));
+      //fprintf(fp, buffer.c_str());
+      printClusterData(fp, PrintFormat, "P-value", buffer);
     }
     DisplayRecurrenceInterval(fp, DataHub, iReportedCluster, simVars, PrintFormat);
     //conditionally report gumbel p-value as supplement to reported p-value
     if (parameters.GetReportGumbelPValue() &&
         (parameters.GetPValueReportingType() == STANDARD_PVALUE || parameters.GetPValueReportingType() == TERMINATION_PVALUE)) {
-         PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
+         //PrintFormat.PrintSectionLabel(fp, "Gumbel P-value", false, true);
          std::pair<double,double> p = GetGumbelPValue(simVars);
          if (p.first == 0.0) {
            getValueAsString(p.second, buffer).insert(0, "< ");
          } else {
            getValueAsString(p.first, buffer);
          }
-         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+         //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+         printClusterData(fp, PrintFormat, "Gumbel P-value", buffer);
     }
   }
 }
@@ -637,7 +674,7 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
 
   try {
       if (reportableRecurrenceInterval(Data.GetParameters(), simVars)) {
-         PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
+         //PrintFormat.PrintSectionLabel(fp, "Recurrence interval", false, true);
          RecurrenceInterval_t ri = GetRecurrenceInterval(Data, iReportedCluster, simVars);
          if (ri.first < 1.0) {
             printString(buffer, "%.0lf day%s", ri.second, (ri.second < 1.5 ? "" : "s"));
@@ -647,7 +684,8 @@ void CCluster::DisplayRecurrenceInterval(FILE* fp, const CSaTScanData& Data, uns
             printString(buffer, "%.0lf years", ri.first);
          }
          //print data to file stream
-         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+         //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+         printClusterData(fp, PrintFormat, "Recurrence interval", buffer);
     }
   }
   catch (prg_exception& x) {
@@ -687,16 +725,24 @@ void CCluster::DisplayPopulation(FILE* fp, const CSaTScanData& DataHub, const As
 
 /** Writes clusters log likelihood ratio/test statistic in format required by result output file. */
 void CCluster::DisplayRatio(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
+  std::string  buffer;
+
   if (DataHub.GetParameters().GetProbabilityModelType() == SPACETIMEPERMUTATION) {
-     PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
-     fprintf(fp, "%lf\n", m_nRatio);
+     //PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
+     //fprintf(fp, "%lf\n", m_nRatio);
+     printString(buffer, "%lf", m_nRatio);
+     printClusterData(fp, PrintFormat, "Test statistic", buffer);
   }
   else {
-    PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
-    fprintf(fp, "%lf\n", m_nRatio/m_NonCompactnessPenalty);
+    //PrintFormat.PrintSectionLabel(fp, "Log likelihood ratio", false, true);
+    printString(buffer, "%lf", m_nRatio/m_NonCompactnessPenalty);
+    //fprintf(fp, "%lf\n", m_nRatio/m_NonCompactnessPenalty);
+    printClusterData(fp, PrintFormat, "Log likelihood ratio", buffer);
     if (DataHub.GetParameters().GetSpatialWindowType() == ELLIPTIC) {
-      PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
-      fprintf(fp, "%lf\n", m_nRatio);
+      //PrintFormat.PrintSectionLabel(fp, "Test statistic", false, true);
+      //fprintf(fp, "%lf\n", m_nRatio);
+      printString(buffer, "%lf", m_nRatio);
+      printClusterData(fp, PrintFormat, "Test statistic", buffer);
     }
   }
 }
@@ -706,29 +752,33 @@ void CCluster::DisplayRelativeRisk(FILE* fp, unsigned int iDataSetIndex, const C
   std::string buffer;
   double      dRelativeRisk;
 
-  PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
+  //PrintFormat.PrintSectionLabel(fp, "Relative risk", false, true);
   if ((dRelativeRisk = GetRelativeRisk(DataHub, iDataSetIndex)) == -1)
     buffer = "infinity";
   else
     buffer = getValueAsString(dRelativeRisk, buffer);
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  printClusterData(fp, PrintFormat, "Relative risk", buffer);
 }
 
 /** Writes clusters overall relative risk in format required by result output file. */
 void CCluster::DisplayObservedDivExpected(FILE* fp, unsigned int iDataSetIndex, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
   std::string buffer;
 
-  PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
+  //PrintFormat.PrintSectionLabel(fp, "Observed / expected", false, true);
   buffer = getValueAsString(GetObservedDivExpected(DataHub, iDataSetIndex), buffer);
-  PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  //PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+  printClusterData(fp, PrintFormat, "Observed / expected", buffer);
 }
 
 /** Prints clusters time frame in format required by result output file. */
 void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const {
-  std::string  sStart, sEnd;
+  std::string  buffer, sStart, sEnd;
 
-  PrintFormat.PrintSectionLabel(fp, "Time frame", false, true);
-  fprintf(fp, "%s to %s\n", GetStartDate(sStart, DataHub).c_str(), GetEndDate(sEnd, DataHub).c_str());
+  //PrintFormat.PrintSectionLabel(fp, "Time frame", false, true);
+  //fprintf(fp, "%s to %s\n", GetStartDate(sStart, DataHub).c_str(), GetEndDate(sEnd, DataHub).c_str());
+  printString(buffer, "%s to %s", GetStartDate(sStart, DataHub).c_str(), GetEndDate(sEnd, DataHub).c_str());
+  printClusterData(fp, PrintFormat, "Time frame", buffer);
 }
 
 /** returns end date of defined cluster as formated string */

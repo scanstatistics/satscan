@@ -38,6 +38,7 @@
 #include "SSException.h" 
 #include "SVTTCentricAnalysis.h"
 #include "PurelySpatialBruteForceAnalysis.h"
+//#include "ClusterScatterChart.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -1465,6 +1466,17 @@ void AnalysisRunner::UpdateReport() {
       PrintTopIterativeScanCluster();
     else
       PrintTopClusters();
+
+    /* Scatter chart code ...
+    if (giAnalysisCount == 1 && 
+        gTopClustersContainer.GetNumClustersRetained() && 
+        gParameters.GetCoordinatesType() == CARTESIAN && 
+        !gParameters.GetIsPurelyTemporalAnalysis() &&
+        !gParameters.UseLocationNeighborsFile()) {
+        ClusterScatterChart plot(*gpDataHub, gTopClustersContainer, gSimVars);
+        plot.renderScatterChart();
+    }
+    */
   }
   catch (prg_exception& x) {
     x.addTrace("UpdateReport()","AnalysisRunner");

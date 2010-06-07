@@ -20,6 +20,7 @@ class LocationInformationWriter; /** forward class declaration */
 class CCluster {
   public:
     typedef std::pair<double,double> RecurrenceInterval_t;
+    typedef std::deque<std::pair<std::string,std::string> > ReportCache_t;
     static unsigned int           MIN_RANK_RPT_GUMBEL;
 
   protected:
@@ -30,8 +31,11 @@ class CCluster {
     unsigned int                  m_nRank;                 // Rank based on results of simulations
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
+    mutable ReportCache_t       * gpCachedReportLines;
 
+    void                          cacheReportLine(std::string& label, std::string& value) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
+    void                          printClusterData(FILE* fp, const AsciiPrintFormat& PrintFormat, const char * label, std::string& value) const;
 
   public:
     CCluster();
@@ -117,6 +121,7 @@ class CCluster {
     double                        GetRelativeRisk(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const;
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
+    ReportCache_t               & getReportLinesCache() const;
     RecurrenceInterval_t          GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}

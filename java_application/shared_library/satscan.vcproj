@@ -1053,6 +1053,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\calculation\Output\ClusterScatterChart.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\calculation\Output\LocationRiskEstimateWriter.cpp"
 						>
 					</File>
@@ -1372,6 +1376,10 @@
 					</File>
 					<File
 						RelativePath="..\..\calculation\Output\ClusterLocationsWriter.h"
+						>
+					</File>
+					<File
+						RelativePath="..\..\calculation\Output\ClusterScatterChart.h"
 						>
 					</File>
 					<File
