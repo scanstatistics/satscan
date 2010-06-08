@@ -394,7 +394,6 @@ int DLL_EXP PY_RunAnalysis(const char * filename, PY_Callback* call_back) {
 ///////////////////////////////// VB Shared Library Methods ///////////////////////////////////////////
 
 #ifdef _WINDOWS_
-#include <comutil.h>
 int DLL_EXP VB_RunAnalysis(const char * filename, long cbAddress) {
   CParameters       Parameters;
   VB_PrintCallback  Console(cbAddress, false);

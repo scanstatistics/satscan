@@ -2,10 +2,7 @@
 #pragma hdrstop
 #include "PrintCallback.h"
 
-#ifdef _WINDOWS_
-#include <comutil.h>
-#pragma comment(lib, "comsuppw.lib")
-#endif
+/////////////// C callback class  ////////////////////////////////////
 
 /** constructor */
 C_PrintCallback::C_PrintCallback(C_Callback * callback, bool bSuppressWarnings)
@@ -17,7 +14,10 @@ void C_PrintCallback::print(const char * sMessage) {
   _cancelled = (_callback(sMessage) != 0);
 }
 
+/////////////// Python callback class  ////////////////////////////////
+
 #ifdef _PYTHON_CALLBACK_
+#pragma comment(lib, "python25.lib") // -- actually, this needs to go into: Linker -> Input -> Additional Dependencies
 /** constructor */
 PY_PrintCallback::PY_PrintCallback(PY_Callback * callback, bool bSuppressWarnings)
                 :CallbackPrint(bSuppressWarnings) {
@@ -30,6 +30,8 @@ void PY_PrintCallback::print(const char * sMessage) {
 }
 #endif
 
+/////////////// Visual Basic callback class  //////////////////////////
+
 #ifdef _WINDOWS_
 VB_PrintCallback::VB_PrintCallback(long callBackAddress, bool bSuppressWarnings)
                  :CallbackPrint(bSuppressWarnings) {
@@ -38,9 +40,6 @@ VB_PrintCallback::VB_PrintCallback(long callBackAddress, bool bSuppressWarnings)
 }
 
 void VB_PrintCallback::print(const char * sMessage) {
-   // _bstr_t bstrString;
-   // bstrString = sMessage;
    _cancelled = (_vb_callback(sMessage) != 0);
-   //_vb_callback(BSTR(SysAllocString(bstrString)));
 }
 #endif
