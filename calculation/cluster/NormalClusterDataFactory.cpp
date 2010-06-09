@@ -12,8 +12,6 @@
 /** class constructor */
 NormalClusterDataFactory::NormalClusterDataFactory(const CSaTScanData& Data) : AbstractClusterDataFactory() {
   const AbstractWeightedNormalRandomizer* randomizer = dynamic_cast<const AbstractWeightedNormalRandomizer*>(Data.GetDataSetHandler().GetRandomizer(0));
-  if (!randomizer)
-    throw prg_error("Could not dynamic cast randomizer to AbstractWeightedNormalRandomizer.","NormalClusterDataFactory()");
   _covariates = randomizer ? randomizer->getHasCovariates() : false;
 }
 
