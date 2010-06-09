@@ -8,9 +8,9 @@
 const char * ASCIIDataFileWriter::ASCII_FILE_EXT = ".txt";
 
 /** constructor */
-ASCIIDataFileWriter::ASCIIDataFileWriter(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend) {
+ASCIIDataFileWriter::ASCIIDataFileWriter(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend) {
   try {
-    Setup(Parameters, sFileExtension, bAppend);
+    Setup(Parameters, vFieldDefs, sFileExtension, bAppend);
   }
   catch (prg_exception& x) {
     x.addTrace("constructor()","ASCIIDataFileWriter");
@@ -87,7 +87,7 @@ void ASCIIDataFileWriter::WriteRecord(const RecordBuffer& Record) {
 }
 
 /** internal setup - opens file stream for writing */
-void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const std::string& sFileExtension, bool bAppend) {
+void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend) {
    std::string  buffer, ext(sFileExtension);
 
   try {
@@ -97,6 +97,18 @@ void ASCIIDataFileWriter::Setup(const CParameters& Parameters, const std::string
 
     if ((gpFile = fopen(gsFileName.getFullPath(buffer).c_str(), (bAppend ? "a" : "w"))) == NULL)
       throw resolvable_error("Unable to open/create file %s", "Setup()", gsFileName.getFullPath(buffer).c_str());
+
+    //write column headers when requested
+    if (Parameters.getPrintAsciiHeaders()) {
+        std::stringstream s;
+        ptr_vector<FieldDef>::const_iterator itr=vFieldDefs.begin(), itr_end=vFieldDefs.end();
+        for (; itr != itr_end; ++itr) {
+            s << (*itr)->GetName();
+            for (int i=strlen((*itr)->GetName()); i < (*itr)->GetLength() + ((*itr)->GetType() == FieldValue::ALPHA_FLD ? 2 : 1); ++i)
+                s << " ";
+        }
+        fprintf(gpFile, "%s\n", s.str().c_str());
+    }
   }
   catch (prg_exception& x) {
     x.addTrace("Setup()","ASCIIDataFileWriter");

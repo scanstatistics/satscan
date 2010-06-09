@@ -469,6 +469,10 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getReportClusterRank());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setPrintAsciiHeaders", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPrintAsciiHeaders());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -916,6 +920,10 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getReportClusterRank", "()Z");
   Parameters.setReportClusterRank(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getPrintAsciiHeaders", "()Z");
+  Parameters.setPrintAsciiHeaders(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

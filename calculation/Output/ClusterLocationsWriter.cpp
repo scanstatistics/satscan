@@ -44,7 +44,7 @@ LocationInformationWriter::LocationInformationWriter(const CSaTScanData& DataHub
   try {
     DefineFields(DataHub);
     if (gParameters.GetOutputAreaSpecificAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, AREA_SPECIFIC_FILE_EXT, bAppend);
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
     if (gParameters.GetOutputAreaSpecificDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, AREA_SPECIFIC_FILE_EXT, bAppend);
   }

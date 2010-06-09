@@ -16,7 +16,7 @@ LoglikelihoodRatioWriter::LoglikelihoodRatioWriter(const CParameters& Parameters
     DefineFields();
     gpRecordBuffer = new RecordBuffer(vFieldDefinitions);
     if (gParameters.GetOutputSimLoglikeliRatiosAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, LOG_LIKELIHOOD_FILE_EXT, bAppend);
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, LOG_LIKELIHOOD_FILE_EXT, bAppend);
     if (gParameters.GetOutputSimLoglikeliRatiosDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, LOG_LIKELIHOOD_FILE_EXT, bAppend);
   }

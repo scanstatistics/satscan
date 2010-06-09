@@ -751,7 +751,7 @@ void dBaseFile::Close() {
   }
 }
 
-void dBaseFile::Create(const char * sFilename, ptr_vector<FieldDef>& vFields) {
+void dBaseFile::Create(const char * sFilename, const ptr_vector<FieldDef>& vFields) {
   unsigned u;
   char cFieldType;
   std::pair<long, long> longRange;
@@ -1159,7 +1159,7 @@ void dBaseFile::PackData() {
 //Ensure that the vFields is appropriate for input to the function, Create.
 //<br>require
 //<br>  no_fields_null:  for i in [0, vFields.size()], vFields.at(i) != NULL
-void dBaseFile::PackFields(ptr_vector<FieldDef>& vFields) const {
+void dBaseFile::PackFields(const ptr_vector<FieldDef>& vFields) const {
   for (unsigned u = 0; u < vFields.size(); u++) {
     if (! vFields.at(u))
       throw prg_error("null field at position %d in field vector.", "PackFields", u);

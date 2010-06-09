@@ -62,9 +62,9 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
     if (gParameters.GetOutputClusterCaseFiles())
       DefineClusterCaseInformationFields();
     if (gParameters.GetOutputClusterLevelAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
     if (gParameters.GetOutputClusterCaseAscii())
-      gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, CLUSTERCASE_FILE_EXT, bAppend);
+      gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
     if (gParameters.GetOutputClusterLevelDBase()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
       //gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);

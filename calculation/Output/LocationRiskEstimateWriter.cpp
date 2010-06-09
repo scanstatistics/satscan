@@ -28,7 +28,7 @@ LocationRiskEstimateWriter::LocationRiskEstimateWriter(const CSaTScanData& DataH
   try {
     DefineFields(DataHub);
     if (gParameters.GetOutputRelativeRisksAscii())
-      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, REL_RISK_EXT);
+      gpASCIIFileWriter = new ASCIIDataFileWriter(gParameters, vFieldDefinitions, REL_RISK_EXT);
     if (gParameters.GetOutputRelativeRisksDBase())
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, REL_RISK_EXT);
   }

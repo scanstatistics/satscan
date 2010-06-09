@@ -8,7 +8,7 @@
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 101;
+const int CParameters::giNumParameters 	              = 102;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -131,6 +131,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbReportGumbelPValue                   != rhs.gbReportGumbelPValue) return false;
   if (geTimeTrendType                        != rhs.geTimeTrendType) return false;
   if (gbReportRank                           != rhs.gbReportRank) return false;
+  if (gbPrintAsciiHeaders                    != rhs.gbPrintAsciiHeaders) return false;
 
   return true;
 }
@@ -304,6 +305,7 @@ void CParameters::Copy(const CParameters &rhs) {
   gbReportGumbelPValue                   = rhs.gbReportGumbelPValue;
   geTimeTrendType                        = rhs.geTimeTrendType;
   gbReportRank                           = rhs.gbReportRank;
+  gbPrintAsciiHeaders                    = rhs.gbPrintAsciiHeaders;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -746,6 +748,7 @@ void CParameters::SetAsDefaulted() {
   gbReportGumbelPValue = false;
   geTimeTrendType = LINEAR;
   gbReportRank = false;
+  gbPrintAsciiHeaders = false;
 }
 
 /** Sets start range start date. Throws exception. */

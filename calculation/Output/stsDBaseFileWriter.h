@@ -14,7 +14,7 @@ class RecordBuffer;  /** forward class declaration */
 /** dBase data writer. */
 class DBaseDataFileWriter {
    private :
-      void	          Setup(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension,  bool bAppend);
+      void	          Setup(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension,  bool bAppend);
 
    protected:
       dBaseFile           gFile;
@@ -23,7 +23,7 @@ class DBaseDataFileWriter {
       FileName            gsFileName;        /** output filename */
 
    public :
-      DBaseDataFileWriter(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend = false);
+      DBaseDataFileWriter(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend = false);
       virtual ~DBaseDataFileWriter();
 
      virtual void	  WriteRecord(const RecordBuffer& Record);

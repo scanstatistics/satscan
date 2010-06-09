@@ -129,7 +129,7 @@ class dBaseFile {
     const char                * GetFileName(std::string& name) const;
     dBaseRecord               * GetSystemRecord() const;
     virtual void                Close();
-    virtual void                Create(const char * sFileName, ptr_vector<FieldDef>& vFields);
+    virtual void                Create(const char * sFileName, const ptr_vector<FieldDef>& vFields);
     virtual void                Empty();
     virtual void                PackData();
     virtual void                ReadStructure();
@@ -138,7 +138,7 @@ class dBaseFile {
     virtual unsigned long       GetNumRecords() const;
     virtual void                GotoRecord(unsigned long lRecNum, dBaseRecord * PRecordBuffer = 0);
     virtual void                Open(const char *sFileName, bool bAppendMode=false);
-    virtual void                PackFields(ptr_vector<FieldDef> &vFields) const;
+    virtual void                PackFields(const ptr_vector<FieldDef> &vFields) const;
     virtual bool                GetIsOpen() const;
     const char                * GetDbfErrorString(xbShort code) const;
 

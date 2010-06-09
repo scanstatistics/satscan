@@ -728,6 +728,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         bReturn &= (_reportedSpatialDistanceCheckBox.isSelected() == false);
         bReturn &= (_restrictReportedClustersCheckBox.isSelected() == false);
         bReturn &= (_reportClusterRankCheckBox.isSelected() == false);
+        bReturn &= (_printAsciiColumnHeaders.isSelected() == false);
 
         return bReturn;
     }
@@ -910,6 +911,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetIncludePurelySpatialClusters(_includePureSpacClustCheckBox.isEnabled() && _includePureSpacClustCheckBox.isSelected());
         parameters.SetMultipleCoordinatesType(getMultipleCoordinatesType().ordinal());
         parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
+        parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -1446,6 +1448,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _maxReportedSpatialPercentFileTextField.setText("50");
         _maxReportedSpatialRadiusTextField.setText("1");
         _reportClusterRankCheckBox.setSelected(false);
+        _printAsciiColumnHeaders.setSelected(false);
     }
 
     /**
@@ -2000,6 +2003,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportedSpatialPopulationFileCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), true));
         _reportedSpatialDistanceCheckBox.setSelected(parameters.GetRestrictMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), true));
         _reportClusterRankCheckBox.setSelected(parameters.getReportClusterRank());
+        _printAsciiColumnHeaders.setSelected(parameters.getPrintAsciiHeaders());
 
         // Input tab
         EnableAdditionalDataSetsGroup(false);
@@ -2219,6 +2223,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
         _reportClusterRankGroup = new javax.swing.JPanel();
         _reportClusterRankCheckBox = new javax.swing.JCheckBox();
+        _additionalOutputFiles = new javax.swing.JPanel();
+        _printAsciiColumnHeaders = new javax.swing.JCheckBox();
         _closeButton = new javax.swing.JButton();
         _setDefaultButton = new javax.swing.JButton();
 
@@ -2656,7 +2662,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(116, Short.MAX_VALUE))
+                .addContainerGap(124, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -2770,7 +2776,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(172, Short.MAX_VALUE))
+                .addContainerGap(180, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -2952,7 +2958,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(107, Short.MAX_VALUE))
+                .addContainerGap(115, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3264,7 +3270,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(73, Short.MAX_VALUE))
+                .addContainerGap(81, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -3845,7 +3851,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addContainerGap(108, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4114,7 +4120,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4568,7 +4574,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_monteCarloGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(27, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
@@ -4834,7 +4840,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(29, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
@@ -4895,6 +4901,34 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
+        _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Output Files", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+
+        _printAsciiColumnHeaders.setText("Print column headers in ASCII output files"); // NOI18N
+        _printAsciiColumnHeaders.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        _printAsciiColumnHeaders.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        _reportCriticalValuesCheckBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+
+        javax.swing.GroupLayout _additionalOutputFilesLayout = new javax.swing.GroupLayout(_additionalOutputFiles);
+        _additionalOutputFiles.setLayout(_additionalOutputFilesLayout);
+        _additionalOutputFilesLayout.setHorizontalGroup(
+            _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_printAsciiColumnHeaders, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _additionalOutputFilesLayout.setVerticalGroup(
+            _additionalOutputFilesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_additionalOutputFilesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_printAsciiColumnHeaders)
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _additionalOutputTabLayout = new javax.swing.GroupLayout(_additionalOutputTab);
         _additionalOutputTab.setLayout(_additionalOutputTabLayout);
         _additionalOutputTabLayout.setHorizontalGroup(
@@ -4903,7 +4937,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addGroup(_additionalOutputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _additionalOutputTabLayout.setVerticalGroup(
@@ -4913,7 +4948,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportCriticalValuesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(230, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(166, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -4947,7 +4984,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 423, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -4961,6 +4998,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton _addDataSetButton;
     private javax.swing.JPanel _additionalDataSetsGroup;
+    private javax.swing.JPanel _additionalOutputFiles;
     private javax.swing.JPanel _additionalOutputTab;
     private javax.swing.JCheckBox _adjustForEarlierAnalysesCheckBox;
     private javax.swing.JCheckBox _adjustForKnownRelativeRisksCheckBox;
@@ -5068,6 +5106,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _populationFileImportButton;
     private javax.swing.JLabel _populationFileLabel;
     private javax.swing.JTextField _populationFileTextField;
+    private javax.swing.JCheckBox _printAsciiColumnHeaders;
     private javax.swing.JPanel _prospectiveCompleteCard;
     private javax.swing.JPanel _prospectiveGenericDate;
     private javax.swing.JPanel _prospectiveStartDateCards;

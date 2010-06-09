@@ -160,6 +160,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case REPORT_GUMBEL            : return " report Gumbel p-values";
       case TIME_TREND_TYPE          : return " time trend type - SVTT only (Linear=0, Quadratic=1)";
       case REPORT_RANK              : return " report cluster rank (y/n)";
+      case PRINT_ASCII_HEADERS      : return " print ascii headers in output files (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -288,6 +289,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case REPORT_GUMBEL            : return AsString(s, gParameters.GetReportGumbelPValue());
       case TIME_TREND_TYPE          : return AsString(s, gParameters.getTimeTrendType());
       case REPORT_RANK              : return AsString(s, gParameters.getReportClusterRank()); 
+      case PRINT_ASCII_HEADERS      : return AsString(s, gParameters.getPrintAsciiHeaders()); 
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -408,6 +410,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case REPORT_GUMBEL            : default_value = (gParameters.GetReportGumbelPValue() ? "y" : "n"); break;
       case TIME_TREND_TYPE          : AsString(default_value, gParameters.getTimeTrendType()); break;
       case REPORT_RANK              : default_value = (gParameters.getReportClusterRank() ? "y" : "n"); break;
+      case PRINT_ASCII_HEADERS      : default_value = (gParameters.getPrintAsciiHeaders() ? "y" : "n"); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -753,6 +756,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case TIME_TREND_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, LINEAR, QUADRATIC);
                                        gParameters.setTimeTrendType((TimeTrendType)iValue); break;
       case REPORT_RANK               : gParameters.setReportClusterRank(ReadBoolean(sParameter, eParameterType)); break;
+      case PRINT_ASCII_HEADERS       : gParameters.setPrintAsciiHeaders(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

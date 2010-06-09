@@ -369,6 +369,7 @@ void IniParameterSpecification::Build_8_3_x_ParameterList() {
 
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendType"));
   gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"ReportClusterRank"));  
+  gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"PrintAsciiColumnHeaders"));  
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

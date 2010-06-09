@@ -32,7 +32,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     USE_MAXGEOPOPFILE_REPORTED, USE_MAXGEODISTANCE_REPORTED,
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
                                     MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
-                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE, REPORT_RANK};
+                                    EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE, REPORT_RANK, PRINT_ASCII_HEADERS};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -200,6 +200,7 @@ class CParameters {
     bool                                gbReportGumbelPValue;                   /** report Gumbel p-value */
     TimeTrendType                       geTimeTrendType;                        /** time trend type */
     bool                                gbReportRank;                           /** report cluster rank */
+    bool                                gbPrintAsciiHeaders;                    /** print headers in ascii output files */
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
@@ -301,6 +302,7 @@ class CParameters {
     double                              GetPowerCalculationX() const {return gdPower_X;}
     double                              GetPowerCalculationY() const {return gdPower_Y;}
     DatePrecisionType                   GetPrecisionOfTimesType() const {return gePrecisionOfTimesType;}
+    bool                                getPrintAsciiHeaders() const {return gbPrintAsciiHeaders;}
     ProbabilityModelType                GetProbabilityModelType() const {return geProbabilityModelType;}
     const std::string                 & GetProspectiveStartDate() const {return gsProspectiveStartDate;}
     PValueReportingType                 GetPValueReportingType() const {return gePValueReportingType;}
@@ -388,6 +390,7 @@ class CParameters {
     void                                SetPowerCalculationX(double dPowerX);
     void                                SetPowerCalculationY(double dPowerY);
     void                                SetPrecisionOfTimesType(DatePrecisionType eDatePrecisionType);
+    void                                setPrintAsciiHeaders(bool b) {gbPrintAsciiHeaders = b;}
     void                                SetProbabilityModelType(ProbabilityModelType eProbabilityModelType);
     void                                SetProspectiveStartDate(const char * sProspectiveStartDate);
     void                                SetPValueReportingType(PValueReportingType eType);

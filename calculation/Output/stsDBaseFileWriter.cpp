@@ -8,7 +8,7 @@
 const char * DBaseDataFileWriter::DBASE_FILE_EXT    = ".dbf";
 
 /** constructor */
-DBaseDataFileWriter::DBaseDataFileWriter(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend)
+DBaseDataFileWriter::DBaseDataFileWriter(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend)
                     :gpFileRecord(0) {
   try {
     Setup(Parameters, vFieldDefs, sFileExtension, bAppend);
@@ -29,7 +29,7 @@ DBaseDataFileWriter::~DBaseDataFileWriter() {
 }
 
 /** internal setup - opens file stream */
-void DBaseDataFileWriter::Setup(const CParameters& Parameters, ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend) {
+void DBaseDataFileWriter::Setup(const CParameters& Parameters, const ptr_vector<FieldDef>& vFieldDefs, const std::string& sFileExtension, bool bAppend) {
   std::string   buffer, ext(sFileExtension);
 
   try {

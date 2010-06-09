@@ -184,6 +184,7 @@ public class Parameters implements Cloneable {
     private SpatialWindowType        	        geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
     private TimeTrendType                       geTimeTrendType;                        /** time trend type */
     private boolean                             gbReportRank;  /** report cluster rank */
+    private boolean                             gbPrintAsciiHeaders;  /** print ascii column headers */
 
 //**    public static final int             	  giNumParameters=79; /** number enumerated parameters */
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
@@ -378,9 +379,12 @@ public class Parameters implements Cloneable {
           if (gbReportGumbelPValue != rhs.gbReportGumbelPValue) return false;
           if (geTimeTrendType != rhs.geTimeTrendType) return false;
           if (gbReportRank != rhs.gbReportRank) return false;
+          if (gbPrintAsciiHeaders != rhs.gbPrintAsciiHeaders) return false;
           
     	  return true;
     }
+    public boolean getPrintAsciiHeaders() {return gbPrintAsciiHeaders;}
+    public void setPrintAsciiHeaders(boolean b) {gbPrintAsciiHeaders = b;}
     public boolean GetAdjustForEarlierAnalyses() {return gbAdjustForEarlierAnalyses;}
     public String GetAdjustmentsByRelativeRisksFilename() {return gsAdjustmentsByRelativeRisksFileName;}
     public AnalysisType GetAnalysisType() {return geAnalysisType;}
