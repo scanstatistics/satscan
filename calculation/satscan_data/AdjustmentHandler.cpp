@@ -169,8 +169,8 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
      const TractContainer_t & tract_deque = itr->second;
      fprintf(pFile, "Tract %s:\n", tHandler.getLocations().at(itr->first)->getIndentifier());
      for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque) {
-        JulianToString(sStart,(*itr_deque).GetStartDate());
-        JulianToString(sEnd, (*itr_deque).GetEndDate());
+        JulianToString(sStart,(*itr_deque).GetStartDate(), DAY);
+        JulianToString(sEnd, (*itr_deque).GetEndDate(), DAY);
         fprintf(pFile, "%lf\t%s\t%s\n", (*itr_deque).GetRelativeRisk(), sStart.c_str(), sEnd.c_str());
      }
      fprintf(pFile, "\n\n");

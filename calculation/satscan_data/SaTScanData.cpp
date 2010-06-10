@@ -107,8 +107,8 @@ bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_
                               "       are cases in that interval.\n"
                               "       If the expected is zero, the number of cases must also be zero.\n",
                               (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier()),
-                              JulianToString(sStart, StartDate).c_str(),
-                              JulianToString(sEnd, EndDate).c_str());
+                              JulianToString(sStart, StartDate, gParameters.GetPrecisionOfTimesType()).c_str(),
+                              JulianToString(sEnd, EndDate, gParameters.GetPrecisionOfTimesType()).c_str());
      }
   }
   return true;
@@ -958,8 +958,8 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     iWindowStart = std::max(m_nFlexibleWindowEndRangeStartIndex - m_nIntervalCut, m_nFlexibleWindowStartRangeStartIndex);
     if (iWindowStart >= iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
-      JulianToString(sDateWST, gvTimeIntervalStartTimes[iWindowStart]);
-      JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
+      JulianToString(sDateWST, gvTimeIntervalStartTimes[iWindowStart], gParameters.GetPrecisionOfTimesType());
+      JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1, gParameters.GetPrecisionOfTimesType());
       throw resolvable_error("Error: No clusters will be evaluated.\n"
                              "       With the incorporation of a maximum temporal cluster size of %i %s,\n"
                              "       the temporal window scanned has a start time of %s (end range\n"
@@ -976,7 +976,7 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
     //different than the user defined.
     if (m_nFlexibleWindowEndRangeStartIndex > iMaxEndWindow) {
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sTimeIntervalType, true, false);
-      JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1);
+      JulianToString(sDateMaxWET, gvTimeIntervalStartTimes[iMaxEndWindow] - 1, gParameters.GetPrecisionOfTimesType());
       throw resolvable_error("Error: No clusters will be evaluated.\n"
                              "       With the incorporation of a maximum temporal cluster size of %i %s\n"
                              "       the maximum window end time becomes %s (start range ending\n"
@@ -1060,8 +1060,8 @@ void CSaTScanData::ValidateObservedToExpectedCases(const DataSet& Set) const {
                                    "       the expected number of cases is zero but there were cases observed.\n"
                                    "       Please review the correctness of population and case files.",
                                    gTractHandler->getLocations().at(t)->getIndentifier(),
-                                   JulianToString(sStart, gvTimeIntervalStartTimes[i]).c_str(),
-                                   JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1).c_str());
+                                   JulianToString(sStart, gvTimeIntervalStartTimes[i], gParameters.GetPrecisionOfTimesType()).c_str(),
+                                   JulianToString(sEnd, gvTimeIntervalStartTimes[i + 1] - 1, gParameters.GetPrecisionOfTimesType()).c_str());
   }
   catch (prg_exception& x) {
     x.addTrace("ValidateObservedToExpectedCases()","CSaTScanData");

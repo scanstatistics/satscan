@@ -250,7 +250,7 @@ void PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFil
       throw resolvable_error("Unable to open file.");
 
     for (size_t t=0; t < vJulianDates.size(); ++t)
-       fprintf(pFile, "Date %u: %s\n", t + 1, JulianToString(sBuffer, vJulianDates[t]).c_str());
+       fprintf(pFile, "Date %u: %s\n", t + 1, JulianToString(sBuffer, vJulianDates[t], DAY).c_str());
     fclose(pFile); pFile=0;
    }
   catch (prg_exception& x) {

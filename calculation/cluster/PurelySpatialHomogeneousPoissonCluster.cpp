@@ -112,7 +112,8 @@ void PurelySpatialHomogeneousPoissonCluster::DisplayTimeFrame(FILE* fp, const CS
 
 /** returns end date of defined cluster as formated string */
 std::string& PurelySpatialHomogeneousPoissonCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1);
+  DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[DataHub.GetNumTimeIntervals()] - 1, eDatePrint);
 }
 
 /** Returns the measure for location as defined by cluster. */
@@ -133,7 +134,8 @@ count_t PurelySpatialHomogeneousPoissonCluster::GetObservedCountForTract(tract_t
 
 /** returns start date of defined cluster as formated string */
 std::string& PurelySpatialHomogeneousPoissonCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0]);
+  DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[0], eDatePrint);
 }
 
 /** re-initializes cluster data */

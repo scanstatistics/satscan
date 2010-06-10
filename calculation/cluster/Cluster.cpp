@@ -788,7 +788,8 @@ void CCluster::DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const Asc
 
 /** returns end date of defined cluster as formated string */
 std::string& CCluster::GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const {
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, DataHub.GetParameters().GetPrecisionOfTimesType());
+  DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nLastInterval] - 1, eDatePrint);
 }
 
 /** Returns number of expected cases in accumulated data. */
@@ -985,7 +986,8 @@ double CCluster::GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData
 
 /** returns start date of defined cluster as formated string */
 std::string& CCluster::GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const {
-  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], DataHub.GetParameters().GetPrecisionOfTimesType());
+  DatePrecisionType eDatePrint = (DataHub.GetParameters().GetPrecisionOfTimesType() == GENERIC ? GENERIC : DAY);  
+  return JulianToString(sDateString, DataHub.GetTimeIntervalStartTimes()[m_nFirstInterval], eDatePrint);
 }
 
 /** Prints name and coordinates of locations contained in cluster to ASCII file.
