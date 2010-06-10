@@ -47,7 +47,7 @@ class WeightedNormalVariables {
             try {
                 gtStandard = rhs.gtStandard;
                 delete gpAdditional; gpAdditional = 0;
-                gpAdditional = new MinimalGrowthArray<double>(*rhs.gpAdditional);
+                if (rhs.gpAdditional) gpAdditional = new MinimalGrowthArray<double>(*rhs.gpAdditional);
             } catch (prg_exception& x) {
                 x.addTrace("operator=()","WeightedNormalVariables");
                 throw;
