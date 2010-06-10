@@ -2,6 +2,7 @@
 #LINKOPT	=	/usr/local/lib/libdbmalloc.a
 CFLAGS	=	-g
 CXX = g++
+CXXFLAGS = -O2 -Wall
 COMPILATION = -m32
 
 default:	all
@@ -9,43 +10,43 @@ default:	all
 all:	shpcreate shpadd shpdump shprewind dbfcreate dbfadd dbfdump shptest
 
 shpopen.o:	shpopen.c shapefil.h
-	$(CC) ${COMPILATION} $(CFLAGS) -c shpopen.c
+	$(CXX) $(CXXFLAGS) -c shpopen.c
 
 shptree.o:	shptree.c shapefil.h
-	$(CC) ${COMPILATION} $(CFLAGS) -c shptree.c
+	$(CXX) $(CXXFLAGS) -c shptree.c
 
 dbfopen.o:	dbfopen.c shapefil.h
-	$(CC) ${COMPILATION} $(CFLAGS) -c dbfopen.c
+	$(CXX) $(CXXFLAGS) -c dbfopen.c
 
 shpcreate:	shpcreate.c shpopen.o
-	$(CC) ${COMPILATION} $(CFLAGS) shpcreate.c shpopen.o $(LINKOPT) -o shpcreate
+	$(CXX) $(CXXFLAGS) shpcreate.c shpopen.o $(LINKOPT) -o shpcreate
 
 shpadd:		shpadd.c shpopen.o
-	$(CC) ${COMPILATION} $(CFLAGS) shpadd.c shpopen.o $(LINKOPT) -o shpadd
+	$(CXX) $(CXXFLAGS) shpadd.c shpopen.o $(LINKOPT) -o shpadd
 
 shpdump:	shpdump.c shpopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) shpdump.c shpopen.o $(LINKOPT) -o shpdump
+	$(CXX) $(CXXFLAGS) shpdump.c shpopen.o $(LINKOPT) -o shpdump
 
 shprewind:	shprewind.c shpopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) shprewind.c shpopen.o $(LINKOPT) -o shprewind
+	$(CXX) $(CXXFLAGS) shprewind.c shpopen.o $(LINKOPT) -o shprewind
 
 dbfcreate:	dbfcreate.c dbfopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) dbfcreate.c dbfopen.o $(LINKOPT) -o dbfcreate
+	$(CXX) $(CXXFLAGS) dbfcreate.c dbfopen.o $(LINKOPT) -o dbfcreate
 
 dbfadd:		dbfadd.c dbfopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) dbfadd.c dbfopen.o $(LINKOPT) -o dbfadd
+	$(CXX) $(CXXFLAGS) dbfadd.c dbfopen.o $(LINKOPT) -o dbfadd
 
 dbfdump:	dbfdump.c dbfopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) dbfdump.c dbfopen.o $(LINKOPT) -o dbfdump
+	$(CXX) $(CXXFLAGS) dbfdump.c dbfopen.o $(LINKOPT) -o dbfdump
 
 shptest:	shptest.c shpopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) shptest.c shpopen.o $(LINKOPT) -o shptest
+	$(CXX) $(CXXFLAGS) shptest.c shpopen.o $(LINKOPT) -o shptest
 
 shputils:	shputils.c shpopen.o dbfopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) shputils.c shpopen.o dbfopen.o $(LINKOPT) -o shputils
+	$(CXX) $(CXXFLAGS) shputils.c shpopen.o dbfopen.o $(LINKOPT) -o shputils
 
 shptreedump:	shptreedump.c shptree.o shpopen.o
-	$(CC) ${COMPILATION}  $(CFLAGS) shptreedump.c shptree.o shpopen.o $(LINKOPT) \
+	$(CXX) $(CXXFLAGS) shptreedump.c shptree.o shpopen.o $(LINKOPT) \
 		-o shptreedump
 
 clean:
@@ -144,13 +145,13 @@ lib_install:
 	/usr/bin/install -c -m 644 shapefil.h /usr/local/include/libshp/shapefil.h
 
 
-%.o:           	%.cpp
-		$(CXX) $(CXXFLAGS) -c $*.cpp
+%.o: %.c
+	$(CXX) $(CXXFLAGS) -c $*.c
 
 core_obj = shpopen.o
 
 libshape.a:   	$(core_obj)
-		$(AR) -cr $@ $(newmat_lobj)
+		$(AR) -cr $@ $(core_obj)
 		ranlib $@
 
 libshape.dylib:   $(core_obj)
