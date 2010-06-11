@@ -230,33 +230,33 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
   if (gParameters.GetProbabilityModelType() == POISSON && gParameters.UsePopulationFile()) {
     printString(buffer, "Annual cases / %.0f",  GetAnnualRatePop());
     PrintFormat.PrintSectionLabel(fp, buffer.c_str(), true, false);
-    printString(buffer, "%.1f", GetAnnualRate(0));
+    getValueAsString(GetAnnualRate(0), buffer, 1);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.1f", GetAnnualRate(i));
-       buffer += work;
+       getValueAsString(GetAnnualRate(i), work, 1);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
   if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
     PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
-    printString(buffer, "%.2f", gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases());
+    getValueAsString(gDataSets->GetDataSet(0).getTotalMeasure()/gDataSets->GetDataSet(0).getTotalCases(), buffer);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.2f", gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalCases());
-       buffer += work;
+       getValueAsString(gDataSets->GetDataSet(i).getTotalMeasure()/gDataSets->GetDataSet(i).getTotalCases(), work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    printString(buffer, "%.2f", GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()));
+    getValueAsString(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux()), buffer);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.2f", GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()));
-       buffer += work;
+       getValueAsString(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux()), work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
     PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    printString(buffer, "%.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())));
+    getValueAsString(std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(0).getTotalCases(), gDataSets->GetDataSet(0).getTotalMeasure(), gDataSets->GetDataSet(0).getTotalMeasureAux())), buffer);
     for (i=1; i < gDataSets->GetNumDataSets(); ++i) {
-       printString(work, ", %.2f", std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())));
-       buffer += work;
+       getValueAsString(std::sqrt(GetUnbiasedVariance(gDataSets->GetDataSet(i).getTotalCases(), gDataSets->GetDataSet(i).getTotalMeasure(), gDataSets->GetDataSet(i).getTotalMeasureAux())), work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
@@ -273,64 +273,64 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
 
     //Print total weight for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Total weights", true, false);
-    printString(buffer, "%.2f", dataSetStatistics.front().gtTotalWeight);
+    getValueAsString(dataSetStatistics.front().gtTotalWeight, buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-       printString(work, ", %.2f", dataSetStatistics[i].gtTotalWeight);
-       buffer += work;
+       getValueAsString(dataSetStatistics[i].gtTotalWeight, work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print mean for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Mean", true, false);
-    printString(buffer, "%.2f", dataSetStatistics.front().gtMean);
+    getValueAsString(dataSetStatistics.front().gtMean, buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-       printString(work, ", %.2f", dataSetStatistics[i].gtMean);
-       buffer += work;
+       getValueAsString(dataSetStatistics[i].gtMean, work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print variance for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Variance", true, false);
-    printString(buffer, "%.2f", dataSetStatistics.front().gtVariance);
+    getValueAsString(dataSetStatistics.front().gtVariance, buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-       printString(work, ", %.2f", dataSetStatistics[i].gtVariance);
-       buffer += work;
+       getValueAsString(dataSetStatistics[i].gtVariance, work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print standard deviation for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Standard deviation", true, false);
-    printString(buffer, "%.2f", std::sqrt(dataSetStatistics.front().gtVariance));
+    getValueAsString(std::sqrt(dataSetStatistics.front().gtVariance), buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-       printString(work, ", %.2f", std::sqrt(dataSetStatistics[i].gtVariance));
-       buffer += work;
+       getValueAsString(std::sqrt(dataSetStatistics[i].gtVariance), work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print weighted mean for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Weighted Mean", true, false);
-    printString(buffer, "%.2f", dataSetStatistics.front().gtWeightedMean);
+    getValueAsString(dataSetStatistics.front().gtWeightedMean, buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-       printString(work, ", %.2f", dataSetStatistics[i].gtWeightedMean);
-       buffer += work;
+       getValueAsString(dataSetStatistics[i].gtWeightedMean, work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print weighted variance for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Weighted Variance", true, false);
-    printString(buffer, "%.2f", dataSetStatistics.front().gtWeightedVariance);
+    getValueAsString(dataSetStatistics.front().gtWeightedVariance, buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-        printString(work, ", %.2f", dataSetStatistics[i].gtWeightedVariance);
-       buffer += work;
+       getValueAsString(dataSetStatistics[i].gtWeightedVariance, work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
 
     //Print weighted variance for all data sets.
     PrintFormat.PrintSectionLabel(fp, "Weighted Std deviation", true, false);
-    printString(buffer, "%.2f", std::sqrt(dataSetStatistics.front().gtWeightedVariance));
+    getValueAsString(std::sqrt(dataSetStatistics.front().gtWeightedVariance), buffer);
     for (i=1; i < dataSetStatistics.size(); ++i) {
-       printString(work, ", %.2f", std::sqrt(dataSetStatistics[i].gtWeightedVariance));
-       buffer += work;
+       getValueAsString(std::sqrt(dataSetStatistics[i].gtWeightedVariance), work);
+       buffer += ", "; buffer += work;
     }
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
   }
@@ -340,7 +340,8 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
          double nAnnualTT = const_cast<AbstractTimeTrend&>(globalTrend).SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
          buffer = (nAnnualTT < 0 ? "Annual decrease" : "Annual increase");
          PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
-         fprintf(fp, "%.3lf%%\n", fabs(nAnnualTT));
+         getValueAsString(fabs(nAnnualTT), work, 3);
+         fprintf(fp, "%s%%\n", work.c_str());
       }
       //PrintFormat.PrintSectionLabel(fp, "Global Intercept", false, false);
       //fprintf(fp, "%g\n", globalTrend.GetAlpha());
