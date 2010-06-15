@@ -101,6 +101,6 @@ double WeightedNormalCovariatesLikelihoodCalculator::CalculateMaximizingValueNor
 /** Calculates the full loglikelihood ratio/test statistic given passed maximizing value and data set index. */
 double WeightedNormalCovariatesLikelihoodCalculator::CalculateFullStatistic(double dMaximizingValue, size_t tSetIndex) const {
     if (dMaximizingValue != -std::numeric_limits<double>::max()) 
-        return (-1 * gvDataSetTotals[tSetIndex].first/2 * dMaximizingValue) - (gvDataSetTotals[tSetIndex].first/2 * _dataSetMaximize[tSetIndex] );
+        return gvDataSetTotals[tSetIndex].first/2.0 *(dMaximizingValue - _dataSetMaximize[tSetIndex]);
     return 0.0;
 }
