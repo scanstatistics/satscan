@@ -426,37 +426,29 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
     if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount) || strstr(Source.GetValueAt(guCountIndex), ".")) {
-         gPrint.Printf("Error: The value '%s' of record %ld in the %s could not be read as case count.\n"
-                       "       Case count must be a whole number.\n", BasePrint::P_READERROR,
-                       Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-         return DataSetHandler::Rejected;
-      } 
+        if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
+            gPrint.Printf("Error: The value '%s' of record %ld in the %s could not be read as case count.\n"
+                          "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
+                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
+                          gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
+            return DataSetHandler::Rejected;
+        } 
+	    if (gParameters.getIsWeightedNormal() && nCount > 1) { 
+		    // For weighted normal data, the count column can only be zero or one. This was decided due to
+		    // users incorrectly using this column in their data.
+            gPrint.Printf("Error: The case count for the Normal model with weights can be either 0 or 1. Incorrect value of '%s' in record %ld of %s.\n",
+                          BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
+                          Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+            return DataSetHandler::Rejected;
+	    }
+        if (nCount == 0) return DataSetHandler::Ignored;
     }
     else {
       gPrint.Printf("Error: Record %ld in the %s does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Source.GetValueAt(guCountIndex), "-"))
-        gPrint.Printf("Error: Record %ld, of the %s, contains a negative case count.\n",
-                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      else
-        gPrint.Printf("Error: The case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-	if (gParameters.getIsWeightedNormal() && nCount > 1) { 
-		// For weighted normal data, the count column can only be zero or one. This was decided due to
-		// users incorrectly using this column in their data.
-        gPrint.Printf("Error: The case count for the Normal model with weights can be either 0 or 1. Incorrect value of '%s' in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-        return DataSetHandler::Rejected;
-	}
-    if (nCount == 0) return DataSetHandler::Ignored;
+
     DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
     if (eDateStatus != DataSetHandler::Accepted)
       return eDateStatus;
@@ -468,10 +460,10 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (sscanf(Source.GetValueAt(uOffset), "%lf", &tContinuousVariable) != 1) {
-       gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
-                     BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
+    if (!string_to_type<measure_t>(Source.GetValueAt(uOffset), tContinuousVariable)) {
+        gPrint.Printf("Error: The continuous variable value '%s' in record %ld, of %s, is not a number.\n",
+                      BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        return DataSetHandler::Rejected;
     }
 
     if (pRateVariable) {
@@ -482,15 +474,10 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
                       BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
         return DataSetHandler::Rejected;
       }
-      if (sscanf(Source.GetValueAt(uOffset), "%lf", pRateVariable) != 1) {
-         gPrint.Printf("Error: The rate variable value '%s' in record %ld, of %s, is not a number.\n",
-                       BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-         return DataSetHandler::Rejected;
-      }
-      if (*pRateVariable < 0) {
-         gPrint.Printf("Error: The rate variable value '%s' in record %ld, of %s, is less than zero.\n",
-                       BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-         return DataSetHandler::Rejected;
+      if (!string_to_type<double>(Source.GetValueAt(uOffset), *pRateVariable) || *pRateVariable < 0) {
+        gPrint.Printf("Error: The rate variable value '%s' in record %ld, of %s, is not a number greater than zero.\n",
+                      BasePrint::P_READERROR, Source.GetValueAt(uOffset), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        return DataSetHandler::Rejected;
       }
     }
 
@@ -498,7 +485,7 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
       pvCovariates->clear();
       uOffset = (gParameters.GetPrecisionOfTimesType() == NONE ? uCovariatesIndex - 1 : uCovariatesIndex);
       while ((pCovariate = Source.GetValueAt(static_cast<short>(pvCovariates->size()) + uOffset)) != 0) {
-        if (!sscanf(pCovariate, "%lf", &dCovariate)) {
+        if (!string_to_type<double>(pCovariate, dCovariate)) {
             gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as covariate.\n"
                           "       Case covariate must be numeric.\n", BasePrint::P_READERROR,
                           pCovariate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());

@@ -161,8 +161,8 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
           bValid = false;
           continue;
         }
-        if (sscanf(Source->GetValueAt(uAdjustmentIndex), "%lf", &dRelativeRisk) != 1) {
-          gPrint.Printf("Error: Relative risk value '%s' in record %ld, of %s, is not a number.\n",
+        if (!string_to_type<double>(Source->GetValueAt(uAdjustmentIndex), dRelativeRisk)) {
+          gPrint.Printf("Error: Relative risk value '%s' in record %ld, of %s, is not a decimal number.\n",
                         BasePrint::P_READERROR, Source->GetValueAt(uAdjustmentIndex), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
@@ -266,9 +266,7 @@ bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector
 
   for (i=0, iScanCount=0; i < (int)vCoordinates.size(); ++i, ++iWordOffSet)
      if ((pCoordinate = Source.GetValueAt(iWordOffSet)) != 0) {
-       if (sscanf(pCoordinate, "%lf", &(vCoordinates[i])))
-         iScanCount++; //track num successful scans, caller of function wants this information
-       else {
+       if (!string_to_type<double>(pCoordinate, vCoordinates[i])) {
          //unable to read word as double, print error to print direction and return false
          gPrint.Printf("Error: Value '%s' of record %ld in %s could not be read as ",
                        BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
@@ -280,6 +278,8 @@ bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector
          else
            gPrint.Printf("z%d-coordinate.\n", BasePrint::P_READERROR, i - 1);
          return false;
+       } else {
+         iScanCount++; //track num successful scans, caller of function wants this information
        }
      }
   return true;          
@@ -626,7 +626,7 @@ bool SaTScanDataReader::ReadLatitudeLongitudeCoordinates(DataSource& Source, std
 
   //read latitude, validating that string can be converted to double
   if ((pCoordinate = Source.GetValueAt(iWordOffSet)) != 0) {
-    if (! sscanf(pCoordinate, "%lf", &dLatitude)) {
+    if (!string_to_type<double>(pCoordinate, dLatitude)) {
       gPrint.Printf("Error: The value '%s' of record %ld in the %s file could not be read as the latitude coordinate.\n",
                     BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), sSourceFile);
       return false;
@@ -639,7 +639,7 @@ bool SaTScanDataReader::ReadLatitudeLongitudeCoordinates(DataSource& Source, std
   }
   //read longitude, validating that string can be converted to double
   if ((pCoordinate = Source.GetValueAt(++iWordOffSet)) != 0) {
-    if (! sscanf(pCoordinate, "%lf", &dLongitude)) {
+    if (!string_to_type<double>(pCoordinate, dLongitude)) {
       gPrint.Printf("Error: The value '%s' of record %ld in the %s file could not be read as the longitude coordinate.\n",
                     BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), sSourceFile);
       return false;
@@ -709,23 +709,11 @@ bool SaTScanDataReader::ReadMaxCirclePopulationFile() {
           bValid = false;
           continue;
         }
-        if (sscanf(Source->GetValueAt(uPopulationIndex), "%f", &fPopulation) != 1) {
-          gPrint.Printf("Error: The population value '%s' in record %ld, of %s, is not a number.\n",
+        if (!string_to_type<float>(Source->GetValueAt(uPopulationIndex), fPopulation) || fPopulation < 0) {
+          gPrint.Printf("Error: The population value '%s' in record %ld, of %s, is not a positive decimal number.\n",
                         BasePrint::P_READERROR, Source->GetValueAt(uPopulationIndex), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
           bValid = false;
           continue;
-        }
-        //validate that population is not negative or exceeding type precision
-        if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
-          if (strstr(Source->GetValueAt(uPopulationIndex), "-"))
-             gPrint.Printf("Error: Negative population in record %ld of %s.\n",
-                           BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-          else
-             gPrint.Printf("Error: Population '%s' exceeds the maximum allowed value of %i in record %ld of %s.\n",
-                           BasePrint::P_READERROR, Source->GetValueAt(uPopulationIndex), std::numeric_limits<float>::max(),
-                           Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-           bValid = false;
-           continue;
         }
         gDataHub.gvMaxCirclePopulation[TractIdentifierIndex] += fPopulation;
         gDataHub.m_nTotalMaxCirclePopulation += fPopulation;

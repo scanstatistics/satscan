@@ -248,29 +248,20 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
     if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
-      if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &tPatients) || strstr(Source.GetValueAt(guCountIndex), ".")) {
-         gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
-                       "       Case count must be a whole number.\n", BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
-                       Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-         return DataSetHandler::Rejected;
+      if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), tPatients) || tPatients < 0) {
+          gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as case count.\n"
+                        "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR, Source.GetValueAt(guCountIndex),
+                        Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
+          return DataSetHandler::Rejected;
       } 
+      if (tPatients == 0) return DataSetHandler::Ignored;    
     }
     else {
       gPrint.Printf("Error: Record %ld, in the %s, does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (tPatients < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Source.GetValueAt(guCountIndex), "-"))
-        gPrint.Printf("Error: Case count in record %ld, of the %s, is negative.\n",
-                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      else
-        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-    if (tPatients == 0) return DataSetHandler::Ignored;    
+
     DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
     if (eDateStatus != DataSetHandler::Accepted)
       return eDateStatus;
@@ -282,28 +273,25 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (sscanf(Source.GetValueAt(iContiVariableIndex), "%lf", &tContinuousVariable) != 1) {
-       gPrint.Printf("Error: The survival time value '%s' in record %ld, of the %s, is not a number.\n",
-                                BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
-    }
-    if (tContinuousVariable <= 0) {
-       gPrint.Printf("Error: The survival time '%g' in record %ld of the %s, is not greater than zero.\n",
-                     BasePrint::P_READERROR, tContinuousVariable, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
+    if (!string_to_type<measure_t>(Source.GetValueAt(iContiVariableIndex), tContinuousVariable) || tContinuousVariable <= 0) {
+        gPrint.Printf("Error: The survival time value '%s' in record %ld, of the %s, is not valid.\n"
+                      "       Survival time must be a decimal value greater than 0.\n",
+                      BasePrint::P_READERROR, Source.GetValueAt(iContiVariableIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+        return DataSetHandler::Rejected;
     }
 
     //read and validate censore attribute
     iCensoredAttributeIndex = gParameters.GetPrecisionOfTimesType() == NONE ? (short)3 : (short)4;
     if (Source.GetValueAt(iCensoredAttributeIndex) != 0) {
-      if (!sscanf(Source.GetValueAt(iCensoredAttributeIndex), "%ld", &tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
-       gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as a censoring attribute.\n"
-                     "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
-                     Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-       return DataSetHandler::Rejected;
-      }
-      //treat values greater than one as indication that patient was censored
-      tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
+        if (!string_to_type<count_t>(Source.GetValueAt(iCensoredAttributeIndex), tCensorAttribute) || !(tCensorAttribute == 0 || tCensorAttribute == 1)) {
+            gPrint.Printf("Error: The value '%s' of record %ld, in the %s, could not be read as valid censoring attribute.\n"
+                          "       Censoring attribute must be either 0 or 1.\n", BasePrint::P_READERROR,
+                          Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+            return DataSetHandler::Rejected;
+        }
+        return DataSetHandler::Rejected;
+        //treat values greater than one as indication that patient was censored
+        tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
     }
     else
       //censored attribute optional - default to not censored

@@ -335,21 +335,9 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
             bValid = false;
             continue;
           }
-          if (sscanf(Source->GetValueAt(uPopulationIndex), "%f", &fPopulation) != 1) {
-            gPrint.Printf("Error: Population value '%s' in record %ld, of %s, is not a number.\n",
+          if (!string_to_type<float>(Source->GetValueAt(uPopulationIndex), fPopulation) || fPopulation < 0) {
+            gPrint.Printf("Error: Population value '%s' in record %ld, of %s, is not a positive decimal number.\n",
                           BasePrint::P_READERROR, Source->GetValueAt(uPopulationIndex), Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-            bValid = false;
-            continue;
-          }
-          //validate that population is not negative or exceeding type precision
-          if (fPopulation < 0) {//validate that count is not negative or exceeds type precision
-            if (strstr(Source->GetValueAt(uPopulationIndex), "-"))
-              gPrint.Printf("Error: Negative population in record %ld of %s.\n",
-                            BasePrint::P_READERROR, Source->GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-            else
-              gPrint.Printf("Error: The population '%s', in record %ld of the %s, exceeds the maximum allowed value of %i.\n",
-                            BasePrint::P_READERROR, Source->GetValueAt(uPopulationIndex), Source->GetCurrentRecordIndex(),
-                            gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<float>::max());
             bValid = false;
             continue;
           }

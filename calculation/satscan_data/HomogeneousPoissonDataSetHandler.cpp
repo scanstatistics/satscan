@@ -297,16 +297,16 @@ bool HomogeneousPoissonDataSetHandler::ReadCartesianCoordinates(DataSource& Sour
 
   for (i=0, iScanCount=0; i < (int)vCoordinates.size(); ++i, ++iWordOffSet)
      if ((pCoordinate = Source.GetValueAt(iWordOffSet)) != 0) {
-       if (sscanf(pCoordinate, "%lf", &(vCoordinates[i])))
-         iScanCount++; //track num successful scans, caller of function wants this information
-       else {
-         //unable to read word as double, print error to print direction and return false
-         gPrint.Printf("Error: Value '%s' of record %ld in %s could not be read as ",
-                       BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-         //we can be specific about which dimension we are attending to read to                                    
-         gPrint.Printf("%s-coordinate.\n", BasePrint::P_READERROR, (i == 0 ? "x" : "y"));
-         return false;
-       }
+        if (!string_to_type<double>(pCoordinate, vCoordinates[i])) {
+            //unable to read word as double, print error to print direction and return false
+            gPrint.Printf("Error: Value '%s' of record %ld in %s could not be read as ",
+                          BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+            //we can be specific about which dimension we are attending to read to                                    
+            gPrint.Printf("%s-coordinate.\n", BasePrint::P_READERROR, (i == 0 ? "x" : "y"));
+            return false;
+        } else {
+            iScanCount++; //track num successful scans, caller of function wants this information
+        }
      }
   return true;          
 }

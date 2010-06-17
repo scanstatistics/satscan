@@ -248,29 +248,21 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCaseRecordData(Populati
     if (eStatus != DataSetHandler::Accepted) return eStatus;
     //read and validate count
     if (Source.GetValueAt(guCountIndex) != 0) {
-        if (!sscanf(Source.GetValueAt(guCountIndex), "%ld", &nCount) || strstr(Source.GetValueAt(guCountIndex), ".")) {
+        if  (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
            gPrint.Printf("Error: The value '%s' of record %ld in %s could not be read as case count.\n"
-                          "       Case count must be a whole number.\n", BasePrint::P_READERROR,
-                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                          "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
+                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
+                          gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
            return DataSetHandler::Rejected;
         } 
+        if (nCount == 0) return DataSetHandler::Ignored;
     }
     else {
       gPrint.Printf("Error: Record %ld in %s does not contain case count.\n",
                     BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
       return DataSetHandler::Rejected;
     }
-    if (nCount < 0) {//validate that count is not negative or exceeds type precision
-      if (strstr(Source.GetValueAt(guCountIndex), "-"))
-        gPrint.Printf("Error: Record %ld, of the %s, contains a negative case count.\n",
-                      BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      else
-        gPrint.Printf("Error: Case count '%s' exceeds the maximum allowed value of %ld in record %ld of %s.\n",
-                      BasePrint::P_READERROR, Source.GetValueAt(guCountIndex), std::numeric_limits<count_t>::max(),
-                      Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-      return DataSetHandler::Rejected;
-    }
-    if (nCount == 0) return DataSetHandler::Ignored;
+
     DataSetHandler::RecordStatusType eDateStatus = RetrieveCountDate(Source, nDate);
     if (eDateStatus != DataSetHandler::Accepted) return eDateStatus;
     iCategoryOffSet = gParameters.GetPrecisionOfTimesType() == NONE ? guCountCategoryIndexNone : guCountCategoryIndex;

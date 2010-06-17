@@ -3,6 +3,7 @@
 #define __UTILITYFUNCTIONS_H
 //******************************************************************************
 #include "SaTScan.h"
+#include "boost/lexical_cast.hpp"
 
 class Matrix; // forward declaration
 
@@ -24,6 +25,14 @@ std::string                   & getValueAsString(double value, std::string& s, u
 std::string                   & GetUserDocumentsDirectory(std::string& s, const std::string& defaultPath);
 bool                            getlinePortable(std::ifstream& readstream, std::string& line);
 void                            printoutMatrix(const std::string& s, Matrix& m, FILE * fp);
+template <typename T>           bool string_to_type(const char * s, T& t) {
+                                    try {
+                                        t = boost::lexical_cast<T>(s);
+                                    } catch (boost::bad_lexical_cast& b) {
+                                        return false;
+                                    } 
+                                    return true;
+                                }
 //******************************************************************************
 #endif
 

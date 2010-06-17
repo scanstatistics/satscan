@@ -7,7 +7,6 @@
 #include "UtilityFunctions.h"
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/gregorian_calendar.hpp"
-#include "boost/lexical_cast.hpp"
 
 /* Date module - SaTScan                                  */
 /*                                                        */
@@ -78,11 +77,8 @@ Julian CharToJulian(const char* szDateString) {
 Julian relativeDateToJulian(const char* szDateString) {
   long relativeDate;
 
-  try {
-    relativeDate = boost::lexical_cast<long>(szDateString);
-  } catch (boost::bad_lexical_cast& b) {
+  if (!string_to_type<long>(szDateString, relativeDate))
      throw resolvable_error("Failed to convert generic date '%s' to integer.\n", szDateString);
-  }
 
   boost::gregorian::date baseDate(GENERIC_DATE_BASE_YEAR, GENERIC_DATE_BASE_MONTH, GENERIC_DATE_BASE_DAY);
   Julian initDay = baseDate.julian_day();
