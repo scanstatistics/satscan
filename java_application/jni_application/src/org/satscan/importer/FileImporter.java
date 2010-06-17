@@ -82,7 +82,11 @@ public class FileImporter {
                 iColumn = 0;
                 for (int i=0; i < mappedVariables.size(); ++i) {
                     iColumn = mappedVariables.get(i).getInputFileVariableIndex() - 1;
-                    value = (String)values[iColumn]; //need to check bounds!!!
+                    if (iColumn + 1 > values.length) {
+                        throw new ImportException(String.format("Record %d contains just %d column%s, SaTScan could not read value at column %d.\n",
+                                                                _dataSource.getCurrentRecordNum(), values.length, values.length > 1 ? "s" : "", iColumn +1));
+                    }
+                    value = (String)values[iColumn];
                     if (_dataSource.isColumnDate(iColumn))
                         value = formatDateField(value);
                     value = StringUtils.trimToEmpty(value);
