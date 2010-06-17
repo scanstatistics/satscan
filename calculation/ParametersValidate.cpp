@@ -11,6 +11,7 @@
 #include <boost/random/uniform_int.hpp>
 #include "ObservableRegion.h"
 #include "TimeStamp.h"
+#include "DateStringParser.h"
 
 /** constructor */
 ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
@@ -145,8 +146,8 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
 
     if (bStartDateValid && bEndDateValid) {
       //check that study period start and end dates are chronologically correct
-      StudyPeriodStartDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str());
-      StudyPeriodEndDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str());
+      StudyPeriodStartDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+      StudyPeriodEndDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
       if (StudyPeriodStartDate > StudyPeriodEndDate) {
         bValid = false;
         PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -154,7 +155,7 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
       }
       if (bValid && gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && bProspectiveDateValid) {
         //validate prospective start date
-        ProspectiveStartDate = gParameters.getDateAsJulian(gParameters.GetProspectiveStartDate().c_str());
+        ProspectiveStartDate = DateStringParser::getDateAsJulian(gParameters.GetProspectiveStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
         if (ProspectiveStartDate < StudyPeriodStartDate || ProspectiveStartDate > StudyPeriodEndDate) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -190,12 +191,12 @@ bool ParametersValidate::ValidateDateString(BasePrint& PrintDirection, Parameter
 
       // validate date field conditionally based upon precision of times specification
       if (gParameters.GetPrecisionOfTimesType() == GENERIC) {
-        long dateInteger;
-        if (sscanf(value.c_str(), "%i", &dateInteger) != 1) {
-          PrintDirection.Printf("Invalid Parameter Setting:\nThe %s, '%s', is not valid. Please specify an integer.\n",
-                                BasePrint::P_PARAMERROR, sName, value.c_str());
-          return false;
-        }
+          try {
+              relativeDateToJulian(value.c_str());
+          } catch (resolvable_error& r) {
+              PrintDirection.Printf("Invalid Parameter Setting:\n%s", BasePrint::P_PARAMERROR, r.what());
+              return false;
+          }
       } else {
         //parse date in parts
         if (CharToMDY(&nMonth, &nDay, &nYear, value.c_str()) != 3) {
@@ -636,8 +637,8 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         return false;
       }
       //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
-      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                                      gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()),
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                                      DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * gParameters.GetMaximumTemporalClusterSize()/100.0);
       if (dMaxTemporalLengthInUnits < 1) {
@@ -661,8 +662,8 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
         return false;
       }
       GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
-      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                                      gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()),
+      dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                                      DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                       gParameters.GetTimeAggregationUnitsType(), 1));
       dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION ? 50 : 90)/100.0);
       if (gParameters.GetMaximumTemporalClusterSize() > dMaxTemporalLengthInUnits) {
@@ -956,11 +957,11 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
         return false;
       //now valid that range dates are within study period start and end dates
       if (bValid) {
-        StudyPeriodStartDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str());
-        StudyPeriodEndDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str());
+        StudyPeriodStartDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+        StudyPeriodEndDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
 
-        EndRangeStartDate = gParameters.getDateAsJulian(gParameters.GetEndRangeStartDate().c_str());
-        EndRangeEndDate = gParameters.getDateAsJulian(gParameters.GetEndRangeEndDate().c_str());
+        EndRangeStartDate = DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+        EndRangeEndDate = DateStringParser::getDateAsJulian(gParameters.GetEndRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
         if (EndRangeStartDate > EndRangeEndDate) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nInvalid scanning window end range. Range date '%s' occurs after date '%s'.\n",
@@ -981,8 +982,8 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
           }
         }
 
-        StartRangeStartDate = gParameters.getDateAsJulian(gParameters.GetStartRangeStartDate().c_str());
-        StartRangeEndDate = gParameters.getDateAsJulian(gParameters.GetStartRangeEndDate().c_str());
+        StartRangeStartDate = DateStringParser::getDateAsJulian(gParameters.GetStartRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+        StartRangeEndDate = DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
         if (StartRangeStartDate > StartRangeEndDate) {
           bValid = false;
           PrintDirection.Printf("Invalid Parameter Setting:\nInvalid scanning window start range. The range date '%s' occurs after date '%s'.\n",
@@ -1495,8 +1496,8 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
     return false;
   }
   //validate that the time aggregation length agrees with the study period and maximum temporal cluster size
-  dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                                  gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()),
+  dStudyPeriodLengthInUnits = ceil(CalculateNumberOfTimeIntervals(DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                                  DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()),
                                                                   gParameters.GetTimeAggregationUnitsType(), 1));
   if (dStudyPeriodLengthInUnits < static_cast<double>(gParameters.GetTimeAggregationLength()))  {
     PrintDirection.Printf("Invalid Parameter Setting:\nA time aggregation of %d %s%s is greater than the %d %s study period.\n",

@@ -321,7 +321,7 @@ void DisplayInitialData(Julian StartDate, Julian EndDate, Julian* pIntvDates, in
 {
 #ifdef DEBUGMEASURE
   int  i;
-  char szDate[MAX_DT_STR];
+  char szDate[11];
 
   fprintf(pMResult, "Caluculate Measure\n\n");
 

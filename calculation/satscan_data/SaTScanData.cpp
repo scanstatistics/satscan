@@ -12,6 +12,7 @@
 #include "ParametersPrint.h"
 #include <boost/dynamic_bitset.hpp>
 #include "MetaTractManager.h"
+#include "DateStringParser.h"
 
 /** class constructor */
 CSaTScanData::CSaTScanData(const CParameters& Parameters, BasePrint& PrintDirection)
@@ -907,7 +908,7 @@ int CSaTScanData::CalculateProspectiveIntervalStart() const {
 
   try {
   	if (gParameters.GetAdjustForEarlierAnalyses()) {
-      iDateIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetProspectiveStartDate().c_str())));
+      iDateIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetProspectiveStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
       if (iDateIndex < 0)
         throw resolvable_error("Error: : The start date for prospective analyses '%s' is prior to the study period start date '%s'.\n",
                                gParameters.GetProspectiveStartDate().c_str(), gParameters.GetStudyPeriodStartDate().c_str());
@@ -948,11 +949,11 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
 
   if (gParameters.GetIncludeClustersType() == CLUSTERSINRANGE) {
     //find start range date indexes
-    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeStartDate().c_str())));
-    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeEndDate().c_str())));
+    m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
+    m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     //find end range date indexes
-    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeStartDate().c_str())));
-    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeEndDate().c_str())));
+    m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
+    m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     //validate windows will be evaluated - check that there will be clusters evaluated...
     iMaxEndWindow = std::min(m_nFlexibleWindowEndRangeEndIndex, m_nFlexibleWindowStartRangeEndIndex + m_nIntervalCut);
     iWindowStart = std::max(m_nFlexibleWindowEndRangeStartIndex - m_nIntervalCut, m_nFlexibleWindowStartRangeStartIndex);
@@ -994,10 +995,10 @@ void CSaTScanData::SetTimeIntervalRangeIndexes() {
             gvTimeIntervalStartTimes.erase(gvTimeIntervalStartTimes.begin() + 1, gvTimeIntervalStartTimes.begin() + iWindowStart);
         m_nTimeIntervals = gvTimeIntervalStartTimes.size() - 1;
         // recalculate flexable window indexes
-        m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeStartDate().c_str())));
-        m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(gParameters.getDateAsJulian((gParameters.GetStartRangeEndDate().c_str())));
-        m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeStartDate().c_str())));
-        m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(gParameters.getDateAsJulian((gParameters.GetEndRangeEndDate().c_str())));
+        m_nFlexibleWindowStartRangeStartIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
+        m_nFlexibleWindowStartRangeEndIndex = GetTimeIntervalOfDate(DateStringParser::getDateAsJulian(gParameters.GetStartRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
+        m_nFlexibleWindowEndRangeStartIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeStartDate().c_str(), gParameters.GetPrecisionOfTimesType()));
+        m_nFlexibleWindowEndRangeEndIndex = GetTimeIntervalOfEndDate(DateStringParser::getDateAsJulian(gParameters.GetEndRangeEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
     }
   }
 }
@@ -1008,8 +1009,8 @@ void CSaTScanData::Setup() {
 
 
   try {
-    m_nStartDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str());
-    m_nEndDate = gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str());
+    m_nStartDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType());
+    m_nEndDate = DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType());
 
     //For now, compute the angle and store the angle and shape
     //for each ellipsoid.  Maybe transfer info to a different location in the

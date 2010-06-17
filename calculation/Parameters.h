@@ -238,7 +238,6 @@ class CParameters {
     const CreationVersion            &  GetCreationVersion() const {return gCreationVersion;}
     CriteriaSecondaryClustersType       GetCriteriaSecondClustersType() const {return geCriteriaSecondClustersType;}
     unsigned int                        GetCreationVersionMajor() const {return gCreationVersion.iMajor;}
-    Julian                              getDateAsJulian(const char * sDate) const;
     const std::vector<int>            & GetEllipseRotations() const {return gvEllipseRotations;}
     const std::vector<double>         & GetEllipseShapes() const {return gvEllipseShapes;}
     const std::string                 & GetEndRangeEndDate() const {return gsEndRangeEndDate;}

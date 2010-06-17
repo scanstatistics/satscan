@@ -22,6 +22,7 @@ class DateStringParser {
 
   protected:
     DatePrecisionType                   geTimePrecision;
+    std::string                         _lastError;
     static const unsigned int           DEFAULT_DAY;
     static const unsigned int           DEFAULT_MONTH;
     static const unsigned int           POP_PRECISION_MONTH_DEFAULT_DAY;
@@ -39,6 +40,7 @@ class DateStringParser {
     DateStringParser(DatePrecisionType eTimePrecision);
     ~DateStringParser();
 
+    const std::string                 & getLastParseError() const {return _lastError;}
     DateStringParser::ParserStatus      ParseAdjustmentDateString(const char * sDateString, const Julian& PeriodStart,
                                                                   const Julian& PeriodEnd, Julian& theDate, bool bStartDate);
     DateStringParser::ParserStatus      ParseCountDateString(const char * sDateString, DatePrecisionType eMinPrecision,
@@ -47,6 +49,8 @@ class DateStringParser {
     DateStringParser::ParserStatus      ParsePopulationDateString(const char * sDateString, const Julian& PeriodStart,
                                                                   const Julian& PeriodEnd, Julian& theDate,
                                                                   DatePrecisionType& eReadPrecision);
+
+    static Julian                       getDateAsJulian(const char * sDate, DatePrecisionType ePrecision);
 };
 //***************************************************************************
 #endif

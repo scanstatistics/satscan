@@ -12,15 +12,15 @@
 /* Author : Katherine Rand, IMS                           */
 /* Date   : 12/94 - 1/95                                  */
 
-#define MAX_DT_STR 11
 #define MIN_YEAR  1753 //KR980706 100
-#define MAX_YEAR  9999
-#define MIN_MONTH 1
-#define MAX_MONTH 12
-#define MIN_DAY   1
-#define MAX_DAY   31
+
+#define GENERIC_DATE_BASE_YEAR 2000
+#define GENERIC_DATE_BASE_MONTH 1
+#define GENERIC_DATE_BASE_DAY 1
 
 typedef unsigned long Julian;
+typedef boost::date_time::year_month_day_base<unsigned long, unsigned short, unsigned short > simple_ymd_type;
+typedef boost::date_time::gregorian_calendar_base<simple_ymd_type, Julian> gregorian_calendar;
 
 double          CalculateNumberOfTimeIntervals(Julian StartDate, Julian EndDate, DatePrecisionType eUnits, int iIntervalLength);
 int             CharToMDY(UInt* month, UInt* day, UInt* year, const char* szDateString);
@@ -35,8 +35,8 @@ void            JulianToMDY(UInt* month, UInt* day, UInt* year, Julian JNum);
 std::string   & JulianToString(std::string& sDate, Julian JNum, DatePrecisionType eDatePrint);
 void            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
 Julian          MDYToJulian(UInt m, UInt d, UInt y);
-void            PrintJulianDates(const std::vector<Julian>& vJulianDates, const char * sFilename);
-void            ShowJulianRange();
+void            printDateRange(FILE * pFile);
+UInt            getMinimumYear();
 
 /** Class that manages the subtraction of lengths of time from a starting end date.
     This class was created to:

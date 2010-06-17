@@ -66,8 +66,8 @@ bool PoissonDataSetHandler::ConvertPopulationDateToJulian(const char * sDateStri
       case DateStringParser::INVALID_DATE     :
       case DateStringParser::LESSER_PRECISION :
       default                                 :
-        gPrint.Printf("Error: Invalid date '%s' in %s, record %ld.\n",
-                      BasePrint::P_READERROR, sDateString, gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber);
+        gPrint.Printf("Error: Invalid date '%s' in %s, record %ld.\n%s",
+                      BasePrint::P_READERROR, sDateString, gPrint.GetImpliedFileTypeString().c_str(), iRecordNumber, DateParser.getLastParseError().c_str());
         bValidDate = false;                           
     };
   }
@@ -313,8 +313,8 @@ bool PoissonDataSetHandler::ReadPopulationFile(RealDataSet& DataSet) {
     if (bValid && !bEmpty) {
       //Set tract handlers population date structures since we already now all the dates from above.
       DataSet.getPopulationData().SetPopulationDates(vprPopulationDates,
-                                                     gParameters.getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str()),
-                                                     gParameters.getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str()));
+                                                     DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetPrecisionOfTimesType()),
+                                                     DateStringParser::getDateAsJulian(gParameters.GetStudyPeriodEndDate().c_str(), gParameters.GetPrecisionOfTimesType()));
       vprPopulationDates.clear(); //dump memory
       Source->GotoFirstRecord();
       bEmpty = true;

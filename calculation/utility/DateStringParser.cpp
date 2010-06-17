@@ -3,6 +3,7 @@
 #pragma hdrstop
 //***************************************************************************
 #include "DateStringParser.h"
+#include "SSException.h"
 
 const unsigned int DateStringParser::DEFAULT_DAY                       = 1;
 const unsigned int DateStringParser::DEFAULT_MONTH                     = 1;
@@ -29,7 +30,7 @@ DateStringParser::ParserStatus DateStringParser::Ensure4DigitYear(unsigned int& 
   nLowerD = nLowerBound - nLowerC*100;
   nUpperD = nUpperBound - nUpperC*100;
 
-  if (y >= MIN_YEAR)                              // Return y if 4 digit
+  if (y >= getMinimumYear())                              // Return y if 4 digit
     return VALID_DATE;
   else if (y > 99)
     return INVALID_DATE;
@@ -122,9 +123,15 @@ DateStringParser::ParserStatus DateStringParser::ParseAdjustmentDateString(const
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
 
+  _lastError = "";
   if (geTimePrecision == GENERIC) {
-     theDate = relativeDateToJulian(sDateString);
-     return VALID_DATE;
+      try {
+        theDate = relativeDateToJulian(sDateString);
+      } catch (resolvable_error& r) {
+          _lastError = r.what();
+          return INVALID_DATE;
+      }
+      return VALID_DATE;
   }
 
   eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, ePrecision, eDateFormat);
@@ -165,9 +172,15 @@ DateStringParser::ParserStatus DateStringParser::ParseCountDateString(const char
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
 
+  _lastError = "";
   if (geTimePrecision == GENERIC) {
-     theDate = relativeDateToJulian(sDateString);
-     return VALID_DATE;
+      try {
+        theDate = relativeDateToJulian(sDateString);
+      } catch (resolvable_error& r) {
+          _lastError = r.what();
+          return INVALID_DATE;
+      }
+      return VALID_DATE;
   }
 
   eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, ePrecision, eDateFormat);
@@ -203,10 +216,16 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
   unsigned int          iOne, iTwo, iThree;
   DateFormat            eDateFormat;
 
+  _lastError = "";
   if (geTimePrecision == GENERIC) {
-     theDate = relativeDateToJulian(sDateString);
-     eReadPrecision = GENERIC;
-     return VALID_DATE;
+      try {
+        theDate = relativeDateToJulian(sDateString);
+      } catch (resolvable_error& r) {
+          _lastError = r.what();
+          return INVALID_DATE;
+      }
+      eReadPrecision = GENERIC;
+      return VALID_DATE;
   }
 
   eParserStatus = GetInParts(sDateString, PeriodStart, PeriodEnd, iOne, iTwo, iThree, eReadPrecision, eDateFormat);
@@ -230,3 +249,7 @@ DateStringParser::ParserStatus DateStringParser::ParsePopulationDateString(const
   }
 }
 
+/** Converts date string to Julian given precision of times parameter. */
+Julian DateStringParser::getDateAsJulian(const char * sDate, DatePrecisionType ePrecision) {
+  return ePrecision == GENERIC ? relativeDateToJulian(sDate) : CharToJulian(sDate);
+}

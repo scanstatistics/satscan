@@ -58,9 +58,9 @@ bool SaTScanDataReader::ConvertAdjustmentDateToJulian(DataSource& Source, Julian
       case DateStringParser::INVALID_DATE     :
       case DateStringParser::LESSER_PRECISION :
       default                                 :
-        gPrint.Printf("Error: Invalid %s date '%s' in %s, record %ld.\n", BasePrint::P_READERROR,
+        gPrint.Printf("Error: Invalid %s date '%s' in %s, record %ld.\n%s", BasePrint::P_READERROR,
                       (bStartDate ? "start": "end"), Source.GetValueAt(iDateIndex),
-                      gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
+                      gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), DateParser.getLastParseError().c_str());
         return false;
     };
     //validate that date is between study period start and end dates

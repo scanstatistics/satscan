@@ -212,8 +212,8 @@ DataSetHandler::RecordStatusType DataSetHandler::RetrieveCountDate(DataSource& S
       return DataSetHandler::Rejected; }
     case DateStringParser::INVALID_DATE     :
     default                                 :
-      gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n", BasePrint::P_READERROR,
-                    Source.GetValueAt(guCountDateIndex), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex());
+      gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n%s", BasePrint::P_READERROR,
+                    Source.GetValueAt(guCountDateIndex), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), DateParser.getLastParseError().c_str());
       return DataSetHandler::Rejected;
   };
   //validate that date is between study period start and end dates

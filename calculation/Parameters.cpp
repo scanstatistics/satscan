@@ -322,11 +322,6 @@ const std::string & CParameters::GetControlFileName(size_t iSetIndex) const {
   return gvControlFilenames[iSetIndex - 1];
 }
 
-/** Returns date as Julian. */
-Julian CParameters::getDateAsJulian(const char * sDate) const {
-  return GetPrecisionOfTimesType() == GENERIC ? relativeDateToJulian(sDate) : CharToJulian(sDate);
-}
-
 /** Returns threshold for early termination. If reporting default p-value, then
     threshold is determined by number of replications requested. */
 unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
