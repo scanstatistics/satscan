@@ -67,7 +67,8 @@ ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, 
       gpASCIIFileDataWriter = new ASCIIDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
     if (gParameters.GetOutputClusterLevelDBase()) {
       gpDBaseFileWriter = new DBaseDataFileWriter(gParameters, vFieldDefinitions, CLUSTER_FILE_EXT, bAppend);
-      //gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
+      //if (!DataHub.GetParameters().GetIsPurelyTemporalAnalysis() && DataHub.GetParameters().GetCoordinatesType() == LATLON)
+      //  gpShapeDataFileWriter = new ShapeDataFileWriter(gParameters, CLUSTER_FILE_EXT, bAppend);
     }
     if (gParameters.GetOutputClusterCaseDBase())
       gpDBaseFileDataWriter = new DBaseDataFileWriter(gParameters, vDataFieldDefinitions, CLUSTERCASE_FILE_EXT, bAppend);
