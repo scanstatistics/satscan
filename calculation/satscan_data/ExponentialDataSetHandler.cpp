@@ -289,7 +289,6 @@ DataSetHandler::RecordStatusType ExponentialDataSetHandler::RetrieveCaseRecordDa
                           Source.GetValueAt(iCensoredAttributeIndex), Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             return DataSetHandler::Rejected;
         }
-        return DataSetHandler::Rejected;
         //treat values greater than one as indication that patient was censored
         tCensorAttribute = (tCensorAttribute > 1 ? 1 : tCensorAttribute);
     }
