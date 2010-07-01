@@ -28,7 +28,7 @@ class SimulationVariables {
 
     void            add_llr(double llr) {_sum_llr += llr; 
                                          _sum_squared_llr += std::pow(llr, 2);
-                                         if (llr > _mlc_llr) ++_greater_llr_count;
+                                         if (macro_less_than(_mlc_llr, llr, DBL_CMP_TOLERANCE))  ++_greater_llr_count;
                     }
     double          get_mean() const {return _sum_llr/static_cast<double>(_simulations_count);}
     unsigned int    get_greater_llr_count() const {return _greater_llr_count;}
