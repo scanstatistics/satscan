@@ -7,6 +7,7 @@
 #include "SSException.h" 
 
 unsigned long MostLikelyClustersContainer::MAX_RANKED_CLUSTERS  = 500;
+unsigned long MostLikelyClustersContainer::MAX_BRUTE_FORCE_LOCATIONS = 50000;
 
 /** constructor */
 MostLikelyClustersContainer::MostLikelyClustersContainer() {}
@@ -335,7 +336,7 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
 //
 bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion) {
   bool                                          bResult=true;
-  double                                        dCandidateRadius, dCurrRadius;
+  double                                        dCandidateRadius, dCurrRadius, dDistanceCenters;
   std::vector<double>                           vCandidateCenterCoords, vCurrCenterCoords;
   std::vector<CCluster*>::const_iterator        itrCurr, itrEnd;
 
@@ -349,17 +350,31 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
       //always keep purely temporal cluster - we don't apply geographical overlap for these clusters
       return true;
 
-    if (eCriterion == NOGEOOVERLAP) {
+    // retrieve coordinates of candidate cluster
+    DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
+    stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
+
+    if (eCriterion == NOGEOOVERLAP) { // specialized code for no geographical overlap
+      // we will potentially use the radius shortcut method if many locations and candidate cluster is circular
+      bool shouldShortCut = (DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()) >= MAX_BRUTE_FORCE_LOCATIONS && CandidateCluster.GetEllipseOffset() == 0;
+      if (shouldShortCut) dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
       for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
         if ((*itrCurr)->GetClusterType() == PURELYTEMPORALCLUSTER)
           //skip comparison against retained purely temporal cluster - can't compare
-          continue;
-        bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
+          continue;        
+        //if **itrCurr and CandidateCluster are both not elliptical and there are many locations; do not use brute force HasTractsInCommon() but instead use shortcut.
+        if (shouldShortCut && (**itrCurr).GetEllipseOffset() == 0) {
+            CCluster const & currCluster = **itrCurr;
+            DataHub.GetGInfo()->retrieveCoordinates(currCluster.GetCentroidIndex(), vCurrCenterCoords);
+            stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
+            dCurrRadius = GetClusterRadius(DataHub, currCluster);
+            dDistanceCenters = CandidateCenter.DistanceTo(currCenter) - (dCurrRadius + dCandidateRadius);
+            bResult = std::fabs(dDistanceCenters) > DBL_CMP_TOLERANCE && dDistanceCenters > 0.0;
+        } else {
+            bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
+        }
       }
-    }
-    else {
-      DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
-      stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
+    } else { // standard geographical overlap checking
       //validate conditions:
       switch (eCriterion) {
         case NOCENTROIDSINOTHER: //no cluster centroids in any other clusters
@@ -372,7 +387,6 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         case NOGEOOVERLAP: break; //no geographical overlap
         default:  throw prg_error("Unknown Criteria for Reporting Secondary Clusters, '%d'.","MostLikelyClustersContainer", eCriterion);
       }
-
       dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
       for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
         //skip comparison against retained purely temporal cluster - can't compare
@@ -382,6 +396,9 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
         dCurrRadius = GetClusterRadius(DataHub, currCluster);
         switch (eCriterion) {
+          case NOGEOOVERLAP:
+              bResult = CandidateCenter.DistanceTo(currCenter) > (dCurrRadius + dCandidateRadius);
+              break;
           case NOCENTROIDSINOTHER: {//no cluster centroids in any other clusters
             if (CandidateCluster.GetEllipseOffset() > 0) {
               if (currCluster.GetEllipseOffset() > 0) {//both are ellipses
@@ -389,22 +406,19 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
                  PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
                  || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()))
                 );
-              }
-              else {//candidate is ellipse, curr is circle
+              } else {//candidate is ellipse, curr is circle
                 bResult = !(
                   CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
                  || PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()))
                 );
               }
-            }
-            else {
+            } else {
               if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
                 bResult = !(
                   PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
                  || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius)
                 );
-              }
-              else {//both are circles
+              } else {//both are circles
                 bResult = !(CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius) || CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius));
               }
             }
@@ -431,20 +445,17 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
                 bResult =
                   !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
                  || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()));
-              }
-              else {//candidate is ellipse, curr is circle
+              } else {//candidate is ellipse, curr is circle
                 bResult =
                   !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius)
                  || !PointLiesWithinEllipseArea(currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], dCandidateRadius, DataHub.GetEllipseAngle(CandidateCluster.GetEllipseOffset()), DataHub.GetEllipseShape(CandidateCluster.GetEllipseOffset()));
              }
-            }
-            else {
+            } else {
               if (currCluster.GetEllipseOffset() > 0) {//candidate is circle, curr is ellipse
                 bResult =
                   !PointLiesWithinEllipseArea(CandidateCenter.GetCoordinates()[0], CandidateCenter.GetCoordinates()[1], currCenter.GetCoordinates()[0], currCenter.GetCoordinates()[1], dCurrRadius, DataHub.GetEllipseAngle(currCluster.GetEllipseOffset()), DataHub.GetEllipseShape(currCluster.GetEllipseOffset()))
                  || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
-              }
-              else {//both are circles
+              } else {//both are circles
                 bResult = !CentroidLiesWithinSphereRegion(CandidateCenter, currCenter, dCurrRadius) || !CentroidLiesWithinSphereRegion(currCenter, CandidateCenter, dCandidateRadius);
               }
             }
@@ -454,8 +465,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         }
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
      x.addTrace("ShouldRetainCandidateCluster()", "MostLikelyClustersContainer");
      throw;
   }

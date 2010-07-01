@@ -86,6 +86,7 @@ class MostLikelyClustersContainer {
 
     ptr_vector<CCluster>        gvTopClusterList;
     static unsigned long        MAX_RANKED_CLUSTERS;
+    static unsigned long        MAX_BRUTE_FORCE_LOCATIONS;
 
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
