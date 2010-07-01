@@ -350,14 +350,18 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
       //always keep purely temporal cluster - we don't apply geographical overlap for these clusters
       return true;
 
-    // retrieve coordinates of candidate cluster
-    DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
-    stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
-
     if (eCriterion == NOGEOOVERLAP) { // specialized code for no geographical overlap
+      std::auto_ptr<stsClusterCentroidGeometry> CandidateCenter;
       // we will potentially use the radius shortcut method if many locations and candidate cluster is circular
-      bool shouldShortCut = (DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()) >= MAX_BRUTE_FORCE_LOCATIONS && CandidateCluster.GetEllipseOffset() == 0;
-      if (shouldShortCut) dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
+      bool shouldShortCut = DataHub.GetGInfo()->getNumGridPoints() &&
+                            (DataHub.GetNumTracts() + DataHub.GetNumMetaTracts()) >= MAX_BRUTE_FORCE_LOCATIONS && 
+                            CandidateCluster.GetEllipseOffset() == 0;
+      if (shouldShortCut) {
+          dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
+          // retrieve coordinates of candidate cluster
+          DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
+          stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
+      }
       for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
         if ((*itrCurr)->GetClusterType() == PURELYTEMPORALCLUSTER)
           //skip comparison against retained purely temporal cluster - can't compare
@@ -368,13 +372,16 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
             DataHub.GetGInfo()->retrieveCoordinates(currCluster.GetCentroidIndex(), vCurrCenterCoords);
             stsClusterCentroidGeometry currCenter(vCurrCenterCoords);
             dCurrRadius = GetClusterRadius(DataHub, currCluster);
-            dDistanceCenters = CandidateCenter.DistanceTo(currCenter) - (dCurrRadius + dCandidateRadius);
+            dDistanceCenters = CandidateCenter->DistanceTo(currCenter) - (dCurrRadius + dCandidateRadius);
             bResult = std::fabs(dDistanceCenters) > DBL_CMP_TOLERANCE && dDistanceCenters > 0.0;
         } else {
             bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
         }
       }
     } else { // standard geographical overlap checking
+      // retrieve coordinates of candidate cluster
+      DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
+      stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
       //validate conditions:
       switch (eCriterion) {
         case NOCENTROIDSINOTHER: //no cluster centroids in any other clusters
