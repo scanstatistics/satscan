@@ -616,7 +616,7 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
     } else {
       printString(replicas, "%u", simVars.get_sim_count());
       printString(format, "%%.%dlf", replicas.size());
-      printString(buffer, format.c_str(), GetMonteCarloPValue(parameters,simVars, iReportedCluster == 1));
+      printString(buffer, format.c_str(), GetMonteCarloPValue(parameters,simVars, DataHub.GetParameters().GetIsIterativeScanning() || iReportedCluster == 1));
       //fprintf(fp, buffer.c_str());
       printClusterData(fp, PrintFormat, "P-value", buffer);
     }
@@ -654,7 +654,7 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
       dPValue = std::max(p.first, p.second);
       dAdjustedP_Value = std::max(1.0 - pow(1.0 - dPValue, 1.0/dIntervals),p.second);
   } else {
-      dPValue = GetMonteCarloPValue(Data.GetParameters(), simVars, iReportedCluster == 1);
+      dPValue = GetMonteCarloPValue(Data.GetParameters(), simVars, parameters.GetIsIterativeScanning() || iReportedCluster == 1);
       dAdjustedP_Value = 1.0 - pow(1.0 - dPValue, 1.0/dIntervals);
   }
   dUnitsInOccurrence = static_cast<double>(parameters.GetTimeAggregationLength())/dAdjustedP_Value;

@@ -326,7 +326,7 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
         Record.GetFieldValue(TST_STAT_FIELD).AsDouble() = theCluster.m_nRatio;
     }
     if (theCluster.reportablePValue(gParameters, simVars))
-        Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, iClusterNumber == 1);
+        Record.GetFieldValue(P_VALUE_FLD).AsDouble() = theCluster.getReportingPValue(gParameters, simVars, gDataHub.GetParameters().GetIsIterativeScanning() || iClusterNumber == 1);
     if ((gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE) && gParameters.GetReportGumbelPValue()) {
         std::pair<double,double> p = theCluster.GetGumbelPValue(simVars);
         Record.GetFieldValue(GUMBEL_P_VALUE_FLD).AsDouble() = std::max(p.first, p.second);
