@@ -252,13 +252,13 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
             case 2:
                 return Parameters.ProbabilityModelType.SPACETIMEPERMUTATION;
             case 3:
-                return Parameters.ProbabilityModelType.ORDINAL;
-            case 4:
-                return Parameters.ProbabilityModelType.EXPONENTIAL;
-            case 5:
-                return Parameters.ProbabilityModelType.NORMAL;
-            case 6:
                 return Parameters.ProbabilityModelType.CATEGORICAL;
+            case 4:
+                return Parameters.ProbabilityModelType.ORDINAL;
+            case 5:
+                return Parameters.ProbabilityModelType.EXPONENTIAL;
+            case 6:
+                return Parameters.ProbabilityModelType.NORMAL;
             case 0:
             default:
                 return Parameters.ProbabilityModelType.POISSON;
@@ -692,20 +692,20 @@ public class ImportWizardDialog extends javax.swing.JDialog implements PropertyC
     private void configureDisplayVariablesComboBox() {
         if (_fileType == FileImporter.InputFileType.Case) {
             _displayVariablesComboBox.removeAllItems();
-            _displayVariablesComboBox.addItem("discrete Poisson");
-            _displayVariablesComboBox.addItem("Bernoulli");
-            _displayVariablesComboBox.addItem("space-time permutation");
-            _displayVariablesComboBox.addItem("ordinal");
-            _displayVariablesComboBox.addItem("exponential");
-            _displayVariablesComboBox.addItem("normal");
-            _displayVariablesComboBox.addItem("multinomial");
+            _displayVariablesComboBox.addItem("discrete Poisson model");
+            _displayVariablesComboBox.addItem("Bernoulli model");
+            _displayVariablesComboBox.addItem("space-time permutation model");
+            _displayVariablesComboBox.addItem("multinomial model");
+            _displayVariablesComboBox.addItem("ordinal model");
+            _displayVariablesComboBox.addItem("exponential model");
+            _displayVariablesComboBox.addItem("normal model");
             switch (_startingModelType) {
                 case BERNOULLI            : _displayVariablesComboBox.setSelectedIndex(1); break;
                 case SPACETIMEPERMUTATION : _displayVariablesComboBox.setSelectedIndex(2); break;
-                case ORDINAL              : _displayVariablesComboBox.setSelectedIndex(3); break;
-                case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(4); break;
-                case NORMAL               : _displayVariablesComboBox.setSelectedIndex(5); break;
-                case CATEGORICAL          : _displayVariablesComboBox.setSelectedIndex(6); break;
+                case CATEGORICAL          : _displayVariablesComboBox.setSelectedIndex(3); break;
+                case ORDINAL              : _displayVariablesComboBox.setSelectedIndex(4); break;
+                case EXPONENTIAL          : _displayVariablesComboBox.setSelectedIndex(5); break;
+                case NORMAL               : _displayVariablesComboBox.setSelectedIndex(6); break;
                 case POISSON              :
                 default                   : _displayVariablesComboBox.setSelectedIndex(0); break;
             }

@@ -338,10 +338,10 @@ void CSaTScanData::DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrin
       const AbstractTimeTrend& globalTrend = gDataSets->GetDataSet(0/*for now*/).getTimeTrend();
       if (gParameters.getTimeTrendType() == LINEAR) {
          double nAnnualTT = const_cast<AbstractTimeTrend&>(globalTrend).SetAnnualTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-         buffer = (nAnnualTT < 0 ? "Annual decrease" : "Annual increase");
-         PrintFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);
+         PrintFormat.PrintSectionLabel(fp, "Time trend", false, false);
+         buffer = (nAnnualTT < 0 ? "annual decrease" : "annual increase");
          getValueAsString(fabs(nAnnualTT), work, 3);
-         fprintf(fp, "%s%%\n", work.c_str());
+         fprintf(fp, "%s%% %s\n", work.c_str(), buffer.c_str());
       }
       //PrintFormat.PrintSectionLabel(fp, "Global Intercept", false, false);
       //fprintf(fp, "%g\n", globalTrend.GetAlpha());

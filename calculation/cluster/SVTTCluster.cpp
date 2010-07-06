@@ -394,10 +394,10 @@ void CSVTTCluster::DisplayTimeTrend(FILE* fp, const CSaTScanData& DataHub, const
   std::string buffer, buffer2;
 
   if (gClusterData->getInsideTrend().getType() == LINEAR) {
-     PrintFormat.PrintSectionLabel(fp, "Inside Time trend", false, true);
+     PrintFormat.PrintSectionLabel(fp, "Inside time trend", false, true);
      GetFormattedTimeTrend(buffer, gClusterData->getInsideTrend());
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-     PrintFormat.PrintSectionLabel(fp, "Outside Time trend", false, true);
+     PrintFormat.PrintSectionLabel(fp, "Outside time trend", false, true);
      GetFormattedTimeTrend(buffer, gClusterData->getOutsideTrend());
      PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
      //PrintFormat.PrintSectionLabel(fp, "Time trend difference", false, true);

@@ -1107,8 +1107,8 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
 /** Prints early termination status to report file. */
 void AnalysisRunner::PrintEarlyTerminationStatus(FILE* fp) {
   if (gTopClustersContainer.GetNumClustersRetained() && gSimVars.get_sim_count() < gParameters.GetNumReplicationsRequested()) {
-    fprintf(fp, "\nNOTE: The optional sequential procedure was used to terminate\n");
-    fprintf(fp, "      the simulations early for large p-values.\n");
+    fprintf(fp, "\nNOTE: The sequential Monte Carlo procedure was used to terminate\n");
+    fprintf(fp, "      the calculations after %u replications.\n", gSimVars.get_sim_count());
   }
 }
 

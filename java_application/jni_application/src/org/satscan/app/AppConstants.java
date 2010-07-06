@@ -18,8 +18,8 @@ public final class AppConstants {
     public static final int MAX_YEAR = 9999;
     public static final int MIN_GENERIC = -714593;
     public static final int MAX_GENERIC = 2921939;
-    public static final int VERSION_MAJOR = 8;
-    public static final int VERSION_MINOR = 3;
+    public static final int VERSION_MAJOR = 9;
+    public static final int VERSION_MINOR = 0;
     public static final int VERSION_RELEASE = 0;
 
     public static final String getSoftwareTitle() {
