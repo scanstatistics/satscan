@@ -603,8 +603,10 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
   if (reportablePValue(parameters,simVars)) {
     // conditionally report cluster p-value as monte carlo or gumbel
     //PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
+    bool bPurelySpatialPoissonBernoulli = parameters.GetAnalysisType() == PURELYSPATIAL && 
+                                          (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI);
     if (parameters.GetPValueReportingType() == GUMBEL_PVALUE ||
-        (parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
+        (bPurelySpatialPoissonBernoulli && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
         getValueAsString(p.second, buffer).insert(0, "< ");
@@ -648,7 +650,11 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
      throw prg_error("GetRecurrenceInterval() called for non-prospective analysis.","GetRecurrenceInterval()");
 
   dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
-  if ((parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) ||
+
+  bool bPurelySpatialPoissonBernoulli = parameters.GetAnalysisType() == PURELYSPATIAL && 
+                                        (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI);
+
+  if ((bPurelySpatialPoissonBernoulli && parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) ||
        parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       dPValue = std::max(p.first, p.second);
@@ -948,12 +954,16 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
         break;
     case DEFAULT_PVALUE     :
     default                 :
-        if (reportableGumbelPValue(parameters, simVars)) {
-           std::pair<double,double> p = GetGumbelPValue(simVars);
-           return std::max(p.first, p.second);
+        {
+            bool bPurelySpatialPoissonBernoulli = parameters.GetAnalysisType() == PURELYSPATIAL && 
+                                                  (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI);
+            if (bPurelySpatialPoissonBernoulli && reportableGumbelPValue(parameters, simVars)) {
+                std::pair<double,double> p = GetGumbelPValue(simVars);
+                return std::max(p.first, p.second);
+            }
+            if (reportableMonteCarloPValue(parameters,simVars))
+                return GetMonteCarloPValue(parameters, simVars, bMLC);
         }
-        if (reportableMonteCarloPValue(parameters,simVars))
-          return GetMonteCarloPValue(parameters, simVars, bMLC);
   }
 
   return p_value;
