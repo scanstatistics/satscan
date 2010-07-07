@@ -419,11 +419,15 @@ bool CParameters::GetOutputSimLoglikeliRatiosFiles() const {
   return gbOutputSimLogLikeliRatiosAscii || gbOutputSimLogLikeliRatiosDBase;
 }
 
-bool CParameters::GetPermitsCentricExecution() const {
- return  !(GetIsPurelyTemporalAnalysis() || GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
-          (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) ||
-          (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) ||          
-           GetTerminateSimulationsEarly() || UseLocationNeighborsFile() || UsingMultipleCoordinatesMetaLocations());
+bool CParameters::GetPermitsCentricExecution(bool excludePValue) const {
+ if (GetIsPurelyTemporalAnalysis()) return false;
+ if (GetProbabilityModelType() == HOMOGENEOUSPOISSON) return false;
+ if (GetAnalysisType() == PURELYSPATIAL && GetRiskType() == MONOTONERISK) return false;
+ if (GetSpatialWindowType() == ELLIPTIC && GetNonCompactnessPenaltyType() > NOPENALTY) return false;
+ if (!excludePValue && GetPValueReportingType() == TERMINATION_PVALUE && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) return false;
+ if (UseLocationNeighborsFile()) return false;
+ if (UsingMultipleCoordinatesMetaLocations()) return false;
+ return true;
 }
 
 /** returns whether analysis type permits inclusion of purely spatial cluster */

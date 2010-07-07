@@ -197,10 +197,21 @@ void AnalysisRunner::Execute() {
       };
     }
     catch (std::bad_alloc &b) {
+      std::string additional;
+      //Potentially provide detailed options given user parameter settings:
+      if (geExecutingType == SUCCESSIVELY && 
+          gParameters.GetPermitsCentricExecution(true) &&
+          gParameters.GetPValueReportingType() == TERMINATION_PVALUE && gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
+              additional = "\nNote: SaTScan could not utilize the alternative memory allocation for\n"
+                           "this analysis because of the P-Value reporting setting (sequential Monte Carlo).\n"
+                           "Consider changing this setting, which will enable analysis to utilize the\n"
+                           "alternative memory allocation and possibly execute without memory issues.\n";
+      }
+
       throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
                              "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
-                             "Note that memory needs are on the order of %.0lf MB.\n",
-                             (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second));
+                             "Note that memory needs are on the order of %.0lf MB.\n%s",
+                             (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second), additional.c_str());
     }
   }
   catch (prg_exception& x) {

@@ -276,37 +276,36 @@ bool ParametersValidate::ValidateEllipseParameters(BasePrint & PrintDirection) c
 
 /** Validates execution type parameters. */
 bool ParametersValidate::ValidateExecutionTypeParameters(BasePrint & PrintDirection) const {
-  bool          bValid=true;
+   bool          bValid=true;
 
-  try {
-    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetTerminateSimulationsEarly()) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The early termination of simulations option can not be applied "
-                            "with the centric analysis execution.\n", BasePrint::P_PARAMERROR);
-    }
-    if (gParameters.GetExecutionType() == CENTRICALLY &&
-        (gParameters.GetIsPurelyTemporalAnalysis() ||
-         (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK) ||
-         gParameters.GetAnalysisType() == SPATIALVARTEMPTREND)) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "The centric analysis execution is not available for:\n"
-                            " purely temporal analyses\n purely spatial analyses with isotonic scan\n"
-                            " spatial variation in temporal trends analysis\n", BasePrint::P_PARAMERROR);
-    }
-    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.UseLocationNeighborsFile()) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "Centric analysis execution is not implemented with the non-Eucludian neighbors file.\n", BasePrint::P_PARAMERROR);
-    }
-    if (gParameters.GetExecutionType() == CENTRICALLY && gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
-      bValid = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "Centric analysis execution is not implemented with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR);
-    }
-  }
-  catch (prg_exception& x) {
+   try {
+     if (gParameters.GetExecutionType() == CENTRICALLY) {
+        if (gParameters.GetPValueReportingType() == TERMINATION_PVALUE && gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
+           bValid = false;
+           PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                 "The sequential Monte Carlo option can not be applied with the alternative memory allocation.\n", BasePrint::P_PARAMERROR);
+        }
+        if (gParameters.GetIsPurelyTemporalAnalysis() ||
+            (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK) ||
+             gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+           bValid = false;
+           PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                 "The alternative memory allocation is not available for:\n"
+                                 " purely temporal analyses\n purely spatial analyses with isotonic scan\n"
+                                 " spatial variation in temporal trends analysis\n", BasePrint::P_PARAMERROR);
+        }
+        if (gParameters.UseLocationNeighborsFile()) {
+           bValid = false;
+           PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                 "The alternative memory allocation is not implemented with the non-Eucludian neighbors file.\n", BasePrint::P_PARAMERROR);
+        }
+        if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
+           bValid = false;
+           PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                 "The alternative memory allocation is not implemented with the multiple coordinates per location id feature.\n", BasePrint::P_PARAMERROR);
+        }
+     }
+  } catch (prg_exception& x) {
     x.addTrace("ValidateExecutionTypeParameters()","ParametersValidate");
     throw;
   }
