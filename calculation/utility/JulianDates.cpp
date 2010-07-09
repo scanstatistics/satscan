@@ -206,6 +206,19 @@ void printDateRange(FILE * pFile) {
   }
 }
 
+/** Debug function to print calculated time intervals. */
+void printTimeIntervals(const std::vector<Julian>& intervals, DatePrecisionType eDatePrint) {
+    std::string buffer;
+
+    std::cout << "Number of intervals: " << intervals.size() << std::endl;
+    for (std::vector<Julian>::const_iterator itr=intervals.begin(); itr != intervals.end(); ++itr) {
+        std::cout << JulianToString(buffer, *itr, eDatePrint);
+        if (itr + 1 != intervals.end())
+            std::cout << " : length in days is " << *(itr + 1) - *itr;
+        std::cout << std::endl;
+    }
+}
+
 /** class constructor */
 DecrementableEndDate::DecrementableEndDate(Julian StartingDate, DatePrecisionType eDecrementUnits)
                      :gStartingDate(StartingDate + 1),

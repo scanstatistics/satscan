@@ -893,8 +893,6 @@ void CSaTScanData::SetIntervalStartTimes() {
   //record number of time intervals, not including 'study period end date + 1' date
   m_nTimeIntervals = (int)gvTimeIntervalStartTimes.size() - 1;
 
-//  PrintJulianDates(gvTimeIntervalStartTimes, "c:\\StartDates.txt");
-
   if (m_nTimeIntervals <= 1)
     //This error should be catch in the CParameters validation process.
     throw prg_error("The number of time intervals was calculated as one. Temporal\n"

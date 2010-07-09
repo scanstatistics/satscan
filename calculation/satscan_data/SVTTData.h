@@ -23,6 +23,7 @@ class CSVTTData : public CSaTScanData {
   protected:
     virtual void        ReadDataFromFiles();
     virtual void        RemoveClusterSignificance(const CCluster& Cluster);
+    virtual void        SetIntervalStartTimes();
 
   public:
     CSVTTData(const CParameters& Parameters, BasePrint& PrintDirection);

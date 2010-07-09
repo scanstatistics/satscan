@@ -37,6 +37,7 @@ void            MDYToChar(char* szDateString, UInt month, UInt day, UInt year);
 Julian          MDYToJulian(UInt m, UInt d, UInt y);
 void            printDateRange(FILE * pFile);
 UInt            getMinimumYear();
+void            printTimeIntervals(const std::vector<Julian>& intervals, DatePrecisionType eDatePrint);
 
 /** Class that manages the subtraction of lengths of time from a starting end date.
     This class was created to:

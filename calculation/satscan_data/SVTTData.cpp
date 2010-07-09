@@ -239,3 +239,30 @@ void CSVTTData::SetProbabilityModel() {
   }
 }
 
+/** First calls base class SetIntervalStartTimes() then verifies that first time interval
+    length is equal to time aggregation length. This is a requirement for SVTT, all time 
+    intervals must be of same length. */
+void CSVTTData::SetIntervalStartTimes() {
+    CSaTScanData::SetIntervalStartTimes();
+
+    //It is possible that the initial time interval is shorter than other time intervals. For SVTT, it is 
+    //necessary for all time intervals to be of equal length. We will verfiy that user has specified a valid
+    //study period given time aggregation settings and abort analysis if we find start interval is short.
+
+    //To verfiy, we'll decrement from earliest known complete time interval to determine expected start time.
+    DecrementableEndDate secondIntervalDate(*(gvTimeIntervalStartTimes.begin() + 1) - 1, gParameters.GetTimeAggregationUnitsType());
+    Julian expectedStartingDate = secondIntervalDate.Decrement(gParameters.GetTimeAggregationLength());
+
+    if (*(gvTimeIntervalStartTimes.begin()) != expectedStartingDate) {
+        std::string buffer, buffer2;
+        throw resolvable_error("Error: For a spatial variation in temporal trends analysis, the length of the time\n"
+                               "       intervals must be the same. Please use a different length of the time interval\n"
+                               "       that is evenly divisible by the total length of the study period.\n\n"
+                               "       Alternatively, shorten the study period and select the advanced input data checking\n"
+                               "       option to ignore cases that falls outside the study period. You should not increase\n"
+                               "       the study period to include time periods without data.\n"
+                               "       Example: Given time aggregation settings, a valid study period is: %s to %s\n",
+                               JulianToString(buffer, *(gvTimeIntervalStartTimes.begin() + 1), gParameters.GetPrecisionOfTimesType()).c_str(), 
+                               JulianToString(buffer2, m_nEndDate, gParameters.GetPrecisionOfTimesType()).c_str());
+    }
+}

@@ -33,6 +33,13 @@ template <typename T>           bool string_to_type(const char * s, T& t) {
                                     } 
                                     return true;
                                 }
+template <typename T>           bool type_to_string(T& t, std::string& s) {
+                                    try {
+                                        s = boost::lexical_cast<std::string>(t);
+                                    } catch (boost::bad_lexical_cast& b) {
+                                        return false;
+                                    } 
+                                    return true;
+                                }
 //******************************************************************************
 #endif
-
