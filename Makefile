@@ -112,6 +112,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(OUTPUT)/AsciiPrintFormat.cpp \
                $(OUTPUT)/ClusterScatterChart.cpp \
                $(OUTPUT)/ShapeFileWriter.cpp \
+               $(OUTPUT)/ClusterKML.cpp \
                $(PRINT)/BasePrint.cpp \
                $(PRINT)/PrintScreen.cpp \
                $(PRINT)/PrintQueue.cpp \

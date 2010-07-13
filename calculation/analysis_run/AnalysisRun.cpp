@@ -39,6 +39,7 @@
 #include "SVTTCentricAnalysis.h"
 #include "PurelySpatialBruteForceAnalysis.h"
 //#include "ClusterScatterChart.h"
+//#include "ClusterKML.h"
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -1488,6 +1489,16 @@ void AnalysisRunner::UpdateReport() {
         plot.renderScatterChart();
     }
     */
+
+    /* Google Earth code ... 
+    if (giAnalysisCount == 1 && 
+        gTopClustersContainer.GetNumClustersRetained() && 
+        gParameters.GetCoordinatesType() == LATLON && 
+        !gParameters.GetIsPurelyTemporalAnalysis() &&
+        !gParameters.UseLocationNeighborsFile()) {
+        ClusterKML kmlOut(*gpDataHub, gTopClustersContainer, gSimVars);
+        kmlOut.renderKML();
+    }*/
   }
   catch (prg_exception& x) {
     x.addTrace("UpdateReport()","AnalysisRunner");

@@ -1227,6 +1227,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\calculation\Output\ClusterKML.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\calculation\Output\ClusterLocationsWriter.cpp"
 						>
 					</File>
@@ -1526,6 +1530,10 @@
 					</File>
 					<File
 						RelativePath="..\calculation\Output\ClusterInformationWriter.h"
+						>
+					</File>
+					<File
+						RelativePath="..\calculation\Output\ClusterKML.h"
 						>
 					</File>
 					<File
