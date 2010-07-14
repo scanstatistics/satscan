@@ -37,7 +37,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_8_3_x_ParameterList();
+  Build_9_0_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -88,7 +88,7 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
   else if (Version.iMajor == 8  && Version.iMinor == 2)
     Build_8_2_x_ParameterList();
   else
-    Build_8_3_x_ParameterList();
+    Build_9_0_x_ParameterList();
 }
 
 /** destructor */
@@ -360,7 +360,7 @@ void IniParameterSpecification::Build_8_2_x_ParameterList() {
 }
 
 /** Version 8.3.x */
-void IniParameterSpecification::Build_8_3_x_ParameterList() {
+void IniParameterSpecification::Build_9_0_x_ParameterList() {
   Build_8_2_x_ParameterList();
 
   gvParameterInfo.push_back(std::make_pair(Inference, (const char*)"EarlyTerminationThreshold"));
