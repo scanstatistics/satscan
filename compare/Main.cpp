@@ -705,19 +705,23 @@ void TfrmMain::CompareClusterInformationFiles(ParameterResultsInfo& ResultsInfo)
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
-  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+  try {
+    GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
-  sMaster.insert(sMaster.find_last_of("."),".col");
-  sCompare.insert(sCompare.find_last_of("."),".col");
-  if (access(sMaster.c_str(), 00))
-    eType = MASTER_MISSING;
-  else if (access(sCompare.c_str(), 00))
-    eType = COMPARE_MISSING;
-  else if (CompareTextFiles(sMaster, sCompare))
-    eType = EQUAL;
-  else
-    eType = NOT_EQUAL;
+    sMaster.insert(sMaster.find_last_of("."),".col");
+    sCompare.insert(sCompare.find_last_of("."),".col");
+    if (access(sMaster.c_str(), 00))
+      eType = MASTER_MISSING;
+    else if (access(sCompare.c_str(), 00))
+      eType = COMPARE_MISSING;
+    else if (CompareTextFiles(sMaster, sCompare))
+      eType = EQUAL;
+    else
+      eType = NOT_EQUAL;
+  } catch (...) {
+      eType = UNKNOWN;
+  }
 
   ResultsInfo.SetClusterInformationType(eType);
 }
@@ -727,19 +731,23 @@ void TfrmMain::CompareClusterCaseInformationFiles(ParameterResultsInfo& ResultsI
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
-  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+  try {
+    GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
-  sMaster.insert(sMaster.find_last_of("."),".cci");
-  sCompare.insert(sCompare.find_last_of("."),".cci");
-  if (access(sMaster.c_str(), 00))
-    eType = MASTER_MISSING;
-  else if (access(sCompare.c_str(), 00))
-    eType = COMPARE_MISSING;
-  else if (CompareTextFiles(sMaster, sCompare))
-    eType = EQUAL;
-  else
-    eType = NOT_EQUAL;
+    sMaster.insert(sMaster.find_last_of("."),".cci");
+    sCompare.insert(sCompare.find_last_of("."),".cci");
+    if (access(sMaster.c_str(), 00))
+      eType = MASTER_MISSING;
+    else if (access(sCompare.c_str(), 00))
+      eType = COMPARE_MISSING;
+    else if (CompareTextFiles(sMaster, sCompare))
+      eType = EQUAL;
+    else
+      eType = NOT_EQUAL;
+  } catch (...) {
+      eType = UNKNOWN;
+  }
 
   ResultsInfo.SetClusterCaseInformationType(eType);
 }
@@ -749,19 +757,23 @@ void TfrmMain::CompareLocationInformationFiles(ParameterResultsInfo& ResultsInfo
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
-  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+  try {
+    GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
-  sMaster.insert(sMaster.find_last_of("."),".gis");
-  sCompare.insert(sCompare.find_last_of("."),".gis");
-  if (access(sMaster.c_str(), 00))
-    eType = MASTER_MISSING;
-  else if (access(sCompare.c_str(), 00))
-    eType = COMPARE_MISSING;
-  else if (CompareTextFiles(sMaster, sCompare))
-    eType = EQUAL;
-  else
-    eType = NOT_EQUAL;
+    sMaster.insert(sMaster.find_last_of("."),".gis");
+    sCompare.insert(sCompare.find_last_of("."),".gis");
+    if (access(sMaster.c_str(), 00))
+      eType = MASTER_MISSING;
+    else if (access(sCompare.c_str(), 00))
+      eType = COMPARE_MISSING;
+    else if (CompareTextFiles(sMaster, sCompare))
+      eType = EQUAL;
+    else
+      eType = NOT_EQUAL;
+  } catch (...) {
+      eType = UNKNOWN;
+  }
 
   ResultsInfo.SetLocationInformationType(eType);
 }
@@ -772,36 +784,40 @@ void TfrmMain::CompareRelativeRisksInformationFiles(ParameterResultsInfo& Result
   std::string   sMaster, sCompare, sLineBuffer;
   unsigned int  iPos, iLine=0;
 
-  //not applicable for Space-Time Permutation model
-  ZdIniFile IniFile(ResultsInfo.GetFilenameString());
-  if (IniFile.GetNumSections())
-    sLineBuffer = IniFile.GetSection("[Analysis]")->GetString("ModelType");
-  else {
-    ifstream ParameterFile(ResultsInfo.GetFilenameString());
-    while (++iLine < 22 && std::getline(ParameterFile, sLineBuffer));
-    if ((iPos = sLineBuffer.find_first_of("//")) != sLineBuffer.npos)
-      sLineBuffer = sLineBuffer.substr(0, iPos);
-    sLineBuffer = Trim(sLineBuffer.c_str()).c_str();
-  }
+  try {
+    //not applicable for Space-Time Permutation model
+    ZdIniFile IniFile(ResultsInfo.GetFilenameString());
+    if (IniFile.GetNumSections())
+      sLineBuffer = IniFile.GetSection("[Analysis]")->GetString("ModelType");
+    else {
+      ifstream ParameterFile(ResultsInfo.GetFilenameString());
+      while (++iLine < 22 && std::getline(ParameterFile, sLineBuffer));
+        if ((iPos = sLineBuffer.find_first_of("//")) != sLineBuffer.npos)
+          sLineBuffer = sLineBuffer.substr(0, iPos);
+      sLineBuffer = Trim(sLineBuffer.c_str()).c_str();
+    }
 
-  if (sLineBuffer == "2"/* Space-Time Permutation */) {
-    eType = NOT_APPLICABLE;
-  }
-  else {
-    GetResultFileName(ResultsInfo.GetFilename(), sMaster);
-    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+    if (sLineBuffer == "2"/* Space-Time Permutation */) {
+      eType = NOT_APPLICABLE;
+    }
+    else {
+      GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+      GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
-    sMaster.insert(sMaster.find_last_of("."),".rr");
-    sCompare.insert(sCompare.find_last_of("."),".rr");
-    if (access(sMaster.c_str(), 00))
-      eType = MASTER_MISSING;
-    else if (access(sCompare.c_str(), 00))
-      eType = COMPARE_MISSING;
-    else if (CompareTextFiles(sMaster, sCompare))
-      eType = EQUAL;
-    else
-      eType = NOT_EQUAL;
-  }
+      sMaster.insert(sMaster.find_last_of("."),".rr");
+      sCompare.insert(sCompare.find_last_of("."),".rr");
+      if (access(sMaster.c_str(), 00))
+        eType = MASTER_MISSING;
+      else if (access(sCompare.c_str(), 00))
+        eType = COMPARE_MISSING;
+      else if (CompareTextFiles(sMaster, sCompare))
+        eType = EQUAL;
+      else
+        eType = NOT_EQUAL;
+    }
+   } catch(...) {
+      eType = UNKNOWN;
+   }
 
   ResultsInfo.SetRelativeRisksType(eType);
 }
@@ -826,20 +842,23 @@ void TfrmMain::CompareSimulatedRatiosFiles(ParameterResultsInfo& ResultsInfo) {
   CompareType     eType;
   std::string     sMaster, sCompare;
 
-  GetResultFileName(ResultsInfo.GetFilename(), sMaster);
-  GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
+  try {
+    GetResultFileName(ResultsInfo.GetFilename(), sMaster);
+    GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
 
-  sMaster.insert(sMaster.find_last_of("."),".llr");
-  sCompare.insert(sCompare.find_last_of("."),".llr");
-  if (access(sMaster.c_str(), 00))
-    eType = MASTER_MISSING;
-  else if (access(sCompare.c_str(), 00))
-    eType = COMPARE_MISSING;
-  else if (CompareTextFiles(sMaster, sCompare))
-    eType = EQUAL;
-  else
-    eType = NOT_EQUAL;
-
+    sMaster.insert(sMaster.find_last_of("."),".llr");
+    sCompare.insert(sCompare.find_last_of("."),".llr");
+    if (access(sMaster.c_str(), 00))
+      eType = MASTER_MISSING;
+    else if (access(sCompare.c_str(), 00))
+      eType = COMPARE_MISSING;
+    else if (CompareTextFiles(sMaster, sCompare))
+      eType = EQUAL;
+    else
+      eType = NOT_EQUAL;
+  } catch (...) {
+      eType = UNKNOWN;
+  }
   ResultsInfo.SetSimulatedRatiosType(eType);
 }
 
@@ -869,6 +888,7 @@ void TfrmMain::CompareTimes(ParameterResultsInfo& ResultsInfo) {
   unsigned short        uHoursY, uMinutesY, uSecondsY, uHoursS, uMinutesS, uSecondsS;
   std::string           sMaster, sCompare;
 
+  try {
   GetResultFileName(ResultsInfo.GetFilename(), sMaster);
   if (GetRunTime(sMaster.c_str(), uHoursY, uMinutesY, uSecondsY)) {
     GetInQuestionFilename(ResultsInfo.GetFilename(), sCompare);
@@ -877,6 +897,9 @@ void TfrmMain::CompareTimes(ParameterResultsInfo& ResultsInfo) {
   }
   else
     ResultsInfo.SetTimeDifference(0, 0, 0, INCOMPLETE);
+    }
+    catch (...) {
+    }
 }
 
 /** creates excel spread sheet of results */
