@@ -182,9 +182,9 @@ public class Parameters implements Cloneable {
     private boolean                         gbReportCriticalValues=false; /** indicates whether to report critical llr values */
     private boolean                         gbSuppressWarnings=false; /** indicates whether to suppres warnings printed during execution */
     private SpatialWindowType        	        geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
-    private TimeTrendType                       geTimeTrendType;                        /** time trend type */
-    private boolean                             gbReportRank;  /** report cluster rank */
-    private boolean                             gbPrintAsciiHeaders;  /** print ascii column headers */
+    private TimeTrendType                       geTimeTrendType=TimeTrendType.LINEAR;                        /** time trend type */
+    private boolean                             gbReportRank=false;  /** report cluster rank */
+    private boolean                             gbPrintAsciiHeaders=false;  /** print ascii column headers */
 
 //**    public static final int             	  giNumParameters=79; /** number enumerated parameters */
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
