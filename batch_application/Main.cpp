@@ -28,7 +28,8 @@ bool validateCommandLineArguments(int argc, char *argv[]) {
       continue;
     }
     if (stricmp(argv[i], "-p") && stricmp(argv[i], "-c") &&
-        stricmp(argv[i], "-one-cpu") && stricmp(argv[i], "-centric") && stricmp(argv[i], "-all-out"))
+        stricmp(argv[i], "-one-cpu") && stricmp(argv[i], "-centric") && 
+        stricmp(argv[i], "-all-out") && stricmp(argv[i], "-standard-pvalue"))
       throw usage_error(argv[0]);
   }
   for (int i=2; i < argc; ++i)
@@ -84,6 +85,8 @@ int main(int argc, char *argv[]) {
       Parameters.SetExecutionType(CENTRICALLY); // overide execution type, if requested
     if (getCommandLineArgumentIndex(argc, argv, "-all-out"))
       Parameters.RequestAllAdditionalOutputFiles(); // overide selected output files, if requested
+    if (getCommandLineArgumentIndex(argc, argv, "-standard-pvalue"))
+      Parameters.SetPValueReportingType(STANDARD_PVALUE);
     if (getCommandLineArgumentIndex(argc, argv, "-p"))
       ParametersPrint(Parameters).Print(stdout);
     if (getCommandLineArgumentIndex(argc, argv, "-c"))
