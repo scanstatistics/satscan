@@ -24,7 +24,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual ~CPurelyTemporalCluster();
 
     virtual CPurelyTemporalCluster    * Clone() const;
-    CPurelyTemporalCluster            & CPurelyTemporalCluster::operator=(const CPurelyTemporalCluster& rhs);
+    CPurelyTemporalCluster            & operator=(const CPurelyTemporalCluster& rhs);
 
     virtual void                        CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                        DisplayCensusTracts(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const;
@@ -34,6 +34,7 @@ class CPurelyTemporalCluster : public CCluster {
     virtual const AbstractClusterData * GetClusterData() const {return gpClusterData;}
     virtual ClusterType                 GetClusterType() const {return PURELYTEMPORALCLUSTER;}
     virtual measure_t                   GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
+    virtual std::vector<tract_t>      & getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
     tract_t                             GetMostCentralLocationIndex() const;
     virtual count_t                     GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual void                        Initialize(tract_t nCenter=0);
