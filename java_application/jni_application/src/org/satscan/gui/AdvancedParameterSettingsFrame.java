@@ -405,14 +405,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private void EnablePValueOptionsGroup() {
         boolean bPoisson = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
-                bBernoulli = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI;
-        boolean bPurelySpatial = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYSPATIAL;
+                bBernoulli = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
+                bSTP = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION;
+        boolean bPurelySpatial = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYSPATIAL,
+                bSpaceTime = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
+                             _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
         
-        _radioGumbelPValues.setEnabled(bPurelySpatial && (bPoisson || bBernoulli));        
+        _radioGumbelPValues.setEnabled((bPurelySpatial || bSpaceTime) && (bPoisson || bBernoulli || bSTP));
         if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected())
             _radioDefaultPValues.setSelected(true);
 
-        _checkReportGumbel.setEnabled(bPurelySpatial && (bPoisson || bBernoulli) &&
+        _checkReportGumbel.setEnabled((bPurelySpatial || bSpaceTime) && (bPoisson || bBernoulli || bSTP) &&
                                       (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));       
         if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected())
             _checkReportGumbel.setSelected(false);
