@@ -40,7 +40,7 @@
               <Component id="_regionsPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="_inequalitiesPanel" min="-2" pref="63" max="-2" attributes="0"/>
-              <EmptySpace pref="44" max="32767" attributes="0"/>
+              <EmptySpace pref="48" max="32767" attributes="0"/>
               <Component id="_closeButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -313,15 +313,15 @@
               <Group type="102" attributes="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="_ycoefficientTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                          <Component id="_xcoefficientTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_ycoefficientTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_xcoefficientTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="_xcoefficientLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="_interceptTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                          <Component id="_updateInequalityButton" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                          <Component id="_interceptTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_updateInequalityButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Component id="_plusMinusComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="13" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="_inequalitySelectComboBox" max="32767" attributes="1"/>
