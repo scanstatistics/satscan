@@ -10,6 +10,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="1"/>
@@ -21,12 +22,12 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="1" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="_inequalitiesPanel" alignment="1" max="32767" attributes="1"/>
                   <Component id="_regionsPanel" alignment="1" max="32767" attributes="1"/>
                   <Component id="_closeButton" alignment="1" min="-2" pref="101" max="-2" attributes="1"/>
-                  <Component id="_inequalitiesPanel" alignment="1" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -38,8 +39,8 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="_regionsPanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="_inequalitiesPanel" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="_inequalitiesPanel" min="-2" pref="63" max="-2" attributes="0"/>
+              <EmptySpace pref="48" max="32767" attributes="0"/>
               <Component id="_closeButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -286,41 +287,49 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="_ycoefficientTextField" min="-2" pref="50" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="_variableSelectComboBox" min="-2" pref="50" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="_inequalitySelectComboBox" min="-2" pref="60" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <Component id="_variableSelectComboBox" min="-2" pref="60" max="-2" attributes="1"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="_inequalitySelectComboBox" min="-2" pref="60" max="-2" attributes="1"/>
+                  <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
                   <Component id="_xcoefficientTextField" min="-2" pref="50" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="_xcoefficientLabel" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="_plusMinusComboBox" min="-2" pref="50" max="-2" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="_plusMinusComboBox" min="-2" pref="50" max="-2" attributes="1"/>
+                  <EmptySpace max="-2" attributes="0"/>
                   <Component id="_interceptTextField" min="-2" pref="50" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="_updateInequalityButton" min="-2" pref="81" max="-2" attributes="1"/>
-                  <EmptySpace pref="43" max="32767" attributes="0"/>
+                  <EmptySpace pref="14" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="_ycoefficientTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="_variableSelectComboBox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="_inequalitySelectComboBox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="_xcoefficientTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="_xcoefficientLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="_plusMinusComboBox" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="_interceptTextField" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
-                      <Component id="_updateInequalityButton" alignment="3" min="-2" pref="20" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="_ycoefficientTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_xcoefficientTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_xcoefficientLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_interceptTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="_updateInequalityButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <Component id="_plusMinusComboBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="23" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="_inequalitySelectComboBox" max="32767" attributes="1"/>
+                  <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
+              </Group>
+              <Group type="102" alignment="0" attributes="0">
+                  <Component id="_variableSelectComboBox" min="-2" max="-2" attributes="1"/>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -332,22 +341,6 @@
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_ycoefficientTextField.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validateFloatKeyTyped(_ycoefficientTextField, e, 10);&#xa;    }&#xa;});&#xa;_ycoefficientTextField.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_ycoefficientTextField.getText().length() == 0 ||&#xa;              Double.parseDouble(_ycoefficientTextField.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _ycoefficientTextField.setText(&quot;1&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_ycoefficientTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
-          </AuxValues>
-        </Component>
-        <Component class="javax.swing.JComboBox" name="_inequalitySelectComboBox">
-          <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
-                <StringItem index="0" value="&gt;="/>
-                <StringItem index="1" value="&lt;="/>
-              </StringArray>
-            </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[50, 20]"/>
-            </Property>
-          </Properties>
-          <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_inequalitySelectComboBox.setLightWeightPopupEnabled(false);"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JTextField" name="_xcoefficientTextField">
@@ -382,36 +375,19 @@
             <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_updateInequalityButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        updateInequality();&#xa;        /*EnableDataSetList(true);&#xa;        EnableDataSetPurposeControls(true);&#xa;        _dataSetsListModel.addElement(&quot;Data Set &quot; + Integer.toString(_inputDataSetsList.getModel().getSize() + 1));&#xa;        &#xa;        // enable and clear the edit boxes&#xa;        EnableInputFileEdits(true);&#xa;        _caseFilenames.addElement(&quot;&quot;);&#xa;        _controlFilenames.addElement(&quot;&quot;);&#xa;        _populationFilenames.addElement(&quot;&quot;);&#xa;       _inputDataSetsList.setSelectedIndex(_dataSetsListModel.getSize() - 1);&#xa;        _inputDataSetsList.ensureIndexIsVisible(_dataSetsListModel.getSize() - 1);&#xa;        _caseFileTextField.setText(&quot;&quot;);&#xa;        _controlFileTextField.setText(&quot;&quot;);&#xa;        _populationFileTextField.setText(&quot;&quot;);&#xa;        _caseFileTextField.requestFocusInWindow();&#xa;        EnableNewButton();&#xa;        EnableRemoveButton();&#xa;        enableSetDefaultsButton();*/&#xa;    }&#xa;});"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JComboBox" name="_variableSelectComboBox">
-          <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
-                <StringItem index="0" value="Y"/>
-                <StringItem index="1" value="X"/>
-              </StringArray>
-            </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[50, 20]"/>
-            </Property>
-          </Properties>
+        <Component class="java.awt.Choice" name="_variableSelectComboBox">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_variableSelectComboBox.setLightWeightPopupEnabled(false);&#xd;&#xa;_variableSelectComboBox.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        _xcoefficientTextField.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);&#xd;&#xa;        _xcoefficientLabel.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_variableSelectComboBox.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        _xcoefficientTextField.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);&#xd;&#xa;        _xcoefficientLabel.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;_variableSelectComboBox.add(&quot;Y&quot;);&#xd;&#xa;_variableSelectComboBox.add(&quot;X&quot;);&#xd;&#xa;"/>
           </AuxValues>
         </Component>
-        <Component class="javax.swing.JComboBox" name="_plusMinusComboBox">
-          <Properties>
-            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="2">
-                <StringItem index="0" value="+"/>
-                <StringItem index="1" value="-"/>
-              </StringArray>
-            </Property>
-            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-              <Dimension value="[50, 20]"/>
-            </Property>
-          </Properties>
+        <Component class="java.awt.Choice" name="_inequalitySelectComboBox">
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodePost" type="java.lang.String" value="_plusMinusComboBox.setLightWeightPopupEnabled(false);"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_inequalitySelectComboBox.add(&quot;&gt;=&quot;);&#xd;&#xa;_inequalitySelectComboBox.add(&quot;&lt;=&quot;);&#xd;&#xa;"/>
+          </AuxValues>
+        </Component>
+        <Component class="java.awt.Choice" name="_plusMinusComboBox">
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_plusMinusComboBox.add(&quot;+&quot;);&#xd;&#xa;_plusMinusComboBox.add(&quot;-&quot;);&#xd;&#xa;"/>
           </AuxValues>
         </Component>
       </SubComponents>

@@ -172,7 +172,7 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
         if (Double.parseDouble(_ycoefficientTextField.getText()) != 1)
             inequality.append(_ycoefficientTextField.getText());
         inequality.append(((String)_variableSelectComboBox.getSelectedItem()).toLowerCase()).append(" ");
-        inequality.append(((String)_inequalitySelectComboBox.getSelectedItem())).append(" ");  
+        inequality.append(((String)_inequalitySelectComboBox.getSelectedItem())).append(" ");
         boolean hasX = false;
         if (_xcoefficientTextField.isEnabled() && Double.parseDouble(_xcoefficientTextField.getText()) != 0) {
             if (Double.parseDouble(_xcoefficientTextField.getText()) != 1)
@@ -186,7 +186,7 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             inequality.append(_interceptTextField.getText()); 
         }
         else if (Double.parseDouble(_interceptTextField.getText()) != 0) {
-            inequality.append(((String)_plusMinusComboBox.getSelectedItem())).append(" "); 
+            inequality.append(((String)_plusMinusComboBox.getSelectedItem())).append(" ");
             inequality.append(_interceptTextField.getText()); 
         }
                 
@@ -246,37 +246,37 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             //determine which pattern this inequality matches
             if (reYFullMatcher.matches()) {
                 // get Y coefficient
-                _variableSelectComboBox.setSelectedIndex(0);
+                _variableSelectComboBox.select(0);
                 _ycoefficientTextField.setText(reYFullMatcher.group(1) != null ? reYFullMatcher.group(1) : "1");
                 // get equality sign
-                _inequalitySelectComboBox.setSelectedIndex(reYFullMatcher.group(2).equals(">=") ? 0 : 1);
+                _inequalitySelectComboBox.select(reYFullMatcher.group(2).equals(">=") ? 0 : 1);
                 // get X coefficient
                 _xcoefficientTextField.setText(reYFullMatcher.group(3) != null ? reYFullMatcher.group(3) : "1");
                 // get operator
                 if (reYFullMatcher.group(4) != null) {
-                    _plusMinusComboBox.setSelectedIndex(reYFullMatcher.group(4).equals("+") ? 0 : 1);
+                    _plusMinusComboBox.select(reYFullMatcher.group(4).equals("+") ? 0 : 1);
                 }
                 // get constant
                 _interceptTextField.setText(reYFullMatcher.group(5) != null ? reYFullMatcher.group(5) : "0");
             } else if (reYConstMatcher.matches()) {
                 // get Y coefficient
-                _variableSelectComboBox.setSelectedIndex(0);
+                _variableSelectComboBox.select(0);
                 _ycoefficientTextField.setText(reYConstMatcher.group(1) != null ? reYConstMatcher.group(1) : "1");
                 // get equality sign
-                _inequalitySelectComboBox.setSelectedIndex(reYConstMatcher.group(2).equals(">=") ? 0 : 1);
+                _inequalitySelectComboBox.select(reYConstMatcher.group(2).equals(">=") ? 0 : 1);
                 _xcoefficientTextField.setText("0");
                 double inter = Double.parseDouble(reYConstMatcher.group(3));
-                _plusMinusComboBox.setSelectedIndex(inter >= 0 ? 0 : 1);
+                _plusMinusComboBox.select(inter >= 0 ? 0 : 1);
                 // get constant
                 _interceptTextField.setText(reYConstMatcher.group(3).replace("-", ""));
             } else if (reXConstMatcher.matches()) {
                 // get X coefficient
-                _variableSelectComboBox.setSelectedIndex(1);
+                _variableSelectComboBox.select(1);
                 _ycoefficientTextField.setText(reXConstMatcher.group(1) != null ? reXConstMatcher.group(1) : "1");
                 // get equality sign
                 double inter = Double.parseDouble(reXConstMatcher.group(3));
-                _plusMinusComboBox.setSelectedIndex(inter >= 0 ? 0 : 1);
-                _inequalitySelectComboBox.setSelectedIndex(reXConstMatcher.group(2).equals(">=") ? 0 : 1);
+                _plusMinusComboBox.select(inter >= 0 ? 0 : 1);
+                _inequalitySelectComboBox.select(reXConstMatcher.group(2).equals(">=") ? 0 : 1);
                 _xcoefficientTextField.setText("0");
                 // get constant
                 _interceptTextField.setText(reXConstMatcher.group(3).replace("-", ""));
@@ -361,8 +361,6 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                 undo.addEdit(evt.getEdit());
             }
         });
-        _inequalitySelectComboBox = new javax.swing.JComboBox();
-        _inequalitySelectComboBox.setLightWeightPopupEnabled(false);
         _xcoefficientTextField = new javax.swing.JTextField();
         _xcoefficientTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent e) {
@@ -401,16 +399,9 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             }
         });
         _updateInequalityButton = new javax.swing.JButton();
-        _variableSelectComboBox = new javax.swing.JComboBox();
-        _variableSelectComboBox.setLightWeightPopupEnabled(false);
-        _variableSelectComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                _xcoefficientTextField.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);
-                _xcoefficientLabel.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);
-            }
-        });
-        _plusMinusComboBox = new javax.swing.JComboBox();
-        _plusMinusComboBox.setLightWeightPopupEnabled(false);
+        _variableSelectComboBox = new java.awt.Choice();
+        _inequalitySelectComboBox = new java.awt.Choice();
+        _plusMinusComboBox = new java.awt.Choice();
 
         setTitle("Polygons");
 
@@ -570,9 +561,6 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
 
         _ycoefficientTextField.setText("1");
 
-        _inequalitySelectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { ">=", "<=" }));
-        _inequalitySelectComboBox.setPreferredSize(new java.awt.Dimension(50, 20));
-
         _xcoefficientTextField.setText("1");
 
         _xcoefficientLabel.setText("X");
@@ -609,11 +597,20 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
             }
         });
 
-        _variableSelectComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Y", "X" }));
-        _variableSelectComboBox.setPreferredSize(new java.awt.Dimension(50, 20));
+        _variableSelectComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                _xcoefficientTextField.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);
+                _xcoefficientLabel.setEnabled(_variableSelectComboBox.getSelectedIndex() != 1);
+            }
+        });
+        _variableSelectComboBox.add("Y");
+        _variableSelectComboBox.add("X");
 
-        _plusMinusComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "+", "-" }));
-        _plusMinusComboBox.setPreferredSize(new java.awt.Dimension(50, 20));
+        _inequalitySelectComboBox.add(">=");
+        _inequalitySelectComboBox.add("<=");
+
+        _plusMinusComboBox.add("+");
+        _plusMinusComboBox.add("-");
 
         javax.swing.GroupLayout _inequalitiesPanelLayout = new javax.swing.GroupLayout(_inequalitiesPanel);
         _inequalitiesPanel.setLayout(_inequalitiesPanelLayout);
@@ -623,46 +620,51 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                 .addContainerGap()
                 .addComponent(_ycoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_variableSelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_variableSelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_inequalitySelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(25, 25, 25)
                 .addComponent(_xcoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_xcoefficientLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_plusMinusComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_interceptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(_updateInequalityButton, javax.swing.GroupLayout.PREFERRED_SIZE, 81, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(43, Short.MAX_VALUE))
+                .addContainerGap(14, Short.MAX_VALUE))
         );
         _inequalitiesPanelLayout.setVerticalGroup(
             _inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
-                .addGroup(_inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_ycoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_variableSelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_inequalitySelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_xcoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_xcoefficientLabel)
-                    .addComponent(_plusMinusComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_interceptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_updateInequalityButton, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addGroup(_inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_inequalitiesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(_ycoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_xcoefficientTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_xcoefficientLabel)
+                        .addComponent(_interceptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(_updateInequalityButton))
+                    .addComponent(_plusMinusComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
+                .addComponent(_inequalitySelectComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(40, 40, 40))
+            .addGroup(_inequalitiesPanelLayout.createSequentialGroup()
+                .addComponent(_variableSelectComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_regionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_closeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(_inequalitiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_inequalitiesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_regionsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_closeButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -671,8 +673,8 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
                 .addContainerGap()
                 .addComponent(_regionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_inequalitiesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_inequalitiesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 48, Short.MAX_VALUE)
                 .addComponent(_closeButton)
                 .addContainerGap())
         );
@@ -697,13 +699,13 @@ public class OberservableRegionsFrame extends ModalInternalFrame {
     private javax.swing.JLabel _inequalitiesForRegion;
     private javax.swing.JList _inequalitiesList;
     private javax.swing.JPanel _inequalitiesPanel;
-    private javax.swing.JComboBox _inequalitySelectComboBox;
+    private java.awt.Choice _inequalitySelectComboBox;
     private javax.swing.JTextField _interceptTextField;
-    private javax.swing.JComboBox _plusMinusComboBox;
+    private java.awt.Choice _plusMinusComboBox;
     private javax.swing.JList _regionsList;
     private javax.swing.JPanel _regionsPanel;
     private javax.swing.JButton _updateInequalityButton;
-    private javax.swing.JComboBox _variableSelectComboBox;
+    private java.awt.Choice _variableSelectComboBox;
     private javax.swing.JLabel _xcoefficientLabel;
     private javax.swing.JTextField _xcoefficientTextField;
     private javax.swing.JTextField _ycoefficientTextField;
