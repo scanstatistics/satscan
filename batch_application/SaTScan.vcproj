@@ -47,7 +47,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_0\calculation;C:\prj\satscan.development\b_9_0\calculation\analysis;C:\prj\satscan.development\b_9_0\calculation\analysis_run;C:\prj\satscan.development\b_9_0\calculation\cluster;C:\prj\satscan.development\b_9_0\calculation\loglikelihood;C:\prj\satscan.development\b_9_0\calculation\Output;C:\prj\satscan.development\b_9_0\calculation\print;C:\prj\satscan.development\b_9_0\calculation\probability_model;C:\prj\satscan.development\b_9_0\calculation\randomization;C:\prj\satscan.development\b_9_0\calculation\satscan_data;C:\prj\satscan.development\b_9_0\calculation\utility;C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_0\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_1\calculation;C:\prj\satscan.development\b_9_1\calculation\analysis;C:\prj\satscan.development\b_9_1\calculation\analysis_run;C:\prj\satscan.development\b_9_1\calculation\cluster;C:\prj\satscan.development\b_9_1\calculation\loglikelihood;C:\prj\satscan.development\b_9_1\calculation\Output;C:\prj\satscan.development\b_9_1\calculation\print;C:\prj\satscan.development\b_9_1\calculation\probability_model;C:\prj\satscan.development\b_9_1\calculation\randomization;C:\prj\satscan.development\b_9_1\calculation\satscan_data;C:\prj\satscan.development\b_9_1\calculation\utility;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_1\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -68,7 +68,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib C:\prj\satscan.development\b_9_0\newmat\Debug\newmat.lib C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10\Debug\shapelib.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib C:\prj\satscan.development\b_9_1\newmat\Debug\newmat.lib C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10\Debug\shapelib.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
@@ -126,7 +126,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_0\calculation;C:\prj\satscan.development\b_9_0\calculation\analysis;C:\prj\satscan.development\b_9_0\calculation\analysis_run;C:\prj\satscan.development\b_9_0\calculation\cluster;C:\prj\satscan.development\b_9_0\calculation\loglikelihood;C:\prj\satscan.development\b_9_0\calculation\Output;C:\prj\satscan.development\b_9_0\calculation\print;C:\prj\satscan.development\b_9_0\calculation\probability_model;C:\prj\satscan.development\b_9_0\calculation\randomization;C:\prj\satscan.development\b_9_0\calculation\satscan_data;C:\prj\satscan.development\b_9_0\calculation\utility;C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_0\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_1\calculation;C:\prj\satscan.development\b_9_1\calculation\analysis;C:\prj\satscan.development\b_9_1\calculation\analysis_run;C:\prj\satscan.development\b_9_1\calculation\cluster;C:\prj\satscan.development\b_9_1\calculation\loglikelihood;C:\prj\satscan.development\b_9_1\calculation\Output;C:\prj\satscan.development\b_9_1\calculation\print;C:\prj\satscan.development\b_9_1\calculation\probability_model;C:\prj\satscan.development\b_9_1\calculation\randomization;C:\prj\satscan.development\b_9_1\calculation\satscan_data;C:\prj\satscan.development\b_9_1\calculation\utility;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_1\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -147,7 +147,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib C:\prj\satscan.development\b_9_0\newmat\x64\Debug\newmat.lib C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib C:\prj\satscan.development\b_9_1\newmat\x64\Debug\newmat.lib C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch64.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
@@ -205,7 +205,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_0\calculation;C:\prj\satscan.development\b_9_0\calculation\analysis;C:\prj\satscan.development\b_9_0\calculation\analysis_run;C:\prj\satscan.development\b_9_0\calculation\cluster;C:\prj\satscan.development\b_9_0\calculation\loglikelihood;C:\prj\satscan.development\b_9_0\calculation\Output;C:\prj\satscan.development\b_9_0\calculation\print;C:\prj\satscan.development\b_9_0\calculation\probability_model;C:\prj\satscan.development\b_9_0\calculation\randomization;C:\prj\satscan.development\b_9_0\calculation\satscan_data;C:\prj\satscan.development\b_9_0\calculation\utility;C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_0\newmat\newmat10"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_1\calculation;C:\prj\satscan.development\b_9_1\calculation\analysis;C:\prj\satscan.development\b_9_1\calculation\analysis_run;C:\prj\satscan.development\b_9_1\calculation\cluster;C:\prj\satscan.development\b_9_1\calculation\loglikelihood;C:\prj\satscan.development\b_9_1\calculation\Output;C:\prj\satscan.development\b_9_1\calculation\print;C:\prj\satscan.development\b_9_1\calculation\probability_model;C:\prj\satscan.development\b_9_1\calculation\randomization;C:\prj\satscan.development\b_9_1\calculation\satscan_data;C:\prj\satscan.development\b_9_1\calculation\utility;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_1\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
@@ -226,7 +226,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0\xbase\Itanium\Debug\vc.xbase.lib C:\prj\satscan.development\b_9_0\newmat\Itanium\Debug\newmat.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\Itanium\Debug\vc.xbase.lib C:\prj\satscan.development\b_9_1\newmat\Itanium\Debug\newmat.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatchIA64.exe"
 				LinkIncremental="2"
 				IgnoreAllDefaultLibraries="false"
@@ -287,7 +287,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_0\calculation;C:\prj\satscan.development\b_9_0\calculation\analysis;C:\prj\satscan.development\b_9_0\calculation\analysis_run;C:\prj\satscan.development\b_9_0\calculation\cluster;C:\prj\satscan.development\b_9_0\calculation\loglikelihood;C:\prj\satscan.development\b_9_0\calculation\Output;C:\prj\satscan.development\b_9_0\calculation\print;C:\prj\satscan.development\b_9_0\calculation\probability_model;C:\prj\satscan.development\b_9_0\calculation\randomization;C:\prj\satscan.development\b_9_0\calculation\satscan_data;C:\prj\satscan.development\b_9_0\calculation\utility;C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_0\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_1\calculation;C:\prj\satscan.development\b_9_1\calculation\analysis;C:\prj\satscan.development\b_9_1\calculation\analysis_run;C:\prj\satscan.development\b_9_1\calculation\cluster;C:\prj\satscan.development\b_9_1\calculation\loglikelihood;C:\prj\satscan.development\b_9_1\calculation\Output;C:\prj\satscan.development\b_9_1\calculation\print;C:\prj\satscan.development\b_9_1\calculation\probability_model;C:\prj\satscan.development\b_9_1\calculation\randomization;C:\prj\satscan.development\b_9_1\calculation\satscan_data;C:\prj\satscan.development\b_9_1\calculation\utility;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_1\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -306,7 +306,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib C:\prj\satscan.development\b_9_0\newmat\Release\newmat.lib C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10\Release\shapelib.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib C:\prj\satscan.development\b_9_1\newmat\Release\newmat.lib C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10\Release\shapelib.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
@@ -369,7 +369,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_0\calculation;C:\prj\satscan.development\b_9_0\calculation\analysis;C:\prj\satscan.development\b_9_0\calculation\analysis_run;C:\prj\satscan.development\b_9_0\calculation\cluster;C:\prj\satscan.development\b_9_0\calculation\loglikelihood;C:\prj\satscan.development\b_9_0\calculation\Output;C:\prj\satscan.development\b_9_0\calculation\print;C:\prj\satscan.development\b_9_0\calculation\probability_model;C:\prj\satscan.development\b_9_0\calculation\randomization;C:\prj\satscan.development\b_9_0\calculation\satscan_data;C:\prj\satscan.development\b_9_0\calculation\utility;C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_0\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10&quot;;C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_1\calculation;C:\prj\satscan.development\b_9_1\calculation\analysis;C:\prj\satscan.development\b_9_1\calculation\analysis_run;C:\prj\satscan.development\b_9_1\calculation\cluster;C:\prj\satscan.development\b_9_1\calculation\loglikelihood;C:\prj\satscan.development\b_9_1\calculation\Output;C:\prj\satscan.development\b_9_1\calculation\print;C:\prj\satscan.development\b_9_1\calculation\probability_model;C:\prj\satscan.development\b_9_1\calculation\randomization;C:\prj\satscan.development\b_9_1\calculation\satscan_data;C:\prj\satscan.development\b_9_1\calculation\utility;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_1\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -388,7 +388,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib C:\prj\satscan.development\b_9_0\newmat\x64\Release\newmat.lib C:\prj\satscan.development\b_9_0\shapelib\shapelib_1.2.10\x64\Release\shapelib.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib C:\prj\satscan.development\b_9_1\newmat\x64\Release\newmat.lib C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10\x64\Release\shapelib.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatch64.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
@@ -451,7 +451,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_0\calculation;C:\prj\satscan.development\b_9_0\calculation\analysis;C:\prj\satscan.development\b_9_0\calculation\analysis_run;C:\prj\satscan.development\b_9_0\calculation\cluster;C:\prj\satscan.development\b_9_0\calculation\loglikelihood;C:\prj\satscan.development\b_9_0\calculation\Output;C:\prj\satscan.development\b_9_0\calculation\print;C:\prj\satscan.development\b_9_0\calculation\probability_model;C:\prj\satscan.development\b_9_0\calculation\randomization;C:\prj\satscan.development\b_9_0\calculation\satscan_data;C:\prj\satscan.development\b_9_0\calculation\utility;C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_0\newmat\newmat10"
+				AdditionalIncludeDirectories="C:\prj\satscan.development\boost\boost_1_39_0;C:\prj\satscan.development\b_9_1\calculation;C:\prj\satscan.development\b_9_1\calculation\analysis;C:\prj\satscan.development\b_9_1\calculation\analysis_run;C:\prj\satscan.development\b_9_1\calculation\cluster;C:\prj\satscan.development\b_9_1\calculation\loglikelihood;C:\prj\satscan.development\b_9_1\calculation\Output;C:\prj\satscan.development\b_9_1\calculation\print;C:\prj\satscan.development\b_9_1\calculation\probability_model;C:\prj\satscan.development\b_9_1\calculation\randomization;C:\prj\satscan.development\b_9_1\calculation\satscan_data;C:\prj\satscan.development\b_9_1\calculation\utility;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0;C:\prj\satscan.development\b_9_1\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -470,7 +470,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_0\xbase\xbase_2.0.0\xbase\Itanium\Release\vc.xbase.lib C:\prj\satscan.development\b_9_0\newmat\Itanium\Release\newmat.lib $(NOINHERIT)"
+				AdditionalDependencies="kernel32.lib shell32.lib C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\Itanium\Release\vc.xbase.lib C:\prj\satscan.development\b_9_1\newmat\Itanium\Release\newmat.lib $(NOINHERIT)"
 				OutputFile="$(OutDir)\SaTScanBatchIA64.exe"
 				LinkIncremental="1"
 				GenerateDebugInformation="false"
