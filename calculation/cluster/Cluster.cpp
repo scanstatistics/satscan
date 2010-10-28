@@ -603,10 +603,14 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
   if (reportablePValue(parameters,simVars)) {
     // conditionally report cluster p-value as monte carlo or gumbel
     //PrintFormat.PrintSectionLabel(fp, "P-value", false, true);
-    bool bPurelySpatialPoissonBernoulli = parameters.GetAnalysisType() == PURELYSPATIAL && 
-                                          (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI);
-    if (parameters.GetPValueReportingType() == GUMBEL_PVALUE ||
-        (bPurelySpatialPoissonBernoulli && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
+    bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
+                                  parameters.GetAnalysisType() == SPACETIME || 
+                                  parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
+                                  && 
+                                 (parameters.GetProbabilityModelType() == POISSON || 
+                                  parameters.GetProbabilityModelType() == BERNOULLI ||
+                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+    if (parameters.GetPValueReportingType() == GUMBEL_PVALUE || (bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
         getValueAsString(p.second, buffer).insert(0, "< ");
@@ -651,10 +655,15 @@ CCluster::RecurrenceInterval_t CCluster::GetRecurrenceInterval(const CSaTScanDat
 
   dIntervals = static_cast<double>(Data.GetNumTimeIntervals() - Data.GetProspectiveStartIndex() + 1);
 
-  bool bPurelySpatialPoissonBernoulli = parameters.GetAnalysisType() == PURELYSPATIAL && 
-                                        (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI);
+  bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
+                                parameters.GetAnalysisType() == SPACETIME || 
+                                parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
+                                && 
+                               (parameters.GetProbabilityModelType() == POISSON || 
+                                parameters.GetProbabilityModelType() == BERNOULLI ||
+                                parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
 
-  if ((bPurelySpatialPoissonBernoulli && parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) ||
+  if ((bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && m_nRank < MIN_RANK_RPT_GUMBEL) ||
        parameters.GetPValueReportingType() == GUMBEL_PVALUE) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       dPValue = std::max(p.first, p.second);
@@ -955,9 +964,14 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
     case DEFAULT_PVALUE     :
     default                 :
         {
-            bool bPurelySpatialPoissonBernoulli = parameters.GetAnalysisType() == PURELYSPATIAL && 
-                                                  (parameters.GetProbabilityModelType() == POISSON || parameters.GetProbabilityModelType() == BERNOULLI);
-            if (bPurelySpatialPoissonBernoulli && reportableGumbelPValue(parameters, simVars)) {
+            bool bReportsDefaultGumbel = (parameters.GetAnalysisType() == PURELYSPATIAL ||
+                                          parameters.GetAnalysisType() == SPACETIME ||
+                                          parameters.GetAnalysisType() == PROSPECTIVESPACETIME) 
+                                          && 
+                                         (parameters.GetProbabilityModelType() == POISSON ||
+                                          parameters.GetProbabilityModelType() == BERNOULLI ||
+                                          parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+            if (bReportsDefaultGumbel && reportableGumbelPValue(parameters, simVars)) {
                 std::pair<double,double> p = GetGumbelPValue(simVars);
                 return std::max(p.first, p.second);
             }
