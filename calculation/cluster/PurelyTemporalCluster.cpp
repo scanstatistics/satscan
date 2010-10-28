@@ -91,6 +91,14 @@ measure_t CPurelyTemporalCluster::GetExpectedCountForTract(tract_t tTractIndex, 
   return tMeasure;
 }
 
+/** Returns collection of location indexes that define this cluster. If 'bAtomize' is true, breaks
+    down meta locations into atomic indexes. */
+std::vector<tract_t> & CPurelyTemporalCluster::getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const {
+   indexes.clear();
+   indexes.push_back(0);   
+   return indexes;
+}
+
 /** Returns index of most central location. */
 tract_t CPurelyTemporalCluster::GetMostCentralLocationIndex() const {
   throw prg_error("GetMostCentralLocationIndex() not implemented for CPurelyTemporalCluster.","GetMostCentralLocationIndex()");

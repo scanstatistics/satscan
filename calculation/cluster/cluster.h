@@ -102,7 +102,7 @@ class CCluster {
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
-    std::vector<tract_t>        & getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
+    virtual std::vector<tract_t>& getLocationIndexes(const CSaTScanData& DataHub, std::vector<tract_t>& indexes, bool bAtomize) const;
     tract_t                       GetMostCentralLocationIndex() const;
     virtual tract_t               GetNumTractsInCluster() const {return m_nTracts;}
     virtual tract_t               GetNumNonNullifiedTractsInCluster(const CSaTScanData& DataHub) const;
