@@ -1,14 +1,14 @@
 
 SATSCAN     := /prj/satscan/build.area/satscan
 
-CC          := g++  
-M_CFLAGS    :=  
+CC          := g++
+M_CFLAGS    :=
 APPLICATION := SaTScan
 MAC_APPLICATION := SaTScan_mac
 LINUX_LIBRARY := libsatscan.linux.so
 SOLARIS_LIBRARY := libsatscan.solaris.so
 MAC_LIBRARY := libsatscan.jnilib
-DEBUG       := -ggdb 
+DEBUG       := -ggdb
 COMPILATION := -m32
 OPTIMIZATION := -O3
 COMPONENT_REPORT := #-DRPRTCMPT_RUNTIMES
@@ -38,11 +38,11 @@ INCLUDEDIRS := -I$(CALCULATION) -I$(ANALYSIS) -I$(CLUSTER) -I$(UTILITY) -I$(XBAS
 
 DEFINES     := -D__BATCH_COMPILE \
                -DBOOST_ALL_NO_LIB
-                              
+
 CFLAGS      := -c $(M_CFLAGS) $(COMPILATION) -Wno-deprecated $(OPTIMIZATION) $(DEBUG) $(INCLUDEDIRS) $(DEFINES) $(THREAD_DEFINE) $(COMPONENT_REPORT)
 LFLAGS      := $(COMPILATION) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lxbaseg -lnewmat -lshape -lm -Wl,-Bdynamic -lrt -lpthread
-# static libgcc flags 
-#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lshape -lm -lpthread 
+# static libgcc flags
+#LFLAGS      := $(COMPILATION) -static-libgcc -L. -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -Wl,-Bstatic -lstdc++ -lrt -lxbaseg -lnewmat -lshape -lm -lpthread
 
 # Linux link flags
 L_DLFLAGS   := -shared $(COMPILATION) -Wl,-soname,$(LINUX_LIBRARY).x.x -o $(LINUX_LIBRARY).x.x.0
@@ -205,7 +205,6 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(CALCULATION)/IniParameterFileAccess.cpp \
                $(CALCULATION)/RunTimeComponents.cpp \
-               $(BOOSTDIR)/libs/thread/src/pthread/exceptions.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
                $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
@@ -259,8 +258,8 @@ $(SOLARIS_LIBRARY) : $(OBJS) $(LIB_OBJS)
 
 $(MAC_LIBRARY) : $(OBJS) $(LIB_OBJS)
 	$(CC) $(M_DLFLAGS) $(OBJS) $(LIB_OBJS) -L$(XBASEDIR) -L$(XBASEDIR2) -L$(NEWMAT) -L$(SHAPELIB) -lxbase -lnewmat -lshape -lstdc++ -lm -o $@
-%.o : %.cpp 
-	$(CC) $(CFLAGS) $< -o $@ 
+%.o : %.cpp
+	$(CC) $(CFLAGS) $< -o $@
 
 clean :
 	rm -f core $(OBJS)
@@ -271,4 +270,3 @@ clean :
 	rm -f core $(LIB_OBJS)
 	rm -f $(MAC_APPLICATION)
 	rm -f $(MAC_LIBRARY)
-	

@@ -1,0 +1,613 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Itanium">
+      <Configuration>Debug</Configuration>
+      <Platform>Itanium</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Itanium">
+      <Configuration>Release</Configuration>
+      <Platform>Itanium</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>SaTScan.vc</ProjectName>
+    <ProjectGuid>{F3018D4B-8E07-4E08-BDC8-4C61E3539166}</ProjectGuid>
+    <RootNamespace>SaTScanvc</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Windows7.1SDK</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">$(Platform)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SaTScanBatch</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">SaTScanBatch</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">SaTScanBatch64</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">SaTScanBatch</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Debug\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\Debug\shapelib.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\x64\Debug\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Itanium'">
+    <Midl>
+      <TargetEnvironment>Itanium</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Itanium\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Itanium\Debug\newmat.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)SaTScanBatchIA64.exe</OutputFile>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineIA64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Release\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Release\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\Release\shapelib.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)SaTScanBatch.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10;C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Release\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\x64\Release\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\x64\Release\shapelib.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Itanium'">
+    <Midl>
+      <TargetEnvironment>Itanium</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <AdditionalIncludeDirectories>C:\prj\satscan.development\boost\boost_1_46_0;C:\prj\satscan.development\satscan\calculation;C:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation\cluster;C:\prj\satscan.development\satscan\calculation\loglikelihood;C:\prj\satscan.development\satscan\calculation\Output;C:\prj\satscan.development\satscan\calculation\print;C:\prj\satscan.development\satscan\calculation\probability_model;C:\prj\satscan.development\satscan\calculation\randomization;C:\prj\satscan.development\satscan\calculation\satscan_data;C:\prj\satscan.development\satscan\calculation\utility;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0;C:\prj\satscan.development\satscan\newmat\newmat10;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_CONSOLE;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level2</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\Itanium\Release\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\Itanium\Release\newmat.lib</AdditionalDependencies>
+      <OutputFile>$(OutDir)SaTScanBatchIA64.exe</OutputFile>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention>
+      </DataExecutionPrevention>
+      <TargetMachine>MachineIA64</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\c_regex_traits.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\cpp_regex_traits.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\cregex.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\fileiter.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\icu.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\instances.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\posix_api.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\regex.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\regex_debug.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\regex_raw_buffer.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\regex_traits_defaults.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\static_mutex.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\usinstances.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\w32_regex_traits.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\wc_regex_traits.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\wide_posix_api.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\winstances.cpp" />
+    <ClCompile Include="..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
+    <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
+    <ClCompile Include="..\calculation\ParameterFileAccess.cpp" />
+    <ClCompile Include="..\calculation\Parameters.cpp" />
+    <ClCompile Include="..\calculation\ParametersPrint.cpp" />
+    <ClCompile Include="..\calculation\ParametersValidate.cpp" />
+    <ClCompile Include="..\calculation\RunTimeComponents.cpp" />
+    <ClCompile Include="..\calculation\ScanLineParameterFileAccess.cpp" />
+    <ClCompile Include="..\calculation\Toolkit.cpp" />
+    <ClCompile Include="..\calculation\analysis\AbstractAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\AbstractBruteForceAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\AbstractCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\Analysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\IntermediateClustersContainer.cpp" />
+    <ClCompile Include="..\calculation\analysis\MeasureList.cpp" />
+    <ClCompile Include="..\calculation\analysis\PurelySpatialAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\PurelySpatialBruteForceAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\PurelySpatialCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\PurelyTemporalAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SignificantRatios05.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePureAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SVTTAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis\SVTTCentricAnalysis.cpp" />
+    <ClCompile Include="..\calculation\analysis_run\AnalysisRun.cpp" />
+    <ClCompile Include="..\calculation\analysis_run\MostLikelyClustersContainer.cpp" />
+    <ClCompile Include="..\calculation\cluster\AbstractClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\AbstractClusterDataFactory.cpp" />
+    <ClCompile Include="..\calculation\cluster\CategoricalClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\CategoricalClusterDataFactory.cpp" />
+    <ClCompile Include="..\calculation\cluster\Cluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\ClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\ClusterDataFactory.cpp" />
+    <ClCompile Include="..\calculation\cluster\IncidentRate.cpp" />
+    <ClCompile Include="..\calculation\cluster\MultiSetCategoricalClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\MultiSetClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\MultiSetNormalClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\NormalClusterData.cpp" />
+    <ClCompile Include="..\calculation\cluster\NormalClusterDataFactory.cpp" />
+    <ClCompile Include="..\calculation\cluster\PurelySpatialCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\PurelySpatialMonotoneCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\PurelySpatialProspectiveCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\PurelyTemporalCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\SpaceTimeCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\SVTTCluster.cpp" />
+    <ClCompile Include="..\calculation\cluster\TimeIntervalRange.cpp" />
+    <ClCompile Include="..\calculation\cluster\TimeIntervals.cpp" />
+    <ClCompile Include="..\calculation\cluster\TimeTrend.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\LikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\WeightedNormalCovariatesLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp" />
+    <ClCompile Include="..\calculation\utility\AsynchronouslyAccessible.cpp" />
+    <ClCompile Include="..\calculation\utility\contractor.cpp" />
+    <ClCompile Include="..\calculation\utility\dBaseFile.cpp" />
+    <ClCompile Include="..\calculation\utility\FieldDef.cpp" />
+    <ClCompile Include="..\calculation\utility\FileName.cpp" />
+    <ClCompile Include="..\calculation\utility\Ini.cpp" />
+    <ClCompile Include="..\calculation\utility\JulianDates.cpp" />
+    <ClCompile Include="..\calculation\utility\MultipleDimensionArrayHandler.cpp" />
+    <ClCompile Include="..\calculation\utility\RandomDistribution.cpp" />
+    <ClCompile Include="..\calculation\utility\RandomNumberGenerator.cpp" />
+    <ClCompile Include="..\calculation\utility\ShapeFile.cpp" />
+    <ClCompile Include="..\calculation\utility\SSException.cpp" />
+    <ClCompile Include="..\calculation\utility\stsCentricAlgoFunctor.cpp" />
+    <ClCompile Include="..\calculation\utility\stsCentricAlgoJobSource.cpp" />
+    <ClCompile Include="..\calculation\utility\stsMCSimJobSource.cpp" />
+    <ClCompile Include="..\calculation\utility\stsMonteCarloSimFunctor.cpp" />
+    <ClCompile Include="..\calculation\utility\TimeStamp.cpp" />
+    <ClCompile Include="..\calculation\utility\UtilityFunctions.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\AdjustmentHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\BernoulliDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\probability_model\CalculateMeasure.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\CentroidNeighbors.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSet.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSetGateway.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSetInterface.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSetReader.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSetWriter.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\DataSource.cpp" />
+    <ClCompile Include="..\calculation\utility\DateStringParser.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\ExponentialDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\GridTractCoordinates.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\MakeNeighbors.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\MaxWindowLengthIndicator.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\MetaTractManager.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\NormalDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\ObservableRegion.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\OrdinalDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\PoissonDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\PopulationData.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\PurelySpatialData.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\PurelyTemporalData.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\RankDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\SaTScanData.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\SaTScanDataDisplay.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\SaTScanDataRead.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\SpaceTimeData.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\SVTTData.cpp" />
+    <ClCompile Include="..\calculation\satscan_data\Tracts.cpp" />
+    <ClCompile Include="..\calculation\randomization\BernoulliRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\DenominatorDataRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\ExponentialRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\HomogeneousPoissonRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\NormalRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\OrdinalDataRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\PermutationDataRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\PoissonRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\Randomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\RankRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\SpaceTimeRandomizer.cpp" />
+    <ClCompile Include="..\calculation\randomization\WeightedNormalRandomizer.cpp" />
+    <ClCompile Include="..\calculation\probability_model\BernoulliModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\ExponentialModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\HomogeneousPoissonModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\NormalModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\OrdinalModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\PoissonModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\ProbabilityModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\RankModel.cpp" />
+    <ClCompile Include="..\calculation\probability_model\SpaceTimePermutationModel.cpp" />
+    <ClCompile Include="..\calculation\Output\AsciiPrintFormat.cpp" />
+    <ClCompile Include="..\calculation\print\BasePrint.cpp" />
+    <ClCompile Include="..\calculation\print\PrintQueue.cpp" />
+    <ClCompile Include="..\calculation\print\PrintScreen.cpp" />
+    <ClCompile Include="..\calculation\Output\AbstractDataFileWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterInformationWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterKML.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterLocationsWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\ClusterScatterChart.cpp" />
+    <ClCompile Include="..\calculation\Output\LocationRiskEstimateWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\LoglikelihoodRatioWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\ShapeFileWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\stsASCIIFileWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\stsDBaseFileWriter.cpp" />
+    <ClCompile Include="..\calculation\Output\stsRunHistoryFile.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
+    <ClInclude Include="..\calculation\IniParameterSpecification.h" />
+    <ClInclude Include="..\calculation\ParameterFileAccess.h" />
+    <ClInclude Include="..\calculation\Parameters.h" />
+    <ClInclude Include="..\calculation\ParametersPrint.h" />
+    <ClInclude Include="..\calculation\ParametersValidate.h" />
+    <ClInclude Include="..\calculation\RunTimeComponents.h" />
+    <ClInclude Include="..\calculation\SaTScan.h" />
+    <ClInclude Include="..\calculation\ScanLineParameterFileAccess.h" />
+    <ClInclude Include="..\calculation\Toolkit.h" />
+    <ClInclude Include="..\calculation\analysis\AbstractAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\AbstractBruteForceAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\AbstractCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\Analysis.h" />
+    <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.h" />
+    <ClInclude Include="..\calculation\analysis\MeasureList.h" />
+    <ClInclude Include="..\calculation\analysis\PurelySpatialAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\PurelySpatialBruteForceAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\PurelySpatialCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\PurelySpatialMonotoneAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\PurelyTemporalAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SignificantRatios05.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePureAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SVTTAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis\SVTTCentricAnalysis.h" />
+    <ClInclude Include="..\calculation\analysis_run\AnalysisRun.h" />
+    <ClInclude Include="..\calculation\analysis_run\MostLikelyClustersContainer.h" />
+    <ClInclude Include="..\calculation\analysis_run\SimulationVariables.h" />
+    <ClInclude Include="..\calculation\cluster\AbstractClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\AbstractClusterDataFactory.h" />
+    <ClInclude Include="..\calculation\cluster\CategoricalClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\CategoricalClusterDataFactory.h" />
+    <ClInclude Include="..\calculation\cluster\cluster.h" />
+    <ClInclude Include="..\calculation\cluster\ClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\ClusterDataFactory.h" />
+    <ClInclude Include="..\calculation\cluster\IncidentRate.h" />
+    <ClInclude Include="..\calculation\cluster\MultiSetCategoricalClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\MultiSetClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\MultiSetNormalClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\NormalClusterData.h" />
+    <ClInclude Include="..\calculation\cluster\NormalClusterDataFactory.h" />
+    <ClInclude Include="..\calculation\cluster\PurelySpatialCluster.h" />
+    <ClInclude Include="..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.h" />
+    <ClInclude Include="..\calculation\cluster\PurelySpatialMonotoneCluster.h" />
+    <ClInclude Include="..\calculation\cluster\PurelySpatialProspectiveCluster.h" />
+    <ClInclude Include="..\calculation\cluster\PurelyTemporalCluster.h" />
+    <ClInclude Include="..\calculation\cluster\SpaceTimeCluster.h" />
+    <ClInclude Include="..\calculation\cluster\SVTTCluster.h" />
+    <ClInclude Include="..\calculation\cluster\TimeIntervalRange.h" />
+    <ClInclude Include="..\calculation\cluster\TimeIntervals.h" />
+    <ClInclude Include="..\calculation\cluster\TimeTrend.h" />
+    <ClInclude Include="..\calculation\Output\AbstractDataFileWriter.h" />
+    <ClInclude Include="..\calculation\Output\AsciiPrintFormat.h" />
+    <ClInclude Include="..\calculation\Output\ClusterInformationWriter.h" />
+    <ClInclude Include="..\calculation\Output\ClusterKML.h" />
+    <ClInclude Include="..\calculation\Output\ClusterLocationsWriter.h" />
+    <ClInclude Include="..\calculation\Output\ClusterScatterChart.h" />
+    <ClInclude Include="..\calculation\Output\LocationRiskEstimateWriter.h" />
+    <ClInclude Include="..\calculation\Output\LoglikelihoodRatioWriter.h" />
+    <ClInclude Include="..\calculation\Output\ShapeFileWriter.h" />
+    <ClInclude Include="..\calculation\Output\stsASCIIFileWriter.h" />
+    <ClInclude Include="..\calculation\Output\stsDBaseFileWriter.h" />
+    <ClInclude Include="..\calculation\Output\stsRunHistoryFile.h" />
+    <ClInclude Include="..\calculation\print\BasePrint.h" />
+    <ClInclude Include="..\calculation\print\PrintQueue.h" />
+    <ClInclude Include="..\calculation\print\PrintScreen.h" />
+    <ClInclude Include="..\calculation\loglikelihood\BernoulliLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\LikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\LoglikelihoodRatioUnifier.h" />
+    <ClInclude Include="..\calculation\loglikelihood\NormalLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\OrdinalLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\PoissonLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\WeightedNormalCovariatesLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.h" />
+    <ClInclude Include="..\calculation\probability_model\BernoulliModel.h" />
+    <ClInclude Include="..\calculation\probability_model\ExponentialModel.h" />
+    <ClInclude Include="..\calculation\probability_model\HomogeneousPoissonModel.h" />
+    <ClInclude Include="..\calculation\probability_model\NormalModel.h" />
+    <ClInclude Include="..\calculation\probability_model\PoissonModel.h" />
+    <ClInclude Include="..\calculation\probability_model\ProbabilityModel.h" />
+    <ClInclude Include="..\calculation\probability_model\RankModel.h" />
+    <ClInclude Include="..\calculation\probability_model\SpaceTimePermutationModel.h" />
+    <ClInclude Include="..\calculation\randomization\BernoulliRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\DenominatorDataRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\ExponentialRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\HomogeneousPoissonRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\NormalRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\OrdinalDataRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\PermutationDataRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\PoissonRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\Randomizer.h" />
+    <ClInclude Include="..\calculation\randomization\RankRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\SpaceTimeRandomizer.h" />
+    <ClInclude Include="..\calculation\randomization\WeightedNormalRandomizer.h" />
+    <ClInclude Include="..\calculation\satscan_data\AdjustmentHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\BernoulliDataSetHandler.h" />
+    <ClInclude Include="..\calculation\probability_model\CalculateMeasure.h" />
+    <ClInclude Include="..\calculation\satscan_data\CentroidNeighbors.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSet.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSetGateway.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSetInterface.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSetReader.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSetWriter.h" />
+    <ClInclude Include="..\calculation\satscan_data\DataSource.h" />
+    <ClInclude Include="..\calculation\utility\DateStringParser.h" />
+    <ClInclude Include="..\calculation\satscan_data\ExponentialDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\GridTractCoordinates.h" />
+    <ClInclude Include="..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\MakeNeighbors.h" />
+    <ClInclude Include="..\calculation\satscan_data\MaxWindowLengthIndicator.h" />
+    <ClInclude Include="..\calculation\satscan_data\MetaTractManager.h" />
+    <ClInclude Include="..\calculation\satscan_data\NormalDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\ObservableRegion.h" />
+    <ClInclude Include="..\calculation\satscan_data\OrdinalDataSetHandler.h" />
+    <ClInclude Include="..\calculation\probability_model\OrdinalModel.h" />
+    <ClInclude Include="..\calculation\satscan_data\PoissonDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\PopulationData.h" />
+    <ClInclude Include="..\calculation\satscan_data\PurelySpatialData.h" />
+    <ClInclude Include="..\calculation\satscan_data\PurelyTemporalData.h" />
+    <ClInclude Include="..\calculation\satscan_data\RankDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\SaTScanData.h" />
+    <ClInclude Include="..\calculation\satscan_data\SaTScanDataRead.h" />
+    <ClInclude Include="..\calculation\satscan_data\SpaceTimeData.h" />
+    <ClInclude Include="..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.h" />
+    <ClInclude Include="..\calculation\satscan_data\SVTTData.h" />
+    <ClInclude Include="..\calculation\satscan_data\Tracts.h" />
+    <ClInclude Include="..\calculation\utility\AsynchronouslyAccessible.h" />
+    <ClInclude Include="..\calculation\utility\contractor.h" />
+    <ClInclude Include="..\calculation\utility\dBaseFile.h" />
+    <ClInclude Include="..\calculation\utility\FieldDef.h" />
+    <ClInclude Include="..\calculation\utility\FileName.h" />
+    <ClInclude Include="..\calculation\utility\Ini.h" />
+    <ClInclude Include="..\calculation\utility\JulianDates.h" />
+    <ClInclude Include="..\calculation\utility\MultipleDimensionArrayHandler.h" />
+    <ClInclude Include="..\calculation\utility\ptr_vector.h" />
+    <ClInclude Include="..\calculation\utility\RandomDistribution.h" />
+    <ClInclude Include="..\calculation\utility\RandomNumberGenerator.h" />
+    <ClInclude Include="..\calculation\utility\ShapeFile.h" />
+    <ClInclude Include="..\calculation\utility\SSException.h" />
+    <ClInclude Include="..\calculation\utility\stsCentricAlgoFunctor.h" />
+    <ClInclude Include="..\calculation\utility\stsCentricAlgoJobSource.h" />
+    <ClInclude Include="..\calculation\utility\stsMCSimJobSource.h" />
+    <ClInclude Include="..\calculation\utility\stsMonteCarloSimFunctor.h" />
+    <ClInclude Include="..\calculation\utility\TimeStamp.h" />
+    <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

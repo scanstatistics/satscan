@@ -1,0 +1,1128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\boost">
+      <UniqueIdentifier>{68d6c17e-4938-46b9-b6ed-cfb727955040}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost\regex">
+      <UniqueIdentifier>{1f3f3b10-6b69-4532-9981-75a9c82ce29b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\boost\threads">
+      <UniqueIdentifier>{66b8576c-6889-4d69-b987-21b821e7d3d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation">
+      <UniqueIdentifier>{f126026e-63f6-4bbc-89fe-66b40ab54eb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\analysis">
+      <UniqueIdentifier>{6f1c26b3-6b07-4096-9c0e-ad5e6d44f1d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\analysis_run">
+      <UniqueIdentifier>{803713d5-e3b9-4d02-b5e4-3421212ec3ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\cluster">
+      <UniqueIdentifier>{a8664d93-ec2c-4547-b245-12a426f5ab86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\loglikelihood">
+      <UniqueIdentifier>{64f4c305-7336-47f5-997e-9ede24f95da7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\utility">
+      <UniqueIdentifier>{e90e82e6-1c90-4813-876c-8a56d0c4b791}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\satscan_data">
+      <UniqueIdentifier>{66daac54-cfd9-4952-ac09-ab9d9aa68d8f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\randomization">
+      <UniqueIdentifier>{c4a9827d-b5ff-4e87-a825-c1817347dfb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\probability_model">
+      <UniqueIdentifier>{c7ed78ea-6f85-467c-bb3d-d9140aa36148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\print">
+      <UniqueIdentifier>{01cf5361-ad1b-479c-a216-67e54271d8c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\calculation\Output">
+      <UniqueIdentifier>{537b2688-08f4-4839-9337-60a1989d3fbf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\jni">
+      <UniqueIdentifier>{a03cbaa0-ed55-4ff2-bdf1-b8af5354273b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\library">
+      <UniqueIdentifier>{36e623f9-9dd4-4ae4-a21d-cb84d410a707}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\calculation">
+      <UniqueIdentifier>{22ec711f-a153-4d2b-b932-7ec1fc0c8e98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\analysis">
+      <UniqueIdentifier>{87e074f7-bc9a-4512-bd0c-de0a0135004c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\analysis_run">
+      <UniqueIdentifier>{6ddd3ee1-9e83-4d41-9d05-68b2f9a18b3c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\cluster">
+      <UniqueIdentifier>{b8a28784-42f1-4842-9c31-73986c3b1c96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\Output">
+      <UniqueIdentifier>{e89cdf56-6382-4eeb-b675-ae26b69a3aa0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\print">
+      <UniqueIdentifier>{ae0598ee-346a-4d67-9ae5-11df9425672c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\loglikelihood">
+      <UniqueIdentifier>{5d9ae9c1-c491-40f0-903e-2e94eed98078}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\probability_model">
+      <UniqueIdentifier>{4e6e82b6-2882-4d1b-b256-e4f9fa5dc477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\randomization">
+      <UniqueIdentifier>{66958b55-e266-43ff-a5e6-344b7bfb0ef6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\satscan_data">
+      <UniqueIdentifier>{7769bf1c-ad84-439b-8c5b-924c07c9b2e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\calculation\utility">
+      <UniqueIdentifier>{e6128437-708d-4d17-8059-79b72627ba45}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\jni">
+      <UniqueIdentifier>{b24c64cc-1e07-4d8c-a0a9-91d95cbd0861}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\library">
+      <UniqueIdentifier>{5db94ea0-28cf-41e8-834c-b47c01a93224}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\c_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\cpp_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\cregex.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\fileiter.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\icu.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\instances.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\posix_api.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\regex.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\regex_debug.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\regex_raw_buffer.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\regex_traits_defaults.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\static_mutex.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\usinstances.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\w32_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\wc_regex_traits.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\wide_posix_api.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\regex\src\winstances.cpp">
+      <Filter>Source Files\boost\regex</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp">
+      <Filter>Source Files\boost\threads</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\IniParameterFileAccess.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\IniParameterSpecification.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\ParameterFileAccess.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Parameters.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\ParametersPrint.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\ParametersValidate.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\RunTimeComponents.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\ScanLineParameterFileAccess.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Toolkit.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\AbstractAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\AbstractBruteForceAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\AbstractCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\Analysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\IntermediateClustersContainer.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\MeasureList.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\PurelySpatialAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\PurelySpatialBruteForceAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\PurelySpatialCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\PurelySpatialMonotoneAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\PurelyTemporalAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SignificantRatios05.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeIncludePureAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SVTTAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis\SVTTCentricAnalysis.cpp">
+      <Filter>Source Files\calculation\analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis_run\AnalysisRun.cpp">
+      <Filter>Source Files\calculation\analysis_run</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\analysis_run\MostLikelyClustersContainer.cpp">
+      <Filter>Source Files\calculation\analysis_run</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\AbstractClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\AbstractClusterDataFactory.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\CategoricalClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\CategoricalClusterDataFactory.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\Cluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\ClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\ClusterDataFactory.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\IncidentRate.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\MultiSetCategoricalClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\MultiSetClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\MultiSetNormalClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\NormalClusterData.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\NormalClusterDataFactory.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\PurelySpatialCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\PurelySpatialMonotoneCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\PurelySpatialProspectiveCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\PurelyTemporalCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\SpaceTimeCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\SVTTCluster.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\TimeIntervalRange.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\TimeIntervals.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\cluster\TimeTrend.cpp">
+      <Filter>Source Files\calculation\cluster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\BernoulliLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\LikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\LoglikelihoodRatioUnifier.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\NormalLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\OrdinalLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\PoissonLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\WeightedNormalCovariatesLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.cpp">
+      <Filter>Source Files\calculation\loglikelihood</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\AsynchronouslyAccessible.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\contractor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\dBaseFile.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\FieldDef.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\FileName.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\Ini.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\JulianDates.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\MultipleDimensionArrayHandler.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\RandomDistribution.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\RandomNumberGenerator.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\ShapeFile.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\SSException.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\stsCentricAlgoFunctor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\stsCentricAlgoJobSource.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\stsMCSimJobSource.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\stsMonteCarloSimFunctor.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\TimeStamp.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\UtilityFunctions.cpp">
+      <Filter>Source Files\calculation\utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\AdjustmentHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\BernoulliDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\CalculateMeasure.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\CentroidNeighbors.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSet.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSetGateway.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSetInterface.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSetReader.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSetWriter.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\DataSource.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\utility\DateStringParser.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\ExponentialDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\GridTractCoordinates.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\MakeNeighbors.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\MaxWindowLengthIndicator.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\MetaTractManager.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\NormalDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\ObservableRegion.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\OrdinalDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\PoissonDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\PopulationData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\PurelySpatialData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\PurelyTemporalData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\RankDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\SaTScanData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\SaTScanDataDisplay.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\SaTScanDataRead.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\SpaceTimeData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\SVTTData.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\satscan_data\Tracts.cpp">
+      <Filter>Source Files\calculation\satscan_data</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\BernoulliRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\DenominatorDataRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\ExponentialRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\HomogeneousPoissonRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\NormalRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\OrdinalDataRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\PermutationDataRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\PoissonRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\Randomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\RankRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\SpaceTimeRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\randomization\WeightedNormalRandomizer.cpp">
+      <Filter>Source Files\calculation\randomization</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\BernoulliModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\ExponentialModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\HomogeneousPoissonModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\NormalModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\OrdinalModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\PoissonModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\ProbabilityModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\RankModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\probability_model\SpaceTimePermutationModel.cpp">
+      <Filter>Source Files\calculation\probability_model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\AsciiPrintFormat.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\print\BasePrint.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\print\PrintQueue.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\print\PrintScreen.cpp">
+      <Filter>Source Files\calculation\print</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\AbstractDataFileWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\ClusterInformationWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\ClusterKML.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\ClusterLocationsWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\ClusterScatterChart.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\LocationRiskEstimateWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\LoglikelihoodRatioWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\ShapeFileWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\stsASCIIFileWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\stsDBaseFileWriter.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\calculation\Output\stsRunHistoryFile.cpp">
+      <Filter>Source Files\calculation\Output</Filter>
+    </ClCompile>
+    <ClCompile Include="JNIException.cpp">
+      <Filter>Source Files\jni</Filter>
+    </ClCompile>
+    <ClCompile Include="SharedLibrary.cpp">
+      <Filter>Source Files\jni</Filter>
+    </ClCompile>
+    <ClCompile Include="stsJNIPrintWindow.cpp">
+      <Filter>Source Files\jni</Filter>
+    </ClCompile>
+    <ClCompile Include="stsParametersUtility.cpp">
+      <Filter>Source Files\jni</Filter>
+    </ClCompile>
+    <ClCompile Include="PrintCallback.cpp">
+      <Filter>Source Files\library</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\calculation\IniParameterFileAccess.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\IniParameterSpecification.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\ParameterFileAccess.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Parameters.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\ParametersPrint.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\ParametersValidate.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\RunTimeComponents.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\SaTScan.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\ScanLineParameterFileAccess.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Toolkit.h">
+      <Filter>Header Files\calculation</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\AbstractAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\AbstractBruteForceAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\AbstractCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\Analysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\IntermediateClustersContainer.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\MeasureList.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\PurelySpatialAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\PurelySpatialBruteForceAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\PurelySpatialCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\PurelySpatialMonotoneAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\PurelyTemporalAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SignificantRatios05.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeIncludePureAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeIncludePureCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeIncludePurelySpatialAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeIncludePurelySpatialCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeIncludePurelyTemporalAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SpaceTimeIncludePurelyTemporalCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SVTTAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis\SVTTCentricAnalysis.h">
+      <Filter>Header Files\calculation\analysis</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis_run\AnalysisRun.h">
+      <Filter>Header Files\calculation\analysis_run</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis_run\MostLikelyClustersContainer.h">
+      <Filter>Header Files\calculation\analysis_run</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\analysis_run\SimulationVariables.h">
+      <Filter>Header Files\calculation\analysis_run</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\AbstractClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\AbstractClusterDataFactory.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\CategoricalClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\CategoricalClusterDataFactory.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\cluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\ClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\ClusterDataFactory.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\IncidentRate.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\MultiSetCategoricalClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\MultiSetClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\MultiSetNormalClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\NormalClusterData.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\NormalClusterDataFactory.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\PurelySpatialCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\PurelySpatialHomogeneousPoissonCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\PurelySpatialMonotoneCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\PurelySpatialProspectiveCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\PurelyTemporalCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\SpaceTimeCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\SVTTCluster.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\TimeIntervalRange.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\TimeIntervals.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\cluster\TimeTrend.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\AbstractDataFileWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\AsciiPrintFormat.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\ClusterInformationWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\ClusterKML.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\ClusterLocationsWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\ClusterScatterChart.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\LocationRiskEstimateWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\LoglikelihoodRatioWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\ShapeFileWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\stsASCIIFileWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\stsDBaseFileWriter.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\Output\stsRunHistoryFile.h">
+      <Filter>Header Files\calculation\Output</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\print\BasePrint.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\print\PrintQueue.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\print\PrintScreen.h">
+      <Filter>Header Files\calculation\print</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\BernoulliLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\LikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\LoglikelihoodRatioUnifier.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\NormalLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\OrdinalLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\PoissonLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\PoissonSVTTLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\WeightedNormalCovariatesLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\WeightedNormalLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\loglikelihood\WilcoxonLikelihoodCalculation.h">
+      <Filter>Header Files\calculation\loglikelihood</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\BernoulliModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\ExponentialModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\HomogeneousPoissonModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\NormalModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\PoissonModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\ProbabilityModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\RankModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\SpaceTimePermutationModel.h">
+      <Filter>Header Files\calculation\probability_model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\BernoulliRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\DenominatorDataRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\ExponentialRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\HomogeneousPoissonRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\NormalRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\OrdinalDataRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\PermutationDataRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\PoissonRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\Randomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\RankRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\SpaceTimeRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\randomization\WeightedNormalRandomizer.h">
+      <Filter>Header Files\calculation\randomization</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\AdjustmentHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\BernoulliDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\CalculateMeasure.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\CentroidNeighbors.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSet.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSetGateway.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSetInterface.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSetReader.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSetWriter.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\DataSource.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\DateStringParser.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\ExponentialDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\GridTractCoordinates.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\HomogeneousPoissonDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\MakeNeighbors.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\MaxWindowLengthIndicator.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\MetaTractManager.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\NormalDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\ObservableRegion.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\OrdinalDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\probability_model\OrdinalModel.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\PoissonDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\PopulationData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\PurelySpatialData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\PurelyTemporalData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\RankDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\SaTScanData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\SaTScanDataRead.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\SpaceTimeData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\SpaceTimePermutationDataSetHandler.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\SVTTData.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\satscan_data\Tracts.h">
+      <Filter>Header Files\calculation\satscan_data</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\AsynchronouslyAccessible.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\contractor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\dBaseFile.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\FieldDef.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\FileName.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\Ini.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\JulianDates.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\MultipleDimensionArrayHandler.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\ptr_vector.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\RandomDistribution.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\RandomNumberGenerator.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\ShapeFile.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\SSException.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\stsCentricAlgoFunctor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\stsCentricAlgoJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\stsMCSimJobSource.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\stsMonteCarloSimFunctor.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\TimeStamp.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\calculation\utility\UtilityFunctions.h">
+      <Filter>Header Files\calculation\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="JNIException.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="org_satscan_app_AppConstants.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="org_satscan_app_CalculationThread.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="org_satscan_app_Parameters.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="org_satscan_gui_OberservableRegionsFrame.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="org_satscan_gui_ParameterSettingsFrame.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="stsJNIPrintWindow.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="stsParametersUtility.h">
+      <Filter>Header Files\jni</Filter>
+    </ClInclude>
+    <ClInclude Include="PrintCallback.h">
+      <Filter>Header Files\library</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

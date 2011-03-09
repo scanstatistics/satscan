@@ -43,7 +43,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_46_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_46_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -201,7 +201,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_46_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
@@ -283,7 +283,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_39_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
+				AdditionalIncludeDirectories="&quot;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\&quot;;&quot;C:\Program Files\Java\jdk1.6.0_04\include\win32\&quot;;C:\prj\satscan.development\boost\boost_1_46_0;c:\prj\satscan.development\satscan\xbase\xbase_2.0.0;c:\prj\satscan.development\satscan\calculation\utility;c:\prj\satscan.development\satscan\calculation\satscan_data;c:\prj\satscan.development\satscan\calculation\randomization;c:\prj\satscan.development\satscan\calculation\probability_model;c:\prj\satscan.development\satscan\calculation\print;c:\prj\satscan.development\satscan\calculation\Output;c:\prj\satscan.development\satscan\calculation\loglikelihood;c:\prj\satscan.development\satscan\calculation\cluster;c:\prj\satscan.development\satscan\calculation\analysis_run;C:\prj\satscan.development\satscan\calculation;c:\prj\satscan.development\satscan\calculation\analysis;C:\prj\satscan.development\satscan\newmat\newmat10"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_USRDLL;SATSCANDLLVC_EXPORTS;__BATCH_COMPILE;BOOST_ALL_NO_LIB;INTEL_BASED;NOMINMAX;_USE_MATH_DEFINES;__WIN32__;_CRT_SECURE_NO_DEPRECATE;_WIN64"
 				MinimalRebuild="false"
 				RuntimeLibrary="0"
@@ -353,83 +353,80 @@
 					Name="regex"
 					>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\c_regex_traits.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\c_regex_traits.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\cpp_regex_traits.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\cpp_regex_traits.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\cregex.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\cregex.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\fileiter.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\fileiter.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\icu.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\icu.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\instances.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\instances.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\posix_api.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\posix_api.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\regex.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\regex.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\regex_debug.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\regex_debug.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\regex_raw_buffer.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\regex_raw_buffer.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\regex_traits_defaults.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\regex_traits_defaults.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\static_mutex.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\static_mutex.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\usinstances.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\usinstances.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\w32_regex_traits.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\w32_regex_traits.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\wc_regex_traits.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\wc_regex_traits.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\wide_posix_api.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\wide_posix_api.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\regex\src\winstances.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\regex\src\winstances.cpp"
 						>
 					</File>
 				</Filter>
 				<Filter
 					Name="threads"
 					>
-					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\thread\src\win32\exceptions.cpp"
-						>
 					</File>
 					<File
-						RelativePath="..\..\..\boost\boost_1_39_0\libs\thread\src\win32\thread.cpp"
+						RelativePath="..\..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp"
 						>
 					</File>
 				</Filter>
