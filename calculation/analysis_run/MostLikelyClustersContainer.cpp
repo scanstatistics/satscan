@@ -360,7 +360,8 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
           dCandidateRadius = GetClusterRadius(DataHub, CandidateCluster);
           // retrieve coordinates of candidate cluster
           DataHub.GetGInfo()->retrieveCoordinates(CandidateCluster.GetCentroidIndex(), vCandidateCenterCoords);
-          stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
+          //stsClusterCentroidGeometry CandidateCenter(vCandidateCenterCoords);
+		  CandidateCenter.reset(new stsClusterCentroidGeometry(vCandidateCenterCoords));
       }
       for (itrCurr=vRetainedClusters.begin(), itrEnd=vRetainedClusters.end(); bResult && (itrCurr != itrEnd); ++itrCurr) {
         if ((*itrCurr)->GetClusterType() == PURELYTEMPORALCLUSTER)

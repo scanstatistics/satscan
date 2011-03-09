@@ -16,8 +16,12 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
                             gCentroidInfo(*DataHub.GetGInfo()), gLocationInfo(*DataHub.GetTInfo()), 
                             gvEllipseAngles(DataHub.gvEllipseAngles), gvEllipseShapes(DataHub.gvEllipseShapes),
                             gNumTracts(DataHub.GetNumTracts()), gtCurrentEllipseCoordinates(0),
-                            gPrimaryNeighbors(0,0), gSecondaryNeighbors(0,0), gTertiaryNeighbors(0,0), 
-                            gPrimaryReportedNeighbors(0,0), gSecondaryReportedNeighbors(0,0), gTertiaryReportedNeighbors(0,0) {
+                            gPrimaryNeighbors((CALCULATE_NEIGHBORS_METHOD)0,0), 
+							gSecondaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+							gTertiaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+                            gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+							gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+							gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0) {
   gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
   SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
@@ -31,8 +35,12 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
                             gCentroidInfo(gridInfo), gLocationInfo(tractHandler), 
                             gvEllipseAngles(DataHub.gvEllipseAngles), gvEllipseShapes(DataHub.gvEllipseShapes),
                             gNumTracts(DataHub.GetNumTracts()), gtCurrentEllipseCoordinates(0),
-                            gPrimaryNeighbors(0,0), gSecondaryNeighbors(0,0), gTertiaryNeighbors(0,0), 
-                            gPrimaryReportedNeighbors(0,0), gSecondaryReportedNeighbors(0,0), gTertiaryReportedNeighbors(0,0) {
+                            gPrimaryNeighbors((CALCULATE_NEIGHBORS_METHOD)0,0), 
+							gSecondaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+							gTertiaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+                            gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+							gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
+							gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0) {
   gvCentroidToLocationDistances.resize(DataHub.GetTInfo()->getNumLocationCoordinates());
   SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
