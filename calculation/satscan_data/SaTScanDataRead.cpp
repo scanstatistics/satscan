@@ -530,7 +530,14 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
           bValid = false;
           continue;
         }
-        pGridPoints->addGridPoint(vCoordinates);
+        GInfo::FocusInterval_t focusInterval;
+        //check for focus interval dates - but only for analysis types that can implement this feature
+        if (! ReadIntervalDates(Source, focusInterval, pGridPoints->getGridPointDimensions())) {
+            bValid = false;
+            continue;
+        }
+
+        pGridPoints->addGridPoint(vCoordinates, focusInterval);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -550,6 +557,75 @@ bool SaTScanDataReader::ReadGridFileAsCartiesian(DataSource& Source) {
     throw;
   }
   return bValid;
+}
+
+/** Reads interval ranges from data source starting at 'iSourceOffset'*/
+bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterval_t& focusInterval, short iSourceOffset) {
+    bool                            bValid=true, hasValuesAtOffset=false;
+    DateStringParser                DateParser(gParameters.GetPrecisionOfTimesType());
+    DateStringParser::ParserStatus  eStatus;
+    DatePrecisionType               ePrecision = gParameters.GetPrecisionOfTimesType();
+    Julian                          JulianDate;
+
+    try {
+        focusInterval.first = Source.GetValueAt(iSourceOffset) != 0;
+        if (focusInterval.first && (gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL)) {
+            //if there is one more value, then we expect 4 more: <startrange start>  <startrange end>  <endrange start>  <endrange end>
+            for (int i=0; i < 4 /*expected number of dates*/; ++i, ++iSourceOffset) {
+                if (!Source.GetValueAt(iSourceOffset)) {
+                    gPrint.Printf("Error: Expecting date value in column %d, record %ld of %s.\n", BasePrint::P_READERROR, iSourceOffset + 1, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                    bValid = false;
+                    continue;
+                }
+                //Attempt to convert string into Julian equivalence.
+                eStatus = DateParser.ParseCountDateString(Source.GetValueAt(iSourceOffset), ePrecision, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
+                switch (eStatus) {
+                    case DateStringParser::VALID_DATE       : 
+                        //validate that date is between study period start and end dates
+                        if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
+                            gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n       within the study period beginning %s and ending %s.\n",
+                                          BasePrint::P_READERROR, Source.GetValueAt(iSourceOffset), Source.GetCurrentRecordIndex(),
+                                          gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+                            bValid = false; 
+                        } else {
+                            if (i == 0) focusInterval.second.get<0>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
+                            else if (i == 1) focusInterval.second.get<1>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
+                            else if (i == 2) focusInterval.second.get<2>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
+                            else if (i == 3) focusInterval.second.get<3>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
+                        }
+                        break;
+                    case DateStringParser::LESSER_PRECISION : {
+                        std::string sBuffer; //Dates in the case/control files must be at least as precise as ePrecision units.
+                        gPrint.Printf("Error: The date '%s' of record %ld in the %s must be precise to %s,\n       as specified by time precision units.\n", 
+                                      BasePrint::P_READERROR, Source.GetValueAt(iSourceOffset), Source.GetCurrentRecordIndex(),
+                                      gPrint.GetImpliedFileTypeString().c_str(), GetDatePrecisionAsString(ePrecision, sBuffer, false, false));
+                        bValid = false; 
+                    }
+                    case DateStringParser::AMBIGUOUS_YEAR   :
+                    case DateStringParser::INVALID_DATE     :
+                    default                                 :
+                        gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n%s", BasePrint::P_READERROR,
+                                        Source.GetValueAt(iSourceOffset), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), DateParser.getLastParseError().c_str());
+                        bValid = false; 
+                };
+            }
+            if (bValid) {// now validate the dates do not conflict each other
+                if (focusInterval.second.get<0>() > focusInterval.second.get<1>() || 
+                    focusInterval.second.get<2>() > focusInterval.second.get<3>() ||
+                    focusInterval.second.get<0>() > focusInterval.second.get<3>()) {
+                    gPrint.Printf("Error: Centroid focus interval dates are conflicting in record %ld of %s.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                    bValid = false;
+                }
+            }
+            if (bValid) {// now validate the window evaluate clusters given maximum temporal cluster size.
+                // TODO
+            }
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("ReadIntervalDates()","SaTScanDataReader");
+        throw;
+    }
+    return bValid;
 }
 
 /** Read the special grid data file as latitude/longitude coordinates.
@@ -573,7 +649,13 @@ bool SaTScanDataReader::ReadGridFileAsLatitudeLongitude(DataSource& Source) {
            bValid = false;
            continue;
         }
-        pGridPoints->addGridPoint(vCoordinates);
+        GInfo::FocusInterval_t focusInterval;
+        //check for focus interval dates - but only for analysis types that can implement this feature
+        if (! ReadIntervalDates(Source, focusInterval, pGridPoints->getGridPointDimensions() - 1)) {
+            bValid = false;
+            continue;
+        }
+        pGridPoints->addGridPoint(vCoordinates, focusInterval);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -648,12 +730,6 @@ bool SaTScanDataReader::ReadLatitudeLongitudeCoordinates(DataSource& Source, std
   else {
     gPrint.Printf("Error: Record %ld in the %s file is missing the longitude coordinate.\n",
                   BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), sSourceFile);
-    return false;
-  }
-  //validate that there is not extra data for record
-  if ((pCoordinate = Source.GetValueAt(++iWordOffSet)) != 0) {
-    gPrint.Printf("Error: Record %ld in the %s file contains extra data: '%s'.\n",
-                  BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), sSourceFile, pCoordinate);
     return false;
   }
   //validate range of latitude value

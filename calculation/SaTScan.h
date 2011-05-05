@@ -43,6 +43,7 @@
 #pragma warn +8055
 #endif
 
+#include "boost/tuple/tuple.hpp"
 #include "BasePrint.h"
 
 /**********************************************************************
@@ -50,14 +51,14 @@
  This file contains header information for all SaTScan program files
  **********************************************************************/
 /** Current version information. */
-#define VERSION_ID      "27"  /** incremental version identifier - this value must
+#define VERSION_ID      "30"  /** incremental version identifier - this value must
                                   be incremented for each released version in order
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "9"
-#define VERSION_MINOR   "0"
-#define VERSION_RELEASE "1"
-#define VERSION_PHASE   "" /** testing phase name - leave blank for release */
-#define VERSION_DATE    "July 23, 2010"
+#define VERSION_MINOR   "2"
+#define VERSION_RELEASE "0"
+#define VERSION_PHASE   "Alpha 1" /** testing phase name - leave blank for release */
+#define VERSION_DATE    "Not Released"
 
 /** PI declaration - this is now defined in math.h but changing may cause
     precision to differ and the programs results. */
@@ -100,5 +101,7 @@ enum DatePrecisionType { NONE, YEAR=1, MONTH, DAY, GENERIC };
 #define macro_round(x) (x<0?ceil((x)-0.5):floor((x)+0.5))
 /** minimum number of simulations to report pvalues */
 #define MIN_SIMULATION_RPT_PVALUE 99
+/** interval range type */
+typedef boost::tuple<int,int,int,int>  IntervalRange_t;
 //*****************************************************************************
 #endif

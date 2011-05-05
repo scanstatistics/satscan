@@ -48,6 +48,7 @@ void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGatewa
     CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //create comparator cluster
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+    gTimeIntervals->resetIntervalRange();
     gTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
     TopClustersContainer.Add(TopCluster);
   }
@@ -67,8 +68,11 @@ double C_ST_PT_Analysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGatewa
 
   gAbstractPTClusterData->InitializeData();
   //iterate through time intervals, finding top maximizing value
+  gTimeIntervals->resetIntervalRange();
   dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gAbstractPTClusterData);
   if (dMaximizingValue > vMaximizingValues[0]) vMaximizingValues[0] = dMaximizingValue;
+
+  gTimeIntervals->setIntervalRange(tCenter);
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractClusterData->InitializeData();
@@ -105,6 +109,7 @@ double C_ST_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   gMeasureList->Reset();
   //compare purely temporal cluster in same ratio correction as circle
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+  gTimeIntervals->resetIntervalRange();
   gTimeIntervals->CompareMeasures(*gAbstractPTClusterData, *gMeasureList);
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
@@ -112,6 +117,7 @@ double C_ST_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
+        gTimeIntervals->setIntervalRange(i);
         pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
      gMeasureList->SetForNextIteration(k);

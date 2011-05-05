@@ -52,10 +52,10 @@ void TemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster & TopCl
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iWindowStart = std::min(_interval_range.get<1>() + 1, iWindowEnd) - 1;
      for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
         tCases = pCases[iWindowStart] - pCases[iWindowEnd];
         tMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
@@ -84,10 +84,10 @@ void TemporalDataEvaluator::CompareMeasures(AbstractTemporalClusterData& Cluster
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart)
         MeasureList.AddMeasure(pCases[iWindowStart] - pCases[iWindowEnd], pMeasure[iWindowStart] - pMeasure[iWindowEnd]);
   }
@@ -106,10 +106,10 @@ double TemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClusterData
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Data.gtCases = pCases[iWindowStart] - pCases[iWindowEnd];
         Data.gtMeasure = pMeasure[iWindowStart] - pMeasure[iWindowEnd];
@@ -147,10 +147,10 @@ void MultiSetTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iWindowStart = std::min(_interval_range.get<1>() + 1, iWindowEnd) - 1;
      for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
         Unifier.Reset();
         for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
@@ -185,10 +185,10 @@ double MultiSetTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClu
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Unifier.Reset();
         for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
@@ -237,10 +237,10 @@ void NormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CCluster &
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iWindowStart = std::min(_interval_range.get<1>() + 1, iWindowEnd) - 1;
      for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
         Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
         Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
@@ -273,10 +273,10 @@ double NormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporalClust
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Data.gtCases = Data.gpCases[iWindowStart] - Data.gpCases[iWindowEnd];
         Data.gtMeasure = Data.gpMeasure[iWindowStart] - Data.gpMeasure[iWindowEnd];
@@ -315,10 +315,10 @@ void MultiSetNormalTemporalDataEvaluator::CompareClusters(CCluster & Running, CC
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iMinWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iWindowStart = std::min(_interval_range.get<1>() + 1, iWindowEnd) - 1;
      for (; iWindowStart >= iMinWindowStart; --iWindowStart) {
         Unifier.Reset();
         for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
@@ -354,10 +354,10 @@ double MultiSetNormalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTempo
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Unifier.Reset();
         for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
@@ -406,10 +406,10 @@ void CategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running, CClust
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iWindowStart = std::min(_interval_range.get<1>() + 1, iWindowEnd) - 1;
      for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
         for (size_t t=0; t < Data.gvCasesPerCategory.size(); ++t)
           Data.gvCasesPerCategory[t] = Data.gppCategoryCases[t][iWindowStart] - Data.gppCategoryCases[t][iWindowEnd];
@@ -438,10 +438,10 @@ double CategoricalTemporalDataEvaluator::ComputeMaximizingValue(AbstractTemporal
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         for (size_t t=0; t < Data.gvCasesPerCategory.size(); ++t)
           Data.gvCasesPerCategory[t] = Data.gppCategoryCases[t][iWindowStart] - Data.gppCategoryCases[t][iWindowEnd];
@@ -477,10 +477,10 @@ void MultiSetCategoricalTemporalDataEvaluator::CompareClusters(CCluster& Running
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iWindowStart = std::min(giStartRange_End + 1, iWindowEnd) - 1;
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iMinStartWindow = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iWindowStart = std::min(_interval_range.get<1>() + 1, iWindowEnd) - 1;
      for (; iWindowStart >= iMinStartWindow; --iWindowStart) {
         Unifier.Reset();
         for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {
@@ -515,10 +515,10 @@ double MultiSetCategoricalTemporalDataEvaluator::ComputeMaximizingValue(Abstract
 
   //iterate through windows
   gpMaxWindowLengthIndicator->Reset();
-  iMaxEndWindow = std::min(giEndRange_End, giStartRange_End + giMaxWindowLength);
-  for (iWindowEnd=giEndRange_Start; iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
-     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), giStartRange_Start);
-     iMaxStartWindow = std::min(giStartRange_End + 1, iWindowEnd);
+  iMaxEndWindow = std::min(_interval_range.get<3>(), _interval_range.get<1>() + giMaxWindowLength);
+  for (iWindowEnd=_interval_range.get<2>(); iWindowEnd <= iMaxEndWindow; ++iWindowEnd) {
+     iWindowStart = std::max(iWindowEnd - gpMaxWindowLengthIndicator->GetNextWindowLength(), _interval_range.get<0>());
+     iMaxStartWindow = std::min(_interval_range.get<1>() + 1, iWindowEnd);
      for (; iWindowStart < iMaxStartWindow; ++iWindowStart) {
         Unifier.Reset();
         for (size_t t=0; t < Data.gvSetClusterData.size(); ++t) {

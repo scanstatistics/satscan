@@ -63,6 +63,7 @@ const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const A
   tract_t               k;
 
   gTopShapeClusters.Reset(tCenter);
+  gTimeIntervals->setIntervalRange(tCenter);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
   for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
      CentroidNeighbors CentroidDef(k, gDataHub);
@@ -85,6 +86,7 @@ double CSpaceTimeAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGate
   std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
   std::vector<double>::iterator itr, itr_end;
 
+  gTimeIntervals->setIntervalRange(tCenter);
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractClusterData->InitializeData();
@@ -124,6 +126,7 @@ double CSpaceTimeAnalysis::MonteCarlo(const DataSetInterface& Interface) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
+        gTimeIntervals->setIntervalRange(i);
         pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
      gMeasureList->SetForNextIteration(k);

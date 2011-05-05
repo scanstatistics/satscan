@@ -229,8 +229,10 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
   short                         iScanCount;
   std::vector<double>           vCoordinates;
   CentroidHandler             * pGridPoints;
+  GInfo::FocusInterval_t        focusInterval;
 
   try {
+    focusInterval.first = false;
     if ((pGridPoints = dynamic_cast<CentroidHandler*>(&gCentroidsHandler)) == 0)
       throw prg_error("Not a CentroidHandler type.", "ReadGridFileAsCartiesian()");
     pGridPoints->setDimensions(gTractHandler.getCoordinateDimensions());
@@ -262,7 +264,7 @@ bool HomogeneousPoissonDataSetHandler::ReadGridFile(DataSource& Source) {
             continue;
         }
 
-        pGridPoints->addGridPoint(vCoordinates);
+        pGridPoints->addGridPoint(vCoordinates, focusInterval);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance

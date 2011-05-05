@@ -57,7 +57,7 @@ const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const Abs
   if (gPSClusterComparator.get()) gPSTopShapeClusters.Reset(tCenter);
   if (gPSPClusterComparator.get()) gPSPTopShapeClusters.Reset(tCenter);
   gTopShapeClusters.Reset(tCenter);
-
+  gTimeIntervals->setIntervalRange(tCenter);
   for (j=0 ;j <= gParameters.GetNumTotalEllipses(); ++j) {
      CentroidNeighbors CentroidDef(j, gDataHub);
      CentroidDef.Set(tCenter);
@@ -111,6 +111,7 @@ double C_ST_PS_Analysis::MonteCarlo(const DataSetInterface & Interface) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
+        gTimeIntervals->setIntervalRange(i);
         pSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
         pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
@@ -133,6 +134,7 @@ double C_ST_PS_Analysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGatewa
   std::vector<double>           vMaximizingValues(gParameters.GetNumTotalEllipses() + 1, -std::numeric_limits<double>::max());
   std::vector<double>::iterator itr, itr_end;
 
+  gTimeIntervals->setIntervalRange(tCenter);
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractPSClusterData->InitializeData();
@@ -177,6 +179,7 @@ double C_ST_PS_Analysis::MonteCarloProspective(const DataSetInterface & Interfac
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
+        gTimeIntervals->setIntervalRange(i);
         pPSSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
         pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
@@ -197,6 +200,7 @@ double C_ST_PS_Analysis::MonteCarloProspective(tract_t tCenter, const AbstractDa
   std::vector<double>::iterator itr, itr_end;
   AbstractProspectiveSpatialClusterData * pPSPSpatialData = dynamic_cast<AbstractProspectiveSpatialClusterData*>(gAbstractPSPClusterData.get());
 
+  gTimeIntervals->setIntervalRange(tCenter);
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractPSPClusterData->InitializeData();

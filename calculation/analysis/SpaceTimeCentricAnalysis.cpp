@@ -37,6 +37,7 @@ void SpaceTimeCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const Cent
   std::vector<double>::iterator              itrLoglikelihoodRatios=gCalculatedRatios->begin();
   tract_t                                    t, tNumNeighbors;
 
+  gTimeIntervals_S->setIntervalRange(CentroidDef.GetCentroidIndex());
   //perform simulations about current centroid
   for (; itrGateway != itrGatewayEnd; ++itrGateway, ++itrLoglikelihoodRatios) {
      gAbstractClusterData->InitializeData();
@@ -65,6 +66,7 @@ void SpaceTimeCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const 
   if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
     //re-intialize top cluster object if evaluating data about new centroid
     gTopCluster->Initialize(CentroidDef.GetCentroidIndex());
+  gTimeIntervals_R->setIntervalRange(CentroidDef.GetCentroidIndex());
   gClusterComparator->Initialize(CentroidDef.GetCentroidIndex());
   gClusterComparator->SetEllipseOffset(CentroidDef.GetEllipseIndex(), gDataHub);
   gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopCluster, *gTimeIntervals_R);
@@ -93,6 +95,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
     CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //create comparator cluster
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+    gTimeIntervals_R->resetIntervalRange();
     gTimeIntervals_R->CompareClusters(ClusterComparator, TopCluster);
     if (TopCluster.ClusterDefined())
       gRetainedClusters.push_back(TopCluster.Clone());
@@ -103,7 +106,7 @@ void SpaceTimeCentricAnalysis::ExecuteAboutPurelyTemporalCluster(const AbstractD
       std::auto_ptr<AbstractTemporalClusterData>              PTClusterData;
 
       PTClusterData.reset(gpClusterDataFactory->GetNewTemporalClusterData(*(*vSimDataGateways.begin())));
-
+      gTimeIntervals_S->resetIntervalRange();
       if (geReplicationsProcessType == MeasureListEvaluation) {
         MeasureListContainer_t::iterator  itrMeasureList=gvMeasureLists.begin();
         //perform simulation about purely temporal data
@@ -147,6 +150,7 @@ void SpaceTimeCentricAnalysis::MonteCarloAboutCentroidDefinition(const CentroidN
   DataSetGatewayContainer_t::const_iterator  itrGateway, itrGatewayEnd=vDataGateways.end();
   MeasureListContainer_t::iterator           itrMeasureList;
 
+  gTimeIntervals_S->setIntervalRange(CentroidDef.GetCentroidIndex());
   //perform simulations about current centroid
   itrGateway = vDataGateways.begin();
   itrMeasureList=gvMeasureLists.begin();

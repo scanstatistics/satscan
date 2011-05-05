@@ -168,7 +168,7 @@ class WeightedNormalRandomizer : public AbstractWeightedNormalRandomizer {
     virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    WeightedNormalRandomizer::WeightedNormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(lInitialSeed) {}
+    WeightedNormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractWeightedNormalRandomizer(lInitialSeed) {}
     virtual ~WeightedNormalRandomizer() {}
 
     virtual WeightedNormalRandomizer * Clone() const {return new WeightedNormalRandomizer(*this);}

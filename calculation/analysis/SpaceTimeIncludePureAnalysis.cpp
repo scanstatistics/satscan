@@ -46,6 +46,7 @@ void C_ST_PS_PT_Analysis::FindTopClusters(const AbstractDataSetGateway& DataGate
   CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
   CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
   //iterate through time intervals - looking for top purely temporal cluster
+  gTimeIntervals->resetIntervalRange();
   gTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
   TopClustersContainer.Add(TopCluster);
 }
@@ -63,6 +64,7 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+  gTimeIntervals->resetIntervalRange();
   gTimeIntervals->CompareMeasures(*gPTClusterData, *gMeasureList);
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
@@ -70,6 +72,7 @@ double C_ST_PS_PT_Analysis::MonteCarlo(const DataSetInterface & Interface) {
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
+        gTimeIntervals->setIntervalRange(i);
         pSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
         pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
@@ -90,8 +93,11 @@ double C_ST_PS_PT_Analysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGat
 
   gPTClusterData->InitializeData();
   //iterate through time intervals, finding top cluster
+  gTimeIntervals->resetIntervalRange();
   dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gPTClusterData);
   if (dMaximizingValue > vMaximizingValues[0]) vMaximizingValues[0] = dMaximizingValue;
+
+  gTimeIntervals->setIntervalRange(tCenter);
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractPSClusterData->InitializeData();
@@ -134,6 +140,7 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Inter
   //Add measure values for purely space first - so that this cluster's values
   //will be calculated with circle's measure values.
   macroRunTimeStartFocused(FocusRunTimeComponent::MeasureListScanningAdding);
+  gTimeIntervals->resetIntervalRange();
   gTimeIntervals->CompareMeasures(*gPTClusterData, *gMeasureList);
   macroRunTimeStopFocused(FocusRunTimeComponent::MeasureListScanningAdding);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
@@ -141,6 +148,7 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(const DataSetInterface & Inter
      CentroidNeighbors CentroidDef(k, gDataHub);
      for (i=0; i < gDataHub.m_nGridTracts; ++i) {
         CentroidDef.Set(i);
+        gTimeIntervals->setIntervalRange(i);
         pPSSpatialData->AddMeasureList(CentroidDef, Interface, gMeasureList.get());
         pSpaceTimeData->AddNeighborDataAndCompare(CentroidDef, Interface, *gTimeIntervals, *gMeasureList);
      }
@@ -159,8 +167,11 @@ double C_ST_PS_PT_Analysis::MonteCarloProspective(tract_t tCenter, const Abstrac
 
   gPTClusterData->InitializeData();
   //iterate through time intervals, finding top cluster
+  gTimeIntervals->resetIntervalRange();
   dMaximizingValue = gTimeIntervals->ComputeMaximizingValue(*gPTClusterData);
   if (dMaximizingValue > vMaximizingValues[0]) vMaximizingValues[0] = dMaximizingValue;  
+
+  gTimeIntervals->setIntervalRange(tCenter);
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      double& dShapeMaxValue = vMaximizingValues[j];
      gAbstractPSPClusterData->InitializeData();

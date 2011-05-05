@@ -18,7 +18,7 @@ void GInfo::displayGridPoints(FILE* pDisplay) const {
 }
 
 /** Inserts grid point into internal container, ordered by coordinates. */
-void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates) {
+void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates, const FocusInterval_t& foucsInterval) {
   try {
     if (gAdditionStatus == Closed)
       throw prg_error("This TractHandler object is closed to insertions.", "addGridPoint()");
@@ -27,14 +27,19 @@ void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates) {
     if (vCoordinates.size() != (unsigned int)giPointDimensions)
       throw prg_error("Passed coordinates have %u dimensions, wanted %i.", "addGridPoint()", vCoordinates.size(), giPointDimensions);
 
-    std::auto_ptr<Point_t> pPoint(new Point_t(vCoordinates, gvPoints.size()));
+    GridPoint point(vCoordinates, _grid_points.size() );
+    if (foucsInterval.first) {
+        point._interval_range.reset(new IntervalRange_t(foucsInterval.second));
+        _has_focus_intervals = true;
+    }
+
     //keeping coordinates in sorted order accomplishes two things:
     // 1) makes determination of duplicates much faster
     // 2) consistancy with index into gvPoints -- we sometimes use this attribute to break ties in ranking of clusters
-    PointsContainer_t::iterator itrPoint = std::lower_bound(gvPoints.begin(), gvPoints.end(), pPoint.get(), TractHandler::CompareCoordinates());
+    GridPointsContainer_t::iterator itrGridPoint = std::lower_bound(_grid_points.begin(), _grid_points.end(), point);
     //if there exists a grid point with same coordinates, ignore this record
-    if (itrPoint == gvPoints.end() ||  *(pPoint.get()) != *(*itrPoint))
-      gvPoints.insert(itrPoint, pPoint.release());
+    if (itrGridPoint == _grid_points.end() || point != (*itrGridPoint))
+        _grid_points.insert(itrGridPoint, point);
   }
   catch (prg_exception& x) {
     x.addTrace("addGridPoint()", "CentroidHandler");
@@ -42,9 +47,15 @@ void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates) {
   }
 }
 
+/** Returns focus interval range for point, if any. First item in returned pair indicates whether point has focus interval. */
+CentroidHandler::FocusInterval_t CentroidHandler::retrieveFocusInterval(tract_t tPoint) const {
+    IntervalRange_t * interval = _grid_points[tPoint]._interval_range.get();
+    return (interval ? std::make_pair(true, *interval) : std::make_pair(false, IntervalRange_t(0,0,0,0)));
+}
+
 /** sets dimensions expected for points added to this object. */
 void CentroidHandler::setDimensions(unsigned int iPointDimensions) {
-  if (gvPoints.size())
+  if (_grid_points.size())
     throw prg_error("Changing the coordinate dimensions is not permited once points have been defined.","setDimensions()");
   giPointDimensions = iPointDimensions;
 }

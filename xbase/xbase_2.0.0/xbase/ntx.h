@@ -218,7 +218,7 @@ class XBDLLEXPORT xbNtx : public xbIndex  {
    xbShort  KeyExists( char * Key ) { return FindKey( Key, strlen( Key ), 0 ); }
    xbShort  KeyExists( xbDouble );
 
-   xbShort xbNtx::AllocKeyBufs(void);
+   xbShort  AllocKeyBufs(void);
 
    virtual void GetExpression(char *buf, int len);
 };
