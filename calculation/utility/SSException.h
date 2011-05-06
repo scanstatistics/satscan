@@ -52,14 +52,6 @@ class resolvable_error : public prg_exception {
     virtual ~resolvable_error() throw();
 };
 
-/** Exception type to throw when command-line arguments are invalid. */
-class usage_error : public prg_exception {
-  public:
-    usage_error(const char * sExecutableFullpathName);
-    virtual ~usage_error() throw();
-};
-
-
 /** Exception type to throw when a user resolvable problem is detected (e.g. input). */
 class region_exception : public resolvable_error {
   protected:

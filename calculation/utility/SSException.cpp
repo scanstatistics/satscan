@@ -141,23 +141,6 @@ resolvable_error::~resolvable_error() throw() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**  Construct. This is an alternate constructor for when the varArgs list for sMessage
-     has already been prepared. Primarily, this will be used by derived classes.        */
-usage_error::usage_error(const char * sExecutableFullpathName) : prg_exception() {
-   FileName     exe(sExecutableFullpathName);
-
-   printString(_what, "usage: %s%s [parameters file] [options]\n\n"
-                  "options: -o     -- ignore parameter result filename setting, use next parameter\n"
-                  "                   ex. c:\\>satscan.exe c:\\parameters.prm -o c:\\alternate.out.txt\n"
-                  "         -c     -- confirm parameter file correctness only (does not perform analysis)\n"
-                  "         -p     -- print parameter settings to screen (does not perform analysis)\n",
-               exe.getFileName().c_str(), exe.getExtension().c_str());
-}
-
-usage_error::~usage_error() throw() {}
-
-////////////////////////////////////////////////////////////////////////////////
-
 region_exception::region_exception() : resolvable_error() {}
 
 region_exception::region_exception(const char * format, ...) : resolvable_error() {

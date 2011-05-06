@@ -223,7 +223,16 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/regex/src/w32_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/wc_regex_traits.cpp \
                $(BOOSTDIR)/libs/regex/src/wide_posix_api.cpp \
-               $(BOOSTDIR)/libs/regex/src/winstances.cpp
+               $(BOOSTDIR)/libs/regex/src/winstances.cpp \
+               $(BOOSTDIR)/libs/program_options/src/cmdline.cpp \
+               $(BOOSTDIR)/libs/program_options/src/config_file.cpp \
+               $(BOOSTDIR)/libs/program_options/src/convert.cpp \
+               $(BOOSTDIR)/libs/program_options/src/options_description.cpp \
+               $(BOOSTDIR)/libs/program_options/src/positional_options.cpp \
+               $(BOOSTDIR)/libs/program_options/src/split.cpp \
+               $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
+               $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
+               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
 
 APP_SRC     := $(SATSCAN)/batch_application/Main.cpp
 LIB_SRC     := $(SATSCAN)/java_application/shared_library/SharedLibrary.cpp \
