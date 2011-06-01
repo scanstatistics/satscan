@@ -331,7 +331,7 @@ void TractHandler::reportCombinedLocations(FILE * fDisplay) const {
        if (!bPrinted) {
          PrintFormat.SetMarginsAsOverviewSection();
          std::string buffer = "\nNote: The coordinates file contains location IDs with identical "
-                              "coordinates that where combined into one location. In the "
+                              "coordinates that were combined into one location. In the "
                               "optional output files, combined locations are represented by a "
                               "single location ID as follows:";
          PrintFormat.PrintAlignedMarginsDataString(fDisplay, buffer);
