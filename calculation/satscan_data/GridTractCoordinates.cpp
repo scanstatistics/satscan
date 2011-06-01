@@ -27,7 +27,7 @@ void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates, cons
     if (vCoordinates.size() != (unsigned int)giPointDimensions)
       throw prg_error("Passed coordinates have %u dimensions, wanted %i.", "addGridPoint()", vCoordinates.size(), giPointDimensions);
 
-    GridPoint point(vCoordinates, _grid_points.size() );
+    GridPoint point(vCoordinates, _grid_points.size());
     if (foucsInterval.first) {
         point._interval_range.reset(new IntervalRange_t(foucsInterval.second));
         _has_focus_intervals = true;
@@ -40,8 +40,7 @@ void CentroidHandler::addGridPoint(const std::vector<double>& vCoordinates, cons
     //if there exists a grid point with same coordinates, ignore this record
     if (itrGridPoint == _grid_points.end() || point != (*itrGridPoint))
         _grid_points.insert(itrGridPoint, point);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("addGridPoint()", "CentroidHandler");
     throw;
   }

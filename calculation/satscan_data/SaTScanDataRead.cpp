@@ -199,7 +199,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
           if (!ConvertAdjustmentDateToJulian(*Source, EndDate, false)) {
             bValid = false;
             continue;
-          }   
+          }
         }
         //check that the adjustment dates are relatively correct
         if (EndDate < StartDate) {
@@ -270,7 +270,7 @@ bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector
          //unable to read word as double, print error to print direction and return false
          gPrint.Printf("Error: Value '%s' of record %ld in %s could not be read as ",
                        BasePrint::P_READERROR, pCoordinate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-         //we can be specific about which dimension we are attending to read to                                    
+         //we can be specific about which dimension we are attending to read to
          if (i < 2)
            gPrint.Printf("%s-coordinate.\n", BasePrint::P_READERROR, (i == 0 ? "x" : "y"));
          else if (vCoordinates.size() == 3)
@@ -282,7 +282,7 @@ bool SaTScanDataReader::ReadCartesianCoordinates(DataSource& Source, std::vector
          iScanCount++; //track num successful scans, caller of function wants this information
        }
      }
-  return true;          
+  return true;
 }
 
 /** Read the geographic data file. Calls particular function for coordinate type. */
@@ -569,57 +569,66 @@ bool SaTScanDataReader::ReadIntervalDates(DataSource& Source, GInfo::FocusInterv
 
     try {
         focusInterval.first = Source.GetValueAt(iSourceOffset) != 0;
-        if (focusInterval.first && (gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL)) {
-            //if there is one more value, then we expect 4 more: <startrange start>  <startrange end>  <endrange start>  <endrange end>
-            for (int i=0; i < 4 /*expected number of dates*/; ++i, ++iSourceOffset) {
-                if (!Source.GetValueAt(iSourceOffset)) {
-                    gPrint.Printf("Error: Expecting date value in column %d, record %ld of %s.\n", BasePrint::P_READERROR, iSourceOffset + 1, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-                    bValid = false;
-                    continue;
-                }
-                //Attempt to convert string into Julian equivalence.
-                eStatus = DateParser.ParseCountDateString(Source.GetValueAt(iSourceOffset), ePrecision, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
-                switch (eStatus) {
-                    case DateStringParser::VALID_DATE       : 
-                        //validate that date is between study period start and end dates
-                        if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
-                            gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n       within the study period beginning %s and ending %s.\n",
-                                          BasePrint::P_READERROR, Source.GetValueAt(iSourceOffset), Source.GetCurrentRecordIndex(),
-                                          gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
-                            bValid = false; 
-                        } else {
-                            if (i == 0) focusInterval.second.get<0>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
-                            else if (i == 1) focusInterval.second.get<1>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
-                            else if (i == 2) focusInterval.second.get<2>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
-                            else if (i == 3) focusInterval.second.get<3>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
-                        }
-                        break;
-                    case DateStringParser::LESSER_PRECISION : {
-                        std::string sBuffer; //Dates in the case/control files must be at least as precise as ePrecision units.
-                        gPrint.Printf("Error: The date '%s' of record %ld in the %s must be precise to %s,\n       as specified by time precision units.\n", 
-                                      BasePrint::P_READERROR, Source.GetValueAt(iSourceOffset), Source.GetCurrentRecordIndex(),
-                                      gPrint.GetImpliedFileTypeString().c_str(), GetDatePrecisionAsString(ePrecision, sBuffer, false, false));
-                        bValid = false; 
-                    }
-                    case DateStringParser::AMBIGUOUS_YEAR   :
-                    case DateStringParser::INVALID_DATE     :
-                    default                                 :
-                        gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n%s", BasePrint::P_READERROR,
-                                        Source.GetValueAt(iSourceOffset), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), DateParser.getLastParseError().c_str());
-                        bValid = false; 
-                };
-            }
-            if (bValid) {// now validate the dates do not conflict each other
-                if (focusInterval.second.get<0>() > focusInterval.second.get<1>() || 
-                    focusInterval.second.get<2>() > focusInterval.second.get<3>() ||
-                    focusInterval.second.get<0>() > focusInterval.second.get<3>()) {
-                    gPrint.Printf("Error: Centroid focus interval dates are conflicting in record %ld of %s.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
-                    bValid = false;
-                }
-            }
-            if (bValid) {// now validate the window evaluate clusters given maximum temporal cluster size.
-                // TODO
-            }
+        if (focusInterval.first && !(gParameters.GetAnalysisType() == SPACETIME || gParameters.GetAnalysisType() == PURELYTEMPORAL)) {
+          gPrint.Printf("Error: Extra data found in column %d, record %ld of %s.\n", BasePrint::P_READERROR, iSourceOffset + 1, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+          bValid = false;
+        }
+
+        if (focusInterval.first && bValid) {
+          //if there is one more value, then we expect 4 more: <startrange start>  <startrange end>  <endrange start>  <endrange end>
+          for (int i=0; i < 4 /*expected number of dates*/; ++i) {
+              if (!Source.GetValueAt(iSourceOffset)) {
+                  gPrint.Printf("Error: Expecting date value in column %d, record %ld of %s.\n", BasePrint::P_READERROR, iSourceOffset + 1, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                  bValid = false;
+                  continue;
+              }
+              //Attempt to convert string into Julian equivalence.
+              eStatus = DateParser.ParseCountDateString(Source.GetValueAt(iSourceOffset), ePrecision, gDataHub.GetStudyPeriodStartDate(), gDataHub.GetStudyPeriodStartDate(), JulianDate);
+              switch (eStatus) {
+                  case DateStringParser::VALID_DATE       :
+                      //validate that date is between study period start and end dates
+                      if (!(gDataHub.GetStudyPeriodStartDate() <= JulianDate && JulianDate <= gDataHub.GetStudyPeriodEndDate())) {
+                          gPrint.Printf("Error: The date '%s' in record %ld of the %s is not\n       within the study period beginning %s and ending %s.\n",
+                                        BasePrint::P_READERROR, Source.GetValueAt(iSourceOffset), Source.GetCurrentRecordIndex(),
+                                        gPrint.GetImpliedFileTypeString().c_str(), gParameters.GetStudyPeriodStartDate().c_str(), gParameters.GetStudyPeriodEndDate().c_str());
+                          bValid = false;
+                      } else {
+                          if (i == 0) focusInterval.second.get<0>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
+                          else if (i == 1) focusInterval.second.get<1>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
+                          else if (i == 2) focusInterval.second.get<2>() = gDataHub.GetTimeIntervalOfDate(JulianDate);
+                          else if (i == 3) focusInterval.second.get<3>() = gDataHub.GetTimeIntervalOfEndDate(JulianDate);
+                      }
+                      break;
+                  case DateStringParser::LESSER_PRECISION : {
+                      std::string sBuffer; //Dates in the case/control files must be at least as precise as ePrecision units.
+                      gPrint.Printf("Error: The date '%s' of record %ld in the %s must be precise to %s,\n       as specified by time precision units.\n",
+                                    BasePrint::P_READERROR, Source.GetValueAt(iSourceOffset), Source.GetCurrentRecordIndex(),
+                                    gPrint.GetImpliedFileTypeString().c_str(), GetDatePrecisionAsString(ePrecision, sBuffer, false, false));
+                      bValid = false;
+                  }
+                  case DateStringParser::AMBIGUOUS_YEAR   :
+                  case DateStringParser::INVALID_DATE     :
+                  default                                 :
+                      gPrint.Printf("Error: Invalid date '%s' in the %s, record %ld.\n%s", BasePrint::P_READERROR,
+                                      Source.GetValueAt(iSourceOffset), gPrint.GetImpliedFileTypeString().c_str(), Source.GetCurrentRecordIndex(), DateParser.getLastParseError().c_str());
+                      bValid = false;
+              };
+              ++iSourceOffset;
+          }
+          if (bValid) {// now validate the dates do not conflict each other
+              if (focusInterval.second.get<0>() > focusInterval.second.get<1>() ||
+                  focusInterval.second.get<2>() > focusInterval.second.get<3>() ||
+                  focusInterval.second.get<0>() > focusInterval.second.get<3>()) {
+                  gPrint.Printf("Error: Centroid focus interval dates are conflicting in record %ld of %s.\n", BasePrint::P_READERROR, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                  bValid = false;
+              }
+          }
+          if (bValid) {// now validate the window evaluate clusters given maximum temporal cluster size.
+              if (Source.GetValueAt(iSourceOffset)) {
+                  gPrint.Printf("Error: Extra data found in column %d, record %ld of %s.\n", BasePrint::P_READERROR, iSourceOffset + 1, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
+                  bValid = false;
+              }
+          }
         }
     } catch (prg_exception& x) {
         x.addTrace("ReadIntervalDates()","SaTScanDataReader");
@@ -1050,7 +1059,7 @@ bool SaTScanDataReader::ReadUserSpecifiedNeighbors() {
             else {
               NeighborsSet.set(tLocationIndex);
               vRecordNeighborList.push_back(tLocationIndex);
-            }  
+            }
           }
           else {
             tLocationIndex = gTractHandler.getMetaLocations().getMetaLocationIndex(Source->GetValueAt(uLocation0ffset));

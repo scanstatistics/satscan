@@ -37,10 +37,38 @@ class CentroidHandler : public GInfo {
 
                 GridPoint(const std::vector<double>& Coordinates, unsigned int ordinal) {_point.reset(new Point_t(Coordinates, ordinal));}
                 bool operator<(const GridPoint& rhs) const {
+                    if (*(_point.get()) == *(rhs._point.get())) {
+                        // compare interval range -- they have one
+                        if (_interval_range.get() == 0 && rhs._interval_range.get() == 0) return false;
+                        if (_interval_range.get() == 0) return true;
+                        if (rhs._interval_range.get() == 0) return false;
+                        const IntervalRange_t left(*_interval_range.get());
+                        const IntervalRange_t right(*rhs._interval_range.get());
+                        if (left.get<0>() == right.get<0>()) {
+                            if (left.get<1>() == right.get<1>()) {
+                                if (left.get<2>() == right.get<2>()) {
+                                    return left.get<3>() == right.get<3>() ? false : left.get<3>() < right.get<3>();
+                                } else return left.get<2>() < right.get<2>();
+                            } else return left.get<1>() < right.get<1>();
+                        } else return left.get<0>() < right.get<0>();
+
+                        //return left.get<0>() < right.get<0>() && left.get<1>() < right.get<1>() && left.get<2>() < right.get<2>() && left.get<3>() < right.get<3>();
+                    }
                     return *(_point.get()) < *(rhs._point.get());
                 }
+                bool operator==(const GridPoint& rhs) const {
+                    if (*(_point.get()) == *(rhs._point.get())) {
+                        // compare interval range -- they have one
+                        if (_interval_range.get() == 0 && rhs._interval_range.get() == 0) return true;
+                        if (_interval_range.get() == 0 || rhs._interval_range.get() == 0) return false;
+                        const IntervalRange_t left(*_interval_range.get());
+                        const IntervalRange_t right(*rhs._interval_range.get());
+                        return left.get<0>() == right.get<0>() && left.get<1>() == right.get<1>() && left.get<2>() == right.get<2>() && left.get<3>() == right.get<3>();
+                    }
+                    return false;
+                }
                 bool operator!=(const GridPoint& rhs) const {
-                    return *(_point.get()) != *(rhs._point.get());
+                    return !(*this == rhs);
                 }
         };
         typedef std::vector<GridPoint>      GridPointsContainer_t;
