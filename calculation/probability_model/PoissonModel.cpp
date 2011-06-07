@@ -172,7 +172,7 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
     for (AdjustedTotalMeasure_t=0, i=0; i < DataSet.getIntervalDimension(); ++i)
        for (t=0; t < DataSet.getLocationDimension(); ++t)
           AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
-    if (fabs(AdjustedTotalMeasure_t - DataSet.getTotalMeasure()) > 0.0001)
+    if (fabs(AdjustedTotalMeasure_t - DataSet.getTotalMeasure()) > 0.001)
       throw prg_error("Error: The adjusted total measure '%8.6lf' is not equal to the total measure '%8.6lf'.\n",
                       "AdjustMeasure()", AdjustedTotalMeasure_t, DataSet.getTotalMeasure());
   }
@@ -193,7 +193,7 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
     gDataHub.ValidateObservedToExpectedCases(Set); //validate that observed and expected agree
     AdjustMeasure(Set, *pPopMeasure); // apply adjustments
     Set.setMeasureDataToCumulative(); // now we can make the measure data cummulative
-    if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.0001) // bug check total cases == total measure
+    if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.001) // bug check total cases == total measure
       throw prg_error("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
     if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
