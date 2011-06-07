@@ -150,7 +150,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib;C:\prj\satscan.development\b_9_1\newmat\x64\Debug\newmat.lib;C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\prj\satscan.development\b_9_1\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib;C:\prj\satscan.development\b_9_1\newmat\x64\Debug\newmat.lib;C:\prj\satscan.development\b_9_1\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>

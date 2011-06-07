@@ -55,7 +55,7 @@
                                   for update feature to function correctly */
 #define VERSION_MAJOR   "9"
 #define VERSION_MINOR   "1"
-#define VERSION_RELEASE "1"
+#define VERSION_RELEASE "1.1"
 #define VERSION_PHASE   "" /** testing phase name - leave blank for release */
 #define VERSION_DATE    "March 9, 2011"
 
