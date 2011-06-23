@@ -167,17 +167,11 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, Da
   measure_t             cummeasure=0, TotalMeasure = RealSet.getTotalMeasure(), ** ppMeasure = RealSet.getMeasureData().GetArray();
   count_t               c, d, cumcases=0, ** ppSimCases = SimSet.getCaseData().GetArray();
 
-  //duplicate the  ppMeasure[][] into gpAlternativeMeasure[][], gpAlternativeMeasure[][] will be changed depending upon
-  //the gvRelativeRisks[], and ppMeasure[][] remains the same as the expected measure
-  for (t=0; t < tNumTracts; ++t)
-     for (i=0; i < tNumTimeIntervals; ++i)
-        gAlternativeMeasure.GetArray()[i][t] = ppMeasure[i][t];
-
+  //make a copy of real measure data for manipulation
+  gAlternativeMeasure = RealSet.getMeasureData();
   //initialize the gvRelativeRisks[] to be 1.0
-  for (t=0; t < tNumTracts; ++t)
-     gvRelativeRisks[t] = 1.0;
-
-  //read in the RR's for those tracts with higher risks
+  std::fill(gvRelativeRisks.begin(), gvRelativeRisks.end(), 1.0);
+  //read in the RR's for those tracts with specified risks
   RelativeRiskFile.open(gDataHub.GetParameters().GetAdjustmentsByRelativeRisksFilename().c_str());
   while (!RelativeRiskFile.eof()) {
        RelativeRiskFile >> sTractId;
@@ -186,49 +180,37 @@ void AlternateHypothesisRandomizer::RandomizeData(const RealDataSet& RealSet, Da
         RelativeRiskFile >> gvRelativeRisks[tractIndex];
   }
   RelativeRiskFile.close();
-
   //modify the measures
- for (t=0; t < tNumTracts; ++t) {
+  measure_t ** ppAltMeasure = gAlternativeMeasure.GetArray();
+  for (t=0; t < tNumTracts; ++t) {
      gvMeasure[t] = ppMeasure[0][t];
-     for (i=tNumTimeIntervals-1; i >= 30/* what is this constant? */ ; i--) {
-        if (i == tNumTimeIntervals-1) {//if the last interval, the cummulative measure is the measure itself
-          gvMeasure[t] = gvMeasure[t] + ppMeasure[i][t] * (gvRelativeRisks[t]-1);
-          TotalMeasure = TotalMeasure + ppMeasure[i][t] * (gvRelativeRisks[t]-1);
-          for (j=0; j <= i; ++j)
-             gAlternativeMeasure.GetArray()[j][t] += ppMeasure[i][t] * (gvRelativeRisks[t]-1);
-        }
-        else {
-          //if not the last interval, the measure belongs to the interval  is the difference between
-          //the measure of this interval and the measure for next interval, measure[] and TotalMeasure
-          //should change accordingly.
-          gvMeasure[t] = gvMeasure[t] + (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
-          TotalMeasure = TotalMeasure + (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
-          for (j=0; j <= i; ++j)
-             gAlternativeMeasure.GetArray()[j][t] += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t]-1);
-        }
+     //handle last interval separately, cummulative measure is the measure itself
+     i = tNumTimeIntervals - 1;
+     gvMeasure[t] += ppMeasure[i][t] * (gvRelativeRisks[t] - 1);
+     TotalMeasure += ppMeasure[i][t] * (gvRelativeRisks[t] - 1);
+     for (j=0; j <= i; ++j) ppAltMeasure[j][t] += ppMeasure[i][t] * (gvRelativeRisks[t] - 1);
+     for (i=tNumTimeIntervals-2; tNumTimeIntervals > 1; --i) {
+        gvMeasure[t] += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t] - 1);
+        TotalMeasure += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t] - 1);
+        for (j=0; j <= i; ++j) ppAltMeasure[j][t] += (ppMeasure[i][t] - ppMeasure[i+1][t]) * (gvRelativeRisks[t] - 1);
+        if (i == 0) break;
      }
   }
-
    //start alternative simulations
   for (t=0; t < tNumTracts; ++t) {
     if (TotalMeasure-cummeasure > 0)
-        c = gBinomialGenerator.GetBinomialDistributedVariable(RealSet.getTotalCases() - cumcases,
-                                                              gvMeasure[t] / (TotalMeasure-cummeasure),
-                                                              gRandomNumberGenerator);
+       c = gBinomialGenerator.GetBinomialDistributedVariable(RealSet.getTotalCases() - cumcases, gvMeasure[t] / (TotalMeasure-cummeasure), gRandomNumberGenerator);
     else
-      c = 0;
+       c = 0;
     ppSimCases[0][t] = c;
     cumcases += c;
     cummeasure += gvMeasure[t];
-
-   for (i=0; i < tNumTimeIntervals-1; ++i) {
-       if (gAlternativeMeasure.GetArray()[i][t] > 0)
-        d = gBinomialGenerator.GetBinomialDistributedVariable(ppSimCases[i][t],
-              1 - gAlternativeMeasure.GetArray()[i+1][t] / gAlternativeMeasure.GetArray()[i][t], gRandomNumberGenerator);
-      else
-        d = 0;
-
-      ppSimCases[i+1][t] = ppSimCases[i][t] - d;
+    for (i=0; i < tNumTimeIntervals-1; ++i) {
+       if (ppAltMeasure[i][t] > 0)
+         d = gBinomialGenerator.GetBinomialDistributedVariable(ppSimCases[i][t],  1 - ppAltMeasure[i+1][t] / ppAltMeasure[i][t], gRandomNumberGenerator);
+       else
+         d = 0;
+       ppSimCases[i+1][t] = ppSimCases[i][t] - d;
     }
   }
 }
