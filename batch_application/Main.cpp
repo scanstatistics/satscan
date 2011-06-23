@@ -34,13 +34,13 @@ void __SaTScanExit() {
 void usage_message(std::string program, po::options_description& desc, PrintScreen& console) {
     FileName            exe(program.c_str());
     std::stringstream   message;
-    message << "Usage: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter file> [options]" << std::endl << desc;
+    message << std::endl << "Usage: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter file> [options]" << std::endl << std::endl << desc;
     console.Printf(message.str().c_str(), BasePrint::P_STDOUT);
 }
 
 int main(int argc, char *argv[]) {
-  int                   i;
-  bool                  verifyParameters=false, printParameters=false, oneCPU=false, forceCentric=false, allOut=false, standardPvalue=false;
+  int                   i, limit_threads;
+  bool                  verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false;
   time_t                RunTime;
   CParameters           Parameters;
   std::string           sMessage;
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
                          ("version,v", "Program version")
                          ("parameter-file,f", po::value<std::string>(), "Parameter file")
                          ("results-file,o", po::value<std::string>(), "Results file (overrides parameter file)")
-                         ("one-cpu,s", po::bool_switch(&oneCPU), "One thread execution (overrides parameter file)")
+                         ("limit-threads,l", po::value<int>(&limit_threads)->default_value(0), "Limit threads in simulation.")
                          ("verify-parameters,c", po::bool_switch(&verifyParameters), "Verify parameters only")
                          ("print-parameters,p", po::bool_switch(&printParameters), "Print parameters only");
 
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     /* program options processing */
     if (vm.count("help")) {usage_message(argv[0], generic, Console); return 0;}
     if (vm.count("version")) {Console.Printf("SaTScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
-    if (!vm.count("parameter-file"))  {Console.Printf("Missing input parameter-file.\n", BasePrint::P_ERROR); return 1;}
+    if (!vm.count("parameter-file"))  {Console.Printf("Missing input parameter-file.\n", BasePrint::P_ERROR); usage_message(argv[0], generic, Console); return 1;}
     /* read parameter file */
     if (!ParameterAccessCoordinator(Parameters).Read(vm["parameter-file"].as<std::string>().c_str(), Console))
       throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
     Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     /* override parameter file settings as given in options */
     if (vm.count("results-file")) Parameters.SetOutputFileName(vm["results-file"].as<std::string>().c_str());
-    if (oneCPU) Parameters.SetNumParallelProcessesToExecute(1); 
+    Parameters.SetNumParallelProcessesToExecute(static_cast<unsigned int>(limit_threads));
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY); 
     if (allOut) Parameters.RequestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);
