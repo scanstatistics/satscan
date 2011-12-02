@@ -39,12 +39,11 @@ void usage_message(std::string program, po::options_description& desc, PrintScre
 }
 
 int main(int argc, char *argv[]) {
-  int                   i, limit_threads;
-  bool                  verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false;
-  time_t                RunTime;
-  CParameters           Parameters;
-  std::string           sMessage;
-  PrintScreen           Console(false);
+  bool verifyParameters=false, printParameters=false, forceCentric=false, allOut=false, standardPvalue=false;
+  time_t RunTime;
+  CParameters Parameters;
+  std::string sMessage;
+  PrintScreen Console(false);
   po::variables_map vm;
 
   try {
@@ -57,7 +56,7 @@ int main(int argc, char *argv[]) {
                          ("version,v", "Program version")
                          ("parameter-file,f", po::value<std::string>(), "Parameter file")
                          ("results-file,o", po::value<std::string>(), "Results file (overrides parameter file)")
-                         ("limit-threads,l", po::value<int>(&limit_threads)->default_value(0), "Limit threads in simulation.")
+                         ("limit-threads,l", po::value<int>(), "Limit threads in simulation.")
                          ("verify-parameters,c", po::bool_switch(&verifyParameters), "Verify parameters only")
                          ("print-parameters,p", po::bool_switch(&printParameters), "Print parameters only");
 
@@ -93,7 +92,7 @@ int main(int argc, char *argv[]) {
     Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     /* override parameter file settings as given in options */
     if (vm.count("results-file")) Parameters.SetOutputFileName(vm["results-file"].as<std::string>().c_str());
-    Parameters.SetNumParallelProcessesToExecute(static_cast<unsigned int>(limit_threads));
+    if (vm.count("limit-threads")) Parameters.SetNumParallelProcessesToExecute(vm["limit-threads"].as<int>());
     if (forceCentric) Parameters.SetExecutionType(CENTRICALLY); 
     if (allOut) Parameters.RequestAllAdditionalOutputFiles();
     if (standardPvalue) Parameters.SetPValueReportingType(STANDARD_PVALUE);
@@ -104,6 +103,9 @@ int main(int argc, char *argv[]) {
     /* additional program options processing */
     if (printParameters) {ParametersPrint(Parameters).Print(stdout); return 0;}
     if (verifyParameters) {Console.Printf("Parameters confirmed.\n", BasePrint::P_STDOUT); return 0;}
+
+
+    //ParameterAccessCoordinator(Parameters).Write(vm["parameter-file"].as<std::string>().c_str(), Console);
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis
