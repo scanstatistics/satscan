@@ -5,10 +5,12 @@
 #include "Parameters.h"
 #include "Randomizer.h"
 #include "SSException.h"
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 102;
+const int CParameters::giNumParameters 	              = 108;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -20,9 +22,6 @@ CParameters::CParameters(const CParameters &other) {
    SetAsDefaulted();
    Copy(other);
 }
-
-/** Destructor */
-CParameters::~CParameters() {}
 
 /** Overload assignment operator */
 CParameters &CParameters::operator=(const CParameters &rhs) {
@@ -132,6 +131,12 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geTimeTrendType                        != rhs.geTimeTrendType) return false;
   if (gbReportRank                           != rhs.gbReportRank) return false;
   if (gbPrintAsciiHeaders                    != rhs.gbPrintAsciiHeaders) return false;
+  if (geOptSpatialClusterSizeType            != rhs.geOptSpatialClusterSizeType) return false;  
+  if (gvSpatialWindowStops                   != rhs.gvSpatialWindowStops) return false;
+  if (gbOptSpatialClusterSizeCutOffPValue    != rhs.gbOptSpatialClusterSizeCutOffPValue) return false;
+  if (geOptSpatialClusterSizeReportType      != rhs.geOptSpatialClusterSizeReportType) return false;
+  if (_reportCoefficientsAscii               != rhs._reportCoefficientsAscii) return false;
+  if (_reportCoefficientsDBase               != rhs._reportCoefficientsDBase) return false; 
 
   return true;
 }
@@ -155,6 +160,14 @@ void CParameters::AddEllipsoidRotations(int iRotations, bool bEmptyFirst) {
 void CParameters::AddEllipsoidShape(double dShape, bool bEmptyFirst) {
   if (bEmptyFirst) gvEllipseShapes.clear();
   gvEllipseShapes.push_back(dShape);
+}
+
+void CParameters::AddSpatialWindowStop(double windowStop, bool bEmptyFirst) {
+  if (bEmptyFirst) gvSpatialWindowStops.clear();
+  gvSpatialWindowStops.push_back(windowStop);
+  // ensure that window stops are ascending
+  std::sort(gvSpatialWindowStops.begin(), gvSpatialWindowStops.end());
+  _executeSpatialWindowStops.clear();
 }
 
 /** Adds string that defines observable region to internal collection. */
@@ -306,6 +319,12 @@ void CParameters::Copy(const CParameters &rhs) {
   geTimeTrendType                        = rhs.geTimeTrendType;
   gbReportRank                           = rhs.gbReportRank;
   gbPrintAsciiHeaders                    = rhs.gbPrintAsciiHeaders;
+  geOptSpatialClusterSizeType            = rhs.geOptSpatialClusterSizeType;
+  gvSpatialWindowStops                   = rhs.gvSpatialWindowStops; _executeSpatialWindowStops.clear();
+  gbOptSpatialClusterSizeCutOffPValue    = rhs.gbOptSpatialClusterSizeCutOffPValue;
+  geOptSpatialClusterSizeReportType      = rhs.geOptSpatialClusterSizeReportType;
+  _reportCoefficientsAscii               = rhs._reportCoefficientsAscii;
+  _reportCoefficientsDBase               = rhs._reportCoefficientsDBase;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -329,6 +348,19 @@ unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
       return (GetNumReplicationsRequested() + 1)/20;
   }
   return giEarlyTermThreshold;
+}
+
+const std::vector<double> & CParameters::getExecuteSpatialWindowStops() const {
+  if (_executeSpatialWindowStops.size()) return _executeSpatialWindowStops; // already calculated
+  if (optimizeSpatialClusterSize()) {
+    for (std::vector<double>::const_iterator itr=gvSpatialWindowStops.begin(); itr != gvSpatialWindowStops.end(); ++itr) {
+        if (*itr <= gdMaxSpatialSizeInPopulationAtRisk)
+            _executeSpatialWindowStops.push_back(*itr);
+    }  
+    std::sort(_executeSpatialWindowStops.begin(), _executeSpatialWindowStops.end());
+  } else
+    _executeSpatialWindowStops.resize(1, GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
+  return _executeSpatialWindowStops;
 }
 
 /** Returns the scanning area type used during execution. For the normal model,
@@ -492,6 +524,7 @@ void CParameters::SetMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, dou
     case PERCENTOFMAXCIRCLEFILE : bReported ? gdMaxSpatialSizeInMaxCirclePopulationFile_Reported = d : gdMaxSpatialSizeInMaxCirclePopulationFile = d; break;
     default : throw prg_error("Unknown type '%d'.\n", "GetMaxSpatialSizeForType()", eSpatialSizeType);
   };
+  _executeSpatialWindowStops.clear();
 }
 
 /** Returns whether early termination option is set. */
@@ -533,6 +566,8 @@ void CParameters::RequestAllAdditionalOutputFiles() {
    }
    SetOutputSimLogLikeliRatiosAscii(true);
    SetOutputSimLogLikeliRatiosDBase(true);
+   setOutputCoefficientsAscii(optimizeSpatialClusterSize());
+   setOutputCoefficientsDBase(optimizeSpatialClusterSize());
 }
 
 /** Sets whether maximum spatial cluster size is restricted by given type and whether retriction is for real or simulations. */
@@ -675,17 +710,9 @@ void CParameters::SetAsDefaulted() {
   gbOutputRelativeRisksAscii               = false;
   geSpatialWindowType                      = CIRCULAR;
   gvEllipseShapes.clear();
-  gvEllipseShapes.push_back(1.5);
-  gvEllipseShapes.push_back(2);
-  gvEllipseShapes.push_back(3);
-  gvEllipseShapes.push_back(4);
-  gvEllipseShapes.push_back(5);
+  gvEllipseShapes += 1.5,2,3,4,5;
   gvEllipseRotations.clear();
-  gvEllipseRotations.push_back(4);
-  gvEllipseRotations.push_back(6);
-  gvEllipseRotations.push_back(9);
-  gvEllipseRotations.push_back(12);
-  gvEllipseRotations.push_back(15);
+  gvEllipseRotations += 4,6,9,12,15;
   glTotalNumEllipses = 0;
   for (size_t t=0; t < gvEllipseRotations.size(); ++t)
      glTotalNumEllipses += gvEllipseRotations[t];
@@ -748,6 +775,13 @@ void CParameters::SetAsDefaulted() {
   geTimeTrendType = LINEAR;
   gbReportRank = false;
   gbPrintAsciiHeaders = false;
+  gvSpatialWindowStops.clear();
+  gvSpatialWindowStops += 2,5,10,15,20,25,30,40,50; //1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
+  geOptSpatialClusterSizeType = OPT_GINI; // OPT_NONE;
+  gbOptSpatialClusterSizeCutOffPValue = 0.05;
+  geOptSpatialClusterSizeReportType = MAX_SIZE_PLUS_MAXIMIZED_GINI;
+  _reportCoefficientsAscii = false;
+  _reportCoefficientsDBase = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -765,6 +799,13 @@ void CParameters::SetExecutionType(ExecutionType eExecutionType) {
   if (AUTOMATIC > eExecutionType || CENTRICALLY < eExecutionType)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetExecutionType()", eExecutionType, AUTOMATIC, CENTRICALLY);
   geExecutionType = eExecutionType;
+}
+
+/** Sets gini reporting type. */
+void CParameters::SetOptSpatialClusterSizeReportType(OptSpatialClusterSizeReportType e) {
+  if (ALL_GINI > e || MAXIMIZED_GINI < e)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "SetOptSpatialClusterSizeReportType()", e, ALL_GINI, MAXIMIZED_GINI);
+  geOptSpatialClusterSizeReportType = e;
 }
 
 /** Sets clusters to include type. Throws exception if out of range. */
@@ -946,11 +987,6 @@ void  CParameters::SetSpatialWindowType(SpatialWindowType eSpatialWindowType) {
   geSpatialWindowType = eSpatialWindowType;
 }
 
-/** Set p-value that is cut-off for Iterative scans. */
-void CParameters::SetIterativeCutOffPValue(double dPValue) {
-  gbIterativeCutOffPValue = dPValue;
-}
-
 /** Sets filename of file used to load parameters. */
 void CParameters::SetSourceFileName(const char * sParametersSourceFileName) {
   //Use FileName class to ensure that a relative path is expanded to absolute path.
@@ -1079,6 +1115,10 @@ bool CParameters::UseCoordinatesFile() const {
     } else {
         return !UseLocationNeighborsFile();
     }
+}
+
+bool CParameters::optimizeSpatialClusterSize() const {
+    return geOptSpatialClusterSizeType != OPT_NONE && !GetIsPurelyTemporalAnalysis(); // TODO: more restrictions?            
 }
 
 /** Returns indication of whether current parameter settings indicate that the max circle file should be read. */

@@ -23,7 +23,7 @@ class C_ST_PS_PT_Analysis : public C_ST_PS_Analysis {
     C_ST_PS_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PS_PT_Analysis();
 
-    virtual void                FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual void                FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_Collections_t& TopClustersContainers);
 };
 //*************************************************************************
 #endif

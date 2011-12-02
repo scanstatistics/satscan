@@ -19,9 +19,9 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
                             gPrimaryNeighbors((CALCULATE_NEIGHBORS_METHOD)0,0), 
 							gSecondaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
 							gTertiaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
-                            gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
-							gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
-							gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0) {
+                            gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
+							gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
+							gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()) {
   gvCentroidToLocationDistances.resize(gLocationInfo.getNumLocationCoordinates());
   SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
@@ -38,9 +38,9 @@ CentroidNeighborCalculator::CentroidNeighborCalculator(const CSaTScanData& DataH
                             gPrimaryNeighbors((CALCULATE_NEIGHBORS_METHOD)0,0), 
 							gSecondaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
 							gTertiaryNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
-                            gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
-							gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0), 
-							gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,0) {
+                            gPrimaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
+							gSecondaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()), 
+							gTertiaryReportedNeighbors((CALCULATE_NEIGHBORS_LIMIT_METHOD)0,std::vector<measure_t>()) {
   gvCentroidToLocationDistances.resize(DataHub.GetTInfo()->getNumLocationCoordinates());
   SetupPopulationArrays(DataHub);
   //calculate reported and actual maximum spatial clusters sizes
@@ -54,11 +54,13 @@ CentroidNeighborCalculator::~CentroidNeighborCalculator() {}
 /** Adjusts neighbor counts such that elements at prNeigborsCount.first and prNeigborsCount.second do
     not reference the same coordinates as the element after them. Doing this ensures that all locations
     that reference the same coordinate are either included or excluded in spatial window. */
-void CentroidNeighborCalculator::AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, int>& prNeigborsCount) {
+void CentroidNeighborCalculator::AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, std::vector<int> >& prNeigborsCount) {
   if (gParameters.GetMultipleCoordinatesType() != ONEPERLOCATION) {
-    bool bCalcSecond = prNeigborsCount.first != prNeigborsCount.second;
     prNeigborsCount.first = getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.first);
-    prNeigborsCount.second = (bCalcSecond ? getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.second) : prNeigborsCount.first);
+
+    //bool bCalcSecond = prNeigborsCount.first != prNeigborsCount.second;
+    for (size_t t=0; t < prNeigborsCount.second.size(); ++t)
+       prNeigborsCount.second[t] = getAdjustedNeighborCountsForMultipleCoordinates(prNeigborsCount.second[t]);
   }
 }
 
@@ -85,22 +87,26 @@ void CentroidNeighborCalculator::CalculateEllipticCoordinates(tract_t tEllipseOf
 void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize(const CSaTScanData& dataHub) {
   measure_t               tPopulation, tTotalPopulation=0;
   const DataSetHandler  & DataSetHandler = dataHub.GetDataSetHandler();
-  SecondaryCalcPair_t   * pNextToSet = &gPrimaryReportedNeighbors;
+  ReportedCalcPair_t   * pNextToSet = &gPrimaryReportedNeighbors;
 
-  if (!gParameters.GetRestrictingMaximumReportedGeoClusterSize()) return;
+  if (!(gParameters.GetRestrictingMaximumReportedGeoClusterSize() || gParameters.optimizeSpatialClusterSize())) return;
 
   if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
      const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(&DataSetHandler);
      if (!pHandler)
-       throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","CalculateMaximumSpatialClusterSize()");
+       throw prg_error("Could not cast to HomogeneousPoissonDataSetHandler type.","CalculateMaximumReportedSpatialClusterSize()");
      //Calculate the maximum circle radius as percentage of total area in regions.
-     measure_t maxRadius = sqrt(pHandler->getTotalArea()/PI);
-      maxRadius *= (gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0);
-     //If also restricting max size by fixed distance, take the minimum value of the two.
-     if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true))
-         maxRadius = std::min(gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), maxRadius);
-      pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-      pNextToSet->second = maxRadius;
+     measure_t tempMaxRadius = sqrt(pHandler->getTotalArea()/PI);
+     std::vector<measure_t> maximums;
+     for (size_t t=0; t < gParameters.getExecuteSpatialWindowStops().size(); ++t) {
+        double maxRadius = tempMaxRadius * (gParameters.getExecuteSpatialWindowStops()[t] / 100.0);
+        //If also restricting max size by fixed distance, take the minimum value of the two.
+        if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true))
+            maxRadius = std::min(gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), maxRadius);
+        maximums.push_back(maxRadius);
+     }
+     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
+     pNextToSet->second = maximums;
      return; // homogeneous poisson only uses this property during neighbors calculation
   }
 
@@ -122,19 +128,23 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize(cons
        tTotalPopulation += tPopulation;
     }
     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByPopulationAtRisk;
-    pNextToSet->second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true) / 100.0) * tTotalPopulation;
+    std::vector<measure_t> maximums;
+    for (size_t t=0; t < gParameters.getExecuteSpatialWindowStops().size(); ++t) {
+        maximums.push_back((gParameters.getExecuteSpatialWindowStops()[t] / 100.0) * tTotalPopulation);
+    }
+    pNextToSet->second = maximums;
     pNextToSet = &gSecondaryReportedNeighbors;
   }
   if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
     //set maximum circle size based upon percentage of population defined in maximum circle size file
     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByMaxCirclePopulation;
-    pNextToSet->second = (gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) / 100.0) * dataHub.GetMaxCirclePopulationSize();
+    pNextToSet->second = std::vector<measure_t>(1, (gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true) / 100.0) * dataHub.GetMaxCirclePopulationSize());
     pNextToSet = pNextToSet == &gPrimaryReportedNeighbors ? &gSecondaryReportedNeighbors : &gTertiaryReportedNeighbors;
   }
   //set maximum circle size based upon a distance
   if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
     pNextToSet->first = &CentroidNeighborCalculator::CalculateNumberOfNeighboringLocationsByDistance;
-    pNextToSet->second = gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true);
+    pNextToSet->second = std::vector<measure_t>(1, gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true));
   }
 }
 
@@ -211,7 +221,7 @@ void CentroidNeighborCalculator::CalculateMaximumSpatialClusterSize(const CSaTSc
 void CentroidNeighborCalculator::CalculateNeighbors(const CSaTScanData& dataHub) {
   try {
     if (gParameters.UseLocationNeighborsFile()) {
-      std::pair<int, int>   prNeighborsCount;
+      std::pair<int, std::vector<int> >   prNeighborsCount;
       boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
       gPrintDirection.Printf("Calculating maximum circles\n", BasePrint::P_STDOUT);
       //Calculate maximum neighboring locations about each centroid for circular regions
@@ -273,7 +283,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
 /** Calculates neighboring locations about centroid for given ellipse offset and centroid;
     storing results in CentroidNeighbors object. */
 void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex, CentroidNeighbors& Centroid) {
-  std::pair<int, int> prNeighborsCount;
+  std::pair<int, std::vector<tract_t> > prNeighborsCount;
 
   CalculateNeighborsAboutCentroid(tEllipseOffsetIndex, tCentroidIndex);
   CalculateNeighborsForCurrentState(prNeighborsCount);
@@ -317,7 +327,7 @@ void CentroidNeighborCalculator::CalculateNeighborsAboutCentroid(tract_t tEllips
     storing results in sorted array contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByCircles(const CSaTScanData& dataHub) {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-  std::pair<int, int>   prNeighborsCount;
+  std::pair<int, std::vector<tract_t> >   prNeighborsCount;
 
   gPrintDirection.Printf("Constructing the circles\n", BasePrint::P_STDOUT);
   //Calculate neighboring locations about each centroid for circular regions
@@ -335,7 +345,7 @@ void CentroidNeighborCalculator::CalculateNeighborsByCircles(const CSaTScanData&
     results in multiple dimension arrays contained in CSaTScanData object. */
 void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData& dataHub) {
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-  std::pair<int, int>   prNeighborsCount;
+  std::pair<int, std::vector<int> >   prNeighborsCount;
 
   //only perform calculation if ellipses requested
   if (!gParameters.GetSpatialWindowType() == ELLIPTIC)
@@ -356,7 +366,36 @@ void CentroidNeighborCalculator::CalculateNeighborsByEllipses(const CSaTScanData
 }
 
 /** Given current state of class data members, calculates the number of neighbors in real data and simulation data. */
-void CentroidNeighborCalculator::CalculateNeighborsForCurrentState(std::pair<int, int>& prNeigborsCount) const {
+void CentroidNeighborCalculator::CalculateNeighborsForCurrentState(std::pair<int, std::vector<int> >& prNeigborsCount) const {
+  prNeigborsCount.first = (this->*gPrimaryNeighbors.first)(gPrimaryNeighbors.second);
+  if (gSecondaryNeighbors.first) {
+    prNeigborsCount.first = (this->*gSecondaryNeighbors.first)(gSecondaryNeighbors.second, prNeigborsCount.first);
+    if (gTertiaryNeighbors.first)
+      prNeigborsCount.first = (this->*gTertiaryNeighbors.first)(gTertiaryNeighbors.second, prNeigborsCount.first);
+  }
+  prNeigborsCount.second.clear();
+  if (gPrimaryReportedNeighbors.first) {
+     int numNeighbors = prNeigborsCount.first;
+     std::vector<double> SWS(gPrimaryReportedNeighbors.second);
+     std::reverse(SWS.begin(),SWS.end()); // ----> if GINI, then [2,5,10 ..., 50] else [user specified max e.g. 50%]
+     for (size_t i=0; i < SWS.size(); ++i) {
+         numNeighbors = (this->*gPrimaryReportedNeighbors.first)( SWS[i], numNeighbors );
+         if (gSecondaryReportedNeighbors.first) {
+             numNeighbors = (this->*gSecondaryReportedNeighbors.first)(gSecondaryReportedNeighbors.second.back(), numNeighbors);
+             if (gTertiaryReportedNeighbors.first)
+                numNeighbors = (this->*gTertiaryReportedNeighbors.first)(gTertiaryReportedNeighbors.second.back(), numNeighbors);
+         }
+         prNeigborsCount.second.push_back( numNeighbors );
+     }
+     std::reverse(prNeigborsCount.second.begin(),prNeigborsCount.second.end());
+  } else {
+      prNeigborsCount.second.push_back(prNeigborsCount.first);
+  }
+}
+
+
+/** Given current state of class data members, calculates the number of neighbors in real data and simulation data. */
+/*void CentroidNeighborCalculator::CalculateNeighborsForCurrentState(std::pair<int, int>& prNeigborsCount) const {
   prNeigborsCount.first = (this->*gPrimaryNeighbors.first)(gPrimaryNeighbors.second);
   if (gSecondaryNeighbors.first) {
     prNeigborsCount.first = (this->*gSecondaryNeighbors.first)(gSecondaryNeighbors.second, prNeigborsCount.first);
@@ -369,7 +408,7 @@ void CentroidNeighborCalculator::CalculateNeighborsForCurrentState(std::pair<int
     if (gTertiaryReportedNeighbors.first)
       prNeigborsCount.second = (this->*gTertiaryReportedNeighbors.first)(gTertiaryReportedNeighbors.second, prNeigborsCount.second);
   }
-}
+}*/
 
 
 /** Calculates the number of neighboring locations as defined in gvCentroidToLocationDistances
@@ -511,7 +550,7 @@ void CentroidNeighborCalculator::CenterLocationDistancesAbout(tract_t tEllipseOf
     at the same time, as one location. This method relies on gvCentroidToLocationDistances being
     sorted by distance from target ellipse/centroid and that locations referencing the same coordinates
     are adjacent to each other. */
-void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int, int>& prNeighborsCount) {
+void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int, std::vector<int> >& prNeighborsCount) {
   if (gParameters.GetMultipleCoordinatesType() == ONEPERLOCATION) return;
   std::vector<LocationDistance>::iterator tGroupStart=gvCentroidToLocationDistances.begin(), tGroupEnd=gvCentroidToLocationDistances.end();
   for (int tCurrent=0; tCurrent < prNeighborsCount.first; ++tCurrent) {
@@ -535,8 +574,10 @@ void CentroidNeighborCalculator::CoupleLocationsAtSameCoordinates(std::pair<int,
       //adjust actual neighbor count to account for grouped locations
       prNeighborsCount.first -= indexes.size() - 1;
       //adjust reported neighbor count for grouped locations if insertion point overlapped with reported neighbors
-      if (tCurrent < prNeighborsCount.second) //tCurrent is pointing to inserted meta location
-        prNeighborsCount.second -= std::min((size_t)prNeighborsCount.second, indexes.size() - 1);
+      for (size_t t=0; t < prNeighborsCount.second.size(); ++t) {
+        if (tCurrent < prNeighborsCount.second[t]) //tCurrent is pointing to inserted meta location
+            prNeighborsCount.second[t] -= std::min((size_t)prNeighborsCount.second[t], indexes.size() - 1);
+      }
     }
     else {
       ++tGroupStart;//advance group start

@@ -27,6 +27,7 @@ class MinimalGrowthArray {
      void            clear() {delete[] gpArray; gpArray=0; giSize=0;}
      bool            exists(const T& x) const;
      std::vector<T>& get(std::vector<T>& v) const;
+     void            set(const std::vector<T>& v);
      unsigned int    size() const {return giSize;}
 };
 
@@ -66,6 +67,13 @@ std::vector<T>& MinimalGrowthArray<T>::get(std::vector<T>& v) const {
   for (unsigned int i=0; i < giSize; ++i) 
       v[i] = gpArray[i];
   return v;
+}
+
+template <class T>
+void MinimalGrowthArray<T>::set(const std::vector<T>& v) {
+  giSize = v.size();
+  gpArray = new T[giSize];
+  for (unsigned int i=0; i < giSize; ++i) gpArray[i] = v[i];
 }
 
 template <class T>

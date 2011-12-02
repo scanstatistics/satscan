@@ -186,6 +186,10 @@ std::string & ClusterScatterChart::getClusterLegend(const CCluster& cluster, int
 
 /** Returns random HTML color. */
 std::string& ClusterScatterChart::changeColor(std::string& s, long i, RandomNumberGenerator & rng) {
+
+  static const char * firstColors[] = {"ffd700", "DFDF20", "9ACD32", "DF9020", "DF4020", "DF2020", "008000", "008080", "0000ff", "154890"};
+  //http://www.colorcombos.com/combotester.html?color0=ffd700&color1=DFDF20&color2=9ACD32&color3=DF9020&color4=DF4020&color5=DF2020&color6=008000&color7=008080%20&color8=0000ff%20&color9=154890
+
   static long border = 360, border2 = 270;
   long r, g, b; 
   bool lights, darks;

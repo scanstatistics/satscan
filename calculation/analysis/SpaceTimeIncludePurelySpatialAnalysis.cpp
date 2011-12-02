@@ -8,7 +8,7 @@
 
 /** Constructor */
 C_ST_PS_Analysis::C_ST_PS_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                 :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection), gPSTopShapeClusters(DataHub), gPSPTopShapeClusters(DataHub) {}
+                 :CSpaceTimeAnalysis(Parameters, DataHub, PrintDirection), _PSTopShapeClusters(DataHub), _PSPTopShapeClusters(DataHub) {}
 
 /** Destructor */
 C_ST_PS_Analysis::~C_ST_PS_Analysis() {}
@@ -39,7 +39,7 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway &
     CSpaceTimeAnalysis::AllocateTopClustersObjects(DataGateway);
     //create comparator cluster for purely spatial cluster
     gPSClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, DataGateway));
-    gPSTopShapeClusters.SetTopClusters(*gPSClusterComparator);
+    _PSTopShapeClusters.setTopClusters(*gPSClusterComparator);
   }
   catch (prg_exception& x) {
     x.addTrace("AllocateTopClustersObjects()","C_ST_PS_Analysis");
@@ -50,36 +50,44 @@ void C_ST_PS_Analysis::AllocateTopClustersObjects(const AbstractDataSetGateway &
 /** Returns cluster centered at grid point nCenter, with the greatest log likelihood
     ratio. Caller should not assume that returned reference is persistent, but should
     either call Clone() method or overloaded assignment operator. */
-const CCluster& C_ST_PS_Analysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
-  int                   j;
-
+const SharedClusterVector_t C_ST_PS_Analysis::CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
   //re-initialize clusters
-  if (gPSClusterComparator.get()) gPSTopShapeClusters.Reset(tCenter);
-  if (gPSPClusterComparator.get()) gPSPTopShapeClusters.Reset(tCenter);
-  gTopShapeClusters.Reset(tCenter);
+  _topClusters.reset(tCenter);
+  if (gPSClusterComparator.get()) _PSTopShapeClusters.reset(tCenter);
+  if (gPSPClusterComparator.get()) _PSPTopShapeClusters.reset(tCenter);
   gTimeIntervals->setIntervalRange(tCenter);
-  for (j=0 ;j <= gParameters.GetNumTotalEllipses(); ++j) {
-     CentroidNeighbors CentroidDef(j, gDataHub);
-     CentroidDef.Set(tCenter);
+  for (int j=0 ;j <= gParameters.GetNumTotalEllipses(); ++j) {
+     CentroidNeighbors CentroidDef(j, gDataHub, tCenter);
+     _topClusters.resetNeighborCounts(j);
+    if (gPSClusterComparator.get()) _PSTopShapeClusters.resetNeighborCounts(j);
+    if (gPSPClusterComparator.get()) _PSPTopShapeClusters.resetNeighborCounts(j);
      gClusterComparator->Initialize(tCenter);
      gClusterComparator->SetEllipseOffset(j, gDataHub);
      if (gPSClusterComparator.get()) {
        gPSClusterComparator->Initialize(tCenter);
        gPSClusterComparator->SetEllipseOffset(j, gDataHub);
-       gPSClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gPSTopShapeClusters.GetTopCluster(j), *gpLikelihoodCalculator);
+       gPSClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _PSTopShapeClusters.getClusterSet(j), *gpLikelihoodCalculator);
      }
      else {
        gPSPClusterComparator->Initialize(tCenter);
        gPSPClusterComparator->SetEllipseOffset(j, gDataHub);
-       gPSPClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gPSPTopShapeClusters.GetTopCluster(j), *gpLikelihoodCalculator);
+       gPSPClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _PSPTopShapeClusters.getClusterSet(j), *gpLikelihoodCalculator);
      }
-     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, gTopShapeClusters.GetTopCluster(j), *gTimeIntervals);
+     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(j), *gTimeIntervals);
   }
-  return GetTopCalculatedCluster();
+  SharedClusterVector_t topClusters, psClusters;
+  _topClusters.getTopClusters(topClusters);
+  if (gPSClusterComparator.get()) _PSTopShapeClusters.getTopClusters(psClusters);
+  if (gPSPClusterComparator.get()) _PSPTopShapeClusters.getTopClusters(psClusters);
+  for (size_t t=0; t < topClusters.size(); ++t) {
+      if (psClusters[t]->ClusterDefined() && std::fabs(psClusters[t]->m_nRatio - topClusters[t]->m_nRatio) > DBL_CMP_TOLERANCE && psClusters[t]->m_nRatio > topClusters[t]->m_nRatio)
+        topClusters[t] = psClusters[t];
+  }
+  return topClusters;
 }
 
-/** returns top cluster calculated during 'FindTopClsuters()' routine */
-const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
+/** returns top cluster calculated during 'FindTopClusters()' routine */
+/*const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
   try {
     CCluster& PSCluster = gPSClusterComparator.get() ? (CCluster&)gPSTopShapeClusters.GetTopCluster() : (CCluster&)gPSPTopShapeClusters.GetTopCluster();
     CCluster& STCluster = (CCluster&)gTopShapeClusters.GetTopCluster();
@@ -94,7 +102,7 @@ const CCluster & C_ST_PS_Analysis::GetTopCalculatedCluster() {
     x.addTrace("GetTopCalculatedCluster()","C_ST_PS_Analysis");
     throw;
   }
-}
+}*/
 
 /** Returns loglikelihood for Monte Carlo replication. */
 double C_ST_PS_Analysis::MonteCarlo(const DataSetInterface & Interface) {

@@ -4,6 +4,7 @@
 //*****************************************************************************
 #include "cluster.h"
 #include "ClusterData.h"
+#include "IntermediateClustersContainer.h"
 
 /** Purely spatial monotone cluster */
 class CPSMonotoneCluster : public CCluster {
@@ -25,7 +26,7 @@ class CPSMonotoneCluster : public CCluster {
     void                        AllocateForMaxCircles(tract_t nCircles) {gpClusterData->AllocateForMaxCircles(nCircles);}
     void                        CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                            const CentroidNeighbors& CentroidDef,
-                                                                           CPSMonotoneCluster& TopCluster,
+                                                                           CClusterSet& clusterSet,
                                                                            AbstractLikelihoodCalculator& Calculator);
     virtual bool                ClusterDefined() const {return gpClusterData->m_nSteps > 0;}
     virtual void                CopyEssentialClassMembers(const CCluster& rhs) {*this = (CPSMonotoneCluster&)rhs;}

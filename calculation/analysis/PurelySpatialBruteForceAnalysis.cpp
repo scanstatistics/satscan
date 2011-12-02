@@ -10,7 +10,7 @@
 
 /** Constructor */
 CPurelySpatialBruteForceAnalysis::CPurelySpatialBruteForceAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                       :AbstractBruteForceAnalysis(Parameters, DataHub, PrintDirection), gTopShapeClusters(DataHub) {}
+                       :AbstractBruteForceAnalysis(Parameters, DataHub, PrintDirection), _topClusters(DataHub) {}
 
 /** Destructor */
 CPurelySpatialBruteForceAnalysis::~CPurelySpatialBruteForceAnalysis(){}
@@ -35,7 +35,7 @@ void CPurelySpatialBruteForceAnalysis::AllocateSimulationObjects(const AbstractD
 void CPurelySpatialBruteForceAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {
   try {
     gClusterComparator.reset(new PurelySpatialHomogeneousPoissonCluster(DataGateway));
-    gTopShapeClusters.SetTopClusters(*gClusterComparator);
+    _topClusters.setTopClusters(*gClusterComparator);
     gCentroidCalculator.reset(new CentroidNeighborCalculator(gDataHub, gPrintDirection));
   }
   catch (prg_exception& x) {
@@ -47,8 +47,8 @@ void CPurelySpatialBruteForceAnalysis::AllocateTopClustersObjects(const Abstract
 /** Returns cluster centered at grid point nCenter, with the greatest loglikelihood ratio.
     Caller should not assume that returned reference is persistent, but should either call
     Clone() method or overloaded assignment operator. */
-const CCluster& CPurelySpatialBruteForceAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
-  gTopShapeClusters.Reset(tCenter);
+const SharedClusterVector_t CPurelySpatialBruteForceAnalysis::CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
+  _topClusters.reset(tCenter);
   gNeighborInfo.killAll();
   const CentroidNeighborCalculator::LocationDistContainer_t& locDist = gCentroidCalculator->getLocationDistances();
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
@@ -56,11 +56,10 @@ const CCluster& CPurelySpatialBruteForceAnalysis::CalculateTopCluster(tract_t tC
      gCentroidCalculator->CalculateNeighborsAboutCentroid(j, tCenter, *gNeighborInfo.back());
      gClusterComparator->Initialize(tCenter);
      gClusterComparator->SetEllipseOffset(j, gDataHub);
-     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, *gNeighborInfo.back(), locDist,
-                                                                    gTopShapeClusters.GetTopCluster(j),
-                                                                    *gpLikelihoodCalculator);
+     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, *gNeighborInfo.back(), locDist, _topClusters.getClusterSet(j), *gpLikelihoodCalculator);
   }
-  return gTopShapeClusters.GetTopCluster();
+  SharedClusterVector_t topClusters;
+  return _topClusters.getTopClusters(topClusters);
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */

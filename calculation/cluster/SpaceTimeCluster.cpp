@@ -11,8 +11,7 @@ CSpaceTimeCluster::CSpaceTimeCluster(const AbstractClusterDataFactory * pCluster
   try {
     Init();
     Setup(pClusterFactory, DataGateway);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("constructor()","CSpaceTimeCluster");
     throw;
   }
@@ -26,8 +25,7 @@ CSpaceTimeCluster::CSpaceTimeCluster(const CSpaceTimeCluster& rhs)
     Init();
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     delete gpClusterData;
     x.addTrace("copy constructor()","CSpaceTimeCluster");
     throw;
@@ -36,10 +34,7 @@ CSpaceTimeCluster::CSpaceTimeCluster(const CSpaceTimeCluster& rhs)
 
 /** destructor */
 CSpaceTimeCluster::~CSpaceTimeCluster() {
-  try {
-    delete gpClusterData;
-  }
-  catch(...){}
+  try { delete gpClusterData; } catch(...){}
 }
 
 /** overloaded assignment operator */
@@ -103,20 +98,18 @@ count_t CSpaceTimeCluster::GetObservedCountForTract(tract_t tTractIndex, const C
   return tCaseCount;
 }
 
-/** Adds neighbor tract data from DataGateway to cluster data accumulation and
-    evaluates for significant clusterings. Assigns greastest clustering to 'TopCluster'. */
+/** Adds neighbor location data from DataGateway to cluster data accumulation and calculates loglikelihood ratio. 
+    Updates cluster set given current state of this cluster object. */
 void CSpaceTimeCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway & DataGateway,
                                                                    const CentroidNeighbors& CentroidDef,
-                                                                   CSpaceTimeCluster& TopCluster,
+                                                                   CClusterSet& clusterSet,
                                                                    CTimeIntervals& TimeIntervals) {
-  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
-                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
-  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
-
-  for (t=0; t < tNumNeighbors; ++t) {
+  tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+  for (tract_t t=0, tNumNeighbors = CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
     ++m_nTracts;
     gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
-    TimeIntervals.CompareClusters(*this, TopCluster);
+    TimeIntervals.CompareClusterSet(*this, clusterSet);
   }
 }
 
@@ -134,8 +127,7 @@ void CSpaceTimeCluster::Initialize(tract_t nCenter) {
 void CSpaceTimeCluster::Setup(const AbstractClusterDataFactory * pClusterFactory, const AbstractDataSetGateway & DataGateway) {
   try {
     gpClusterData = pClusterFactory->GetNewSpaceTimeClusterData(DataGateway);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     delete gpClusterData;
     x.addTrace("Setup()","CSpaceTimeCluster");
     throw;

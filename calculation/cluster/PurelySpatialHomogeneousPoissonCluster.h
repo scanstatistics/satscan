@@ -6,6 +6,7 @@
 #include "UtilityFunctions.h"
 #include "MeasureList.h"
 #include "ClusterData.h"
+#include "IntermediateClustersContainer.h"
 
 /** cluster class for purely spatial analysis and purely spatial cluster
     of space-time analysis */
@@ -26,7 +27,7 @@ class PurelySpatialHomogeneousPoissonCluster : public CCluster {
     void                                CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                    const CentroidNeighbors& CentroidDef,
                                                                                    const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
-                                                                                   PurelySpatialHomogeneousPoissonCluster& TopCluster,
+                                                                                   CClusterSet& clusterSet,
                                                                                    AbstractLikelihoodCalculator& Calculator);
     virtual void                        CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;

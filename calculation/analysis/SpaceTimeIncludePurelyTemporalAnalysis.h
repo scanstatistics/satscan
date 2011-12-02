@@ -26,7 +26,7 @@ class C_ST_PT_Analysis : public CSpaceTimeAnalysis {
     C_ST_PT_Analysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~C_ST_PT_Analysis();
 
-    virtual void                FindTopClusters(const AbstractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual void                FindTopClusters(const AbstractDataSetGateway & DataGateway, MLC_Collections_t& TopClustersContainers);
 };
 //******************************************************************************
 #endif

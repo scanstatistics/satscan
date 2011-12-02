@@ -38,10 +38,7 @@ PurelySpatialHomogeneousPoissonCluster::PurelySpatialHomogeneousPoissonCluster(c
 
 /** destructor */
 PurelySpatialHomogeneousPoissonCluster::~PurelySpatialHomogeneousPoissonCluster() {
-  try {
-    delete gpClusterData;
-  }
-  catch (...){}  
+  try { delete gpClusterData; } catch (...){}  
 }
 
 /** overloaded assignment operator */
@@ -74,30 +71,22 @@ void PurelySpatialHomogeneousPoissonCluster::CopyEssentialClassMembers(const CCl
   gpClusterData->CopyEssentialClassMembers(*(rhs.GetClusterData()));
 }
 
-/** Adds neighbor location data from DataGateway to cluster data accumulation and
-    calculates loglikelihood ratio. If ratio is greater than that of TopCluster,
-    assigns TopCluster to 'this'. */
+/** Adds neighbor location data from DataGateway to cluster data accumulation and calculates loglikelihood ratio. 
+    Updates cluster set given current state of this cluster object. */
 void PurelySpatialHomogeneousPoissonCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                        const CentroidNeighbors& CentroidDef,
                                                                        const CentroidNeighborCalculator::LocationDistContainer_t& locDist,
-                                                                       PurelySpatialHomogeneousPoissonCluster& TopCluster,
+                                                                       CClusterSet& clusterSet,
                                                                        AbstractLikelihoodCalculator& Calculator) {
-  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
-                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
-  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
-  measure_t             tAdjustment = DataGateway.GetDataSetInterface().GetTotalMeasureAuxCount();
-
-  for (t=0; t < tNumNeighbors; ++t) {
-    //update cluster data
+  measure_t tAdjustment = DataGateway.GetDataSetInterface().GetTotalMeasureAuxCount();
+  for (tract_t t=0, tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
     ++m_nTracts;
-    //gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     gpClusterData->gtCases = m_nTracts;
     gpClusterData->gtMeasure = pow(locDist[t].GetDistance(),2.0) * PI * tAdjustment;
-    //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
-    if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster.CopyEssentialClassMembers(*this);
-  }    
+    clusterSet.update(*this);
+  }
+  clusterSet.maximizeClusterSet();
 }
 
 /** returns newly cloned CPurelySpatialCluster */

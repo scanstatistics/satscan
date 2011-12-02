@@ -236,6 +236,8 @@ void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(MAXGEODISTANCE_REPORTED));
     WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE_REPORTED, GetParameterString(USE_MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE_REPORTED));
     WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
+    WriteIniParameter(WriteFile, OPTIMIZE_CLUSTER_CUTOFF, GetParameterString(OPTIMIZE_CLUSTER_CUTOFF, s).c_str(), GetParameterComment(OPTIMIZE_CLUSTER_CUTOFF));
+    WriteIniParameter(WriteFile, OPTIMIZE_CLUSTER_REPORT_TYPE, GetParameterString(OPTIMIZE_CLUSTER_REPORT_TYPE, s).c_str(), GetParameterComment(OPTIMIZE_CLUSTER_REPORT_TYPE));
   }
   catch (prg_exception& x) {
     x.addTrace("WriteClustersReportedSettings()","IniParameterFileAccess");
@@ -418,6 +420,8 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
+    WriteIniParameter(WriteFile, OUTPUT_COEFFICIENTS_ASCII, GetParameterString(OUTPUT_COEFFICIENTS_ASCII, s).c_str(), GetParameterComment(OUTPUT_COEFFICIENTS_ASCII));
+    WriteIniParameter(WriteFile, OUTPUT_COEFFICIENTS_DBASE, GetParameterString(OUTPUT_COEFFICIENTS_DBASE, s).c_str(), GetParameterComment(OUTPUT_COEFFICIENTS_DBASE));
   }
   catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
@@ -508,7 +512,9 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
   std::string  s;
 
   try {
-    WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s).c_str(), GetParameterComment(MAXGEOPOPATRISK));
+    WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s).c_str(), GetParameterComment(MAXGEOPOPATRISK));    
+    WriteIniParameter(WriteFile, OPTIMIZE_SPATIAL_SIZE, GetParameterString(OPTIMIZE_SPATIAL_SIZE, s).c_str(), GetParameterComment(OPTIMIZE_SPATIAL_SIZE));
+    WriteIniParameter(WriteFile, WINDOW_STOPS, GetParameterString(WINDOW_STOPS, s).c_str(), GetParameterComment(WINDOW_STOPS));
     WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s).c_str(), GetParameterComment(MAXGEOPOPFILE));
     WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s).c_str(), GetParameterComment(MAXGEODISTANCE));
     WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE));

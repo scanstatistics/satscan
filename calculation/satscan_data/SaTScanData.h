@@ -33,7 +33,8 @@ class CSaTScanData {
     void                                        AllocateSortedArray();
     void                                        AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
                                                                              int iEllipseIndex, tract_t iCentroidIndex,
-                                                                             tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
+                                                                             const std::vector<tract_t>& vMaxReported, 
+                                                                             tract_t iNumMaximumNeighbors);
     void                                        AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const std::vector<tract_t>& vLocations);
     void                                        Init();
     virtual void                                SetProbabilityModel() = 0;
@@ -49,6 +50,7 @@ class CSaTScanData {
     std::auto_ptr<TractHandler>                 gTractHandler;
     tract_t                                  ** gppActiveNeighborArray;
     TwoDimensionArrayHandler<tract_t>         * gpReportedNeighborCountHandler;
+    TwoDimensionArrayHandler<MinimalGrowthArray<tract_t> > * gpReportedMaximumsNeighborCountHandler;
     TwoDimensionArrayHandler<tract_t>         * gpNeighborCountHandler;
     ThreeDimensionArrayHandler<tract_t>       * gpSortedIntHandler;
     ThreeDimensionArrayHandler<unsigned short>* gpSortedUShortHandler;
@@ -88,7 +90,7 @@ class CSaTScanData {
     virtual void                                SetIntervalStartTimes();
     void                                        SetMeasureByTimeIntervalArray();
     void                                        SetMeasureByTimeIntervalArray(measure_t ** pNonCumulativeMeasure);
-    void                                        setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors);
+    void                                        setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, const std::vector<tract_t>& vMaxReported, tract_t iNumMaximumNeighbors);
     void                                        SetPurelyTemporalCases();
     virtual void                                SetTimeIntervalRangeIndexes();
 
@@ -126,6 +128,9 @@ class CSaTScanData {
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius=-1) const;
     inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
+
+    inline MinimalGrowthArray<tract_t>       ** GetReportedNeighborMaxsCountArray() const {return gpReportedMaximumsNeighborCountHandler->GetArray();}
+
     inline size_t                               GetNumDataSets() const {return gDataSets->GetNumDataSets();}
     inline tract_t                              GetNumMetaTracts() const {return (tract_t)gTractHandler->getMetaLocations().getLocations().size();}
     inline tract_t                              GetNumMetaTractsReferenced() const {return (tract_t)gTractHandler->getMetaLocations().getNumReferencedLocations();}
@@ -212,7 +217,8 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
     //first, look for neighbor information in store
     if (!gvCentroidNeighborStore.size())
       gvCentroidNeighborStore.resize(m_nGridTracts, 0);
-    if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
+    // check the centroid neighbor store but only if the not calculating gini coeficients and ellipse/centroid match that of stored
+    if (!gParameters.optimizeSpatialClusterSize() &&  gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
       return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
     else {//else calculate
       delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;

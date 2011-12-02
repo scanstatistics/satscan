@@ -47,6 +47,9 @@ void ClusterKML::renderKML() {
     for (int i=0; i < _clusters.GetNumClustersRetained(); ++i) {
        //get reference to i'th top cluster
        const CCluster& cluster = _clusters.GetCluster(i);
+       //skip purely temporal clusters
+       if (cluster.GetClusterType() == PURELYTEMPORALCLUSTER)
+           continue;
        if (!(i == 0 || (i < tNumClustersToDisplay && cluster.m_nRatio >= gdMinRatioToReport && (_simVars.get_sim_count() == 0 || cluster.GetRank() <= _simVars.get_sim_count()))))
            break;
        //write cluster details to 'cluster information' file

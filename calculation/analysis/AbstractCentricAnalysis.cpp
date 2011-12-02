@@ -5,14 +5,15 @@
 #include "cluster.h"
 #include "AbstractCentricAnalysis.h"
 #include "MeasureList.h"
-#include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
 #include "Toolkit.h"
 #include "SSException.h"
 
 /** constructor */
 AbstractCentricAnalysis::AbstractCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection)
-                        :AbstractAnalysis(Parameters, Data, PrintDirection) {}
+                        :AbstractAnalysis(Parameters, Data, PrintDirection) {
+  gRetainedClusters.resize(Parameters.getExecuteSpatialWindowStops().size());
+}
                         
 /** destructor */
 AbstractCentricAnalysis::~AbstractCentricAnalysis() {}
@@ -25,7 +26,7 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
                                                     const AbstractDataSetGateway& RealDataGateway,
                                                     const DataSetGatewayContainer_t& vSimDataGateways) {
   try {
-    CentroidNeighbors   CentroidDef;
+    CentroidNeighbors CentroidDef;
 
     for (int iEllipseIndex=0; iEllipseIndex <= gParameters.GetNumTotalEllipses(); ++iEllipseIndex) {
        //calculate neigbor about current centroid
@@ -44,10 +45,12 @@ void AbstractCentricAnalysis::ExecuteAboutCentroid(tract_t tCentroidIndex,
          macroRunTimeStopSerial();
        }
     }
-    gRetainedClusters.push_back(GetTopCalculatedCluster().Clone());
-    gRetainedClusters.back()->DeallocateEvaluationAssistClassMembers();
-  }
-  catch (prg_exception& x) {
+    const SharedClusterVector_t topClusters(GetTopCalculatedClusters());
+    for (size_t t=0; t < topClusters.size(); ++t) {
+        gRetainedClusters.at(t).push_back(topClusters.at(t).get()->Clone());
+        gRetainedClusters.at(t).back()->DeallocateEvaluationAssistClassMembers();
+    }
+  } catch (prg_exception& x) {
     x.addTrace("ExecuteAboutCentroid()","AbstractCentricAnalysis");
     throw;
   }
@@ -68,15 +71,18 @@ void AbstractCentricAnalysis::ExecuteSimulationsAboutCentroidDefinition(const Ce
 /** Retrieves calculated most likely clusters. After successful retrieval of clusters,
     ownership of cluster objects in gRetainedClusters class member will have been
     given to MostLikelyClustersContainer object and gRetainedClusters will be empty. */
-void AbstractCentricAnalysis::RetrieveClusters(MostLikelyClustersContainer& TopClustersContainer) {
-  ClustersContainer_t::iterator itr=gRetainedClusters.begin(), itr_end=gRetainedClusters.end();
-  std::auto_ptr<CCluster>       Cluster;
+void AbstractCentricAnalysis::RetrieveClusters(MLC_Collections_t& topClustersContainers) {
+    ClustersContainer_t::iterator itr=gRetainedClusters.begin(), itr_end=gRetainedClusters.end();
+    std::auto_ptr<CCluster> Cluster;
 
-  for (; itr != itr_end; ++itr) {
-     Cluster.reset(*itr); *itr = 0;
-     TopClustersContainer.Add(Cluster);
-  }
-  gRetainedClusters.clear();
+    for (size_t s=0; s < gRetainedClusters.size(); ++s) {
+        ptr_vector<CCluster>& clusters = gRetainedClusters[s];
+        for (size_t t=0; t < clusters.size(); ++t) {
+            Cluster.reset(clusters[t]); clusters[t] = 0;
+            topClustersContainers[s].Add(Cluster);
+        }
+    }
+    gRetainedClusters.clear();
 }
 
 /** Retrieves calculated loglikehood ratio from class CalculatedRatioContainer_t object.

@@ -778,12 +778,10 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
                                        "Please check inequalities and/or redefine to not have overlap.");
         }
     }
-  }
-  catch (region_exception& x) {
+  } catch (region_exception& x) {
     PrintDirection.Printf("Invalid Parameter Setting:\n%s\n", BasePrint::P_PARAMERROR, x.what());
     bReturn=false;
-  } 
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateContinuousPoissonParameters()","ParametersValidate");
     throw;
   }
@@ -813,9 +811,14 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING, 
                             ParametersPrint(gParameters).GetAnalysisTypeAsString());
     }
-
-  } 
-  catch (prg_exception& x) {
+    if (gParameters.getOutputCoefficientsFiles() && !gParameters.optimizeSpatialClusterSize()) {
+      const_cast<CParameters&>(gParameters).setOutputCoefficientsAscii(false);
+      const_cast<CParameters&>(gParameters).setOutputCoefficientsDBase(false);
+      PrintDirection.Printf("Parameter Setting Warning:\n"
+                            "The additional output file for coefficients of optimized spatial cluster sizes is not permitted with current parameter settings.\nThe option was disabled.\n", 
+                            BasePrint::P_WARNING);
+    }
+  } catch (prg_exception& x) {
     x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
     throw;
   }
@@ -846,8 +849,7 @@ bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDire
                               BasePrint::P_PARAMERROR, std::numeric_limits<double>::max());
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidatePowerCalculationParameters()","ParametersValidate");
     throw;
   }
@@ -1097,6 +1099,18 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
   try {
     //validate spatial options
     if (!gParameters.GetIsPurelyTemporalAnalysis()) {
+      //restricting reported cluster sizes and gini calculations are not compatible 
+      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.optimizeSpatialClusterSize()) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe option to restrict the maximum reported spatial cluster size\n, "
+                              "cannot be used when also selecting to calcuation GINI coefficients.", BasePrint::P_PARAMERROR);
+      }
+      //iterative scan and gini calculations are not compatible 
+      if (gParameters.GetIsIterativeScanning() && gParameters.optimizeSpatialClusterSize()) {
+        bValid = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe option to perform the iterative scan statistic\n, "
+                              "cannot be used when also selecting to calcuation GINI coefficients.", BasePrint::P_PARAMERROR);
+      }
       //validate maximum is specified as a pecentage of population at risk when using neighbors file
       if (gParameters.UseLocationNeighborsFile() && gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
         bValid = false;

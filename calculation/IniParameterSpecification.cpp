@@ -37,7 +37,7 @@ const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Fea
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {
-  Build_9_0_x_ParameterList();
+  Build_9_2_x_ParameterList();
 }
 
 /** constructor -- builds specification for read process */
@@ -87,8 +87,10 @@ IniParameterSpecification::IniParameterSpecification(const IniFile& SourceFile, 
     Build_8_0_x_ParameterList();
   else if (Version.iMajor == 8  && Version.iMinor == 2)
     Build_8_2_x_ParameterList();
-  else
+  else if (Version.iMajor == 9  && Version.iMinor == 0)
     Build_9_0_x_ParameterList();
+  else
+    Build_9_2_x_ParameterList();
 }
 
 /** destructor */
@@ -194,7 +196,7 @@ void IniParameterSpecification::Build_5_0_x_ParameterList() {
    paramter file, we need to move sections around accordingly.
    NOTE: The (const char *) cast is needed for gcc 2.96 or less, but otherwise is irrelevant. */
 void IniParameterSpecification::Build_5_1_x_ParameterList() {
-  // Order in vector is essential - should identical to ParameterType enumeration.
+  // Order in vector is essential - should be identical to ParameterType enumeration.
   gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"AnalysisType"));
   gvParameterInfo.push_back(std::make_pair(Analysis, (const char*)"ScanAreas"));
   gvParameterInfo.push_back(std::make_pair(Input, (const char*)"CaseFile"));
@@ -359,7 +361,7 @@ void IniParameterSpecification::Build_8_2_x_ParameterList() {
   gvParameterInfo[REPLICAS - 1] = std::make_pair(Inference, (const char*)"MonteCarloReps");
 }
 
-/** Version 8.3.x */
+/** Version 9.0.x */
 void IniParameterSpecification::Build_9_0_x_ParameterList() {
   Build_8_2_x_ParameterList();
 
@@ -370,6 +372,18 @@ void IniParameterSpecification::Build_9_0_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(SpaceAndTimeAdjustments, (const char*)"TimeTrendType"));
   gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"ReportClusterRank"));  
   gvParameterInfo.push_back(std::make_pair(AdditionalOutput, (const char*)"PrintAsciiColumnHeaders"));  
+}
+
+/** Version 9.2.x */
+void IniParameterSpecification::Build_9_2_x_ParameterList() {
+  Build_9_0_x_ParameterList();
+
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"OptimizeSpatialClusterSizeType"));
+  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"OptimizingSpatialClusterSizes"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniPValueCutOff"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniReportType"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ReportOptimizedSpatialCoefficientsASCII"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ReportOptimizedSpatialCoefficientsDBASE"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

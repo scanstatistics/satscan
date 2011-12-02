@@ -22,13 +22,14 @@ class CentroidNeighborCalculator {
     typedef tract_t (CentroidNeighborCalculator:: *CALCULATE_NEIGHBORS_LIMIT_METHOD) (measure_t, count_t) const;
     typedef std::pair<CALCULATE_NEIGHBORS_METHOD, measure_t> PrimaryCalcPair_t;
     typedef std::pair<CALCULATE_NEIGHBORS_LIMIT_METHOD, measure_t> SecondaryCalcPair_t;
+    typedef std::pair<CALCULATE_NEIGHBORS_LIMIT_METHOD, std::vector<measure_t> > ReportedCalcPair_t;
 
     PrimaryCalcPair_t           gPrimaryNeighbors;
     SecondaryCalcPair_t         gSecondaryNeighbors;
     SecondaryCalcPair_t         gTertiaryNeighbors;
-    SecondaryCalcPair_t         gPrimaryReportedNeighbors;
-    SecondaryCalcPair_t         gSecondaryReportedNeighbors;
-    SecondaryCalcPair_t         gTertiaryReportedNeighbors;
+    ReportedCalcPair_t         gPrimaryReportedNeighbors;
+    ReportedCalcPair_t         gSecondaryReportedNeighbors;
+    ReportedCalcPair_t         gTertiaryReportedNeighbors;
     const measure_t           * gpPopulation;
     const measure_t           * gpMaxCircleFilePopulation;
     const CParameters         & gParameters;
@@ -43,14 +44,17 @@ class CentroidNeighborCalculator {
     std::vector<double>         gvEllipseAngles;
     std::vector<double>         gvEllipseShapes; 
 
-    void                        AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, int>& prNeighborsCount);
+    void                        AdjustedNeighborCountsForMultipleCoordinates(std::pair<int, std::vector<int> >& prNeighborsCount);
     void                        CalculateEllipticCoordinates(tract_t tEllipseOffset);
     void                        CalculateMaximumSpatialClusterSize(const CSaTScanData& dataHub);
     void                        CalculateMaximumReportedSpatialClusterSize(const CSaTScanData& dataHub);
     void                        CalculateNeighborsAboutCentroid(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
     void                        CalculateNeighborsByCircles(const CSaTScanData& dataHub);
     void                        CalculateNeighborsByEllipses(const CSaTScanData& dataHub);
-    void                        CalculateNeighborsForCurrentState(std::pair<int, int>& prNeigborsCount) const;
+
+    void                        CalculateNeighborsForCurrentState(std::pair<int, std::vector<int> >& prNeigborsCount) const;
+    //void                        CalculateNeighborsForCurrentState(std::pair<int, int>& prNeigborsCount) const;
+
     tract_t                     CalculateNumberOfNeighboringLocationsByDistance(measure_t tMaximumSize) const;
     tract_t                     CalculateNumberOfNeighboringLocationsByDistance(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
     tract_t                     CalculateNumberOfNeighboringLocationsByMaxCirclePopulation(measure_t tMaximumSize) const;
@@ -58,7 +62,7 @@ class CentroidNeighborCalculator {
     tract_t                     CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize) const;
     tract_t                     CalculateNumberOfNeighboringLocationsByPopulationAtRisk(measure_t tMaximumSize, count_t tMaximumNeighbors) const;
     void                        CenterLocationDistancesAbout(tract_t tEllipseOffsetIndex, tract_t tCentroidIndex);
-    void                        CoupleLocationsAtSameCoordinates(std::pair<int, int>& prNeighborsCount);
+    void                        CoupleLocationsAtSameCoordinates(std::pair<int, std::vector<int> >& prNeighborsCount);
     int                         getAdjustedNeighborCountsForMultipleCoordinates(int iNeigborsCount);
     double                      GetEllipseAngle(int iEllipseIndex) const;
     double                      GetEllipseShape(int iEllipseIndex) const;

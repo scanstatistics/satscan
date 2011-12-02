@@ -102,6 +102,8 @@ class MultiSetSVTTClusterData : public AbtractSVTTClusterData {
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
 };
 
+class CClusterSet;
+
 /** cluster class for spatial variation and temporal trends analysis */
 class CSVTTCluster : public CCluster  {
   public:
@@ -117,12 +119,10 @@ class CSVTTCluster : public CCluster  {
 
 
     void                        AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway & DataGateway);
-//    void                        AddNeighbor(tract_t tNeighbor, const DataSetInterface & Interface);
     void                        CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                            const CentroidNeighbors& CentroidDef,
-                                                                           CSVTTCluster& TopCluster,
+                                                                           CClusterSet& clusterSet,
                                                                            AbstractLikelihoodCalculator& Calculator);
-
     virtual CSVTTCluster      * Clone() const;
     virtual void                DisplayAnnualTimeTrendWithoutTitle(FILE* fp) const;
     virtual void                DisplayTimeFrame(FILE* fp, const CSaTScanData& Data, const AsciiPrintFormat& PrintFormat) const {};

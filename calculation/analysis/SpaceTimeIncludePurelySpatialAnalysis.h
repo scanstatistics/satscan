@@ -15,23 +15,21 @@ class ProspectiveSpatialData;
 /** Derives from base class to re-define methods for a space-time analysis that
     include purely spatial clusters. */
 class C_ST_PS_Analysis : public CSpaceTimeAnalysis {
-  typedef IntermediateClustersContainer<CPurelySpatialCluster>            intermediate_ps_clusters_t;
-  typedef IntermediateClustersContainer<CPurelySpatialProspectiveCluster> intermediate_psp_clusters_t;
-    
   protected:
-//    SpatialData                       * gpPSClusterData;
+    //SpatialData                       * gpPSClusterData;
     std::auto_ptr<CPurelySpatialCluster>            gPSClusterComparator;
-    intermediate_ps_clusters_t                      gPSTopShapeClusters;
-//    ProspectiveSpatialData            * gpPSPClusterData;
+    // ProspectiveSpatialData            * gpPSPClusterData;
     std::auto_ptr<CPurelySpatialProspectiveCluster> gPSPClusterComparator;
-    intermediate_psp_clusters_t                     gPSPTopShapeClusters;
     std::auto_ptr<AbstractSpatialClusterData>       gAbstractPSClusterData; /** cluster data object utilized in calculated simulation ratio */
     std::auto_ptr<AbstractTemporalClusterData>      gAbstractPSPClusterData;
 
+    CClusterSetCollections                          _PSTopShapeClusters;
+    CClusterSetCollections                          _PSPTopShapeClusters;
+
+
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway);
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway);
-    virtual const CCluster            & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
-    virtual const CCluster            & GetTopCalculatedCluster();
+    virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
     virtual double                      MonteCarlo(const DataSetInterface & Interface);
     virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
     double                              MonteCarloProspective(const DataSetInterface & Interface);

@@ -32,23 +32,27 @@ void C_ST_PS_PT_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway
 /** Given data gate way, calculates and collects most likely clusters about
     each grid point. Collection of clusters are sorted by loglikelihood ratio
     and condensed based upon overlapping parameter settings.                */
-void C_ST_PS_PT_Analysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void C_ST_PS_PT_Analysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_Collections_t& TopClustersContainers) {
   IncludeClustersType           eIncludeClustersType;
 
   //calculate top cluster over all space-time
-  C_ST_PS_Analysis::FindTopClusters(DataGateway, TopClustersContainer);
+  C_ST_PS_Analysis::FindTopClusters(DataGateway, TopClustersContainers);
   //detect user cancellation
   if (gPrintDirection.GetIsCanceled())
     return;
   //calculate top purely temporal cluster
   eIncludeClustersType = (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gParameters.GetIncludeClustersType());
   //create cluster objects
-  CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
   CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+  CClusterSet clusterSet;
+  CClusterObject clusterObject(ClusterComparator);
+  clusterSet.add(clusterObject);
   //iterate through time intervals - looking for top purely temporal cluster
   gTimeIntervals->resetIntervalRange();
-  gTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
-  TopClustersContainer.Add(TopCluster);
+  gTimeIntervals->CompareClusterSet(ClusterComparator, clusterSet);
+  // add purely temporal cluster to each cluster collection
+  for (MLC_Collections_t::iterator itr=TopClustersContainers.begin(); itr != TopClustersContainers.end(); ++itr)
+     itr->Add(clusterSet.get(0).getCluster());
 }
 
 /** Returns loglikelihood for Monte Carlo replication. */

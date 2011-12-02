@@ -59,7 +59,7 @@ private://data members
   result_registration_fn_type               gfnRegisterResult;
   overflow_jobs_container_type              gmapOverflowResults;//contains unprocesed results for jobs, sorted by jobid.
   const boost::posix_time::ptime            gConstructionTime;
-  MostLikelyClustersContainer             & grMLCs;
+  MLC_Collections_t                       & grMLCs;
   PrintQueue                              & grPrintDirection;
   const char                              * gszReplicationFormatString;
   std::auto_ptr<LoglikelihoodRatioWriter>   gRatioWriter;
@@ -81,7 +81,7 @@ public:
   stsMCSimJobSource(
     CParameters const & rParameters
    ,boost::posix_time::ptime CurrentTime
-   ,MostLikelyClustersContainer & rMLCs
+   ,MLC_Collections_t & rMLCs
    ,PrintQueue & rPrintDirection
    ,const char * szReplicationFormatString
    ,AnalysisRunner & rRunner

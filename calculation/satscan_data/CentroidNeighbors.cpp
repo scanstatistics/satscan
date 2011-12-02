@@ -41,7 +41,7 @@ CentroidNeighbors::CentroidNeighbors()
                    gppSortedNeighborsUnsignedShortType(0), gpNeighborArray(0) {}
 
 /** constructor */
-CentroidNeighbors::CentroidNeighbors(tract_t tEllipseOffset, const CSaTScanData& DataHub)
+CentroidNeighbors::CentroidNeighbors(tract_t tEllipseOffset, const CSaTScanData& DataHub, tract_t tCentroid)
                   : gtCentroid(0), gtEllipseOffset(tEllipseOffset), giNeighbors(0), giMaxNeighbors(0),
                     giMaxReportedNeighbors(0), gpSortedNeighborsIntegerType(0),
                     gpSortedNeighborsUnsignedShortType(0), gppSortedNeighborsIntegerType(0),
@@ -52,6 +52,7 @@ CentroidNeighbors::CentroidNeighbors(tract_t tEllipseOffset, const CSaTScanData&
     gppSortedNeighborsIntegerType = DataHub.GetSortedArrayAsTract_T(gtEllipseOffset);
   else
     gppSortedNeighborsUnsignedShortType = DataHub.GetSortedArrayAsUShort_T(gtEllipseOffset);
+  if (tCentroid >= 0) Set(tCentroid);
 }
 
 /** destructor */
@@ -65,7 +66,7 @@ CentroidNeighbors::~CentroidNeighbors() {}
     Allocates vector of either integers or unsigned shorts, based upon specified number of
     neighbors for centroid (iNumNeighbors). Sets maxium number of neighbors variable returned
     through GetNumNeighbors() method to that of 'iNumReportedNeighbors' variable. */
-void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, int iNumReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations) {
+void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumNeighbors, const std::vector<tract_t>& maxReportedNeighbors, const std::vector<LocationDistance>& vOrderedLocations) {
 
   //conditionally allocate unsigned short vs tract_t
   if (vOrderedLocations.size() < (size_t)std::numeric_limits<unsigned short>::max()) {
@@ -84,6 +85,7 @@ void CentroidNeighbors::Set(tract_t tEllipseOffset, tract_t tCentroid, int iNumN
   gtCentroid = tCentroid;
   gtEllipseOffset = tEllipseOffset;
   giMaxNeighbors = iNumNeighbors;
-  giNeighbors = giMaxReportedNeighbors = iNumReportedNeighbors;
+  giNeighbors = giMaxReportedNeighbors = maxReportedNeighbors.back();
+  gvMaxReportedNeighbors = maxReportedNeighbors;
 }
 

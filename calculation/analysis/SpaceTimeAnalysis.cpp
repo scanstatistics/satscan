@@ -9,7 +9,7 @@
 
 /** Constructor */
 CSpaceTimeAnalysis::CSpaceTimeAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                   :CAnalysis(Parameters, DataHub, PrintDirection), gTopShapeClusters(DataHub) {}
+                   :CAnalysis(Parameters, DataHub, PrintDirection), _topClusters(DataHub) {}
 
 /** Destructor */
 CSpaceTimeAnalysis::~CSpaceTimeAnalysis() {}
@@ -47,7 +47,7 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
     //create cluster object used as comparator when iterating over centroids and time intervals
     gClusterComparator.reset(new CSpaceTimeCluster(gpClusterDataFactory, DataGateway));
     //initialize list of top circle/ellipse clusters
-    gTopShapeClusters.SetTopClusters(*gClusterComparator);
+    _topClusters.setTopClusters(*gClusterComparator);
   }
   catch (prg_exception& x) {
     x.addTrace("AllocateTopClustersObjects()","CSpaceTimeAnalysis");
@@ -55,27 +55,20 @@ void CSpaceTimeAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway
   }
 }
 
-/** Returns cluster centered at grid point nCenter, with the greatest log
-    likelihood ratio . Caller should not assume that returned reference is
-    persistent, but should either call Clone() method or overloaded assignment
-    operator. */
-const CCluster& CSpaceTimeAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
-  tract_t               k;
-
-  gTopShapeClusters.Reset(tCenter);
+/** Calculates the top clusters about centroid and returns collection for each spatial expansion stop. */
+const SharedClusterVector_t CSpaceTimeAnalysis::CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway& DataGateway) {
+  _topClusters.reset(tCenter);
   gTimeIntervals->setIntervalRange(tCenter);
   //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
-  for (k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-     CentroidNeighbors CentroidDef(k, gDataHub);
-     CentroidDef.Set(tCenter);
+  for (tract_t k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
+     CentroidNeighbors CentroidDef(k, gDataHub, tCenter);
+     _topClusters.resetNeighborCounts(k);
      gClusterComparator->Initialize(tCenter);
      gClusterComparator->SetEllipseOffset(k, gDataHub);
-     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway,
-                                                                    CentroidDef,
-                                                                    gTopShapeClusters.GetTopCluster(k),
-                                                                    *gTimeIntervals);
+     gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(k), *gTimeIntervals);
   }
-  return gTopShapeClusters.GetTopCluster();
+  SharedClusterVector_t topClusters;
+  return _topClusters.getTopClusters(topClusters);
 }
 
 /** Returns loglikelihood ratio for Monte Carlo replication using same algorithm as real data. */

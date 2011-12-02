@@ -86,10 +86,35 @@ class MostLikelyClustersContainer {
                                   return pCluster1->m_nRatio > pCluster2->m_nRatio;
                                 }
     };
+    class CompareClustersObservedDivExpected {
+       private:
+           const CSaTScanData & _DataHub;
+           bool _classic;
 
+       public:
+         CompareClustersObservedDivExpected(const CSaTScanData& DataHub, bool classic) : _DataHub(DataHub), _classic(classic) {}
+         bool                   operator() (const CCluster* pCluster1, const CCluster* pCluster2)
+                                {
+                                  if (_classic) {   
+                                    double lhsExpected = pCluster1->GetRelativeRisk(_DataHub, 0);
+                                    double rhsExpected = pCluster2->GetRelativeRisk(_DataHub, 0);
+                                    if (macro_equal(lhsExpected,rhsExpected,DBL_CMP_TOLERANCE))
+                                        return pCluster1->GetRatio() > pCluster2->GetRatio();
+                                    return lhsExpected < rhsExpected;
+                                  }
+                                  else {
+                                    double lhsExpected = pCluster1->GetObservedDivExpected(_DataHub, 0);
+                                    double rhsExpected = pCluster2->GetObservedDivExpected(_DataHub, 0);
+                                    if (macro_equal(lhsExpected,rhsExpected,DBL_CMP_TOLERANCE))
+                                        return pCluster1->GetRatio() > pCluster2->GetRatio();
+                                    return lhsExpected > rhsExpected;
+                                  }
+                                }
+    };
     ptr_vector<CCluster>        gvTopClusterList;
     static unsigned long        MAX_RANKED_CLUSTERS;
     static unsigned long        MAX_BRUTE_FORCE_LOCATIONS;
+    double                      _maximum_window_size;
 
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
@@ -99,18 +124,22 @@ class MostLikelyClustersContainer {
     void                        SortTopClusters();
 
   public:
-    MostLikelyClustersContainer();
-    ~MostLikelyClustersContainer();
+    MostLikelyClustersContainer(double maximum_window_size);
 
     void                        Add(const CCluster& Cluster);
     void                        Add(std::auto_ptr<CCluster>& pCluster);
     void                        Empty();
     tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
+    double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
+    double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
     const CCluster            & GetTopRankedCluster() const;
+    double                      getMaximumWindowSize() const {return _maximum_window_size;}
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
     void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection);
     void                        UpdateTopClustersRank(double r);
 };
+
+typedef std::vector<MostLikelyClustersContainer> MLC_Collections_t;
 //***************************************************************************
 #endif

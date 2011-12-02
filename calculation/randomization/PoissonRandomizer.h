@@ -69,7 +69,7 @@ class CSaTScanData; /** forward class declaration */
     !!! This unit has note been thoughly tested, especially with multiple datasets. !!! */
 class AlternateHypothesisRandomizer : public PoissonRandomizer {
   protected:
-    std::vector<float>                          gvRelativeRisks;
+    std::vector<double>                         gvRelativeRisks;
     std::vector<measure_t>                      gvMeasure;
     TwoDimensionArrayHandler<measure_t>         gAlternativeMeasure;
     CSaTScanData                              & gDataHub;

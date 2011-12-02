@@ -34,23 +34,25 @@ void C_ST_PT_Analysis::AllocateSimulationObjects(const AbstractDataSetGateway & 
     all possible time intervals - populates top cluster array with most likely
     cluster about each grid point plus , possible, one more for purely temporal
     cluster. */
-void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void C_ST_PT_Analysis::FindTopClusters(const AbstractDataSetGateway & DataGateway, MLC_Collections_t& TopClustersContainers) {
   IncludeClustersType           eIncludeClustersType;
 
   try {
     //calculate top cluster over all space-time
-    CSpaceTimeAnalysis::FindTopClusters(DataGateway, TopClustersContainer);
+    CSpaceTimeAnalysis::FindTopClusters(DataGateway, TopClustersContainers);
     //detect user cancellation
     if (gPrintDirection.GetIsCanceled())
       return;
     eIncludeClustersType = (gParameters.GetAnalysisType() == PROSPECTIVESPACETIME ? ALIVECLUSTERS : gParameters.GetIncludeClustersType());
-    //create top cluster
-    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //create comparator cluster
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
+    CClusterSet clusterSet;
+    CClusterObject clusterObject(ClusterComparator);
+    clusterSet.add(clusterObject);
     gTimeIntervals->resetIntervalRange();
-    gTimeIntervals->CompareClusters(ClusterComparator, TopCluster);
-    TopClustersContainer.Add(TopCluster);
+    gTimeIntervals->CompareClusterSet(ClusterComparator, clusterSet);
+    for (MLC_Collections_t::iterator itr = TopClustersContainers.begin(); itr != TopClustersContainers.end(); ++itr)
+       itr->Add(clusterSet.get(0).getCluster());
   }
   catch (prg_exception& x) {
     x.addTrace("FindTopClusters()","C_ST_PT_Analysis");

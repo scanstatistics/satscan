@@ -20,17 +20,17 @@ class CPurelyTemporalAnalysis : public CAnalysis {
     void                          Setup();
 
   protected:
-    virtual void                  AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
-    virtual void                  AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {/*nop*/}
-    virtual const CCluster     &  CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
-    virtual double                MonteCarlo(const DataSetInterface& Interface);
-    virtual double                MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+    virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway& DataGateway);
+    virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway& DataGateway) {/*nop*/}
+    virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway& DataGateway);
+    virtual double                      MonteCarlo(const DataSetInterface& Interface);
+    virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     CPurelyTemporalAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CPurelyTemporalAnalysis();
 
-    virtual void                  FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual void                        FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_Collections_t& TopClustersContainers);
 };
 //******************************************************************************
 #endif

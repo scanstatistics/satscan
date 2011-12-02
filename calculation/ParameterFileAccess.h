@@ -33,6 +33,7 @@ class AbtractParameterFileAccess {
     void                        ReadEllipseShapes(const std::string& sParameter) const;
     int                         ReadEnumeration(int iValue, ParameterType eParameterType, int iLow, int iHigh) const;
     int                         ReadInt(const std::string& sValue, ParameterType eParameterType) const;
+    void                        ReadSpatialWindowStops(const std::string& sParameter) const;
     int                         ReadUnsignedInt(const std::string& sValue, ParameterType eParameterType) const;
     void                        ReadVersion(const std::string& sValue) const;
 

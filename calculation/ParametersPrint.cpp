@@ -437,6 +437,17 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Reported Clusters",buffer));
         }
     }
+    if (gParameters.optimizeSpatialClusterSize()) {
+        switch (gParameters.GetOptSpatialClusterSizeReportType()) {
+            case ALL_GINI : buffer = "All GINI"; break;
+            case MAX_SIZE_PLUS_MAXIMIZED_GINI : buffer = "Maximized GINI Plus Maximum Spatial"; break;
+            case MAXIMIZED_GINI : buffer = "Maximized GINI"; break;
+            default : throw prg_error("Unknown gini reporting type '%d'.\n", "PrintSpatialWindowParameters()", gParameters.GetOptSpatialClusterSizeReportType());
+        }
+        settings.push_back(std::make_pair("Optimizing Spatial Cluster Size Coefficient Reporting",buffer));
+        printString(buffer, "%g", gParameters.GetOptimizingSpatialCutOffPValue());
+        settings.push_back(std::make_pair("Optimizing Spatial Cluster Size P-Value Cutoff",buffer));
+    }
     WriteSettingsContainer(settings, "Clusters Reported", fp);
   }
   catch (prg_exception& x) {
@@ -731,6 +742,15 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       AdditionalOutputFile.setExtension(".llr.dbf");
       settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
     }
+    // maximizing spatial cluster size coefficients
+    if (gParameters.getOutputCoefficientsAscii()) {
+      AdditionalOutputFile.setExtension(".ceo.txt");
+      settings.push_back(std::make_pair("Spatial Cluster Coefficients",AdditionalOutputFile.getFullPath(buffer)));
+    }
+    if (gParameters.getOutputCoefficientsDBase()) {
+      AdditionalOutputFile.setExtension(".ceo.dbf");
+      settings.push_back(std::make_pair("Spatial Cluster Coefficients",AdditionalOutputFile.getFullPath(buffer)));
+    }
     WriteSettingsContainer(settings, "Output", fp);
   }
   catch (prg_exception& x) {
@@ -820,7 +840,6 @@ void ParametersPrint::PrintRunOptionsParameters(FILE* fp) const {
         settings.push_back(std::make_pair("Randomization Seed",buffer));
     }
     if (gParameters.GetExecutionType() != AUTOMATIC) {
-      fprintf(fp, "  Execution Type      : ");
       buffer = "Execution Type";
       switch (gParameters.GetExecutionType()) {
         case AUTOMATIC    : settings.push_back(std::make_pair(buffer,"Automatic Determination")); break;
@@ -944,7 +963,7 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
 /** Prints 'Spatial Window' tab parameters to file stream. */
 void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
   SettingContainer_t settings;
-  std::string        buffer;
+  std::string        buffer, worker;
 
   try {
     if (gParameters.GetIsPurelyTemporalAnalysis())
@@ -953,6 +972,16 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
         printString(buffer, "%g percent of population at risk", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
         settings.push_back(std::make_pair("Maximum Spatial Cluster Size",buffer));
+    }
+    // TODO: conditions around printing this? certain settings that prevent possibly using gini
+    settings.push_back(std::make_pair("Optimize Spatial Cluster Size", (gParameters.optimizeSpatialClusterSize() ? "Yes" : "No")));
+    if (gParameters.optimizeSpatialClusterSize()) {
+        printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
+        for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
+            printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
+            buffer += worker;
+        }
+        settings.push_back(std::make_pair("Optimal Maximum Spatial Cluster Sizes",buffer));
     }
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
         printString(buffer, "%g percent of population defined in max circle file", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));

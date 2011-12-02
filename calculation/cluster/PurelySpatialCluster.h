@@ -6,6 +6,10 @@
 #include "UtilityFunctions.h"
 #include "MeasureList.h"
 #include "ClusterDataFactory.h"
+#include "IntermediateClustersContainer.h"
+
+//class CPurelySpatialCluster;
+//typedef ClusterSet<CPurelySpatialCluster> clusters_set_t;
 
 /** cluster class for purely spatial analysis and purely spatial cluster
     of space-time analysis */
@@ -23,9 +27,10 @@ class CPurelySpatialCluster : public CCluster {
     virtual inline AbstractClusterData       * GetClusterData() {return gpClusterData;}
     virtual inline const AbstractClusterData * GetClusterData() const {return gpClusterData;}
 
+
     void                                CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                    const CentroidNeighbors& CentroidDef,
-                                                                                   CPurelySpatialCluster& TopCluster,
+                                                                                   CClusterSet& clusterSet,
                                                                                    AbstractLikelihoodCalculator& Calculator);
     virtual void                        CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                        DisplayTimeFrame(FILE* fp, const CSaTScanData& DataHub, const AsciiPrintFormat& PrintFormat) const;

@@ -10,21 +10,21 @@
 /** spatial variation and temporal tends analysis class */
 class CSpatialVarTempTrendAnalysis : public CAnalysis {
   private:
-    IntermediateClustersContainer<CSVTTCluster>  gTopClusters;
     std::auto_ptr<CSVTTCluster>                  gClusterComparator;   /** cluster object utilized to find top cluster */
     std::auto_ptr<SVTTClusterData>               gClusterData;
+    CClusterSetCollections                       _topClusters;
 
   protected:
-    virtual void                AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway);
-    virtual void                AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway);
-    virtual const CCluster    & CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+    virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway);
+    virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway);
+    virtual const SharedClusterVector_t CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 
   public:
     CSpatialVarTempTrendAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection);
     virtual ~CSpatialVarTempTrendAnalysis();
 
-    virtual double              MonteCarlo(const DataSetInterface & Interface);
-    virtual double              MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
+    virtual double                      MonteCarlo(const DataSetInterface & Interface);
+    virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway);
 };
 //******************************************************************************
 #endif

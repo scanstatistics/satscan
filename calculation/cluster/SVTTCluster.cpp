@@ -4,6 +4,7 @@
 //******************************************************************************
 #include "SVTTCluster.h"
 #include "SSException.h"
+#include "IntermediateClustersContainer.h"
 
 ///////////////////////////// SVTTClusterData //////////////////////////////////
 
@@ -12,8 +13,7 @@ SVTTClusterData::SVTTClusterData(const AbstractDataSetGateway& DataGateway) : gi
   try {
     Init();
     Setup(DataGateway.GetDataSetInterface());
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("constructor()","SVTTClusterData");
     throw;
   }
@@ -24,8 +24,7 @@ SVTTClusterData::SVTTClusterData(const DataSetInterface & Interface) : giAllocat
   try {
     Init();
     Setup(Interface);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("constructor()","SVTTClusterData");
     throw;
   }
@@ -36,8 +35,7 @@ SVTTClusterData::SVTTClusterData(const SVTTClusterData& rhs) {
   try {
     Init();
     *this = rhs;
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("constructor()","SVTTClusterData");
     throw;
   }
@@ -52,8 +50,7 @@ SVTTClusterData::~SVTTClusterData() {
     delete[] gpCasesOutsideCluster;
     delete[] gpMeasureInsideCluster;
     delete[] gpMeasureOutsideCluster;
-  }
-  catch(...){}
+  } catch(...){}
 }
 
 /** Overloaded assignment assigment operator. */
@@ -140,8 +137,7 @@ void SVTTClusterData::DeallocateEvaluationAssistClassMembers() {
     delete[] gpMeasureOutsideCluster; gpMeasureOutsideCluster=0;
     giAllocationSize=0;
     geEvaluationAssistDataStatus = Deallocated;
-  }
-  catch (...){}
+  } catch (...){}
 }
 
 /** Returns number of cases accumulated in cluster object. */
@@ -198,8 +194,7 @@ void SVTTClusterData::Setup(const DataSetInterface& Interface) {
     gpMeasureOutsideCluster = new measure_t[giAllocationSize];
     gpTimeTrendInside = Interface.GetTimeTrend()->clone();
     gpTimeTrendOutside = Interface.GetTimeTrend()->clone();
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     delete gpTimeTrendInside;
     delete gpTimeTrendOutside;
     delete[] gpCasesInsideCluster;
@@ -314,8 +309,7 @@ CSVTTCluster::CSVTTCluster(const AbstractClusterDataFactory * pClusterFactory, c
     gClusterData.reset(pClusterFactory->GetNewSVTTClusterData(DataGateway));
     InitializeSVTT(0, DataGateway);
     m_nLastInterval = DataGateway.GetDataSetInterface().GetNumTimeIntervals();
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("constructor()","CSVTTCluster");
     throw;
   }
@@ -326,8 +320,7 @@ CSVTTCluster::CSVTTCluster(const CSVTTCluster & rhs): CCluster() {
   try {
     gClusterData.reset(rhs.gClusterData->CloneSVTT());
     *this = rhs;
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("copy constructor()","CSVTTCluster");
     throw;
   }
@@ -366,19 +359,17 @@ void CSVTTCluster::AddNeighbor(tract_t tNeighbor, const AbstractDataSetGateway &
     assigns TopCluster to 'this'. */
 void CSVTTCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                               const CentroidNeighbors& CentroidDef,
-                                                              CSVTTCluster& TopCluster,
+                                                              CClusterSet& clusterSet,
                                                               AbstractLikelihoodCalculator& Calculator) {
-  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
-                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
-  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
-
-  for (t=0; t < tNumNeighbors; ++t) {
+  tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+  for (tract_t t=0, tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
     ++m_nTracts;
     gClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
     m_nRatio =  gClusterData->CalculateSVTTLoglikelihoodRatio(Calculator, DataGateway);
-    if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster.CopyEssentialClassMembers(*this);
+    clusterSet.update(*this);
   }    
+  clusterSet.maximizeClusterSet();
 }
 
 /** returns newly cloned CSVTTCluster */
@@ -479,8 +470,7 @@ void CSVTTCluster::GetFormattedTimeTrend(std::string& buffer, const AbstractTime
                                                        (Trend.GetAnnualTimeTrend() < 0 ? "annual decrease" : "annual increase")); break;
      default : throw prg_error("Unknown time trend status type '%d'.", "GetFormattedTimeTrend()", Trend.GetStatus());
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("GetFormattedTimeTrend()","CSVTTCluster");
     throw;
   }

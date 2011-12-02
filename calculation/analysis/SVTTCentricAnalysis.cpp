@@ -11,7 +11,7 @@ SpatialVarTempTrendCentricAnalysis::SpatialVarTempTrendCentricAnalysis(const CPa
                                                            BasePrint& PrintDirection,
                                                            const AbstractDataSetGateway& RealDataGateway,
                                                            const DataSetGatewayContainer_t& vSimDataGateways)
-                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection) {
+                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection), _topClusters(Data) {
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
@@ -62,24 +62,28 @@ void SpatialVarTempTrendCentricAnalysis::CalculateRatiosAboutCentroidDefinition(
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
 void SpatialVarTempTrendCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
-  if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
-    //re-intialize top cluster object if evaluating data about new centroid
-    gTopCluster->InitializeSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
+  if (_topClusters.getClusterSet(0).get(0).getCluster().GetCentroidIndex() != CentroidDef.GetCentroidIndex())
+    //re-intialize top cluster objects if evaluating data about new centroid
+    _topClusters.resetSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
   gClusterComparator->InitializeSVTT(CentroidDef.GetCentroidIndex(), DataGateway);
   gClusterComparator->SetEllipseOffset(CentroidDef.GetEllipseIndex(), gDataHub);
-  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopCluster, *gpLikelihoodCalculator);
+  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(0), *gpLikelihoodCalculator);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
-  if (gTopCluster->GetEllipseOffset() == CentroidDef.GetEllipseIndex())
-    gTopCluster->SetNonPersistantNeighborInfo(gDataHub, CentroidDef);
+  _topClusters.setClusterNonPersistantNeighborInfo(CentroidDef);
 }
 
 /** Returns cluster object with greatest llr value as specified by gTopCluster.
     Note that this object will potentially be updated with next call to
     CalculateTopClusterAboutCentroidDefinition(), so calling Clone() on returned object
     is necessary if you want to keep object around in current state. */
-const CCluster& SpatialVarTempTrendCentricAnalysis::GetTopCalculatedCluster() {
-  gTopCluster->SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-  return *gTopCluster;
+const SharedClusterVector_t SpatialVarTempTrendCentricAnalysis::GetTopCalculatedClusters() {
+    SharedClusterVector_t topClusters; 
+    _topClusters.getTopClusters(topClusters);
+    for (size_t t=0; t < topClusters.size(); ++t) {
+      if (topClusters[t]->ClusterDefined())
+        dynamic_cast<CSVTTCluster*>(topClusters[t].get())->SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+    }
+    return _topClusters.getTopClusters(topClusters);
 }
 
 /** Updates CMeasureList objects for each defined data set of gateway object.
@@ -96,7 +100,7 @@ void SpatialVarTempTrendCentricAnalysis::Setup(const AbstractDataSetGateway& Rea
   try {
     //allocate objects used to evaluate real data
     gClusterComparator.reset(new CSVTTCluster(gpClusterDataFactory, RealDataGateway));
-    gTopCluster.reset(new CSVTTCluster(gpClusterDataFactory, RealDataGateway));
+    _topClusters.setTopClusters(*gClusterComparator.get());
 
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {

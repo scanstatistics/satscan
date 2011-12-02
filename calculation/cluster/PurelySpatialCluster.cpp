@@ -15,8 +15,7 @@ CPurelySpatialCluster::CPurelySpatialCluster(const AbstractClusterDataFactory * 
     //calculated time intervals. This would be 1 for a purely spatial analysis but
     //for a space-time analysis, the index would be dependent on # of intervals requested.
     m_nLastInterval = DataGateway.GetDataSetInterface().GetNumTimeIntervals();
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     delete gpClusterData;
     x.addTrace("constructor()","CPurelySpatialCluster");
     throw;
@@ -29,8 +28,7 @@ CPurelySpatialCluster::CPurelySpatialCluster(const CPurelySpatialCluster& rhs)
   try {
     gpClusterData = rhs.gpClusterData->Clone();
     *this = rhs;
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     delete gpClusterData; gpClusterData=0;
     x.addTrace("constructor()","CPurelySpatialCluster");
     throw;
@@ -39,10 +37,7 @@ CPurelySpatialCluster::CPurelySpatialCluster(const CPurelySpatialCluster& rhs)
 
 /** destructor */
 CPurelySpatialCluster::~CPurelySpatialCluster() {
-  try {
-    delete gpClusterData;
-  }
-  catch (...){}  
+  try { delete gpClusterData; } catch (...){}  
 }
 
 /** overloaded assignment operator */
@@ -75,26 +70,21 @@ void CPurelySpatialCluster::CopyEssentialClassMembers(const CCluster& rhs) {
   gpClusterData->CopyEssentialClassMembers(*(rhs.GetClusterData()));
 }
 
-/** Adds neighbor location data from DataGateway to cluster data accumulation and
-    calculates loglikelihood ratio. If ratio is greater than that of TopCluster,
-    assigns TopCluster to 'this'. */
+/** Adds neighbor location data from DataGateway to cluster data accumulation and calculates loglikelihood ratio. 
+    Updates cluster set given current state of this cluster object. */
 void CPurelySpatialCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                        const CentroidNeighbors& CentroidDef,
-                                                                       CPurelySpatialCluster& TopCluster,
+                                                                       CClusterSet& clusterSet,
                                                                        AbstractLikelihoodCalculator& Calculator) {
-  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
-                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
-  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
-
-  for (t=0; t < tNumNeighbors; ++t) {
-    //update cluster data
+  tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+  for (tract_t t=0, tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
     ++m_nTracts;
     gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
-    //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
-    if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster.CopyEssentialClassMembers(*this);
-  }    
+    clusterSet.update(*this);
+  }
+  clusterSet.maximizeClusterSet();
 }
 
 /** returns newly cloned CPurelySpatialCluster */

@@ -5,15 +5,14 @@
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
 #include "SSException.h" 
+#include <functional>
+#include <numeric>
 
 unsigned long MostLikelyClustersContainer::MAX_RANKED_CLUSTERS  = 500;
 unsigned long MostLikelyClustersContainer::MAX_BRUTE_FORCE_LOCATIONS = 50000;
 
 /** constructor */
-MostLikelyClustersContainer::MostLikelyClustersContainer() {}
-
-/** destructor */
-MostLikelyClustersContainer::~MostLikelyClustersContainer() {}
+MostLikelyClustersContainer::MostLikelyClustersContainer(double maximum_window_size) : _maximum_window_size(maximum_window_size) {}
 
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
@@ -95,6 +94,150 @@ double MostLikelyClustersContainer::GetClusterRadius(const CSaTScanData& DataHub
     throw;
   }
   return dResult;
+}
+
+double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const {
+    const CParameters & params(DataHub.GetParameters());
+    double numClusters=0;
+    double totalLLR=0;
+    double totalPopulation=0;
+
+    //create a copy of top cluster pointers
+    ptr_vector<CCluster>::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
+    std::vector<CCluster *> sortClusters;
+    for (size_t t=0; t < gvTopClusterList.size(); ++t) {
+        double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
+        if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE)) {
+            const CCluster* cluster = gvTopClusterList[t];
+            totalLLR += cluster->GetRatio()/cluster->GetNonCompactnessPenalty();
+            //TODO: only Poisson (and using population file) and Bernoulli
+            totalPopulation += DataHub.GetProbabilityModel().GetPopulation(0, *cluster, DataHub);
+            ++numClusters;
+        }
+    }
+    return -2.0 * totalLLR + log(totalPopulation) * numClusters;
+}
+
+double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const {
+    bool classic=true;
+    double giniCoefficient=0.0;
+    p_cutoff = 1.0;
+
+    const CParameters & params(DataHub.GetParameters());
+    //create a copy of top cluster pointers
+    ptr_vector<CCluster>::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
+    std::vector<CCluster *> sortClusters;
+    for (size_t t=0; t < gvTopClusterList.size(); ++t) {
+        double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
+        if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || 
+            macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE))
+            sortClusters.push_back(gvTopClusterList[t]);
+    }
+    if (classic) {
+        //sort by observed div expected
+        std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub, true));
+
+        double totalPopulation=DataHub.GetTotalPopulationCount(), totalCases=static_cast<double>(DataHub.GetTotalCases());
+        double sumClusterPopulation=0.0, sumClusterTotalCases=0.0;
+        std::vector<double> tmp_pops, tmp_cases;
+        for (size_t t=0; t < sortClusters.size(); ++t) {
+            const CCluster& cluster = *(sortClusters[t]);
+            tmp_pops.push_back(DataHub.GetProbabilityModel().GetPopulation(0, cluster, DataHub));
+            sumClusterPopulation += tmp_pops.back();
+            tmp_cases.push_back(static_cast<double>(cluster.GetObservedCount(0)));
+            sumClusterTotalCases += tmp_cases.back();
+        }
+        tmp_pops.insert(tmp_pops.begin(), totalPopulation - sumClusterPopulation);
+        tmp_cases.insert(tmp_cases.begin(), totalCases - sumClusterTotalCases);
+
+        std::vector<double> cum_tmp_pops_per(tmp_pops.size(), 0), cum_tmp_cases_per(tmp_cases.size(),0);
+        std::partial_sum(tmp_pops.begin(), tmp_pops.end(), cum_tmp_pops_per.begin());
+        cum_tmp_pops_per.insert(cum_tmp_pops_per.begin(), 0);
+        for (size_t t=0; t < cum_tmp_pops_per.size(); ++t)
+            cum_tmp_pops_per[t] /= totalPopulation;
+        std::partial_sum(tmp_cases.begin(), tmp_cases.end(), cum_tmp_cases_per.begin());
+        cum_tmp_cases_per.insert(cum_tmp_cases_per.begin(), 0);
+        for (size_t t=0; t < cum_tmp_cases_per.size(); ++t)
+            cum_tmp_cases_per[t] /= totalCases;
+
+        std::vector<double> tmp1, tmp2;
+        for (size_t t=0; t < cum_tmp_pops_per.size() - 1; ++t) 
+            tmp1.push_back(cum_tmp_pops_per[t+1] - cum_tmp_pops_per[t]);
+        for (size_t t=0; t < cum_tmp_cases_per.size() - 1; ++t) 
+            tmp2.push_back(cum_tmp_cases_per[t+1] + cum_tmp_cases_per[t]);
+
+        double sum=0.0;
+        for (size_t t=0; t < tmp1.size(); ++t) 
+            sum += tmp1[t] * tmp2[t];
+        giniCoefficient = 1.0 - sum;
+    } 
+    /*{
+        //sort by observed div expected
+        std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub, false));
+
+        // first create collection of observed and expected values for each cluster
+        double totalMeasure = DataHub.GetTotalMeasure(), totalCases=static_cast<double>(DataHub.GetTotalCases());
+        double sumClusterMeasure=0.0, sumClusterTotalCases=0.0;
+        std::vector<double> tmp_measure, tmp_cases;
+        for (size_t t=0; t < sortClusters.size(); ++t) {
+            const CCluster& cluster = *(sortClusters[t]);
+            tmp_measure.push_back(cluster.GetExpectedCount(DataHub, 0));
+            sumClusterMeasure += tmp_measure.back();
+            tmp_cases.push_back(static_cast<double>(cluster.GetObservedCount(0)));
+            sumClusterTotalCases += tmp_cases.back();
+        }
+        // add remainder of totals to beginning of collection
+        tmp_measure.insert(tmp_measure.begin(), totalMeasure - sumClusterMeasure);
+        tmp_cases.insert(tmp_cases.begin(), totalCases - sumClusterTotalCases);
+        // set collections as cummulative then divide by respective total 
+        std::vector<double> cum_tmp_measure_per(tmp_measure.size(), 0), cum_tmp_cases_per(tmp_cases.size(),0);
+        std::partial_sum(tmp_measure.begin(), tmp_measure.end(), cum_tmp_measure_per.begin());
+        cum_tmp_measure_per.insert(cum_tmp_measure_per.begin(), 0);
+        for (size_t t=0; t < cum_tmp_measure_per.size(); ++t)
+            cum_tmp_measure_per[t] /= totalMeasure;
+        std::partial_sum(tmp_cases.begin(), tmp_cases.end(), cum_tmp_cases_per.begin());
+        cum_tmp_cases_per.insert(cum_tmp_cases_per.begin(), 0);
+        for (size_t t=0; t < cum_tmp_cases_per.size(); ++t)
+            cum_tmp_cases_per[t] /= totalCases;
+        // GINI coefficient - see the wikipedia for the details
+        // GINI = 1-2B = 1 - sum of (p1-p0)*(d1+d0)'s
+        double sum=0.0;
+        for (size_t t=0; t < cum_tmp_measure_per.size() - 1; ++t) 
+            sum += (cum_tmp_measure_per[t+1] - cum_tmp_measure_per[t]) * (cum_tmp_cases_per[t+1] + cum_tmp_cases_per[t]);
+        giniCoefficient = 1.0 - sum;
+    }*/
+    {
+        std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub, false));
+        //create structures to help calculating areas
+        std::vector<double> height(sortClusters.size() + 2, 0.0);
+        std::vector<double> base(sortClusters.size() + 2, 0.0);
+        //initialize vectors to get respective lengths
+        double totalCases = static_cast<double>(DataHub.GetTotalCases());
+        double totalMeasure = DataHub.GetTotalMeasure();
+        double totalPopulation = DataHub.GetTotalPopulationCount();
+        height.front() = base.front() = 1.0;
+        for (size_t t=1; t < height.size() - 1; ++t) {
+            const CCluster& cluster = *(sortClusters[t-1]);
+            double obs = static_cast<double>(cluster.GetObservedCount(0));
+            height[t] = height[t-1] - obs/totalCases;
+            double exp = cluster.GetExpectedCount(DataHub, 0);
+            base[t] = base[t-1] - exp/totalMeasure;
+            //double pop =  DataHub.GetProbabilityModel().GetPopulation(0, cluster, DataHub);
+            //base[t] = base[t-1] - pop/totalPopulation;
+        }
+        std::reverse(height.begin(),height.end());
+        std::reverse(base.begin(),base.end());
+        //sum area of each trapezoid
+        double totalArea = 0.0;
+        for (size_t t=0; t < height.size() - 1; ++t) {
+            double b = base[t+1] - base[t];
+            double h = height[t+1] + height[t];
+            totalArea += b * h;
+        }
+        giniCoefficient = 1.0 - totalArea;
+    }
+
+    return giniCoefficient;
 }
 
 /** Returns constant reference to most likely cluster. Throws exception if

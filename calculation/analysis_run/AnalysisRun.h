@@ -18,17 +18,16 @@ class AnalysisRunner {
   private:
     const CParameters                 & gParameters;
     BasePrint                         & gPrintDirection;
-    CSaTScanData                      * gpDataHub;
-    CSignificantRatios05              * gpSignificantRatios;
+    std::auto_ptr<CSaTScanData>         gpDataHub;
+    std::auto_ptr<CSignificantRatios05> gpSignificantRatios;
     unsigned short                      guwSignificantAt005;
     time_t                              gStartTime;
     double                              gdMinRatioToReport;
     unsigned int                        giAnalysisCount;
     int                                 giPower_X_Count;
     int                                 giPower_Y_Count;
-    //unsigned int                        giNumSimsExecuted;
-    unsigned int                        giClustersReported;
-    MostLikelyClustersContainer         gTopClustersContainer;
+    bool                                _clustersReported;
+    MLC_Collections_t                   gTopClustersContainers;
     ExecutionType                       geExecutingType;
 	SimulationVariables                 gSimVars;
 
@@ -41,7 +40,6 @@ class AnalysisRunner {
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
     std::pair<double, double>           GetMemoryApproxiation() const;
-    void                                Init();
     void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                PerformCentric_Parallel();
@@ -52,6 +50,7 @@ class AnalysisRunner {
     void                                PrintCriticalValuesStatus(FILE* fp);
     void                                PrintEarlyTerminationStatus(FILE* fp);
     void                                PrintFindClusterHeading();
+    void                                PrintGiniCoefficients(FILE* fp);
     void                                PrintPowerCalculationsStatus(FILE* fp);
     void                                PrintRetainedClustersStatus(FILE* fp, bool bClusterReported);
     void                                PrintTopClusters();
@@ -65,13 +64,12 @@ class AnalysisRunner {
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);
-    virtual ~AnalysisRunner();
 
     virtual bool                        CheckForEarlyTermination(unsigned int iNumSimulationsCompleted) const;
 
-    const MostLikelyClustersContainer & GetClusterContainer() const {return gTopClustersContainer;}
+    const MLC_Collections_t           & GetClusterContainer() const {return gTopClustersContainers;}
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
-    bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios != 0;}
+    bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios.get() != 0;}
     CAnalysis                         * GetNewAnalysisObject() const;
     AbstractCentricAnalysis           * GetNewCentricAnalysisObject(const AbstractDataSetGateway& RealDataGateway,
                                                                     const ptr_vector<AbstractDataSetGateway>& vSimDataGateways) const;

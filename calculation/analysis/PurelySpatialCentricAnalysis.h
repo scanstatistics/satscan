@@ -11,7 +11,7 @@
     for each centroid separate than other centroids. */
 class PurelySpatialCentricAnalysis : public AbstractCentricAnalysis {
   private:
-    std::auto_ptr<CPurelySpatialCluster>      gTopCluster;           /** instance of purely spatial cluster
+    CClusterSetCollections                    _topClusters;          /** collection of clusters representing top cluster
                                                                          - used to evaluate real data */
     std::auto_ptr<CPurelySpatialCluster>      gClusterComparator;    /** instance of purely spatial cluster
                                                                          - used to evaluate real data */
@@ -20,15 +20,15 @@ class PurelySpatialCentricAnalysis : public AbstractCentricAnalysis {
     std::auto_ptr<AbstractSpatialClusterData> gAbstractClusterData;  /** abstract instance of spatial cluster data object
                                                                         - used by simulation process */
 
-    void                     Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    void                                Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
 
   protected:
 
 
-    virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
-    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
-    virtual const CCluster & GetTopCalculatedCluster();
-    virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
+    virtual void                        CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
+    virtual void                        CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
+    virtual const SharedClusterVector_t GetTopCalculatedClusters();
+    virtual void                        MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
 
   public:
     PurelySpatialCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,

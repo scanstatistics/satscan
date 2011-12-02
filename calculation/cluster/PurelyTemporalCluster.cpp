@@ -38,10 +38,7 @@ CPurelyTemporalCluster::CPurelyTemporalCluster(const CPurelyTemporalCluster& rhs
 
 /** destructor */
 CPurelyTemporalCluster::~CPurelyTemporalCluster() {
-  try {
-    delete gpClusterData;
-  }
-  catch(...){}
+  try { delete gpClusterData; } catch(...){}
 }
 
 /** overloaded assignment operator */

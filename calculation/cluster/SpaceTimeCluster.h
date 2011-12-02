@@ -5,6 +5,7 @@
 #include "cluster.h"
 #include "TimeIntervalRange.h"
 #include "ClusterDataFactory.h"
+#include "IntermediateClustersContainer.h"
 
 /** cluster class for space-time analysis (retrospective and prospective) */
 class CSpaceTimeCluster : public CCluster {
@@ -28,9 +29,9 @@ class CSpaceTimeCluster : public CCluster {
     virtual ClusterType                   GetClusterType() const {return SPACETIMECLUSTER;}
     virtual measure_t                     GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
     virtual count_t                       GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const;
-    void                                  CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway & DataGateway,
+    void                                  CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                      const CentroidNeighbors& CentroidDef,
-                                                                                     CSpaceTimeCluster & TopCluster,
+                                                                                     CClusterSet& clusterSet,
                                                                                      CTimeIntervals& TimeIntervals);
     virtual void                          CopyEssentialClassMembers(const CCluster& rhs);
     virtual void                          Initialize(tract_t nCenter=0);

@@ -42,13 +42,13 @@ class CCluster {
     virtual ~CCluster();
 
     //assignment operations
-    virtual CCluster            * Clone() const = 0;
-    virtual void                  CopyEssentialClassMembers(const CCluster& rhs) = 0;
+    virtual CCluster            * Clone() const {throw prg_error("Clone().", "Clone()"); return 0; }//= 0;
+    virtual void                  CopyEssentialClassMembers(const CCluster& rhs) {throw prg_error("CopyEssentialClassMembers()", "CopyEssentialClassMembers()");}//= 0;
     CCluster                    & operator=(const CCluster& rhs);
     //pure virtual functions
-    virtual AbstractClusterData       * GetClusterData() = 0;
-    virtual const AbstractClusterData * GetClusterData() const = 0;
-    virtual ClusterType                 GetClusterType() const = 0;
+    virtual AbstractClusterData       * GetClusterData() {throw prg_error("GetClusterData()", "GetClusterData()"); return 0; }//= 0;
+    virtual const AbstractClusterData * GetClusterData() const {throw prg_error("GetClusterData().", "GetClusterData()"); return 0; }//= 0;
+    virtual ClusterType                 GetClusterType() const {throw prg_error("GetClusterType().", "GetClusterType()"); return PURELYSPATIALCLUSTER; }//= 0;
     //public data members - speed considerations
     double                        m_nRatio;             // Likelihood ratio
     int                           m_nFirstInterval;     // Index # of first time interval
@@ -98,7 +98,7 @@ class CCluster {
     int                           GetEllipseOffset() const {return m_iEllipseOffset;}
     virtual std::string         & GetEndDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     virtual measure_t             GetExpectedCount(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
-    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
+    virtual measure_t             GetExpectedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetExpectedCountForTract()", "GetExpectedCountForTract()"); return 0; }//= 0;
     virtual measure_t             GetExpectedCountOrdinal(const CSaTScanData& DataHub, size_t tSetIndex, size_t iCategoryIndex) const;
     std::pair<double,double>      GetGumbelPValue(const SimulationVariables& simVars) const;
     double                        GetLatLongRadius() const {return 2 * EARTH_RADIUS_km * asin(m_CartesianRadius/(2 * EARTH_RADIUS_km));}
@@ -107,7 +107,7 @@ class CCluster {
     virtual tract_t               GetNumTractsInCluster() const {return m_nTracts;}
     virtual tract_t               GetNumNonNullifiedTractsInCluster(const CSaTScanData& DataHub) const;
     virtual count_t               GetObservedCount(size_t tSetIndex=0) const;
-    virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const = 0;
+    virtual count_t               GetObservedCountForTract(tract_t tTractIndex, const CSaTScanData& Data, size_t tSetIndex=0) const {throw prg_error("GetObservedCountForTract().", "GetObservedCountForTract()"); return 0; }//= 0;
     virtual count_t               GetObservedCountOrdinal(size_t tSetIndex, size_t iCategoryIndex) const;
     double                        GetObservedDivExpected(const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     virtual double                GetObservedDivExpectedForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;

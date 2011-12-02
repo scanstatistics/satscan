@@ -117,11 +117,17 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case USE_META_LOCATIONS_FILE   : return "Use meta locations file (line 95)";
     case OBSERVABLE_REGIONS        : return "Inequalities (line 96)";
     case EARLY_TERM_THRESHOLD      : return "Early Termination Threshold (line 97)";
-    case PVALUE_REPORT_TYPE        : return " p-value reporting type (line 98)";
-    case REPORT_GUMBEL             : return " report Gumbel p-values (line 99)";
-    case TIME_TREND_TYPE           : return " time trend type (line 100)";
-    case REPORT_RANK               : return " report cluster rank (line 101)";
-    case PRINT_ASCII_HEADERS       : return " print ascii headers in output files (line 102)";
+    case PVALUE_REPORT_TYPE        : return "p-value reporting type (line 98)";
+    case REPORT_GUMBEL             : return "report Gumbel p-values (line 99)";
+    case TIME_TREND_TYPE           : return "time trend type (line 100)";
+    case REPORT_RANK               : return "report cluster rank (line 101)";
+    case PRINT_ASCII_HEADERS       : return "print ascii headers in output files (line 102)";
+    case OPTIMIZE_SPATIAL_SIZE     : return "determine optimal spatial cluster size (line 103)";
+    case WINDOW_STOPS              : return "maximum spatial window size for gini (line 104)";
+    case OPTIMIZE_CLUSTER_CUTOFF   : return "reported clusters P-Value cutoff for optimizing calculation (line 105)";
+    case OPTIMIZE_CLUSTER_REPORT_TYPE : return "optimizing spatial size reporting options (line 106)";
+    case OUTPUT_COEFFICIENTS_ASCII : return "report optimizing spatial coefficients - ASCII? (line 107)";  
+    case OUTPUT_COEFFICIENTS_DBASE : return "report optimizing spatial coefficients - DBase? (line 108)";  
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

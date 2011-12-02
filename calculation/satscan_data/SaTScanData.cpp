@@ -122,7 +122,7 @@ void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
                             !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) &&
                             !gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true);
     //We do not need to recalculate the number of neighbors when the max spatial size restriction is by distance only.
-    if (!bDistanceOnlyMax && !gParameters.UseLocationNeighborsFile() && geExecutingType != CENTRICALLY) {
+    if (!bDistanceOnlyMax && /*!gParameters.UseLocationNeighborsFile() &&*/ geExecutingType != CENTRICALLY) {
       //Re-calculate neighboring locations about each centroid.
       CentroidNeighborCalculator(*this, gPrint).CalculateNeighbors(*this);
       //possibly re-allocate and assign meta data contained in DataSet objects
@@ -161,10 +161,12 @@ void CSaTScanData::AllocateSortedArray() {
         gpSortedIntHandler->FreeThirdDimension();
     }
     //allocates two-dimensional array that will track the number of neighbors for each shape/grid point combination.
-    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
+    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() || gParameters.optimizeSpatialClusterSize()) {
       if (!gpReportedNeighborCountHandler)
         gpReportedNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
       gpReportedNeighborCountHandler->Set(0);
+      if (!gpReportedMaximumsNeighborCountHandler)
+          gpReportedMaximumsNeighborCountHandler = new TwoDimensionArrayHandler<MinimalGrowthArray<tract_t> >(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
     }
     if (!gpNeighborCountHandler)
       gpNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
@@ -177,6 +179,7 @@ void CSaTScanData::AllocateSortedArray() {
     delete gpSortedIntHandler; gpSortedIntHandler=0;
     delete gpNeighborCountHandler; gpNeighborCountHandler=0;
     delete gpReportedNeighborCountHandler; gpReportedNeighborCountHandler=0;
+    delete gpReportedMaximumsNeighborCountHandler; gpReportedMaximumsNeighborCountHandler=0;
     x.addTrace("AllocateSortedArray()","CSaTScanData");
     throw;
   }
@@ -195,13 +198,15 @@ void CSaTScanData::AllocateSortedArray() {
 
 /** Set the number of neighbors about ellipse/circle at centroid index. Care must be taken
     when calling this function since it sets the variables which detail the size of the sorted arrays.*/
-void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
+void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, const std::vector<tract_t>& vMaxReported, tract_t iNumMaximumNeighbors) {
   //update neighbor array(s) for number of calculated neighbors
   if (!gpNeighborCountHandler)
     throw prg_error("Neighbor array not allocated.","setNeighborCounts()");
 
   if (gpReportedNeighborCountHandler)
-    gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumReportedNeighbors;
+    gpReportedNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = vMaxReported.back();
+  if (gpReportedMaximumsNeighborCountHandler)
+    gpReportedMaximumsNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex].set(vMaxReported);
   gpNeighborCountHandler->GetArray()[iEllipseIndex][iCentroidIndex] = iNumMaximumNeighbors;
 }
 
@@ -211,7 +216,8 @@ void CSaTScanData::setNeighborCounts(int iEllipseIndex, tract_t iCentroidIndex, 
     the number actual and reported neighbors defined in just allocated sorted array. */
 void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistance>& vOrderLocations,
                                                 int iEllipseIndex, tract_t iCentroidIndex,
-                                                tract_t iNumReportedNeighbors, tract_t iNumMaximumNeighbors) {
+                                                const std::vector<tract_t>& vMaxReported, 
+                                                tract_t iNumMaximumNeighbors) {
   try {
     if (gpSortedUShortHandler) {
       delete[] gpSortedUShortHandler->GetArray()[iEllipseIndex][iCentroidIndex];
@@ -231,7 +237,7 @@ void CSaTScanData::AllocateSortedArrayNeighbors(const std::vector<LocationDistan
       throw prg_error("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
 
     //update neighbor array(s) for number of calculated neighbors
-    setNeighborCounts(iEllipseIndex, iCentroidIndex, iNumReportedNeighbors, iNumMaximumNeighbors);
+    setNeighborCounts(iEllipseIndex, iCentroidIndex, vMaxReported, iNumMaximumNeighbors);
   }
   catch (prg_exception &x) {
     x.addTrace("AllocateSortedArrayNeighbors()","CSaTScanData");
@@ -263,7 +269,7 @@ void CSaTScanData::AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const st
       throw prg_error("Sorted array not allocated.","AllocateSortedArrayNeighbors()");
 
     //update neighbor array(s) for number of calculated neighbors
-    setNeighborCounts(0, iCentroidIndex, 0, vLocations.size());
+    setNeighborCounts(0, iCentroidIndex, std::vector<tract_t>(1, vLocations.size()), vLocations.size());
   }
   catch (prg_exception& x) {
     x.addTrace("AllocateSortedArrayNeighbors()","CSaTScanData");
@@ -539,6 +545,7 @@ void CSaTScanData::Init() {
   gppActiveNeighborArray=0;
   gpNeighborCountHandler=0;
   gpReportedNeighborCountHandler=0;
+  gpReportedMaximumsNeighborCountHandler=0;
   gpSortedIntHandler=0;
   gpSortedUShortHandler=0;
   m_nAnnualRatePop = 100000;

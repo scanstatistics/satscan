@@ -7,7 +7,7 @@
 
 /** constructor */
 CSpatialVarTempTrendAnalysis::CSpatialVarTempTrendAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
-                             :CAnalysis(Parameters, DataHub, PrintDirection), gTopClusters(DataHub) {
+                             :CAnalysis(Parameters, DataHub, PrintDirection), _topClusters(DataHub) {
 }
 
 /** destructor */
@@ -28,7 +28,7 @@ void CSpatialVarTempTrendAnalysis::AllocateSimulationObjects(const AbstractDataS
 void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) {
   try {
     gClusterComparator.reset(new CSVTTCluster(gpClusterDataFactory, DataGateway));
-    gTopClusters.SetTopClusters(*gClusterComparator);
+    _topClusters.setTopClusters(*gClusterComparator);
   }
   catch (prg_exception& x) {
     x.addTrace("AllocateTopClustersObjects()","CSpatialVarTempTrendAnalysis");
@@ -37,24 +37,25 @@ void CSpatialVarTempTrendAnalysis::AllocateTopClustersObjects(const AbstractData
 }
 
 /** calculates most likely cluster about central location 'tCenter' */
-const CCluster & CSpatialVarTempTrendAnalysis::CalculateTopCluster(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
+const SharedClusterVector_t CSpatialVarTempTrendAnalysis::CalculateTopClusters(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
   try {
     gClusterComparator->InitializeSVTT(0, DataGateway);
-    gTopClusters.SetTopClusters(*gClusterComparator);
+    _topClusters.resetSVTT(tCenter, DataGateway);
     //Iterate over circle/ellipse(s) - remember that circle is allows zero'th item.
     for (int k=0; k <= gParameters.GetNumTotalEllipses(); ++k) {
-       CentroidNeighbors CentroidDef(k, gDataHub);
-       CentroidDef.Set(tCenter);
+       CentroidNeighbors CentroidDef(k, gDataHub, tCenter);
+       _topClusters.resetNeighborCounts(k);
        gClusterComparator->InitializeSVTT(tCenter, DataGateway);
        gClusterComparator->SetEllipseOffset(k, gDataHub);
-       gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef,
-                                                                      gTopClusters.GetTopCluster(k),
-                                                                      *gpLikelihoodCalculator);
+       gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(k), *gpLikelihoodCalculator);
     }
-    CSVTTCluster& TopCluster = gTopClusters.GetTopCluster();
-    if (gTopClusters.GetTopCluster().ClusterDefined())
-      TopCluster.SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
-    return TopCluster;
+    SharedClusterVector_t topClusters;
+    _topClusters.getTopClusters(topClusters);
+    for (size_t t=0; t < topClusters.size(); ++t) {
+      if (topClusters[t]->ClusterDefined())
+        dynamic_cast<CSVTTCluster*>(topClusters[t].get())->SetTimeTrend(gParameters.GetTimeAggregationUnitsType(), gParameters.GetTimeAggregationLength());
+    }
+    return topClusters;
   }
   catch (prg_exception& x) {
     x.addTrace("CalculateTopCluster()","CSpatialVarTempTrendAnalysis");

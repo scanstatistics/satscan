@@ -66,6 +66,36 @@ CPSMonotoneCluster& CPSMonotoneCluster::operator=(const CPSMonotoneCluster& rhs)
     assigns TopCluster to 'this'. */
 void CPSMonotoneCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                     const CentroidNeighbors& CentroidDef,
+                                                                    CClusterSet& clusterSet,
+                                                                    AbstractLikelihoodCalculator& Calculator) {
+  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
+                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+
+  for (t=0; t < tNumNeighbors; ++t) {
+    //update cluster data
+    gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
+    gpClusterData->CheckCircle(gpClusterData->GetLastCircleIndex());
+  }
+  gpClusterData->AddRemainder(Calculator.GetDataHub());
+  m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
+  gpClusterData->RemoveRemainder(Calculator.GetDataHub());
+  if (gpClusterData->m_nSteps == 0) Initialize(m_Center);
+
+  //TODO: This implies/requires no GINI spatial window stops -- only maximum.
+  CClusterObject& clusterObj = clusterSet.get(0);
+  if (m_nRatio > clusterObj.getCluster().GetRatio()) {
+    gpClusterData->SetCasesAndMeasures(); //re-calculate case and measure for outer tracts absorber into remainder
+    SetTotalTracts();                     //re-calculate total tracts for outer tracts absorber into remainder
+    clusterObj.getCluster().CopyEssentialClassMembers(*this);
+  }
+}
+
+/** Adds neighbor location data from DataGateway to cluster data accumulation and
+    calculates loglikelihood ratio. If ratio is greater than that of TopCluster,
+    assigns TopCluster to 'this'. */
+/*void CPSMonotoneCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
+                                                                    const CentroidNeighbors& CentroidDef,
                                                                     CPSMonotoneCluster& TopCluster,
                                                                     AbstractLikelihoodCalculator& Calculator) {
   tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
@@ -86,7 +116,7 @@ void CPSMonotoneCluster::CalculateTopClusterAboutCentroidDefinition(const Abstra
     SetTotalTracts();                     //re-calculate total tracts for outer tracts absorber into remainder
     TopCluster.CopyEssentialClassMembers(*this);
   }
-}
+}*/
 
 /** returns newly cloned CPSMonotoneCluster */
 CPSMonotoneCluster * CPSMonotoneCluster::Clone() const {

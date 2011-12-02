@@ -32,13 +32,13 @@ void CPurelyTemporalAnalysis::AllocateSimulationObjects(const AbstractDataSetGat
   }
 }
 
-const CCluster & CPurelyTemporalAnalysis::CalculateTopCluster(tract_t, const AbstractDataSetGateway&) {
+const SharedClusterVector_t CPurelyTemporalAnalysis::CalculateTopClusters(tract_t, const AbstractDataSetGateway&) {
   throw prg_error("CalculateTopCluster() can not be called for CPurelyTemporalAnalysis.","CPurelyTemporalAnalysis");
 }
 
 /** Calculate most likely, purely temporal, cluster and adds clone of top cluster
     to top cluster array. */
-void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MostLikelyClustersContainer& TopClustersContainer) {
+void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& DataGateway, MLC_Collections_t& TopClustersContainers) {
   IncludeClustersType           eIncludeClustersType;
   std::auto_ptr<CTimeIntervals> TimeIntervals;
 
@@ -46,15 +46,18 @@ void CPurelyTemporalAnalysis::FindTopClusters(const AbstractDataSetGateway& Data
     //determine the type of clusters to compare
     eIncludeClustersType = (gParameters.GetIsProspectiveAnalysis() ? ALIVECLUSTERS : gParameters.GetIncludeClustersType());
     //create cluster objects
-    CPurelyTemporalCluster TopCluster(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     CPurelyTemporalCluster ClusterComparator(gpClusterDataFactory, DataGateway, eIncludeClustersType, gDataHub);
     //get new time intervals objects
     TimeIntervals.reset(GetNewTemporalDataEvaluatorObject(eIncludeClustersType, SUCCESSIVELY));
     //iterate through time intervals, finding top cluster
-    TimeIntervals->CompareClusters(ClusterComparator, TopCluster);
-    //if any interesting clusters found, add to top cluster array
-    if (TopCluster.ClusterDefined())
-      TopClustersContainer.Add(TopCluster);
+    CClusterSet clusterSet;
+    CClusterObject clusterObject(ClusterComparator);
+    clusterSet.add(clusterObject);
+    TimeIntervals->CompareClusterSet(ClusterComparator, clusterSet);
+    // add purely temporal cluster to each cluster collection
+    if (clusterSet.get(0).getCluster().ClusterDefined())
+        for (MLC_Collections_t::iterator itr=TopClustersContainers.begin(); itr != TopClustersContainers.end(); ++itr)
+            itr->Add(clusterSet.get(0).getCluster());
   }
   catch (prg_exception& x) {
     x.addTrace("FindTopClusters()","CPurelyTemporalAnalysis");

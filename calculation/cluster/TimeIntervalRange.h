@@ -7,8 +7,8 @@
 #include "TimeIntervals.h"
 #include "DataSet.h"
 
-class CSaTScanData;                /** forward class declaration */
-class CCluster;                    /** forward class declaration */
+class CSaTScanData; /** forward class declaration */
+class CCluster; /** forward class declaration */
 class AbstractTemporalClusterData; /** forward class declaration */
 
 /** Class which defines methods of iterating through temporal windows,
@@ -16,17 +16,16 @@ class AbstractTemporalClusterData; /** forward class declaration */
 class TemporalDataEvaluator : public CTimeIntervals {
   private:
     typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,size_t) const;
-    MAXIMIZE_FUNCPTR            gpCalculationMethod;
-    double                      gdDefaultMaximizingValue;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+    double gdDefaultMaximizingValue;
 
   public:
     TemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
                           IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
-    virtual ~TemporalDataEvaluator();
 
-    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -37,11 +36,10 @@ class TemporalDataEvaluator : public CTimeIntervals {
 class MultiSetTemporalDataEvaluator : public CTimeIntervals {
   public:
     MultiSetTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
-    virtual ~MultiSetTemporalDataEvaluator() {}
 
-    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -53,17 +51,16 @@ class MultiSetTemporalDataEvaluator : public CTimeIntervals {
 class NormalTemporalDataEvaluator : public CTimeIntervals {
   private:
     typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (count_t,measure_t,measure_t,size_t) const;
-    MAXIMIZE_FUNCPTR            gpCalculationMethod;
-    double                      gdDefaultMaximizingValue;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+    double gdDefaultMaximizingValue;
 
   public:
     NormalTemporalDataEvaluator(const CSaTScanData& Data, AbstractLikelihoodCalculator& Calculator,
                                 IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
-    virtual ~NormalTemporalDataEvaluator() {}
 
-    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -75,11 +72,10 @@ class NormalTemporalDataEvaluator : public CTimeIntervals {
 class MultiSetNormalTemporalDataEvaluator : public CTimeIntervals {
   public:
     MultiSetNormalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
-    virtual ~MultiSetNormalTemporalDataEvaluator() {}
 
-    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -90,17 +86,16 @@ class MultiSetNormalTemporalDataEvaluator : public CTimeIntervals {
 class CategoricalTemporalDataEvaluator : public CTimeIntervals {
   private:
     typedef double (AbstractLikelihoodCalculator::*MAXIMIZE_FUNCPTR) (const std::vector<count_t>&,size_t) const;
-    MAXIMIZE_FUNCPTR            gpCalculationMethod;
-    double                      gdDefaultMaximizingValue;
+    MAXIMIZE_FUNCPTR gpCalculationMethod;
+    double gdDefaultMaximizingValue;
 
   public:
     CategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator,
                                      IncludeClustersType eIncludeClustersType, ExecutionType eExecutionType);
-    virtual ~CategoricalTemporalDataEvaluator() {}
 
-    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 
 /** Class which defines methods of iterating through temporal windows,
@@ -112,11 +107,10 @@ class CategoricalTemporalDataEvaluator : public CTimeIntervals {
 class MultiSetCategoricalTemporalDataEvaluator : public CTimeIntervals {
   public:
     MultiSetCategoricalTemporalDataEvaluator(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType);
-    virtual ~MultiSetCategoricalTemporalDataEvaluator() {}
 
-    virtual void                CompareClusters(CCluster& Running, CCluster& TopCluster);
-    virtual void                CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
-    virtual double              ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
+    virtual void CompareClusterSet(CCluster& Running, CClusterSet& ClusterSet);
+    virtual void CompareMeasures(AbstractTemporalClusterData& ClusterData, CMeasureList& MeasureList);
+    virtual double ComputeMaximizingValue(AbstractTemporalClusterData& ClusterData);
 };
 //******************************************************************************
 #endif

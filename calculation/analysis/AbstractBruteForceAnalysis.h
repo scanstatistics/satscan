@@ -33,7 +33,7 @@ class AbstractBruteForceAnalysis : public CAnalysis {
 
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) = 0;
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) = 0;
-    virtual void                        FindTopClusters(const AbstractDataSetGateway & DataGateway, MostLikelyClustersContainer& TopClustersContainer);
+    virtual void                        FindTopClusters(const AbstractDataSetGateway & DataGateway, MLC_Collections_t& TopClustersContainers);
     double                              ExecuteSimulation(const AbstractDataSetGateway& DataGateway);
     virtual void                        AllocateAdditionalSimulationObjects(RandomizerContainer_t& Container) = 0;
 };

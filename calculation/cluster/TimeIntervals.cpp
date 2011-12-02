@@ -6,12 +6,8 @@
 #include "SSException.h"
 
 CTimeIntervals::CTimeIntervals(const CSaTScanData& DataHub, AbstractLikelihoodCalculator& Calculator, IncludeClustersType eIncludeClustersType)
-                :gDataHub(DataHub), _gInfo(*DataHub.GetGInfo()), gLikelihoodCalculator(Calculator), gpMaxWindowLengthIndicator(0) {
+                :gDataHub(DataHub), _gInfo(*DataHub.GetGInfo()), gLikelihoodCalculator(Calculator) {
    Setup(eIncludeClustersType);
-}
-
-CTimeIntervals::~CTimeIntervals() {
-    try { delete gpMaxWindowLengthIndicator; } catch (...) {}
 }
 
 /** Sets interval range to that of specified centroid point. If point does not have focus range, 'global' range used. */
@@ -40,9 +36,9 @@ void CTimeIntervals::Setup(IncludeClustersType eIncludeClustersType) {
             //the maximum window length varies when the analysis is prospective and
             //the maximum is defined as percentage of study period
             if (gDataHub.GetParameters().GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE && gDataHub.GetParameters().GetAdjustForEarlierAnalyses())
-                gpMaxWindowLengthIndicator = new ProspectiveMaxWindowLengthIndicator(gDataHub);
+                gpMaxWindowLengthIndicator.reset(new ProspectiveMaxWindowLengthIndicator(gDataHub));
             else
-                gpMaxWindowLengthIndicator = new FixedMaxWindowLengthIndicator(gDataHub);
+                gpMaxWindowLengthIndicator.reset(new FixedMaxWindowLengthIndicator(gDataHub));
         } else {
             switch (eIncludeClustersType) {
                 case ALLCLUSTERS        : _interval_range = IntervalRange_t(0, gDataHub.GetNumTimeIntervals(), 1, gDataHub.GetNumTimeIntervals()); break;
@@ -53,11 +49,10 @@ void CTimeIntervals::Setup(IncludeClustersType eIncludeClustersType) {
                                                                             gDataHub.GetFlexibleWindowEndRangeEndIndex()); break;  
                 default : throw prg_error("Unknown cluster inclusion type: '%d'.", "Setup()", gDataHub.GetParameters().GetIncludeClustersType());
             };
-            gpMaxWindowLengthIndicator = new FixedMaxWindowLengthIndicator(gDataHub);
+            gpMaxWindowLengthIndicator.reset(new FixedMaxWindowLengthIndicator(gDataHub));
         }
         _init_interval_range = _interval_range; // store initial range settings
     } catch (prg_exception& x) {
-        delete gpMaxWindowLengthIndicator; gpMaxWindowLengthIndicator=0;
         x.addTrace("setup()","CTimeIntervals");
         throw;
     }

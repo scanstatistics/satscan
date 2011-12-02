@@ -40,10 +40,7 @@ CPurelySpatialProspectiveCluster::CPurelySpatialProspectiveCluster(const CPurely
 
 /** destructor */
 CPurelySpatialProspectiveCluster::~CPurelySpatialProspectiveCluster() {
-  try {
-    delete gpClusterData;
-  }
-  catch(...){}
+  try { delete gpClusterData; } catch(...){}
 }
 
 /** overloaded assignment operator */
@@ -103,25 +100,21 @@ std::string& CPurelySpatialProspectiveCluster::GetStartDate(std::string& sDateSt
   return sDateString;
 }
 
-/** Adds neighbor location data from DataGateway to cluster data accumulation and
-    evaluates for significant clusterings. Assigns greastest clustering to 'TopCluster'. */
+/** Adds neighbor location data from DataGateway to cluster data accumulation and calculates loglikelihood ratio. 
+    Updates cluster set given current state of this cluster object. */
 void CPurelySpatialProspectiveCluster::CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                   const CentroidNeighbors& CentroidDef,
-                                                                                  CPurelySpatialProspectiveCluster& TopCluster,
+                                                                                  CClusterSet& clusterSet,
                                                                                   AbstractLikelihoodCalculator& Calculator) {
-  tract_t               t, tNumNeighbors = CentroidDef.GetNumNeighbors(),
-                      * pIntegerArray = CentroidDef.GetRawIntegerArray();
-  unsigned short      * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
-
-  for (t=0; t < tNumNeighbors; ++t) {
-    //update cluster data
+  tract_t * pIntegerArray = CentroidDef.GetRawIntegerArray();
+  unsigned short * pUnsignedShortArray = CentroidDef.GetRawUnsignedShortArray();
+  for (tract_t t=0,tNumNeighbors=CentroidDef.GetNumNeighbors(); t < tNumNeighbors; ++t) {
     ++m_nTracts;
     gpClusterData->AddNeighborData((pUnsignedShortArray ? (tract_t)pUnsignedShortArray[t] : pIntegerArray[t]), DataGateway);
-    //calculate loglikehood ratio and compare against current top cluster
     m_nRatio = gpClusterData->CalculateLoglikelihoodRatio(Calculator);
-    if (m_nRatio > TopCluster.m_nRatio)
-      TopCluster.CopyEssentialClassMembers(*this);
+    clusterSet.update(*this);
   }
+  clusterSet.maximizeClusterSet();
 }
 
 /** re-initializes cluster data */

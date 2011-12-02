@@ -14,7 +14,7 @@ class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
     void                     Setup(const AbstractDataSetGateway& RealDataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
 
   protected:
-    std::auto_ptr<CSpaceTimeCluster>           gTopCluster;           /** instance of space-time cluster
+    CClusterSetCollections                     _topClusters;          /** collection of clusters representing top cluster
                                                                          - used to evaluate real data */
     std::auto_ptr<CSpaceTimeCluster>           gClusterComparator;    /** instance of space-time cluster
                                                                          - used to evaluate real data */
@@ -25,11 +25,11 @@ class SpaceTimeCentricAnalysis : public AbstractCentricAnalysis {
     std::auto_ptr<CTimeIntervals>              gTimeIntervals_R;      /** iterates through temporal windows of cluster data */
     std::auto_ptr<CTimeIntervals>              gTimeIntervals_S;      /** iterates through temporal windows of cluster data */
 
-    virtual void             CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
-    virtual void             CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
-    virtual void             ExecuteAboutPurelyTemporalCluster(const AbstractDataSetGateway& DataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
-    virtual const CCluster & GetTopCalculatedCluster();
-    virtual void             MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
+    virtual void                        CalculateRatiosAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
+    virtual void                        CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway);
+    virtual void                        ExecuteAboutPurelyTemporalCluster(const AbstractDataSetGateway& DataGateway, const DataSetGatewayContainer_t& vSimDataGateways);
+    virtual const SharedClusterVector_t GetTopCalculatedClusters();
+    virtual void                        MonteCarloAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const DataSetGatewayContainer_t& vDataGateways);
 
   public:
     SpaceTimeCentricAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection,

@@ -14,7 +14,7 @@ PurelySpatialCentricAnalysis::PurelySpatialCentricAnalysis(const CParameters& Pa
                                                            BasePrint& PrintDirection,
                                                            const AbstractDataSetGateway& RealDataGateway,
                                                            const DataSetGatewayContainer_t& vSimDataGateways)
-                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection) {
+                             :AbstractCentricAnalysis(Parameters, Data, PrintDirection), _topClusters(Data) {
   try {
     Setup(RealDataGateway, vSimDataGateways);
   }
@@ -65,23 +65,24 @@ void PurelySpatialCentricAnalysis::CalculateRatiosAboutCentroidDefinition(const 
     Caller is responsible for ensuring:
     1) DataSetInterface objects are assigned to appropriate structures used to accumulate cluster data */
 void PurelySpatialCentricAnalysis::CalculateTopClusterAboutCentroidDefinition(const CentroidNeighbors& CentroidDef, const AbstractDataSetGateway& DataGateway) {
-  if (gTopCluster->GetCentroidIndex() != CentroidDef.GetCentroidIndex())
-    //re-intialize top cluster object if evaluating data about new centroid
-    gTopCluster->Initialize(CentroidDef.GetCentroidIndex());
+  if (_topClusters.getClusterSet(0).get(0).getCluster().GetCentroidIndex() != CentroidDef.GetCentroidIndex())
+    //re-intialize top cluster objects if evaluating data about new centroid
+    _topClusters.reset(CentroidDef.GetCentroidIndex());
   gClusterComparator->Initialize(CentroidDef.GetCentroidIndex());
   gClusterComparator->SetEllipseOffset(CentroidDef.GetEllipseIndex(), gDataHub);
-  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, *gTopCluster, *gpLikelihoodCalculator);
+  _topClusters.resetNeighborCounts(CentroidDef);
+  gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, CentroidDef, _topClusters.getClusterSet(0), *gpLikelihoodCalculator);
   //if top cluster was found in this centroid/ellipse, calculate radius now - CentroidNeighbors object wont' be available later
-  if (gTopCluster->GetEllipseOffset() == CentroidDef.GetEllipseIndex())
-    gTopCluster->SetNonPersistantNeighborInfo(gDataHub, CentroidDef);
+  _topClusters.setClusterNonPersistantNeighborInfo(CentroidDef);
 }
 
 /** Returns cluster object with greatest llr value as specified by gTopCluster.
     Note that this object will potentially be updated with next call to
     CalculateTopClusterAboutCentroidDefinition(), so calling Clone() on returned object
     is necessary if you want to keep object around in current state. */
-const CCluster& PurelySpatialCentricAnalysis::GetTopCalculatedCluster() {
-  return *gTopCluster;
+const SharedClusterVector_t PurelySpatialCentricAnalysis::GetTopCalculatedClusters() {
+  SharedClusterVector_t topClusters; 
+  return _topClusters.getTopClusters(topClusters);
 }
 
 /** Updates CMeasureList objects for each defined data set of gateway object.
@@ -112,7 +113,7 @@ void PurelySpatialCentricAnalysis::Setup(const AbstractDataSetGateway& RealDataG
   try {
     //allocate objects used to evaluate real data
     gClusterComparator.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway));
-    gTopCluster.reset(new CPurelySpatialCluster(gpClusterDataFactory, RealDataGateway));
+    _topClusters.setTopClusters(*gClusterComparator.get());
     
     //allocate objects used to evaluate simulation data
     if (gParameters.GetNumReplicationsRequested()) {

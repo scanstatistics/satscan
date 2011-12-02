@@ -5,6 +5,7 @@
 #include "cluster.h"
 #include "ClusterDataFactory.h"
 #include "UtilityFunctions.h"
+#include "IntermediateClustersContainer.h"
 
 class CMeasureList; /** class declaration defined in other unit */
 
@@ -29,7 +30,7 @@ class CPurelySpatialProspectiveCluster : public CCluster {
 
     void                                       CalculateTopClusterAboutCentroidDefinition(const AbstractDataSetGateway& DataGateway,
                                                                                           const CentroidNeighbors& CentroidDef,
-                                                                                          CPurelySpatialProspectiveCluster& TopCluster,
+                                                                                          CClusterSet& clusterSet,
                                                                                           AbstractLikelihoodCalculator& Calculator);
     virtual void                               CopyEssentialClassMembers(const CCluster& rhs);
     virtual AbstractClusterData              * GetClusterData() {return gpClusterData;}
