@@ -13,8 +13,7 @@ IniParameterFileAccess::IniParameterFileAccess(CParameters& Parameters, BasePrin
 IniParameterFileAccess::~IniParameterFileAccess() {
   try {
     delete gpSpecifications;
-  }
-  catch (...){}  
+  } catch (...){}  
 }
 
 /** Returns key string for specified parameter type. */
@@ -30,8 +29,7 @@ const IniParameterSpecification & IniParameterFileAccess::GetSpecifications() co
   try {
     if (!gpSpecifications)
       throw prg_error("Specifications object not allocated.", "GetSpecifications()");
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("GetSpecifications()","IniParameterFileAccess");
     throw;
   }
@@ -54,8 +52,7 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
        ReadIniParameter(SourceFile, eType);
     ReadObservableRegionSettings(SourceFile);
     ReadMultipleDataSetsSettings(SourceFile);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("Read()","IniParameterFileAccess");
     throw;
   }
@@ -67,7 +64,6 @@ bool IniParameterFileAccess::Read(const char* sFilename) {
 void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, ParameterType eParameterType) {
   long          lSectionIndex, lKeyIndex=-1;
   const char  * sSectionName, * sKey;
-
   try {
     if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
       if ((lSectionIndex = SourceFile.GetSectionIndex(sSectionName)) > -1) {
@@ -78,8 +74,7 @@ void IniParameterFileAccess::ReadIniParameter(const IniFile& SourceFile, Paramet
     }
     //if (lKeyIndex == -1)
     //  MarkAsMissingDefaulted(eParameterType, gPrintDirection);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ReadIniParameter()","IniParameterFileAccess");
     throw;
   }
@@ -105,7 +100,6 @@ std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile
       }
     }
   }
-
   return vParameters;
 }
 
@@ -113,7 +107,6 @@ std::vector<std::string>& IniParameterFileAccess::ReadIniParameter(const IniFile
 void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceFile) {
   std::vector<std::string>      vFilenames;
   size_t                        t, iMostDataSets=1;
-
   try {
     ReadIniParameter(SourceFile, MULTI_DATASET_PURPOSE_TYPE);
     ReadIniParameter(SourceFile, CASEFILE, vFilenames, 2);
@@ -132,8 +125,7 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceF
     //any file of a particular dataset, even if blank. This keeps the same behavior
     //as when there was only one dataset.
     gParameters.SetNumDataSets(iMostDataSets);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ReadMultipleDataSetsSettings()","IniParameterFileAccess");
     throw;
   }
@@ -142,13 +134,11 @@ void IniParameterFileAccess::ReadMultipleDataSetsSettings(const IniFile& SourceF
 /** Reads parameter settings grouped under 'Regions Window'. */
 void IniParameterFileAccess::ReadObservableRegionSettings(const IniFile& SourceFile) {
   std::vector<std::string>      inequalities;
-
   try {
     ReadIniParameter(SourceFile, OBSERVABLE_REGIONS, inequalities, 1);
     for (size_t t=0; t < inequalities.size(); ++t)
         gParameters.AddObservableRegion(inequalities[t].c_str(), t, t == 0);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ReadObservableRegionSettings()","IniParameterFileAccess");
     throw;
   }
@@ -185,8 +175,7 @@ void IniParameterFileAccess::Write(const char* sFilename) {
     WriteSystemSettings(WriteFile);
 
 	WriteFile.Write(gParameters.GetSourceFileName());
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("Write()", "IniParameterFileAccess");
     throw;
   }
@@ -195,13 +184,11 @@ void IniParameterFileAccess::Write(const char* sFilename) {
 /** Writes parameter settings grouped under 'Additional Output'. */
 void IniParameterFileAccess::WriteAdditionalOutputSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, REPORT_CRITICAL_VALUES, GetParameterString(REPORT_CRITICAL_VALUES, s).c_str(), GetParameterComment(REPORT_CRITICAL_VALUES));
     WriteIniParameter(WriteFile, REPORT_RANK, GetParameterString(REPORT_RANK, s).c_str(), GetParameterComment(REPORT_RANK));
     WriteIniParameter(WriteFile, PRINT_ASCII_HEADERS, GetParameterString(PRINT_ASCII_HEADERS, s).c_str(), GetParameterComment(PRINT_ASCII_HEADERS));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteAdditionalOutputSettings()","IniParameterFileAccess");
     throw;
   }
@@ -210,15 +197,13 @@ void IniParameterFileAccess::WriteAdditionalOutputSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Analysis'. */
 void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, ANALYSISTYPE, GetParameterString(ANALYSISTYPE, s).c_str(), GetParameterComment(ANALYSISTYPE));
     WriteIniParameter(WriteFile, MODEL, GetParameterString(MODEL, s).c_str(), GetParameterComment(MODEL));
     WriteIniParameter(WriteFile, SCANAREAS, GetParameterString(SCANAREAS, s).c_str(), GetParameterComment(SCANAREAS));
     WriteIniParameter(WriteFile, TIME_AGGREGATION_UNITS, GetParameterString(TIME_AGGREGATION_UNITS, s).c_str(), GetParameterComment(TIME_AGGREGATION_UNITS));
     WriteIniParameter(WriteFile, TIME_AGGREGATION, GetParameterString(TIME_AGGREGATION, s).c_str(), GetParameterComment(TIME_AGGREGATION));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteAnalysisSettings()","IniParameterFileAccess");
     throw;
   }
@@ -227,19 +212,19 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Clusters Reported'. */
 void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
+    WriteIniParameter(WriteFile, SPATIAL_MAXIMA, GetParameterString(SPATIAL_MAXIMA, s).c_str(), GetParameterComment(SPATIAL_MAXIMA));
+    WriteIniParameter(WriteFile, INDEXBASED_REPORT_TYPE, GetParameterString(INDEXBASED_REPORT_TYPE, s).c_str(), GetParameterComment(INDEXBASED_REPORT_TYPE));
+    WriteIniParameter(WriteFile, INDEXBASED_PVALUE_CUTOFF, GetParameterString(INDEXBASED_PVALUE_CUTOFF, s).c_str(), GetParameterComment(INDEXBASED_PVALUE_CUTOFF));
+    WriteIniParameter(WriteFile, OUTPUT_INDEX_COEFFICENTS, GetParameterString(OUTPUT_INDEX_COEFFICENTS, s).c_str(), GetParameterComment(OUTPUT_INDEX_COEFFICENTS));
     WriteIniParameter(WriteFile, USE_REPORTED_GEOSIZE, GetParameterString(USE_REPORTED_GEOSIZE, s).c_str(), GetParameterComment(USE_REPORTED_GEOSIZE));
     WriteIniParameter(WriteFile, MAXGEOPOPATRISK_REPORTED, GetParameterString(MAXGEOPOPATRISK_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPATRISK_REPORTED));
     WriteIniParameter(WriteFile, MAXGEOPOPFILE_REPORTED, GetParameterString(MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(MAXGEOPOPFILE_REPORTED));
     WriteIniParameter(WriteFile, MAXGEODISTANCE_REPORTED, GetParameterString(MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(MAXGEODISTANCE_REPORTED));
     WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE_REPORTED, GetParameterString(USE_MAXGEOPOPFILE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE_REPORTED));
     WriteIniParameter(WriteFile, USE_MAXGEODISTANCE_REPORTED, GetParameterString(USE_MAXGEODISTANCE_REPORTED, s).c_str(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
-    WriteIniParameter(WriteFile, OPTIMIZE_CLUSTER_CUTOFF, GetParameterString(OPTIMIZE_CLUSTER_CUTOFF, s).c_str(), GetParameterComment(OPTIMIZE_CLUSTER_CUTOFF));
-    WriteIniParameter(WriteFile, OPTIMIZE_CLUSTER_REPORT_TYPE, GetParameterString(OPTIMIZE_CLUSTER_REPORT_TYPE, s).c_str(), GetParameterComment(OPTIMIZE_CLUSTER_REPORT_TYPE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteClustersReportedSettings()","IniParameterFileAccess");
     throw;
   }
@@ -248,12 +233,10 @@ void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Data Checking'. */
 void IniParameterFileAccess::WriteDataCheckingSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, STUDYPERIOD_DATACHECK, GetParameterString(STUDYPERIOD_DATACHECK, s).c_str(), GetParameterComment(STUDYPERIOD_DATACHECK));
     WriteIniParameter(WriteFile, COORDINATES_DATACHECK, GetParameterString(COORDINATES_DATACHECK, s).c_str(), GetParameterComment(COORDINATES_DATACHECK));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteDataCheckingSettings()","IniParameterFileAccess");
     throw;
   }
@@ -262,12 +245,10 @@ void IniParameterFileAccess::WriteDataCheckingSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under '[Elliptic Scan]'. */
 void IniParameterFileAccess::WriteEllipticScanSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, ESHAPES, GetParameterString(ESHAPES, s).c_str(), GetParameterComment(ESHAPES));
     WriteIniParameter(WriteFile, ENUMBERS, GetParameterString(ENUMBERS, s).c_str(), GetParameterComment(ENUMBERS));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteEllipticScanSettings()","IniParameterFileAccess");
     throw;
   }
@@ -276,7 +257,6 @@ void IniParameterFileAccess::WriteEllipticScanSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Inference'. */
 void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, START_PROSP_SURV, GetParameterString(START_PROSP_SURV, s).c_str(), GetParameterComment(START_PROSP_SURV));
     WriteIniParameter(WriteFile, PVALUE_REPORT_TYPE, GetParameterString(PVALUE_REPORT_TYPE, s).c_str(), GetParameterComment(PVALUE_REPORT_TYPE));
@@ -287,8 +267,7 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, ITERATIVE_NUM, GetParameterString(ITERATIVE_NUM, s).c_str(), GetParameterComment(ITERATIVE_NUM));
     WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s).c_str(), GetParameterComment(ITERATIVE_PVAL));
     WriteIniParameter(WriteFile, REPLICAS, GetParameterString(REPLICAS, s).c_str(), GetParameterComment(REPLICAS));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
     throw;
   }
@@ -297,7 +276,6 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
 /** Writes specified comment and value to file for parameter type. */
 void IniParameterFileAccess::WriteIniParameter(IniFile& WriteFile, ParameterType eParameterType, const char* sValue, const char* sComment) {
   const char  * sSectionName, * sKey;
-
   try {
     if (GetSpecifications().GetParameterIniInfo(eParameterType, &sSectionName, &sKey)) {
       IniSection *  pSection = WriteFile.GetSection(sSectionName);
@@ -305,8 +283,7 @@ void IniParameterFileAccess::WriteIniParameter(IniFile& WriteFile, ParameterType
       pSection->AddLine(sKey, sValue);
     }
     else throw prg_error("Unknown parameter type '%d'.", "WriteIniParameters()", eParameterType);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteIniParameters()","IniParameterFileAccess");
     throw;
   }
@@ -318,8 +295,7 @@ void IniParameterFileAccess::WriteIniParameterAsKey(IniFile& WriteFile, const ch
     IniSection *  pSection = WriteFile.GetSection(sSectionName);
     if (sComment) pSection->AddComment(sComment);
     pSection->AddLine(sKey, sValue);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteIniParameterAsKey()","IniParameterFileAccess");
     throw;
   }
@@ -328,7 +304,6 @@ void IniParameterFileAccess::WriteIniParameterAsKey(IniFile& WriteFile, const ch
 /** Writes parameter settings grouped under 'Input'. */
 void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, CASEFILE, GetParameterString(CASEFILE, s).c_str(), GetParameterComment(CASEFILE));
     WriteIniParameter(WriteFile, CONTROLFILE, GetParameterString(CONTROLFILE, s).c_str(), GetParameterComment(CONTROLFILE));
@@ -340,8 +315,7 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, COORDTYPE, GetParameterString(COORDTYPE, s).c_str(), GetParameterComment(COORDTYPE));
     WriteIniParameter(WriteFile, STARTDATE, GetParameterString(STARTDATE, s).c_str(), GetParameterComment(STARTDATE));
     WriteIniParameter(WriteFile, ENDDATE, GetParameterString(ENDDATE, s).c_str(), GetParameterComment(ENDDATE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteInputSettings()","IniParameterFileAccess");
     throw;
   }
@@ -351,7 +325,6 @@ void IniParameterFileAccess::WriteInputSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
   std::string   s, sComment;
   const char  * sSectionName, * sBaseKey;
-
   try {
     WriteIniParameter(WriteFile, MULTI_DATASET_PURPOSE_TYPE, AsString(s, gParameters.GetMultipleDataSetPurposeType()).c_str(),
                       " multiple data sets purpose type (0=Multivariate, 1=Adjustment)");
@@ -377,8 +350,7 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
          WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.GetPopulationFileName(t + 1).c_str(), sComment.c_str());
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteMultipleDataSetsSettings()","IniParameterFileAccess");
     throw;
   }
@@ -388,7 +360,6 @@ void IniParameterFileAccess::WriteMultipleDataSetsSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteObservableRegionSettings(IniFile& WriteFile) {
   std::string   s, sComment;
   const char  * sSectionName, * sBaseKey;
-
   try {
     if (GetSpecifications().GetMultipleParameterIniInfo(OBSERVABLE_REGIONS, &sSectionName, &sBaseKey)) {
         for (size_t t=0; t < gParameters.getObservableRegions().size(); ++t) {
@@ -397,8 +368,7 @@ void IniParameterFileAccess::WriteObservableRegionSettings(IniFile& WriteFile) {
          WriteIniParameterAsKey(WriteFile, sSectionName, s.c_str(), gParameters.getObservableRegions()[t].c_str(), sComment.c_str());
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteObservableRegionSettings()","IniParameterFileAccess");
     throw;
   }
@@ -407,9 +377,9 @@ void IniParameterFileAccess::WriteObservableRegionSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Output'. */
 void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, OUTPUTFILE, GetParameterString(OUTPUTFILE, s).c_str(), GetParameterComment(OUTPUTFILE));
+    WriteIniParameter(WriteFile, CLUSTER_REPORT_TYPE, GetParameterString(CLUSTER_REPORT_TYPE, s).c_str(), GetParameterComment(CLUSTER_REPORT_TYPE));
     WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, GetParameterString(OUTPUT_SIM_LLR_ASCII, s).c_str(), GetParameterComment(OUTPUT_SIM_LLR_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, GetParameterString(OUTPUT_SIM_LLR_DBASE, s).c_str(), GetParameterComment(OUTPUT_SIM_LLR_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, GetParameterString(OUTPUT_RR_ASCII, s).c_str(), GetParameterComment(OUTPUT_RR_ASCII));
@@ -420,10 +390,7 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, OUTPUT_MLC_DBASE, GetParameterString(OUTPUT_MLC_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_ASCII, GetParameterString(OUTPUT_MLC_CASE_ASCII, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_MLC_CASE_DBASE, GetParameterString(OUTPUT_MLC_CASE_DBASE, s).c_str(), GetParameterComment(OUTPUT_MLC_CASE_DBASE));
-    WriteIniParameter(WriteFile, OUTPUT_COEFFICIENTS_ASCII, GetParameterString(OUTPUT_COEFFICIENTS_ASCII, s).c_str(), GetParameterComment(OUTPUT_COEFFICIENTS_ASCII));
-    WriteIniParameter(WriteFile, OUTPUT_COEFFICIENTS_DBASE, GetParameterString(OUTPUT_COEFFICIENTS_DBASE, s).c_str(), GetParameterComment(OUTPUT_COEFFICIENTS_DBASE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteOutputSettings()","IniParameterFileAccess");
     throw;
   }
@@ -432,7 +399,6 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under '[Power Simulations]'. */
 void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, POWERCALC, GetParameterString(POWERCALC, s).c_str(), GetParameterComment(POWERCALC));
     WriteIniParameter(WriteFile, POWERX, GetParameterString(POWERX, s).c_str(), GetParameterComment(POWERX));
@@ -441,8 +407,7 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, GetParameterString(SIMULATION_SOURCEFILE, s).c_str(), GetParameterComment(SIMULATION_SOURCEFILE));
     WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s).c_str(), GetParameterComment(OUTPUT_SIMULATION_DATA));
     WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, GetParameterString(SIMULATION_DATA_OUTFILE, s).c_str(), GetParameterComment(SIMULATION_DATA_OUTFILE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
     throw;
   }
@@ -451,7 +416,6 @@ void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under '[Run Options]'. */
 void IniParameterFileAccess::WriteRunOptionSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     // since randomization seed is a hidden parameter, only write to file if user had specified one originally;
     // which we'll determine by whether it is different than default seed
@@ -465,8 +429,7 @@ void IniParameterFileAccess::WriteRunOptionSettings(IniFile& WriteFile) {
     // since randomly generating seed is a hidden parameter, only write to file if user has switched from default;
     if (gParameters.GetIsRandomlyGeneratingSeed())
       WriteIniParameter(WriteFile, RANDOMLY_GENERATE_SEED, GetParameterString(RANDOMLY_GENERATE_SEED, s).c_str(), GetParameterComment(RANDOMLY_GENERATE_SEED));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteRunOptionSettings()","IniParameterFileAccess");
     throw;
   }
@@ -475,7 +438,6 @@ void IniParameterFileAccess::WriteRunOptionSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, TIMETREND, GetParameterString(TIMETREND, s).c_str(), GetParameterComment(TIMETREND));
     WriteIniParameter(WriteFile, TIMETRENDPERC, GetParameterString(TIMETRENDPERC, s).c_str(), GetParameterComment(TIMETRENDPERC));
@@ -483,8 +445,7 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
     WriteIniParameter(WriteFile, USE_ADJ_BY_RR_FILE, GetParameterString(USE_ADJ_BY_RR_FILE, s).c_str(), GetParameterComment(USE_ADJ_BY_RR_FILE));
     WriteIniParameter(WriteFile, SPATIAL_ADJ_TYPE, GetParameterString(SPATIAL_ADJ_TYPE, s).c_str(), GetParameterComment(SPATIAL_ADJ_TYPE));
     WriteIniParameter(WriteFile, TIME_TREND_TYPE, GetParameterString(TIME_TREND_TYPE, s).c_str(), GetParameterComment(TIME_TREND_TYPE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
     throw;
   }
@@ -493,15 +454,13 @@ void IniParameterFileAccess::WriteSpaceAndTimeAdjustmentSettings(IniFile& WriteF
 /** Writes parameter settings grouped under 'Spatial Neighbors'. */
 void IniParameterFileAccess::WriteSpatialNeighborsSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, LOCATION_NEIGHBORS_FILE, GetParameterString(LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(LOCATION_NEIGHBORS_FILE));
     WriteIniParameter(WriteFile, USE_LOCATION_NEIGHBORS_FILE, GetParameterString(USE_LOCATION_NEIGHBORS_FILE, s).c_str(), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE));
     WriteIniParameter(WriteFile, META_LOCATIONS_FILE, GetParameterString(META_LOCATIONS_FILE, s).c_str(), GetParameterComment(META_LOCATIONS_FILE));
     WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
     WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteNeighborsFileSettings()","IniParameterFileAccess");
     throw;
   }
@@ -510,11 +469,8 @@ void IniParameterFileAccess::WriteSpatialNeighborsSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, MAXGEOPOPATRISK, GetParameterString(MAXGEOPOPATRISK, s).c_str(), GetParameterComment(MAXGEOPOPATRISK));    
-    WriteIniParameter(WriteFile, OPTIMIZE_SPATIAL_SIZE, GetParameterString(OPTIMIZE_SPATIAL_SIZE, s).c_str(), GetParameterComment(OPTIMIZE_SPATIAL_SIZE));
-    WriteIniParameter(WriteFile, WINDOW_STOPS, GetParameterString(WINDOW_STOPS, s).c_str(), GetParameterComment(WINDOW_STOPS));
     WriteIniParameter(WriteFile, MAXGEOPOPFILE, GetParameterString(MAXGEOPOPFILE, s).c_str(), GetParameterComment(MAXGEOPOPFILE));
     WriteIniParameter(WriteFile, MAXGEODISTANCE, GetParameterString(MAXGEODISTANCE, s).c_str(), GetParameterComment(MAXGEODISTANCE));
     WriteIniParameter(WriteFile, USE_MAXGEOPOPFILE, GetParameterString(USE_MAXGEOPOPFILE, s).c_str(), GetParameterComment(USE_MAXGEOPOPFILE));
@@ -524,8 +480,7 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, WINDOW_SHAPE, GetParameterString(WINDOW_SHAPE, s).c_str(), GetParameterComment(WINDOW_SHAPE));
     WriteIniParameter(WriteFile, NON_COMPACTNESS_PENALTY, GetParameterString(NON_COMPACTNESS_PENALTY, s).c_str(), GetParameterComment(NON_COMPACTNESS_PENALTY));
     WriteIniParameter(WriteFile, RISKFUNCTION, GetParameterString(RISKFUNCTION, s).c_str(), GetParameterComment(RISKFUNCTION));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteSpatialWindowSettings()","IniParameterFileAccess");
     throw;
   }
@@ -534,11 +489,9 @@ void IniParameterFileAccess::WriteSpatialWindowSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under '[System]'. */
 void IniParameterFileAccess::WriteSystemSettings(IniFile& WriteFile) {
   std::string s;
-
   try {
     WriteIniParameter(WriteFile, CREATION_VERSION, GetParameterString(CREATION_VERSION, s).c_str(), GetParameterComment(CREATION_VERSION));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteSystemSettings()","IniParameterFileAccess");
     throw;
   }
@@ -547,7 +500,6 @@ void IniParameterFileAccess::WriteSystemSettings(IniFile& WriteFile) {
 /** Writes parameter settings grouped under 'Spatial Window'. */
 void IniParameterFileAccess::WriteTemporalWindowSettings(IniFile& WriteFile) {
   std::string  s;
-
   try {
     WriteIniParameter(WriteFile, TIMESIZE, GetParameterString(TIMESIZE, s).c_str(), GetParameterComment(TIMESIZE));
     WriteIniParameter(WriteFile, PURESPATIAL, GetParameterString(PURESPATIAL, s).c_str(), GetParameterComment(PURESPATIAL));
@@ -555,8 +507,7 @@ void IniParameterFileAccess::WriteTemporalWindowSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, CLUSTERS, GetParameterString(CLUSTERS, s).c_str(), GetParameterComment(CLUSTERS));
     WriteIniParameter(WriteFile, INTERVAL_STARTRANGE, GetParameterString(INTERVAL_STARTRANGE, s).c_str(), GetParameterComment(INTERVAL_STARTRANGE));
     WriteIniParameter(WriteFile, INTERVAL_ENDRANGE, GetParameterString(INTERVAL_ENDRANGE, s).c_str(), GetParameterComment(INTERVAL_ENDRANGE));
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("WriteTemporalWindowSettings()","IniParameterFileAccess");
     throw;
   }

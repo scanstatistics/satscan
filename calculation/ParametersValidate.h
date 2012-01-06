@@ -5,12 +5,12 @@
 #include "Parameters.h"
 #include "BasePrint.h"
 
-/** Validates CParameters settings in relation to program and each other, as well
-    as available functionality in program. */
+/** Validates CParameters settings in relation to program and each other, as well as available functionality in program. */
 class ParametersValidate {
   private:
     const CParameters & gParameters;
 
+    bool                ValidateClustersReportedParameters(BasePrint & PrintDirection) const;
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;
     bool                ValidateDateParameters(BasePrint& PrintDirection) const;
     bool                ValidateDateString(BasePrint& PrintDirection, ParameterType eParameterType, const std::string& value) const;
@@ -34,8 +34,7 @@ class ParametersValidate {
     bool                ValidateTimeAggregationUnits(BasePrint & PrintDirection) const;
 
   public:
-    ParametersValidate(const CParameters& Parameters);
-    ~ParametersValidate();
+    ParametersValidate(const CParameters& Parameters): gParameters(Parameters) {}
 
     bool                Validate(BasePrint& PrintDirection) const;
 };

@@ -24,17 +24,19 @@ class MultiSetCategoricalSpatialData : public AbstractSpatialClusterData, public
     virtual MultiSetCategoricalSpatialData            * Clone() const;
     virtual void        CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void        setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
     void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                           AbstractLikelihoodCalculator& Calculator,
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
     virtual double      GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void        setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                      unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
-
+    virtual size_t      getNumSets() const {return gvSetClusterData.size();}
 };
 
 /** Abstract class representing accumulated data of a temporal clustering in multiple
@@ -48,15 +50,18 @@ class AbstractMultiSetCategoricalTemporalData : public AbstractTemporalClusterDa
 
     virtual void        CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void        setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
     void                GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                           AbstractLikelihoodCalculator& Calculator,
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void        setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void        GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                      std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                      unsigned int tSetIndex=0) const;
     virtual void        InitializeData();
+    virtual size_t      getNumSets() const {return gvSetClusterData.size();}
 };
 
 /** Class representing accumulated data of a temporal clustering in multiple data

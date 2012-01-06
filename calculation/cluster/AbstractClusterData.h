@@ -27,13 +27,16 @@ class AbstractClusterData {
     virtual void        CopyEssentialClassMembers(const AbstractClusterData& rhs) = 0;
     virtual void        DeallocateEvaluationAssistClassMembers() {/*nop*/}
     virtual count_t     GetCaseCount(unsigned int tSetIndex=0) const = 0;
+    virtual void        setCaseCount(count_t t, unsigned int tSetIndex=0) = 0;
     virtual count_t     GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
     virtual void        GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                           AbstractLikelihoodCalculator& Calculator,
                                                           std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t   GetMeasure(unsigned int tSetIndex=0) const = 0;
+    virtual void        setMeasure(measure_t m, unsigned int tSetIndex=0) = 0;
     virtual void        InitializeData() = 0;
     virtual void        InitializeData(const AbstractDataSetGateway& DataGateway) {InitializeData();}
+    virtual size_t      getNumSets() const {return 1;}
 };
 
 /** Abstract class representing accumulated data of spatial clustering. */

@@ -396,7 +396,6 @@ QuadraticTimeTrend::Status QuadraticTimeTrend::CalculateAndSet(const count_t* pC
 	gStatus = QuadraticTimeTrend::SINGULAR_MATRIX;
   }
 
-  //TODO: Remove these debug statements later.
   //if (gStatus == QuadraticTimeTrend::NOT_CONVERGED || gStatus == QuadraticTimeTrend::SINGULAR_MATRIX) {
   //  fprintf(AppToolkit::getToolkit().openDebugFile(), "\n\nQuadratic trend failed %s\n", 
   //      (gStatus == QuadraticTimeTrend::NOT_CONVERGED ? "to converge." : "due to singular matrix."));

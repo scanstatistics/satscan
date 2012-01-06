@@ -16,17 +16,16 @@ MostLikelyClustersContainer::MostLikelyClustersContainer(double maximum_window_s
 
 /** Adds clone of passed cluster object to list of top clusters. */
 void MostLikelyClustersContainer::Add(const CCluster& Cluster) {
-  if (Cluster.ClusterDefined()) {
-    gvTopClusterList.push_back(0);
-    gvTopClusterList.back() = Cluster.Clone();
+  if (Cluster.ClusterDefined() && Cluster.GetRatio() > 0) {
+    gvTopClusterList.push_back(boost::shared_ptr<CCluster>(Cluster.Clone()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
 
 /** Adds cluster object to list of top clusters, taking ownership. */
 void MostLikelyClustersContainer::Add(std::auto_ptr<CCluster>& pCluster) {
-  if (pCluster.get() && pCluster->ClusterDefined()) {
-    gvTopClusterList.push_back(pCluster.release());
+  if (pCluster.get() && pCluster->ClusterDefined() && pCluster->GetRatio() > 0) {
+    gvTopClusterList.push_back(boost::shared_ptr<CCluster>(pCluster.release()));
     gvTopClusterList.back()->DeallocateEvaluationAssistClassMembers();
   }
 }
@@ -52,23 +51,56 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
   return bResult;
 }
 
-/** Removes all cluster objects from list. */
-void MostLikelyClustersContainer::Empty() {
-  gvTopClusterList.killAll();
+/** Combines passed collection with this collection of clusters. */
+void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub) {
+    if (gvTopClusterList.size() == 0)
+        gvTopClusterList = other.gvTopClusterList;
+    else {
+        ClusterList_t combineClusters;
+        ClusterList_t::const_iterator itrOther=other.gvTopClusterList.begin(), itrEndOther=other.gvTopClusterList.end();
+        for (;itrOther != itrEndOther; ++itrOther) {
+            // create bit set of cluster locations
+            std::auto_ptr<boost::dynamic_bitset<> > otherSet;
+            // iterate through this cluster collections to see if other cluster is duplicate of cluster already in set
+            ClusterList_t::const_iterator itrThis=gvTopClusterList.begin(), itrThisEnd=gvTopClusterList.end();
+            bool isDuplicate = false;
+            for (;!isDuplicate && itrThis != itrThisEnd; ++itrThis) {
+                // clusters are identical in terms of time interval and cluster locations
+                if ((*itrOther)->m_nFirstInterval == (*itrThis)->m_nFirstInterval && 
+                    (*itrOther)->m_nLastInterval == (*itrThis)->m_nLastInterval && 
+                    (*itrOther)->GetNumTractsInCluster() == (*itrThis)->GetNumTractsInCluster()) {
+                    if (!otherSet.get()) {
+                        // allocate and set 'other' clusters bitset
+                        otherSet.reset(new boost::dynamic_bitset<>(DataHub.GetNumTracts()));
+                        getClusterLocationsSet(DataHub, **itrOther, *otherSet.get());
+                    }
+                    boost::dynamic_bitset<> thisSet(DataHub.GetNumTracts());
+                    getClusterLocationsSet(DataHub, **itrThis, thisSet);
+                    thisSet &= *otherSet;
+                    isDuplicate = thisSet.count() == (*itrThis)->GetNumTractsInCluster();
+                }
+            }
+            if (!isDuplicate) combineClusters.push_back(*itrOther);
+        }
+        // now add the non-duplicate clusters to cluster collection
+        ClusterList_t::const_iterator itr=combineClusters.begin(), itrEnd=combineClusters.end();
+        for (;itr != itrEnd; ++itr) gvTopClusterList.push_back(*itr);
+    }
 }
 
-/** Returns reference to cluster object at passed index. Throws exception if index
-    is out of range.*/
+/** Removes all cluster objects from list. */
+void MostLikelyClustersContainer::Empty() {
+    gvTopClusterList.clear();
+}
+
+/** Returns reference to cluster object at passed index. Throws exception if index is out of range.*/
 const CCluster& MostLikelyClustersContainer::GetCluster(tract_t tClusterIndex) const {
-  try {
-    if (tClusterIndex < 0 || (unsigned int)tClusterIndex > gvTopClusterList.size() - 1)
-      throw prg_error("Index %d out of range [size=%u].","GetCluster()", tClusterIndex, gvTopClusterList.size());
-  }
-  catch (prg_exception& x) {
-     x.addTrace("GetCluster()","MostLikelyClustersContainer");
-     throw;
-  }
-  return *gvTopClusterList[tClusterIndex];
+  return *gvTopClusterList.at(tClusterIndex);
+}
+
+/** Returns reference to cluster object at passed index. Throws exception if index is out of range.*/
+MostLikelyClustersContainer::Cluster_t& MostLikelyClustersContainer::GetClusterRef(tract_t tClusterIndex) {
+  return gvTopClusterList.at(tClusterIndex);
 }
 
 /** According to information contained in 'DataHub', what is the radius of 'theCluster'? */
@@ -103,140 +135,108 @@ double MostLikelyClustersContainer::getClicCoefficient(const CSaTScanData& DataH
     double totalPopulation=0;
 
     //create a copy of top cluster pointers
-    ptr_vector<CCluster>::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
+    ClusterList_t::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
     std::vector<CCluster *> sortClusters;
     for (size_t t=0; t < gvTopClusterList.size(); ++t) {
         double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
         if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE)) {
-            const CCluster* cluster = gvTopClusterList[t];
+            const CCluster* cluster = gvTopClusterList[t].get();
             totalLLR += cluster->GetRatio()/cluster->GetNonCompactnessPenalty();
             //TODO: only Poisson (and using population file) and Bernoulli
             totalPopulation += DataHub.GetProbabilityModel().GetPopulation(0, *cluster, DataHub);
             ++numClusters;
         }
     }
+    //Question proposed in meeting: Can we use proportion of total population instead?
     return -2.0 * totalLLR + log(totalPopulation) * numClusters;
 }
 
 double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const {
-    bool classic=true;
-    double giniCoefficient=0.0;
-    p_cutoff = 1.0;
-
+    double giniCoefficient=0.0, totalCases = static_cast<double>(DataHub.GetTotalCases()), totalMeasure = DataHub.GetTotalMeasure();
     const CParameters & params(DataHub.GetParameters());
+    unsigned int numDataSets = DataHub.GetDataSetHandler().GetNumDataSets();    
     //create a copy of top cluster pointers
-    ptr_vector<CCluster>::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
-    std::vector<CCluster *> sortClusters;
+    ClusterList_t::const_iterator itrCurr=gvTopClusterList.begin(), itrEnd=gvTopClusterList.end();
+    ClusterList_t sortClusters;
     for (size_t t=0; t < gvTopClusterList.size(); ++t) {
         double p_value = gvTopClusterList[t]->getReportingPValue(params, simVars, t==0);
         if (params.GetNumReplicationsRequested() < MIN_SIMULATION_RPT_PVALUE || 
             macro_less_than(gvTopClusterList[t]->getReportingPValue(params, simVars, t==0), p_cutoff, DBL_CMP_TOLERANCE))
             sortClusters.push_back(gvTopClusterList[t]);
     }
-    if (classic) {
-        //sort by observed div expected
-        std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub, true));
-
-        double totalPopulation=DataHub.GetTotalPopulationCount(), totalCases=static_cast<double>(DataHub.GetTotalCases());
-        double sumClusterPopulation=0.0, sumClusterTotalCases=0.0;
-        std::vector<double> tmp_pops, tmp_cases;
-        for (size_t t=0; t < sortClusters.size(); ++t) {
-            const CCluster& cluster = *(sortClusters[t]);
-            tmp_pops.push_back(DataHub.GetProbabilityModel().GetPopulation(0, cluster, DataHub));
-            sumClusterPopulation += tmp_pops.back();
-            tmp_cases.push_back(static_cast<double>(cluster.GetObservedCount(0)));
-            sumClusterTotalCases += tmp_cases.back();
+    if (numDataSets > 1 && params.GetMultipleDataSetPurposeType() != ADJUSTMENT)
+        throw prg_error("GINI coefficient calculation not implemented for multiple data set using '%d' purpose.", "getGiniCoefficient()", params.GetMultipleDataSetPurposeType());
+    if (sortClusters.size() == 0) return giniCoefficient;
+    // In order for index calculation to be correct when scanning low or high+low rates, we need to insert
+    // a cluster that is the remainder of data outside of the clusters used in calcuation. 
+    std::vector<count_t> remainderCases(numDataSets, 0);
+    std::vector<measure_t> remainderMeasure(numDataSets, 0);
+    for (size_t t=0; t < sortClusters.size(); ++t) {
+        const CCluster& cluster = *(sortClusters[t]);
+        for (size_t s=0; s < numDataSets; ++s) {
+            remainderCases[s] += cluster.GetClusterData()->GetCaseCount(s);
+            remainderMeasure[s] += cluster.GetClusterData()->GetMeasure(s);
         }
-        tmp_pops.insert(tmp_pops.begin(), totalPopulation - sumClusterPopulation);
-        tmp_cases.insert(tmp_cases.begin(), totalCases - sumClusterTotalCases);
-
-        std::vector<double> cum_tmp_pops_per(tmp_pops.size(), 0), cum_tmp_cases_per(tmp_cases.size(),0);
-        std::partial_sum(tmp_pops.begin(), tmp_pops.end(), cum_tmp_pops_per.begin());
-        cum_tmp_pops_per.insert(cum_tmp_pops_per.begin(), 0);
-        for (size_t t=0; t < cum_tmp_pops_per.size(); ++t)
-            cum_tmp_pops_per[t] /= totalPopulation;
-        std::partial_sum(tmp_cases.begin(), tmp_cases.end(), cum_tmp_cases_per.begin());
-        cum_tmp_cases_per.insert(cum_tmp_cases_per.begin(), 0);
-        for (size_t t=0; t < cum_tmp_cases_per.size(); ++t)
-            cum_tmp_cases_per[t] /= totalCases;
-
-        std::vector<double> tmp1, tmp2;
-        for (size_t t=0; t < cum_tmp_pops_per.size() - 1; ++t) 
-            tmp1.push_back(cum_tmp_pops_per[t+1] - cum_tmp_pops_per[t]);
-        for (size_t t=0; t < cum_tmp_cases_per.size() - 1; ++t) 
-            tmp2.push_back(cum_tmp_cases_per[t+1] + cum_tmp_cases_per[t]);
-
-        double sum=0.0;
-        for (size_t t=0; t < tmp1.size(); ++t) 
-            sum += tmp1[t] * tmp2[t];
-        giniCoefficient = 1.0 - sum;
-    } 
-    /*{
-        //sort by observed div expected
-        std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub, false));
-
-        // first create collection of observed and expected values for each cluster
-        double totalMeasure = DataHub.GetTotalMeasure(), totalCases=static_cast<double>(DataHub.GetTotalCases());
-        double sumClusterMeasure=0.0, sumClusterTotalCases=0.0;
-        std::vector<double> tmp_measure, tmp_cases;
-        for (size_t t=0; t < sortClusters.size(); ++t) {
-            const CCluster& cluster = *(sortClusters[t]);
-            tmp_measure.push_back(cluster.GetExpectedCount(DataHub, 0));
-            sumClusterMeasure += tmp_measure.back();
-            tmp_cases.push_back(static_cast<double>(cluster.GetObservedCount(0)));
-            sumClusterTotalCases += tmp_cases.back();
-        }
-        // add remainder of totals to beginning of collection
-        tmp_measure.insert(tmp_measure.begin(), totalMeasure - sumClusterMeasure);
-        tmp_cases.insert(tmp_cases.begin(), totalCases - sumClusterTotalCases);
-        // set collections as cummulative then divide by respective total 
-        std::vector<double> cum_tmp_measure_per(tmp_measure.size(), 0), cum_tmp_cases_per(tmp_cases.size(),0);
-        std::partial_sum(tmp_measure.begin(), tmp_measure.end(), cum_tmp_measure_per.begin());
-        cum_tmp_measure_per.insert(cum_tmp_measure_per.begin(), 0);
-        for (size_t t=0; t < cum_tmp_measure_per.size(); ++t)
-            cum_tmp_measure_per[t] /= totalMeasure;
-        std::partial_sum(tmp_cases.begin(), tmp_cases.end(), cum_tmp_cases_per.begin());
-        cum_tmp_cases_per.insert(cum_tmp_cases_per.begin(), 0);
-        for (size_t t=0; t < cum_tmp_cases_per.size(); ++t)
-            cum_tmp_cases_per[t] /= totalCases;
-        // GINI coefficient - see the wikipedia for the details
-        // GINI = 1-2B = 1 - sum of (p1-p0)*(d1+d0)'s
-        double sum=0.0;
-        for (size_t t=0; t < cum_tmp_measure_per.size() - 1; ++t) 
-            sum += (cum_tmp_measure_per[t+1] - cum_tmp_measure_per[t]) * (cum_tmp_cases_per[t+1] + cum_tmp_cases_per[t]);
-        giniCoefficient = 1.0 - sum;
-    }*/
-    {
-        std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub, false));
-        //create structures to help calculating areas
-        std::vector<double> height(sortClusters.size() + 2, 0.0);
-        std::vector<double> base(sortClusters.size() + 2, 0.0);
-        //initialize vectors to get respective lengths
-        double totalCases = static_cast<double>(DataHub.GetTotalCases());
-        double totalMeasure = DataHub.GetTotalMeasure();
-        double totalPopulation = DataHub.GetTotalPopulationCount();
-        height.front() = base.front() = 1.0;
-        for (size_t t=1; t < height.size() - 1; ++t) {
-            const CCluster& cluster = *(sortClusters[t-1]);
-            double obs = static_cast<double>(cluster.GetObservedCount(0));
-            height[t] = height[t-1] - obs/totalCases;
-            double exp = cluster.GetExpectedCount(DataHub, 0);
-            base[t] = base[t-1] - exp/totalMeasure;
-            //double pop =  DataHub.GetProbabilityModel().GetPopulation(0, cluster, DataHub);
-            //base[t] = base[t-1] - pop/totalPopulation;
-        }
-        std::reverse(height.begin(),height.end());
-        std::reverse(base.begin(),base.end());
-        //sum area of each trapezoid
-        double totalArea = 0.0;
-        for (size_t t=0; t < height.size() - 1; ++t) {
-            double b = base[t+1] - base[t];
-            double h = height[t+1] + height[t];
-            totalArea += b * h;
-        }
-        giniCoefficient = 1.0 - totalArea;
     }
-
+    boost::shared_ptr<CCluster> remainderCluster((*sortClusters.begin())->Clone());
+    for (unsigned int s=0; s < numDataSets; ++s) {
+        remainderCluster->GetClusterData()->setCaseCount(DataHub.GetDataSetHandler().GetDataSet(s).getTotalCases() - remainderCases[s], s);
+        remainderCluster->GetClusterData()->setMeasure(DataHub.GetDataSetHandler().GetDataSet(s).getTotalMeasure() - remainderMeasure[s], s);
+    }
+    remainderCluster->m_nRatio = 0;
+    sortClusters.push_back(remainderCluster);
+    // sort cluster collection by it's observerd/expected value
+    std::sort(sortClusters.begin(), sortClusters.end(), CompareClustersObservedDivExpected(DataHub));
+    //create structures to help calculating areas
+    std::vector<double> height(sortClusters.size() + 1, 0.0);
+    std::vector<double> base(sortClusters.size() + 1, 0.0);
+    //initialize vectors to get respective lengths
+    height.front() = base.front() = 1.0;
+    for (size_t t=1; t < height.size() - 1; ++t) {
+        const CCluster& cluster = *(sortClusters[t-1]);
+        switch (params.GetProbabilityModelType()) {
+            case POISSON:
+            case BERNOULLI:
+            case SPACETIMEPERMUTATION:
+            case EXPONENTIAL:
+            case HOMOGENEOUSPOISSON: {
+                double observed=0, expected=0;
+                for (unsigned int s=0; s < numDataSets; ++s) {
+                    observed += static_cast<double>(cluster.GetObservedCount(s));
+                    expected += cluster.GetExpectedCount(DataHub, s);
+                }
+                height[t] = height[t-1] - observed/totalCases;
+                base[t] = base[t-1] - expected/totalMeasure;
+            } break;
+            case NORMAL: {
+                // Martin: After some thinking, I believe we can do this one. Instead of the expected, use the observed number of cases
+                // in the cluster times the overall mean in the whole study region. Instead of the observed, use the observed 
+                // number of cases in the cluster times the mean in the cluster.
+                double observed=0, expected=0,clusterObserved=0,clusterExpected=0,overallMean=totalMeasure/totalCases;
+                const DataSetHandler& dataSets(DataHub.GetDataSetHandler());
+                for (unsigned int s=0; s < numDataSets; ++s) {
+                    double overall_mean_dataset = dataSets.GetDataSet(s).getTotalMeasure()/dataSets.GetDataSet(s).getTotalCases();
+                    clusterObserved = static_cast<double>(cluster.GetObservedCount(s));
+                    clusterExpected = cluster.GetExpectedCount(DataHub, s);
+                    observed += clusterObserved * clusterExpected/clusterObserved;
+                    expected += clusterObserved * overall_mean_dataset;
+                }
+                height[t] = height[t-1] - observed/(overallMean * totalCases);
+                base[t] = base[t-1] - expected/(overallMean * totalCases);
+            } break;
+            case ORDINAL:
+            case CATEGORICAL:
+            case RANK:
+            default : throw prg_error("Unknown Probability Model Type '%d'.", "getGiniCoefficient()", params.GetProbabilityModelType());
+        };
+    }
+    std::reverse(height.begin(),height.end());
+    std::reverse(base.begin(),base.end());
+    // GINI coefficient - see the wikipedia for the details -- GINI = 1-2B = 1 - sum of (base1-base0)*(height1+height0)'s
+    double _2B_ = 0.0;
+    for (size_t t=0; t < height.size() - 1; ++t)
+        _2B_ += (base[t+1] - base[t]) * (height[t+1] + height[t]);
+    giniCoefficient = 1.0 - _2B_;
     return giniCoefficient;
 }
 
@@ -254,9 +254,24 @@ const CCluster& MostLikelyClustersContainer::GetTopRankedCluster() const {
   return *gvTopClusterList[0];
 }
 
+/** sets passed bit to */
+void MostLikelyClustersContainer::getClusterLocationsSet(const CSaTScanData& DataHub, const CCluster& theCluster, boost::dynamic_bitset<>& theSet) {
+    theSet.reset();
+    for (tract_t v=1; v <= theCluster.GetNumTractsInCluster(); ++v) {
+        tract_t loc_id = DataHub.GetNeighbor(theCluster.GetEllipseOffset(), theCluster.GetCentroidIndex(), v, theCluster.GetCartesianRadius()/* use Radius? */);
+        if (loc_id < DataHub.GetNumTracts())// is tract atomic?
+            theSet.set(loc_id);
+        else {
+            std::vector<tract_t> indexes;
+            DataHub.GetTInfo()->getMetaManagerProxy().getIndexes(loc_id, indexes);
+            for (std::vector<tract_t>::const_iterator itr=indexes.begin(); itr != indexes.end(); ++itr) theSet.set(*itr);
+        }
+    }
+}
+
 /** Returns indication of whether geographical overlap exists between passed
     clusters by examining tract locations to comprise the cluster.*/
-bool MostLikelyClustersContainer::HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) {
+bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo) {
   tract_t       tTwoNumTracts = ClusterTwo.GetNumTractsInCluster(),
                 tOneNumTracts = ClusterOne.GetNumTractsInCluster(),
                 tTwoCentroid = ClusterTwo.GetCentroidIndex(), tOneCentroid = ClusterOne.GetCentroidIndex();
@@ -418,53 +433,52 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
     Note that this function should not be called with cluster list containing
     purely temporal clusters. The ranking performed is based soley on geographical
     orientation.   */
-void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection) {
-   unsigned int                         uClustersToKeepEachPass;
-   ptr_vector<CCluster>::iterator       itrCurr, itrEnd;
-   CriteriaSecondaryClustersType        eClusterInclusionCriterion = Parameters.GetCriteriaSecondClustersType();
+void MostLikelyClustersContainer::rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print) {
+   const CParameters& parameters(DataHub.GetParameters());
+   unsigned int       uClustersToKeepEachPass;
 
    try {
      //return if analysis is purely temporal -- there will be at most one cluster
-     if (Parameters.GetIsPurelyTemporalAnalysis()) return;
+     if (parameters.GetIsPurelyTemporalAnalysis()) return;
      //return from function if no clusters retained
      if (!gvTopClusterList.size()) return;
      //determine maximum number of clusters to retain
-     if (Parameters.GetIsIterativeScanning())
+     if (parameters.GetIsIterativeScanning())
        uClustersToKeepEachPass = 1;
-     else if (eClusterInclusionCriterion == NORESTRICTIONS)
+     else if (eOverlapType == NORESTRICTIONS)
        uClustersToKeepEachPass = static_cast<unsigned long>(DataHub.GetNumTracts());
      else
        uClustersToKeepEachPass = std::min(static_cast<unsigned long>(DataHub.m_nGridTracts), MAX_RANKED_CLUSTERS);
      //sort by descending m_ratio
      std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
 
-     if (DataHub.GetTInfo()->getCoordinateDimensions() < 2 && !(eClusterInclusionCriterion == NORESTRICTIONS || eClusterInclusionCriterion == NOGEOOVERLAP))
+     if (DataHub.GetTInfo()->getCoordinateDimensions() < 2 && !(eOverlapType == NORESTRICTIONS || eOverlapType == NOGEOOVERLAP))
        throw prg_error("This function written for at least two (2) dimensions.", "MostLikelyClustersContainer");
 
-     if (eClusterInclusionCriterion != NORESTRICTIONS)
-       gPrintDirection.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
+     if (eOverlapType != NORESTRICTIONS)
+       print.Printf("Checking the Overlapping Nature of Clusters\n", BasePrint::P_STDOUT);
      //remove geographically overlapping clusters
      if (gvTopClusterList.size() > 0) {
-       std::vector<CCluster *> vRetainedClusters;
-       size_t                  tNumSpatialRetained=0; 
+       ClusterList_t vRetainedClusters;
+       size_t tNumSpatialRetained=0;
+       ClusterList_t::iterator itrCurr, itrEnd;
        for (itrCurr=gvTopClusterList.begin(),itrEnd=gvTopClusterList.end(); (tNumSpatialRetained < uClustersToKeepEachPass) && (itrCurr != itrEnd); ++itrCurr) {
-          if (ShouldRetainCandidateCluster(vRetainedClusters, **itrCurr, DataHub, eClusterInclusionCriterion)) {
+          if (ShouldRetainCandidateCluster(vRetainedClusters, **itrCurr, DataHub, eOverlapType)) {
             //transfer ownership of cluster to vRetainedClusters
-            vRetainedClusters.push_back(*itrCurr);
+              vRetainedClusters.push_back(*itrCurr);
             //since previous version had it so that the purely temporal cluster was added after
             //this ranking process, we don't want to consider a purely temporal cluster as
             //part of the retained list when determining whether list is at maximum size
             if ((*itrCurr)->GetClusterType() != PURELYTEMPORALCLUSTER) ++tNumSpatialRetained;
-            *itrCurr = 0;
+            //*itrCurr = 0;
           }
        }
-       gvTopClusterList.killAll();
+       gvTopClusterList.clear();
        gvTopClusterList.resize(vRetainedClusters.size());
        std::copy(vRetainedClusters.begin(), vRetainedClusters.end(), gvTopClusterList.begin());
      }
-   }
-   catch (prg_exception& x) {
-     x.addTrace("RankTopClusters()", "MostLikelyClustersContainer");
+   } catch (prg_exception& x) {
+     x.addTrace("rankClusters()", "MostLikelyClustersContainer");
      throw;
    }
 }
@@ -477,11 +491,11 @@ void MostLikelyClustersContainer::RankTopClusters(const CParameters& Parameters,
 //If the criterion is NOGEOOVERLAP then none of the clusters may be non-circular.
 //require
 //
-bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion) {
-  bool                                          bResult=true;
-  double                                        dCandidateRadius, dCurrRadius, dDistanceCenters;
-  std::vector<double>                           vCandidateCenterCoords, vCurrCenterCoords;
-  std::vector<CCluster*>::const_iterator        itrCurr, itrEnd;
+bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(ClusterList_t const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion) {
+  bool                          bResult=true;
+  double                        dCandidateRadius, dCurrRadius, dDistanceCenters;
+  std::vector<double>           vCandidateCenterCoords, vCurrCenterCoords;
+  ClusterList_t::const_iterator itrCurr, itrEnd;
 
   try {
     //criteria with no restrictions includes all clusters
@@ -510,7 +524,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
         if ((*itrCurr)->GetClusterType() == PURELYTEMPORALCLUSTER)
           //skip comparison against retained purely temporal cluster - can't compare
           continue;        
-        //if **itrCurr and CandidateCluster are both not elliptical and there are many locations; do not use brute force HasTractsInCommon() but instead use shortcut.
+        //if **itrCurr and CandidateCluster are both not elliptical and there are many locations; do not use brute force HasAnyTractsInCommon() but instead use shortcut.
         if (shouldShortCut && (**itrCurr).GetEllipseOffset() == 0) {
             CCluster const & currCluster = **itrCurr;
             DataHub.GetGInfo()->retrieveCoordinates(currCluster.GetCentroidIndex(), vCurrCenterCoords);
@@ -519,7 +533,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
             dDistanceCenters = CandidateCenter->DistanceTo(currCenter) - (dCurrRadius + dCandidateRadius);
             bResult = std::fabs(dDistanceCenters) > DBL_CMP_TOLERANCE && dDistanceCenters > 0.0;
         } else {
-            bResult = !HasTractsInCommon(DataHub, **itrCurr, CandidateCluster);
+            bResult = !HasAnyTractsInCommon(DataHub, **itrCurr, CandidateCluster);
         }
       }
     } else { // standard geographical overlap checking
@@ -623,18 +637,7 @@ bool MostLikelyClustersContainer::ShouldRetainCandidateCluster(std::vector<CClus
   return bResult;
 }
 
-/** Updates rank of top clusters by comparing simulated loglikelihood ratio(LLR)
-    with each remaining clusters LLR.  */
-void MostLikelyClustersContainer::UpdateTopClustersRank(double r) {
-  ptr_vector<CCluster>::reverse_iterator rev(gvTopClusterList.end());
-  ptr_vector<CCluster>::reverse_iterator rev_end(gvTopClusterList.begin());
-
-  for (; rev != rev_end; rev++) {
-     if (std::fabs((*rev)->GetRatio() - r) > DBL_CMP_TOLERANCE && (*rev)->GetRatio() > r)
-        break;
-     (*rev)->IncrementRank();
-   }
+/** sorts collection by cluster LLR, descending order */
+void MostLikelyClustersContainer::sort() {
+     std::sort(gvTopClusterList.begin(), gvTopClusterList.end(), CompareClustersRatios());
 }
-
-
-

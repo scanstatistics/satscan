@@ -11,6 +11,45 @@
 #include "ptr_vector.h"
 #include "SimulationVariables.h"
 
+class ClusterRankHelper {
+    private:
+        typedef MostLikelyClustersContainer::ClusterList_t RankList_t;
+        enum AddStatus {accepting=0,closed};
+
+        RankList_t _rankCollection;
+        AddStatus  _addStatus;
+
+    public:
+        ClusterRankHelper() : _addStatus(accepting) {}
+
+        void add(MostLikelyClustersContainer& mlc) {
+            if (_addStatus != accepting)
+                throw prg_error("Cluster collection is closed to additions.", "ClusterRankHelper");
+            // add clusters from passed cluster collection -- maintaining sor order and cluster uniqueness
+            for (tract_t t=0; t < mlc.GetNumClustersRetained(); ++t) {
+                MostLikelyClustersContainer::Cluster_t& cluster = mlc.GetClusterRef(t);
+                RankList_t::iterator itr=std::lower_bound(_rankCollection.begin(), _rankCollection.end(), cluster);
+                if (itr == _rankCollection.end() || itr->get() != cluster.get())
+                    _rankCollection.insert(itr, cluster);
+            }
+        }
+        void sort() {
+            // sort cluster collection by cluster LLR -- adding clusters after this call is undefined behavior.
+            std::sort(_rankCollection.begin(), _rankCollection.end(), MostLikelyClustersContainer::CompareClustersRatios());
+            _addStatus = closed;
+        }
+        void update(double llr) {
+            if (_addStatus == accepting)
+                throw prg_error("Cluster collection is not sorted.", "ClusterRankHelper");
+            // update rank of each cluster in collection with LLR >= passed LLR.
+            RankList_t::reverse_iterator rev(_rankCollection.end()), rev_end(_rankCollection.begin());
+            for (; rev != rev_end; rev++) {
+                if (macro_less_than(llr, (*rev)->GetRatio(), DBL_CMP_TOLERANCE)) return;
+                (*rev)->IncrementRank();
+            }
+        }
+};
+
 /** Coordinates the execution of analysis defined by parameters. */
 class AnalysisRunner {
   friend class stsMCSimJobSource;
@@ -28,8 +67,10 @@ class AnalysisRunner {
     int                                 giPower_Y_Count;
     bool                                _clustersReported;
     MLC_Collections_t                   gTopClustersContainers;
+    MostLikelyClustersContainer         _reportClusters;
     ExecutionType                       geExecutingType;
 	SimulationVariables                 gSimVars;
+    ClusterRankHelper                   _clusterRanker;
 
     void                                Execute();
     void                                ExecuteCentrically();
@@ -42,24 +83,23 @@ class AnalysisRunner {
     std::pair<double, double>           GetMemoryApproxiation() const;
     void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
-    void                                PerformCentric_Parallel();
-    void                                PerformCentric_Serial();
+    void                                ExecuteCentricEvaluation();
     void                                PerformSuccessiveSimulations_Parallel();
-    void                                PerformSuccessiveSimulations_Serial();
-    void                                PerformSuccessiveSimulations();
+    void                                ExecuteSuccessiveSimulations();
     void                                PrintCriticalValuesStatus(FILE* fp);
     void                                PrintEarlyTerminationStatus(FILE* fp);
     void                                PrintFindClusterHeading();
     void                                PrintGiniCoefficients(FILE* fp);
     void                                PrintPowerCalculationsStatus(FILE* fp);
     void                                PrintRetainedClustersStatus(FILE* fp, bool bClusterReported);
-    void                                PrintTopClusters();
-    void                                PrintTopClusterLogLikelihood();
-    void                                PrintTopIterativeScanCluster();
+    void                                PrintTopClusters(const MostLikelyClustersContainer& mlc);
+    void                                PrintTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
+    void                                PrintTopIterativeScanCluster(const MostLikelyClustersContainer& mlc);
+    void                                rankClusterCollections();
     bool                                RepeatAnalysis();
+    void                                reportClusters();
     void                                Setup();
     void                                UpdatePowerCounts(double r);
-    void                                UpdateReport();
     void                                UpdateSignificantRatiosList(double dRatio);
 
   public:
@@ -67,7 +107,8 @@ class AnalysisRunner {
 
     virtual bool                        CheckForEarlyTermination(unsigned int iNumSimulationsCompleted) const;
 
-    const MLC_Collections_t           & GetClusterContainer() const {return gTopClustersContainers;}
+    //const MLC_Collections_t           & GetClusterContainer() const {return gTopClustersContainers;}
+    const MostLikelyClustersContainer & getLargestMaximaClusterCollection() const;
     const CSaTScanData                & GetDataHub() const {return *gpDataHub;}
     bool                                GetIsCalculatingSignificantRatios() const {return gpSignificantRatios.get() != 0;}
     CAnalysis                         * GetNewAnalysisObject() const;

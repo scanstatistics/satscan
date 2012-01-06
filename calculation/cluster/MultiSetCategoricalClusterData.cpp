@@ -62,6 +62,11 @@ count_t MultiSetCategoricalSpatialData::GetCaseCount(unsigned int) const {
   throw prg_error("GetCaseCount(unsigned int) not implemented.","MultiSetCategoricalSpatialData");
 }
 
+/** No implemented - throws prg_error. */
+void MultiSetCategoricalSpatialData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  throw prg_error("'setCaseCount(count_t,unsigned int)' not implemeneted.","MultiSetCategoricalSpatialData");
+}
+
 /** Returns number of cases in accumulated cluster data for data set and category.
     Caller responsible for ensuring that 'iCategoryIndex' and 'tSetIndex' are valid indexes. */
 count_t MultiSetCategoricalSpatialData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex) const {
@@ -130,6 +135,10 @@ measure_t MultiSetCategoricalSpatialData::GetMeasure(unsigned int) const {
   throw prg_error("GetMeasure(unsigned int) not implemented.","MultiSetCategoricalSpatialData");
 }
 
+void MultiSetCategoricalSpatialData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  throw prg_error("'setMeasure(measure,unsigned int)' not implemeneted.","MultiSetCategoricalSpatialData");
+}
+
 /** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood
     ratio to determine which, if any, categories where combined into one category. */
 void MultiSetCategoricalSpatialData::GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
@@ -154,6 +163,11 @@ void AbstractMultiSetCategoricalTemporalData::CopyEssentialClassMembers(const Ab
 /** Not implemented - throws prg_error. */
 count_t AbstractMultiSetCategoricalTemporalData::GetCaseCount(unsigned int) const {
   throw prg_error("GetCaseCount(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
+}
+
+/** No implemented - throws prg_error. */
+void AbstractMultiSetCategoricalTemporalData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  throw prg_error("'setCaseCount(count_t,unsigned int)' not implemeneted.","AbstractMultiSetCategoricalTemporalData");
 }
 
 /** Returns number of cases in accumulated cluster data for data set and category.
@@ -214,7 +228,11 @@ void AbstractMultiSetCategoricalTemporalData::GetDataSetIndexesComprisedInRatio(
 
 /** Not implemented - throws prg_error. */
 measure_t AbstractMultiSetCategoricalTemporalData::GetMeasure(unsigned int) const {
-  throw prg_error("GetCaseCount(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
+  throw prg_error("GetMeasure(unsigned int) not implemented.","AbstractMultiSetCategoricalTemporalData");
+}
+
+void AbstractMultiSetCategoricalTemporalData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  throw prg_error("'setMeasure(measure,unsigned int)' not implemeneted.","AbstractMultiSetCategoricalTemporalData");
 }
 
 /** Given ordinal category cases accumulated in cluster data, re-calculates the log likelihood

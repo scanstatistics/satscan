@@ -79,7 +79,7 @@ double CPSMonotoneAnalysis::MonteCarlo(const DataSetInterface& Interface) {
 /** Returns calculates log likelihood ratio about centroid. Currently this function calls CalculateTopCluster()
     but will likely be updated in the future. */
 double CPSMonotoneAnalysis::MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) {
-  //TODO: refactor for GINI
+  //TODO: refactor for index based cluster reporting
   return CalculateTopClusters(tCenter, DataGateway).back()->m_nRatio;
 }
 

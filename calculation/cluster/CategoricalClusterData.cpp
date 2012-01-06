@@ -65,6 +65,11 @@ count_t CategoricalSpatialData::GetCaseCount(unsigned int) const {
   throw prg_error("'GetCaseCount(unsigned int)' not implemeneted.","CategoricalSpatialData");
 }
 
+/** No implemented - throws prg_error. */
+void CategoricalSpatialData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  throw prg_error("'setCaseCount(count_t,unsigned int)' not implemeneted.","CategoricalSpatialData");
+}
+
 /** Returns number of accumulated cases for category index. */
 count_t CategoricalSpatialData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int) const {
   return gvCasesPerCategory[iCategoryIndex];
@@ -86,6 +91,10 @@ double CategoricalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculator& 
 /** No implemented - throws prg_error. */
 measure_t CategoricalSpatialData::GetMeasure(unsigned int) const {
   throw prg_error("'GetMeasure(unsigned int)' not implemeneted.","CategoricalSpatialData");
+}
+
+void CategoricalSpatialData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  throw prg_error("'setMeasure(measure,unsigned int)' not implemeneted.","CategoricalSpatialData");
 }
 
 //***************** class CategoricalTemporalData ******************************
@@ -139,6 +148,11 @@ count_t CategoricalTemporalData::GetCaseCount(unsigned int) const {
   throw prg_error("GetCaseCount(unsigned int) not implemeneted.","CategoricalTemporalData");
 }
 
+/** No implemented - throws prg_error. */
+void CategoricalTemporalData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  throw prg_error("'setCaseCount(count_t,unsigned int)' not implemeneted.","CategoricalSpatialData");
+}
+
 /** Returns number of accumulated cases for category. */
 count_t CategoricalTemporalData::GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int) const {
   return gvCasesPerCategory[iCategoryIndex];
@@ -155,6 +169,10 @@ void CategoricalTemporalData::GetOrdinalCombinedCategories(const OrdinalLikeliho
 /** Not implemented - throws prg_error. */
 measure_t CategoricalTemporalData::GetMeasure(unsigned int) const {
   throw prg_error("GetMeasure(unsigned int) not implemeneted.","CategoricalTemporalData");
+}
+
+void CategoricalTemporalData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  throw prg_error("'setMeasure(measure,unsigned int)' not implemeneted.","CategoricalSpatialData");
 }
 
 /** Reassociates internal data with passed DataSetInterface pointers. */

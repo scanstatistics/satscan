@@ -33,7 +33,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
                                     MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
                                     EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE, REPORT_RANK, PRINT_ASCII_HEADERS,
-                                    OPTIMIZE_SPATIAL_SIZE, WINDOW_STOPS, OPTIMIZE_CLUSTER_CUTOFF, OPTIMIZE_CLUSTER_REPORT_TYPE, OUTPUT_COEFFICIENTS_ASCII, OUTPUT_COEFFICIENTS_DBASE};
+                                    CLUSTER_REPORT_TYPE, SPATIAL_MAXIMA, INDEXBASED_REPORT_TYPE, INDEXBASED_PVALUE_CUTOFF, OUTPUT_INDEX_COEFFICENTS};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -81,10 +81,10 @@ enum MultipleCoordinatesType       {ONEPERLOCATION=0, ATLEASTONELOCATION, ALLLOC
 enum PValueReportingType           {DEFAULT_PVALUE=0, STANDARD_PVALUE, TERMINATION_PVALUE, GUMBEL_PVALUE};
 /** time trend calculation type */
 enum TimeTrendType                 {LINEAR=0,QUADRATIC};
-/** optimizing spatial cluster size type */
-enum OptSpatialClusterSizeType     {OPT_NONE=0, OPT_GINI, OPT_CLIC, OPT_BOTH};
-/** optimizing spatial cluster reporting options */
-enum OptSpatialClusterSizeReportType {ALL_GINI=0, MAX_SIZE_PLUS_MAXIMIZED_GINI, MAXIMIZED_GINI};
+/** cluster reporting type */
+enum ClusterReportType             {HIERARCHICAL=0, INDEX_BASED, ALL_CLUSTER_TYPES};
+/** index based cluster reporting type*/
+enum IndexBasedReportType          {OPTIMAL_ONLY=0, ALL_VALUES};
 
 class CParameters {
   public:
@@ -198,26 +198,25 @@ class CParameters {
     bool                                gbSuppressWarnings;                     /** indicates whether to suppres warnings printed during execution */
     SpatialWindowType                   geSpatialWindowType;                    /** spatial window shape */
     std::vector<std::string>            gvObservableRegions;                    /** collection of observable regions */
-    bool                                gbWeightedNormal;                       /** convieniance variable - normal model is weighted*/
-    bool                                gbWeightedNormalCovariates;             /** convieniance variable - normal model is weighted with covariates */
+    bool                                gbWeightedNormal;                       /** convenience variable - normal model is weighted*/
+    bool                                gbWeightedNormalCovariates;             /** convenience variable - normal model is weighted with covariates */
     unsigned int                        giEarlyTermThreshold;                   /** early termination threshold */
     PValueReportingType                 gePValueReportingType;                  /** p-value reporting type */
     bool                                gbReportGumbelPValue;                   /** report Gumbel p-value */
     TimeTrendType                       geTimeTrendType;                        /** time trend type */
     bool                                gbReportRank;                           /** report cluster rank */
     bool                                gbPrintAsciiHeaders;                    /** print headers in ascii output files */
-    OptSpatialClusterSizeType           geOptSpatialClusterSizeType;                 /** determine optimal spatial cluster size */
     std::vector<double>                 gvSpatialWindowStops;                   /** spatial window stops */
-    double                              gbOptSpatialClusterSizeCutOffPValue;    /* P-Value used to limit clusters in optimal spatial cluster coefficients calcuation */
-    OptSpatialClusterSizeReportType     geOptSpatialClusterSizeReportType;      /** options for optimizing spatial cluster size reporting */
-    bool                                _reportCoefficientsAscii;               /** whether to report optimal spatial cluster coefficients in ASCII file */
-    bool                                _reportCoefficientsDBase;               /** whether to report optimal spatial cluster coefficients in dBase file */
-
+    double                              _indexBasedPValueCutoff;                /* P-Value used to limit clusters in optimal spatial cluster coefficients calcuation */
+    ClusterReportType                   _clusterReportType;                     /* cluster reporting type */
+    IndexBasedReportType                _indexBasedReportType;                  /* type for the index based cluster reporting */
+    bool                                _outputIndexCoefficients;               /* output index based coefficents */
     mutable std::vector<double>        _executeSpatialWindowStops;
 
     void                                AssignMissingPath(std::string & sInputFilename, bool bCheckWritable=false);
     void                                Copy(const CParameters &rhs);
     const char                        * GetRelativeToParameterName(const FileName& fParameterName, const std::string& sFilename, std::string& sValue) const;
+    void                                checkEnumeration(int e, int eLow, int eHigh) const;
 
   public:
     CParameters();
@@ -241,9 +240,9 @@ class CParameters {
     AreaRateType                        GetAreaScanRateType() const {return geAreaScanRate;}
     AreaRateType                        GetExecuteScanRateType() const;
     unsigned int                        GetExecuteEarlyTermThreshold() const;
-    OptSpatialClusterSizeType           getOptimizingSpatialClusterSizeType() const {return geOptSpatialClusterSizeType;}
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
+    ClusterReportType                   getClusterReportType() const {return _clusterReportType;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetControlFileNames() const {return gvControlFilenames;}
     CoordinatesDataCheckingType         GetCoordinatesDataCheckingType() const {return geCoordinatesDataCheckingType;}
@@ -258,10 +257,11 @@ class CParameters {
     const std::string                 & GetEndRangeStartDate() const {return gsEndRangeStartDate;}
     unsigned int                        GetEarlyTermThreshold() const {return giEarlyTermThreshold;}
     ExecutionType                       GetExecutionType() const {return geExecutionType;}
-    double                              GetOptimizingSpatialCutOffPValue() const {return gbOptSpatialClusterSizeCutOffPValue;}
+    double                              getIndexBasedPValueCutoff() const {return _indexBasedPValueCutoff;}
     IncludeClustersType                 GetIncludeClustersType() const {return geIncludeClustersType;}
     bool                                GetIncludePurelySpatialClusters() const {return gbIncludePurelySpatialClusters;}
     bool                                GetIncludePurelyTemporalClusters() const {return gbIncludePurelyTemporalClusters;}
+    IndexBasedReportType                getIndexBasedReportType() const {return _indexBasedReportType;}
     bool                                GetIsLoggingHistory() const {return gbLogRunHistory;}
     bool                                GetIsPowerCalculated() const {return gbPowerCalculation;}
     bool                                GetIsProspectiveAnalysis() const;
@@ -269,7 +269,6 @@ class CParameters {
     bool                                GetIsIterativeScanning() const {return gbIterativeRuns;}
     bool                                GetIsRandomlyGeneratingSeed() const {return gbRandomlyGenerateSeed;}
     bool                                GetIsSpaceTimeAnalysis() const;
-    OptSpatialClusterSizeReportType     GetOptSpatialClusterSizeReportType() const {return geOptSpatialClusterSizeReportType;}
     const std::string                 & GetLocationNeighborsFileName() const {return gsLocationNeighborsFilename;}
     bool                                GetLogLikelihoodRatioIsTestStatistic() const;
     const std::string                 & GetMaxCirclePopulationFileName() const {return gsMaxCirclePopulationFileName;}
@@ -299,10 +298,8 @@ class CParameters {
     bool                                GetOutputClusterLevelAscii() const {return gbOutputClusterLevelAscii;}
     bool                                GetOutputClusterLevelDBase() const {return gbOutputClusterLevelDBase;}
     bool                                GetOutputClusterLevelFiles() const;
-    bool                                getOutputCoefficientsAscii() const {return _reportCoefficientsAscii;}
-    bool                                getOutputCoefficientsDBase() const {return _reportCoefficientsDBase;}
-    bool                                getOutputCoefficientsFiles() const {return _reportCoefficientsAscii || _reportCoefficientsDBase;}
     const std::string                 & GetOutputFileName() const {return gsOutputFileName; }
+    bool                                getOutputIndexBasedCoefficents() const {return _outputIndexCoefficients;}
     bool                                GetOutputRelativeRisksAscii() const {return gbOutputRelativeRisksAscii;}
     bool                                GetOutputRelativeRisksDBase() const {return gbOutputRelativeRisksDBase;}
     bool                                GetOutputRelativeRisksFiles() const;
@@ -355,8 +352,11 @@ class CParameters {
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
 	TimeTrendType                       getTimeTrendType() const {return geTimeTrendType;}
+    bool                                getIsReportingHierarchicalClusters() const;
+    bool                                getIsReportingIndexBasedClusters() const;
     bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
     bool                                getIsWeightedNormalCovariates() const {return gbWeightedNormalCovariates;}    
+    bool                                getIsReportingIndexBasedCoefficents() const;
     bool                                getIsReportingGumbelPValue() const;
     bool                                getIsReportingStandardPValue() const;
     void                                RequestAllAdditionalOutputFiles();
@@ -365,19 +365,19 @@ class CParameters {
     void                                SetAnalysisType(AnalysisType eAnalysisType);
     void                                SetAreaRateType(AreaRateType eAreaRateType);
     void                                SetAsDefaulted();
-    void                                setOptimizeSpatialClusterSizeType(OptSpatialClusterSizeType e) {geOptSpatialClusterSizeType = e;}
     void                                SetEndRangeEndDate(const char * sEndRangeEndDate);
     void                                SetEndRangeStartDate(const char * sEndRangeStartDate);
     void                                SetEarlyTermThreshold(unsigned int i) {giEarlyTermThreshold = i;}
     void                                SetExecutionType(ExecutionType eExecutionType);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
+    void                                setClusterReportType(ClusterReportType e);
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCoordinatesDataCheckingType);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);
     void                                SetCoordinatesType(CoordinatesType eCoordinatesType);
     void                                SetCriteriaForReportingSecondaryClusters(CriteriaSecondaryClustersType eCriteriaSecondaryClustersType);
-    void                                SetOptSpatialClusterSizeCutOffPValue(double dPValue) {gbOptSpatialClusterSizeCutOffPValue = dPValue;}
-    void                                SetOptSpatialClusterSizeReportType(OptSpatialClusterSizeReportType eOptSpatialClusterSizeReportType);
+    void                                setIndexBasedPValueCutoff(double dPValue) {_indexBasedPValueCutoff = dPValue;}
+    void                                setIndexBasedReportType(IndexBasedReportType e);
     void                                SetIncludeClustersType(IncludeClustersType eIncludeClustersType);
     void                                SetIncludePurelySpatialClusters(bool b) {gbIncludePurelySpatialClusters = b;}
     void                                SetIncludePurelyTemporalClusters(bool b) {gbIncludePurelyTemporalClusters = b;}
@@ -403,8 +403,6 @@ class CParameters {
     void                                SetOutputClusterCaseDBase(bool b) {gbOutputClusterCaseDBase = b;}
     void                                SetOutputClusterLevelAscii(bool b) {gbOutputClusterLevelAscii = b;}
     void                                SetOutputClusterLevelDBase(bool b) {gbOutputClusterLevelDBase = b;}
-    void                                setOutputCoefficientsAscii(bool b) {_reportCoefficientsAscii = b;}
-    void                                setOutputCoefficientsDBase(bool b) {_reportCoefficientsDBase = b;}
     void                                SetOutputFileName(const char * sOutPutFileName, bool bCorrectForRelativePath=false);
     void                                SetOutputRelativeRisksAscii(bool b) {gbOutputRelativeRisksAscii = b;}
     void                                SetOutputRelativeRisksDBase(bool b) {gbOutputRelativeRisksDBase = b;}
@@ -423,7 +421,8 @@ class CParameters {
     void                                SetRandomizationSeed(long lSeed);
     void                                setReportClusterRank(bool b) {gbReportRank = b;}
     void                                SetReportCriticalValues(bool b) {gbReportCriticalValues = b;}
-    void                                SetReportGumbelPValue(bool b) {gbReportGumbelPValue = b;}
+    void                                setReportIndexBasedCoefficents(bool b) {_outputIndexCoefficients = b;}
+    void                                SetReportGumbelPValue(bool b) {gbReportGumbelPValue = b;}    
     void                                SetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool b, bool bReported);
     void                                SetRestrictReportedClusters(bool b) {gbRestrictReportedClusters = b;}
     void                                SetRiskType(RiskType eRiskType);
@@ -456,7 +455,6 @@ class CParameters {
     void                                SetUseSpecialGrid(bool b) {gbUseSpecialGridFile = b;}
     void                                SetVersion(const CreationVersion& vVersion);
     bool                                UseAdjustmentForRelativeRisksFile() const {return gbUseAdjustmentsForRRFile;}
-    bool                                optimizeSpatialClusterSize() const;
     bool                                UseMaxCirclePopulationFile() const;
     bool                                UseCoordinatesFile() const;
     bool                                UsingMultipleCoordinatesMetaLocations() const;

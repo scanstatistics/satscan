@@ -61,6 +61,10 @@ count_t MultiSetNormalSpatialData::GetCaseCount(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->GetCaseCount();
 }
 
+void MultiSetNormalSpatialData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  gvSetClusterData.at(tSetIndex)->setCaseCount(t);
+}
+
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
     If specified purpose for multiple data sets is multivariate, recalculates high and low
     LLR values to determine which data sets comprised target ratio; else all data sets
@@ -117,9 +121,12 @@ double MultiSetNormalSpatialData::GetMaximizingValue(AbstractLikelihoodCalculato
   return CalculateLoglikelihoodRatio(Calculator);
 }
 
-/** Not implemented - throws prg_error. */
 measure_t MultiSetNormalSpatialData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->GetMeasure();
+}
+
+void MultiSetNormalSpatialData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  gvSetClusterData.at(tSetIndex)->setMeasure(m);
 }
 
 measure_t MultiSetNormalSpatialData::GetMeasureAux(unsigned int tSetIndex) const {
@@ -152,6 +159,10 @@ void AbstractMultiSetNormalTemporalData::CopyEssentialClassMembers(const Abstrac
     Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
 count_t AbstractMultiSetNormalTemporalData::GetCaseCount(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->gtCases;
+}
+
+void AbstractMultiSetNormalTemporalData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  gvSetClusterData.at(tSetIndex)->setCaseCount(t);
 }
 
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
@@ -207,6 +218,10 @@ void AbstractMultiSetNormalTemporalData::GetDataSetIndexesComprisedInRatio(doubl
     Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
 measure_t AbstractMultiSetNormalTemporalData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->gtMeasure;
+}
+
+void AbstractMultiSetNormalTemporalData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  gvSetClusterData.at(tSetIndex)->setMeasure(m);
 }
 
 /** Returns expected number of cases in accumulated respective data sets' cluster data.

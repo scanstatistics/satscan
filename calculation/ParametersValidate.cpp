@@ -13,12 +13,6 @@
 #include "TimeStamp.h"
 #include "DateStringParser.h"
 
-/** constructor */
-ParametersValidate::ParametersValidate(const CParameters& Parameters) : gParameters(Parameters) {}
-
-/** destructor */
-ParametersValidate::~ParametersValidate() {}
-
 /** Validates that given current state of settings, parameters and their relationships
     with other parameters are correct. Errors are sent to print direction and*/
 bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
@@ -531,8 +525,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                             "have permissions to write to this directory and file.\n",
                             BasePrint::P_PARAMERROR, gParameters.GetOutputFileName().c_str());
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateFileParameters()","ParametersValidate");
     throw;
   }
@@ -552,8 +545,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
                             "The threshold for early termination of simulations must be from 1 to "
                             "number of replications.\n", BasePrint::P_PARAMERROR);
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateInferenceParameters()","ParametersValidate");
     throw;
   }
@@ -598,8 +590,7 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
                               BasePrint::P_PARAMERROR, gParameters.GetIterativeCutOffPValue());
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateIterativeScanParameters()","ParametersValidate");
     throw;
   }
@@ -681,17 +672,42 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
     else
       throw prg_error("Unknown temporal percentage type: %d.",
                       "ValidateMaximumTemporalClusterSize()", gParameters.GetMaximumTemporalClusterSizeType());
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateMaximumTemporalClusterSize()","ParametersValidate");
     throw;
   }
   return true;
 }
 
+bool ParametersValidate::ValidateClustersReportedParameters(BasePrint & PrintDirection) const {
+  bool  bReturn=true;
+  //verify the index based cluster collection option with other settings.
+  if (gParameters.getIsReportingIndexBasedClusters()) {
+      if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
+         bReturn = false;
+         PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for index based cluster collection reporting.\n", 
+                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+      }    
+      if (gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
+          bReturn = false;
+          PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                "Multivariate purpose for multiple data sets is not implemented for index based cluster collection reporting.\n", 
+                                BasePrint::P_PARAMERROR);
+      }
+      if (gParameters.GetRiskType() == MONOTONERISK) {
+        bReturn = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is not implemented for index based cluster collection reporting.\n", BasePrint::P_PARAMERROR);
+      }
+      if (gParameters.GetIsIterativeScanning()) {
+        bReturn = false;
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for index based cluster collection reporting.\n", BasePrint::P_PARAMERROR);
+      }
+  }
+  return bReturn;
+}
+
 bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
   bool  bReturn=true;
-
   try {
     if (gParameters.GetRiskType() == MONOTONERISK) {
       if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
@@ -711,8 +727,7 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
         PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is not implemented for elliptic shaped windows.\n", BasePrint::P_PARAMERROR);
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateMonotoneRisk()","ParametersValidate");
     throw;
   }
@@ -722,9 +737,7 @@ bool ParametersValidate::ValidateMonotoneRisk(BasePrint& PrintDirection) const {
 /** Validates observable regions parameters. */
 bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const {
   bool  bReturn=true;
-
   if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) return true;
-
   try {
     const_cast<CParameters&>(gParameters).SetMultipleCoordinatesType(ONEPERLOCATION);
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false) ||
@@ -790,9 +803,9 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
 
 /** Validates output options. */
 bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirection) const {
+  bool  bValid=true;
   try {
-    // Sometime in a previous version, it was decided to just suppress this setting
-    // for situations that don't allow it. 
+    // Just suppress this setting for situations that don't allow it. 
     if (gParameters.GetOutputRelativeRisksFiles() &&
         (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
          gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
@@ -811,18 +824,13 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
                             BasePrint::P_WARNING, 
                             ParametersPrint(gParameters).GetAnalysisTypeAsString());
     }
-    if (gParameters.getOutputCoefficientsFiles() && !gParameters.optimizeSpatialClusterSize()) {
-      const_cast<CParameters&>(gParameters).setOutputCoefficientsAscii(false);
-      const_cast<CParameters&>(gParameters).setOutputCoefficientsDBase(false);
-      PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The additional output file for coefficients of optimized spatial cluster sizes is not permitted with current parameter settings.\nThe option was disabled.\n", 
-                            BasePrint::P_WARNING);
-    }
+    if (!ValidateClustersReportedParameters(PrintDirection))
+        bValid = false;
   } catch (prg_exception& x) {
     x.addTrace("ValidateOutputOptionParameters()","ParametersValidate");
     throw;
   }
-  return true;
+  return bValid;
 }
 
 /** Validates power calculation parameters.
@@ -1011,8 +1019,7 @@ bool ParametersValidate::ValidateRangeParameters(BasePrint& PrintDirection) cons
         }
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateRangeParameters()","ParametersValidate");
     throw;
   }
@@ -1081,8 +1088,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
         break;
       default : throw prg_error("Unknown simulation type '%d'.","ValidateSimulationDataParameters()", gParameters.GetSimulationType());
     };
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateSimulationDataParameters()","ParametersValidate");
     throw;
   }
@@ -1099,18 +1105,6 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
   try {
     //validate spatial options
     if (!gParameters.GetIsPurelyTemporalAnalysis()) {
-      //restricting reported cluster sizes and gini calculations are not compatible 
-      if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() && gParameters.optimizeSpatialClusterSize()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe option to restrict the maximum reported spatial cluster size\n, "
-                              "cannot be used when also selecting to calcuation GINI coefficients.", BasePrint::P_PARAMERROR);
-      }
-      //iterative scan and gini calculations are not compatible 
-      if (gParameters.GetIsIterativeScanning() && gParameters.optimizeSpatialClusterSize()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe option to perform the iterative scan statistic\n, "
-                              "cannot be used when also selecting to calcuation GINI coefficients.", BasePrint::P_PARAMERROR);
-      }
       //validate maximum is specified as a pecentage of population at risk when using neighbors file
       if (gParameters.UseLocationNeighborsFile() && gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, false)) {
         bValid = false;
@@ -1196,8 +1190,7 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                               "the inclusion of a purely spatial cluster.\n", BasePrint::P_PARAMERROR);
       }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateSpatialParameters()","ParametersValidate");
     throw;
   }
@@ -1255,8 +1248,7 @@ bool ParametersValidate::ValidateStudyPeriodEndDate(BasePrint& PrintDirection) c
       case DAY   :
       case NONE  : break;
     };
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateStudyPeriodEndDate()","ParametersValidate");
     throw;
   }
@@ -1313,8 +1305,7 @@ bool ParametersValidate::ValidateStudyPeriodStartDate(BasePrint& PrintDirection)
       case DAY   :
       case NONE  : break;
     };
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateStartDate()","ParametersValidate");
     throw;
   }
@@ -1474,8 +1465,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     //the locations neighbor file is irrelevant when analysis type is purely temporal
     if (gParameters.GetIsPurelyTemporalAnalysis()) const_cast<CParameters&>(gParameters).UseLocationNeighborsFile(false);
     //since there is not location data, we can no report relative risk estimates per location
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ValidateTemporalParameters()","ParametersValidate");
     throw;
   }

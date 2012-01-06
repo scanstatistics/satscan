@@ -89,7 +89,7 @@ void CentroidNeighborCalculator::CalculateMaximumReportedSpatialClusterSize(cons
   const DataSetHandler  & DataSetHandler = dataHub.GetDataSetHandler();
   ReportedCalcPair_t   * pNextToSet = &gPrimaryReportedNeighbors;
 
-  if (!(gParameters.GetRestrictingMaximumReportedGeoClusterSize() || gParameters.optimizeSpatialClusterSize())) return;
+  if (!(gParameters.GetRestrictingMaximumReportedGeoClusterSize() || gParameters.getIsReportingIndexBasedClusters())) return;
 
   if (gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON) {
      const HomogeneousPoissonDataSetHandler * pHandler = dynamic_cast<const HomogeneousPoissonDataSetHandler*>(&DataSetHandler);

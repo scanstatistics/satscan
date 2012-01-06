@@ -12,7 +12,7 @@ HomogenousPoissonModel::HomogenousPoissonModel() : CModel() {}
 /** destructor */
 HomogenousPoissonModel::~HomogenousPoissonModel() {}
 
-/** TODO : document */
+/** No operation performed for this probability model. */
 void HomogenousPoissonModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */

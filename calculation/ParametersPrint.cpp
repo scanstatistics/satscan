@@ -394,33 +394,43 @@ void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& S
 /** Prints 'Clusters Reported' tab parameters to file stream. */
 void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   SettingContainer_t settings;
-  std::string        buffer;
+  std::string        buffer, worker;
 
   if (gParameters.GetIsPurelyTemporalAnalysis()) return;
 
   try {
-    buffer = "Criteria for Reporting Secondary Clusters";
-    switch (gParameters.GetCriteriaSecondClustersType()) {
-       case NOGEOOVERLAP          : 
-           settings.push_back(std::make_pair(buffer,"No Geographical Overlap"));
-           break;
-       case NOCENTROIDSINOTHER    : 
-           settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Other Clusters"));
-           break;
-       case NOCENTROIDSINMORELIKE : 
-           settings.push_back(std::make_pair(buffer,"No Cluster Centroids in More Likely Clusters"));
-           break;
-       case NOCENTROIDSINLESSLIKE : 
-           settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Less Likely Clusters"));
-           break;
-       case NOPAIRSINEACHOTHERS   : 
-           settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters"));
-           break;
-       case NORESTRICTIONS        : 
-           settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid"));
-           break;
-       default : throw prg_error("Unknown secondary clusters type '%d'.\n",
-                                 "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
+    if (gParameters.getIsReportingHierarchicalClusters()) {
+        buffer = "Criteria for Reporting Secondary Clusters";
+        switch (gParameters.GetCriteriaSecondClustersType()) {
+            case NOGEOOVERLAP          : 
+                settings.push_back(std::make_pair(buffer,"No Geographical Overlap")); break;
+            case NOCENTROIDSINOTHER    : 
+                settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Other Clusters")); break;
+            case NOCENTROIDSINMORELIKE : 
+                settings.push_back(std::make_pair(buffer,"No Cluster Centroids in More Likely Clusters")); break;
+            case NOCENTROIDSINLESSLIKE : 
+                settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Less Likely Clusters")); break;
+            case NOPAIRSINEACHOTHERS   : 
+                settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters")); break;
+            case NORESTRICTIONS        : 
+                settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid")); break;
+            default : throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
+        }
+    }
+    if (gParameters.getIsReportingIndexBasedClusters()) {
+        buffer = "Index Based Cluster Collection Reporting";
+        switch (gParameters.getIndexBasedReportType()) {
+            case OPTIMAL_ONLY : settings.push_back(std::make_pair(buffer,"Optimal Only")); break;
+            case ALL_VALUES    : settings.push_back(std::make_pair(buffer,"All Values")); break;
+            default : throw prg_error("Unknown index based cluster reporting type '%d'.\n","PrintClustersReportedParameters()", gParameters.getIndexBasedReportType());
+        }
+        settings.push_back(std::make_pair("Output Index Based Cluster Coefficents", (gParameters.getOutputIndexBasedCoefficents() ? "Yes" : "No")));
+        printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
+        for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
+            printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
+            buffer += worker;
+        }
+        settings.push_back(std::make_pair("Spatial Cluster Maxima",buffer));
     }
     if (gParameters.GetRestrictingMaximumReportedGeoClusterSize()) {
         if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
@@ -437,20 +447,8 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Reported Clusters",buffer));
         }
     }
-    if (gParameters.optimizeSpatialClusterSize()) {
-        switch (gParameters.GetOptSpatialClusterSizeReportType()) {
-            case ALL_GINI : buffer = "All GINI"; break;
-            case MAX_SIZE_PLUS_MAXIMIZED_GINI : buffer = "Maximized GINI Plus Maximum Spatial"; break;
-            case MAXIMIZED_GINI : buffer = "Maximized GINI"; break;
-            default : throw prg_error("Unknown gini reporting type '%d'.\n", "PrintSpatialWindowParameters()", gParameters.GetOptSpatialClusterSizeReportType());
-        }
-        settings.push_back(std::make_pair("Optimizing Spatial Cluster Size Coefficient Reporting",buffer));
-        printString(buffer, "%g", gParameters.GetOptimizingSpatialCutOffPValue());
-        settings.push_back(std::make_pair("Optimizing Spatial Cluster Size P-Value Cutoff",buffer));
-    }
     WriteSettingsContainer(settings, "Clusters Reported", fp);
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("PrintClustersReportedParameters()","ParametersPrint");
     throw;
   }
@@ -698,6 +696,13 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 
   try {
     settings.push_back(std::make_pair("Results File",gParameters.GetOutputFileName()));
+    buffer = "Cluster Reporting";
+    switch (gParameters.getClusterReportType()) {
+      case HIERARCHICAL : settings.push_back(std::make_pair(buffer,"Hierarchical")); break;
+      case INDEX_BASED    : settings.push_back(std::make_pair(buffer,"Index Based Cluster Collection")); break;
+      case ALL_CLUSTER_TYPES    : settings.push_back(std::make_pair(buffer,"Hierarchical and Index Based Cluster Collection")); break;
+      default : throw prg_error("Unknown cluster reporting type '%d'.\n","PrintOutputParameters()", gParameters.getClusterReportType());
+    }
     if (gParameters.GetOutputClusterLevelAscii()) {
       AdditionalOutputFile.setExtension(".col.txt");
       settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
@@ -741,15 +746,6 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     if (gParameters.GetOutputSimLoglikeliRatiosDBase()) {
       AdditionalOutputFile.setExtension(".llr.dbf");
       settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
-    }
-    // maximizing spatial cluster size coefficients
-    if (gParameters.getOutputCoefficientsAscii()) {
-      AdditionalOutputFile.setExtension(".ceo.txt");
-      settings.push_back(std::make_pair("Spatial Cluster Coefficients",AdditionalOutputFile.getFullPath(buffer)));
-    }
-    if (gParameters.getOutputCoefficientsDBase()) {
-      AdditionalOutputFile.setExtension(".ceo.dbf");
-      settings.push_back(std::make_pair("Spatial Cluster Coefficients",AdditionalOutputFile.getFullPath(buffer)));
     }
     WriteSettingsContainer(settings, "Output", fp);
   }
@@ -972,16 +968,6 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
         printString(buffer, "%g percent of population at risk", gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false));
         settings.push_back(std::make_pair("Maximum Spatial Cluster Size",buffer));
-    }
-    // TODO: conditions around printing this? certain settings that prevent possibly using gini
-    settings.push_back(std::make_pair("Optimize Spatial Cluster Size", (gParameters.optimizeSpatialClusterSize() ? "Yes" : "No")));
-    if (gParameters.optimizeSpatialClusterSize()) {
-        printString(buffer, "%g", gParameters.getExecuteSpatialWindowStops()[0]);
-        for (size_t i=1; i < gParameters.getExecuteSpatialWindowStops().size(); ++i) {
-            printString(worker, ", %g", gParameters.getExecuteSpatialWindowStops()[i]);
-            buffer += worker;
-        }
-        settings.push_back(std::make_pair("Optimal Maximum Spatial Cluster Sizes",buffer));
     }
     if (gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false)) {
         printString(buffer, "%g percent of population defined in max circle file", gParameters.GetMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, false));

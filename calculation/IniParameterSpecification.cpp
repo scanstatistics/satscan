@@ -378,12 +378,11 @@ void IniParameterSpecification::Build_9_0_x_ParameterList() {
 void IniParameterSpecification::Build_9_2_x_ParameterList() {
   Build_9_0_x_ParameterList();
 
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"OptimizeSpatialClusterSizeType"));
-  gvParameterInfo.push_back(std::make_pair(SpatialWindow, (const char*)"OptimizingSpatialClusterSizes"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniPValueCutOff"));
-  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"GiniReportType"));
-  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ReportOptimizedSpatialCoefficientsASCII"));
-  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ReportOptimizedSpatialCoefficientsDBASE"));
+  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ClustersReportingType"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"SpatialMaxima"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClusterReportingType"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClustersPValueCutOff"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"OutputIndexBasedCoefficents"));
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

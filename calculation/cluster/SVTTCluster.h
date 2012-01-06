@@ -64,11 +64,13 @@ class SVTTClusterData : public AbtractSVTTClusterData {
     virtual void                CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual void                DeallocateEvaluationAssistClassMembers();
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void                setCaseCount(count_t t, unsigned int tSetIndex=0) {gtTotalCasesInsideCluster = t;}
     virtual AbstractTimeTrend        & getInsideTrend(size_t tSetIndex=0) {return *gpTimeTrendInside;}
     virtual AbstractTimeTrend        & getOutsideTrend(size_t tSetIndex=0) {return *gpTimeTrendOutside;}
     virtual const AbstractTimeTrend  & getInsideTrend(size_t tSetIndex=0) const {return *gpTimeTrendInside;}
     virtual const AbstractTimeTrend  & getOutsideTrend(size_t tSetIndex=0) const {return *gpTimeTrendOutside;}
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                setMeasure(measure_t m, unsigned int tSetIndex=0) {gtTotalMeasureInsideCluster = m;}
 };
 
 /** Class representing accumulated data of spatial variation of temporal trend in multiple data sets.
@@ -92,6 +94,7 @@ class MultiSetSVTTClusterData : public AbtractSVTTClusterData {
     virtual void                DeallocateEvaluationAssistClassMembers();
     virtual MultiSetSVTTClusterData * Clone() const;
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void                setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual AbstractTimeTrend        & getInsideTrend(size_t tSetIndex=0);
     virtual AbstractTimeTrend        & getOutsideTrend(size_t tSetIndex=0);
     virtual const AbstractTimeTrend  & getInsideTrend(size_t tSetIndex=0) const;
@@ -100,6 +103,8 @@ class MultiSetSVTTClusterData : public AbtractSVTTClusterData {
                                                                   AbstractLikelihoodCalculator& Calculator,
                                                                   std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                setMeasure(measure_t m, unsigned int tSetIndex=0);
+    virtual size_t              getNumSets() const {return gvSetClusterData.size();}
 };
 
 class CClusterSet;

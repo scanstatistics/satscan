@@ -645,9 +645,6 @@
     <ClCompile Include="..\..\boost\boost_1_46_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
-    <ClCompile Include="..\calculation\Output\CoefficientsWriter.cpp">
-      <Filter>Source Files\calculation\Output</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1117,9 +1114,6 @@
     </ClInclude>
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp">
       <Filter>Header Files\calculation\analysis</Filter>
-    </ClInclude>
-    <ClInclude Include="..\calculation\Output\CoefficientsWriter.h">
-      <Filter>Header Files\calculation\Output</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -8,7 +8,6 @@
 stsMCSimJobSource::stsMCSimJobSource(
   CParameters const & rParameters
  ,boost::posix_time::ptime CurrentTime
- ,MLC_Collections_t & rMLCs
  ,PrintQueue & rPrintDirection
  ,const char * szReplicationFormatString
  ,AnalysisRunner & rRunner
@@ -17,7 +16,6 @@ stsMCSimJobSource::stsMCSimJobSource(
  , guiUnregisteredJobLowerBound(1)
  , gfnRegisterResult(&stsMCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , gConstructionTime(CurrentTime)
- , grMLCs(rMLCs)
  , grPrintDirection(rPrintDirection)
  , gszReplicationFormatString(szReplicationFormatString)
  , grRunner(rRunner)
@@ -318,8 +316,7 @@ void stsMCSimJobSource::WriteResultToStructures(successful_result_type const & r
   try
   {
     //update most likely clusters given latest simulated loglikelihood ratio
-    for (MLC_Collections_t::iterator itrMLC=grMLCs.begin(); itrMLC != grMLCs.end(); ++itrMLC)
-       itrMLC->UpdateTopClustersRank(rResult);
+    grRunner._clusterRanker.update(rResult);
     //update significance indicator
     grRunner.UpdateSignificantRatiosList(rResult);
     if (gRatioWriter.get()) gRatioWriter->Write(rResult);

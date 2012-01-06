@@ -473,6 +473,22 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPrintAsciiHeaders());
   jni_error::_detectError(Env);
 
+  mid = _getMethodId_Checked(Env, clazz, "setIndexBasedPValueCutoff", "(D)V");
+  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getIndexBasedPValueCutoff());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setClusterReportType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterReportType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setIndexBasedReportType", "(I)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getIndexBasedReportType());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setReportIndexBasedCoefficents", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getOutputIndexBasedCoefficents());
+  jni_error::_detectError(Env);
+
   return jParameters;
 }
 
@@ -924,6 +940,18 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
 
   mid = _getMethodId_Checked(Env, clazz, "getPrintAsciiHeaders", "()Z");
   Parameters.setPrintAsciiHeaders(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getIndexBasedPValueCutoff", "()D");
+  Parameters.setIndexBasedPValueCutoff(Env.CallDoubleMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  Parameters.setClusterReportType((ClusterReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getClusterReportType", "Lorg/satscan/app/Parameters$ClusterReportType;"));
+
+  Parameters.setIndexBasedReportType((IndexBasedReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getIndexBasedReportType", "Lorg/satscan/app/Parameters$IndexBasedReportType;"));
+
+  mid = _getMethodId_Checked(Env, clazz, "getOutputIndexBasedCoefficents", "()Z");
+  Parameters.setReportIndexBasedCoefficents(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
   return Parameters;

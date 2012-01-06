@@ -34,12 +34,14 @@ class CategoricalSpatialData : public AbstractSpatialClusterData, public Abstrac
     virtual CategoricalSpatialData * Clone() const;
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void             setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual count_t          GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
     virtual void             GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                           std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                           unsigned int tSetIndex=0) const;
     virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void             setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void             InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);}
 };
 
@@ -64,11 +66,13 @@ class CategoricalTemporalData : public AbstractTemporalClusterData, public Abstr
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual unsigned int     GetAllocationSize() const;
     virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void             setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual count_t          GetCategoryCaseCount(unsigned int iCategoryIndex, unsigned int tSetIndex=0) const;
     virtual void             GetOrdinalCombinedCategories(const OrdinalLikelihoodCalculator& Calculator,
                                                           std::vector<OrdinalCombinedCategory>& vCategoryContainer,
                                                           unsigned int tSetIndex=0) const;
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void             setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void             InitializeData() {std::fill(gvCasesPerCategory.begin(), gvCasesPerCategory.end(), 0);}
     virtual void             Reassociate(const DataSetInterface& Interface);
     virtual void             Reassociate(const AbstractDataSetGateway& DataGateway);

@@ -122,12 +122,11 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case TIME_TREND_TYPE           : return "time trend type (line 100)";
     case REPORT_RANK               : return "report cluster rank (line 101)";
     case PRINT_ASCII_HEADERS       : return "print ascii headers in output files (line 102)";
-    case OPTIMIZE_SPATIAL_SIZE     : return "determine optimal spatial cluster size (line 103)";
-    case WINDOW_STOPS              : return "maximum spatial window size for gini (line 104)";
-    case OPTIMIZE_CLUSTER_CUTOFF   : return "reported clusters P-Value cutoff for optimizing calculation (line 105)";
-    case OPTIMIZE_CLUSTER_REPORT_TYPE : return "optimizing spatial size reporting options (line 106)";
-    case OUTPUT_COEFFICIENTS_ASCII : return "report optimizing spatial coefficients - ASCII? (line 107)";  
-    case OUTPUT_COEFFICIENTS_DBASE : return "report optimizing spatial coefficients - DBase? (line 108)";  
+    case CLUSTER_REPORT_TYPE       : return "cluster reporting type (line 103)";
+    case SPATIAL_MAXIMA            : return "spatial window maximum window stops (line 104)";
+    case INDEXBASED_REPORT_TYPE    : return "index based cluster report type (line 105)";
+    case INDEXBASED_PVALUE_CUTOFF  : return "index based cluster p-value cut off (line 106)";
+    case OUTPUT_INDEX_COEFFICENTS  : return "output index based coefficents (line 107)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

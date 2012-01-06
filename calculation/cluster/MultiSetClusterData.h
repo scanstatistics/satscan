@@ -23,12 +23,15 @@ class MultiSetSpatialData : public AbstractSpatialClusterData {
     virtual MultiSetSpatialData * Clone() const;
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void             setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual void             GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                                AbstractLikelihoodCalculator& Calculator,
                                                                std::vector<unsigned int>& vDataSetIndexes) const;
     virtual double           GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void             setMeasure(measure_t m, unsigned int tSetIndex=0);
     virtual void             InitializeData();
+    virtual size_t           getNumSets() const {return gvSetClusterData.size();}
 };
 
 /** Abstract class representing accumulated data of temporal clustering in multiple data sets. */
@@ -42,10 +45,13 @@ class AbstractMultiSetTemporalData : public AbstractTemporalClusterData {
     virtual void             Assign(const AbstractTemporalClusterData& rhs);
     virtual void             CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t          GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void             setCaseCount(count_t t, unsigned int tSetIndex=0);
     virtual void             GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                                AbstractLikelihoodCalculator& Calculator,
                                                                std::vector<unsigned int>& vDataSetIndexes) const;
     virtual measure_t        GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void             setMeasure(measure_t m, unsigned int tSetIndex=0);
+    virtual size_t           getNumSets() const {return gvSetClusterData.size();}
 };
 
 /** Class representing accumulated data of temporal clustering in multiple data sets. */

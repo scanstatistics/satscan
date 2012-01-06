@@ -5,6 +5,8 @@
 #include "cluster.h"
 #include "ptr_vector.h"
 #include "SSException.h"
+#include "boost/shared_ptr.hpp"
+#include <boost/dynamic_bitset.hpp>
 
 class stsClusterCentroidGeometry
 {
@@ -56,88 +58,112 @@ class CSaTScanData;
 
 /** Container class for maintaining the collection of most likely clusters. */
 class MostLikelyClustersContainer {
-  private:
-    //CCluster comparison functor used to order CClusters in descending order
-    //by evaluating clusters calculated loglikelihood ratio. When ratios are
-    //equal, clusters centroid index is used to break tie. Note that purely
-    //temporal cluster types are rank higher than other cluster types with
-    //same LLR. 
+ public:
+    typedef boost::shared_ptr<CCluster> Cluster_t;
+    typedef std::vector<Cluster_t> ClusterList_t;
+
+    /* CCluster comparison functor used to order CClusters in descending order by evaluating clusters calculated
+       loglikelihood ratio. When ratios are equal, clusters centroid index is used to break tie. Purely temporal
+       clusters will rank higher than other cluster types in tie break situation. */
     class CompareClustersRatios {
-       public:
-         bool                   operator() (const CCluster* pCluster1, const CCluster* pCluster2)
-                                {
-                                  if (std::fabs(pCluster1->m_nRatio - pCluster2->m_nRatio) < DBL_CMP_TOLERANCE) {
-                                    //rank a purely temporal cluster higher than other cluster types
-                                    //when rank is the same -- there will be at most one pt cluster in list 
-                                    if (pCluster1->GetClusterType() == PURELYTEMPORALCLUSTER)
-                                       return true;
-                                    if (pCluster2->GetClusterType() == PURELYTEMPORALCLUSTER)
-                                       return false;
-                                    if (pCluster1->GetNumTractsInCluster() < pCluster2->GetNumTractsInCluster())
-                                       return true;
-                                    if (pCluster2->GetNumTractsInCluster() < pCluster1->GetNumTractsInCluster())
-                                       return false;
-                                    //if ratios are equal, lesser centroid index ranks greater
-                                    if (pCluster1->GetMostCentralLocationIndex() != pCluster2->GetMostCentralLocationIndex())
-                                        return (pCluster1->GetMostCentralLocationIndex() < pCluster2->GetMostCentralLocationIndex());
-                                    else
-                                        return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
-                                  }
-                                  return pCluster1->m_nRatio > pCluster2->m_nRatio;
-                                }
+        public:
+            bool operator() (const Cluster_t pCluster1, const Cluster_t pCluster2) {
+                if (std::fabs(pCluster1->m_nRatio - pCluster2->m_nRatio) < DBL_CMP_TOLERANCE) {
+                    //rank a purely temporal cluster higher than other cluster types
+                    //when rank is the same -- there will be at most one pt cluster in list 
+                    if (pCluster1->GetClusterType() == PURELYTEMPORALCLUSTER)
+                        return true;
+                    if (pCluster2->GetClusterType() == PURELYTEMPORALCLUSTER)
+                        return false;
+                    if (pCluster1->GetNumTractsInCluster() < pCluster2->GetNumTractsInCluster())
+                        return true;
+                    if (pCluster2->GetNumTractsInCluster() < pCluster1->GetNumTractsInCluster())
+                        return false;
+                    //if ratios are equal, lesser centroid index ranks greater
+                    if (pCluster1->GetMostCentralLocationIndex() != pCluster2->GetMostCentralLocationIndex())
+                        return (pCluster1->GetMostCentralLocationIndex() < pCluster2->GetMostCentralLocationIndex());
+                    else
+                        return (pCluster1->GetCentroidIndex() < pCluster2->GetCentroidIndex());
+                } 
+                return pCluster1->m_nRatio > pCluster2->m_nRatio;
+            }
     };
+
+  protected:
     class CompareClustersObservedDivExpected {
        private:
-           const CSaTScanData & _DataHub;
-           bool _classic;
+           const CSaTScanData & _dataHub;
+           const CParameters & _parameters;
+           unsigned int _numDataSets;
 
        public:
-         CompareClustersObservedDivExpected(const CSaTScanData& DataHub, bool classic) : _DataHub(DataHub), _classic(classic) {}
-         bool                   operator() (const CCluster* pCluster1, const CCluster* pCluster2)
-                                {
-                                  if (_classic) {   
-                                    double lhsExpected = pCluster1->GetRelativeRisk(_DataHub, 0);
-                                    double rhsExpected = pCluster2->GetRelativeRisk(_DataHub, 0);
-                                    if (macro_equal(lhsExpected,rhsExpected,DBL_CMP_TOLERANCE))
-                                        return pCluster1->GetRatio() > pCluster2->GetRatio();
-                                    return lhsExpected < rhsExpected;
-                                  }
-                                  else {
-                                    double lhsExpected = pCluster1->GetObservedDivExpected(_DataHub, 0);
-                                    double rhsExpected = pCluster2->GetObservedDivExpected(_DataHub, 0);
-                                    if (macro_equal(lhsExpected,rhsExpected,DBL_CMP_TOLERANCE))
-                                        return pCluster1->GetRatio() > pCluster2->GetRatio();
-                                    return lhsExpected > rhsExpected;
-                                  }
-                                }
+         CompareClustersObservedDivExpected(const CSaTScanData& DataHub) : _dataHub(DataHub), _parameters(DataHub.GetParameters()), _numDataSets(DataHub.GetDataSetHandler().GetNumDataSets()) {
+             // Verify that method is called for supported models -- Ordinal, Multinomial and Normal are not currently.
+             if (_parameters.GetProbabilityModelType() == ORDINAL || 
+                 _parameters.GetProbabilityModelType() == CATEGORICAL ||
+                 _parameters.GetProbabilityModelType() == RANK)
+               throw prg_error("CompareClustersObservedDivExpected() not implemented for model('%d').","CompareClustersObservedDivExpected()", _parameters.GetProbabilityModelType());
+         }
+         bool operator() (const Cluster_t& pCluster1, const Cluster_t& pCluster2) {
+             measure_t lhsObserved=0, rhsObserved=0, lhsExpected=0, rhsExpected=0;
+             if (_parameters.GetProbabilityModelType() == NORMAL) {
+                double lhsClusterObserved=0,lhsClusterExpected=0,rhsClusterObserved=0,rhsClusterExpected=0;
+                const DataSetHandler& dataSets(_dataHub.GetDataSetHandler());
+                for (unsigned int s=0; s < _numDataSets; ++s) {
+                    double datasetMean = dataSets.GetDataSet(s).getTotalMeasure()/dataSets.GetDataSet(s).getTotalCases();
+                    lhsClusterObserved = static_cast<measure_t>(pCluster1->GetObservedCount(s));
+                    rhsClusterObserved = static_cast<measure_t>(pCluster2->GetObservedCount(s));
+                    lhsClusterExpected = pCluster1->GetExpectedCount(_dataHub, s);
+                    rhsClusterExpected = pCluster2->GetExpectedCount(_dataHub, s);
+                    lhsObserved += lhsClusterObserved * lhsClusterExpected/lhsClusterObserved;
+                    lhsExpected += lhsClusterObserved * datasetMean;
+                    rhsObserved += rhsClusterObserved * rhsClusterExpected/rhsClusterObserved;
+                    rhsExpected += rhsClusterObserved * datasetMean;
+                }
+             } else {
+                for (unsigned int s=0; s < _numDataSets; ++s) {
+                    lhsObserved += static_cast<measure_t>(pCluster1->GetObservedCount(s));
+                    rhsObserved += static_cast<measure_t>(pCluster2->GetObservedCount(s));
+                    lhsExpected += pCluster1->GetExpectedCount(_dataHub, s);
+                    rhsExpected += pCluster2->GetExpectedCount(_dataHub, s);
+                }
+            }
+            double lhsODE = lhsExpected ? lhsObserved/lhsExpected : 0;
+            double rhsODE = rhsExpected ? rhsObserved/rhsExpected : 0;
+            if (macro_equal(lhsODE, rhsODE, DBL_CMP_TOLERANCE))
+                return pCluster1->GetRatio() > pCluster2->GetRatio();
+            return lhsODE > rhsODE;
+         }
     };
-    ptr_vector<CCluster>        gvTopClusterList;
+    ClusterList_t               gvTopClusterList;
     static unsigned long        MAX_RANKED_CLUSTERS;
     static unsigned long        MAX_BRUTE_FORCE_LOCATIONS;
     double                      _maximum_window_size;
 
     static bool                 CentroidLiesWithinSphereRegion(stsClusterCentroidGeometry const & theCentroid, stsClusterCentroidGeometry const & theSphereCentroid, double dSphereRadius);
     static double               GetClusterRadius(const CSaTScanData& DataHub, CCluster const & theCluster);
-    static bool                 HasTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
+    static void                 getClusterLocationsSet(const CSaTScanData& DataHub, const CCluster& theCluster, boost::dynamic_bitset<>& theSet);
+    static bool                 HasAnyTractsInCommon(const CSaTScanData& DataHub, const CCluster& ClusterOne, const CCluster& ClusterTwo);
     static bool                 PointLiesWithinEllipseArea(double dXPoint, double dYPoint, double dXEllipseCenter, double dYEllipseCenter, double dEllipseRadius, double dEllipseAngle, double dEllipseShape);
-    bool                        ShouldRetainCandidateCluster(std::vector<CCluster *> const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion);
-    void                        SortTopClusters();
+    bool                        ShouldRetainCandidateCluster(ClusterList_t const & vRetainedClusters, CCluster const & CandidateCluster, const CSaTScanData& DataHub, CriteriaSecondaryClustersType eCriterion);
 
   public:
     MostLikelyClustersContainer(double maximum_window_size);
 
     void                        Add(const CCluster& Cluster);
     void                        Add(std::auto_ptr<CCluster>& pCluster);
+    void                        combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub);
     void                        Empty();
     tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;
+    Cluster_t                 & GetClusterRef(tract_t tClusterIndex);
     double                      getClicCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
     double                      getGiniCoefficient(const CSaTScanData& DataHub, const SimulationVariables& simVars, double p_cutoff) const;
     const CCluster            & GetTopRankedCluster() const;
     double                      getMaximumWindowSize() const {return _maximum_window_size;}
     void                        PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub);
-    void                        RankTopClusters(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& gPrintDirection);
-    void                        UpdateTopClustersRank(double r);
+    void                        rankClusters(const CSaTScanData& DataHub, CriteriaSecondaryClustersType eOverlapType, BasePrint& print);
+    void                        sort();
 };
 
 typedef std::vector<MostLikelyClustersContainer> MLC_Collections_t;

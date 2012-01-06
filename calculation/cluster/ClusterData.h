@@ -28,8 +28,10 @@ protected:
     virtual SpatialData * Clone() const;
     virtual void          CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void          setCaseCount(count_t t, unsigned int tSetIndex=0) {gtCases = t;}
     virtual double        GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t     GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void          setMeasure(measure_t m, unsigned int tSetIndex=0) {gtMeasure = m;}
     SpatialData         & operator=(const SpatialData& rhs);
     virtual void          InitializeData() {gtCases=0;gtMeasure=0;}
 };
@@ -72,8 +74,10 @@ class SpatialHomogeneousData : public AbstractSpatialClusterData {
     virtual SpatialHomogeneousData * Clone() const;
     virtual void          CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t       GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void          setCaseCount(count_t t, unsigned int tSetIndex=0) {gtCases = t;}
     virtual double        GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t     GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void          setMeasure(measure_t m, unsigned int tSetIndex=0) {gtMeasure = m;}
     SpatialHomogeneousData & operator=(const SpatialHomogeneousData& rhs);
     virtual void          InitializeData() {gtCases=0;gtMeasure=0;}
 };
@@ -132,8 +136,10 @@ class SpatialMonotoneData : public AbstractClusterData {
     void                   ConcatLastCircles();
     virtual void           CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual count_t        GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void           setCaseCount(count_t t, unsigned int tSetIndex=0) {gtCases = t;}
     virtual double         GetMaximizingValue(AbstractLikelihoodCalculator& Calculator);
     virtual measure_t      GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void           setMeasure(measure_t m, unsigned int tSetIndex=0) {gtMeasure = m;}
     tract_t                GetLastCircleIndex() const {return m_nSteps-1;}
     virtual void           InitializeData();
     void                   RemoveRemainder(const CSaTScanData& Data);
@@ -164,7 +170,9 @@ class TemporalData : public AbstractTemporalClusterData {
     virtual void                Assign(const AbstractTemporalClusterData& rhs);
     virtual unsigned int        GetAllocationSize() const;
     virtual count_t             GetCaseCount(unsigned int tSetIndex=0) const;
+    virtual void                setCaseCount(count_t t, unsigned int tSetIndex=0) {gtCases = t;}
     virtual measure_t           GetMeasure(unsigned int tSetIndex=0) const;
+    virtual void                setMeasure(measure_t m, unsigned int tSetIndex=0) {gtMeasure = m;}
     virtual TemporalData      * Clone() const;
     virtual void                CopyEssentialClassMembers(const AbstractClusterData& rhs);
     virtual void                InitializeData() {gtCases=0;gtMeasure=0;}

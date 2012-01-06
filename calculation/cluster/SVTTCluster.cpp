@@ -247,6 +247,10 @@ count_t MultiSetSVTTClusterData::GetCaseCount(unsigned int tSetIndex) const {
   return gvSetClusterData[tSetIndex]->GetCaseCount();
 }
 
+void MultiSetSVTTClusterData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  gvSetClusterData.at(tSetIndex)->setCaseCount(t);
+}
+
 /** Returns the data sets indexes that comprise the target ratio value. */
 void MultiSetSVTTClusterData::GetDataSetIndexesComprisedInRatio(double dTargetLoglikelihoodRatio,
                                                                 AbstractLikelihoodCalculator& Calculator,
@@ -259,6 +263,10 @@ void MultiSetSVTTClusterData::GetDataSetIndexesComprisedInRatio(double dTargetLo
 /** Returns the number of expected cases in data set as index. */
 measure_t MultiSetSVTTClusterData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData[tSetIndex]->GetMeasure();
+}
+
+void MultiSetSVTTClusterData::setMeasure(measure_t m, unsigned int tSetIndex) {
+  gvSetClusterData.at(tSetIndex)->setMeasure(m);
 }
 
 /** Deallocates data members that assist with evaluation of temporal data.

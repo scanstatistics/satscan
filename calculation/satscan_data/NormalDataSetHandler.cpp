@@ -338,6 +338,10 @@ bool NormalDataSetHandler::setIsWeighted() {
 
     int currentColumnsSize = setColumns.front();
     const_cast<CParameters&>(gParameters).SetIsWeightedNormal(currentColumnsSize > (gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4));
+    if (gParameters.getIsWeightedNormal() && gParameters.getIsReportingIndexBasedClusters()) {
+      gPrint.Printf("Error: The index based cluster collection feature is not implemented with Normal probability model with weighted data.\n", BasePrint::P_ERROR);
+      return false;
+    }
     for (size_t t=1; t < setColumns.size(); ++t) {
         if (currentColumnsSize != setColumns.at(t)) {
             gPrint.Printf("Error: Data sets do not have same number of columns.\n"

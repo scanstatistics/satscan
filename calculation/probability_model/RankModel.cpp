@@ -12,7 +12,7 @@ CRankModel::CRankModel() : CModel() {}
 /** destructor */
 CRankModel::~CRankModel() {}
 
-/** TODO : document */
+/** No operation performed for this probability model. */
 void CRankModel::CalculateMeasure(RealDataSet&) {/* no action here */}
 
 /** Returns population as defined in CCluster object. Not implemeneted yet - throws exception. */

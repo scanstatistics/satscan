@@ -217,8 +217,8 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
     //first, look for neighbor information in store
     if (!gvCentroidNeighborStore.size())
       gvCentroidNeighborStore.resize(m_nGridTracts, 0);
-    // check the centroid neighbor store but only if the not calculating gini coeficients and ellipse/centroid match that of stored
-    if (!gParameters.optimizeSpatialClusterSize() &&  gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
+    // check the centroid neighbor store but only if the not calculating index based coeficients and ellipse/centroid match that of stored
+    if (!gParameters.getIsReportingIndexBasedClusters() &&  gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
       return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
     else {//else calculate
       delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;

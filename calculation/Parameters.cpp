@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 108;
+const int CParameters::giNumParameters 	              = 107;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -131,12 +131,11 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geTimeTrendType                        != rhs.geTimeTrendType) return false;
   if (gbReportRank                           != rhs.gbReportRank) return false;
   if (gbPrintAsciiHeaders                    != rhs.gbPrintAsciiHeaders) return false;
-  if (geOptSpatialClusterSizeType            != rhs.geOptSpatialClusterSizeType) return false;  
   if (gvSpatialWindowStops                   != rhs.gvSpatialWindowStops) return false;
-  if (gbOptSpatialClusterSizeCutOffPValue    != rhs.gbOptSpatialClusterSizeCutOffPValue) return false;
-  if (geOptSpatialClusterSizeReportType      != rhs.geOptSpatialClusterSizeReportType) return false;
-  if (_reportCoefficientsAscii               != rhs._reportCoefficientsAscii) return false;
-  if (_reportCoefficientsDBase               != rhs._reportCoefficientsDBase) return false; 
+  if (_indexBasedPValueCutoff                != rhs._indexBasedPValueCutoff) return false;
+  if (_clusterReportType                     != rhs._clusterReportType) return false;
+  if (_indexBasedReportType                  != rhs._indexBasedReportType) return false;
+  if (_outputIndexCoefficients               != rhs._outputIndexCoefficients) return false;
 
   return true;
 }
@@ -319,12 +318,11 @@ void CParameters::Copy(const CParameters &rhs) {
   geTimeTrendType                        = rhs.geTimeTrendType;
   gbReportRank                           = rhs.gbReportRank;
   gbPrintAsciiHeaders                    = rhs.gbPrintAsciiHeaders;
-  geOptSpatialClusterSizeType            = rhs.geOptSpatialClusterSizeType;
   gvSpatialWindowStops                   = rhs.gvSpatialWindowStops; _executeSpatialWindowStops.clear();
-  gbOptSpatialClusterSizeCutOffPValue    = rhs.gbOptSpatialClusterSizeCutOffPValue;
-  geOptSpatialClusterSizeReportType      = rhs.geOptSpatialClusterSizeReportType;
-  _reportCoefficientsAscii               = rhs._reportCoefficientsAscii;
-  _reportCoefficientsDBase               = rhs._reportCoefficientsDBase;
+  _indexBasedPValueCutoff                = rhs._indexBasedPValueCutoff;
+  _clusterReportType                     = rhs._clusterReportType;
+  _indexBasedReportType                  = rhs._indexBasedReportType;
+  _outputIndexCoefficients               = rhs._outputIndexCoefficients;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -352,14 +350,15 @@ unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
 
 const std::vector<double> & CParameters::getExecuteSpatialWindowStops() const {
   if (_executeSpatialWindowStops.size()) return _executeSpatialWindowStops; // already calculated
-  if (optimizeSpatialClusterSize()) {
+  double spatialMaxInPopulationAtRisk = GetMaxSpatialSizeForType(PERCENTOFPOPULATION, GetRestrictingMaximumReportedGeoClusterSize());
+  if (getIsReportingIndexBasedClusters()) {
     for (std::vector<double>::const_iterator itr=gvSpatialWindowStops.begin(); itr != gvSpatialWindowStops.end(); ++itr) {
-        if (*itr <= gdMaxSpatialSizeInPopulationAtRisk)
+        if (*itr <= spatialMaxInPopulationAtRisk)
             _executeSpatialWindowStops.push_back(*itr);
     }  
     std::sort(_executeSpatialWindowStops.begin(), _executeSpatialWindowStops.end());
   } else
-    _executeSpatialWindowStops.resize(1, GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true));
+    _executeSpatialWindowStops.resize(1, spatialMaxInPopulationAtRisk);
   return _executeSpatialWindowStops;
 }
 
@@ -532,6 +531,20 @@ bool CParameters::GetTerminateSimulationsEarly() const {
    return (GetPValueReportingType() == DEFAULT_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE) && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
 }
 
+/* return whether parameter settings indcate that index based clusters are reported */
+bool CParameters::getIsReportingHierarchicalClusters() const {
+    return !GetIsPurelyTemporalAnalysis() && (_clusterReportType == HIERARCHICAL || _clusterReportType == ALL_CLUSTER_TYPES);
+}
+
+/* return whether parameter settings indcate that index based clusters are reported */
+bool CParameters::getIsReportingIndexBasedClusters() const {
+    return (_clusterReportType == INDEX_BASED || _clusterReportType == ALL_CLUSTER_TYPES) && geAnalysisType == PURELYSPATIAL;
+}
+
+bool CParameters::getIsReportingIndexBasedCoefficents() const {
+    return getIsReportingIndexBasedClusters() && _outputIndexCoefficients;
+}
+
 /** Returns indication of Gumbel value is reported. */
 bool CParameters::getIsReportingGumbelPValue() const {
     return GetPValueReportingType() == DEFAULT_PVALUE ||  // clusters with rank < 10 report Gumbel p-value
@@ -566,8 +579,6 @@ void CParameters::RequestAllAdditionalOutputFiles() {
    }
    SetOutputSimLogLikeliRatiosAscii(true);
    SetOutputSimLogLikeliRatiosDBase(true);
-   setOutputCoefficientsAscii(optimizeSpatialClusterSize());
-   setOutputCoefficientsDBase(optimizeSpatialClusterSize());
 }
 
 /** Sets whether maximum spatial cluster size is restricted by given type and whether retriction is for real or simulations. */
@@ -617,6 +628,20 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
   gvCaseFilenames[iSetIndex - 1] = sCaseFileName;
   if (bCorrectForRelativePath)
     AssignMissingPath(gvCaseFilenames[iSetIndex - 1]);
+}
+
+void CParameters::checkEnumeration(int e, int eLow, int eHigh) const {
+  if (e < eLow || e > eHigh) throw prg_error("Enumeration %d out of range [%d,%d].", "checkEnumeration()", e, eLow, eHigh);
+}
+
+void CParameters::setClusterReportType(ClusterReportType e) {
+  checkEnumeration(e, HIERARCHICAL, ALL_CLUSTER_TYPES);
+  _clusterReportType = e;
+}
+
+void CParameters::setIndexBasedReportType(IndexBasedReportType e) {
+  checkEnumeration(e, OPTIMAL_ONLY, ALL_VALUES);
+  _indexBasedReportType = e;
 }
 
 /** Sets control data file name.
@@ -776,12 +801,11 @@ void CParameters::SetAsDefaulted() {
   gbReportRank = false;
   gbPrintAsciiHeaders = false;
   gvSpatialWindowStops.clear();
-  gvSpatialWindowStops += 2,5,10,15,20,25,30,40,50; //1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
-  geOptSpatialClusterSizeType = OPT_GINI; // OPT_NONE;
-  gbOptSpatialClusterSizeCutOffPValue = 0.05;
-  geOptSpatialClusterSizeReportType = MAX_SIZE_PLUS_MAXIMIZED_GINI;
-  _reportCoefficientsAscii = false;
-  _reportCoefficientsDBase = false;
+  gvSpatialWindowStops += 1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
+  _indexBasedPValueCutoff = 0.05;
+  _clusterReportType = HIERARCHICAL;
+  _indexBasedReportType = OPTIMAL_ONLY;
+  _outputIndexCoefficients = false;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -799,13 +823,6 @@ void CParameters::SetExecutionType(ExecutionType eExecutionType) {
   if (AUTOMATIC > eExecutionType || CENTRICALLY < eExecutionType)
     throw prg_error("Enumeration %d out of range [%d,%d].", "SetExecutionType()", eExecutionType, AUTOMATIC, CENTRICALLY);
   geExecutionType = eExecutionType;
-}
-
-/** Sets gini reporting type. */
-void CParameters::SetOptSpatialClusterSizeReportType(OptSpatialClusterSizeReportType e) {
-  if (ALL_GINI > e || MAXIMIZED_GINI < e)
-    throw prg_error("Enumeration %d out of range [%d,%d].", "SetOptSpatialClusterSizeReportType()", e, ALL_GINI, MAXIMIZED_GINI);
-  geOptSpatialClusterSizeReportType = e;
 }
 
 /** Sets clusters to include type. Throws exception if out of range. */
@@ -1115,10 +1132,6 @@ bool CParameters::UseCoordinatesFile() const {
     } else {
         return !UseLocationNeighborsFile();
     }
-}
-
-bool CParameters::optimizeSpatialClusterSize() const {
-    return geOptSpatialClusterSizeType != OPT_NONE && !GetIsPurelyTemporalAnalysis(); // TODO: more restrictions?            
 }
 
 /** Returns indication of whether current parameter settings indicate that the max circle file should be read. */

@@ -161,12 +161,11 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case TIME_TREND_TYPE          : return " time trend type - SVTT only (Linear=0, Quadratic=1)";
       case REPORT_RANK              : return " report cluster rank (y/n)";
       case PRINT_ASCII_HEADERS      : return " print ascii headers in output files (y/n)";
-      case OPTIMIZE_SPATIAL_SIZE    : return " optimizing spatial window type (off=0, GINI=1, CLIC=2, BOTH=3)";
-      case WINDOW_STOPS             : return " maximum percentages for optimizing cluster sizes (comma separated decimal values[<=50%] )";
-      case OPTIMIZE_CLUSTER_CUTOFF  : return " max p-value for clusters used in optimizing spatial cluster size coefficients (0.000-1.000)";
-      case OPTIMIZE_CLUSTER_REPORT_TYPE : return " optimizing spatial cluster size reporting options (All Gini=0, Max spatial plus maximized gini=1, Maximized gini=2)";
-      case OUTPUT_COEFFICIENTS_ASCII : return " report optimizing spatial size coefficients ascii format? (y/n)";
-      case OUTPUT_COEFFICIENTS_DBASE : return " report optimizing spatial size coefficients dBase format? (y/n)";
+      case CLUSTER_REPORT_TYPE      : return " cluster reporting type (0=hierarchical, 1=index based, 2=all clusters)";
+      case SPATIAL_MAXIMA           : return " spatial window maxima stops (comma separated decimal values[<=50%] )";
+      case INDEXBASED_REPORT_TYPE   : return " index based cluster reporting type (0=optimal index only, 1=all values)";
+      case OUTPUT_INDEX_COEFFICENTS : return " output index coefficents to results file (y/n)";
+      case INDEXBASED_PVALUE_CUTOFF : return " max p-value for clusters used in calculation of index based coefficients (0.000-1.000)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -296,18 +295,16 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case TIME_TREND_TYPE          : return AsString(s, gParameters.getTimeTrendType());
       case REPORT_RANK              : return AsString(s, gParameters.getReportClusterRank()); 
       case PRINT_ASCII_HEADERS      : return AsString(s, gParameters.getPrintAsciiHeaders()); 
-      case OPTIMIZE_SPATIAL_SIZE    : return AsString(s, gParameters.getOptimizingSpatialClusterSizeType());
-      case WINDOW_STOPS             : s = "";
+      case CLUSTER_REPORT_TYPE      : return AsString(s, gParameters.getClusterReportType());
+      case SPATIAL_MAXIMA           : s = "";
                                       for (size_t i=0; i < gParameters.getSpatialWindowStops().size(); ++i) {
                                          printString(worker, "%g", gParameters.getSpatialWindowStops()[i]);
                                          s += (i == 0 ? "" : ","); s += worker;
                                       }
                                       return s; 
-      case OPTIMIZE_CLUSTER_CUTOFF  : return AsString(s, gParameters.GetOptimizingSpatialCutOffPValue());
-      case OPTIMIZE_CLUSTER_REPORT_TYPE : return AsString(s, gParameters.GetOptSpatialClusterSizeReportType());
-      case OUTPUT_COEFFICIENTS_ASCII : return AsString(s, gParameters.getOutputCoefficientsAscii());
-      case OUTPUT_COEFFICIENTS_DBASE : return AsString(s, gParameters.getOutputCoefficientsDBase());
-
+      case INDEXBASED_REPORT_TYPE    : return AsString(s, gParameters.getIndexBasedReportType());
+      case INDEXBASED_PVALUE_CUTOFF  : return AsString(s, gParameters.getIndexBasedPValueCutoff());
+      case OUTPUT_INDEX_COEFFICENTS  : return AsString(s, gParameters.getOutputIndexBasedCoefficents()); 
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -429,12 +426,11 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case TIME_TREND_TYPE          : AsString(default_value, gParameters.getTimeTrendType()); break;
       case REPORT_RANK              : default_value = (gParameters.getReportClusterRank() ? "y" : "n"); break;
       case PRINT_ASCII_HEADERS      : default_value = (gParameters.getPrintAsciiHeaders() ? "y" : "n"); break;
-      case OPTIMIZE_SPATIAL_SIZE    : default_value = (gParameters.optimizeSpatialClusterSize() ? "y" : "n"); break;
-      case WINDOW_STOPS             : default_value = "<blank>"; break;
-      case OPTIMIZE_CLUSTER_CUTOFF  : AsString(default_value, gParameters.GetOptimizingSpatialCutOffPValue()); break;
-      case OPTIMIZE_CLUSTER_REPORT_TYPE : AsString(default_value, gParameters.GetOptSpatialClusterSizeReportType()); break;
-      case OUTPUT_COEFFICIENTS_ASCII : default_value = (gParameters.getOutputCoefficientsAscii() ? "y" : "n"); break;
-      case OUTPUT_COEFFICIENTS_DBASE : default_value = (gParameters.getOutputCoefficientsDBase() ? "y" : "n"); break;
+      case CLUSTER_REPORT_TYPE      : AsString(default_value, gParameters.getClusterReportType()); break;
+      case SPATIAL_MAXIMA           : default_value = "<blank>"; break;
+      case INDEXBASED_REPORT_TYPE   : AsString(default_value, gParameters.getIndexBasedReportType()); break;
+      case INDEXBASED_PVALUE_CUTOFF : AsString(default_value, gParameters.getIndexBasedPValueCutoff()); break;
+      case OUTPUT_INDEX_COEFFICENTS : default_value = (gParameters.getOutputIndexBasedCoefficents() ? "y" : "n"); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -606,7 +602,7 @@ void AbtractParameterFileAccess::ReadSpatialWindowStops(const std::string& sPara
        }
        else
          throw parameter_error("Invalid Parameter Setting:\nFor parameter '%s', setting '%s' is not an decimal number.\n",
-                               GetParameterLabel(WINDOW_STOPS), (*itr).c_str());
+                               GetParameterLabel(SPATIAL_MAXIMA), (*itr).c_str());
     }
   }
 }
@@ -803,15 +799,13 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.setTimeTrendType((TimeTrendType)iValue); break;
       case REPORT_RANK               : gParameters.setReportClusterRank(ReadBoolean(sParameter, eParameterType)); break;
       case PRINT_ASCII_HEADERS       : gParameters.setPrintAsciiHeaders(ReadBoolean(sParameter, eParameterType)); break;
-      case OPTIMIZE_SPATIAL_SIZE     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPT_NONE, OPT_BOTH);
-                                       gParameters.setOptimizeSpatialClusterSizeType((OptSpatialClusterSizeType)iValue); break;
-      case WINDOW_STOPS              : ReadSpatialWindowStops(sParameter); break;
-      case OPTIMIZE_CLUSTER_CUTOFF   : gParameters.SetOptSpatialClusterSizeCutOffPValue(ReadDouble(sParameter, eParameterType)); break;
-      case OPTIMIZE_CLUSTER_REPORT_TYPE : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, ALL_GINI, MAXIMIZED_GINI);
-                                       gParameters.SetOptSpatialClusterSizeReportType((OptSpatialClusterSizeReportType)iValue); break;
-      case OUTPUT_COEFFICIENTS_ASCII : gParameters.setOutputCoefficientsAscii(ReadBoolean(sParameter, eParameterType)); break;
-      case OUTPUT_COEFFICIENTS_DBASE : gParameters.setOutputCoefficientsDBase(ReadBoolean(sParameter, eParameterType)); break; 
-
+      case CLUSTER_REPORT_TYPE       : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, HIERARCHICAL, ALL_CLUSTER_TYPES);
+                                       gParameters.setClusterReportType((ClusterReportType)ReadInt(sParameter, eParameterType)); break;
+      case SPATIAL_MAXIMA            : ReadSpatialWindowStops(sParameter); break;
+      case INDEXBASED_REPORT_TYPE    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPTIMAL_ONLY, ALL_VALUES);
+                                       gParameters.setIndexBasedReportType((IndexBasedReportType)ReadInt(sParameter, eParameterType)); break;
+      case INDEXBASED_PVALUE_CUTOFF  : gParameters.setIndexBasedPValueCutoff(ReadDouble(sParameter, eParameterType)); break;
+      case OUTPUT_INDEX_COEFFICENTS  : gParameters.setReportIndexBasedCoefficents(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

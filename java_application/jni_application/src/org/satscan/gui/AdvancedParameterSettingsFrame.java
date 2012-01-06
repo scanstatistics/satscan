@@ -438,7 +438,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 EnableWindowShapeGroup(true);
                 EnableTemporalOptionsGroup(false, false, false);
                 EnableProspectiveSurveillanceGroup(false);
-                EnableOutputOptions(true);
+                enableClustersReportedOptions(true);
                 EnableCoordinatesCheckGroup(true);
                 EnableTemporalStudyPeriodCheckGroup(!bH_Poisson);
                 EnableNonEucludianNeighborsGroup(!bH_Poisson);
@@ -455,7 +455,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 EnableWindowShapeGroup(false);
                 EnableTemporalOptionsGroup(true, false, true);
                 EnableProspectiveSurveillanceGroup(false);
-                EnableOutputOptions(false);
+                enableClustersReportedOptions(false);
                 EnableCoordinatesCheckGroup(false);
                 EnableTemporalStudyPeriodCheckGroup(true);
                 EnableNonEucludianNeighborsGroup(false);
@@ -474,7 +474,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 EnableWindowShapeGroup(true);
                 EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, true);
                 EnableProspectiveSurveillanceGroup(false);
-                EnableOutputOptions(true);
+                enableClustersReportedOptions(true);
                 EnableCoordinatesCheckGroup(true);
                 EnableTemporalStudyPeriodCheckGroup(true);
                 EnableNonEucludianNeighborsGroup(true);
@@ -493,7 +493,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 EnableWindowShapeGroup(true);
                 EnableTemporalOptionsGroup(true, !bSpaceTimePermutation, false);
                 EnableProspectiveSurveillanceGroup(true);
-                EnableOutputOptions(true);
+                enableClustersReportedOptions(true);
                 EnableCoordinatesCheckGroup(true);
                 EnableTemporalStudyPeriodCheckGroup(true);
                 EnableNonEucludianNeighborsGroup(true);
@@ -510,7 +510,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 EnableWindowShapeGroup(false);
                 EnableTemporalOptionsGroup(true, false, false);
                 EnableProspectiveSurveillanceGroup(true);
-                EnableOutputOptions(false);
+                enableClustersReportedOptions(false);
                 EnableCoordinatesCheckGroup(false);
                 EnableTemporalStudyPeriodCheckGroup(true);                
                 EnableNonEucludianNeighborsGroup(false);
@@ -526,7 +526,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 enableSpatialOptionsGroup(true, false);
                 EnableTemporalOptionsGroup(false, false, false);
                 EnableProspectiveSurveillanceGroup(false);
-                EnableOutputOptions(true);
+                enableClustersReportedOptions(true);
                 EnableCoordinatesCheckGroup(true);
                 EnableTemporalStudyPeriodCheckGroup(true);
                 EnableNonEucludianNeighborsGroup(true);
@@ -723,7 +723,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         boolean bReturn = true;
 
         // Output tab
-        bReturn &= (_criteriaSecClustersNoGeoLapRadioButton.isSelected() == true);
+        bReturn &= (_hierarchicalSecondaryClusters.getSelectedIndex() == 0);
+        bReturn &= (_indexBasedClusterCriteria.getSelectedIndex() == 0);
         bReturn &= (Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 50);
         bReturn &= (Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 50);
         bReturn &= (_reportedSpatialPopulationFileCheckBox.isSelected() == false);
@@ -750,24 +751,34 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
     private Parameters.CriteriaSecondaryClustersType getCriteriaSecondaryClustersType() {
         Parameters.CriteriaSecondaryClustersType eReturn = null;
-
-        if (_criteriaSecClustersNoGeoLapRadioButton.isSelected()) {
+        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 0) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOGEOOVERLAP;
         }
-        if (_criteriaSecClustersNoCentersRadioButton.isSelected()) {
+        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 1) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOCENTROIDSINOTHER;
         }
-        if (_criteriaSecClustersNoCentersMoreRadioButton.isSelected()) {
+        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 2) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOCENTROIDSINMORELIKE;
         }
-        if (_criteriaSecClustersNoCentersLessRadioButton.isSelected()) {
+        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 3) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOCENTROIDSINLESSLIKE;
         }
-        if (_criteriaSecClustersNoCentersEachRadioButton.isSelected()) {
+        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 4) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NOPAIRSINEACHOTHERS;
         }
-        if (_criteriaSecClustersNoRestrictionsRadioButton.isSelected()) {
+        if (_hierarchicalSecondaryClusters.getSelectedIndex() == 5) {
             eReturn = Parameters.CriteriaSecondaryClustersType.NORESTRICTIONS;
+        }
+        return eReturn;
+    }
+
+    private Parameters.IndexBasedReportType getIndexBasedClusterReportType() {
+        Parameters.IndexBasedReportType eReturn = null;
+        if (_indexBasedClusterCriteria.getSelectedIndex() == 0) {
+            eReturn = Parameters.IndexBasedReportType.OPTIMAL_ONLY;
+        }
+        if (_indexBasedClusterCriteria.getSelectedIndex() == 1) {
+            eReturn = Parameters.IndexBasedReportType.ALL_VALUES;
         }
         return eReturn;
     }
@@ -870,7 +881,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             parameters.SetEndRangeStartDate(sString);
             sString = _endRangeEndYearTextField.getText() + "/" + _endRangeEndMonthTextField.getText() + "/" + _endRangeEndDayTextField.getText();
             parameters.SetEndRangeEndDate(sString);
-            parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
         }
         // save the input files on Input tab
         if (!_additionalDataSetsGroup.isEnabled()) {
@@ -915,6 +925,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         parameters.SetMultipleCoordinatesType(getMultipleCoordinatesType().ordinal());
         parameters.setReportClusterRank(_reportClusterRankCheckBox.isSelected());
         parameters.setPrintAsciiHeaders(_printAsciiColumnHeaders.isSelected());
+        parameters.SetCriteriaForReportingSecondaryClusters(getCriteriaSecondaryClustersType().ordinal());
+        parameters.setIndexBasedReportType(getIndexBasedClusterReportType().ordinal());
+        parameters.setReportIndexBasedCoefficents(_checkboxReportIndexCoefficients.isSelected());
     }
 
     public boolean isNonEucledianNeighborsSelected() {
@@ -1040,16 +1053,14 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         }
     }
 
-    private void ValidateSpatialClusterSize() {
+    private void ValidateSpatialWindowSettings() {
         if (_spatialOptionsGroup.isEnabled() && _spatialPopulationFileCheckBox.isSelected() && _maxCirclePopulationFilenameTextField.getText().length() == 0) {
             throw new AdvFeaturesExpection("Please specify a maximum circle size file.", FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
         }
-
         if (_spatialOptionsGroup.isEnabled() && _spatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
             throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                     FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
         }
-
         if (_reportedSpatialOptionsGroup.isEnabled() && _restrictReportedClustersCheckBox.isSelected() &&
                 _reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
             throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + "reported spatial cluster size by a population defined through a\nmaximum circle file.",
@@ -1066,6 +1077,11 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n" + "cluster size must be defined as a percentage of the population as defined in a max\n" + "circle size file.\n" + "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n" + "max circle size file is not required.\n",
                         FocusedTabSet.ANALYSIS, (Component) _spatialPopulationFileCheckBox);
             }
+        }
+        // The isotonic scan feature is not currently implemented with the index based cluster collection option.
+        boolean indexBasedClusterdSelected = _analysisSettingsWindow._clustersReportedGroup.isEnabled() && (_analysisSettingsWindow._indexBasedClusterCollection.isSelected() || _analysisSettingsWindow._allClustersReported.isSelected());
+        if (indexBasedClusterdSelected && _performIsotonicScanCheckBox.isEnabled() && _performIsotonicScanCheckBox.isSelected()) {
+            throw new AdvFeaturesExpection("The isotonic spatial scan statistic is not permitted with the index based cluster collection feature.", FocusedTabSet.ANALYSIS, (Component) _performIsotonicScanCheckBox);
         }
     }
 
@@ -1241,25 +1257,26 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     }
 
     /** validates reported clusters limiting control setting - throws exception */
-    private void ValidateReportedSpatialClusterSize() {
-        if (!(_restrictReportedClustersCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected())) {
-            return;
+    private void ValidateClustersReportedSettings() {
+        boolean bUsingNeighbors = _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
+        if (bUsingNeighbors && _hierarchicalSecondaryClusters.getSelectedIndex() > 0 && _hierarchicalSecondaryClusters.getSelectedIndex() < 5) {
+            throw new AdvFeaturesExpection("Non-eculedian neighbors can only restrict secondary cluster in terms of no geographical overlap.\n",
+                                           FocusedTabSet.OUTPUT, (Component) _hierarchicalSecondaryClusters);
         }
         //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
         //as percentage of max circle population or as a distance.
-        if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME &&
+        if (_restrictReportedClustersCheckBox.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
+            if (_analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME &&
                 _adjustForEarlierAnalysesCheckBox.isEnabled() && _adjustForEarlierAnalysesCheckBox.isSelected()) {
-            if (!_reportedSpatialPopulationFileCheckBox.isSelected() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
-                throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses and defining\n" + "non-eculedian neighbors, the maximum reported spatial cluster size must be\n" + "defined as a percentage of the population as defined in a max circle size file.\n",
-                        FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
-
-            } else if (!_reportedSpatialPopulationFileCheckBox.isSelected() && !_reportedSpatialDistanceCheckBox.isSelected()) {
-                throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n" + "cluster size must be defined as a percentage of the population as defined in a max\n" + "circle size file.\n" + "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n" + "max circle size file is not required.\n", FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
+                if (!_reportedSpatialPopulationFileCheckBox.isSelected() && _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected()) {
+                    throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses and defining\n" + "non-eculedian neighbors, the maximum reported spatial cluster size must be\n" + "defined as a percentage of the population as defined in a max circle size file.\n",
+                                                   FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
+                } else if (!_reportedSpatialPopulationFileCheckBox.isSelected() && !_reportedSpatialDistanceCheckBox.isSelected()) {
+                    throw new AdvFeaturesExpection("For a prospective space-time analysis adjusting for ealier analyses, the maximum spatial\n" + "cluster size must be defined as a percentage of the population as defined in a max\n" + "circle size file.\n" + "Alternatively you may choose to specify the maximum as a fixed radius, in which case a\n" + "max circle size file is not required.\n", FocusedTabSet.OUTPUT, (Component) _reportedSpatialPopulationFileCheckBox);
+                }
             }
         }
     }
-
-
     
     /** validates Monte Carlo replications */
     private void ValidateInferenceSettings() {
@@ -1288,12 +1305,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     public void Validate() {
         ValidateInputFiles();
         ValidateNeighborsFileSettings();
-        ValidateSpatialClusterSize();
+        ValidateSpatialWindowSettings();
         ValidateAdjustmentSettings();
         ValidateTemporalWindowSettings();
         ValidateProspDateRange();
         ValidateInferenceSettings();
-        ValidateReportedSpatialClusterSize();
+        ValidateClustersReportedSettings();
     }
 
     /**
@@ -1443,7 +1460,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
      *   pulled these default values from the CParameter class
      */
     private void SetDefaultsForOutputTab() {
-        _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
+        _hierarchicalSecondaryClusters.select(0);
+        _indexBasedClusterCriteria.select(0);
+        _checkboxReportIndexCoefficients.setSelected(false);
         _restrictReportedClustersCheckBox.setSelected(false);
         _reportedSpatialPopulationFileCheckBox.setSelected(false);
         _reportedSpatialDistanceCheckBox.setSelected(false);
@@ -1734,20 +1753,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         EnableProspectiveStartDate();
     }
 
-    /** enables adjustment options controls */
-    private void EnableOutputOptions(boolean bEnable) {
-        boolean bUsingNeighbors = _specifiyNeighborsFileCheckBox.isEnabled() && _specifiyNeighborsFileCheckBox.isSelected();
+    /** Enables controls on the clusters reported tab. */
+    private void enableClustersReportedOptions(boolean bEnable) {
         _criteriaSecClustersGroup.setEnabled(bEnable);
-        _criteriaSecClustersNoGeoLapRadioButton.setEnabled(bEnable);
-        _criteriaSecClustersNoCentersRadioButton.setEnabled(bEnable && !bUsingNeighbors);
-        _criteriaSecClustersNoCentersMoreRadioButton.setEnabled(bEnable && !bUsingNeighbors);
-        _criteriaSecClustersNoCentersLessRadioButton.setEnabled(bEnable && !bUsingNeighbors);
-        _criteriaSecClustersNoCentersEachRadioButton.setEnabled(bEnable && !bUsingNeighbors);
-        _criteriaSecClustersNoRestrictionsRadioButton.setEnabled(bEnable);
-        
-        if (bEnable && bUsingNeighbors && 
-            !(_criteriaSecClustersNoGeoLapRadioButton.isSelected() || _criteriaSecClustersNoRestrictionsRadioButton.isSelected()))
-            _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
+        _hierarchicalLabel.setEnabled(bEnable);
+        _hierarchicalSecondaryClusters.setEnabled(bEnable);
+        // enable the advanced settings for index based clusters reported group
+        _criteriaIndexBasedClustersGroup.setEnabled(bEnable && 
+                                                    (_analysisSettingsWindow._indexBasedClusterCollection.isSelected() || _analysisSettingsWindow._allClustersReported.isSelected()));
+        _indexBasedCriteriaLabel.setEnabled(_criteriaIndexBasedClustersGroup.isEnabled());
+        _indexBasedClusterCriteria.setEnabled(_criteriaIndexBasedClustersGroup.isEnabled());
+        _checkboxReportIndexCoefficients.setEnabled(_criteriaIndexBasedClustersGroup.isEnabled());
     }
     
     /** Set appropriate control for maximum spatial cluster size type. */
@@ -1805,30 +1821,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             case SPATIALLY_STRATIFIED_RANDOMIZATION:
             default:
                 _spatialAdjustmentsSpatialStratifiedRadioButton.setSelected(true);
-        }
-    }
-
-    /** Sets secondary cluster control type */
-    private void SetSecondaryClustersTypeControl(Parameters.CriteriaSecondaryClustersType eCriteriaSecondaryClustersType) {
-        switch (eCriteriaSecondaryClustersType) {
-            case NOGEOOVERLAP:
-                _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
-                break;
-            case NOCENTROIDSINOTHER:
-                _criteriaSecClustersNoCentersRadioButton.setSelected(true);
-                break;
-            case NOCENTROIDSINMORELIKE:
-                _criteriaSecClustersNoCentersMoreRadioButton.setSelected(true);
-                break;
-            case NOCENTROIDSINLESSLIKE:
-                _criteriaSecClustersNoCentersLessRadioButton.setSelected(true);
-                break;
-            case NOPAIRSINEACHOTHERS:
-                _criteriaSecClustersNoCentersEachRadioButton.setSelected(true);
-                break;
-            case NORESTRICTIONS:
-                _criteriaSecClustersNoRestrictionsRadioButton.setSelected(true);
-                break;
         }
     }
 
@@ -1999,7 +1991,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
 
         // Output tab
         _restrictReportedClustersCheckBox.setSelected(parameters.GetRestrictingMaximumReportedGeoClusterSize());
-        SetSecondaryClustersTypeControl(parameters.GetCriteriaSecondClustersType());
+        _hierarchicalSecondaryClusters.select(parameters.GetCriteriaSecondClustersType().ordinal());
+        _indexBasedClusterCriteria.select(parameters.getIndexBasedReportType().ordinal());
+        _checkboxReportIndexCoefficients.setSelected(parameters.getOutputIndexBasedCoefficents());
         SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFPOPULATION, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFPOPULATION.ordinal(), true));
         SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.PERCENTOFMAXCIRCLEFILE.ordinal(), true));
         SetMaxReportedSpatialClusterSizeControl(Parameters.SpatialSizeType.MAXDISTANCE, parameters.GetMaxSpatialSizeForType(Parameters.SpatialSizeType.MAXDISTANCE.ordinal(), true));
@@ -2049,7 +2043,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalOptionsButtonGroup = new javax.swing.ButtonGroup();
         _spatialAdjustmentsButtonGroup = new javax.swing.ButtonGroup();
         _temporalTrendAdjButtonGroup = new javax.swing.ButtonGroup();
-        _criteriaSecClustersButtonGroup = new javax.swing.ButtonGroup();
         _pValueButtonGroup = new javax.swing.ButtonGroup();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         _multipleDataSetsTab = new javax.swing.JPanel();
@@ -2204,12 +2197,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _montCarloReplicationsTextField = new javax.swing.JTextField();
         _clustersReportedTab = new javax.swing.JPanel();
         _criteriaSecClustersGroup = new javax.swing.JPanel();
-        _criteriaSecClustersNoGeoLapRadioButton = new javax.swing.JRadioButton();
-        _criteriaSecClustersNoCentersRadioButton = new javax.swing.JRadioButton();
-        _criteriaSecClustersNoCentersMoreRadioButton = new javax.swing.JRadioButton();
-        _criteriaSecClustersNoCentersLessRadioButton = new javax.swing.JRadioButton();
-        _criteriaSecClustersNoCentersEachRadioButton = new javax.swing.JRadioButton();
-        _criteriaSecClustersNoRestrictionsRadioButton = new javax.swing.JRadioButton();
+        _hierarchicalSecondaryClusters = new java.awt.Choice();
+        _hierarchicalLabel = new javax.swing.JLabel();
         _reportedSpatialOptionsGroup = new javax.swing.JPanel();
         _restrictReportedClustersCheckBox = new javax.swing.JCheckBox();
         _maxReportedSpatialClusterSizeTextField = new javax.swing.JTextField();
@@ -2221,6 +2210,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportedMaxDistanceLabel = new javax.swing.JLabel();
         _maxReportedSpatialRadiusTextField = new javax.swing.JTextField();
         _maxReportedRadiusLabel = new javax.swing.JLabel();
+        _criteriaIndexBasedClustersGroup = new javax.swing.JPanel();
+        _indexBasedClusterCriteria = new java.awt.Choice();
+        _indexBasedCriteriaLabel = new javax.swing.JLabel();
+        _checkboxReportIndexCoefficients = new javax.swing.JCheckBox();
         _additionalOutputTab = new javax.swing.JPanel();
         _reportCriticalValuesGroup = new javax.swing.JPanel();
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
@@ -2258,16 +2251,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _temporalTrendAdjButtonGroup.add(this._temporalTrendAdjLogLinearRadioButton);
         _temporalTrendAdjButtonGroup.add(this._temporalTrendAdjLogLinearCalcRadioButton);
 
-        _criteriaSecClustersButtonGroup.add(_criteriaSecClustersNoCentersEachRadioButton);
-        _criteriaSecClustersButtonGroup.add(_criteriaSecClustersNoCentersLessRadioButton);
-        _criteriaSecClustersButtonGroup.add(_criteriaSecClustersNoCentersMoreRadioButton);
-        _criteriaSecClustersButtonGroup.add(_criteriaSecClustersNoCentersRadioButton);
-        _criteriaSecClustersButtonGroup.add(_criteriaSecClustersNoGeoLapRadioButton);
-        _criteriaSecClustersButtonGroup.add(_criteriaSecClustersNoRestrictionsRadioButton);
-
         setDefaultCloseOperation(javax.swing.WindowConstants.HIDE_ON_CLOSE);
 
-        _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _additionalDataSetsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Input Data Sets"));
 
         _inputDataSetsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         _inputDataSetsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -2665,12 +2651,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(120, Short.MAX_VALUE))
+                .addContainerGap(144, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
 
-        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _studyPeriodCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Data Check"));
 
         _strictStudyPeriodCheckRadioButton.setSelected(true);
         _strictStudyPeriodCheckRadioButton.setText("Check to ensure that all cases and controls are within the specified temporal study period."); // NOI18N
@@ -2712,7 +2698,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _geographicalCoordinatesCheckGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Data Check"));
 
         _strictCoordinatesRadioButton.setSelected(true);
         _strictCoordinatesRadioButton.setText("Check to ensure that all observations (cases, controls and populations) are within the specified"); // NOI18N
@@ -2779,12 +2765,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(176, Short.MAX_VALUE))
+                .addContainerGap(200, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
 
-        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidian Neighbors", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _specialNeighborFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Non-Euclidian Neighbors"));
 
         _specifiyNeighborsFileCheckBox.setText("Specify neighbors through a non-Euclidian neighbors file"); // NOI18N
         _specifiyNeighborsFileCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -2889,7 +2875,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _multipleSetsSpatialCoordinatesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Multiple Sets of Spatial Coordinates per Location ID"));
 
         _onePerLocationIdRadioButton.setSelected(true);
         _onePerLocationIdRadioButton.setText("Allow only one set of coordinates per location ID."); // NOI18N
@@ -2961,12 +2947,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(111, Short.MAX_VALUE))
+                .addContainerGap(135, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
 
-        _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _spatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Spatial Cluster Size"));
 
         _maxSpatialClusterSizeTextField.setText("50"); // NOI18N
         _maxSpatialClusterSizeTextField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -3169,7 +3155,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _spatialWindowShapeGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Window Shape"));
 
         _circularRadioButton.setSelected(true);
         _circularRadioButton.setText("Circular"); // NOI18N
@@ -3273,12 +3259,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addContainerGap(101, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
 
-        _temporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _temporalOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Temporal Cluster Size"));
 
         _percentageTemporalRadioButton.setSelected(true);
         _percentageTemporalRadioButton.setText("is"); // NOI18N
@@ -3400,7 +3386,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             }
         });
 
-        _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _flexibleTemporalWindowDefinitionGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Flexible Temporal Window Definition"));
 
         _restrictTemporalRangeCheckBox.setText("Include only windows with:"); // NOI18N
         _restrictTemporalRangeCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -3854,12 +3840,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(104, Short.MAX_VALUE))
+                .addContainerGap(128, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
 
-        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _temporalTrendAdjGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal Adjustments"));
 
         _temporalTrendAdjNoneRadioButton.setSelected(true);
         _temporalTrendAdjNoneRadioButton.setText("None"); // NOI18N
@@ -3965,7 +3951,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _spatialAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Spatial Adjustments"));
 
         _spatialAdjustmentsNoneRadioButton.setSelected(true);
         _spatialAdjustmentsNoneRadioButton.setText("None"); // NOI18N
@@ -4009,7 +3995,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _knownAdjustmentsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Temporal, Spatial and/or Space-Time Adjustments"));
 
         _adjustForKnownRelativeRisksCheckBox.setText("Adjust for known relative risks"); // NOI18N
         _adjustForKnownRelativeRisksCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4123,12 +4109,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(28, Short.MAX_VALUE))
+                .addContainerGap(52, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
 
-        _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _pValueOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "P-Value"));
 
         _pValueButtonGroup.add(_radioDefaultPValues);
         _radioDefaultPValues.setSelected(true);
@@ -4236,7 +4222,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                     .addComponent(_checkReportGumbel)))
         );
 
-        _prospectiveSurveillanceGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Prospective Surveillance", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _prospectiveSurveillanceGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Prospective Surveillance"));
 
         _adjustForEarlierAnalysesCheckBox.setText("Adjust for earlier analyses performed since:"); // NOI18N
         _adjustForEarlierAnalysesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4419,7 +4405,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addComponent(_prospectiveStartDateCards, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _iterativeScanGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Iterative Scan Statistic"));
 
         _performIterativeScanCheckBox.setText("Adjusting for More Likely Clusters"); // NOI18N
         _performIterativeScanCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4510,7 +4496,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _monteCarloGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Replications"));
 
         _labelMonteCarloReplications.setText("Number of replications (0, 9, 999, or value ending in 999):"); // NOI18N
 
@@ -4577,67 +4563,26 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(47, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
 
-        _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters Hierarchical"));
 
-        _criteriaSecClustersNoGeoLapRadioButton.setSelected(true);
-        _criteriaSecClustersNoGeoLapRadioButton.setText("No Geographical Overlap"); // NOI18N
-        _criteriaSecClustersNoGeoLapRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _criteriaSecClustersNoGeoLapRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _criteriaSecClustersNoGeoLapRadioButton.addItemListener(new java.awt.event.ItemListener() {
+        _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
+                enableSetDefaultsButton();
             }
         });
+        _hierarchicalSecondaryClusters.add("No Geographical Overlap");
+        _hierarchicalSecondaryClusters.add("No Cluster Centers in Other Clusters");
+        _hierarchicalSecondaryClusters.add("No Cluster Centers in More Likely Clusters");
+        _hierarchicalSecondaryClusters.add("No Cluster Centers in Less Likely Clusters");
+        _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
+        _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
 
-        _criteriaSecClustersNoCentersRadioButton.setText("No Cluster Centers in Other Clusters"); // NOI18N
-        _criteriaSecClustersNoCentersRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
-
-        _criteriaSecClustersNoCentersMoreRadioButton.setText("No Cluster Centers in More Likely Clusters"); // NOI18N
-        _criteriaSecClustersNoCentersMoreRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersMoreRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersMoreRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
-
-        _criteriaSecClustersNoCentersLessRadioButton.setText("No Cluster Centers in Less Likely Clusters"); // NOI18N
-        _criteriaSecClustersNoCentersLessRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersLessRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersLessRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
-
-        _criteriaSecClustersNoCentersEachRadioButton.setText("No Pairs of Centers Both in Each Others Clusters"); // NOI18N
-        _criteriaSecClustersNoCentersEachRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersEachRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _criteriaSecClustersNoCentersEachRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
-
-        _criteriaSecClustersNoRestrictionsRadioButton.setText("No Restrictions = Most Likely Cluster for Each Grid Point"); // NOI18N
-        _criteriaSecClustersNoRestrictionsRadioButton.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        _criteriaSecClustersNoRestrictionsRadioButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        _criteriaSecClustersNoRestrictionsRadioButton.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) enableSetDefaultsButton();
-            }
-        });
+        _hierarchicalLabel.setText("Overlapping Criteria");
 
         javax.swing.GroupLayout _criteriaSecClustersGroupLayout = new javax.swing.GroupLayout(_criteriaSecClustersGroup);
         _criteriaSecClustersGroup.setLayout(_criteriaSecClustersGroupLayout);
@@ -4645,34 +4590,21 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             _criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_criteriaSecClustersGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_criteriaSecClustersNoGeoLapRadioButton)
-                    .addComponent(_criteriaSecClustersNoCentersRadioButton)
-                    .addComponent(_criteriaSecClustersNoCentersMoreRadioButton)
-                    .addComponent(_criteriaSecClustersNoCentersLessRadioButton)
-                    .addComponent(_criteriaSecClustersNoCentersEachRadioButton)
-                    .addComponent(_criteriaSecClustersNoRestrictionsRadioButton))
-                .addContainerGap(260, Short.MAX_VALUE))
+                .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+                .addContainerGap())
         );
         _criteriaSecClustersGroupLayout.setVerticalGroup(
             _criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_criteriaSecClustersGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(_criteriaSecClustersNoGeoLapRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_criteriaSecClustersNoCentersRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_criteriaSecClustersNoCentersMoreRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_criteriaSecClustersNoCentersLessRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_criteriaSecClustersNoCentersEachRadioButton)
-                .addGap(10, 10, 10)
-                .addComponent(_criteriaSecClustersNoRestrictionsRadioButton)
+                .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_hierarchicalLabel)
+                    .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _reportedSpatialOptionsGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Maximum Reported Spatial Cluster Size"));
 
         _restrictReportedClustersCheckBox.setText("Report only clusters smaller than:"); // NOI18N
         _restrictReportedClustersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4825,6 +4757,46 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        _criteriaIndexBasedClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Index Based Cluster Collection"));
+
+        _indexBasedClusterCriteria.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+        _indexBasedClusterCriteria.add("Optimal Index Only");
+        _indexBasedClusterCriteria.add("All Index Values");
+
+        _indexBasedCriteriaLabel.setText("Cluster Reporting Criteria");
+
+        _checkboxReportIndexCoefficients.setText("Report index based coefficients in results file");
+        _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {     public void itemStateChanged(java.awt.event.ItemEvent e) {         enableSetDefaultsButton();     } });
+
+        javax.swing.GroupLayout _criteriaIndexBasedClustersGroupLayout = new javax.swing.GroupLayout(_criteriaIndexBasedClustersGroup);
+        _criteriaIndexBasedClustersGroup.setLayout(_criteriaIndexBasedClustersGroupLayout);
+        _criteriaIndexBasedClustersGroupLayout.setHorizontalGroup(
+            _criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_criteriaIndexBasedClustersGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(_criteriaIndexBasedClustersGroupLayout.createSequentialGroup()
+                        .addComponent(_indexBasedCriteriaLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        _criteriaIndexBasedClustersGroupLayout.setVerticalGroup(
+            _criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_criteriaIndexBasedClustersGroupLayout.createSequentialGroup()
+                .addGroup(_criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_indexBasedCriteriaLabel)
+                    .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_checkboxReportIndexCoefficients)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _clustersReportedTabLayout = new javax.swing.GroupLayout(_clustersReportedTab);
         _clustersReportedTab.setLayout(_clustersReportedTabLayout);
         _clustersReportedTabLayout.setHorizontalGroup(
@@ -4832,8 +4804,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _clustersReportedTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_clustersReportedTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(_criteriaIndexBasedClustersGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _clustersReportedTabLayout.setVerticalGroup(
@@ -4842,13 +4815,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_criteriaIndexBasedClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(25, Short.MAX_VALUE))
+                .addContainerGap(89, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
 
-        _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _reportCriticalValuesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Critical Values"));
 
         _reportCriticalValuesCheckBox.setText("Report critical values for an observed cluster to be significant"); // NOI18N
         _reportCriticalValuesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4876,7 +4851,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
-        _reportClusterRankGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Rank", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _reportClusterRankGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Monte Carlo Rank"));
 
         _reportClusterRankCheckBox.setText("Report Monte Carlo Rank"); // NOI18N
         _reportClusterRankCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4904,7 +4879,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(14, Short.MAX_VALUE))
         );
 
-        _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Headers", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 0, 0))); // NOI18N
+        _additionalOutputFiles.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Headers"));
 
         _printAsciiColumnHeaders.setText("Print column headers in ASCII output files"); // NOI18N
         _printAsciiColumnHeaders.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -4953,7 +4928,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(162, Short.MAX_VALUE))
+                .addContainerGap(186, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -4987,7 +4962,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 427, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5017,6 +4992,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JLabel _caseFileLabel;
     private javax.swing.JTextField _caseFileTextField;
     private javax.swing.JCheckBox _checkReportGumbel;
+    private javax.swing.JCheckBox _checkboxReportIndexCoefficients;
     private javax.swing.JRadioButton _circularRadioButton;
     private javax.swing.JButton _closeButton;
     private javax.swing.JPanel _clustersReportedTab;
@@ -5024,14 +5000,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
-    private javax.swing.ButtonGroup _criteriaSecClustersButtonGroup;
+    private javax.swing.JPanel _criteriaIndexBasedClustersGroup;
     private javax.swing.JPanel _criteriaSecClustersGroup;
-    private javax.swing.JRadioButton _criteriaSecClustersNoCentersEachRadioButton;
-    private javax.swing.JRadioButton _criteriaSecClustersNoCentersLessRadioButton;
-    private javax.swing.JRadioButton _criteriaSecClustersNoCentersMoreRadioButton;
-    private javax.swing.JRadioButton _criteriaSecClustersNoCentersRadioButton;
-    private javax.swing.JRadioButton _criteriaSecClustersNoGeoLapRadioButton;
-    private javax.swing.JRadioButton _criteriaSecClustersNoRestrictionsRadioButton;
     private javax.swing.JPanel _dataCheckingTab;
     private javax.swing.JPanel _dataSetsGroup;
     private javax.swing.JLabel _distancePrefixLabel;
@@ -5054,8 +5024,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JPanel _flexible_window_cards;
     private javax.swing.ButtonGroup _geographicalCoordinatesCheckButtonGroup;
     private javax.swing.JPanel _geographicalCoordinatesCheckGroup;
+    private javax.swing.JLabel _hierarchicalLabel;
+    private java.awt.Choice _hierarchicalSecondaryClusters;
     private javax.swing.JCheckBox _inclPureTempClustCheckBox;
     private javax.swing.JCheckBox _includePureSpacClustCheckBox;
+    private java.awt.Choice _indexBasedClusterCriteria;
+    private javax.swing.JLabel _indexBasedCriteriaLabel;
     private javax.swing.JPanel _inferenceTab;
     private javax.swing.JList _inputDataSetsList;
     private javax.swing.JLabel _iterativeCutoffLabel;

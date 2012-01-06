@@ -59,7 +59,6 @@ WeightedNormalCovariatesLikelihoodCalculator::~WeightedNormalCovariatesLikelihoo
             delete (*itr); (*itr)=0;
         }
     } catch (...){}
-    //TODO: delete objects in vectors of pointers
 }
 
 /** Calculates the full loglikelihood ratio/test statistic given passed maximizing value and data set index. 

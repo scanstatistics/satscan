@@ -150,7 +150,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;shell32.lib;C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\x64\Debug\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib</AdditionalDependencies>
+      <AdditionalDependencies>C:\prj\satscan.development\satscan\xbase\xbase_2.0.0\xbase\x64\Debug\vc.xbase.lib;C:\prj\satscan.development\satscan\newmat\x64\Debug\newmat.lib;C:\prj\satscan.development\satscan\shapelib\shapelib_1.2.10\x64\Debug\shapelib.lib</AdditionalDependencies>
       <OutputFile>$(OutDir)SaTScanBatch64.exe</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -306,7 +306,6 @@
     <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\wide_posix_api.cpp" />
     <ClCompile Include="..\..\boost\boost_1_46_0\libs\regex\src\winstances.cpp" />
     <ClCompile Include="..\..\boost\boost_1_46_0\libs\thread\src\win32\thread.cpp" />
-    <ClCompile Include="..\calculation\Output\CoefficientsWriter.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="..\calculation\IniParameterFileAccess.cpp" />
     <ClCompile Include="..\calculation\IniParameterSpecification.cpp" />
@@ -466,7 +465,6 @@
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp" />
     <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
     <ClInclude Include="..\calculation\IniParameterSpecification.h" />
-    <ClInclude Include="..\calculation\Output\CoefficientsWriter.h" />
     <ClInclude Include="..\calculation\ParameterFileAccess.h" />
     <ClInclude Include="..\calculation\Parameters.h" />
     <ClInclude Include="..\calculation\ParametersPrint.h" />

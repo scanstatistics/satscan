@@ -68,6 +68,10 @@ count_t MultiSetSpatialData::GetCaseCount(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->GetCaseCount();
 }
 
+void MultiSetSpatialData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  return gvSetClusterData.at(tSetIndex)->setCaseCount(t);
+}
+
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
     If specified purpose for multiple data sets is multivariate, recalculates high and low
     LLR values to determine which data sets comprised target ratio; else all data sets
@@ -130,6 +134,10 @@ measure_t MultiSetSpatialData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->GetMeasure();
 }
 
+void MultiSetSpatialData::setMeasure(measure_t t, unsigned int tSetIndex) {
+  return gvSetClusterData.at(tSetIndex)->setMeasure(t);
+}
+
 /** Initializes cluster data in each data set. */
 void MultiSetSpatialData::InitializeData() {
   ptr_vector<SpatialData>::iterator itr=gvSetClusterData.begin();
@@ -156,6 +164,10 @@ void AbstractMultiSetTemporalData::CopyEssentialClassMembers(const AbstractClust
     Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
 count_t AbstractMultiSetTemporalData::GetCaseCount(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->gtCases;
+}
+
+void AbstractMultiSetTemporalData::setCaseCount(count_t t, unsigned int tSetIndex) {
+  return gvSetClusterData.at(tSetIndex)->setCaseCount(t);
 }
 
 /** Fills passed vector with indexes of data sets that contributed to calculated loglikelihood ratio.
@@ -212,6 +224,10 @@ void AbstractMultiSetTemporalData::GetDataSetIndexesComprisedInRatio(double dTar
     Caller is responsible for ensuring that 'tSetIndex' is a valid index. */
 measure_t AbstractMultiSetTemporalData::GetMeasure(unsigned int tSetIndex) const {
   return gvSetClusterData.at(tSetIndex)->gtMeasure;
+}
+
+void AbstractMultiSetTemporalData::setMeasure(measure_t t, unsigned int tSetIndex) {
+  return gvSetClusterData.at(tSetIndex)->setMeasure(t);
 }
 
 //********************** class MultiSetTemporalData ****************************

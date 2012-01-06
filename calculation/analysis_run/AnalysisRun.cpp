@@ -38,7 +38,6 @@
 #include "SSException.h" 
 #include "SVTTCentricAnalysis.h"
 #include "PurelySpatialBruteForceAnalysis.h"
-#include "CoefficientsWriter.h"
 //#include "ClusterScatterChart.h"
 //#include "ClusterKML.h"
 
@@ -46,7 +45,7 @@
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
                :gParameters(Parameters), gStartTime(StartTime), gPrintDirection(PrintDirection),
                 geExecutingType(Parameters.GetExecutionType()), giAnalysisCount(0), giPower_X_Count(0), giPower_Y_Count(0),
-                gdMinRatioToReport(0.001), guwSignificantAt005(0), _clustersReported(false)
+                gdMinRatioToReport(0.001), guwSignificantAt005(0), _clustersReported(false), _reportClusters(0)
  {
   try {
     macroRunTimeManagerInit();
@@ -75,9 +74,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
     pAnalysis->FindTopClusters(*pDataSetGateway, gTopClustersContainers);
     //display the loglikelihood of most likely cluster
     if (!gPrintDirection.GetIsCanceled()) {
-      for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr)
-         itr->RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
-      PrintTopClusterLogLikelihood();
+      rankClusterCollections();
     }
   } catch (prg_exception& x) {
     x.addTrace("CalculateMostLikelyClusters()","AnalysisRunner");
@@ -87,7 +84,7 @@ void AnalysisRunner::CalculateMostLikelyClusters() {
 
 /** Returns indication of whether analysis is to be cancelled.
     Indication returned is false if:
-    - the number of simulations requested is have been completed
+    - the number of simulations requested have been completed
     - the user did not request early termination option
     - no 'most likely clusters' were retained
     Indication returned is true if:
@@ -175,7 +172,7 @@ void AnalysisRunner::Execute() {
     try {
       switch (geExecutingType) {
         case CENTRICALLY  : //gPrintDirection.Printf("Centric execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.second);
-                            ExecuteCentrically(); break;
+                            ExecuteCentricEvaluation(); break;
         case SUCCESSIVELY :
         default           : //gPrintDirection.Printf("Successive execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.first);
                             ExecuteSuccessively(); break;
@@ -233,15 +230,15 @@ void AnalysisRunner::ExecuteSuccessively() {
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
-      gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && gTopClustersContainers.back().GetNumClustersRetained() > 0 ? gTopClustersContainers.back().GetTopRankedCluster().GetRatio() : 0.0);
+      gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && getLargestMaximaClusterCollection().GetNumClustersRetained() > 0 ? getLargestMaximaClusterCollection().GetTopRankedCluster().GetRatio() : 0.0);
       //Do Monte Carlo replications.
-      if (gTopClustersContainers.back().GetNumClustersRetained())
-        PerformSuccessiveSimulations();
+      if (getLargestMaximaClusterCollection().GetNumClustersRetained())
+        ExecuteSuccessiveSimulations();
       //detect user cancellation
       if (gPrintDirection.GetIsCanceled())
         return;
-      //update report
-      UpdateReport();
+      // report clusters to output files
+      reportClusters();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
         LogRunHistory();
@@ -258,18 +255,9 @@ void AnalysisRunner::ExecuteSuccessively() {
   }
 }
 
-/** starts analysis execution - development */
-void AnalysisRunner::ExecuteCentrically() {
-  try {
-      if (gParameters.GetNumParallelProcessesToExecute() == 1)
-        PerformCentric_Serial();
-      else
-        PerformCentric_Parallel();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("ExecuteCentrically()","AnalysisRunner");
-    throw;
-  }
+/** Returns the most likely cluster collection associated with largest spatial maxima. */
+const MostLikelyClustersContainer & AnalysisRunner::getLargestMaximaClusterCollection() const {
+    return _reportClusters.GetNumClustersRetained() ? _reportClusters : gTopClustersContainers.back();
 }
 
 /** Finalizes the reporting to result output file.
@@ -560,7 +548,7 @@ void AnalysisRunner::OpenReportFile(FILE*& fp, bool bOpenAppend) {
 }
 
 /** starts analysis execution - development */
-void AnalysisRunner::PerformCentric_Parallel() {
+void AnalysisRunner::ExecuteCentricEvaluation() {
   unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(gpDataHub->m_nGridTracts));
   DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
@@ -686,18 +674,15 @@ void AnalysisRunner::PerformCentric_Parallel() {
       if (gPrintDirection.GetIsCanceled())
         return;
       //rank top clusters and apply criteria for reporting secondary clusters
-      for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr)
-         itr->RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
-
+      rankClusterCollections();
       //report calculated simulation llr values
       if (SimulationRatios) {
         if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
         RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
-        std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
+        std::vector<double>::const_iterator itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
         for (; itr != itr_end; ++itr) {
           //update most likely clusters given latest simulated loglikelihood ratio
-          for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-              itrMLC->UpdateTopClustersRank(*itr);
+          _clusterRanker.update(*itr);
           //update significance indicator
           UpdateSignificantRatiosList(*itr);
           //update power calculations
@@ -709,8 +694,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
         }
         SimulationRatios.reset();
       }  
-      //report clusters
-      UpdateReport();
+      //report clusters to output files
+      reportClusters();
       //log history for first analysis run
       if (giAnalysisCount == 1) {
         LogRunHistory();
@@ -722,159 +707,8 @@ void AnalysisRunner::PerformCentric_Parallel() {
 
     //finish report
     FinalizeReport();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PerformCentric_Parallel()","AnalysisRunner");
-    throw;
-  }
-}
-
-/** starts analysis execution - development */
-void AnalysisRunner::PerformCentric_Serial() {
-  DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
-
-  try {
-    //detect user cancellation
-    if (gPrintDirection.GetIsCanceled()) return;
-    //create result file report
-    CreateReport();
-    //start analyzing data
-    do {
-      ++giAnalysisCount;
-      guwSignificantAt005 = 0;
-      giPower_X_Count = giPower_Y_Count = 0;
-      gSimVars.reset(0.0);
-
-      //simualtion data randomizer
-      RandomizerContainer_t                       RandomizationContainer;
-      //allocate a simulation data set for each requested replication
-      std::vector<SimulationDataContainer_t>      vRandomizedDataSets(gParameters.GetNumReplicationsRequested());
-      //allocate a data gateway for each requested replication
-      ptr_vector<AbstractDataSetGateway>          vSimDataGateways(gParameters.GetNumReplicationsRequested());
-      //allocate an array to contain simulation llr values
-      AbstractCentricAnalysis::CalculatedRatioContainer_t SimulationRatios;
-      //data gateway object for real data
-      std::auto_ptr<AbstractDataSetGateway>        DataSetGateway(DataHandler.GetNewDataGatewayObject());
-      //centroid neighbor information objects
-      std::vector<CentroidNeighbors>              CentroidNeighbors(gpDataHub->GetParameters().GetNumTotalEllipses() + 1);
-      std::auto_ptr<LoglikelihoodRatioWriter>     RatioWriter;
-      std::auto_ptr<AbstractCentricAnalysis>      CentricAnalysis;
-      //centroid neighbors calculator
-      std::auto_ptr<CentroidNeighborCalculator>   CentroidCalculator;
-      std::auto_ptr<AbstractDataSetWriter>        DataSetWriter;
-
-      //get data randomizers
-      DataHandler.GetRandomizerContainer(RandomizationContainer);
-      //set data gateway object
-      DataHandler.GetDataGateway(*DataSetGateway);
-
-      if (gParameters.GetNumReplicationsRequested())
-        gPrintDirection.Printf("Calculating simulation data for %u simulations\n\n", BasePrint::P_STDOUT, gParameters.GetNumReplicationsRequested());
-      if (gParameters.GetOutputSimulationData()) {
-        remove(gParameters.GetSimulationDataOutputFilename().c_str());
-        DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gParameters));
-      }
-      //create simulation data sets -- randomize each and set corresponding data gateway object
-      for (unsigned int i=0; i < gParameters.GetNumReplicationsRequested() && !gPrintDirection.GetIsCanceled(); ++i) {
-         SimulationDataContainer_t& thisDataCollection = vRandomizedDataSets[i];
-         //create new simulation data set object for each data set of this simulation
-         for (unsigned int j=0; j < DataHandler.GetNumDataSets(); ++j)
-			 thisDataCollection.push_back(new DataSet(gpDataHub->GetNumTimeIntervals(), gpDataHub->GetNumTracts(), gpDataHub->GetNumMetaTractsReferenced(), gParameters, j + 1));
-         //allocate appropriate data structure for given data set handler (probablility model)
-         DataHandler.AllocateSimulationData(thisDataCollection);
-         //randomize data
-         macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
-         gpDataHub->RandomizeData(RandomizationContainer, thisDataCollection, i + 1);
-         macroRunTimeStopSerial();
-        //print simulation data to file, if requested
-        if (gParameters.GetOutputSimulationData())
-          for (size_t t=0; t < thisDataCollection.size(); ++t)
-             DataSetWriter->write(*thisDataCollection[t], gParameters);
-         //allocate and set data gateway object
-         vSimDataGateways[i] = DataHandler.GetNewDataGatewayObject();
-         DataHandler.GetSimulationDataGateway(*vSimDataGateways[i], thisDataCollection, RandomizationContainer);
-      }
-
-      //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
-
-      //allocate analysis object
-      CentricAnalysis.reset(GetNewCentricAnalysisObject(*DataSetGateway, vSimDataGateways));
-      //allocate centroid neigbor calculator
-      CentroidCalculator.reset(new CentroidNeighborCalculator(*gpDataHub, gPrintDirection));
-
-      //analyze real and simulation data about each centroid
-      boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-      for (int c=0; c < gpDataHub->m_nGridTracts && !gPrintDirection.GetIsCanceled(); ++c) {
-         gPrintDirection.Printf("Evaluating centroid %i of %i\n", BasePrint::P_STDOUT, c + 1, gpDataHub->m_nGridTracts);
-         CentricAnalysis->ExecuteAboutCentroid(c, *CentroidCalculator, *DataSetGateway, vSimDataGateways);
-         //report estimation of total execution time
-         if (c==9)
-           ReportTimeEstimate(StartTime, gpDataHub->m_nGridTracts, c+1, &gPrintDirection);
-      }
-      //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
-      if (gParameters.GetIncludePurelyTemporalClusters()) {
-        gPrintDirection.Printf("Evaluating purely temporal clusters\n", BasePrint::P_STDOUT);
-        CentricAnalysis->ExecuteAboutPurelyTemporalCluster(*DataSetGateway, vSimDataGateways);
-      }
-
-      //retrieve top clusters and simulated loglikelihood ratios from analysis object
-      CentricAnalysis->RetrieveClusters(gTopClustersContainers);
-      CentricAnalysis->RetrieveLoglikelihoodRatios(SimulationRatios);
-
-      // Since we are evaluating real and simulation data simultaneuosly, there is no early termination option. 
-      gSimVars.set_sim_count_explicit(gParameters.GetNumReplicationsRequested());
-
-      //free memory of objects that will no longer be used
-      // - we might need the memory for recalculating neighbors in geographical overlap code
-      vRandomizedDataSets.clear();
-      CentricAnalysis.reset(0);
-      vSimDataGateways.killAll();
-      //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
-      //rank top clusters and apply criteria for reporting secondary clusters
-      for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr)
-         itr->RankTopClusters(gParameters, *gpDataHub, gPrintDirection);
-      //report calculated simulation llr values
-      if (SimulationRatios) {
-        if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-        RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
-        std::vector<double>::iterator  itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
-        for (; itr != itr_end; ++itr) {
-          //update most likely clusters given latest simulated loglikelihood ratio
-          for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-             itrMLC->UpdateTopClustersRank(*itr);
-          //update significance indicator
-          UpdateSignificantRatiosList(*itr);
-          //update power calculations
-          UpdatePowerCounts(*itr);
-          //update simulation variables
-          gSimVars.add_llr(*itr);
-          //update simulated loglikelihood record buffer
-          if(RatioWriter.get()) RatioWriter->Write(*itr);
-        }
-        SimulationRatios.reset();
-      }
-      //report clusters
-      UpdateReport();
-      //log history for first analysis run
-      if (giAnalysisCount == 1) {
-        LogRunHistory();
-      }
-      //report additional output file: 'relative risks for each location'
-      CreateRelativeRiskFile();
-      if (gPrintDirection.GetIsCanceled()) return;
-    } while (RepeatAnalysis()); //repeat analysis - iterative scan
-
-    //finish report
-    FinalizeReport();
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PerformCentric_Serial()","AnalysisRunner");
+  } catch (prg_exception& x) {
+    x.addTrace("ExecuteCentricEvaluation()","AnalysisRunner");
     throw;
   }
 }
@@ -906,7 +740,7 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
 
     {
       PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
-      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), gTopClustersContainers, lclPrintDirection, sReplicationFormatString, *this);
+      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
       //run threads:
@@ -949,125 +783,18 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
   }
 }
 
-/** Calculates simulated loglikelihood ratios and updates:
-    - most likely clusters rank
-    - significant loglikelihood ratio indicator
-    - power calculation data, if requested by user
-    - additional output file(s)                             */
-void AnalysisRunner::PerformSuccessiveSimulations_Serial() {
-  double                                  dSimulatedRatio;
-  unsigned int                            iSimulationNumber;
-  char                                  * sReplicationFormatString;
-  AbstractDataSetGateway                * pDataGateway=0;
-  CAnalysis                             * pAnalysis=0;
-  SimulationDataContainer_t               SimulationDataContainer;
-  RandomizerContainer_t                   RandomizationContainer;
-  std::auto_ptr<LoglikelihoodRatioWriter> RatioWriter;
-  std::auto_ptr<AbstractDataSetWriter>    DataSetWriter;
-
-  try {
-    if (gParameters.GetNumReplicationsRequested() == 0)
-      return;
-    //set print message format string
-    if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
-      sReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
-    else
-      sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
-    //create record buffers for simulated loglikelihood ratios, if user requested these output files
-    RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
-    //set/reset loglikelihood ratio significance indicator
-    if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-    //get container for simulation data - this data will be modified in the randomize process
-    GetDataHub().GetDataSetHandler().GetSimulationDataContainer(SimulationDataContainer);
-    //get container of data randomizers - these will modify the simulation data
-    GetDataHub().GetDataSetHandler().GetRandomizerContainer(RandomizationContainer);
-    //get data gateway given dataset handler's real data and simulated data structures
-    pDataGateway = GetDataHub().GetDataSetHandler().GetNewDataGatewayObject();
-    GetDataHub().GetDataSetHandler().GetSimulationDataGateway(*pDataGateway, SimulationDataContainer, RandomizationContainer);
-    //get new analysis object for which to defined simulation algorithm
-    pAnalysis = GetNewAnalysisObject();
-    //allocate appropriate data members for simulation algorithm
-    pAnalysis->AllocateSimulationObjects(*pDataGateway);
-    //allocate additional data structures for homogeneous poisson model
-    if (GetDataHub().GetParameters().GetProbabilityModelType() == HOMOGENEOUSPOISSON)
-       dynamic_cast<AbstractBruteForceAnalysis*>(pAnalysis)->AllocateAdditionalSimulationObjects(RandomizationContainer);
-    //if writing simulation data to file, delete file now
-    if (gParameters.GetOutputSimulationData()) {
-      remove(gParameters.GetSimulationDataOutputFilename().c_str());
-      DataSetWriter.reset(AbstractDataSetWriter::getNewDataSetWriter(gParameters));
-    }
-    //start clock for estimating approximate time to complete
-    boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
-    {//block for the scope of SimulationPrintDirection
-      PrintQueue SimulationPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
-
-      for (iSimulationNumber=1; (iSimulationNumber <= gParameters.GetNumReplicationsRequested()) && !gPrintDirection.GetIsCanceled(); iSimulationNumber++) {
-        gSimVars.increment_sim_count();
-        //randomize data
-        macroRunTimeStartSerial(SerialRunTimeComponent::RandomDataGeneration);
-        GetDataHub().RandomizeData(RandomizationContainer, SimulationDataContainer, iSimulationNumber);
-        macroRunTimeStopSerial();
-        //print simulation data to file, if requested
-        if (gParameters.GetOutputSimulationData())
-          for (size_t t=0; t < SimulationDataContainer.size(); ++t)
-             DataSetWriter->write(*SimulationDataContainer[t], gParameters);
-        //perform simulation to get loglikelihood ratio
-        macroRunTimeStartSerial(SerialRunTimeComponent::ScanningSimulatedData);
-        dSimulatedRatio = pAnalysis->ExecuteSimulation(*pDataGateway);
-        gSimVars.add_llr(dSimulatedRatio);
-        macroRunTimeStopSerial();
-        //update most likely clusters given latest simulated loglikelihood ratio
-        for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-            itrMLC->UpdateTopClustersRank(dSimulatedRatio);
-        //update significance indicator
-        UpdateSignificantRatiosList(dSimulatedRatio);
-        //update power calculations
-        UpdatePowerCounts(dSimulatedRatio);
-        //update simulated loglikelihood record buffer
-        if(RatioWriter.get()) RatioWriter->Write(dSimulatedRatio);
-        //if first simulation, report approximate time to complete simulations and print queue threshold
-        if (gSimVars.get_sim_count()==1) {
-          //***** time to complete approximate will need modified with incorporation of thread code ******
-          ReportTimeEstimate(StartTime, gParameters.GetNumReplicationsRequested(), iSimulationNumber, &SimulationPrintDirection);
-          SaTScan::Timestamp tsReleaseTime;
-          tsReleaseTime.Now();
-          tsReleaseTime.AddSeconds(3);//queue lines until 3 seconds from now
-          SimulationPrintDirection.SetThresholdPolicy(TimedReleaseThresholdPolicy(tsReleaseTime));
-        }
-        //report simulated loglikelihood ratio to print direction
-        SimulationPrintDirection.Printf(sReplicationFormatString, BasePrint::P_STDOUT, iSimulationNumber,
-                                        gParameters.GetNumReplicationsRequested(), dSimulatedRatio);
-        //check that simulations are not terminated early
-        if (CheckForEarlyTermination(iSimulationNumber))
-          break;
-      }
-    }//end scope of SimulationPrintDirection
-    delete pDataGateway; pDataGateway=0;
-    delete pAnalysis; pAnalysis=0;
-  }
-  catch (prg_exception& x) {
-    delete pDataGateway;
-    delete pAnalysis;
-    x.addTrace("PerformSuccessiveSimulations_Serial()","AnalysisRunner");
-    throw;
-  }
-}
-
 /** Prepares data for simulations and contracts simulation process. */
-void AnalysisRunner::PerformSuccessiveSimulations() {
+void AnalysisRunner::ExecuteSuccessiveSimulations() {
   try {                                                           
     if (gParameters.GetNumReplicationsRequested() > 0) {
       //recompute neighbors if settings indicate that smaller clusters are reported
       gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
       gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
-      if (gParameters.GetNumParallelProcessesToExecute() == 1)
-        PerformSuccessiveSimulations_Serial();
-      else
-        PerformSuccessiveSimulations_Parallel();
+      PerformSuccessiveSimulations_Parallel();
     }
   }
   catch (prg_exception& x) {
-    x.addTrace("PerformSuccessiveSimulations()","AnalysisRunner");
+    x.addTrace("ExecuteSuccessiveSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -1121,23 +848,30 @@ void AnalysisRunner::PrintFindClusterHeading() {
 
 /** Print GINI coefficients */
 void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
-  if (!gParameters.optimizeSpatialClusterSize()) return;
-
+  if (!(gParameters.getIsReportingIndexBasedClusters() && gParameters.getOutputIndexBasedCoefficents())) return;
   AsciiPrintFormat printFormat;
   std::string buffer;
   printFormat.SetMarginsAsClusterSection(0);
   printFormat.PrintSectionSeparatorString(fp, 0, 2);
-  printString(buffer, "GINI Coefficients (base upon percent of poplation at risk)");
+  printString(buffer, "Indexed Based Coefficients (GINI)");
   printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   printString(buffer, "----------------------------------------------------------");
   printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-  for (size_t t=0; t < gParameters.getExecuteSpatialWindowStops().size(); ++t) {
-      printString(buffer, "%g percent", gParameters.getExecuteSpatialWindowStops()[t]);
+  double maxGINI = 0;
+  const MostLikelyClustersContainer* maximizedCollection = 0;
+  for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
+      printString(buffer, "%g percent", itrMLC->getMaximumWindowSize());
       printFormat.PrintSectionLabel(fp, buffer.c_str(), false, false);  
-      printFormat.PrintAlignedMarginsDataString(fp, getValueAsString(gTopClustersContainers.at(t).getGiniCoefficient(GetDataHub(), gSimVars, gParameters.GetOptimizingSpatialCutOffPValue()), buffer, 4));
+      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getIndexBasedPValueCutoff());
+      printFormat.PrintAlignedMarginsDataString(fp, getValueAsString(gini, buffer, 4));
+      if (gini > maxGINI) {maximizedCollection = &(*itrMLC); maxGINI = gini;}
+  }
+  if (maximizedCollection) {
+    printString(buffer, "Optimal GINI coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize());
+    printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
   if (gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
-    printString(buffer, "* Coefficients based on clusters with P-Value of %lf or better.", gParameters.GetOptimizingSpatialCutOffPValue());
+    printString(buffer, "Coefficients based on clusters with P-Value of %lf or better.", gParameters.getIndexBasedPValueCutoff());
     printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
 }
@@ -1218,7 +952,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
     fprintf(fp, "\nNo clusters reported.\n");
     anyClusters=false;
     for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end() && !anyClusters; ++itrMLC)
-        anyClusters = itrMLC->GetTopRankedCluster().GetRatio() < gdMinRatioToReport;
+        anyClusters = itrMLC->GetNumClustersRetained() && itrMLC->GetTopRankedCluster().GetRatio() < gdMinRatioToReport;
     if (!anyClusters)
       printString(buffer, "All clusters had a %s less than %g.", (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"), gdMinRatioToReport);
     else
@@ -1230,91 +964,55 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
 /** Prints most likely cluster information, if any retained, to result file.
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
-void AnalysisRunner::PrintTopClusters() {
+void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
   std::auto_ptr<LocationInformationWriter> ClusterLocationWriter;
   std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   FILE * fp=0;
 
   try {
-    if (gParameters.optimizeSpatialClusterSize()) {
-        CoefficientsWriter coefficientsWriter(*gpDataHub, gSimVars);
-        for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-            coefficientsWriter.write(*itrMLC);
-    }
-
     //if creating 'location information' files, create record data buffers
     if (gParameters.GetOutputAreaSpecificFiles())
       ClusterLocationWriter.reset(new LocationInformationWriter(*gpDataHub, giAnalysisCount > 1));
-
     //if creating 'cluster information' files, create record data buffers
     if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
       ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
-
     //open result output file
     OpenReportFile(fp, true);
-
-    //create collection of most likely clusters based upon reporting options
-    std::vector<const MostLikelyClustersContainer*> MLCS;
-    if (!gParameters.optimizeSpatialClusterSize() || (gParameters.optimizeSpatialClusterSize() && gParameters.GetOptSpatialClusterSizeReportType() == ALL_GINI)) {
-        for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-            MLCS.push_back(&(*itrMLC));
-    } else {
-        // find the cluster that maximized the gini coefficient
-        MLCS.push_back(&(*gTopClustersContainers.begin()));
-        double maximizedGini = MLCS.front()->getGiniCoefficient(*gpDataHub, gSimVars, gParameters.GetOptimizingSpatialCutOffPValue());
-        for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin() + 1; itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-            double gini = (*itrMLC).getGiniCoefficient(*gpDataHub, gSimVars, gParameters.GetOptimizingSpatialCutOffPValue());
-            if (maximizedGini < gini) {
-                MLCS.assign(1, &(*itrMLC));
-                maximizedGini = gini;
+    unsigned int clustersReported=0;
+    //if no replications requested, attempt to display up to top 10 clusters
+    tract_t tNumClustersToDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained());
+    for (int i=0; i < mlc.GetNumClustersRetained(); ++i) {
+        gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, mlc.GetNumClustersRetained());
+        if (i==9) //report estimate of time to report all clusters
+            ReportTimeEstimate(StartTime, mlc.GetNumClustersRetained(), i, &gPrintDirection);
+        //get reference to i'th top cluster
+        const CCluster& TopCluster = mlc.GetCluster(i);
+        //write cluster details to 'cluster information' file
+        if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
+            ClusterWriter->Write(TopCluster, i+1, gSimVars);
+        //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
+        //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
+        if (i == 0 || (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || TopCluster.GetRank() <= gSimVars.get_sim_count()))) {
+            ++clustersReported;
+            switch (clustersReported) {
+                case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+                case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
+                default : fprintf(fp, "\n"); break;
             }
+            //print cluster definition to file stream
+            TopCluster.Display(fp, *gpDataHub, clustersReported, gSimVars);
+            //check track of whether this cluster was significant in top five percentage
+            if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
+                ++guwSignificantAt005;
+            //print cluster definition to 'location information' record buffer
+            if (gParameters.GetOutputAreaSpecificFiles())
+                TopCluster.Write(*ClusterLocationWriter, *gpDataHub, clustersReported, gSimVars);
+            _clustersReported = true;
         }
-        // if reporting type is maximized gini plus maximum spatial size, that maximum spatial clusters on now
-        if (gParameters.GetOptSpatialClusterSizeReportType() == MAX_SIZE_PLUS_MAXIMIZED_GINI && MLCS.front()->getMaximumWindowSize() != gTopClustersContainers.back().getMaximumWindowSize())
-            MLCS.push_back(&gTopClustersContainers.back());
-    }
-
-    for (std::vector<const MostLikelyClustersContainer*>::iterator itrMLC=MLCS.begin(); itrMLC != MLCS.end(); ++itrMLC) {
-        unsigned int clustersReported=0;
-        //if no replications requested, attempt to display up to top 10 clusters
-        tract_t tNumClustersToDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, (*itrMLC)->GetNumClustersRetained()) : (*itrMLC)->GetNumClustersRetained());
-        for (int i=0; i < (*itrMLC)->GetNumClustersRetained(); ++i) {
-            gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, (*itrMLC)->GetNumClustersRetained());
-            if (i==9) //report estimate of time to report all clusters
-                ReportTimeEstimate(StartTime, (*itrMLC)->GetNumClustersRetained(), i, &gPrintDirection);
-            //get reference to i'th top cluster
-            const CCluster& TopCluster = (*itrMLC)->GetCluster(i);
-            //write cluster details to 'cluster information' file
-            if (ClusterWriter.get() && TopCluster.m_nRatio >= gdMinRatioToReport)
-                ClusterWriter->Write(TopCluster, i+1, gSimVars);
-            //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
-            //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-            if (i == 0 || (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || TopCluster.GetRank() <= gSimVars.get_sim_count()))) {
-                ++clustersReported;
-                switch (clustersReported) {
-                    case 1  : if (gParameters.optimizeSpatialClusterSize())
-                                fprintf(fp, "\nMOST LIKELY CLUSTER AT %g%% MAXIMUM SPATIAL CLUSTER SIZE\n\n", (*itrMLC)->getMaximumWindowSize()); 
-                              else
-                                fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); 
-                              break;
-                    case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
-                    default : fprintf(fp, "\n"); break;
-                }
-                //print cluster definition to file stream
-                TopCluster.Display(fp, *gpDataHub, clustersReported, gSimVars);
-                //check track of whether this cluster was significant in top five percentage
-                if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
-                    ++guwSignificantAt005;
-                //print cluster definition to 'location information' record buffer
-                if (gParameters.GetOutputAreaSpecificFiles())
-                    TopCluster.Write(*ClusterLocationWriter, *gpDataHub, clustersReported, gSimVars);
-                _clustersReported = true;
-            }
-            //we no longer will be requesting neighbor information for this centroid - we can delete
-            //neighbor information - which might have been just calculated at beginning of this loop
-            if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER) gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
-        }
+        //we no longer will be requesting neighbor information for this centroid - we can delete
+        //neighbor information - which might have been just calculated at beginning of this loop
+        if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER) gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
     PrintCriticalValuesStatus(fp);
@@ -1332,22 +1030,14 @@ void AnalysisRunner::PrintTopClusters() {
 
 /** Displays most likely clusters loglikelihood ratio(test statistic) to print
     direction. If no clusters were retained, indicating message is printed. */
-void AnalysisRunner::PrintTopClusterLogLikelihood() {
-  //if any clusters were retained, display either loglikelihood or test statistic
-
-  std::string buffer;
-  for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
-      buffer="";
-      if (gParameters.optimizeSpatialClusterSize())
-        printString(buffer, " at %g%%%% of maximum spatial cluster size ", itrMLC->getMaximumWindowSize());
-      if (itrMLC->GetNumClustersRetained())
-        gPrintDirection.Printf("SaTScan %s for the most likely cluster%s: %7.2lf\n", BasePrint::P_STDOUT, 
+void AnalysisRunner::PrintTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc) {
+    //if any clusters were retained, display either loglikelihood or test statistic
+    if (mlc.GetNumClustersRetained())
+        gPrintDirection.Printf("SaTScan %s for the most likely cluster: %7.2lf\n", BasePrint::P_STDOUT, 
                                gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio",
-                               buffer.c_str(),
-                               itrMLC->GetTopRankedCluster().m_nRatio);
-      else
-        gPrintDirection.Printf("No clusters retained%s.\n", BasePrint::P_STDOUT, buffer.c_str());
-  }
+                               mlc.GetTopRankedCluster().m_nRatio);
+    else
+        gPrintDirection.Printf("No clusters retained.\n", BasePrint::P_STDOUT);
 }
 
 /** Prints most likely cluster information, if retained, to result file. This
@@ -1356,17 +1046,16 @@ void AnalysisRunner::PrintTopClusterLogLikelihood() {
     iteration of the iterative scan.
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
-void AnalysisRunner::PrintTopIterativeScanCluster() {
+void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContainer& mlc) {
   FILE        * fp=0;
   unsigned int  clustersReported=0;
 
   try {
     //open result output file
     OpenReportFile(fp, true);
-
-    if (gTopClustersContainers.back().GetNumClustersRetained()) {
+    if (mlc.GetNumClustersRetained()) {
       //get most likely cluster
-      const CCluster& TopCluster = gTopClustersContainers.back().GetTopRankedCluster();
+      const CCluster& TopCluster = mlc.GetTopRankedCluster();
       ++clustersReported; 
       switch (clustersReported) {
        case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
@@ -1401,12 +1090,36 @@ void AnalysisRunner::PrintTopIterativeScanCluster() {
     PrintPowerCalculationsStatus(fp);
     PrintEarlyTerminationStatus(fp);
     fclose(fp); fp=0;
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
      if (fp) fclose(fp);
     x.addTrace("PrintTopIterativeScanCluster()","AnalysisRunner");
     throw;
   }
+}
+
+/** Performs ranking on each collection of clusters. */
+void AnalysisRunner::rankClusterCollections() {
+    // If reporting hierarchical clusters, clone the collection of clusters associated with the greatest maxima.
+    // We need to maintain a copy since geographical overlap might be different that index based ranking (no overlap).
+    if (gParameters.getIsReportingHierarchicalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
+        _reportClusters = gTopClustersContainers.back();
+        _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection);
+        // don't need to add clusters to cluster ranker if not performing simulations
+        if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(_reportClusters);
+    }
+    if (gParameters.getIsReportingIndexBasedClusters()) {
+        // Index based clusters always use 'No Geographical Overlap'.
+        for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr) {
+            itr->rankClusters(*gpDataHub, NOGEOOVERLAP, gPrintDirection);
+            // don't need to add clusters to cluster ranker if not performing simulations
+            if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(*itr);
+        }
+    }
+    // cause the cluster ranker to sort clusters by LLR for ranking during simulations
+    _clusterRanker.sort();
+    // Note: If we're not reporting hierarchical, then this might report a cluster that is not displayed in final output.
+    //       We can't perform index based ordering here since we need to perform simulations first ... correct?
+    PrintTopClusterLogLikelihood(getLargestMaximaClusterCollection());
 }
 
 /** Returns indication of whether analysis repeats.
@@ -1428,17 +1141,17 @@ bool AnalysisRunner::RepeatAnalysis() {
         return false;
 
       //determine whether a top cluster was found and it's p-value mets cutoff
-      if (!gTopClustersContainers.back().GetNumClustersRetained())
+      if (!getLargestMaximaClusterCollection().GetNumClustersRetained())
         return false;
       //if user requested replications, validate that p-value does not exceed user defined cutoff 
       if (gParameters.GetNumReplicationsRequested()) {
-          const CCluster& topCluster = gTopClustersContainers.back().GetTopRankedCluster();
+          const CCluster& topCluster = getLargestMaximaClusterCollection().GetTopRankedCluster();
           if (topCluster.getReportingPValue(gParameters, gSimVars, true) > gParameters.GetIterativeCutOffPValue())
              return false;
       }
 
       //now we need to modify the data sets - removing data of locations in top cluster
-      gpDataHub->RemoveClusterSignificance(gTopClustersContainers.back().GetTopRankedCluster());
+      gpDataHub->RemoveClusterSignificance(getLargestMaximaClusterCollection().GetTopRankedCluster());
 
       //for SVTT analyses, are data set global time trends converging?
       if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
@@ -1474,6 +1187,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       //clear top clusters container
       for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
         itrMLC->Empty();
+      _reportClusters.Empty();
   }
   catch (prg_exception& x) {
     x.addTrace("RepeatAnalysis()","AnalysisRunner");
@@ -1522,47 +1236,64 @@ void AnalysisRunner::UpdatePowerCounts(double r) {
     - significant loglikelihood ratio indicator
     - power calculation results, if option requested by user
     - indication of when simulations terminated early */
-void AnalysisRunner::UpdateReport() {
-  macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-  try {
-    gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
-    if (gParameters.GetIsIterativeScanning())
-      PrintTopIterativeScanCluster();
-    else
-      PrintTopClusters();
-
-    /* Scatter chart code ...
-    if (giAnalysisCount == 1 && 
-        gTopClustersContainer.GetNumClustersRetained() && 
-        gParameters.GetCoordinatesType() == CARTESIAN && 
-        !gParameters.GetIsPurelyTemporalAnalysis() &&
-        !gParameters.UseLocationNeighborsFile()) {
-        ClusterScatterChart plot(*gpDataHub, gTopClustersContainer, gSimVars);
-        plot.renderScatterChart();
+void AnalysisRunner::reportClusters() {
+    macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+    try {
+        gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
+        if (gParameters.getIsReportingIndexBasedClusters()) {
+            // cluster reporting for index based cluster collections can either be only the optimal collection or all collections
+            if (gParameters.getIndexBasedReportType() == OPTIMAL_ONLY) {
+                // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent
+                const MostLikelyClustersContainer* maximizedCollection = 0;
+                double maximizedGINI = gTopClustersContainers.front().getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getIndexBasedPValueCutoff());
+                for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin() + 1; itrMLC != gTopClustersContainers.end(); ++itrMLC) {
+                    double thisGini = itrMLC->getGiniCoefficient(*gpDataHub, gSimVars, gParameters.getIndexBasedPValueCutoff());
+                    if (maximizedGINI < thisGini) {
+                        maximizedCollection = &(*itrMLC);
+                        maximizedGINI = thisGini;
+                    }
+                }
+                // combine clusters from maximized GINI collection with reporting collection
+                if (maximizedCollection) _reportClusters.combine(*maximizedCollection, *gpDataHub);
+            } else {
+                // combine clusters from each maxima collection with reporting collection
+                for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
+                    _reportClusters.combine(*itrMLC, *gpDataHub);
+            }
+            // now sort combined cluster collection by LLR
+            _reportClusters.sort();
+        }
+        if (gParameters.GetIsIterativeScanning())
+            PrintTopIterativeScanCluster(_reportClusters);
+        else {
+            PrintTopClusters(_reportClusters);
+            /* Scatter chart code ...
+            if (_reportClusters.GetNumClustersRetained() && 
+                gParameters.GetCoordinatesType() == CARTESIAN && 
+                !gParameters.GetIsPurelyTemporalAnalysis() &&
+                !gParameters.UseLocationNeighborsFile()) {
+                ClusterScatterChart plot(*gpDataHub, _reportClusters, gSimVars);
+                plot.renderScatterChart();
+            } */
+            /* Google Earth code ... 
+            if (_reportClusters.GetNumClustersRetained() && 
+                gParameters.GetCoordinatesType() == LATLON && 
+                !gParameters.GetIsPurelyTemporalAnalysis() &&
+                !gParameters.UseLocationNeighborsFile()) {
+                ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
+                kmlOut.renderKML();
+            }*/
+        }
+    } catch (prg_exception& x) {
+        x.addTrace("reportClusters()","AnalysisRunner");
+        throw;
     }
-    */
-
-    /* Google Earth code ... 
-    if (giAnalysisCount == 1 && 
-        gTopClustersContainer.GetNumClustersRetained() && 
-        gParameters.GetCoordinatesType() == LATLON && 
-        !gParameters.GetIsPurelyTemporalAnalysis() &&
-        !gParameters.UseLocationNeighborsFile()) {
-        ClusterKML kmlOut(*gpDataHub, gTopClustersContainer, gSimVars);
-        kmlOut.renderKML();
-    }*/
-  }
-  catch (prg_exception& x) {
-    x.addTrace("UpdateReport()","AnalysisRunner");
-    throw;
-  }
-
-  macroRunTimeStopSerial();
+    macroRunTimeStopSerial();
 }
 
 /** Updates list of significant ratio, if structure allocated. */
 void AnalysisRunner::UpdateSignificantRatiosList(double dRatio) {
-  if (gpSignificantRatios.get()) gpSignificantRatios->AddRatio(dRatio);
+    if (gpSignificantRatios.get()) gpSignificantRatios->AddRatio(dRatio);
 }
 
 
