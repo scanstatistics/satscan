@@ -1,0 +1,61 @@
+#!/bin/sh
+
+binaries="/Users/hostovic/prj/satscan.development/build.area/binaries/mac"
+satscan_src="/Users/hostovic/prj/satscan.development/build.area/satscan"
+boost_src="/Users/hostovic/prj/boost/boost_1_48_0"
+processors="-j2"
+
+rm -f $binaries/*
+
+
+# Intel command-line binaries
+
+echo building SaTScan for 32-bit system using gcc4.0.1 - i386
+./makescript.mac.sh $binaries/satscan_gcc4.0.1_i386_32bit $satscan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch i386 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+
+echo building SaTScan for 64-bit system using gcc4.0.1 - x86_64
+./makescript.mac.sh $binaries/satscan_gcc4.0.1_x86_64_64bit $satscan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch x86_64 -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+
+# Create universal binary - only interested in Intel architectures
+echo creating universal binary for 32-bit and 64-bit systems
+lipo -create $binaries/satscan_gcc4.0.1_i386_32bit $binaries/satscan_gcc4.0.1_x86_64_64bit -output $binaries/satscan_gcc4.0.1_universal_intel
+
+
+# Intel JNI libraries
+
+echo building SaTScan shared object for 32-bit system using gcc4.0.1 - i386
+./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_i386_32bit.jnilib $satscan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch i386  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+
+echo building SaTScan shared object for 64-bit system using gcc4.0.1 - x86_64
+./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_x86_64_64bit.jnilib $satscan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch x86_64  -mmacosx-version-min=10.5 -isysroot /Developer/SDKs/MacOSX10.5.sdk" $processors
+
+# Create universal binary - only interested in Intel architectures
+echo creating universal shared object binary for 32-bit and 64-bit systems
+lipo -create $binaries/libsatscan.gcc4.0.1_i386_32bit.jnilib $binaries/libsatscan.gcc4.0.1_x86_64_64bit.jnilib -output $binaries/libsatscan_gcc4.0.1_universal_intel.jnilib
+
+
+
+# PowerPC command-line binaries
+
+echo building SaTScan for 32-bit system using gcc4.0.1 - PowerPC
+./makescript.mac.sh $binaries/satscan_gcc4.0.1_ppc_32bit $satscan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch ppc" $processors
+
+
+## ppc64 support was dropped in Snow Leopard (10.6). You can still use ppc64 if you build and link against the Mac OS X 10.5 SDK.
+## http://stackoverflow.com/questions/2830931/g-on-macosx-doesnt-work-with-arch-ppc64
+## For satscan, we'll just drop building ppc64 binary -- what for user to request or recommend ppc architecture.
+
+##### echo building SaTScan for 64-bit system using gcc4.0.1 - PowerPC
+##### ./makescript.mac.sh $binaries/satscan_gcc4.0.1_ppc64_64bit $satscan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch ppc64" $processors
+#####
+##### # Create universal binary for PPC
+##### echo creating universal binary for 32-bit and 64-bit systems
+##### lipo -create $binaries/satscan_gcc4.0.1_ppc_32bit $binaries/satscan_gcc4.0.1_ppc64_64bit -output $binaries/satscan_gcc4.0.1_universal_ppc
+
+
+##### # PowerPC JNI libraries --- SaTScan requires Java 1.6 or newer; so PPC libraries are not useful.
+##### echo building SaTScan shared object for 32-bit system using gcc4.0.1 - PowerPC
+##### ./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_ppc_32bit.jnilib $satscan_src $boost_src -m32 -O3 "/usr/bin/g++-4.0 -arch ppc" $processors
+#####
+##### echo building SaTScan shared object for 64-bit system using gcc4.0.1 - PowerPC
+##### ./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_ppc64_64bit.jnilib $satscan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch ppc64" $processors
