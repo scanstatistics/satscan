@@ -1,0 +1,136 @@
+#!/bin/sh
+
+############ Script Defines #######################################################################
+build="/prj/satscan/build.area"
+installer_version="/prj/satscan/installers/v.9.2.x"
+
+launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.0.1"
+IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.4.3.2"
+
+#### Windows ##############################################################################
+# Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
+$launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_app.xml
+
+# Build Windows SaTScan updater executable from java jar file ... this executable is needed when updating from v7.0.3 and earlier.
+$launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_updater.xml
+
+# Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
+$launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_app.xml
+
+# Build the IzPack Java installer for Windows.
+$IzPack/bin/compile $build/satscan/installers/izpack/windows/install_windows.xml -b $installer_version -o $installer_version/install-9_2_windows.jar -k standard
+
+# Build Windows installer executable from Java jar file. This is needed for:
+#  - UAC (User Account Control)
+#  - we wanted a message to user when Java not installed
+$launch4j/launch4j $build/satscan/installers/izpack/windows/launch4j_install.xml
+rm $installer_version/install-9_2_windows.jar
+
+# Build Windows command-line only archive
+rm -f $installer_version/satscan.9.2_windows.zip
+zip $installer_version/satscan.9.2_windows.zip -j $build/satscan/batch_application/Release/SaTScanBatch.exe
+zip $installer_version/satscan.9.2_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
+cd $build/satscan/installers
+zip $installer_version/satscan.9.2_windows.zip -j documents/*
+zip $installer_version/satscan.9.2_windows.zip sample_data/*
+
+#######   ############ Linux ################################################################################
+# Build the IzPack Java installer for Linux.
+$IzPack/bin/compile $build/satscan/installers/izpack/linux/install_linux.xml -b $installer_version -o $installer_version/install-9_2_linux.jar -k standard
+chmod a+x $installer_version/install-9_2_linux.jar
+
+# Build batch binaries archive for Linux.
+rm -f $installer_version/satscan.9.2_linux.tar.bz2
+cd $build/binaries/linux
+tar -cf $installer_version/satscan.9.2_linux.tar satscan*
+cd $build/satscan/installers
+tar -rf $installer_version/satscan.9.2_linux.tar documents/*
+tar -rf $installer_version/satscan.9.2_linux.tar sample_data/*
+bzip2 -f $installer_version/satscan.9.2_linux.tar
+
+############ Mac OS X #############################################################################
+# Build SaTScan Mac OS X Application Bundle Directory
+rm -rf $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
+python $build/satscan/installers/izpack/mac/satscan2app/satscan2app.py $build/satscan/java_application/jni_application/dist/SaTScan.jar $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
+# copy jni libraries into app directory
+cp $build/binaries/mac/libsatscan.jnilib $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Resources/Java/libsatscan.jnilib
+# copy additional Java libraries into app directory
+cp $build/satscan/java_application/jni_application/dist/lib/* $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app/Contents/Resources/Java/lib/
+
+# Build the IzPack Java installer for Mac OS X.
+$IzPack/bin/compile $build/satscan/installers/izpack/mac/install_mac.xml -b $installer_version -o $installer_version/install-9_2_mac.jar -k standard
+
+# Build Mac OS X Application Bundle from IzPack Java Installer
+rm -rf $installer_version/install-9_2_mac.zip
+python $build/satscan/installers/izpack/mac/izpack2app/izpack2app.py $installer_version/install-9_2_mac.jar $build/satscan/installers/izpack/mac/Install.app
+cd $build/satscan/installers/izpack/mac
+zip $installer_version/install-9_2_mac.zip -r ./Install.app/*
+rm $installer_version/install-9_2_mac.jar
+rm -rf $build/satscan/installers/izpack/mac/Install.app
+chmod a+x $installer_version/install-9_2_mac.zip
+
+# Build batch binaries archive for Mac OS X.
+rm -f $installer_version/satscan.9.2_mac.tar.bz2
+cd $build/binaries/mac
+tar -cf $installer_version/satscan.9.2_mac.tar satscan
+cd $build/satscan/installers
+tar -rf $installer_version/satscan.9.2_mac.tar documents/*
+tar -rf $installer_version/satscan.9.2_mac.tar sample_data/*
+bzip2 -f $installer_version/satscan.9.2_mac.tar
+
+#rm -rf $build/satscan/installers/izpack/mac/satscan2app/SaTScan.app
+
+############ Java Application Update Archive ######################################################
+# Build update archive files -- relative paths are important; must be the same as installation
+
+# Combined Windows/Linux update archive
+#  -- Starting with the release featuring the Mac, this archive was not needed;
+#     so only add Windows and Linux relevant files.
+rm -f $installer_version/update_data_combined.zip
+
+zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/Release/SaTScanBatch.exe
+zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/shared_library/Release/satscan32.dll
+zip $installer_version/update_data_combined.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
+zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/shared_library/x64/Release/satscan64.dll
+zip $installer_version/update_data_combined.zip -j $build/binaries/linux/*
+zip $installer_version/update_data_combined.zip -j $build/satscan/installers/documents/*
+zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
+cd $build/satscan/java_application/jni_application/dist
+zip $installer_version/update_data_combined.zip -r lib
+cd $build/satscan/installers
+zip $installer_version/update_data_combined.zip -r sample_data
+
+# Windows update archive
+rm -f $installer_version/update_data_windows.zip
+
+zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/Release/SaTScanBatch.exe
+zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/shared_library/Release/satscan32.dll
+zip $installer_version/update_data_windows.zip -j $build/satscan/batch_application/x64/Release/SaTScanBatch64.exe
+zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/shared_library/x64/Release/satscan64.dll
+zip $installer_version/update_data_windows.zip -j $build/satscan/installers/documents/*
+zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
+cd $build/satscan/java_application/jni_application/dist
+zip $installer_version/update_data_windows.zip -r lib
+cd $build/satscan/installers
+zip $installer_version/update_data_windows.zip -r sample_data
+
+# Linux update archive
+rm -f $installer_version/update_data_linux.zip
+
+zip $installer_version/update_data_linux.zip -j $build/binaries/linux/*
+zip $installer_version/update_data_linux.zip -j $build/satscan/installers/documents/*
+zip $installer_version/update_data_linux.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
+cd $build/satscan/java_application/jni_application/dist
+zip $installer_version/update_data_linux.zip -r lib
+cd $build/satscan/installers
+zip $installer_version/update_data_linux.zip -r sample_data
+
+# Mac update archive
+rm -f $installer_version/update_data_mac.zip
+
+cd $build/satscan/installers/izpack/mac/satscan2app
+zip $installer_version/update_data_mac.zip -r SaTScan.app
+zip $installer_version/update_data_mac.zip -j $build/binaries/mac/satscan
+zip $installer_version/update_data_mac.zip -j $build/satscan/installers/documents/*
+cd $build/satscan/installers
+zip $installer_version/update_data_mac.zip -r sample_data

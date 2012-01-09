@@ -1,0 +1,38 @@
+
+<processing>
+
+  <!-- unix jobs -->
+
+  <job name="32bit symbolic links for Java Native Interface">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/libsatscan32.so</arg><arg>$INSTALL_PATH/libsatscan_stdc++6_x86_64_32bit.so</arg><arg>$INSTALL_PATH/libsatscan_stdc++5_x86_64_32bit.so</arg>
+	    </executefile>
+  </job>
+
+  <job name="32bit symbolic links for SaTScan Commandline Application">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/SaTScanBatch</arg><arg>$INSTALL_PATH/satscan_stdc++6_x86_64_32bit</arg><arg>$INSTALL_PATH/satscan_stdc++5_x86_64_32bit</arg>
+	    </executefile>
+  </job>
+	  
+  <job name="64bit symbolic links for Java Native Interface">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/libsatscan64.so</arg><arg>$INSTALL_PATH/libsatscan_stdc++6_x86_64_64bit.so</arg><arg>$INSTALL_PATH/libsatscan_stdc++5_x86_64_64bit.so</arg>
+	    </executefile>
+  </job>
+
+  <job name="64bit symbolic links for SaTScan Commandline Application">
+	    <description>Create symbolic links</description>
+	    <os family="unix"/>
+	    <executefile name="$INSTALL_PATH/symbolic.link.sh">
+	      <arg>$INSTALL_PATH/SaTScanBatch64</arg><arg>$INSTALL_PATH/satscan_stdc++6_x86_64_64bit</arg><arg>$INSTALL_PATH/satscan_stdc++5_x86_64_64bit</arg>
+	    </executefile>
+  </job>
+  	  
+</processing>

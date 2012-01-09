@@ -1,0 +1,10 @@
+
+<processing>
+  <job name="Unzipping SaTScan Application Bundle">
+	    <description>Unzipping SaTScan Application Bundle</description>
+	    <os family="mac"/>
+	    <executefile name="$INSTALL_PATH/setBundle.sh">
+	      <arg>$INSTALL_PATH/SaTScan.app</arg>
+	    </executefile>
+  </job>
+</processing>
