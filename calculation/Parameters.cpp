@@ -538,7 +538,7 @@ bool CParameters::getIsReportingHierarchicalClusters() const {
 
 /* return whether parameter settings indcate that index based clusters are reported */
 bool CParameters::getIsReportingIndexBasedClusters() const {
-    return (_clusterReportType == INDEX_BASED || _clusterReportType == ALL_CLUSTER_TYPES) && geAnalysisType == PURELYSPATIAL;
+    return (_clusterReportType == INDEX_BASED || _clusterReportType == ALL_CLUSTER_TYPES);
 }
 
 bool CParameters::getIsReportingIndexBasedCoefficents() const {

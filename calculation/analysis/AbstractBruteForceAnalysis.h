@@ -28,8 +28,9 @@ class AbstractBruteForceAnalysis : public CAnalysis {
     virtual double                      MonteCarlo(tract_t tCenter, const AbstractDataSetGateway & DataGateway) = 0;
 
   public:
-    AbstractBruteForceAnalysis(const CParameters& Parameters, const CSaTScanData& Data, BasePrint& PrintDirection);
-    virtual ~AbstractBruteForceAnalysis();
+    AbstractBruteForceAnalysis(const CParameters& Parameters, const CSaTScanData& DataHub, BasePrint& PrintDirection)
+       :CAnalysis(Parameters, DataHub, PrintDirection) {}
+    virtual ~AbstractBruteForceAnalysis() {}
 
     virtual void                        AllocateSimulationObjects(const AbstractDataSetGateway & DataGateway) = 0;
     virtual void                        AllocateTopClustersObjects(const AbstractDataSetGateway & DataGateway) = 0;

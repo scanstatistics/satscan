@@ -1668,7 +1668,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timePrecisionMonth)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(_timePrecisionDay)))
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(21, Short.MAX_VALUE))
         );
         _timePrecisionGroupLayout.setVerticalGroup(
             _timePrecisionGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2026,8 +2026,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                                 .addComponent(_bernoulliModelHintLabel))
                             .addGroup(_caseInputPanelLayout.createSequentialGroup()
                                 .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE)
-                                    .addComponent(_caseFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 311, Short.MAX_VALUE))
+                                    .addComponent(_controlFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                                    .addComponent(_caseFileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(_caseInputPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addGroup(_caseInputPanelLayout.createSequentialGroup()
@@ -2357,7 +2357,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2830,7 +2830,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 137, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 145, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
@@ -2992,7 +2992,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         _clustersReportedButtonGroup.add(_hierarchicalClusters);
         _hierarchicalClusters.setSelected(true);
-        _hierarchicalClusters.setText("Hierarchical");
+        _hierarchicalClusters.setText("Most Likely Clusters, Hierarchically");
         _hierarchicalClusters.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
@@ -3014,7 +3014,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         });
 
         _clustersReportedButtonGroup.add(_allClustersReported);
-        _allClustersReported.setText("All Clusters");
+        _allClustersReported.setText("Both");
         _allClustersReported.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
                 if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
@@ -3030,12 +3030,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_clustersReportedGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_hierarchicalClusters, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(_hierarchicalClusters)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_indexBasedClusterCollection, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(_allClustersReported, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(66, Short.MAX_VALUE))
+                .addComponent(_indexBasedClusterCollection)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(_allClustersReported)
+                .addContainerGap(108, Short.MAX_VALUE))
         );
         _clustersReportedGroupLayout.setVerticalGroup(
             _clustersReportedGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -3078,7 +3078,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_clustersReportedGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(__additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 143, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 151, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -3093,7 +3093,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 485, Short.MAX_VALUE)
         );
 
         pack();

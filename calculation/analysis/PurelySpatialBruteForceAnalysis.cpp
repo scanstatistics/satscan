@@ -54,6 +54,7 @@ const SharedClusterVector_t CPurelySpatialBruteForceAnalysis::CalculateTopCluste
   for (int j=0; j <= gParameters.GetNumTotalEllipses(); ++j) {
      gNeighborInfo.push_back(new CentroidNeighbors());
      gCentroidCalculator->CalculateNeighborsAboutCentroid(j, tCenter, *gNeighborInfo.back());
+     _topClusters.resetNeighborCounts(*gNeighborInfo.back());
      gClusterComparator->Initialize(tCenter);
      gClusterComparator->SetEllipseOffset(j, gDataHub);
      gClusterComparator->CalculateTopClusterAboutCentroidDefinition(DataGateway, *gNeighborInfo.back(), locDist, _topClusters.getClusterSet(j), *gpLikelihoodCalculator);

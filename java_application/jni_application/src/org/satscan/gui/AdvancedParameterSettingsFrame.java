@@ -725,6 +725,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         // Output tab
         bReturn &= (_hierarchicalSecondaryClusters.getSelectedIndex() == 0);
         bReturn &= (_indexBasedClusterCriteria.getSelectedIndex() == 0);
+        bReturn &= (_checkboxReportIndexCoefficients.isSelected() == false);
         bReturn &= (Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()) == 50);
         bReturn &= (Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()) == 50);
         bReturn &= (_reportedSpatialPopulationFileCheckBox.isSelected() == false);
@@ -1019,13 +1020,17 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 }
             }
         }  //for loop
-
         //validate that purpose for multiple data sets is not 'adjustment' if probability model is ordinal
         if ((_analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL ||
              _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL)
             && _adjustmentByDataSetsRadioButton.isEnabled() && _adjustmentByDataSetsRadioButton.isSelected()) {
             throw new AdvFeaturesExpection("For the ordinal and multinomial probability models with input data defined in multiple data sets,\n" + 
                                             "the adjustment option has not been implemented.", FocusedTabSet.INPUT, (Component) _adjustmentByDataSetsRadioButton);
+        }
+        //validate that purpose for multiple data sets is not 'mulitvariate' if also reporting index based clusters
+        if (_multivariateAdjustmentsRadioButton.isEnabled() && _multivariateAdjustmentsRadioButton.isSelected() && _indexBasedClusterCriteria.isEnabled()) {
+            throw new AdvFeaturesExpection("The multivariate option is not implemented when reporting clusters with\nthe index based cluster collection.",
+                                            FocusedTabSet.INPUT, (Component) _multivariateAdjustmentsRadioButton);
         }
     }
 
@@ -1061,10 +1066,19 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file.",
                     FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
         }
-        if (_reportedSpatialOptionsGroup.isEnabled() && _restrictReportedClustersCheckBox.isSelected() &&
-                _reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false)) {
-            throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + "reported spatial cluster size by a population defined through a\nmaximum circle file.",
-                    FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+        if (_reportedSpatialOptionsGroup.isEnabled() && _restrictReportedClustersCheckBox.isSelected()) {
+            if (_maxReportedSpatialClusterSizeTextField.isEnabled() && Double.parseDouble(_maxSpatialClusterSizeTextField.getText()) < Double.parseDouble(_maxReportedSpatialClusterSizeTextField.getText()))
+                throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as percentage of population at risk,\ncan not be greater than the maximum specifed on Spatial Window tab.",
+                                               FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialClusterSizeTextField);
+            if (_reportedSpatialPopulationFileCheckBox.isSelected() && !FileAccess.ValidateFileAccess(_maxCirclePopulationFilenameTextField.getText(), false))
+                throw new AdvFeaturesExpection("The maximum circle file could not be opened for reading.\n" + "Please confirm that the path and/or file name are valid\n" + "and that you have permissions to read from this directory\nand file." + "A maximum circle file is required when restricting the maximum\n" + "reported spatial cluster size by a population defined through a\nmaximum circle file.",
+                                               FocusedTabSet.ANALYSIS, (Component) _maxCirclePopulationFilenameTextField);
+            if (_maxReportedSpatialPercentFileTextField.isEnabled() && Double.parseDouble(_maxSpatialPercentFileTextField.getText()) < Double.parseDouble(_maxReportedSpatialPercentFileTextField.getText()))
+                throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as percentage of population in maximum circle file,\ncan not be greater than the maximum specifed on Spatial Window tab.",
+                                               FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialPercentFileTextField);
+            if (_maxReportedSpatialRadiusTextField.isEnabled() && Double.parseDouble(_maxSpatialRadiusTextField.getText()) < Double.parseDouble(_maxReportedSpatialRadiusTextField.getText()))
+                throw new AdvFeaturesExpection("The maximum reported spatial cluster size, as as fixed distance,\ncan not be greater than the maximum distance specifed on Spatial Window tab.",
+                                               FocusedTabSet.OUTPUT, (Component) _maxReportedSpatialRadiusTextField);
         }
         //When analysis type is prospective space-time, adjusting for earlier analyses - max spatial size must be defined
         //as percentage of max circle population or as a distance.
@@ -1759,11 +1773,10 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _hierarchicalLabel.setEnabled(bEnable);
         _hierarchicalSecondaryClusters.setEnabled(bEnable);
         // enable the advanced settings for index based clusters reported group
-        _criteriaIndexBasedClustersGroup.setEnabled(bEnable && 
-                                                    (_analysisSettingsWindow._indexBasedClusterCollection.isSelected() || _analysisSettingsWindow._allClustersReported.isSelected()));
-        _indexBasedCriteriaLabel.setEnabled(_criteriaIndexBasedClustersGroup.isEnabled());
-        _indexBasedClusterCriteria.setEnabled(_criteriaIndexBasedClustersGroup.isEnabled());
-        _checkboxReportIndexCoefficients.setEnabled(_criteriaIndexBasedClustersGroup.isEnabled());
+        _indexBasedClusterCriteria.setEnabled(bEnable &&
+                                              (_analysisSettingsWindow._indexBasedClusterCollection.isSelected() || _analysisSettingsWindow._allClustersReported.isSelected()));
+        _indexBasedCriteriaLabel.setEnabled(_indexBasedClusterCriteria.isEnabled());
+        _checkboxReportIndexCoefficients.setEnabled(_indexBasedClusterCriteria.isEnabled());
     }
     
     /** Set appropriate control for maximum spatial cluster size type. */
@@ -2199,6 +2212,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _criteriaSecClustersGroup = new javax.swing.JPanel();
         _hierarchicalSecondaryClusters = new java.awt.Choice();
         _hierarchicalLabel = new javax.swing.JLabel();
+        _indexBasedCriteriaLabel = new javax.swing.JLabel();
+        _indexBasedClusterCriteria = new java.awt.Choice();
+        _checkboxReportIndexCoefficients = new javax.swing.JCheckBox();
         _reportedSpatialOptionsGroup = new javax.swing.JPanel();
         _restrictReportedClustersCheckBox = new javax.swing.JCheckBox();
         _maxReportedSpatialClusterSizeTextField = new javax.swing.JTextField();
@@ -2210,10 +2226,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _reportedMaxDistanceLabel = new javax.swing.JLabel();
         _maxReportedSpatialRadiusTextField = new javax.swing.JTextField();
         _maxReportedRadiusLabel = new javax.swing.JLabel();
-        _criteriaIndexBasedClustersGroup = new javax.swing.JPanel();
-        _indexBasedClusterCriteria = new java.awt.Choice();
-        _indexBasedCriteriaLabel = new javax.swing.JLabel();
-        _checkboxReportIndexCoefficients = new javax.swing.JCheckBox();
         _additionalOutputTab = new javax.swing.JPanel();
         _reportCriticalValuesGroup = new javax.swing.JPanel();
         _reportCriticalValuesCheckBox = new javax.swing.JCheckBox();
@@ -2651,7 +2663,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
             .addGroup(_multipleDataSetsTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(_additionalDataSetsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(144, Short.MAX_VALUE))
+                .addContainerGap(156, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Multiple Data Sets", _multipleDataSetsTab);
@@ -2765,7 +2777,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_studyPeriodCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalCoordinatesCheckGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(200, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Data Checking", _dataCheckingTab);
@@ -2947,7 +2959,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_specialNeighborFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_multipleSetsSpatialCoordinatesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(135, Short.MAX_VALUE))
+                .addContainerGap(147, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Neighbors", _spatialNeighborsTab);
@@ -3259,7 +3271,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialWindowShapeGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_performIsotonicScanCheckBox)
-                .addContainerGap(101, Short.MAX_VALUE))
+                .addContainerGap(113, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Spatial Window", _spatialWindowTab);
@@ -3840,7 +3852,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_includePureSpacClustCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_flexibleTemporalWindowDefinitionGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(128, Short.MAX_VALUE))
+                .addContainerGap(140, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Temporal Window", _temporalWindowTab);
@@ -4109,7 +4121,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_spatialAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_knownAdjustmentsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(52, Short.MAX_VALUE))
+                .addContainerGap(64, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Space and Time Adjustments", _spaceTimeAjustmentsTab);
@@ -4563,12 +4575,12 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_prospectiveSurveillanceGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_iterativeScanGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(47, Short.MAX_VALUE))
+                .addContainerGap(59, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Inference", _inferenceTab);
 
-        _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters Hierarchical"));
+        _criteriaSecClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Criteria for Reporting Secondary Clusters"));
 
         _hierarchicalSecondaryClusters.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -4582,25 +4594,55 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         _hierarchicalSecondaryClusters.add("No Pairs of Centers Both in Each Others Clusters");
         _hierarchicalSecondaryClusters.add("No Restrictions = Most Likely Cluster for Each Grid Point");
 
-        _hierarchicalLabel.setText("Overlapping Criteria");
+        _hierarchicalLabel.setText("Most Likely Clusters, Hierarchically");
+
+        _indexBasedCriteriaLabel.setText("Gini Index Based Collection");
+
+        _indexBasedClusterCriteria.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
+        _indexBasedClusterCriteria.add("Optimal Index Only");
+        _indexBasedClusterCriteria.add("All Index Values");
+
+        _checkboxReportIndexCoefficients.setText("Report index based coefficients in results file");
+        _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent e) {
+                enableSetDefaultsButton();
+            }
+        });
 
         javax.swing.GroupLayout _criteriaSecClustersGroupLayout = new javax.swing.GroupLayout(_criteriaSecClustersGroup);
         _criteriaSecClustersGroup.setLayout(_criteriaSecClustersGroupLayout);
         _criteriaSecClustersGroupLayout.setHorizontalGroup(
             _criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_criteriaSecClustersGroupLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _criteriaSecClustersGroupLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.DEFAULT_SIZE, 417, Short.MAX_VALUE)
+                .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 535, Short.MAX_VALUE)
+                    .addGroup(_criteriaSecClustersGroupLayout.createSequentialGroup()
+                        .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(_indexBasedCriteriaLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(_hierarchicalLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE)
+                            .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 345, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         _criteriaSecClustersGroupLayout.setVerticalGroup(
             _criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_criteriaSecClustersGroupLayout.createSequentialGroup()
                 .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_hierarchicalLabel)
-                    .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(_hierarchicalSecondaryClusters, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_hierarchicalLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(_criteriaSecClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_indexBasedCriteriaLabel))
+                .addGap(0, 0, 0)
+                .addComponent(_checkboxReportIndexCoefficients)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -4757,56 +4799,15 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        _criteriaIndexBasedClustersGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Index Based Cluster Collection"));
-
-        _indexBasedClusterCriteria.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent e) {
-                enableSetDefaultsButton();
-            }
-        });
-        _indexBasedClusterCriteria.add("Optimal Index Only");
-        _indexBasedClusterCriteria.add("All Index Values");
-
-        _indexBasedCriteriaLabel.setText("Cluster Reporting Criteria");
-
-        _checkboxReportIndexCoefficients.setText("Report index based coefficients in results file");
-        _checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {     public void itemStateChanged(java.awt.event.ItemEvent e) {         enableSetDefaultsButton();     } });
-
-        javax.swing.GroupLayout _criteriaIndexBasedClustersGroupLayout = new javax.swing.GroupLayout(_criteriaIndexBasedClustersGroup);
-        _criteriaIndexBasedClustersGroup.setLayout(_criteriaIndexBasedClustersGroupLayout);
-        _criteriaIndexBasedClustersGroupLayout.setHorizontalGroup(
-            _criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_criteriaIndexBasedClustersGroupLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(_criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_checkboxReportIndexCoefficients, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(_criteriaIndexBasedClustersGroupLayout.createSequentialGroup()
-                        .addComponent(_indexBasedCriteriaLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 126, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap())
-        );
-        _criteriaIndexBasedClustersGroupLayout.setVerticalGroup(
-            _criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(_criteriaIndexBasedClustersGroupLayout.createSequentialGroup()
-                .addGroup(_criteriaIndexBasedClustersGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(_indexBasedCriteriaLabel)
-                    .addComponent(_indexBasedClusterCriteria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(_checkboxReportIndexCoefficients)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
         javax.swing.GroupLayout _clustersReportedTabLayout = new javax.swing.GroupLayout(_clustersReportedTab);
         _clustersReportedTab.setLayout(_clustersReportedTabLayout);
         _clustersReportedTabLayout.setHorizontalGroup(
             _clustersReportedTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _clustersReportedTabLayout.createSequentialGroup()
+            .addGroup(_clustersReportedTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(_clustersReportedTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(_criteriaIndexBasedClustersGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(_clustersReportedTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _clustersReportedTabLayout.setVerticalGroup(
@@ -4815,10 +4816,8 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addContainerGap()
                 .addComponent(_criteriaSecClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(_criteriaIndexBasedClustersGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_reportedSpatialOptionsGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(89, Short.MAX_VALUE))
+                .addContainerGap(143, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Clusters Reported", _clustersReportedTab);
@@ -4928,7 +4927,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
                 .addComponent(_reportClusterRankGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(186, Short.MAX_VALUE))
+                .addContainerGap(198, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Additional Output", _additionalOutputTab);
@@ -4962,7 +4961,7 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 451, Short.MAX_VALUE)
+                .addComponent(jTabbedPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 463, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(_setDefaultButton)
@@ -5000,7 +4999,6 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private javax.swing.JButton _controlFileImportButton;
     private javax.swing.JLabel _controlFileLabel;
     private javax.swing.JTextField _controlFileTextField;
-    private javax.swing.JPanel _criteriaIndexBasedClustersGroup;
     private javax.swing.JPanel _criteriaSecClustersGroup;
     private javax.swing.JPanel _dataCheckingTab;
     private javax.swing.JPanel _dataSetsGroup;

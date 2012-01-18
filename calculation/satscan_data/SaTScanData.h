@@ -217,14 +217,15 @@ inline tract_t CSaTScanData::GetNeighbor(int iEllipse, tract_t t, unsigned int n
     //first, look for neighbor information in store
     if (!gvCentroidNeighborStore.size())
       gvCentroidNeighborStore.resize(m_nGridTracts, 0);
-    // check the centroid neighbor store but only if the not calculating index based coeficients and ellipse/centroid match that of stored
-    if (!gParameters.getIsReportingIndexBasedClusters() &&  gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
+    // check the centroid neighbor store but only if ellipse/centroid match that of stored
+    if (gvCentroidNeighborStore[t] && gvCentroidNeighborStore[t]->GetEllipseIndex() == iEllipse)
       return gvCentroidNeighborStore[t]->GetNeighborTractIndex(nearness - 1);
     else {//else calculate
       delete gvCentroidNeighborStore[t]; gvCentroidNeighborStore[t]=0;
       gvCentroidNeighborStore[t] = new CentroidNeighbors();
       CentroidNeighbors& NeighborInfo = *gvCentroidNeighborStore[t];
-      if (dClusterRadius != -1)
+      if (dClusterRadius != -1 && !gParameters.getIsReportingIndexBasedClusters())
+          // can't use cluster radius with index based cluster reporting since this cluster radius might be a leaster maxima than another for cluster about same centroid
         CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo, dClusterRadius);
       else  
         CentroidNeighborCalculator(*this, gPrint).CalculateNeighborsAboutCentroid(iEllipse, t, NeighborInfo);

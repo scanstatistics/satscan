@@ -910,6 +910,7 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
       case POISSON :
       case BERNOULLI :
       case SPACETIMEPERMUTATION :
+      case HOMOGENEOUSPOISSON :
          switch (gParameters.GetAreaScanRateType()) {
             case HIGH       : buffer = "All areas scanned had either only one case or an equal or fewer number of cases than expected."; break;
             case LOW        : buffer = "All areas scanned had either only one case or an equal or greater number of cases than expected."; break;
@@ -1010,9 +1011,6 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
                 TopCluster.Write(*ClusterLocationWriter, *gpDataHub, clustersReported, gSimVars);
             _clustersReported = true;
         }
-        //we no longer will be requesting neighbor information for this centroid - we can delete
-        //neighbor information - which might have been just calculated at beginning of this loop
-        if (TopCluster.GetClusterType() != PURELYTEMPORALCLUSTER) gpDataHub->FreeNeighborInfo(TopCluster.GetCentroidIndex());
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
     PrintCriticalValuesStatus(fp);

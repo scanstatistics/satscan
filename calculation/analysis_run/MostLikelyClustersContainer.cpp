@@ -302,16 +302,12 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
     if (DataHub.GetParameters().UseSpecialGrid()) {
       if ((std::fabs(ClusterOneRadius - (dDistanceBetween + ClusterTwoRadius)) > dNumericalDeviation && ClusterOneRadius >= dDistanceBetween + ClusterTwoRadius) ||
           (std::fabs(ClusterTwoRadius - (dDistanceBetween + ClusterOneRadius)) > dNumericalDeviation && ClusterTwoRadius >= dDistanceBetween + ClusterOneRadius)) {
-        //if neighbors for secondard centroid where re-calculated, we can delete this data now
-        DataHub.FreeNeighborInfo(tTwoCentroid);
         return true;
       }
     }
     else {
       if ((std::fabs(dDistanceBetween - ClusterOneRadius) > dNumericalDeviation && dDistanceBetween <= ClusterOneRadius) ||
           (std::fabs(dDistanceBetween - ClusterTwoRadius) > dNumericalDeviation && dDistanceBetween <= ClusterTwoRadius)) {
-          //if neighbors for secondard centroid where re-calculated, we can delete this data now
-          DataHub.FreeNeighborInfo(tTwoCentroid);
           return true;
       }
     }
@@ -323,8 +319,7 @@ bool MostLikelyClustersContainer::HasAnyTractsInCommon(const CSaTScanData& DataH
        for (tract_t v=1; v <= tOneNumTracts; ++v) {
          tract_t tInner = DataHub.GetNeighbor(iOneOffset, tOneCentroid, v, ClusterOne.GetCartesianRadius());
          if (tInner < DataHub.GetNumTracts()) {//inner and outer are atomic locations
-           if (tOuter == tInner) {//if neighbors for secondard centroid where re-calculated, we can delete this data now
-             DataHub.FreeNeighborInfo(tTwoCentroid);
+           if (tOuter == tInner) {
              return true;
            }
          }

@@ -473,9 +473,9 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.getPrintAsciiHeaders());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setIndexBasedPValueCutoff", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getIndexBasedPValueCutoff());
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "setIndexBasedPValueCutoff", "(D)V");
+  //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getIndexBasedPValueCutoff());
+  //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setClusterReportType", "(I)V");
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterReportType());
@@ -942,9 +942,9 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.setPrintAsciiHeaders(Env.CallBooleanMethod(jParameters, mid));
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "getIndexBasedPValueCutoff", "()D");
-  Parameters.setIndexBasedPValueCutoff(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "getIndexBasedPValueCutoff", "()D");
+  //Parameters.setIndexBasedPValueCutoff(Env.CallDoubleMethod(jParameters, mid));
+  //jni_error::_detectError(Env);
 
   Parameters.setClusterReportType((ClusterReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getClusterReportType", "Lorg/satscan/app/Parameters$ClusterReportType;"));
 

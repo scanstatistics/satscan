@@ -82,7 +82,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="451" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="463" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -124,7 +124,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="144" max="32767" attributes="0"/>
+                      <EmptySpace pref="156" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -508,7 +508,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="200" max="32767" attributes="0"/>
+                      <EmptySpace pref="212" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -706,7 +706,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="135" max="32767" attributes="0"/>
+                      <EmptySpace pref="147" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -967,7 +967,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="101" max="32767" attributes="0"/>
+                      <EmptySpace pref="113" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1327,7 +1327,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="128" max="32767" attributes="0"/>
+                      <EmptySpace pref="140" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1890,7 +1890,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="52" max="32767" attributes="0"/>
+                      <EmptySpace pref="64" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2244,7 +2244,7 @@
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="47" max="32767" attributes="0"/>
+                      <EmptySpace pref="59" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2754,10 +2754,9 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="_criteriaIndexBasedClustersGroup" alignment="0" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="_criteriaSecClustersGroup" alignment="0" max="32767" attributes="0"/>
                           <Component id="_reportedSpatialOptionsGroup" alignment="0" max="32767" attributes="0"/>
                       </Group>
@@ -2771,10 +2770,8 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_criteriaSecClustersGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_criteriaIndexBasedClustersGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="89" max="32767" attributes="0"/>
+                      <EmptySpace pref="143" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2784,7 +2781,7 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Criteria for Reporting Secondary Clusters Hierarchical">
+                    <TitledBorder title="Criteria for Reporting Secondary Clusters">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -2796,12 +2793,23 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_hierarchicalLabel" min="-2" pref="108" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_hierarchicalSecondaryClusters" pref="417" max="32767" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                      <Group type="102" alignment="1" attributes="0">
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" attributes="0">
+                              <Component id="_checkboxReportIndexCoefficients" alignment="0" pref="535" max="32767" attributes="0"/>
+                              <Group type="102" alignment="1" attributes="0">
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="_indexBasedCriteriaLabel" max="32767" attributes="1"/>
+                                      <Component id="_hierarchicalLabel" alignment="0" pref="180" max="32767" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="1" attributes="0">
+                                      <Component id="_indexBasedClusterCriteria" pref="345" max="32767" attributes="1"/>
+                                      <Component id="_hierarchicalSecondaryClusters" alignment="0" pref="345" max="32767" attributes="1"/>
+                                  </Group>
+                              </Group>
+                          </Group>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -2809,9 +2817,16 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_hierarchicalSecondaryClusters" min="-2" max="-2" attributes="0"/>
                               <Component id="_hierarchicalLabel" min="-2" max="-2" attributes="0"/>
-                              <Component id="_hierarchicalSecondaryClusters" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_indexBasedClusterCriteria" min="-2" max="-2" attributes="0"/>
+                              <Component id="_indexBasedCriteriaLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                          <Component id="_checkboxReportIndexCoefficients" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -2825,8 +2840,26 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_hierarchicalLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Overlapping Criteria"/>
+                    <Property name="text" type="java.lang.String" value="Most Likely Clusters, Hierarchically"/>
                   </Properties>
+                </Component>
+                <Component class="javax.swing.JLabel" name="_indexBasedCriteriaLabel">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Gini Index Based Collection"/>
+                  </Properties>
+                </Component>
+                <Component class="java.awt.Choice" name="_indexBasedClusterCriteria">
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_indexBasedClusterCriteria.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_indexBasedClusterCriteria.add(&quot;Optimal Index Only&quot;);&#xd;&#xa;_indexBasedClusterCriteria.add(&quot;All Index Values&quot;);"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_checkboxReportIndexCoefficients">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Report index based coefficients in results file"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
+                  </AuxValues>
                 </Component>
               </SubComponents>
             </Container>
@@ -3004,71 +3037,6 @@
                 </Component>
               </SubComponents>
             </Container>
-            <Container class="javax.swing.JPanel" name="_criteriaIndexBasedClustersGroup">
-              <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Index Based Cluster Collection">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
-                  </Border>
-                </Property>
-              </Properties>
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_checkboxReportIndexCoefficients" alignment="0" min="-2" pref="307" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="_indexBasedCriteriaLabel" pref="126" max="32767" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="_indexBasedClusterCriteria" min="-2" pref="399" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_indexBasedCriteriaLabel" min="-2" max="-2" attributes="0"/>
-                              <Component id="_indexBasedClusterCriteria" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_checkboxReportIndexCoefficients" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="java.awt.Choice" name="_indexBasedClusterCriteria">
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_indexBasedClusterCriteria.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;   public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;      enableSetDefaultsButton();&#xd;&#xa;   }&#xd;&#xa; });&#xd;&#xa;_indexBasedClusterCriteria.add(&quot;Optimal Index Only&quot;);&#xd;&#xa;_indexBasedClusterCriteria.add(&quot;All Index Values&quot;);"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JLabel" name="_indexBasedCriteriaLabel">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Cluster Reporting Criteria"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JCheckBox" name="_checkboxReportIndexCoefficients">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Report index based coefficients in results file"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {     public void itemStateChanged(java.awt.event.ItemEvent e) {         enableSetDefaultsButton();     } }); "/>
-                  </AuxValues>
-                </Component>
-              </SubComponents>
-            </Container>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="_additionalOutputTab">
@@ -3103,7 +3071,7 @@
                       <Component id="_reportClusterRankGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="186" max="32767" attributes="0"/>
+                      <EmptySpace pref="198" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

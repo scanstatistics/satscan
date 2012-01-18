@@ -67,7 +67,7 @@ class MostLikelyClustersContainer {
        clusters will rank higher than other cluster types in tie break situation. */
     class CompareClustersRatios {
         public:
-            bool operator() (const Cluster_t pCluster1, const Cluster_t pCluster2) {
+            bool operator() (const Cluster_t& pCluster1, const Cluster_t& pCluster2) {
                 if (std::fabs(pCluster1->m_nRatio - pCluster2->m_nRatio) < DBL_CMP_TOLERANCE) {
                     //rank a purely temporal cluster higher than other cluster types
                     //when rank is the same -- there will be at most one pt cluster in list 
