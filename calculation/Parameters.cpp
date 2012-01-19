@@ -508,9 +508,9 @@ const char * CParameters::GetRelativeToParameterName(const FileName& fParameterN
 /** Returns indication of whether maximum spatial cluster size is restricted by given type and for real or simulations. */
 bool CParameters::GetRestrictMaxSpatialSizeForType(SpatialSizeType eSpatialSizeType, bool bReported) const {
   switch (eSpatialSizeType) {
-    case PERCENTOFPOPULATION    : return true;
-    case MAXDISTANCE            : return bReported ? gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported : gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
-    case PERCENTOFMAXCIRCLEFILE : return bReported ? gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
+    case PERCENTOFPOPULATION    : return bReported ? gbRestrictReportedClusters && gdMaxSpatialSizeInPopulationAtRisk_Reported : true;
+    case MAXDISTANCE            : return bReported ? gbRestrictReportedClusters && gbRestrictMaxSpatialSizeThroughDistanceFromCenter_Reported : gbRestrictMaxSpatialSizeThroughDistanceFromCenter;
+    case PERCENTOFMAXCIRCLEFILE : return bReported ? gbRestrictReportedClusters && gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile_Reported : gbRestrictMaxSpatialSizeThroughMaxCirclePopulationFile;
     default : throw prg_error("Unknown type '%d'.\n", "GetRestrictMaxSpatialSizeForType()", eSpatialSizeType);
   };
 }

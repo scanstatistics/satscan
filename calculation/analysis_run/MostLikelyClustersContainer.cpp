@@ -165,7 +165,7 @@ double MostLikelyClustersContainer::getGiniCoefficient(const CSaTScanData& DataH
             sortClusters.push_back(gvTopClusterList[t]);
     }
     if (numDataSets > 1 && params.GetMultipleDataSetPurposeType() != ADJUSTMENT)
-        throw prg_error("GINI coefficient calculation not implemented for multiple data set using '%d' purpose.", "getGiniCoefficient()", params.GetMultipleDataSetPurposeType());
+        throw prg_error("Gini coefficient calculation not implemented for multiple data set using '%d' purpose.", "getGiniCoefficient()", params.GetMultipleDataSetPurposeType());
     if (sortClusters.size() == 0) return giniCoefficient;
     // In order for index calculation to be correct when scanning low or high+low rates, we need to insert
     // a cluster that is the remainder of data outside of the clusters used in calcuation. 

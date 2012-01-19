@@ -1770,8 +1770,9 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     /** Enables controls on the clusters reported tab. */
     private void enableClustersReportedOptions(boolean bEnable) {
         _criteriaSecClustersGroup.setEnabled(bEnable);
-        _hierarchicalLabel.setEnabled(bEnable);
-        _hierarchicalSecondaryClusters.setEnabled(bEnable);
+        _hierarchicalSecondaryClusters.setEnabled(bEnable &&
+                                                  (_analysisSettingsWindow._hierarchicalClusters.isSelected() || _analysisSettingsWindow._allClustersReported.isSelected()));
+        _hierarchicalLabel.setEnabled(_hierarchicalSecondaryClusters.isEnabled());
         // enable the advanced settings for index based clusters reported group
         _indexBasedClusterCriteria.setEnabled(bEnable &&
                                               (_analysisSettingsWindow._indexBasedClusterCollection.isSelected() || _analysisSettingsWindow._allClustersReported.isSelected()));

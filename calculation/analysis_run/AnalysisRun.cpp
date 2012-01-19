@@ -853,7 +853,7 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
   std::string buffer;
   printFormat.SetMarginsAsClusterSection(0);
   printFormat.PrintSectionSeparatorString(fp, 0, 2);
-  printString(buffer, "Indexed Based Coefficients (GINI)");
+  printString(buffer, "Gini Indexes");
   printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   printString(buffer, "----------------------------------------------------------");
   printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
@@ -867,7 +867,7 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
       if (gini > maxGINI) {maximizedCollection = &(*itrMLC); maxGINI = gini;}
   }
   if (maximizedCollection) {
-    printString(buffer, "Optimal GINI coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize());
+    printString(buffer, "Optimal Gini coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize());
     printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
   if (gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {

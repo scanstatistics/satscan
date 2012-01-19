@@ -95,6 +95,7 @@ zip $installer_version/update_data_combined.zip -j $build/satscan/java_applicati
 zip $installer_version/update_data_combined.zip -j $build/binaries/linux/*
 zip $installer_version/update_data_combined.zip -j $build/satscan/installers/documents/*
 zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
+zip $installer_version/update_data_combined.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.exe
 cd $build/satscan/java_application/jni_application/dist
 zip $installer_version/update_data_combined.zip -r lib
 cd $build/satscan/installers
@@ -109,6 +110,7 @@ zip $installer_version/update_data_windows.zip -j $build/satscan/batch_applicati
 zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/shared_library/x64/Release/satscan64.dll
 zip $installer_version/update_data_windows.zip -j $build/satscan/installers/documents/*
 zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.jar
+zip $installer_version/update_data_windows.zip -j $build/satscan/java_application/jni_application/dist/SaTScan.exe
 cd $build/satscan/java_application/jni_application/dist
 zip $installer_version/update_data_windows.zip -r lib
 cd $build/satscan/installers

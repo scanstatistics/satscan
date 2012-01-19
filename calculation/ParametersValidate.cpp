@@ -1142,7 +1142,7 @@ bool ParametersValidate::ValidateSpatialParameters(BasePrint & PrintDirection) c
                               "The specified value is %2g. Must be greater than zero.\n", BasePrint::P_PARAMERROR, dDistanceValue);
       }
       //validate maximum as pecentage of population at risk -- reported
-      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses())) {
+      if (!(gParameters.GetAnalysisType() == PROSPECTIVESPACETIME && gParameters.GetAdjustForEarlierAnalyses()) && gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFPOPULATION, true)) {
           double dRptPercentPopValue = gParameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, true);
           if (dRptPercentPopValue <= 0.0 || dRptPercentPopValue > dPercentPopValue) {
             bValid = false;
