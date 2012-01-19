@@ -33,7 +33,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
         && gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == ADJUSTMENT) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
-                            "Adjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n", 
+                            "Adjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
                             BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
@@ -132,7 +132,7 @@ bool ParametersValidate::ValidateDateParameters(BasePrint& PrintDirection) const
       bEndDateValid = false;
     }
     //validate prospective start date based upon precision of times parameter setting
-    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() && 
+    if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetAdjustForEarlierAnalyses() &&
         !ValidateDateString(PrintDirection, START_PROSP_SURV, gParameters.GetProspectiveStartDate())) {
       bValid = false;
       bProspectiveDateValid = false;
@@ -410,7 +410,7 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
                               "have permissions to read from this directory and file.\n",
                               BasePrint::P_PARAMERROR, gParameters.GetCoordinatesFileName().c_str());
       }
-    }  
+    }
     //validate special grid file
     if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.UseLocationNeighborsFile())
       const_cast<CParameters&>(gParameters).SetUseSpecialGrid(false);
@@ -538,7 +538,7 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
   bool  bValid=true;
 
   try {
-    if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetPValueReportingType() == TERMINATION_PVALUE && 
+    if (gParameters.GetNumReplicationsRequested() > 0 && gParameters.GetPValueReportingType() == TERMINATION_PVALUE &&
         (gParameters.GetEarlyTermThreshold() < 1 || gParameters.GetEarlyTermThreshold() > gParameters.GetNumReplicationsRequested())) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -575,7 +575,7 @@ bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirect
       if (!(gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI ||
             gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL ||
             gParameters.GetProbabilityModelType() == NORMAL || gParameters.GetProbabilityModelType() == EXPONENTIAL)) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for %s model.\n", 
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for %s model.\n",
                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
         return false;
       }
@@ -642,7 +642,7 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
       }
     }
     else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE) {
-      //validate for maximum specified as time aggregation unit 
+      //validate for maximum specified as time aggregation unit
       if (gParameters.GetMaximumTemporalClusterSize() < 1) {
         PrintDirection.Printf("Invalid Parameter Setting:\n"
                               "The maximum temporal cluster size of '%2g' is invalid. "
@@ -685,26 +685,26 @@ bool ParametersValidate::ValidateClustersReportedParameters(BasePrint & PrintDir
   if (gParameters.getIsReportingIndexBasedClusters()) {
       if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
          bReturn = false;
-         PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for index based cluster collection reporting.\n", 
+         PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for Gini index based collection reporting.\n",
                                BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-      }    
+      }
       if (gParameters.GetNumDataSets() > 1 && gParameters.GetMultipleDataSetPurposeType() == MULTIVARIATE) {
           bReturn = false;
           PrintDirection.Printf("Invalid Parameter Setting:\n"
-                                "Multivariate purpose for multiple data sets is not implemented for index based cluster collection reporting.\n", 
+                                "Multivariate purpose for multiple data sets is not implemented for Gini index based collection reporting.\n",
                                 BasePrint::P_PARAMERROR);
       }
       if (gParameters.GetRiskType() == MONOTONERISK) {
         bReturn = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is not implemented for index based cluster collection reporting.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe isotonic scan is not implemented for Gini index based collection reporting.\n", BasePrint::P_PARAMERROR);
       }
       if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
         bReturn = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe index based cluster collection reporting is only implemented for purely spatial analyses.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe Gini index based collection reporting is only implemented for purely spatial analyses.\n", BasePrint::P_PARAMERROR);
       }
       if (gParameters.GetIsIterativeScanning()) {
         bReturn = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for index based cluster collection reporting.\n", BasePrint::P_PARAMERROR);
+        PrintDirection.Printf("Invalid Parameter Setting:\nThe iterative scan feature is not implemented for Gini index based collection reporting.\n", BasePrint::P_PARAMERROR);
       }
   }
   return bReturn;
@@ -748,36 +748,36 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
         gParameters.GetRestrictMaxSpatialSizeForType(PERCENTOFMAXCIRCLEFILE, true)) {
         bReturn = false;
         PrintDirection.Printf("Invalid Parameter Setting:\nThe maximum spatial cluster size can not be specified interms of as percentage\n"
-                              "of population defined in maximum circle file. This feature is not implemented for %s model.\n", 
+                              "of population defined in maximum circle file. This feature is not implemented for %s model.\n",
                               BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.GetAnalysisType() != PURELYSPATIAL) {
       bReturn = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for %s analysis.\n", 
-                            BasePrint::P_PARAMERROR, 
+      PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for %s analysis.\n",
+                            BasePrint::P_PARAMERROR,
                             ParametersPrint(gParameters).GetProbabilityModelTypeAsString(),
                             ParametersPrint(gParameters).GetAnalysisTypeAsString());
     }
     if (gParameters.GetExecutionType() == CENTRICALLY) {
       bReturn = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\nCentric analysis execution is not a valid settings for %s model.\n", 
+      PrintDirection.Printf("Invalid Parameter Setting:\nCentric analysis execution is not a valid settings for %s model.\n",
                             BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.GetSpatialWindowType() == ELLIPTIC) {
       bReturn = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\nElliptical scans are not implemented for %s model.\n", 
+      PrintDirection.Printf("Invalid Parameter Setting:\nElliptical scans are not implemented for %s model.\n",
                             BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.GetNumDataSets() > 1) {
        bReturn = false;
-       PrintDirection.Printf("Invalid Parameter Setting:\nMultiple data sets are not permitted with %s model.\n", 
+       PrintDirection.Printf("Invalid Parameter Setting:\nMultiple data sets are not permitted with %s model.\n",
                              BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.GetCoordinatesType() == LATLON) {
       bReturn = false;
-      PrintDirection.Printf("Invalid Parameter Setting:\nLatitude/Longitude coordinates are not implemented for %s model.\n", 
+      PrintDirection.Printf("Invalid Parameter Setting:\nLatitude/Longitude coordinates are not implemented for %s model.\n",
                             BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
-    }      
+    }
 
     std::vector<ConvexPolygonObservableRegion> polygons;
     // for each region defined, attempt to define region from specifications
@@ -809,23 +809,23 @@ bool ParametersValidate::ValidateContinuousPoissonParameters(BasePrint & PrintDi
 bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirection) const {
   bool  bValid=true;
   try {
-    // Just suppress this setting for situations that don't allow it. 
+    // Just suppress this setting for situations that don't allow it.
     if (gParameters.GetOutputRelativeRisksFiles() &&
         (gParameters.GetProbabilityModelType() == SPACETIMEPERMUTATION || gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON ||
          gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL)) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The additional output file for risk estimates is not permitted for %s model (option was disabled).\n", 
-                            BasePrint::P_WARNING, 
+                            "The additional output file for risk estimates is not permitted for %s model (option was disabled).\n",
+                            BasePrint::P_WARNING,
                             ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
     if (gParameters.GetOutputRelativeRisksFiles() && gParameters.GetIsPurelyTemporalAnalysis()) {
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksAscii(false);
       const_cast<CParameters&>(gParameters).SetOutputRelativeRisksDBase(false);
       PrintDirection.Printf("Parameter Setting Warning:\n"
-                            "The additional output file for risk estimates is not permitted for %s analysis.\nThe option was disabled.\n", 
-                            BasePrint::P_WARNING, 
+                            "The additional output file for risk estimates is not permitted for %s analysis.\nThe option was disabled.\n",
+                            BasePrint::P_WARNING,
                             ParametersPrint(gParameters).GetAnalysisTypeAsString());
     }
     if (!ValidateClustersReportedParameters(PrintDirection))
@@ -912,7 +912,7 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
       //calculate maximum number of replications for requested seed
       dMaxReplications = (double)RandomNumberGenerator::glM - (double)gParameters.GetRandomizationSeed() - (double)(gParameters.GetNumDataSets() -1) * AbstractRandomizer::glDataSetSeedOffSet;
       dMaxReplications = (floor((dMaxReplications)/1000) - 1)  * 1000 + 999;
-      //check whether specified combination of seed and requested number of replications fights each other 
+      //check whether specified combination of seed and requested number of replications fights each other
       if (dMaxReplications < 9 && (dMaxSeed <= 0 || dMaxSeed > RandomNumberGenerator::glM)) {
         PrintDirection.Printf("Invalid Parameter Setting:\nRandomization seed will exceed defined limit. "
                               "The specified initial seed, in conjunction with the number of replications, "
@@ -942,7 +942,7 @@ bool ParametersValidate::ValidateRandomizationSeed(BasePrint& PrintDirection) co
     }
   }
 
-  return true;   
+  return true;
 }
 
 /** Validates parameters used in optional start and end ranges for time windows.
@@ -1380,7 +1380,7 @@ bool ParametersValidate::ValidateTemporalParameters(BasePrint & PrintDirection) 
     //I think it's too late to start enforcing this.
     if (gParameters.GetIsProspectiveAnalysis() && gParameters.GetIncludeClustersType() != ALIVECLUSTERS)
       const_cast<CParameters&>(gParameters).SetIncludeClustersType(ALIVECLUSTERS);
-    //validate time aggregation units  
+    //validate time aggregation units
     if (!ValidateTimeAggregationUnits(PrintDirection))
       bValid = false;
     //validate time trend adjustment
@@ -1488,7 +1488,7 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
 
   if (gParameters.GetAnalysisType() == PURELYSPATIAL) //validate settings for temporal analyses
     return true;
-    
+
   //get date precision string for error reporting
   GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), sPrecisionString, false, false);
   if (gParameters.GetTimeAggregationUnitsType() == NONE) { //validate time aggregation units
@@ -1529,7 +1529,7 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
 
   if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) //svtt does not have a maximum temporal cluster size
     return true;
-      
+
   if (gParameters.GetMaximumTemporalClusterSizeType() == PERCENTAGETYPE)
     dMaxTemporalLengthInUnits = floor(dStudyPeriodLengthInUnits * (double)gParameters.GetMaximumTemporalClusterSize()/100.0);
   else if (gParameters.GetMaximumTemporalClusterSizeType() == TIMETYPE)
@@ -1555,7 +1555,7 @@ bool ParametersValidate::ValidateTimeAggregationUnits(BasePrint& PrintDirection)
                             (dMaxTemporalLengthInUnits == 1 ? "" : "s"));
     return false;
   }
-    
+
   return true;
 }
 

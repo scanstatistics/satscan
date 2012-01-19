@@ -1,5 +1,7 @@
 #!/bin/sh
 
+(
+
 binaries="/prj/satscan/build.area/binaries/linux"
 satscan_src="/prj/satscan/build.area/satscan"
 boost_src="/prj/satscan/build.area/boost/boost_1_48_0"
@@ -47,3 +49,5 @@ echo building SaTScan shared object for 64-bit system using gcc3.4.4
 ##
 ## #echo building SaTScan shared object for 64-bit system using gcc4.0.4
 ## ./makescript.so.sh $lib_target $binaries/libsatscan.gcc4.0.4_x86_64_64bit.so $satscan_src $boost_src -m64 -O3 /home/hostovic/prj/gcc/gcc-4.0.4/bin/g++ $processors $pthread
+
+) 1> build.stdout 2> build.stderr

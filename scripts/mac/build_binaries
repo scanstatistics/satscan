@@ -1,5 +1,7 @@
 #!/bin/sh
 
+(
+
 binaries="/Users/hostovic/prj/satscan.development/build.area/binaries/mac"
 satscan_src="/Users/hostovic/prj/satscan.development/build.area/satscan"
 boost_src="/Users/hostovic/prj/boost/boost_1_48_0"
@@ -59,3 +61,5 @@ echo building SaTScan for 32-bit system using gcc4.0.1 - PowerPC
 #####
 ##### echo building SaTScan shared object for 64-bit system using gcc4.0.1 - PowerPC
 ##### ./makescript.so.mac.sh $binaries/libsatscan.gcc4.0.1_ppc64_64bit.jnilib $satscan_src $boost_src -m64 -O3 "/usr/bin/g++-4.0 -arch ppc64" $processors
+
+) 1> build.stdout 2> build.stderr

@@ -95,7 +95,7 @@ AbstractDataSetGateway & NormalDataSetHandler::GetDataGateway(AbstractDataSetGat
   catch (prg_exception& x) {
     x.addTrace("GetDataGateway()","NormalDataSetHandler");
     throw;
-  }  
+  }
   return DataGatway;
 }
 
@@ -312,7 +312,7 @@ bool NormalDataSetHandler::ReadCountsWeighted(RealDataSet& DataSet, DataSource& 
       gPrint.Printf("Error: The %s does not contain data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
     }
-    else  
+    else
       pRandomizer->AssignFromAttributes(DataSet);
   }
   catch (prg_exception& x) {
@@ -339,7 +339,7 @@ bool NormalDataSetHandler::setIsWeighted() {
     int currentColumnsSize = setColumns.front();
     const_cast<CParameters&>(gParameters).SetIsWeightedNormal(currentColumnsSize > (gParameters.GetPrecisionOfTimesType() == NONE ? 3 : 4));
     if (gParameters.getIsWeightedNormal() && gParameters.getIsReportingIndexBasedClusters()) {
-      gPrint.Printf("Error: The index based cluster collection feature is not implemented with Normal probability model with weighted data.\n", BasePrint::P_ERROR);
+      gPrint.Printf("Error: The Gini index based collection feature is not implemented with Normal probability model with weighted data.\n", BasePrint::P_ERROR);
       return false;
     }
     for (size_t t=1; t < setColumns.size(); ++t) {
@@ -382,7 +382,7 @@ bool NormalDataSetHandler::ReadData() {
             gPrint.Printf("Error: The Normal model with weights is implemented only for the\npurely spatial analysis when covariates are specified.\n", BasePrint::P_READERROR);
             return false;
           }
-           
+
           //Meta locations are not implemented with covariates. Inorder for meta locations to function
           //properly, the current process would have to be significantly refactored from what I can tell.
           //Would probably need to:
@@ -396,7 +396,7 @@ bool NormalDataSetHandler::ReadData() {
 
           //When case data has covariates, we need to verify that every location defined in coordinates file is represented in case file, but only once.
           // NOTE: In terms of missing data (case records), we would need to implement a delete location feature; not easy, major TractHandler updates:
-          //        - changes to CentroidHandlerPassThrough (not special grid file) 
+          //        - changes to CentroidHandlerPassThrough (not special grid file)
           //        - changes to non-Euclidian neighbors (structures already allocated)
           AbstractWeightedNormalRandomizer * pRandomizer=dynamic_cast<AbstractWeightedNormalRandomizer*>(gvDataSetRandomizers.at(t));
           if (pRandomizer && !pRandomizer->hasUniqueLocationsCoverage(gDataHub)) {
@@ -433,11 +433,11 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
         if (!string_to_type<count_t>(Source.GetValueAt(guCountIndex), nCount) || nCount < 0) {
             gPrint.Printf("Error: The value '%s' of record %ld in the %s could not be read as case count.\n"
                           "       Case count must be a whole number in range 0 - %u.\n", BasePrint::P_READERROR,
-                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(), 
+                          Source.GetValueAt(guCountIndex), Source.GetCurrentRecordIndex(),
                           gPrint.GetImpliedFileTypeString().c_str(), std::numeric_limits<count_t>::max());
             return DataSetHandler::Rejected;
-        } 
-	    if (gParameters.getIsWeightedNormal() && nCount > 1) { 
+        }
+	    if (gParameters.getIsWeightedNormal() && nCount > 1) {
 		    // For weighted normal data, the count column can only be zero or one. This was decided due to
 		    // users incorrectly using this column in their data.
             gPrint.Printf("Error: The case count for the Normal model with weights can be either 0 or 1. Incorrect value of '%s' in record %ld of %s.\n",
@@ -494,7 +494,7 @@ DataSetHandler::RecordStatusType NormalDataSetHandler::RetrieveCaseRecordData(Da
                           "       Case covariate must be numeric.\n", BasePrint::P_READERROR,
                           pCovariate, Source.GetCurrentRecordIndex(), gPrint.GetImpliedFileTypeString().c_str());
             return DataSetHandler::Rejected;
-        } 
+        }
         pvCovariates->push_back(dCovariate);
       }
     }

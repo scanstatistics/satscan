@@ -39,7 +39,7 @@ const char * ParametersPrint::GetAnalysisTypeAsString() const {
 const char * ParametersPrint::GetAreaScanRateTypeAsString() const {
   try {
     switch (gParameters.GetProbabilityModelType()) {
-      case POISSON :  
+      case POISSON :
          if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
             switch (gParameters.GetAreaScanRateType()) {
                 case HIGH       : return "More Increasing or Less Decreasing Rates";
@@ -218,7 +218,7 @@ void ParametersPrint::PrintAdjustments(FILE* fp, const DataSetHandler& SetHandle
     if (gParameters.UseAdjustmentForRelativeRisksFile()) {
         buffer = "Adjusted for known relative risks.";
         PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    }    
+    }
   }
   catch (prg_exception& x) {
     x.addTrace("PrintAdjustments()","ParametersPrint");
@@ -246,7 +246,7 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
         default : throw prg_error("Unknown date precision type '%d'.\n",
                                   "PrintAnalysisParameters()", gParameters.GetTimeAggregationUnitsType());
       }
-      printString(buffer, "%i", gParameters.GetTimeAggregationLength());      
+      printString(buffer, "%i", gParameters.GetTimeAggregationLength());
       settings.push_back(std::make_pair("Time Aggregation Length",buffer));
     }
     WriteSettingsContainer(settings, "Analysis", fp);
@@ -320,7 +320,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
 void ParametersPrint::PrintCalculatedTimeTrend(FILE* fp, const DataSetHandler& SetHandler) const {
   unsigned int                  t;
   std::string                   buffer, work;
-  std::deque<unsigned int>      TrendIncrease, TrendDecrease;              
+  std::deque<unsigned int>      TrendIncrease, TrendDecrease;
 
   if (gParameters.GetTimeTrendAdjustmentType() != CALCULATED_LOGLINEAR_PERC)
     return;
@@ -402,23 +402,23 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
     if (gParameters.getIsReportingHierarchicalClusters()) {
         buffer = "Criteria for Reporting Secondary Clusters";
         switch (gParameters.GetCriteriaSecondClustersType()) {
-            case NOGEOOVERLAP          : 
+            case NOGEOOVERLAP          :
                 settings.push_back(std::make_pair(buffer,"No Geographical Overlap")); break;
-            case NOCENTROIDSINOTHER    : 
+            case NOCENTROIDSINOTHER    :
                 settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Other Clusters")); break;
-            case NOCENTROIDSINMORELIKE : 
+            case NOCENTROIDSINMORELIKE :
                 settings.push_back(std::make_pair(buffer,"No Cluster Centroids in More Likely Clusters")); break;
-            case NOCENTROIDSINLESSLIKE : 
+            case NOCENTROIDSINLESSLIKE :
                 settings.push_back(std::make_pair(buffer,"No Cluster Centroids in Less Likely Clusters")); break;
-            case NOPAIRSINEACHOTHERS   : 
+            case NOPAIRSINEACHOTHERS   :
                 settings.push_back(std::make_pair(buffer,"No Pairs of Centroids Both in Each Others Clusters")); break;
-            case NORESTRICTIONS        : 
+            case NORESTRICTIONS        :
                 settings.push_back(std::make_pair(buffer,"No Restrictions = Most Likely Cluster for Each Centroid")); break;
             default : throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
         }
     }
     if (gParameters.getIsReportingIndexBasedClusters()) {
-        buffer = "Index Based Cluster Collection Reporting";
+        buffer = "Gini Index Based Collection Reporting";
         switch (gParameters.getIndexBasedReportType()) {
             case OPTIMAL_ONLY : settings.push_back(std::make_pair(buffer,"Optimal Only")); break;
             case ALL_VALUES    : settings.push_back(std::make_pair(buffer,"All Values")); break;
@@ -442,7 +442,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
             settings.push_back(std::make_pair("Reported Clusters",buffer));
         }
         if (gParameters.GetRestrictMaxSpatialSizeForType(MAXDISTANCE, true)) {
-            printString(buffer, "Only clusters smaller than %g%s reported.", 
+            printString(buffer, "Only clusters smaller than %g%s reported.",
                 gParameters.GetMaxSpatialSizeForType(MAXDISTANCE, true), (gParameters.GetCoordinatesType() == CARTESIAN ? " Cartesian units" : " km"));
             settings.push_back(std::make_pair("Reported Clusters",buffer));
         }
@@ -458,15 +458,15 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
 void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
   SettingContainer_t settings;
   std::string        buffer;
-    
+
   try {
     if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
       buffer = "Temporal Data Check";
       switch (gParameters.GetStudyPeriodDataCheckingType()) {
-          case STRICTBOUNDS     : 
+          case STRICTBOUNDS     :
               settings.push_back(std::make_pair(buffer,"Check to ensure that all cases and controls are within the specified temporal study period."));
               break;
-          case RELAXEDBOUNDS    : 
+          case RELAXEDBOUNDS    :
               settings.push_back(std::make_pair(buffer,"Ignore cases and controls that are outside the specified temporal study period."));
               break;
           default : throw prg_error("Unknown study period check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetStudyPeriodDataCheckingType());
@@ -475,15 +475,15 @@ void ParametersPrint::PrintDataCheckingParameters(FILE* fp) const {
     if (!gParameters.GetIsPurelyTemporalAnalysis()) {
       buffer = "Geographical Data Check";
       switch (gParameters.GetCoordinatesDataCheckingType()) {
-        case STRICTCOORDINATES  : 
+        case STRICTCOORDINATES  :
               settings.push_back(std::make_pair(buffer,"Check to ensure that all observations (cases, controls and populations) are within the specified geographical area."));
               break;
-        case RELAXEDCOORDINATES : 
+        case RELAXEDCOORDINATES :
               settings.push_back(std::make_pair(buffer,"Ignore observations that are outside the specified geographical area."));
               break;
         default : throw prg_error("Unknown geographical coordinates check type '%d'.\n", "PrintDataCheckingParameters()", gParameters.GetCoordinatesDataCheckingType());
       }
-    } 
+    }
     WriteSettingsContainer(settings, "Data Checking", fp);
   }
   catch (prg_exception& x) {
@@ -557,9 +557,9 @@ void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
           settings.push_back(std::make_pair("Maximum number of iterations",buffer));
           printString(buffer, "%g", gParameters.GetIterativeCutOffPValue());
           settings.push_back(std::make_pair("Stop when p-value greater",buffer));
-        }  
+        }
      }
-     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());   
+     printString(buffer, "%u", gParameters.GetNumReplicationsRequested());
      settings.push_back(std::make_pair("Number of Replications",buffer));
      WriteSettingsContainer(settings, "Inference", fp);
   }
@@ -596,7 +596,7 @@ void ParametersPrint::PrintInputParameters(FILE* fp) const {
       case EXPONENTIAL          :
       case NORMAL               :
       case RANK                 :
-      case HOMOGENEOUSPOISSON   :  break;    
+      case HOMOGENEOUSPOISSON   :  break;
       default : throw prg_error("Unknown probability model type '%d'.\n",
                                 "PrintInputParameters()", gParameters.GetProbabilityModelType());
     }
@@ -663,11 +663,11 @@ void ParametersPrint::PrintMultipleDataSetParameters(FILE* fp) const {
            printString(buffer, "Control File (data set %i)", t + 1);
            settings.push_back(std::make_pair(buffer,gParameters.GetControlFileName(t + 1))); break;
          case SPACETIMEPERMUTATION :
-         case CATEGORICAL          : 
+         case CATEGORICAL          :
          case ORDINAL              :
          case EXPONENTIAL          :
          case NORMAL               :
-         case RANK                 : 
+         case RANK                 :
          case HOMOGENEOUSPOISSON   : break;
          default :
            throw prg_error("Unknown probability model type '%d'.\n",
@@ -699,8 +699,8 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
     buffer = "Cluster Reporting";
     switch (gParameters.getClusterReportType()) {
       case HIERARCHICAL : settings.push_back(std::make_pair(buffer,"Hierarchical")); break;
-      case INDEX_BASED    : settings.push_back(std::make_pair(buffer,"Index Based Cluster Collection")); break;
-      case ALL_CLUSTER_TYPES    : settings.push_back(std::make_pair(buffer,"Hierarchical and Index Based Cluster Collection")); break;
+      case INDEX_BASED    : settings.push_back(std::make_pair(buffer,"Gini Index Based Collection")); break;
+      case ALL_CLUSTER_TYPES    : settings.push_back(std::make_pair(buffer,"Hierarchical and Gini Index Based Collection")); break;
       default : throw prg_error("Unknown cluster reporting type '%d'.\n","PrintOutputParameters()", gParameters.getClusterReportType());
     }
     if (gParameters.GetOutputClusterLevelAscii()) {
@@ -770,10 +770,10 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
     }
     buffer = "Simulation Method";
     switch (gParameters.GetSimulationType()) {
-      case STANDARD         : break; 
+      case STANDARD         : break;
       case HA_RANDOMIZATION :
           settings.push_back(std::make_pair(buffer,"HA Randomization")); break;
-      case FILESOURCE       : 
+      case FILESOURCE       :
           settings.push_back(std::make_pair(buffer,"File Source")); break;
           settings.push_back(std::make_pair("Randomization File",gParameters.GetSimulationDataSourceFilename())); break;
           break;
@@ -809,7 +809,7 @@ void ParametersPrint::PrintPolygonParameters(FILE* fp) const {
             }
         }
         WriteSettingsContainer(settings, "Polygons", fp);
-     }     
+     }
   }
   catch (prg_exception& x) {
     x.addTrace("PrintPolygonParameters()","ParametersPrint");
@@ -869,18 +869,18 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
         if (gParameters.UseMetaLocationsFile())
             settings.push_back(std::make_pair("Meta Locations File",gParameters.getMetaLocationsFilename()));
     }
-    if (!(gParameters.GetIsPurelyTemporalAnalysis() || 
-          gParameters.UseLocationNeighborsFile() || 
+    if (!(gParameters.GetIsPurelyTemporalAnalysis() ||
+          gParameters.UseLocationNeighborsFile() ||
           gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON)) {
         buffer = "Multiple Coordinates Type";
         switch (gParameters.GetMultipleCoordinatesType()) {
-            case ONEPERLOCATION : 
+            case ONEPERLOCATION :
                 settings.push_back(std::make_pair(buffer,"Allow only set of coordinates per location ID."));
                 break;
-            case ATLEASTONELOCATION : 
+            case ATLEASTONELOCATION :
                 settings.push_back(std::make_pair(buffer,"Include location ID in the scanning window if at least one set of coordinates is included."));
                 break;
-            case ALLLOCATIONS : 
+            case ALLLOCATIONS :
                 settings.push_back(std::make_pair(buffer,"Include location ID in the scanning window if and only if all sets of coordinates are in the window."));
                 break;
             default : throw prg_error("Unknown multiple coordinates type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetMultipleCoordinatesType());
@@ -916,16 +916,16 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
 
     if (bPrintingTemporalAdjustment) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
-        case NOTADJUSTED               : 
+        case NOTADJUSTED               :
             settings.push_back(std::make_pair("Temporal Adjustment","None"));break;
-        case NONPARAMETRIC             : 
+        case NONPARAMETRIC             :
             settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric"));break;
-        case LOGLINEAR_PERC            : 
+        case LOGLINEAR_PERC            :
             printString(buffer, "Log linear with %g%% per year", gParameters.GetTimeTrendAdjustmentPercentage());
             settings.push_back(std::make_pair("Temporal Adjustment",buffer));break;
-        case CALCULATED_LOGLINEAR_PERC : 
+        case CALCULATED_LOGLINEAR_PERC :
             settings.push_back(std::make_pair("Temporal Adjustment","Log linear with automatically calculated trend"));break;
-        case STRATIFIED_RANDOMIZATION  : 
+        case STRATIFIED_RANDOMIZATION  :
             settings.push_back(std::make_pair("Temporal Adjustment","Nonparametric, with time stratified randomization"));break;
         default : throw prg_error("Unknown time trend adjustment type '%d'.\n",
                                   "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetTimeTrendAdjustmentType());
@@ -933,10 +933,10 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
     }
     if (bPrintingSpatialAdjustment) {
       switch (gParameters.GetSpatialAdjustmentType()) {
-        case NO_SPATIAL_ADJUSTMENT              : 
+        case NO_SPATIAL_ADJUSTMENT              :
             settings.push_back(std::make_pair("Spatial Adjustment","None")); break;
-        case SPATIALLY_STRATIFIED_RANDOMIZATION : 
-            settings.push_back(std::make_pair("Spatial Adjustment","Spatial adjustment by stratified randomization")); break; 
+        case SPATIALLY_STRATIFIED_RANDOMIZATION :
+            settings.push_back(std::make_pair("Spatial Adjustment","Spatial adjustment by stratified randomization")); break;
         default : throw prg_error("Unknown spatial adjustment type '%d'.\n",
                                   "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
       }
@@ -985,15 +985,15 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
     if (!gParameters.UseLocationNeighborsFile()) {
       switch (gParameters.GetSpatialWindowType()) {
         case CIRCULAR : settings.push_back(std::make_pair("Window Shape", "Circular")); break;
-        case ELLIPTIC : 
-            settings.push_back(std::make_pair("Window Shape", "Elliptic"));                    
+        case ELLIPTIC :
+            settings.push_back(std::make_pair("Window Shape", "Elliptic"));
             switch (gParameters.GetNonCompactnessPenaltyType()) {
                case NOPENALTY     : settings.push_back(std::make_pair("Non-Compactness Penalty", "None")); break;
                case MEDIUMPENALTY : settings.push_back(std::make_pair("Non-Compactness Penalty", "Meduim")); break;
                case STRONGPENALTY : settings.push_back(std::make_pair("Non-Compactness Penalty", "Strong")); break;
                default : throw prg_error("Unknown non-compactness penalty type '%d'.\n",
                                          "PrintSpatialWindowParameters()", gParameters.GetNonCompactnessPenaltyType());
-            } 
+            }
             break;
         default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
@@ -1035,13 +1035,13 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
       return;
 
     switch (gParameters.GetMaximumTemporalClusterSizeType()) {
-      case PERCENTAGETYPE : 
-          printString(buffer, "%g percent of study period", gParameters.GetMaximumTemporalClusterSize()); 
+      case PERCENTAGETYPE :
+          printString(buffer, "%g percent of study period", gParameters.GetMaximumTemporalClusterSize());
           settings.push_back(std::make_pair("Maximum Temporal Cluster Size", buffer)); break;
-      case TIMETYPE       : 
-          printString(buffer, "%g %s", 
+      case TIMETYPE       :
+          printString(buffer, "%g %s",
               gParameters.GetMaximumTemporalClusterSize(),
-              GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.GetMaximumTemporalClusterSize() != 1, true)); 
+              GetDatePrecisionAsString(gParameters.GetTimeAggregationUnitsType(), worker, gParameters.GetMaximumTemporalClusterSize() != 1, true));
           settings.push_back(std::make_pair("Maximum Temporal Cluster Size", buffer)); break;
           break;
       default : throw prg_error("Unknown maximum temporal cluster size type '%d'.\n",
@@ -1052,16 +1052,16 @@ void ParametersPrint::PrintTemporalWindowParameters(FILE* fp) const {
     }
     if (gParameters.GetAnalysisType() == PURELYTEMPORAL || gParameters.GetAnalysisType() == SPACETIME) {
       switch (gParameters.GetIncludeClustersType()) {
-         case ALIVECLUSTERS   : 
+         case ALIVECLUSTERS   :
              settings.push_back(std::make_pair("Clusters to Include", "Only those including the study end date"));
              break;
          case ALLCLUSTERS     : /*fprintf(fp, "All\n");
                                   -- geIncludeClustersType parameter no longer visible in GUI,
                                      defaulted to ALLCLUSTERS, so don't print setting */ break;
-         case CLUSTERSINRANGE : 
-             printString(buffer, "%s to %s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str()); 
+         case CLUSTERSINRANGE :
+             printString(buffer, "%s to %s", gParameters.GetStartRangeStartDate().c_str(), gParameters.GetStartRangeEndDate().c_str());
              settings.push_back(std::make_pair("Flexible Temporal Window Start Range", buffer));
-             printString(buffer, "%s to %s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str()); 
+             printString(buffer, "%s to %s", gParameters.GetEndRangeStartDate().c_str(), gParameters.GetEndRangeEndDate().c_str());
              settings.push_back(std::make_pair("Flexible Temporal Window End Range", buffer));
              break;
          default : throw prg_error("Unknown inclusion cluster type '%d'.\n",
@@ -1082,12 +1082,12 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
       if (!settings.size()) return;
 
       //print section label
-      fprintf(fp, "\n");  
-      fprintf(fp, section.c_str());  
-      fprintf(fp, "\n");  
+      fprintf(fp, "\n");
+      fprintf(fp, section.c_str());
+      fprintf(fp, "\n");
       for (size_t t=0; t < section.size(); ++t)
-          fprintf(fp, "-"); 
-      fprintf(fp, "\n");  
+          fprintf(fp, "-");
+      fprintf(fp, "\n");
 
       SettingContainer_t::const_iterator itr=settings.begin();
       //first calculate maximum label length
@@ -1097,13 +1097,13 @@ void ParametersPrint::WriteSettingsContainer(const SettingContainer_t& settings,
       }
       //print settings
       for (itr=settings.begin(); itr != settings.end(); ++itr) {
-          fprintf(fp, "  "); 
-          fprintf(fp, itr->first.c_str()); 
+          fprintf(fp, "  ");
+          fprintf(fp, itr->first.c_str());
           for (size_t t=itr->first.size(); t < tMaxLabel; ++t)
-            fprintf(fp, " "); 
-          fprintf(fp, " : "); 
-          fprintf(fp, itr->second.c_str()); 
-          fprintf(fp, "\n"); 
+            fprintf(fp, " ");
+          fprintf(fp, " : ");
+          fprintf(fp, itr->second.c_str());
+          fprintf(fp, "\n");
       }
   }
   catch (prg_exception& x) {
