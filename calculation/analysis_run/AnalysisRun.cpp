@@ -857,7 +857,7 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
   printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   printString(buffer, "----------------------------------------------------------");
   printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
-  double maxGINI = 0;
+  double minSize=std::numeric_limits<double>::max(), maxSize=0, minGINI=std::numeric_limits<double>::max(), maxGINI = 0;
   const MostLikelyClustersContainer* maximizedCollection = 0;
   for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
       printString(buffer, "%g percent", itrMLC->getMaximumWindowSize());
@@ -865,15 +865,56 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
       double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getIndexBasedPValueCutoff());
       printFormat.PrintAlignedMarginsDataString(fp, getValueAsString(gini, buffer, 4));
       if (gini > maxGINI) {maximizedCollection = &(*itrMLC); maxGINI = gini;}
+      minSize = std::min(minSize, itrMLC->getMaximumWindowSize()); 
+      maxSize = std::max(maxSize, itrMLC->getMaximumWindowSize());
+      minGINI = std::min(minGINI, gini); 
   }
   if (maximizedCollection) {
     printString(buffer, "Optimal Gini coefficient found at %g%% maxima.", maximizedCollection->getMaximumWindowSize());
     printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
   if (gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
-    printString(buffer, "Coefficients based on clusters with P-Value of %lf or better.", gParameters.getIndexBasedPValueCutoff());
+    std::string buffer2;
+    printString(buffer, "Coefficients based on clusters with p<%s.", getValueAsString(gParameters.getIndexBasedPValueCutoff(), buffer).c_str());
     printFormat.PrintNonRightMarginedDataString(fp, buffer, false);
   }
+
+  // create Gnuplot file for Gini coeffiecents
+  std::ofstream pg;
+  //open output file
+  std::string name(gParameters.GetOutputFileName());
+  name += ".pg";
+  pg.open(name.c_str());
+  if (!pg) throw resolvable_error("Error: Could not open file '%s'.\n", name.c_str());
+
+  pg << "reset" << std::endl << "set terminal pngcairo" << std::endl << "set output '" << gParameters.GetOutputFileName().c_str() << ".png'" << std::endl << "set xtics 5" << std::endl;
+  if (maximizedCollection) 
+      pg << "set label 1 'Optimal Gini at " << maximizedCollection->getMaximumWindowSize() <<"% maxima.'" << std::endl;
+  else
+      pg << "set label 1 'No Optimal Gini Found" << std::endl;
+  pg << "set label 1 at graph 0.025, 0.95 tc lt 3" << std::endl;
+  pg << "set title 'Plot of Spatial Window Size to Gini Coefficient'" << std::endl << "set ylabel 'Gini'" << std::endl << "set yrange [" << std::max(0.0, minGINI - 0.05) << ":" << (maxGINI + 0.05) << "]" << std::endl;
+  pg << "set mxtics" << std::endl << "set xlabel 'Spatial Window Size'" << std::endl << "set xrange [" << std::max(0.0, minSize - 2) << ":" << (maxSize + 2) << "]" << std::endl << "set grid" << std::endl;
+  pg << "set style data lines" << std::endl << "set style line 1 lt 1 lc rgb '#0000A0' lw 2" << std::endl << "set style line 2 lc rgb '#0000FF' pt 7 ps 1"<< std::endl;
+  pg << "set style line 3 lc rgb '#0000A0' pt 7 ps 2" << std::endl << "plot '-' with linespoints ls 1 title 'Gini',";
+  // need to determine the maximum gini coefficent
+  std::stringstream lineData, pointData;
+  for (MLC_Collections_t::const_iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC) {
+      double gini = itrMLC->getGiniCoefficient(GetDataHub(), gSimVars, gParameters.getIndexBasedPValueCutoff());
+      pg << "'-' w p ls " << (maximizedCollection == &(*itrMLC) ? 3 : 2) << " notitle" << (itrMLC + 1 != gTopClustersContainers.end() ? "," : "");
+      lineData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl;
+      pointData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl << "e" << std::endl;
+  }
+  pg << std::endl << lineData.str() << "e" << std::endl << pointData.str() << "#";
+  pg.close();
+
+  //change to parameter
+  std::string gnuBinary("c:/prj/gnuplot/bin/gnuplot");
+  std::stringstream command;
+  command << gnuBinary << " " << name;
+  if (system (command.str().c_str()))
+    gPrintDirection.Printf("Failed to create GINI graphic.\n", BasePrint::P_STDOUT);
+  remove(name.c_str());
 }
 
 /** Prints power calculations status to report file. */
@@ -1252,7 +1293,19 @@ void AnalysisRunner::reportClusters() {
                     }
                 }
                 // combine clusters from maximized GINI collection with reporting collection
-                if (maximizedCollection) _reportClusters.combine(*maximizedCollection, *gpDataHub);
+                if (maximizedCollection) 
+                    _reportClusters.combine(*maximizedCollection, *gpDataHub);
+                else if (_reportClusters.GetNumClustersRetained() == 0) {
+                    /* When reporting only Gini coefficients (optimal only) then if no significant gini collection found, 
+                       then report cluster collection from largest maxima with clusters. */
+                    MLC_Collections_t::reverse_iterator rev(gTopClustersContainers.end()), rev_end(gTopClustersContainers.begin());
+                    for (; rev != rev_end; rev++) {
+                        if (rev->GetNumClustersRetained()) {
+                            _reportClusters.combine(*rev, *gpDataHub);
+                            break;
+                        }
+                    }
+                }
             } else {
                 // combine clusters from each maxima collection with reporting collection
                 for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
