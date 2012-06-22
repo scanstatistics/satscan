@@ -161,7 +161,8 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case TIME_TREND_TYPE          : return " time trend type - SVTT only (Linear=0, Quadratic=1)";
       case REPORT_RANK              : return " report cluster rank (y/n)";
       case PRINT_ASCII_HEADERS      : return " print ascii headers in output files (y/n)";
-      case CLUSTER_REPORT_TYPE      : return " cluster reporting type (0=hierarchical, 1=index based, 2=all clusters)";
+      case REPORT_HIERARCHICAL_CLUSTERS : return " report hierarchical clusters (y/n)";
+      case REPORT_GINI_CLUSTERS     : return " report gini clusters (y/n)";
       case SPATIAL_MAXIMA           : return " spatial window maxima stops (comma separated decimal values[<=50%] )";
       case INDEXBASED_REPORT_TYPE   : return " index based cluster reporting type (0=optimal index only, 1=all values)";
       case OUTPUT_INDEX_COEFFICENTS : return " output index coefficents to results file (y/n)";
@@ -295,7 +296,8 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case TIME_TREND_TYPE          : return AsString(s, gParameters.getTimeTrendType());
       case REPORT_RANK              : return AsString(s, gParameters.getReportClusterRank()); 
       case PRINT_ASCII_HEADERS      : return AsString(s, gParameters.getPrintAsciiHeaders()); 
-      case CLUSTER_REPORT_TYPE      : return AsString(s, gParameters.getClusterReportType());
+      case REPORT_HIERARCHICAL_CLUSTERS : return AsString(s, gParameters.getReportHierarchicalClusters());
+      case REPORT_GINI_CLUSTERS     : return AsString(s, gParameters.getReportGiniOptimizedClusters());
       case SPATIAL_MAXIMA           : s = "";
                                       for (size_t i=0; i < gParameters.getSpatialWindowStops().size(); ++i) {
                                          printString(worker, "%g", gParameters.getSpatialWindowStops()[i]);
@@ -426,7 +428,8 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case TIME_TREND_TYPE          : AsString(default_value, gParameters.getTimeTrendType()); break;
       case REPORT_RANK              : default_value = (gParameters.getReportClusterRank() ? "y" : "n"); break;
       case PRINT_ASCII_HEADERS      : default_value = (gParameters.getPrintAsciiHeaders() ? "y" : "n"); break;
-      case CLUSTER_REPORT_TYPE      : AsString(default_value, gParameters.getClusterReportType()); break;
+      case REPORT_HIERARCHICAL_CLUSTERS : default_value = (gParameters.getReportHierarchicalClusters() ? "y" : "n"); break;
+      case REPORT_GINI_CLUSTERS     : AsString(default_value, gParameters.getReportGiniOptimizedClusters()); break;
       case SPATIAL_MAXIMA           : default_value = "<blank>"; break;
       case INDEXBASED_REPORT_TYPE   : AsString(default_value, gParameters.getIndexBasedReportType()); break;
       case INDEXBASED_PVALUE_CUTOFF : AsString(default_value, gParameters.getIndexBasedPValueCutoff()); break;
@@ -799,9 +802,8 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.setTimeTrendType((TimeTrendType)iValue); break;
       case REPORT_RANK               : gParameters.setReportClusterRank(ReadBoolean(sParameter, eParameterType)); break;
       case PRINT_ASCII_HEADERS       : gParameters.setPrintAsciiHeaders(ReadBoolean(sParameter, eParameterType)); break;
-      case CLUSTER_REPORT_TYPE       : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, HIERARCHICAL, ALL_CLUSTER_TYPES);
-                                       gParameters.setClusterReportType((ClusterReportType)ReadInt(sParameter, eParameterType)); break;
-      case SPATIAL_MAXIMA            : ReadSpatialWindowStops(sParameter); break;
+      case REPORT_HIERARCHICAL_CLUSTERS : gParameters.setReportHierarchicalClusters(ReadBoolean(sParameter, eParameterType)); break;
+      case REPORT_GINI_CLUSTERS      : gParameters.setReportGiniOptimizedClusters(ReadBoolean(sParameter, eParameterType)); break;
       case INDEXBASED_REPORT_TYPE    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPTIMAL_ONLY, ALL_VALUES);
                                        gParameters.setIndexBasedReportType((IndexBasedReportType)ReadInt(sParameter, eParameterType)); break;
       case INDEXBASED_PVALUE_CUTOFF  : gParameters.setIndexBasedPValueCutoff(ReadDouble(sParameter, eParameterType)); break;

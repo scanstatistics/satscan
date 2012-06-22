@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 107;
+const int CParameters::giNumParameters 	              = 108;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -133,7 +133,8 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (gbPrintAsciiHeaders                    != rhs.gbPrintAsciiHeaders) return false;
   if (gvSpatialWindowStops                   != rhs.gvSpatialWindowStops) return false;
   if (_indexBasedPValueCutoff                != rhs._indexBasedPValueCutoff) return false;
-  if (_clusterReportType                     != rhs._clusterReportType) return false;
+  if (_reportHierarchicalClusters            != rhs._reportHierarchicalClusters) return false;
+  if (_reportGiniOptimizedClusters           != rhs._reportGiniOptimizedClusters) return false;
   if (_indexBasedReportType                  != rhs._indexBasedReportType) return false;
   if (_outputIndexCoefficients               != rhs._outputIndexCoefficients) return false;
 
@@ -320,7 +321,8 @@ void CParameters::Copy(const CParameters &rhs) {
   gbPrintAsciiHeaders                    = rhs.gbPrintAsciiHeaders;
   gvSpatialWindowStops                   = rhs.gvSpatialWindowStops; _executeSpatialWindowStops.clear();
   _indexBasedPValueCutoff                = rhs._indexBasedPValueCutoff;
-  _clusterReportType                     = rhs._clusterReportType;
+  _reportHierarchicalClusters            = rhs._reportHierarchicalClusters;
+  _reportGiniOptimizedClusters           = rhs._reportGiniOptimizedClusters;
   _indexBasedReportType                  = rhs._indexBasedReportType;
   _outputIndexCoefficients               = rhs._outputIndexCoefficients;
 }
@@ -351,7 +353,7 @@ unsigned int CParameters::GetExecuteEarlyTermThreshold() const {
 const std::vector<double> & CParameters::getExecuteSpatialWindowStops() const {
   if (_executeSpatialWindowStops.size()) return _executeSpatialWindowStops; // already calculated
   double spatialMaxInPopulationAtRisk = GetMaxSpatialSizeForType(PERCENTOFPOPULATION, GetRestrictingMaximumReportedGeoClusterSize());
-  if (getIsReportingIndexBasedClusters()) {
+  if (getReportGiniOptimizedClusters()) {
     for (std::vector<double>::const_iterator itr=gvSpatialWindowStops.begin(); itr != gvSpatialWindowStops.end(); ++itr) {
         if (*itr <= spatialMaxInPopulationAtRisk)
             _executeSpatialWindowStops.push_back(*itr);
@@ -531,18 +533,8 @@ bool CParameters::GetTerminateSimulationsEarly() const {
    return (GetPValueReportingType() == DEFAULT_PVALUE || GetPValueReportingType() == TERMINATION_PVALUE) && GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE;
 }
 
-/* return whether parameter settings indcate that index based clusters are reported */
-bool CParameters::getIsReportingHierarchicalClusters() const {
-    return !GetIsPurelyTemporalAnalysis() && (_clusterReportType == HIERARCHICAL || _clusterReportType == ALL_CLUSTER_TYPES);
-}
-
-/* return whether parameter settings indcate that index based clusters are reported */
-bool CParameters::getIsReportingIndexBasedClusters() const {
-    return (_clusterReportType == INDEX_BASED || _clusterReportType == ALL_CLUSTER_TYPES);
-}
-
 bool CParameters::getIsReportingIndexBasedCoefficents() const {
-    return getIsReportingIndexBasedClusters() && _outputIndexCoefficients;
+    return getReportGiniOptimizedClusters() && _outputIndexCoefficients;
 }
 
 /** Returns indication of Gumbel value is reported. */
@@ -632,11 +624,6 @@ void CParameters::SetCaseFileName(const char * sCaseFileName, bool bCorrectForRe
 
 void CParameters::checkEnumeration(int e, int eLow, int eHigh) const {
   if (e < eLow || e > eHigh) throw prg_error("Enumeration %d out of range [%d,%d].", "checkEnumeration()", e, eLow, eHigh);
-}
-
-void CParameters::setClusterReportType(ClusterReportType e) {
-  checkEnumeration(e, HIERARCHICAL, ALL_CLUSTER_TYPES);
-  _clusterReportType = e;
 }
 
 void CParameters::setIndexBasedReportType(IndexBasedReportType e) {
@@ -803,7 +790,8 @@ void CParameters::SetAsDefaulted() {
   gvSpatialWindowStops.clear();
   gvSpatialWindowStops += 1,2,3,4,5,6,8,10,12,15,20,25,30,40,50;
   _indexBasedPValueCutoff = 0.05;
-  _clusterReportType = HIERARCHICAL;
+  _reportHierarchicalClusters = true;
+  _reportGiniOptimizedClusters = true;
   _indexBasedReportType = OPTIMAL_ONLY;
   _outputIndexCoefficients = false;
 }

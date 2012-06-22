@@ -477,8 +477,12 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.getIndexBasedPValueCutoff());
   //jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "setClusterReportType", "(I)V");
-  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getClusterReportType());
+  mid = _getMethodId_Checked(Env, clazz, "setReportHierarchicalClusters", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getReportHierarchicalClusters());
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "setReportGiniOptimizedClusters", "(Z)V");
+  Env.CallVoidMethod(jParameters, mid, (jint)Parameters.getReportGiniOptimizedClusters());
   jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "setIndexBasedReportType", "(I)V");
@@ -946,7 +950,13 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   //Parameters.setIndexBasedPValueCutoff(Env.CallDoubleMethod(jParameters, mid));
   //jni_error::_detectError(Env);
 
-  Parameters.setClusterReportType((ClusterReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getClusterReportType", "Lorg/satscan/app/Parameters$ClusterReportType;"));
+  mid = _getMethodId_Checked(Env, clazz, "getReportHierarchicalClusters", "()Z");
+  Parameters.setReportHierarchicalClusters(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
+
+  mid = _getMethodId_Checked(Env, clazz, "getReportGiniOptimizedClusters", "()Z");
+  Parameters.setReportGiniOptimizedClusters(Env.CallBooleanMethod(jParameters, mid));
+  jni_error::_detectError(Env);
 
   Parameters.setIndexBasedReportType((IndexBasedReportType)getEnumTypeOrdinalIndex(Env, jParameters, "getIndexBasedReportType", "Lorg/satscan/app/Parameters$IndexBasedReportType;"));
 

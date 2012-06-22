@@ -161,7 +161,7 @@ void CSaTScanData::AllocateSortedArray() {
         gpSortedIntHandler->FreeThirdDimension();
     }
     //allocates two-dimensional array that will track the number of neighbors for each shape/grid point combination.
-    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() || gParameters.getIsReportingIndexBasedClusters()) {
+    if (gParameters.GetRestrictingMaximumReportedGeoClusterSize() || gParameters.getReportGiniOptimizedClusters()) {
       if (!gpReportedNeighborCountHandler)
         gpReportedNeighborCountHandler = new TwoDimensionArrayHandler<tract_t>(gParameters.GetNumTotalEllipses() + 1, m_nGridTracts);
       gpReportedNeighborCountHandler->Set(0);

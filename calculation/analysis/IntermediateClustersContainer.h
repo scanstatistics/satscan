@@ -46,7 +46,7 @@ class CClusterSet {
         return _clusterSet.size();
     }
     void resetShape(const CSaTScanData& dataHub, int shapeOffset) {
-        if (dataHub.GetParameters().getIsReportingIndexBasedClusters() || dataHub.GetParameters().GetRestrictingMaximumReportedGeoClusterSize()) {
+        if (dataHub.GetParameters().getReportGiniOptimizedClusters() || dataHub.GetParameters().GetRestrictingMaximumReportedGeoClusterSize()) {
             for (size_t t=0; t < _clusterSet.size(); ++t) {
                 CClusterObject& clusterObj = _clusterSet[t];
                 clusterObj.resetMaxNeighbors(dataHub.GetReportedNeighborMaxsCountArray()[shapeOffset][clusterObj.getCluster().GetCentroidIndex()][t]);

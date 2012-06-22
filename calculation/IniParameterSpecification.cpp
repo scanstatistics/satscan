@@ -378,7 +378,8 @@ void IniParameterSpecification::Build_9_0_x_ParameterList() {
 void IniParameterSpecification::Build_9_2_x_ParameterList() {
   Build_9_0_x_ParameterList();
 
-  gvParameterInfo.push_back(std::make_pair(Output, (const char*)"ClustersReportingType"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportHierarchicalClusters"));
+  gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"ReportGiniClusters"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"SpatialMaxima"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClusterReportingType"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClustersPValueCutOff"));

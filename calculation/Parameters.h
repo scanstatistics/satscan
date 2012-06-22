@@ -33,7 +33,7 @@ enum ParameterType                 {ANALYSISTYPE=1, SCANAREAS, CASEFILE, POPFILE
                                     LOCATION_NEIGHBORS_FILE, USE_LOCATION_NEIGHBORS_FILE, RANDOMLY_GENERATE_SEED,
                                     MULTIPLE_COORDINATES_TYPE, META_LOCATIONS_FILE, USE_META_LOCATIONS_FILE, OBSERVABLE_REGIONS, 
                                     EARLY_TERM_THRESHOLD, PVALUE_REPORT_TYPE, REPORT_GUMBEL, TIME_TREND_TYPE, REPORT_RANK, PRINT_ASCII_HEADERS,
-                                    CLUSTER_REPORT_TYPE, SPATIAL_MAXIMA, INDEXBASED_REPORT_TYPE, INDEXBASED_PVALUE_CUTOFF, OUTPUT_INDEX_COEFFICENTS};
+                                    REPORT_HIERARCHICAL_CLUSTERS, REPORT_GINI_CLUSTERS, SPATIAL_MAXIMA, INDEXBASED_REPORT_TYPE, INDEXBASED_PVALUE_CUTOFF, OUTPUT_INDEX_COEFFICENTS};
 /** analysis and cluster types */
 enum AnalysisType                  {PURELYSPATIAL=1, PURELYTEMPORAL, SPACETIME,  PROSPECTIVESPACETIME,
                                     SPATIALVARTEMPTREND, PROSPECTIVEPURELYTEMPORAL};
@@ -208,7 +208,8 @@ class CParameters {
     bool                                gbPrintAsciiHeaders;                    /** print headers in ascii output files */
     std::vector<double>                 gvSpatialWindowStops;                   /** spatial window stops */
     double                              _indexBasedPValueCutoff;                /* P-Value used to limit clusters in optimal spatial cluster coefficients calcuation */
-    ClusterReportType                   _clusterReportType;                     /* cluster reporting type */
+    bool                                _reportHierarchicalClusters;
+    bool                                _reportGiniOptimizedClusters;
     IndexBasedReportType                _indexBasedReportType;                  /* type for the index based cluster reporting */
     bool                                _outputIndexCoefficients;               /* output index based coefficents */
     mutable std::vector<double>        _executeSpatialWindowStops;
@@ -242,7 +243,8 @@ class CParameters {
     unsigned int                        GetExecuteEarlyTermThreshold() const;
     const std::string                 & GetCaseFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetCaseFileNames() const {return gvCaseFilenames;}
-    ClusterReportType                   getClusterReportType() const {return _clusterReportType;}
+    bool                                getReportHierarchicalClusters() const {return _reportHierarchicalClusters;}
+    bool                                getReportGiniOptimizedClusters() const {return _reportGiniOptimizedClusters;}
     const std::string                 & GetControlFileName(size_t iSetIndex=1) const;
     const std::vector<std::string>    & GetControlFileNames() const {return gvControlFilenames;}
     CoordinatesDataCheckingType         GetCoordinatesDataCheckingType() const {return geCoordinatesDataCheckingType;}
@@ -352,8 +354,6 @@ class CParameters {
     TimeTrendAdjustmentType             GetTimeTrendAdjustmentType() const {return geTimeTrendAdjustType;}
     double                              GetTimeTrendConvergence() const {return gdTimeTrendConverge;}
 	TimeTrendType                       getTimeTrendType() const {return geTimeTrendType;}
-    bool                                getIsReportingHierarchicalClusters() const;
-    bool                                getIsReportingIndexBasedClusters() const;
     bool                                getIsWeightedNormal() const {return gbWeightedNormal;}
     bool                                getIsWeightedNormalCovariates() const {return gbWeightedNormalCovariates;}    
     bool                                getIsReportingIndexBasedCoefficents() const;
@@ -371,6 +371,8 @@ class CParameters {
     void                                SetExecutionType(ExecutionType eExecutionType);
     void                                SetCaseFileName(const char * sCaseFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                setClusterReportType(ClusterReportType e);
+    void                                setReportHierarchicalClusters(bool b) {_reportHierarchicalClusters = b;}
+    void                                setReportGiniOptimizedClusters(bool b) {_reportGiniOptimizedClusters = b;}
     void                                SetControlFileName(const char * sControlFileName, bool bCorrectForRelativePath=false, size_t iSetIndex=1);
     void                                SetCoordinatesDataCheckingType(CoordinatesDataCheckingType eCoordinatesDataCheckingType);
     void                                SetCoordinatesFileName(const char * sCoordinatesFileName, bool bCorrectForRelativePath=false);

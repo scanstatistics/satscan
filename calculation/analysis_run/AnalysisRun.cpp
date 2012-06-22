@@ -848,7 +848,7 @@ void AnalysisRunner::PrintFindClusterHeading() {
 
 /** Print GINI coefficients */
 void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
-  if (!(gParameters.getIsReportingIndexBasedClusters() && gParameters.getOutputIndexBasedCoefficents())) return;
+  if (!(gParameters.getReportGiniOptimizedClusters() && gParameters.getOutputIndexBasedCoefficents())) return;
   AsciiPrintFormat printFormat;
   std::string buffer;
   printFormat.SetMarginsAsClusterSection(0);
@@ -1140,13 +1140,13 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 void AnalysisRunner::rankClusterCollections() {
     // If reporting hierarchical clusters, clone the collection of clusters associated with the greatest maxima.
     // We need to maintain a copy since geographical overlap might be different that index based ranking (no overlap).
-    if (gParameters.getIsReportingHierarchicalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
+    if (gParameters.getReportHierarchicalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
         _reportClusters = gTopClustersContainers.back();
         _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection);
         // don't need to add clusters to cluster ranker if not performing simulations
         if (gParameters.GetNumReplicationsRequested()) _clusterRanker.add(_reportClusters);
     }
-    if (gParameters.getIsReportingIndexBasedClusters()) {
+    if (gParameters.getReportGiniOptimizedClusters()) {
         // Index based clusters always use 'No Geographical Overlap'.
         for (MLC_Collections_t::iterator itr=gTopClustersContainers.begin(); itr != gTopClustersContainers.end(); ++itr) {
             itr->rankClusters(*gpDataHub, NOGEOOVERLAP, gPrintDirection);
@@ -1279,7 +1279,7 @@ void AnalysisRunner::reportClusters() {
     macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
     try {
         gPrintDirection.Printf("Printing analysis results to file...\n", BasePrint::P_STDOUT);
-        if (gParameters.getIsReportingIndexBasedClusters()) {
+        if (gParameters.getReportGiniOptimizedClusters()) {
             // cluster reporting for index based cluster collections can either be only the optimal collection or all collections
             if (gParameters.getIndexBasedReportType() == OPTIMAL_ONLY) {
                 // iterate through cluster collections, finding the collection with the greatest GINI coeffiecent

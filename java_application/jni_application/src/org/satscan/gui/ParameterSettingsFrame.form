@@ -63,7 +63,7 @@
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="_tabbedPane" alignment="0" pref="493" max="32767" attributes="0"/>
+          <Component id="_tabbedPane" alignment="0" pref="474" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -86,9 +86,9 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="1" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="_caseInputPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="_advancedInputButton" alignment="1" min="-2" max="-2" attributes="0"/>
                           <Component id="_geographicalInputPanel" alignment="0" max="32767" attributes="0"/>
@@ -107,7 +107,7 @@
                       <Component id="_populationInputPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalInputPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="58" max="32767" attributes="0"/>
+                      <EmptySpace pref="26" max="32767" attributes="0"/>
                       <Component id="_advancedInputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -195,8 +195,8 @@
                               <Component id="_timePrecisionGroup" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_studyPeriodGroup" min="-2" pref="64" max="-2" attributes="0"/>
-                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="_studyPeriodGroup" pref="73" max="32767" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -206,6 +206,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Case Files:&quot;,&quot;case_file_htm&quot;)"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_caseFileTextField">
                 </Component>
@@ -231,30 +234,29 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Time Precision">
-                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                            <EtchetBorder/>
-                          </Border>
-                        </TitledBorder>
+                        <TitledBorder title="Time Precision"/>
                       </Border>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_timePrecisionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timePrecisionGroup, &quot;time_precision_htm&quot;));"/>
+                  </AuxValues>
 
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="_timePrecisionNone" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                                       <Component id="_timePrecisionYear" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <Component id="_timePrecisionGeneric" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="_timePrecisionMonth" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Component id="_timePrecisionDay" min="-2" max="-2" attributes="0"/>
                                   </Group>
                               </Group>
@@ -269,14 +271,14 @@
                                   <Component id="_timePrecisionNone" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="_timePrecisionYear" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="3" attributes="0">
                                   <Component id="_timePrecisionMonth" alignment="3" min="-2" max="-2" attributes="0"/>
                                   <Component id="_timePrecisionDay" alignment="3" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="_timePrecisionGeneric" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="11" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -369,21 +371,20 @@
                   </SubComponents>
                 </Container>
                 <Container class="javax.swing.JPanel" name="_studyPeriodGroup">
-                  <Properties>
-                    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                      <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Study Period">
-                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                            <EtchetBorder/>
-                          </Border>
-                        </TitledBorder>
-                      </Border>
-                    </Property>
-                  </Properties>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignCardLayout"/>
                   <SubComponents>
                     <Container class="javax.swing.JPanel" name="_studyPeriodComplete">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                            <TitledBorder title="Study Period"/>
+                          </Border>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodComplete.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodComplete, &quot;study_period_htm&quot;));"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
                           <CardConstraints cardName="study_complete"/>
@@ -454,7 +455,7 @@
                                       <Component id="_startDateLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_studyPeriodEndDateDayTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace pref="13" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -575,6 +576,16 @@
                       </SubComponents>
                     </Container>
                     <Container class="javax.swing.JPanel" name="_studyPeriodGeneric">
+                      <Properties>
+                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+                          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                            <TitledBorder title="Study Period"/>
+                          </Border>
+                        </Property>
+                      </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodGeneric.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodGeneric, &quot;study_period_htm&quot;));"/>
+                      </AuxValues>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignCardLayout" value="org.netbeans.modules.form.compat2.layouts.DesignCardLayout$CardConstraintsDescription">
                           <CardConstraints cardName="study_generic"/>
@@ -617,7 +628,7 @@
                                       <Component id="_studyPeriodEndDateGenericTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="_startDateLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <EmptySpace max="32767" attributes="0"/>
+                                  <EmptySpace pref="13" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -675,6 +686,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Control Files:&quot;,&quot;control_file_htm&quot;)"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_controlFileTextField">
                 </Component>
@@ -751,6 +765,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Population File:&quot;,&quot;population_file_name_htm&quot;)"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_populationFileTextField">
                 </Component>
@@ -851,6 +868,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Coordinates File:" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Coordinates File:&quot;,&quot;coordinates_file_name_htm&quot;)"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_coordiantesFileTextField">
                 </Component>
@@ -876,23 +896,22 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Coordinates">
-                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                            <EtchetBorder/>
-                          </Border>
-                        </TitledBorder>
+                        <TitledBorder title="Coordinates"/>
                       </Border>
                     </Property>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_coordinateTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_coordinateTypeGroup, &quot;coordinates_file_htm&quot;));"/>
+                  </AuxValues>
 
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="_cartesianRadioButton" min="-2" max="-2" attributes="0"/>
-                                  <Component id="_latLongRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_latLongRadioButton" min="-2" max="-2" attributes="0"/>
+                                  <Component id="_cartesianRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace pref="59" max="32767" attributes="0"/>
                           </Group>
@@ -902,9 +921,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="_cartesianRadioButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="14" max="32767" attributes="0"/>
+                              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                               <Component id="_latLongRadioButton" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
+                              <EmptySpace pref="22" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                     </DimensionLayout>
@@ -949,6 +968,9 @@
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Grid File:" noResource="true"/>
                   </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Grid File:&quot;,&quot;grid_file_name_htm&quot;)"/>
+                  </AuxValues>
                 </Component>
                 <Component class="javax.swing.JTextField" name="_gridFileTextField">
                 </Component>
@@ -1019,16 +1041,16 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Group type="102" alignment="0" attributes="1">
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="_scanAreasGroup" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="_timeAggregationGroup" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="_probabilityModelGroup" alignment="0" max="32767" attributes="1"/>
                           <Component id="_analysisTypeGroup" alignment="0" max="32767" attributes="1"/>
                       </Group>
-                      <EmptySpace pref="153" max="32767" attributes="0"/>
+                      <EmptySpace pref="142" max="32767" attributes="0"/>
                       <Component id="_advancedAnalysisButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1040,26 +1062,29 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Type of Analysis">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
+                    <TitledBorder title="Type of Analysis"/>
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this._analysisTypeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_analysisTypeGroup, &quot;type_of_analysis_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
+                                  <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
+                                  <Component id="_spatialVariationRadioLabel" pref="121" max="32767" attributes="0"/>
+                              </Group>
+                              <Group type="102" alignment="0" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Group type="102" alignment="0" attributes="0">
-                                          <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="0" attributes="0">
                                               <Component id="_retrospectivePurelySpatialRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                               <Component id="_retrospectivePurelyTemporalRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1076,10 +1101,7 @@
                                           </Group>
                                       </Group>
                                   </Group>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                                  <Component id="_spatialVariationRadioLabel" max="32767" attributes="0"/>
+                                  <EmptySpace min="-2" pref="31" max="-2" attributes="0"/>
                               </Group>
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -1089,10 +1111,10 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
+                          <Component id="jLabel1" min="-2" pref="14" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="_retrospectivePurelySpatialRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
                           <Component id="_retrospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_retrospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
@@ -1106,7 +1128,7 @@
                           <Component id="_prospectivePurelyTemporalRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_prospectiveSpaceTimeRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="36" max="32767" attributes="0"/>
+                          <EmptySpace pref="31" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1233,24 +1255,23 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Probability Model">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
+                    <TitledBorder title="Probability Model"/>
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_probabilityModelGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_probabilityModelGroup, &quot;probability_model_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="jLabel5" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace min="10" pref="10" max="10" attributes="0"/>
+                                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Component id="_bernoulliModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
                                       <Component id="_poissonModelRadioButton" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -1276,10 +1297,10 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel5" min="-2" pref="14" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="_poissonModelRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="_bernoulliModelRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="_spaceTimePermutationModelRadioButton" min="-2" max="-2" attributes="0"/>
@@ -1298,7 +1319,7 @@
                               <Component id="_homogeneouspoissonModelRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                               <Component id="_observableRegionsButton" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="33" max="32767" attributes="0"/>
+                          <EmptySpace pref="24" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1482,14 +1503,13 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Scan For Areas With:">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
+                    <TitledBorder title="Scan For Areas With:"/>
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_scanAreasGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_scanAreasGroup, &quot;scan_for_high_or_low_rates_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1497,9 +1517,9 @@
                       <Group type="102" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_highRatesRadioButton" alignment="0" pref="153" max="32767" attributes="0"/>
-                              <Component id="_lowRatesRadioButton" alignment="0" pref="153" max="32767" attributes="0"/>
-                              <Component id="_highOrLowRatesRadioButton" alignment="0" pref="153" max="32767" attributes="0"/>
+                              <Component id="_highRatesRadioButton" alignment="0" pref="123" max="32767" attributes="0"/>
+                              <Component id="_lowRatesRadioButton" alignment="1" pref="123" max="32767" attributes="0"/>
+                              <Component id="_highOrLowRatesRadioButton" alignment="0" pref="123" max="32767" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                       </Group>
@@ -1508,12 +1528,12 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="_highRatesRadioButton" min="-2" max="-2" attributes="0"/>
+                          <Component id="_highRatesRadioButton" min="-2" pref="15" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_lowRatesRadioButton" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="_highOrLowRatesRadioButton" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="30" max="32767" attributes="0"/>
+                          <EmptySpace pref="22" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1565,14 +1585,13 @@
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Time Aggregation">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
+                    <TitledBorder title="Time Aggregation"/>
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="this._timeAggregationGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_timeAggregationGroup, &quot;time_aggregation_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1597,7 +1616,7 @@
                                   <Component id="_aggregrationUnitsLabel" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="41" max="32767" attributes="0"/>
+                          <EmptySpace pref="11" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1605,7 +1624,7 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_timeAggregationUnitsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_timeAggregationUnitsLabel" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
                               <Component id="_timeAggregationYearRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
@@ -1725,7 +1744,6 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_clustersReportedGroup" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="_resultsFileLabel" min="-2" max="-2" attributes="0"/>
@@ -1734,8 +1752,8 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="_resultsFileBrowseButton" min="-2" pref="25" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="_additionalOutputFilesGroup" alignment="1" max="32767" attributes="0"/>
                           <Component id="_advancedFeaturesOutputButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="__additionalOutputFilesGroup" alignment="1" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1751,11 +1769,9 @@
                           <Component id="_resultsFileBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="_resultsFileTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="__additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="159" max="32767" attributes="0"/>
+                      <Component id="_additionalOutputFilesGroup" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="207" max="32767" attributes="0"/>
                       <Component id="_advancedFeaturesOutputButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -1767,6 +1783,9 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="Results File:" noResource="true"/>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Results File:&quot;,&quot;results_file_htm&quot;)"/>
+              </AuxValues>
             </Component>
             <Component class="javax.swing.JTextField" name="_resultsFileTextField">
             </Component>
@@ -1778,7 +1797,7 @@
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);&#xa;        fc.setDialogTitle(&quot;Select Results File&quot;);&#xa;        fc.addChoosableFileFilter(new InputFileFilter(&quot;txt&quot;,&quot;Results Files (*.txt)&quot;));&#xa;        if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)&#xa;            SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();&#xa;            _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
-            <Container class="javax.swing.JPanel" name="__additionalOutputFilesGroup">
+            <Container class="javax.swing.JPanel" name="_additionalOutputFilesGroup">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
@@ -1790,6 +1809,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, &quot;create_additional_output_files_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2065,89 +2087,6 @@
                 <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_advancedFeaturesOutputButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        getAdvancedParameterInternalFrame().setVisible(true, AdvancedParameterSettingsFrame.FocusedTabSet.OUTPUT);&#xa;    }&#xa;});&#xa;"/>
               </AuxValues>
             </Component>
-            <Container class="javax.swing.JPanel" name="_clustersReportedGroup">
-              <Properties>
-                <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                  <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Clusters Reported">
-                      <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
-                        <EtchetBorder/>
-                      </Border>
-                    </TitledBorder>
-                  </Border>
-                </Property>
-              </Properties>
-              <AuxValues>
-                <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
-              </AuxValues>
-
-              <Layout>
-                <DimensionLayout dim="0">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="_hierarchicalClusters" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_indexBasedClusterCollection" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="_allClustersReported" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="124" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-                <DimensionLayout dim="1">
-                  <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="3" attributes="0">
-                              <Component id="_hierarchicalClusters" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_indexBasedClusterCollection" alignment="3" min="-2" max="-2" attributes="0"/>
-                              <Component id="_allClustersReported" alignment="3" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
-                </DimensionLayout>
-              </Layout>
-              <SubComponents>
-                <Component class="javax.swing.JRadioButton" name="_hierarchicalClusters">
-                  <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_clustersReportedButtonGroup"/>
-                    </Property>
-                    <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Most Likely Clusters, Hierarchically"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_hierarchicalClusters.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
-                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JRadioButton" name="_indexBasedClusterCollection">
-                  <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_clustersReportedButtonGroup"/>
-                    </Property>
-                    <Property name="text" type="java.lang.String" value="Gini Index Based Collection"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_indexBasedClusterCollection.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
-                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
-                  </AuxValues>
-                </Component>
-                <Component class="javax.swing.JRadioButton" name="_allClustersReported">
-                  <Properties>
-                    <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                      <ComponentRef name="_clustersReportedButtonGroup"/>
-                    </Property>
-                    <Property name="text" type="java.lang.String" value="Both"/>
-                  </Properties>
-                  <AuxValues>
-                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_allClustersReported.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        if (e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {&#xa;            enableSettingsForAnalysisModelCombination();&#xa;            getAdvancedParameterInternalFrame().EnableSettingsForAnalysisModelCombination();&#xa;        }&#xa;    }&#xa;});"/>
-                    <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
-                  </AuxValues>
-                </Component>
-              </SubComponents>
-            </Container>
           </SubComponents>
         </Container>
       </SubComponents>

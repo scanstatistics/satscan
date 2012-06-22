@@ -213,6 +213,8 @@ void IniParameterFileAccess::WriteAnalysisSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WriteClustersReportedSettings(IniFile& WriteFile) {
   std::string s;
   try {
+    WriteIniParameter(WriteFile, REPORT_HIERARCHICAL_CLUSTERS, GetParameterString(REPORT_HIERARCHICAL_CLUSTERS, s).c_str(), GetParameterComment(REPORT_HIERARCHICAL_CLUSTERS));
+    WriteIniParameter(WriteFile, REPORT_GINI_CLUSTERS, GetParameterString(REPORT_GINI_CLUSTERS, s).c_str(), GetParameterComment(REPORT_GINI_CLUSTERS));
     WriteIniParameter(WriteFile, CRITERIA_SECOND_CLUSTERS, GetParameterString(CRITERIA_SECOND_CLUSTERS, s).c_str(), GetParameterComment(CRITERIA_SECOND_CLUSTERS));
     WriteIniParameter(WriteFile, SPATIAL_MAXIMA, GetParameterString(SPATIAL_MAXIMA, s).c_str(), GetParameterComment(SPATIAL_MAXIMA));
     WriteIniParameter(WriteFile, INDEXBASED_REPORT_TYPE, GetParameterString(INDEXBASED_REPORT_TYPE, s).c_str(), GetParameterComment(INDEXBASED_REPORT_TYPE));
@@ -379,7 +381,6 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
   std::string s;
   try {
     WriteIniParameter(WriteFile, OUTPUTFILE, GetParameterString(OUTPUTFILE, s).c_str(), GetParameterComment(OUTPUTFILE));
-    WriteIniParameter(WriteFile, CLUSTER_REPORT_TYPE, GetParameterString(CLUSTER_REPORT_TYPE, s).c_str(), GetParameterComment(CLUSTER_REPORT_TYPE));
     WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_ASCII, GetParameterString(OUTPUT_SIM_LLR_ASCII, s).c_str(), GetParameterComment(OUTPUT_SIM_LLR_ASCII));
     WriteIniParameter(WriteFile, OUTPUT_SIM_LLR_DBASE, GetParameterString(OUTPUT_SIM_LLR_DBASE, s).c_str(), GetParameterComment(OUTPUT_SIM_LLR_DBASE));
     WriteIniParameter(WriteFile, OUTPUT_RR_ASCII, GetParameterString(OUTPUT_RR_ASCII, s).c_str(), GetParameterComment(OUTPUT_RR_ASCII));

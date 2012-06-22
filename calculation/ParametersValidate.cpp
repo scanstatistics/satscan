@@ -681,8 +681,18 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
 
 bool ParametersValidate::ValidateClustersReportedParameters(BasePrint & PrintDirection) const {
   bool  bReturn=true;
+
+  if (gParameters.GetIsPurelyTemporalAnalysis()) return true;
+
+  // One of the criterian for reporting clusters must be selected.
+  if (!gParameters.getReportHierarchicalClusters() && !gParameters.getReportGiniOptimizedClusters()) {
+    bReturn = false;
+    PrintDirection.Printf("Invalid Parameter Setting:\nFor any spatial analysis, a cluster reporting criterian must be selected (hierarchael or Gini optimized cluster size).\n",
+                           BasePrint::P_PARAMERROR);
+  }
+
   //verify the index based cluster collection option with other settings.
-  if (gParameters.getIsReportingIndexBasedClusters()) {
+  if (gParameters.getReportGiniOptimizedClusters()) {
       if (gParameters.GetProbabilityModelType() == ORDINAL || gParameters.GetProbabilityModelType() == CATEGORICAL) {
          bReturn = false;
          PrintDirection.Printf("Invalid Parameter Setting:\nThe %s model is not implemented for Gini index based collection reporting.\n",

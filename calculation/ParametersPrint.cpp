@@ -399,7 +399,8 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   if (gParameters.GetIsPurelyTemporalAnalysis()) return;
 
   try {
-    if (gParameters.getIsReportingHierarchicalClusters()) {
+    settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
+    if (gParameters.getReportHierarchicalClusters()) {
         buffer = "Criteria for Reporting Secondary Clusters";
         switch (gParameters.GetCriteriaSecondClustersType()) {
             case NOGEOOVERLAP          :
@@ -417,7 +418,8 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
             default : throw prg_error("Unknown secondary clusters type '%d'.\n", "PrintClustersReportedParameters()", gParameters.GetCriteriaSecondClustersType());
         }
     }
-    if (gParameters.getIsReportingIndexBasedClusters()) {
+    settings.push_back(std::make_pair("Report Gini Optimized Clusters", (gParameters.getReportGiniOptimizedClusters() ? "Yes" : "No")));
+    if (gParameters.getReportGiniOptimizedClusters()) {
         buffer = "Gini Index Based Collection Reporting";
         switch (gParameters.getIndexBasedReportType()) {
             case OPTIMAL_ONLY : settings.push_back(std::make_pair(buffer,"Optimal Only")); break;
@@ -696,13 +698,6 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 
   try {
     settings.push_back(std::make_pair("Results File",gParameters.GetOutputFileName()));
-    buffer = "Cluster Reporting";
-    switch (gParameters.getClusterReportType()) {
-      case HIERARCHICAL : settings.push_back(std::make_pair(buffer,"Hierarchical")); break;
-      case INDEX_BASED    : settings.push_back(std::make_pair(buffer,"Gini Index Based Collection")); break;
-      case ALL_CLUSTER_TYPES    : settings.push_back(std::make_pair(buffer,"Hierarchical and Gini Index Based Collection")); break;
-      default : throw prg_error("Unknown cluster reporting type '%d'.\n","PrintOutputParameters()", gParameters.getClusterReportType());
-    }
     if (gParameters.GetOutputClusterLevelAscii()) {
       AdditionalOutputFile.setExtension(".col.txt");
       settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));

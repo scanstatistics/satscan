@@ -82,7 +82,7 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="1" attributes="0">
-              <Component id="jTabbedPane1" pref="471" max="32767" attributes="0"/>
+              <Component id="jTabbedPane1" pref="503" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="_setDefaultButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -124,7 +124,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalDataSetsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="164" max="32767" attributes="0"/>
+                      <EmptySpace pref="196" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -142,6 +142,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_additionalDataSetsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalDataSetsGroup, &quot;multiple_data_sets_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -315,6 +318,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Case File:" noResource="true"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Case File:&quot;,&quot;case_file_htm&quot;)"/>
+                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_caseFileTextField">
                       <AuxValues>
@@ -343,6 +349,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Control File:" noResource="true"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Control File:&quot;,&quot;control_file_htm&quot;)"/>
+                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_controlFileTextField">
                       <AuxValues>
@@ -371,6 +380,9 @@
                       <Properties>
                         <Property name="text" type="java.lang.String" value="Population File:" noResource="true"/>
                       </Properties>
+                      <AuxValues>
+                        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new HelpLinkedLabel(&quot;Population File:&quot;,&quot;population_file_name_htm&quot;)"/>
+                      </AuxValues>
                     </Component>
                     <Component class="javax.swing.JTextField" name="_populationFileTextField">
                       <AuxValues>
@@ -508,7 +520,7 @@
                       <Component id="_studyPeriodCheckGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_geographicalCoordinatesCheckGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="220" max="32767" attributes="0"/>
+                      <EmptySpace pref="252" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -526,6 +538,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_studyPeriodCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_studyPeriodCheckGroup, &quot;data_checking_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -600,6 +615,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_geographicalCoordinatesCheckGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalCoordinatesCheckGroup, &quot;data_checking_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -706,7 +724,7 @@
                       <Component id="_specialNeighborFilesGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_multipleSetsSpatialCoordinatesGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="155" max="32767" attributes="0"/>
+                      <EmptySpace pref="187" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -724,6 +742,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_specialNeighborFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_specialNeighborFilesGroup, &quot;non-euclidean_neighbors_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -847,6 +868,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_multipleSetsSpatialCoordinatesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_multipleSetsSpatialCoordinatesGroup, &quot;non-euclidean_neighbors_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -967,7 +991,7 @@
                       <Component id="_spatialWindowShapeGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_performIsotonicScanCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="121" max="32767" attributes="0"/>
+                      <EmptySpace pref="153" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -985,6 +1009,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialOptionsGroup, &quot;maximum_spatial_cluster_size_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1189,6 +1216,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialWindowShapeGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialWindowShapeGroup, &quot;elliptic_scanning_window_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1327,7 +1357,7 @@
                       <Component id="_includePureSpacClustCheckBox" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_flexibleTemporalWindowDefinitionGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="148" max="32767" attributes="0"/>
+                      <EmptySpace pref="180" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1345,6 +1375,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalOptionsGroup, &quot;maximum_temporal_cluster_size_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1481,6 +1514,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_flexibleTemporalWindowDefinitionGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_flexibleTemporalWindowDefinitionGroup, &quot;flexible_temporal_window_definition_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -1890,7 +1926,7 @@
                       <Component id="_spatialAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_knownAdjustmentsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="72" max="32767" attributes="0"/>
+                      <EmptySpace pref="104" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -1908,6 +1944,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_temporalTrendAdjGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_temporalTrendAdjGroup, &quot;temporal_trend_adjustment_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2044,6 +2083,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_spatialAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_spatialAdjustmentsGroup, &quot;spatial_adjustment_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2118,6 +2160,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_knownAdjustmentsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_knownAdjustmentsGroup, &quot;adjustment_with_known_relative_risks_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2244,7 +2289,7 @@
                       <Component id="_prospectiveSurveillanceGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_iterativeScanGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="67" max="32767" attributes="0"/>
+                      <EmptySpace pref="125" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -2262,6 +2307,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_pValueOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_pValueOptionsGroup, &quot;inference_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2278,7 +2326,7 @@
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
                                   <Component id="_radioGumbelPValues" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="129" max="32767" attributes="0"/>
+                                  <EmptySpace pref="141" max="32767" attributes="0"/>
                                   <Component id="_checkReportGumbel" min="-2" pref="281" max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -2380,6 +2428,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_prospectiveSurveillanceGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_prospectiveSurveillanceGroup, &quot;adjust_for_earlier_analyses_in_prospective_surveillance_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2601,6 +2652,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_iterativeScanGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_iterativeScanGroup, &quot;iterative_scan_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2697,6 +2751,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_monteCarloGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_monteCarloGroup, &quot;inference_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -2757,7 +2814,7 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="_criteriaSecClustersGroup" alignment="0" max="32767" attributes="0"/>
+                          <Component id="_clustersReportedGroup" alignment="1" max="32767" attributes="0"/>
                           <Component id="_reportedSpatialOptionsGroup" alignment="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -2768,20 +2825,20 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="_criteriaSecClustersGroup" min="-2" max="-2" attributes="0"/>
+                      <Component id="_clustersReportedGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_reportedSpatialOptionsGroup" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="151" max="32767" attributes="0"/>
+                      <EmptySpace pref="132" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Container class="javax.swing.JPanel" name="_criteriaSecClustersGroup">
+            <Container class="javax.swing.JPanel" name="_clustersReportedGroup">
               <Properties>
                 <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                   <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                    <TitledBorder title="Criteria for Reporting Secondary Clusters">
+                    <TitledBorder title="Criteria for Reporting Clusters">
                       <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
                         <EtchetBorder/>
                       </Border>
@@ -2789,43 +2846,48 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_clustersReportedGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_clustersReportedGroup, &quot;clusters_reported_tab_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="1" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="_checkboxReportIndexCoefficients" alignment="0" pref="535" max="32767" attributes="0"/>
-                              <Group type="102" alignment="1" attributes="0">
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="_indexBasedCriteriaLabel" max="32767" attributes="1"/>
-                                      <Component id="_hierarchicalLabel" alignment="0" pref="180" max="32767" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" attributes="0">
-                                      <Component id="_indexBasedClusterCriteria" pref="345" max="32767" attributes="1"/>
-                                      <Component id="_hierarchicalSecondaryClusters" alignment="0" pref="345" max="32767" attributes="1"/>
-                                  </Group>
-                              </Group>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="_mostLikelyClustersHierarchically" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="_giniOptimizedClusters" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="30" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="_checkboxReportIndexCoefficients" alignment="0" max="32767" attributes="1"/>
+                              <Component id="_indexBasedCriteriaLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                              <Component id="_hierarchicalSecondaryClusters" alignment="0" pref="248" max="32767" attributes="1"/>
+                              <Component id="_hierarchicalLabel" alignment="0" min="-2" max="-2" attributes="1"/>
+                              <Component id="_indexBasedClusterCriteria" alignment="0" max="32767" attributes="1"/>
+                          </Group>
+                          <EmptySpace pref="82" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_hierarchicalSecondaryClusters" min="-2" max="-2" attributes="0"/>
-                              <Component id="_hierarchicalLabel" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="_indexBasedClusterCriteria" min="-2" max="-2" attributes="0"/>
-                              <Component id="_indexBasedCriteriaLabel" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_mostLikelyClustersHierarchically" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_hierarchicalLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                          <Component id="_hierarchicalSecondaryClusters" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="_giniOptimizedClusters" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="_indexBasedCriteriaLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
+                          <Component id="_indexBasedClusterCriteria" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
                           <Component id="_checkboxReportIndexCoefficients" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="32767" attributes="0"/>
                       </Group>
@@ -2840,7 +2902,7 @@
                 </Component>
                 <Component class="javax.swing.JLabel" name="_hierarchicalLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="Most Likely Clusters, Hierarchically"/>
+                    <Property name="text" type="java.lang.String" value="Criteria for Reporting Secondary Clusters"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="_indexBasedCriteriaLabel">
@@ -2861,6 +2923,22 @@
                     <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_checkboxReportIndexCoefficients.addItemListener(new java.awt.event.ItemListener() {&#xd;&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xd;&#xa;        enableSetDefaultsButton();&#xd;&#xa;    }&#xd;&#xa;});&#xd;&#xa;"/>
                   </AuxValues>
                 </Component>
+                <Component class="javax.swing.JCheckBox" name="_mostLikelyClustersHierarchically">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Most Likely Clusters, Hierarchically"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_mostLikelyClustersHierarchically.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableClustersReportedOptions(_clustersReportedGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});&#xa;"/>
+                  </AuxValues>
+                </Component>
+                <Component class="javax.swing.JCheckBox" name="_giniOptimizedClusters">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Gini Optimized Cluster Sizes"/>
+                  </Properties>
+                  <AuxValues>
+                    <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_giniOptimizedClusters.addItemListener(new java.awt.event.ItemListener() {&#xa;    public void itemStateChanged(java.awt.event.ItemEvent e) {&#xa;        enableClustersReportedOptions(_clustersReportedGroup.isEnabled());&#xa;        enableSetDefaultsButton();&#xa;    }&#xa;});"/>
+                  </AuxValues>
+                </Component>
               </SubComponents>
             </Container>
             <Container class="javax.swing.JPanel" name="_reportedSpatialOptionsGroup">
@@ -2875,6 +2953,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportedSpatialOptionsGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportedSpatialOptionsGroup, &quot;report_only_small_clusters_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -3071,7 +3152,7 @@
                       <Component id="_reportClusterRankGroup" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="_additionalOutputFiles" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="206" max="32767" attributes="0"/>
+                      <EmptySpace pref="238" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -3089,6 +3170,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportCriticalValuesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportCriticalValuesGroup, &quot;introduction_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -3141,6 +3225,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_reportClusterRankGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_reportClusterRankGroup, &quot;introduction_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
@@ -3193,6 +3280,9 @@
                   </Border>
                 </Property>
               </Properties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_additionalOutputFiles.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFiles, &quot;introduction_htm&quot;));"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">

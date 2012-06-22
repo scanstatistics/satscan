@@ -1,3 +1,9 @@
+/*
+ * SaTScanApplication.java
+ *
+ * Created on December 5, 2007, 11:14 AM
+ */
+
 package org.satscan.gui;
 
 import java.awt.Toolkit;
@@ -11,12 +17,9 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Locale;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.help.HelpBroker;
-import javax.help.HelpSet;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
@@ -41,16 +44,9 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.event.KeyEvent;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-
-/*
- * SaTScanApplication.java
- *
- * Created on December 5, 2007, 11:14 AM
- */
-import javax.help.Popup;
-import javax.help.SwingHelpUtilities;
 import javax.swing.KeyStroke;
 import org.satscan.gui.utils.MacOSApplication;
+import org.satscan.gui.utils.help.HelpShow;
 
 /**
  *
@@ -456,42 +452,6 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
     }
 
     /**
-     * Shows Java help system, initially directing to section at 'helpID' if not null.
-     * Conditionally shows help as popup window.
-     * @param helpID
-     * @param asPopup
-     */
-    public void showHelp(String helpID, boolean asPopup) {
-        final String helpsetName = "SaTScan_Help";
-        final String defaultID = "introduction_htm";
-        try {
-            SwingHelpUtilities.setContentViewerUI("org.satscan.gui.utils.ExternalLinkContentViewerUI");
-            ClassLoader cl = SaTScanApplication.class.getClassLoader();
-            URL url = HelpSet.findHelpSet(cl, helpsetName, "", Locale.getDefault());
-            if (url == null) {
-                url = HelpSet.findHelpSet(cl, helpsetName, ".hs", Locale.getDefault());
-                if (url == null) {
-                    JOptionPane.showMessageDialog(null, "The help system could not be located.", " Help", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-            }
-            HelpSet mainHS = new HelpSet(cl, url);
-            HelpBroker mainHB = mainHS.createHelpBroker();
-            if (asPopup && helpID != null) {
-                Popup popup = (Popup)Popup.getPresentation(mainHS,null);
-                popup.setInvoker (SaTScanApplication.getInstance());
-                popup.setCurrentID(helpID);
-                popup.setDisplayed(true);
-            } else {
-                mainHB.setCurrentID(helpID != null ? helpID : defaultID);
-                mainHB.setDisplayed(true);
-            }
-        } catch (Throwable t) {
-            new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
-        }
-    }
-
-    /**
      * Help system action, launches the help system.
      * TODO: The current help system is Windows only, will this stay?
      */
@@ -503,7 +463,7 @@ public class SaTScanApplication extends javax.swing.JFrame implements WindowFocu
         }
         public void actionPerformed(ActionEvent e) {
             try {
-                showHelp(null, true);
+                HelpShow.showHelp("introduction_htm");
             } catch (Throwable t) {
                 new ExceptionDialog(SaTScanApplication.this, t).setVisible(true);
             }

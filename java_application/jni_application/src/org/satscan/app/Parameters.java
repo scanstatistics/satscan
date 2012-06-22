@@ -180,7 +180,9 @@ public class Parameters implements Cloneable {
     private boolean                         gbReportRank=false;  /** report cluster rank */
     private boolean                         gbPrintAsciiHeaders=false;  /** print ascii column headers */
     private double                          _indexBasedPValueCutoff=0.05; /* P-Value used to limit clusters in optimal spatial cluster coefficients calcuation */
-    private ClusterReportType               _clusterReportType=ClusterReportType.HIERARCHICAL; /* cluster reporting type */
+
+    private boolean                         _reportHierarchicalClusters=true;  /** print ascii column headers */
+    private boolean                         _reportGiniOptimizedClusters=true;  /** print ascii column headers */
     IndexBasedReportType                    _indexBasedReportType=IndexBasedReportType.OPTIMAL_ONLY; /* type for the index based cluster reporting */
     boolean                                 _outputIndexCoefficients=false; /* output index based coefficents */
 
@@ -370,18 +372,18 @@ public class Parameters implements Cloneable {
         if (gbReportRank != rhs.gbReportRank) return false;
         if (gbPrintAsciiHeaders != rhs.gbPrintAsciiHeaders) return false;
         if (_indexBasedPValueCutoff != rhs._indexBasedPValueCutoff) return false;
-        if (_clusterReportType != rhs._clusterReportType) return false;
+        if (_reportHierarchicalClusters != rhs._reportHierarchicalClusters) return false;
+        if (_reportGiniOptimizedClusters != rhs._reportGiniOptimizedClusters) return false;
         if (_indexBasedReportType != rhs._indexBasedReportType) return false;
         if (_outputIndexCoefficients != rhs._outputIndexCoefficients) return false;
         return true;
     }
     public double getIndexBasedPValueCutoff() {return _indexBasedPValueCutoff;}
     public void setIndexBasedPValueCutoff(double d) {_indexBasedPValueCutoff = d;}
-    public ClusterReportType getClusterReportType() {return _clusterReportType;}
-    public void setClusterReportType(int iOrdinal) {
-        try { _clusterReportType = ClusterReportType.values()[iOrdinal];
-        } catch (ArrayIndexOutOfBoundsException e) { ThrowOrdinalIndexException(iOrdinal, _clusterReportType.values()); }
-    }
+    public boolean getReportHierarchicalClusters() {return _reportHierarchicalClusters;}
+    public void setReportHierarchicalClusters(boolean b) {_reportHierarchicalClusters = b;}
+    public boolean getReportGiniOptimizedClusters() {return _reportGiniOptimizedClusters;}
+    public void setReportGiniOptimizedClusters(boolean b) {_reportGiniOptimizedClusters = b;}
     public IndexBasedReportType getIndexBasedReportType() {return _indexBasedReportType;}
     public void setIndexBasedReportType(int iOrdinal) {
         try { _indexBasedReportType = IndexBasedReportType.values()[iOrdinal];
