@@ -1,6 +1,6 @@
 #!
 
-# Mount nfsc.omni.imsweb.com/prj/satscan onto Mac Mini
+# Mount nfse.omni.imsweb.com/prj/satscan onto this Mac
 
-echo "mounting satscan -- use windows password"
-mount -t smbfs //OMNI\;hostovic@nfsc.omni.imsweb.com/satscan /Users/hostovic/prj/satscan
+echo "mounting satscan home directory"
+mount -t smbfs //OMNI\;hostovic@nfse.omni.imsweb.com/satscan /Users/hostovic/prj/satscan.development/satscan.home
