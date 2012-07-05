@@ -11,7 +11,7 @@
   <supportUrl>http://www.satscan.org/</supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
-  <manifest></manifest>
+  <manifest>launch4j_updater.manifest</manifest>
   <icon>/prj/satscan/build.area/satscan/installers/resources/SaTScan.ico</icon>
   <jre>
     <path></path>
