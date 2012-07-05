@@ -5,7 +5,7 @@ build="/prj/satscan/build.area"
 installer_version="/prj/satscan/installers/v.9.2.x"
 
 launch4j="/prj/satscan/installers/install.applications/launch4j/launch4j-3.0.1"
-IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.4.3.2"
+IzPack="/prj/satscan/installers/install.applications/IzPack/IzPack.4.3.5"
 
 #### Windows ##############################################################################
 # Build Windows SaTScan executable from java jar file ... SaTScan.jar -> SaTScan.exe.
