@@ -101,6 +101,7 @@ class AnalysisRunner {
     void                                Setup();
     void                                UpdatePowerCounts(double r);
     void                                UpdateSignificantRatiosList(double dRatio);
+	void                                determineOverlappingClusters(const MostLikelyClustersContainer& mlc);
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);

@@ -36,6 +36,7 @@ void CCluster::Initialize(tract_t nCenter) {
   m_nLastInterval  = 0;
   m_iEllipseOffset = 0;
   gpCachedReportLines = 0;
+  gpExtraReportLines = 0;
 }
 
 /** overloaded assignment operator */
@@ -53,6 +54,9 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   if (rhs.gpCachedReportLines) {
       gpCachedReportLines = new ReportCache_t(*rhs.gpCachedReportLines);
   }
+  if (rhs.gpExtraReportLines) {
+      gpExtraReportLines = new ReportCache_t(*rhs.gpExtraReportLines);
+  }
   return *this;
 }
 
@@ -63,10 +67,20 @@ void CCluster::cacheReportLine(std::string& label, std::string& value) const {
   gpCachedReportLines->push_back(std::make_pair(label,value));
 }
 
+void CCluster::extraReportLine(const char * label, std::string& value) const {
+  if (!gpExtraReportLines)
+      gpExtraReportLines = new ReportCache_t();
+  gpExtraReportLines->push_back(std::make_pair(label,value));
+}
 CCluster::ReportCache_t & CCluster::getReportLinesCache() const {
   if (!gpCachedReportLines)
       gpCachedReportLines = new ReportCache_t();
   return *gpCachedReportLines;
+}
+CCluster::ReportCache_t & CCluster::getExtraReportLines() const {
+  if (!gpExtraReportLines)
+      gpExtraReportLines = new ReportCache_t();
+  return *gpExtraReportLines;
 }
 
 /** TODO: Document Me! */
@@ -124,6 +138,11 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iRepo
     DisplayTimeTrend(fp, DataHub, PrintFormat);
     DisplayRatio(fp, DataHub, PrintFormat);
     DisplayMonteCarloInformation(fp, DataHub, iReportedCluster, PrintFormat, simVars);
+	//print any extra report lines
+	for (ReportCache_t::iterator itr=  getExtraReportLines().begin(); itr != getExtraReportLines().end(); ++itr) {
+		PrintFormat.PrintSectionLabel(fp, itr->first.c_str(), false, true);
+		PrintFormat.PrintAlignedMarginsDataString(fp, itr->second);
+	}
   }
   catch (prg_exception& x) {
     x.addTrace("Display()","CCluster");

@@ -40,6 +40,9 @@
 #include "PurelySpatialBruteForceAnalysis.h"
 //#include "ClusterScatterChart.h"
 //#include "ClusterKML.h"
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign;
+#include <boost/dynamic_bitset.hpp>
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -1003,6 +1006,54 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
   }
 }
 
+/** Iterates through all reporting clusters to determine which overlap with other clusters. Overlapping added a cluster information, to be reported in results file. */
+void AnalysisRunner::determineOverlappingClusters(const MostLikelyClustersContainer& mlc) {
+	if (gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP && !gParameters.getReportGiniOptimizedClusters()) return;
+
+    tract_t maxDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained());
+	tract_t numClustersReported=0;
+	// first determine how many clusters are being reported
+	for (int i=0; i < mlc.GetNumClustersRetained(); ++i) {
+		const CCluster& cluster = mlc.GetCluster(i);
+		if (i == 0 || (i < maxDisplay && cluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || cluster.GetRank() <= gSimVars.get_sim_count()))) {
+			++numClustersReported;
+		}
+	}
+
+	std::vector<boost::dynamic_bitset<> > overlappingClusters;
+	// allocate bit sets that will track which clusters overlap with cluster at vector index
+	for (size_t t=0; t < numClustersReported; ++t)
+		overlappingClusters.push_back(boost::dynamic_bitset<>(numClustersReported));
+	// iterate over all reporting clusters, checking for overlapping locations
+	for (int i=0; i < numClustersReported; ++i) {
+		const CCluster& cluster = mlc.GetCluster(i);
+		boost::dynamic_bitset<>& clusterSet = overlappingClusters[i];
+		for (int j=0; j < numClustersReported; ++j) {
+			if (i == j) continue; // skip self
+			if (overlappingClusters[j].test(i)) // other cluster already signals overlap with this cluster
+				clusterSet.set(j);
+			else if (mlc.HasAnyTractsInCommon(GetDataHub(), cluster, mlc.GetCluster(j))) {
+				clusterSet.set(j);
+				overlappingClusters[j].set(i);
+			}
+		}
+	}
+	// add to extra report lines which clusters each cluster overlaps with
+	for (int t=0; t < numClustersReported; ++t) {
+		const CCluster& cluster = mlc.GetCluster(t);
+		boost::dynamic_bitset<>& overlappingSet = overlappingClusters[t];
+        std::string buffer, worker;
+	    for (size_t clusteridx=0; clusteridx < overlappingSet.size(); ++clusteridx) {
+			if (overlappingSet.test(clusteridx)) {
+				printString(worker, "%u", clusteridx + 1);
+				buffer += (buffer.size() == 0 ? "" : ", "); buffer += worker;
+			}
+	    }
+		if (buffer.size()) const_cast<CCluster&>(cluster).extraReportLine("Overlaps Clusters", buffer);
+	}
+
+}
+
 /** Prints most likely cluster information, if any retained, to result file.
     If user requested 'location information' output file(s), they are created
     simultaneously with reported clusters. */
@@ -1021,6 +1072,8 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
       ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
     //open result output file
     OpenReportFile(fp, true);
+	// calculate geographical overlap of clusters
+	determineOverlappingClusters(mlc);
     unsigned int clustersReported=0;
     //if no replications requested, attempt to display up to top 10 clusters
     tract_t tNumClustersToDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained());
