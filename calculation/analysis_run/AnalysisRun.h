@@ -10,6 +10,7 @@
 #include "AbstractCentricAnalysis.h"
 #include "ptr_vector.h"
 #include "SimulationVariables.h"
+#include "ClusterSupplement.h"
 
 class ClusterRankHelper {
     private:
@@ -101,7 +102,7 @@ class AnalysisRunner {
     void                                Setup();
     void                                UpdatePowerCounts(double r);
     void                                UpdateSignificantRatiosList(double dRatio);
-	void                                determineOverlappingClusters(const MostLikelyClustersContainer& mlc);
+	void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
 
   public:
     AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection);

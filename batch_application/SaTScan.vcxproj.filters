@@ -1115,5 +1115,8 @@
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp">
       <Filter>Header Files\calculation\analysis</Filter>
     </ClInclude>
+    <ClInclude Include="..\calculation\cluster\ClusterSupplement.h">
+      <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

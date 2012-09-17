@@ -13,6 +13,7 @@
 #include "boost/tuple/tuple.hpp"
 
 class LocationInformationWriter; /** forward class declaration */
+class ClusterSupplementInfo;
 
 /** Defines properties of each potential cluster evaluated by analysis. Provides
     functionality for printing cluster properties to file stream in predefined
@@ -32,7 +33,6 @@ class CCluster {
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
     mutable ReportCache_t       * gpCachedReportLines;
-    mutable ReportCache_t       * gpExtraReportLines;
 
     void                          cacheReportLine(std::string& label, std::string& value) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
@@ -42,7 +42,6 @@ class CCluster {
     CCluster();
     virtual ~CCluster();
 
-    void                          extraReportLine(const char * label, std::string& value) const;
     //assignment operations
     virtual CCluster            * Clone() const {throw prg_error("Clone().", "Clone()"); return 0; }//= 0;
     virtual void                  CopyEssentialClassMembers(const CCluster& rhs) {throw prg_error("CopyEssentialClassMembers()", "CopyEssentialClassMembers()");}//= 0;
@@ -59,7 +58,7 @@ class CCluster {
     virtual bool                  ClusterDefined() const {return m_nTracts > 0;}
     const double                  ConvertAngleToDegrees(double dAngle) const;
     virtual void                  DeallocateEvaluationAssistClassMembers();
-    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
+    virtual void                  Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSupplementInfo& supplementInfo, const SimulationVariables& simVars) const;
     virtual void                  DisplayAnnualCaseInformation(FILE* fp, unsigned int iDataSetIndex,
                                                                const CSaTScanData& DataHub,
                                                                const AsciiPrintFormat& PrintFormat) const;
@@ -124,7 +123,6 @@ class CCluster {
     double                        GetRelativeRisk(double dObserved, double dExpected, double dTotalCases) const;
     virtual double                GetRelativeRiskForTract(tract_t tTractIndex, const CSaTScanData& DataHub, size_t tSetIndex=0) const;
     ReportCache_t               & getReportLinesCache() const;
-    ReportCache_t               & getExtraReportLines() const;
     RecurrenceInterval_t          GetRecurrenceInterval(const CSaTScanData& Data, unsigned int iReportedCluster, const SimulationVariables& simVars) const;
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}

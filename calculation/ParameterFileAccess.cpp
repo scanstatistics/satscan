@@ -804,6 +804,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PRINT_ASCII_HEADERS       : gParameters.setPrintAsciiHeaders(ReadBoolean(sParameter, eParameterType)); break;
       case REPORT_HIERARCHICAL_CLUSTERS : gParameters.setReportHierarchicalClusters(ReadBoolean(sParameter, eParameterType)); break;
       case REPORT_GINI_CLUSTERS      : gParameters.setReportGiniOptimizedClusters(ReadBoolean(sParameter, eParameterType)); break;
+	  case SPATIAL_MAXIMA            : ReadSpatialWindowStops(sParameter); break;
       case INDEXBASED_REPORT_TYPE    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPTIMAL_ONLY, ALL_VALUES);
                                        gParameters.setIndexBasedReportType((IndexBasedReportType)ReadInt(sParameter, eParameterType)); break;
       case INDEXBASED_PVALUE_CUTOFF  : gParameters.setIndexBasedPValueCutoff(ReadDouble(sParameter, eParameterType)); break;

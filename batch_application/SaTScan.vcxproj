@@ -463,6 +463,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp" />
+    <ClInclude Include="..\calculation\cluster\ClusterSupplement.h" />
     <ClInclude Include="..\calculation\IniParameterFileAccess.h" />
     <ClInclude Include="..\calculation\IniParameterSpecification.h" />
     <ClInclude Include="..\calculation\ParameterFileAccess.h" />

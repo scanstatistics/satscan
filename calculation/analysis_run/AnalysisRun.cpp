@@ -42,7 +42,6 @@
 //#include "ClusterKML.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
-#include <boost/dynamic_bitset.hpp>
 
 /** constructor */
 AnalysisRunner::AnalysisRunner(const CParameters& Parameters, time_t StartTime, BasePrint& PrintDirection)
@@ -1007,28 +1006,19 @@ void AnalysisRunner::PrintRetainedClustersStatus(FILE* fp, bool bClusterReported
 }
 
 /** Iterates through all reporting clusters to determine which overlap with other clusters. Overlapping added a cluster information, to be reported in results file. */
-void AnalysisRunner::determineOverlappingClusters(const MostLikelyClustersContainer& mlc) {
+void AnalysisRunner::calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement) {
 	if (gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP && !gParameters.getReportGiniOptimizedClusters()) return;
 
-    tract_t maxDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained());
-	tract_t numClustersReported=0;
-	// first determine how many clusters are being reported
-	for (int i=0; i < mlc.GetNumClustersRetained(); ++i) {
-		const CCluster& cluster = mlc.GetCluster(i);
-		if (i == 0 || (i < maxDisplay && cluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || cluster.GetRank() <= gSimVars.get_sim_count()))) {
-			++numClustersReported;
-		}
-	}
-
-	std::vector<boost::dynamic_bitset<> > overlappingClusters;
+	size_t numClusters = std::min(static_cast<size_t>(mlc.GetNumClustersRetained()), clusterSupplement.size());
 	// allocate bit sets that will track which clusters overlap with cluster at vector index
-	for (size_t t=0; t < numClustersReported; ++t)
-		overlappingClusters.push_back(boost::dynamic_bitset<>(numClustersReported));
+	std::vector<boost::dynamic_bitset<> > overlappingClusters;
+	for (size_t t=0; t < numClusters; ++t)
+		overlappingClusters.push_back(boost::dynamic_bitset<>(numClusters));
 	// iterate over all reporting clusters, checking for overlapping locations
-	for (int i=0; i < numClustersReported; ++i) {
+	for (size_t i=0; i < numClusters; ++i) {
 		const CCluster& cluster = mlc.GetCluster(i);
 		boost::dynamic_bitset<>& clusterSet = overlappingClusters[i];
-		for (int j=0; j < numClustersReported; ++j) {
+		for (size_t j=1; j < numClusters; ++j) {
 			if (i == j) continue; // skip self
 			if (overlappingClusters[j].test(i)) // other cluster already signals overlap with this cluster
 				clusterSet.set(j);
@@ -1039,19 +1029,8 @@ void AnalysisRunner::determineOverlappingClusters(const MostLikelyClustersContai
 		}
 	}
 	// add to extra report lines which clusters each cluster overlaps with
-	for (int t=0; t < numClustersReported; ++t) {
-		const CCluster& cluster = mlc.GetCluster(t);
-		boost::dynamic_bitset<>& overlappingSet = overlappingClusters[t];
-        std::string buffer, worker;
-	    for (size_t clusteridx=0; clusteridx < overlappingSet.size(); ++clusteridx) {
-			if (overlappingSet.test(clusteridx)) {
-				printString(worker, "%u", clusteridx + 1);
-				buffer += (buffer.size() == 0 ? "" : ", "); buffer += worker;
-			}
-	    }
-		if (buffer.size()) const_cast<CCluster&>(cluster).extraReportLine("Overlaps Clusters", buffer);
-	}
-
+	for (size_t t=0; t < numClusters; ++t)
+		clusterSupplement.setOverlappingClusters(mlc.GetCluster(t), overlappingClusters[t]);
 }
 
 /** Prints most likely cluster information, if any retained, to result file.
@@ -1062,6 +1041,7 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
   std::auto_ptr<ClusterInformationWriter>  ClusterWriter;
   boost::posix_time::ptime StartTime = ::GetCurrentTime_HighResolution();
   FILE * fp=0;
+  ClusterSupplementInfo clusterSupplement;
 
   try {
     //if creating 'location information' files, create record data buffers
@@ -1072,15 +1052,20 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
       ClusterWriter.reset(new ClusterInformationWriter(*gpDataHub));
     //open result output file
     OpenReportFile(fp, true);
+	// determine how many clusters are being reported and define supplement information for each
+    // if no replications requested, attempt to display up to top 10 clusters
+    tract_t maxDisplay = gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained();
+	for (int i=0; i < maxDisplay; ++i) {
+		const CCluster& cluster = mlc.GetCluster(i);
+		if (i == 0 || (cluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || cluster.GetRank() <= gSimVars.get_sim_count())))
+			clusterSupplement.addCluster(cluster, i+1);
+	}
 	// calculate geographical overlap of clusters
-	determineOverlappingClusters(mlc);
-    unsigned int clustersReported=0;
-    //if no replications requested, attempt to display up to top 10 clusters
-    tract_t tNumClustersToDisplay(gSimVars.get_sim_count() == 0 ? std::min(10, mlc.GetNumClustersRetained()) : mlc.GetNumClustersRetained());
-    for (int i=0; i < mlc.GetNumClustersRetained(); ++i) {
-        gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, mlc.GetNumClustersRetained());
+	calculateOverlappingClusters(mlc, clusterSupplement);
+    for (size_t i=0; i < clusterSupplement.size(); ++i) {
+        gPrintDirection.Printf("Reporting cluster %i of %i\n", BasePrint::P_STDOUT, i + 1, clusterSupplement.size());
         if (i==9) //report estimate of time to report all clusters
-            ReportTimeEstimate(StartTime, mlc.GetNumClustersRetained(), i, &gPrintDirection);
+            ReportTimeEstimate(StartTime, clusterSupplement.size(), i, &gPrintDirection);
         //get reference to i'th top cluster
         const CCluster& TopCluster = mlc.GetCluster(i);
         //write cluster details to 'cluster information' file
@@ -1088,23 +1073,20 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
             ClusterWriter->Write(TopCluster, i+1, gSimVars);
         //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
         //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
-        if (i == 0 || (i < tNumClustersToDisplay && TopCluster.m_nRatio >= gdMinRatioToReport && (gSimVars.get_sim_count() == 0 || TopCluster.GetRank() <= gSimVars.get_sim_count()))) {
-            ++clustersReported;
-            switch (clustersReported) {
-                case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-                case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
-                default : fprintf(fp, "\n"); break;
-            }
-            //print cluster definition to file stream
-            TopCluster.Display(fp, *gpDataHub, clustersReported, gSimVars);
-            //check track of whether this cluster was significant in top five percentage
-            if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
-                ++guwSignificantAt005;
-            //print cluster definition to 'location information' record buffer
-            if (gParameters.GetOutputAreaSpecificFiles())
-                TopCluster.Write(*ClusterLocationWriter, *gpDataHub, clustersReported, gSimVars);
-            _clustersReported = true;
+        switch (i) {
+            case 0  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
+            case 1  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
+            default : fprintf(fp, "\n"); break;
         }
+        //print cluster definition to file stream
+        TopCluster.Display(fp, *gpDataHub, clusterSupplement, gSimVars);
+        //check track of whether this cluster was significant in top five percentage
+        if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
+            ++guwSignificantAt005;
+        //print cluster definition to 'location information' record buffer
+        if (gParameters.GetOutputAreaSpecificFiles())
+            TopCluster.Write(*ClusterLocationWriter, *gpDataHub, i, gSimVars);
+        _clustersReported = true;
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
     PrintCriticalValuesStatus(fp);
@@ -1140,7 +1122,7 @@ void AnalysisRunner::PrintTopClusterLogLikelihood(const MostLikelyClustersContai
     simultaneously with reported clusters. */
 void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContainer& mlc) {
   FILE        * fp=0;
-  unsigned int  clustersReported=0;
+  ClusterSupplementInfo clusterSupplement;
 
   try {
     //open result output file
@@ -1148,24 +1130,20 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
     if (mlc.GetNumClustersRetained()) {
       //get most likely cluster
       const CCluster& TopCluster = mlc.GetTopRankedCluster();
-      ++clustersReported; 
-      switch (clustersReported) {
-       case 1  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-       case 2  : fprintf(fp, "\nSECONDARY CLUSTERS\n");
-       default : {std::string s; printString(s, "REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
-                  gpDataHub->DisplaySummary(fp, s, false);
-                  fprintf(fp, "\n");
-                 }
-       }
+	  clusterSupplement.addCluster(TopCluster, 1);
+	  fprintf(fp, "\nMOST LIKELY CLUSTER\n\n");
+      //std::string s; printString(s, "REMAINING DATA WITH %d CLUSTER%s REMOVED", giAnalysisCount - 1, (giAnalysisCount - 1 == 1 ? "" : "S"));
+      //gpDataHub->DisplaySummary(fp, s, false);
+      //fprintf(fp, "\n");
       //print cluster definition to file stream
-      TopCluster.Display(fp, *gpDataHub, clustersReported, gSimVars);
+      TopCluster.Display(fp, *gpDataHub, clusterSupplement, gSimVars);
       //print cluster definition to 'cluster information' record buffer
       if (gParameters.GetOutputClusterLevelFiles() || gParameters.GetOutputClusterCaseFiles())
-        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, clustersReported, gSimVars);
+        ClusterInformationWriter(*gpDataHub, giAnalysisCount > 1).Write(TopCluster, 1, gSimVars);
       //print cluster definition to 'location information' record buffer
       if (gParameters.GetOutputAreaSpecificFiles()) {
         LocationInformationWriter Writer(*gpDataHub, giAnalysisCount > 1);
-        TopCluster.Write(Writer, *gpDataHub, clustersReported, gSimVars);
+        TopCluster.Write(Writer, *gpDataHub, 1, gSimVars);
       }
       //check track of whether this cluster was significant in top five percentage
       if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
@@ -1174,10 +1152,10 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
     }
 
     //if no clusters reported in this iteration but clusters were reported previuosly, print spacer
-    if (!clustersReported && _clustersReported)
+	if (!clusterSupplement.size() && _clustersReported)
       fprintf(fp, "                  _____________________________\n\n");
 
-    PrintRetainedClustersStatus(fp, clustersReported);
+    PrintRetainedClustersStatus(fp, clusterSupplement.size() > 0);
     PrintCriticalValuesStatus(fp);
     PrintPowerCalculationsStatus(fp);
     PrintEarlyTerminationStatus(fp);

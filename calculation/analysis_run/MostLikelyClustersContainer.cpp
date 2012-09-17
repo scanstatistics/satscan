@@ -5,6 +5,7 @@
 #include "MostLikelyClustersContainer.h"
 #include "SaTScanData.h"
 #include "SSException.h" 
+#include "ClusterSupplement.h"
 #include <functional>
 #include <numeric>
 
@@ -382,6 +383,7 @@ bool MostLikelyClustersContainer::PointLiesWithinEllipseArea(double dXPoint, dou
 /** Prints properties of cluster objects in top cluster list to ASCII file. */
 void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const CSaTScanData& DataHub) {
    FILE* pFile;
+   ClusterSupplementInfo clusterSupplement;
 
    try {
       if ((pFile = fopen(sFilename, "w")) == NULL)
@@ -401,7 +403,8 @@ void MostLikelyClustersContainer::PrintTopClusters(const char * sFilename, const
           fprintf(pFile, "   Cart. Radius:  %lf\n", gvTopClusterList[i]->GetCartesianRadius());
           */
           SimulationVariables simTemp; 
-          gvTopClusterList[i]->Display(pFile, DataHub, i + 1, simTemp);
+		  clusterSupplement.addCluster(*gvTopClusterList[i], i + 1);
+          gvTopClusterList[i]->Display(pFile, DataHub, clusterSupplement, simTemp);
           fprintf(pFile, " \n");
           fprintf(pFile, " \n");
         }
