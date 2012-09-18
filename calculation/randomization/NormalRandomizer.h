@@ -26,7 +26,7 @@ class NormalRandomizer : public AbstractNormalRandomizer {
     virtual void               AssignRandomizedData(const RealDataSet& RealSet, DataSet& SimSet);
 
   public:
-    NormalRandomizer::NormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(lInitialSeed) {}
+    NormalRandomizer(long lInitialSeed=RandomNumberGenerator::glDefaultSeed) : AbstractNormalRandomizer(lInitialSeed) {}
     virtual ~NormalRandomizer() {}
 
     virtual NormalRandomizer * Clone() const {return new NormalRandomizer(*this);}

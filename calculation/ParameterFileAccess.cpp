@@ -27,6 +27,11 @@ bool ParameterAccessCoordinator::Read(const char* sFilename, BasePrint& PrintDir
       bSuccess = IniParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
     else
       bSuccess = ScanLineParameterFileAccess(gParameters, PrintDirection).Read(sFilename);
+
+    // Now correct any current defaults to revert to old defaults.
+    if (gParameters.GetCreationVersion().iMajor <= 9 && gParameters.GetCreationVersion().iMinor < 2) {
+       gParameters.setReportGiniOptimizedClusters(false);
+    }
   }
   catch (prg_exception &x) {
     throw resolvable_error("Unable to read parameters from file '%s'.\n", sFilename);
@@ -804,7 +809,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case PRINT_ASCII_HEADERS       : gParameters.setPrintAsciiHeaders(ReadBoolean(sParameter, eParameterType)); break;
       case REPORT_HIERARCHICAL_CLUSTERS : gParameters.setReportHierarchicalClusters(ReadBoolean(sParameter, eParameterType)); break;
       case REPORT_GINI_CLUSTERS      : gParameters.setReportGiniOptimizedClusters(ReadBoolean(sParameter, eParameterType)); break;
-	  case SPATIAL_MAXIMA            : ReadSpatialWindowStops(sParameter); break;
+      case SPATIAL_MAXIMA            : ReadSpatialWindowStops(sParameter); break;
       case INDEXBASED_REPORT_TYPE    : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, OPTIMAL_ONLY, ALL_VALUES);
                                        gParameters.setIndexBasedReportType((IndexBasedReportType)ReadInt(sParameter, eParameterType)); break;
       case INDEXBASED_PVALUE_CUTOFF  : gParameters.setIndexBasedPValueCutoff(ReadDouble(sParameter, eParameterType)); break;
