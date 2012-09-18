@@ -618,7 +618,14 @@ void CCluster::DisplayMonteCarloInformation(FILE* fp, const CSaTScanData& DataHu
                                   && 
                                  (parameters.GetProbabilityModelType() == POISSON || 
                                   parameters.GetProbabilityModelType() == BERNOULLI ||
-                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+                                  parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
+								  /* testing additional models for gumbel https://www.squishlist.com/ims/satscan/66320/
+								  || 
+                                  parameters.GetProbabilityModelType() == ORDINAL || 
+                                  parameters.GetProbabilityModelType() == EXPONENTIAL ||
+                                  parameters.GetProbabilityModelType() == NORMAL ||
+                                  parameters.GetProbabilityModelType() == CATEGORICAL*/
+								  );
     if (parameters.GetPValueReportingType() == GUMBEL_PVALUE || (bReportsDefaultGumbel && parameters.GetPValueReportingType() == DEFAULT_PVALUE && GetRank() < MIN_RANK_RPT_GUMBEL)) {
       std::pair<double,double> p = GetGumbelPValue(simVars);
       if (p.first == 0.0) {
@@ -913,17 +920,7 @@ double CCluster::GetObservedDivExpectedOrdinal(const CSaTScanData& DataHub, size
 
 /** Returns Gumbel p-value. */
 std::pair<double,double> CCluster::GetGumbelPValue(const SimulationVariables& simVars) const {
-    double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
-    double mu = simVars.get_mean() - EULER * beta;
-
-	double p = 1 - std::exp(-std::exp((mu - GetRatio())/beta));
-	//double llr = mu - beta * std::log(std::log( 1 /( 1 - p )));
-
-    // Determine the alternative minimum p-value. Very strong clusters will cause 
-    // the calculated p-value to be computed as zero in above statement.    
-    double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
-
-    return std::make_pair(p,min);
+    return calculateGumbelPValue(simVars, GetRatio());
 }
 
 /** Returns population as string with varied precision, based upon value. */
@@ -979,7 +976,14 @@ double CCluster::getReportingPValue(const CParameters& parameters, const Simulat
                                           && 
                                          (parameters.GetProbabilityModelType() == POISSON ||
                                           parameters.GetProbabilityModelType() == BERNOULLI ||
-                                          parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION);
+                                          parameters.GetProbabilityModelType() == SPACETIMEPERMUTATION
+										  /* testing additonal models for gumbel https://www.squishlist.com/ims/satscan/66320/
+										  ||
+                                          parameters.GetProbabilityModelType() == ORDINAL ||
+                                          parameters.GetProbabilityModelType() == EXPONENTIAL ||
+                                          parameters.GetProbabilityModelType() == NORMAL ||
+                                          parameters.GetProbabilityModelType() == CATEGORICAL*/
+										  );
             if (bReportsDefaultGumbel && reportableGumbelPValue(parameters, simVars)) {
                 std::pair<double,double> p = GetGumbelPValue(simVars);
                 return std::max(p.first, p.second);

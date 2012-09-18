@@ -6,6 +6,7 @@
 #include "boost/lexical_cast.hpp"
 
 class Matrix; // forward declaration
+class SimulationVariables;
 
 void 	                        ConvertFromLatLong(double Latitude, double Longitude, std::vector<double>& vCoordinates);
 std::pair<double, double>       ConvertToLatLong(const std::vector<double>& vCoordinates);
@@ -41,5 +42,7 @@ template <typename T>           bool type_to_string(T& t, std::string& s) {
                                     } 
                                     return true;
                                 }
+std::pair<double,double>        calculateGumbelPValue(const SimulationVariables& simVars, double critical_value);
+std::pair<double,double>        calculateGumbelCriticalValue(const SimulationVariables& simVars, double p_value);
 //******************************************************************************
 #endif

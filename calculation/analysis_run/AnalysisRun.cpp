@@ -806,6 +806,9 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
   AsciiPrintFormat      PrintFormat;
   std::string           buffer;
 
+  // Martin is not sure that critical values should be reported if early termination occurs.
+  if (gSimVars.get_sim_count() != gParameters.GetNumReplicationsRequested()) return;
+
   if (GetIsCalculatingSignificantRatios() && gSimVars.get_sim_count() >= 19) {
     PrintFormat.SetMarginsAsOverviewSection();
     fprintf(fp,"\n");
@@ -813,10 +816,50 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
                         "is greater than the critical value, which is, for significance level:",
                         (gParameters.GetLogLikelihoodRatioIsTestStatistic() ? "test statistic" : "log likelihood ratio"));
     PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    if (gSimVars.get_sim_count() >= 99)
-      fprintf(fp,"... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
-    if (gSimVars.get_sim_count() >= 19)
-      fprintf(fp,"... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
+
+    bool printSelectiveGumbel = gParameters.GetPValueReportingType() == DEFAULT_PVALUE;
+    bool printAllGumbel = (gParameters.GetPValueReportingType() == GUMBEL_PVALUE ||
+                           (gParameters.GetReportGumbelPValue() && (gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == TERMINATION_PVALUE)));
+
+    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() > 0)) {
+      fprintf(fp,"\nGumbel Critical Values:\n");
+    }
+    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() < 99999)) {
+      std::pair<double,double> cv = calculateGumbelCriticalValue(gSimVars, (double)0.00001);
+      fprintf(fp,"... 0.00001: %f\n", cv.first);
+    }
+    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() < 9999)) {
+      std::pair<double,double> cv = calculateGumbelCriticalValue(gSimVars, (double)0.0001);
+      fprintf(fp,".... 0.0001: %f\n", cv.first);
+    }
+    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() < 999)) {
+      std::pair<double,double> cv = calculateGumbelCriticalValue(gSimVars, (double)0.001);
+      fprintf(fp,"..... 0.001: %f\n", cv.first);
+    }
+    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() < 99)) {
+      std::pair<double,double> cv = calculateGumbelCriticalValue(gSimVars, (double)0.01);
+      fprintf(fp,"...... 0.01: %f\n", cv.first);
+    }
+    if (printAllGumbel || (printSelectiveGumbel && gSimVars.get_sim_count() < 19)) {
+      std::pair<double,double> cv = calculateGumbelCriticalValue(gSimVars, (double)0.05);
+      fprintf(fp,"...... 0.05: %f\n", cv.first);
+    }
+
+    // skip reporting standard critical values if p-value reporting is gumbel
+    if (gParameters.GetPValueReportingType() != GUMBEL_PVALUE) {
+        if (gSimVars.get_sim_count() > 0)
+            fprintf(fp,"\nStandard Monte Carlo Critical Values:\n");
+        if (gSimVars.get_sim_count() >= 99999)
+            fprintf(fp,"... 0.00001: %f\n", gpSignificantRatios->GetAlpha00001());
+        if (gSimVars.get_sim_count() >= 9999)
+            fprintf(fp,".... 0.0001: %f\n", gpSignificantRatios->GetAlpha0001());
+        if (gSimVars.get_sim_count() >= 999)
+            fprintf(fp,"..... 0.001: %f\n", gpSignificantRatios->GetAlpha001());
+        if (gSimVars.get_sim_count() >= 99)
+            fprintf(fp,"...... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
+        if (gSimVars.get_sim_count() >= 19)
+            fprintf(fp,"...... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
+    }
   }
 }
 

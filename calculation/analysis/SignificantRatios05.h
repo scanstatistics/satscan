@@ -8,14 +8,17 @@
     during simulation process. */
 class CSignificantRatios05 {
   private:
-    std::vector<double>         gvRatiosList;
+    const unsigned int _replications;
+    std::vector<double> _ratios_list;
 
   public:
-    CSignificantRatios05(unsigned int iNumReplications);
-    ~CSignificantRatios05();
+    CSignificantRatios05(unsigned int replications);
 
     bool        AddRatio(double r);
     double      GetAlpha01() const;
+    double      GetAlpha001() const;
+    double      GetAlpha0001() const;
+    double      GetAlpha00001() const;
     double      GetAlpha05() const;
     void        Initialize();
 };

@@ -46,8 +46,13 @@
                           <Component id="cancelButton" alignment="1" min="-2" max="-2" attributes="1"/>
                       </Group>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="_randomizationSeedLabel" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="_randomizationSeed" pref="143" max="32767" attributes="0"/>
+                  </Group>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -70,7 +75,12 @@
                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="_randomizationSeedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="_randomizationSeed" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace pref="15" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -210,6 +220,19 @@
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="okButton.addActionListener(new java.awt.event.ActionListener() {&#xa;    public void actionPerformed(java.awt.event.ActionEvent e) {&#xa;        setParameters();&#xa;        setVisible(false);&#xa;    }&#xa;});"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JLabel" name="_randomizationSeedLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Randomization Seed"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="_randomizationSeed">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="12345678"/>
+      </Properties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="_randomizationSeed.addKeyListener(new java.awt.event.KeyAdapter() {&#xa;    public void keyTyped(java.awt.event.KeyEvent e) {&#xa;        Utils.validatePostiveNumericKeyTyped(_atMostProcessesTextField, e, 8);&#xa;    }&#xa;});&#xa;_randomizationSeed.addFocusListener(new java.awt.event.FocusAdapter() {&#xa;    public void focusLost(java.awt.event.FocusEvent e) {&#xa;        while (_randomizationSeed.getText().length() == 0 ||&#xa;                Integer.parseInt(_randomizationSeed.getText()) == 0) {&#xa;            if (undo.canUndo()) undo.undo(); else _randomizationSeed.setText(&quot;12345678&quot;);&#xa;        }&#xa;    }&#xa;});&#xa;_randomizationSeed.getDocument().addUndoableEditListener(new UndoableEditListener() {&#xa;    public void undoableEditHappened(UndoableEditEvent evt) {&#xa;        undo.addEdit(evt.getEdit());&#xa;    }&#xa;});"/>
       </AuxValues>
     </Component>
   </SubComponents>

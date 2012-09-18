@@ -24,6 +24,8 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
     public ExecutionOptionsDialog(java.awt.Frame parent, Parameters parameters) {
         super(parent, true);
         initComponents();
+        _randomizationSeedLabel.setVisible(false);
+        _randomizationSeed.setVisible(false);
         _allProcessorsRadioButton.setText(_allProcessorsRadioButton.getText() + " (" + Runtime.getRuntime().availableProcessors() + ")");
         _parameters = parameters;
         if (_parameters.GetNumRequestedParallelProcesses() != 0) {
@@ -34,6 +36,7 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
         }
         _logRunHistoryCheckBox.setSelected(_parameters.GetIsLoggingHistory());
         _suppressWarningsCheckBox.setSelected(_parameters.GetSuppressingWarnings());
+        _randomizationSeed.setText(Integer.toString(_parameters.GetRandomizationSeed()));
         setLocationRelativeTo(parent);
     }
 
@@ -50,6 +53,7 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
         }
         _parameters.SetIsLoggingHistory(_logRunHistoryCheckBox.isSelected());
         _parameters.SetSuppressingWarnings(_suppressWarningsCheckBox.isSelected());
+        _parameters.SetRandomizationSeed(Integer.parseInt(_randomizationSeed.getText()));
     }
 
     /** This method is called from within the constructor to
@@ -70,6 +74,8 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
         _suppressWarningsCheckBox = new javax.swing.JCheckBox();
         cancelButton = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
+        _randomizationSeedLabel = new javax.swing.JLabel();
+        _randomizationSeed = new javax.swing.JTextField();
 
         parallelProcessorsButtonGroup.add(_allProcessorsRadioButton);
         parallelProcessorsButtonGroup.add(_atMostProcessesRadioButton);
@@ -167,6 +173,28 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
             }
         });
 
+        _randomizationSeedLabel.setText("Randomization Seed");
+
+        _randomizationSeed.setText("12345678");
+        _randomizationSeed.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent e) {
+                Utils.validatePostiveNumericKeyTyped(_atMostProcessesTextField, e, 8);
+            }
+        });
+        _randomizationSeed.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent e) {
+                while (_randomizationSeed.getText().length() == 0 ||
+                    Integer.parseInt(_randomizationSeed.getText()) == 0) {
+                    if (undo.canUndo()) undo.undo(); else _randomizationSeed.setText("12345678");
+                }
+            }
+        });
+        _randomizationSeed.getDocument().addUndoableEditListener(new UndoableEditListener() {
+            public void undoableEditHappened(UndoableEditEvent evt) {
+                undo.addEdit(evt.getEdit());
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -182,8 +210,12 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(okButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(cancelButton))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(cancelButton)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(_randomizationSeedLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_randomizationSeed, javax.swing.GroupLayout.DEFAULT_SIZE, 143, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -201,7 +233,11 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
                         .addComponent(okButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cancelButton)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_randomizationSeedLabel)
+                    .addComponent(_randomizationSeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(15, Short.MAX_VALUE))
         );
 
         pack();
@@ -211,6 +247,8 @@ public class ExecutionOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton _atMostProcessesRadioButton;
     private javax.swing.JTextField _atMostProcessesTextField;
     private javax.swing.JCheckBox _logRunHistoryCheckBox;
+    private javax.swing.JTextField _randomizationSeed;
+    private javax.swing.JLabel _randomizationSeedLabel;
     private javax.swing.JCheckBox _suppressWarningsCheckBox;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;

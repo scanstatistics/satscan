@@ -407,16 +407,24 @@ public class AdvancedParameterSettingsFrame extends javax.swing.JInternalFrame {
     private void EnablePValueOptionsGroup() {
         boolean bPoisson = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.POISSON,
                 bBernoulli = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.BERNOULLI,
-                bSTP = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION;
+                bSTP = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.SPACETIMEPERMUTATION,
+                bNormal = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.NORMAL,
+                bCategorical = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.CATEGORICAL,
+                bExponential = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.EXPONENTIAL,
+                bOrdinal = _analysisSettingsWindow.getModelControlType() == Parameters.ProbabilityModelType.ORDINAL;
         boolean bPurelySpatial = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PURELYSPATIAL,
                 bSpaceTime = _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.PROSPECTIVESPACETIME ||
                              _analysisSettingsWindow.getAnalysisControlType() == Parameters.AnalysisType.SPACETIME;
-        
-        _radioGumbelPValues.setEnabled((bPurelySpatial || bSpaceTime) && (bPoisson || bBernoulli || bSTP));
+
+        boolean modelGumbelEnabled = (bPoisson || bBernoulli || bSTP
+                                      /* testing additional models for gumbel https://www.squishlist.com/ims/satscan/66320/
+                                       || bNormal || bCategorical || bExponential || bOrdinal*/
+                                      );
+        _radioGumbelPValues.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled);
         if (_radioGumbelPValues.isEnabled() == false && _radioGumbelPValues.isSelected())
             _radioDefaultPValues.setSelected(true);
 
-        _checkReportGumbel.setEnabled((bPurelySpatial || bSpaceTime) && (bPoisson || bBernoulli || bSTP) &&
+        _checkReportGumbel.setEnabled((bPurelySpatial || bSpaceTime) && modelGumbelEnabled &&
                                       (_radioEarlyTerminationPValues.isSelected() || _radioStandardPValues.isSelected()));       
         if (_checkReportGumbel.isEnabled() == false && _checkReportGumbel.isSelected())
             _checkReportGumbel.setSelected(false);

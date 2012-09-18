@@ -9,6 +9,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include "SimulationVariables.h"
 
 // Conversion routines for Latitude/Longitude option for data input
 // and output based on the following formulas:
@@ -341,4 +342,25 @@ void printoutMatrix(const std::string& s, Matrix& m, FILE * fp) {
   }
   fprintf(fp, "\n");
   fflush(fp);
+}
+
+std::pair<double,double> calculateGumbelPValue(const SimulationVariables& simVars, double critical_value) {
+    double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
+    double mu = simVars.get_mean() - EULER * beta;
+	double p = 1 - std::exp(-std::exp((mu - critical_value)/beta));
+    // Determine the alternative minimum p-value. Very strong clusters will cause 
+    // the calculated p-value to be computed as zero in above statement.    
+    double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
+
+    return std::make_pair(p,min);
+}
+
+std::pair<double,double> calculateGumbelCriticalValue(const SimulationVariables& simVars, double p_value) {
+    double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
+    double mu = simVars.get_mean() - EULER * beta;
+	double critical_value = mu - beta * std::log(std::log( 1 /( 1 - p_value )));
+    // Determine the alternative minimum p-value. Very strong clusters will cause 
+    // the calculated p-value to be computed as zero in above statement.    
+    double min = (double)0.1 / std::pow(10.0, std::numeric_limits<double>::digits10 + 1.0);
+    return std::make_pair(critical_value,min);
 }
