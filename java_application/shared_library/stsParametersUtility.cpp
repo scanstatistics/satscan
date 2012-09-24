@@ -159,17 +159,17 @@ jobject& ParametersUtility::copyCParametersToJParameters(JNIEnv& Env, CParameter
   Env.CallVoidMethod(jParameters, mid, (jint)Parameters.GetCoordinatesDataCheckingType());
   jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculation", "(Z)V");
-  Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.GetIsPowerCalculated());
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculation", "(Z)V");
+  //Env.CallVoidMethod(jParameters, mid, (jboolean)Parameters.GetIsPowerCalculated());
+  //jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculationX", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetPowerCalculationX());
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculationX", "(D)V");
+  //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetPowerCalculationX());
+  //jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculationY", "(D)V");
-  Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetPowerCalculationY());
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "SetPowerCalculationY", "(D)V");
+  //Env.CallVoidMethod(jParameters, mid, (jdouble)Parameters.GetPowerCalculationY());
+  //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "SetMaxSpatialSizeForType", "(IDZ)V");
   Env.CallVoidMethod(jParameters, mid, (jint)PERCENTOFPOPULATION, (jdouble)Parameters.GetMaxSpatialSizeForType(PERCENTOFPOPULATION, false), false);
@@ -548,17 +548,17 @@ CParameters& ParametersUtility::copyJParametersToCParameters(JNIEnv& Env, jobjec
   Parameters.SetStudyPeriodDataCheckingType((StudyPeriodDataCheckingType)getEnumTypeOrdinalIndex(Env, jParameters, "GetStudyPeriodDataCheckingType", "Lorg/satscan/app/Parameters$StudyPeriodDataCheckingType;"));
   Parameters.SetCoordinatesDataCheckingType((CoordinatesDataCheckingType)getEnumTypeOrdinalIndex(Env, jParameters, "GetCoordinatesDataCheckingType", "Lorg/satscan/app/Parameters$CoordinatesDataCheckingType;"));
 
-  mid = _getMethodId_Checked(Env, clazz, "GetIsPowerCalculated", "()Z");
-  Parameters.SetPowerCalculation(Env.CallBooleanMethod(jParameters, mid));
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "GetIsPowerCalculated", "()Z");
+  //Parameters.SetPowerCalculation(Env.CallBooleanMethod(jParameters, mid));
+  //jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "GetPowerCalculationX", "()D");
-  Parameters.SetPowerCalculationX(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "GetPowerCalculationX", "()D");
+  //Parameters.SetPowerCalculationX(Env.CallDoubleMethod(jParameters, mid));
+  //jni_error::_detectError(Env);
 
-  mid = _getMethodId_Checked(Env, clazz, "GetPowerCalculationY", "()D");
-  Parameters.SetPowerCalculationY(Env.CallDoubleMethod(jParameters, mid));
-  jni_error::_detectError(Env);
+  //mid = _getMethodId_Checked(Env, clazz, "GetPowerCalculationY", "()D");
+  //Parameters.SetPowerCalculationY(Env.CallDoubleMethod(jParameters, mid));
+  //jni_error::_detectError(Env);
 
   mid = _getMethodId_Checked(Env, clazz, "GetMaxSpatialSizeForType", "(IZ)D");
   Parameters.SetMaxSpatialSizeForType(PERCENTOFPOPULATION, Env.CallDoubleMethod(jParameters, mid, (jint)PERCENTOFPOPULATION, false), false);

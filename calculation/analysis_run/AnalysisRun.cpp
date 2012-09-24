@@ -40,6 +40,7 @@
 #include "PurelySpatialBruteForceAnalysis.h"
 //#include "ClusterScatterChart.h"
 //#include "ClusterKML.h"
+#include "PoissonRandomizer.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
 
@@ -98,30 +99,7 @@ bool AnalysisRunner::CheckForEarlyTermination(unsigned int iNumSimulationsComple
     return false;
   if (!gParameters.GetTerminateSimulationsEarly())
     return false;
-  return  gSimVars.get_greater_llr_count() >= gParameters.GetExecuteEarlyTermThreshold();
-}
-
-/** Creates 'relative risks' output file(s) if requested by user through
-    parameter settings. The created file details the relative risk for each
-    location specified in coordinates file. Files types creates are ASCII text
-    and dBase, with the user's parameter settings indicating which.
-    Note that relative risk information is printed for only first iteration of
-    iterative scan. This is primarily to prevent division by zero, since the
-    squential scan feature zeros out data used in creating relative risks. */
-void AnalysisRunner::CreateRelativeRiskFile() {
-  macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
-
-  try {
-    if (giAnalysisCount == 1 && gParameters.GetOutputRelativeRisksFiles()) {
-      gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
-      gpDataHub->DisplayRelativeRisksForEachTract();
-    }
-  } catch (prg_exception& x) {
-    x.addTrace("CreateRelativeRiskFile()","AnalysisRunner");
-    throw;
-  }
-
-  macroRunTimeStopSerial();
+  return  gSimVars.get_llr_counters().front().second >= gParameters.GetExecuteEarlyTermThreshold();
 }
 
 /** Creates/overwrites result file specified by user in parameter settings. Only
@@ -161,67 +139,160 @@ void AnalysisRunner::Execute() {
        if (gpDataHub->GetDataSetHandler().GetDataSet(i).getTotalCases() == 0)
          throw resolvable_error("Error: No cases found in data set %u.\n", i);
     macroRunTimeStopSerial();
+    if (gPrintDirection.GetIsCanceled()) return;
+    // report relative risk estimates for each location
+    if (gParameters.GetOutputRelativeRisksFiles()) {
+        macroRunTimeStartSerial(SerialRunTimeComponent::PrintingResults);
+        gPrintDirection.Printf("Reporting relative risk estimates...\n", BasePrint::P_STDOUT);
+        gpDataHub->DisplayRelativeRisksForEachTract();
+        macroRunTimeStopSerial();
+    }
+    if (gPrintDirection.GetIsCanceled()) return;
     //calculation approxiate amount of memory required to run analysis
     std::pair<double, double> prMemory = GetMemoryApproxiation();
-    if (geExecutingType == AUTOMATIC) {
-      //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
-      if (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution())
-        geExecutingType = SUCCESSIVELY;
-      else
-        geExecutingType = CENTRICALLY;
-    }
-    //start execution of analysis
+    if (geExecutingType == AUTOMATIC) //prefer successive execution if: enough RAM, or memory needs less than centric, or centric execution not a valid option given parameters
+        geExecutingType = (prMemory.first < GetAvailablePhysicalMemory() || prMemory.first < prMemory.second || !gParameters.GetPermitsCentricExecution()) ? SUCCESSIVELY : CENTRICALLY;
     try {
-      switch (geExecutingType) {
-        case CENTRICALLY  : //gPrintDirection.Printf("Centric execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.second);
-                            ExecuteCentricEvaluation(); break;
-        case SUCCESSIVELY :
-        default           : //gPrintDirection.Printf("Successive execution, using approxiately %.0lf MB of memory...\n", BasePrint::P_STDOUT, prMemory.first);
-                            ExecuteSuccessively(); break;
-      };
+        // sanity check for invalidate paramater configurations
+        if (gParameters.getPerformPowerEvaluation() && !gParameters.getPowerEvaluationCaseCount() && !gParameters.GetCaseFileName().size())
+            throw prg_error("Error: Power evaluation is not implemented such that both the number of power cases and the case file(s) are unspecified.\n","Execute()");
+        if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount() && gParameters.GetCaseFileName().size())
+            throw prg_error("Error: Power evaluation is not implemented such you can specify the number of power cases and the case file(s).\n","Execute()");
+        //calculate number of neighboring locations about each centroid
+        if (geExecutingType == SUCCESSIVELY && gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+            macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
+            gpDataHub->FindNeighbors();
+            macroRunTimeStopSerial();
+        }
+        if (gPrintDirection.GetIsCanceled()) return;
+        //create result file report
+        CreateReport();
+        // conditionally perform standard analysis based upon power evaluation settings
+        if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && !gParameters.getPowerEvaluationCaseCount())) {
+            switch (geExecutingType) {
+                case CENTRICALLY  : ExecuteCentricEvaluation(); break;
+                case SUCCESSIVELY :
+                default           : ExecuteSuccessively();
+            }
+        }
+        // conditionally perform power evaluation
+        if (gParameters.getPerformPowerEvaluation())
+            ExecutePowerEvaluations();
+        // print warnings, parameter settings and run statistics to report file
+        FinalizeReport();
+    } catch (std::bad_alloc &b) {
+        std::string additional;
+        //Potentially provide detailed options given user parameter settings:
+        if (geExecutingType == SUCCESSIVELY && gParameters.GetPermitsCentricExecution(true) &&
+            gParameters.GetPValueReportingType() == TERMINATION_PVALUE && gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
+            additional = "\nNote: SaTScan could not utilize the alternative memory allocation for\n"
+                         "this analysis because of the P-Value reporting setting (sequential Monte Carlo).\n"
+                         "Consider changing this setting, which will enable analysis to utilize the\n"
+                         "alternative memory allocation and possibly execute without memory issues.\n";
+        }
+        throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
+                               "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
+                               "Note that memory needs are on the order of %.0lf MB.\n%s",
+                               (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second), additional.c_str());
     }
-    catch (std::bad_alloc &b) {
-      std::string additional;
-      //Potentially provide detailed options given user parameter settings:
-      if (geExecutingType == SUCCESSIVELY && 
-          gParameters.GetPermitsCentricExecution(true) &&
-          gParameters.GetPValueReportingType() == TERMINATION_PVALUE && gParameters.GetNumReplicationsRequested() >= MIN_SIMULATION_RPT_PVALUE) {
-              additional = "\nNote: SaTScan could not utilize the alternative memory allocation for\n"
-                           "this analysis because of the P-Value reporting setting (sequential Monte Carlo).\n"
-                           "Consider changing this setting, which will enable analysis to utilize the\n"
-                           "alternative memory allocation and possibly execute without memory issues.\n";
-      }
-
-      throw resolvable_error("\nSaTScan is unable to perform analysis due to insufficient memory.\n"
-                             "Please see 'Memory Requirements' in user guide for suggested solutions.\n"
-                             "Note that memory needs are on the order of %.0lf MB.\n%s",
-                             (geExecutingType == SUCCESSIVELY ? prMemory.first : prMemory.second), additional.c_str());
-    }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("Execute()","AnalysisRunner");
     throw;
   }
 }
 
+/* perform power evaluations */
+void AnalysisRunner::ExecutePowerEvaluations() {
+  try {
+    FILE * fp=0;
+    OpenReportFile(fp, true);
+    fprintf(fp, "\nPOWER EVALUATIONS\n");
+    _clusterRanker.sort(); // need to sort otherwise simulation process of ranking clusters will fail
+    boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+    // simulations not already done is analysis, perform them now
+    if (!gSimVars.get_sim_count()) {
+        //Do standard replications
+        gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
+        gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
+        runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested());        
+    } else 
+        AsciiPrintFormat::PrintSectionSeparatorString(fp, 0, 1);
+    unsigned int numReplicaStep1 = gSimVars.get_sim_count();
+
+    // report critical values gathered from simulations and/or user specified
+    fprintf(fp,"\nAlpha\t\t\t\t\t\t\t\t0.05\t\t\t\t\t0.01\t\t\t\t\t0.001\n");
+    double critical05, critical01, critical001;
+    switch (gParameters.getPowerEvaluationCriticalValueType()) {
+        case PE_MONTECARLO:
+                critical05 = gpSignificantRatios->getAlpha05().second;
+                critical01 = gpSignificantRatios->getAlpha01().second;
+                critical001 = gpSignificantRatios->getAlpha001().second;
+                break;
+        case PE_GUMBEL:
+                critical05 = calculateGumbelCriticalValue(gSimVars, 0.05).first;
+                critical01 = calculateGumbelCriticalValue(gSimVars, 0.01).first;
+                critical001 = calculateGumbelCriticalValue(gSimVars, 0.001).first;
+                break;
+        default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEvaluationCriticalValueType());
+    };
+    fprintf(fp,"Critical Value\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", critical05, critical01, critical001);
+    // if power estimation is monte carlo, then set sim vars to track those LLRs
+    if (gParameters.getPowerEstimationType() == PE_MONTECARLO) {
+        gSimVars.reset(critical05);
+        gSimVars.add_additional_mlc(critical01);
+        gSimVars.add_additional_mlc(critical001);
+    }
+
+    // Do power replications
+    if (gPrintDirection.GetIsCanceled()) return;
+    // read power evaluations adjustments
+    SaTScanDataReader reader(*gpDataHub);
+    SaTScanDataReader::RiskAdjustmentsContainer_t riskAdjustments;
+    if (!reader.ReadAdjustmentsByRelativeRisksFile(gParameters.getPowerEvaluationFilename(), riskAdjustments, false))
+        throw resolvable_error("There were problems reading the power evaluation adjustments file.", "ExecutePowerEvaluations()");
+    if (!riskAdjustments.size())
+        throw resolvable_error("Power evaluations can not be performed. No adjustments found in power evaluation file.", "ExecutePowerEvaluations()");
+    for (size_t t=0; t < riskAdjustments.size(); ++t) {
+        ++giAnalysisCount;
+        // create adjusted randomizers
+        randomizers->killAll();
+        randomizers->resize(gParameters.GetNumDataSets(), 0);
+        randomizers->at(0) = new AlternateHypothesisRandomizer(*gpDataHub, riskAdjustments.at(t), gParameters.GetRandomizationSeed());
+        //create more if needed
+        for (size_t r=1; r < gParameters.GetNumDataSets(); ++r)
+            randomizers->at(r) = randomizers->at(0)->Clone();    
+        gPrintDirection.Printf("Doing the alternative replications for power set %d\n", BasePrint::P_STDOUT, t);
+        runSuccessiveSimulations(randomizers, gParameters.getNumPowerEvalReplicaPowerStep());
+
+        double power05, power01, power001;
+        fprintf(fp,"Estimated Power\n");
+        switch (gParameters.getPowerEstimationType()) {
+            case PE_MONTECARLO:
+                power05 = static_cast<double>(gSimVars.get_llr_counters().at(0).second)/static_cast<double>(numReplicaStep1);
+                power01 = static_cast<double>(gSimVars.get_llr_counters().at(1).second)/static_cast<double>(numReplicaStep1);
+                power001 = static_cast<double>(gSimVars.get_llr_counters().at(2).second)/static_cast<double>(numReplicaStep1);
+                break;
+            case PE_GUMBEL:
+                power05 = calculateGumbelPValue(gSimVars, critical05).first;
+                power01 = calculateGumbelPValue(gSimVars, critical01).first;
+                power001 = calculateGumbelPValue(gSimVars, critical001).first;
+                break;
+            default: throw prg_error("Unknown type '%d'.", "ExecutePowerEvaluations()", gParameters.getPowerEstimationType());
+        }
+        fprintf(fp,"Alternative #%d\t\t\t%lf\t\t\t%lf\t\t\t%lf\n", t+1, power05, power01, power001);
+    }
+    fclose(fp); fp=0;
+  } catch (prg_exception& x) {
+    x.addTrace("ExecutePowerEvaluations()","AnalysisRunner");
+    throw;
+  }
+}
+
+
 /** starts analysis execution - evaluating real data then replications */
 void AnalysisRunner::ExecuteSuccessively() {
-  try {
-    //detect user cancellation
-    if (gPrintDirection.GetIsCanceled())
-      return;
-    //calculate number of neighboring locations about each centroid
-    macroRunTimeStartSerial(SerialRunTimeComponent::NeighborCalcuation);
-    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON)
-      gpDataHub->FindNeighbors();
-    macroRunTimeStopSerial();
-    //detect cancellation
-    if (gPrintDirection.GetIsCanceled())
-      return;
-    //create result file report
-    CreateReport();
-    //start analyzing data
-    do {
+  try {    
+    do { //start analyzing data
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
       giPower_X_Count = giPower_Y_Count = 0;
@@ -230,27 +301,19 @@ void AnalysisRunner::ExecuteSuccessively() {
       CalculateMostLikelyClusters();
       macroRunTimeStopSerial();
       //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
+      if (gPrintDirection.GetIsCanceled()) return;
       gSimVars.reset(gParameters.GetNumReplicationsRequested() > 0 && getLargestMaximaClusterCollection().GetNumClustersRetained() > 0 ? getLargestMaximaClusterCollection().GetTopRankedCluster().GetRatio() : 0.0);
       //Do Monte Carlo replications.
       if (getLargestMaximaClusterCollection().GetNumClustersRetained())
         ExecuteSuccessiveSimulations();
       //detect user cancellation
-      if (gPrintDirection.GetIsCanceled())
-        return;
+      if (gPrintDirection.GetIsCanceled()) return;
       // report clusters to output files
       reportClusters();
       //log history for first analysis run
-      if (giAnalysisCount == 1) {
-        LogRunHistory();
-      }
-      //report additional output file: 'relative risks for each location'
-      CreateRelativeRiskFile();
+      if (giAnalysisCount == 1) LogRunHistory();
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis()); //repeat analysis - iterative scan
-    //finish report
-    FinalizeReport();
   } catch (prg_exception& x) {
     x.addTrace("ExecuteSuccessively()","AnalysisRunner");
     throw;
@@ -511,10 +574,10 @@ AbstractCentricAnalysis * AnalysisRunner::GetNewCentricAnalysisObject(const Abst
 }
 
 double AnalysisRunner::GetSimRatio01() const {
-  return gpSignificantRatios.get() ? gpSignificantRatios->GetAlpha01() : 0;
+    return gpSignificantRatios.get() ? gpSignificantRatios->getAlpha01().second: 0.0;
 }
 double AnalysisRunner::GetSimRatio05() const {
-  return gpSignificantRatios.get() ? gpSignificantRatios->GetAlpha05() : 0;
+    return gpSignificantRatios.get() ? gpSignificantRatios->getAlpha05().second : 0;
 }
 
 /** Logs run to history file. */
@@ -554,13 +617,8 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
   unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), static_cast<unsigned>(gpDataHub->m_nGridTracts));
   DataSetHandler      & DataHandler = gpDataHub->GetDataSetHandler();
 
-  try {
-    //detect user cancellation
-    if (gPrintDirection.GetIsCanceled()) return;
-    //create result file report
-    CreateReport();
-    //start analyzing data
-    do {
+  try {    
+    do { //start analyzing data
       ++giAnalysisCount;
       guwSignificantAt005 = 0;
       giPower_X_Count = giPower_Y_Count = 0;
@@ -679,7 +737,7 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
       rankClusterCollections();
       //report calculated simulation llr values
       if (SimulationRatios) {
-        if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
+        if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->initialize();
         RatioWriter.reset(new LoglikelihoodRatioWriter(gParameters, giAnalysisCount > 1));
         std::vector<double>::const_iterator itr=SimulationRatios->begin(), itr_end=SimulationRatios->end();
         for (; itr != itr_end; ++itr) {
@@ -688,7 +746,6 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
           //update significance indicator
           UpdateSignificantRatiosList(*itr);
           //update power calculations
-          UpdatePowerCounts(*itr);
           //update simulation variables
           gSimVars.add_llr(*itr);
           //update simulated loglikelihood record buffer
@@ -703,12 +760,10 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
         LogRunHistory();
       }
       //report additional output file: 'relative risks for each location'
-      CreateRelativeRiskFile();
       if (gPrintDirection.GetIsCanceled()) return;
     } while (RepeatAnalysis() == true); //repeat analysis - iterative scan
 
     //finish report
-    FinalizeReport();
   } catch (prg_exception& x) {
     x.addTrace("ExecuteCentricEvaluation()","AnalysisRunner");
     throw;
@@ -722,35 +777,20 @@ void AnalysisRunner::ExecuteCentricEvaluation() {
     - additional output file(s)
 *****************************************************
 */
-void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
-  char                * sReplicationFormatString;
-  unsigned long         ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), gParameters.GetNumReplicationsRequested());
-
+void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica) {
   try {
-    if (gParameters.GetNumReplicationsRequested() == 0)
-      return;
-    //set print message format string
-    if (gParameters.GetLogLikelihoodRatioIsTestStatistic())
-      sReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
-    else
-      sReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
-    //set/reset loglikelihood ratio significance indicator
-    if (GetIsCalculatingSignificantRatios()) gpSignificantRatios->Initialize();
-    //if writing simulation data to file, delete file now
-    if (gParameters.GetOutputSimulationData())
-      remove(gParameters.GetSimulationDataOutputFilename().c_str());
-
     {
       PrintQueue lclPrintDirection(gPrintDirection, gParameters.GetSuppressingWarnings());
-      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, sReplicationFormatString, *this);
+      stsMCSimJobSource jobSource(gParameters, ::GetCurrentTime_HighResolution(), lclPrintDirection, *this, num_relica);
       typedef contractor<stsMCSimJobSource> contractor_type;
       contractor_type theContractor(jobSource);
       //run threads:
       boost::thread_group tg;
-      boost::mutex        thread_mutex;
+      boost::mutex thread_mutex;
+      unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), num_relica);
       for (unsigned u=0; u < ulParallelProcessCount; ++u) {
          try {
-            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t()));
+            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers);
             tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
          } catch (std::bad_alloc &b) {             
              if (u == 0) throw; // if this is the first thread, re-throw exception
@@ -778,9 +818,8 @@ void AnalysisRunner::PerformSuccessiveSimulations_Parallel() {
       if (jobSource.GetUnregisteredJobCount() > 0)
         throw prg_error("At least %d jobs remain uncompleted.", "AnalysisRunner", jobSource.GetUnregisteredJobCount());
     }
-  }
-  catch (prg_exception& x) {
-    x.addTrace("PerformSuccessiveSimulations_Parallel()","AnalysisRunner");
+  } catch (prg_exception& x) {
+    x.addTrace("runSuccessiveSimulations()","AnalysisRunner");
     throw;
   }
 }
@@ -792,7 +831,14 @@ void AnalysisRunner::ExecuteSuccessiveSimulations() {
       //recompute neighbors if settings indicate that smaller clusters are reported
       gpDataHub->SetActiveNeighborReferenceType(CSaTScanData::MAXIMUM);
       gPrintDirection.Printf("Doing the Monte Carlo replications\n", BasePrint::P_STDOUT);
-      PerformSuccessiveSimulations_Parallel();
+      //set/reset loglikelihood ratio significance indicator
+      if (GetIsCalculatingSignificantRatios()) 
+          gpSignificantRatios->initialize();
+      //if writing simulation data to file, delete file now
+      if (gParameters.GetOutputSimulationData())
+          remove(gParameters.GetSimulationDataOutputFilename().c_str());
+      boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+      runSuccessiveSimulations(randomizers, gParameters.GetNumReplicationsRequested());
     }
   }
   catch (prg_exception& x) {
@@ -847,18 +893,28 @@ void AnalysisRunner::PrintCriticalValuesStatus(FILE* fp) {
 
     // skip reporting standard critical values if p-value reporting is gumbel
     if (gParameters.GetPValueReportingType() != GUMBEL_PVALUE) {
-        if (gSimVars.get_sim_count() > 0)
+		if (gSimVars.get_sim_count() > 0)
             fprintf(fp,"\nStandard Monte Carlo Critical Values:\n");
-        if (gSimVars.get_sim_count() >= 99999)
-            fprintf(fp,"... 0.00001: %f\n", gpSignificantRatios->GetAlpha00001());
-        if (gSimVars.get_sim_count() >= 9999)
-            fprintf(fp,".... 0.0001: %f\n", gpSignificantRatios->GetAlpha0001());
-        if (gSimVars.get_sim_count() >= 999)
-            fprintf(fp,"..... 0.001: %f\n", gpSignificantRatios->GetAlpha001());
-        if (gSimVars.get_sim_count() >= 99)
-            fprintf(fp,"...... 0.01: %f\n", gpSignificantRatios->GetAlpha01());
-        if (gSimVars.get_sim_count() >= 19)
-            fprintf(fp,"...... 0.05: %f\n", gpSignificantRatios->GetAlpha05());
+        if (gSimVars.get_sim_count() >= 99999) {
+			SignificantRatios::alpha_t alpha00001(gpSignificantRatios->getAlpha00001());
+			fprintf(fp,"... 0.00001: %f\n", alpha00001.second);
+		}
+        if (gSimVars.get_sim_count() >= 9999) {
+			SignificantRatios::alpha_t alpha0001(gpSignificantRatios->getAlpha0001());
+            fprintf(fp,".... 0.0001: %f\n", alpha0001.second);
+		}
+        if (gSimVars.get_sim_count() >= 999) {
+			SignificantRatios::alpha_t alpha001(gpSignificantRatios->getAlpha001());
+            fprintf(fp,"..... 0.001: %f\n", alpha001.second);
+		}
+        if (gSimVars.get_sim_count() >= 99) {
+			SignificantRatios::alpha_t alpha01(gpSignificantRatios->getAlpha01());
+            fprintf(fp,"...... 0.01: %f\n", alpha01.second);
+		}
+        if (gSimVars.get_sim_count() >= 19) {
+			SignificantRatios::alpha_t alpha05(gpSignificantRatios->getAlpha05());
+            fprintf(fp,"...... 0.05: %f\n", alpha05.second);
+		}
     }
   }
 }
@@ -960,20 +1016,6 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
   if (system (command.str().c_str()))
     gPrintDirection.Printf("Failed to create GINI graphic.\n", BasePrint::P_STDOUT);
   remove(name.c_str());
-}
-
-/** Prints power calculations status to report file. */
-void AnalysisRunner::PrintPowerCalculationsStatus(FILE* fp) {
-  AsciiPrintFormat      PrintFormat;
-  std::string           buffer;
-
-  if (gParameters.GetIsPowerCalculated() && gSimVars.get_sim_count()) {
-    fprintf(fp, "\n");
-    buffer = "Percentage of Monte Carlo replications with a likelihood greater than";
-    PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
-    fprintf(fp,"... X (%f) : %f\n", gParameters.GetPowerCalculationX(), ((double)giPower_X_Count)/gSimVars.get_sim_count());
-    fprintf(fp,"... Y (%f) : %f\n", gParameters.GetPowerCalculationY(), ((double)giPower_Y_Count)/gSimVars.get_sim_count());
-  }
 }
 
 /** Prints indication of whether no clusters were retained nor reported. */
@@ -1124,7 +1166,8 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
         //print cluster definition to file stream
         TopCluster.Display(fp, *gpDataHub, clusterSupplement, gSimVars);
         //check track of whether this cluster was significant in top five percentage
-        if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
+
+        if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
             ++guwSignificantAt005;
         //print cluster definition to 'location information' record buffer
         if (gParameters.GetOutputAreaSpecificFiles())
@@ -1133,7 +1176,6 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
     }
     PrintRetainedClustersStatus(fp, _clustersReported);
     PrintCriticalValuesStatus(fp);
-    PrintPowerCalculationsStatus(fp);
     PrintEarlyTerminationStatus(fp);
     PrintGiniCoefficients(fp);
     fclose(fp); fp=0;
@@ -1189,7 +1231,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
         TopCluster.Write(Writer, *gpDataHub, 1, gSimVars);
       }
       //check track of whether this cluster was significant in top five percentage
-      if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->GetAlpha05(), TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
+      if (GetIsCalculatingSignificantRatios() && macro_less_than(gpSignificantRatios->getAlpha05().second, TopCluster.m_nRatio, DBL_CMP_TOLERANCE))
         ++guwSignificantAt005;
       _clustersReported=true;
     }
@@ -1200,7 +1242,6 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 
     PrintRetainedClustersStatus(fp, clusterSupplement.size() > 0);
     PrintCriticalValuesStatus(fp);
-    PrintPowerCalculationsStatus(fp);
     PrintEarlyTerminationStatus(fp);
     fclose(fp); fp=0;
   } catch (prg_exception& x) {
@@ -1324,23 +1365,12 @@ void AnalysisRunner::Setup() {
       case SPATIALVARTEMPTREND       : gpDataHub.reset(new CSVTTData(gParameters, gPrintDirection)); break;
       default : throw prg_error("Unknown Analysis Type '%d'.", "Setup()", gParameters.GetAnalysisType());
     };
-    if (gParameters.GetReportCriticalValues() && gParameters.GetNumReplicationsRequested() >= 19)
-      gpSignificantRatios.reset(new CSignificantRatios05(gParameters.GetNumReplicationsRequested()));
+    if (gParameters.GetReportCriticalValues() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCriticalValueType() == PE_MONTECARLO))
+        gpSignificantRatios.reset(new SignificantRatios(gParameters.GetNumReplicationsRequested()));
   }
   catch (prg_exception& x) {
     x.addTrace("Setup()","AnalysisRunner");
     throw;
-  }
-}
-
-/** If user requested power calculation option, updates power calculation
-    counters based upon passed simulated loglikelihood ratio. */
-void AnalysisRunner::UpdatePowerCounts(double r) {
-  if (gParameters.GetIsPowerCalculated()) {
-    if (r > gParameters.GetPowerCalculationX())
-      ++giPower_X_Count;
-    if (r > gParameters.GetPowerCalculationY())
-      ++giPower_Y_Count;
   }
 }
 
@@ -1418,7 +1448,7 @@ void AnalysisRunner::reportClusters() {
 
 /** Updates list of significant ratio, if structure allocated. */
 void AnalysisRunner::UpdateSignificantRatiosList(double dRatio) {
-    if (gpSignificantRatios.get()) gpSignificantRatios->AddRatio(dRatio);
+    if (gpSignificantRatios.get()) gpSignificantRatios->add(dRatio);
 }
 
 

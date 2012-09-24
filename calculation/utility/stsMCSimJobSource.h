@@ -81,8 +81,8 @@ public:
     CParameters const & rParameters
    ,boost::posix_time::ptime CurrentTime
    ,PrintQueue & rPrintDirection
-   ,const char * szReplicationFormatString
    ,AnalysisRunner & rRunner
+   ,unsigned int num_replica
   );
 
   bool                      is_exhausted() const;

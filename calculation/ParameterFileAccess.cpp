@@ -86,9 +86,9 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case REPLICAS                 : return " Monte Carlo replications (0, 9, 999, n999)";
       case MODEL                    : return " model type (0=Discrete Poisson, 1=Bernoulli, 2=Space-Time Permutation, 3=Ordinal, 4=Exponential, 5=Normal, 6=Continuous Poisson, 7=Multinomial)";
       case RISKFUNCTION             : return " isotonic scan (0=Standard, 1=Monotone)";
-      case POWERCALC                : return " p-values for 2 pre-specified log likelihood ratios? (y/n)";
-      case POWERX                   : return " power calculation log likelihood ratio (no. 1)";
-      case POWERY                   : return " power calculation log likelihood ratio (no. 2)";
+      case POWER_EVALUATION         : return " perform power evaluation - Poisson only (y/n)";
+      case POWERX                   : return " power evaluation critical value (no. 1)";
+      case POWERY                   : return " power evaluation critical value (no. 2)";
       case TIMETREND                : return " time trend adjustment type (0=None, 1=Nonparametric, 2=LogLinearPercentage, 3=CalculatedLogLinearPercentage, 4=TimeStratifiedRandomization, 5=CalculatedQuadraticPercentage)";
       case TIMETRENDPERC            : return " time trend adjustment percentage (>-100)";
       case PURETEMPORAL             : return " include purely temporal clusters? (y/n)";
@@ -172,6 +172,12 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case INDEXBASED_REPORT_TYPE   : return " index based cluster reporting type (0=optimal index only, 1=all values)";
       case OUTPUT_INDEX_COEFFICENTS : return " output index coefficents to results file (y/n)";
       case INDEXBASED_PVALUE_CUTOFF : return " max p-value for clusters used in calculation of index based coefficients (0.000-1.000)";
+      case PE_COUNT                 : return " total cases in power evaluation";
+      case PE_CV_SPEC_TYPE          : return " specification of critical values type (Automatic=0, Manual=1, Both=3)";
+      case PE_CRITICAL_TYPE         : return " critical value type (0=Monte Carlo, 1=Gumbel)";
+      case PE_ESTIMATION_TYPE       : return " power estimation type (0=Monte Carlo, 1=Gumbel)";
+      case PE_ADJUSTFILE            : return " power adjustments file";
+      case PE_POWER_REPLICAS        : return " number of replications in power step";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -209,7 +215,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case REPLICAS                 : return AsString(s, gParameters.GetNumReplicationsRequested());
       case MODEL                    : return AsString(s, gParameters.GetProbabilityModelType());
       case RISKFUNCTION             : return AsString(s, gParameters.GetRiskType());
-      case POWERCALC                : return AsString(s, gParameters.GetIsPowerCalculated());
+      case POWER_EVALUATION          : return AsString(s, gParameters.getPerformPowerEvaluation()); 
       case POWERX                   : return AsString(s, gParameters.GetPowerCalculationX());
       case POWERY                   : return AsString(s, gParameters.GetPowerCalculationY());
       case TIMETREND                : return AsString(s, gParameters.GetTimeTrendAdjustmentType());
@@ -312,6 +318,12 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case INDEXBASED_REPORT_TYPE    : return AsString(s, gParameters.getIndexBasedReportType());
       case INDEXBASED_PVALUE_CUTOFF  : return AsString(s, gParameters.getIndexBasedPValueCutoff());
       case OUTPUT_INDEX_COEFFICENTS  : return AsString(s, gParameters.getOutputIndexBasedCoefficents()); 
+      case PE_COUNT                  : return AsString(s, gParameters.getPowerEvaluationCaseCount()); 
+      case PE_CV_SPEC_TYPE            : return AsString(s, gParameters.getPowerEvaluationCriticalValuesSpecType()); 
+      case PE_CRITICAL_TYPE          : return AsString(s, gParameters.getPowerEvaluationCriticalValueType()); 
+      case PE_ESTIMATION_TYPE        : return AsString(s, gParameters.getPowerEstimationType()); 
+      case PE_ADJUSTFILE             : s = gParameters.getPowerEvaluationFilename(); return s;
+      case PE_POWER_REPLICAS         : return AsString(s, gParameters.getNumPowerEvalReplicaPowerStep()); 
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   }
@@ -350,7 +362,7 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case REPLICAS                 : AsString(default_value, gParameters.GetNumReplicationsRequested()); break;
       case MODEL                    : AsString(default_value, gParameters.GetProbabilityModelType()); break;
       case RISKFUNCTION             : AsString(default_value, gParameters.GetRiskType()); break;
-      case POWERCALC                : default_value = (gParameters.GetIsPowerCalculated() ? "y" : "n"); break;
+      case POWER_EVALUATION          : default_value = (gParameters.getPerformPowerEvaluation() ? "y" : "n"); break;
       case POWERX                   : AsString(default_value, gParameters.GetPowerCalculationX()); break;
       case POWERY                   : AsString(default_value, gParameters.GetPowerCalculationY()); break;
       case TIMETREND                : AsString(default_value, gParameters.GetTimeTrendAdjustmentType()); break;
@@ -439,6 +451,12 @@ void AbtractParameterFileAccess::MarkAsMissingDefaulted(ParameterType eParameter
       case INDEXBASED_REPORT_TYPE   : AsString(default_value, gParameters.getIndexBasedReportType()); break;
       case INDEXBASED_PVALUE_CUTOFF : AsString(default_value, gParameters.getIndexBasedPValueCutoff()); break;
       case OUTPUT_INDEX_COEFFICENTS : default_value = (gParameters.getOutputIndexBasedCoefficents() ? "y" : "n"); break;
+      case PE_COUNT                  : AsString(default_value, gParameters.getPowerEvaluationCaseCount()); break;
+      case PE_CV_SPEC_TYPE           : AsString(default_value, gParameters.getPowerEvaluationCriticalValuesSpecType()); break;
+      case PE_CRITICAL_TYPE          : AsString(default_value, gParameters.getPowerEvaluationCriticalValueType()); break;
+      case PE_ESTIMATION_TYPE        : AsString(default_value, gParameters.getPowerEstimationType()); break;
+      case PE_ADJUSTFILE             : default_value = "<blank>"; break;
+      case PE_POWER_REPLICAS         : AsString(default_value, gParameters.getNumPowerEvalReplicaPowerStep()); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
 
@@ -680,7 +698,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case MODEL                     : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, POISSON, RANK);
                                        gParameters.SetProbabilityModelType((ProbabilityModelType)iValue); break;
       case RISKFUNCTION              : gParameters.SetRiskType((RiskType)ReadInt(sParameter, eParameterType)); break;
-      case POWERCALC                 : gParameters.SetPowerCalculation(ReadBoolean(sParameter, eParameterType)); break;
+      case POWER_EVALUATION          : gParameters.setPerformPowerEvaluation(ReadBoolean(sParameter, eParameterType)); break;
       case POWERX                    : gParameters.SetPowerCalculationX(ReadDouble(sParameter, eParameterType)); break;
       case POWERY                    : gParameters.SetPowerCalculationY(ReadDouble(sParameter, eParameterType)); break;
       case TIMETREND                 : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, NOTADJUSTED, STRATIFIED_RANDOMIZATION);
@@ -814,6 +832,15 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
                                        gParameters.setIndexBasedReportType((IndexBasedReportType)ReadInt(sParameter, eParameterType)); break;
       case INDEXBASED_PVALUE_CUTOFF  : gParameters.setIndexBasedPValueCutoff(ReadDouble(sParameter, eParameterType)); break;
       case OUTPUT_INDEX_COEFFICENTS  : gParameters.setReportIndexBasedCoefficents(ReadBoolean(sParameter, eParameterType)); break;
+      case PE_COUNT                  : gParameters.setPowerEvaluationCaseCount(ReadUnsignedInt(sParameter, eParameterType)); break;
+      case PE_CV_SPEC_TYPE           : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_AUTOMATIC, PE_BOTH);
+                                       gParameters.setPowerEvaluationCriticalValuesSpecType((CriticalValuesSpecifyType)ReadInt(sParameter, eParameterType)); break;
+      case PE_CRITICAL_TYPE          : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_MONTECARLO, PE_GUMBEL);
+                                       gParameters.setPowerEvaluationCriticalValueType((PowerEvaluationType)ReadInt(sParameter, eParameterType)); break;
+      case PE_ESTIMATION_TYPE        : iValue = ReadEnumeration(ReadInt(sParameter, eParameterType), eParameterType, PE_MONTECARLO, PE_GUMBEL);
+                                       gParameters.setPowerEstimationType((PowerEvaluationType)ReadInt(sParameter, eParameterType)); break;
+      case PE_ADJUSTFILE             : gParameters.setPowerEvaluationFilename(sParameter.c_str(), true); break;
+      case PE_POWER_REPLICAS         : gParameters.setNumPowerEvalReplicaPowerStep(ReadUnsignedInt(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   }

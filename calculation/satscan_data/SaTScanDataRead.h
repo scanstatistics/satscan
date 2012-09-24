@@ -9,6 +9,7 @@
 
 class DataSource;   /** forward class definition */
 class CSaTScanData; /** forward class definition */
+class RelativeRiskAdjustmentHandler;
 
 /** Reads data from input sources into class members of CSaTScanData object.
     Note: We might want to make this class an abstraction, deriving for each
@@ -16,6 +17,8 @@ class CSaTScanData; /** forward class definition */
           it might be better to simplfy those classes and move reading here. */
 class SaTScanDataReader {
   public:
+    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
+    typedef std::vector<RiskAdjustments_t> RiskAdjustmentsContainer_t;
     enum RecordStatusType       {Rejected=0, Ignored, Accepted};
 
   private:
@@ -28,7 +31,6 @@ class SaTScanDataReader {
     std::deque<void*>           gmSourceLocationWarned;    /** indicates whether user has already been warned that records are being ignored */
 
     bool                        ConvertAdjustmentDateToJulian(DataSource& Source, Julian& JulianDate, bool bStartDate);
-    bool                        ReadAdjustmentsByRelativeRisksFile();
     bool                        ReadBernoulliData();
     bool                        ReadCartesianCoordinates(DataSource& Source, std::vector<double> & vCoordinates, short & iScanCount, short iWordOffSet);
     bool                        ReadCoordinatesFile();
@@ -56,6 +58,7 @@ class SaTScanDataReader {
     ~SaTScanDataReader() {}
 
     void                        Read();
+    bool                        ReadAdjustmentsByRelativeRisksFile(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate);
 };
 //*****************************************************************************
 #endif

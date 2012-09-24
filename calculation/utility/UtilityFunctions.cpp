@@ -344,6 +344,8 @@ void printoutMatrix(const std::string& s, Matrix& m, FILE * fp) {
   fflush(fp);
 }
 
+
+/** Returns Gumbel p-value. */
 std::pair<double,double> calculateGumbelPValue(const SimulationVariables& simVars, double critical_value) {
     double beta = std::sqrt(simVars.get_variance()) * std::sqrt(6.0)/PI;
     double mu = simVars.get_mean() - EULER * beta;

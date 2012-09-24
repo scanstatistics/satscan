@@ -22,11 +22,9 @@
 class CSaTScanData {
   friend class SaTScanDataReader;
   friend class  CentroidNeighborCalculator;
-//  friend void  CentroidNeighborCalculator::CalculateNeighbors();
-//  friend void  CentroidNeighborCalculator::CalculateNeighborsByCircles();
-//  friend void  CentroidNeighborCalculator::CalculateNeighborsByEllipses();
 
   public:
+    typedef boost::shared_ptr<RelativeRiskAdjustmentHandler> RiskAdjustments_t;
     enum           ActiveNeighborReferenceType  {NOT_SET, REPORTED, MAXIMUM};
 
   private:
@@ -67,7 +65,7 @@ class CSaTScanData {
     measure_t                                   gtTotalMeasureAux;              /** total auxillary measure for all data sets */
     count_t                                     gtTotalCases;                   /** total cases for all data sets */
     measure_t                                   gtTotalPopulation;              /** total population for all sets */
-    RelativeRiskAdjustmentHandler               gRelativeRiskAdjustments;
+    RiskAdjustments_t                           gRelativeRiskAdjustments;
     std::vector<int>                            gvProspectiveIntervalCuts;
     int                                         m_nProspectiveIntervalStart; // interval where start of prospective space-time begins
     int                                         m_nIntervalCut; // Maximum time intervals allowed in a cluster (base on TimeSize)
@@ -78,11 +76,8 @@ class CSaTScanData {
     std::vector<tract_t>                        gvNullifiedLocations;
     mutable ptr_vector<CentroidNeighbors>       gvCentroidNeighborStore;
 
-    bool                                        AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate);
-    measure_t                                   CalcMeasureForTimeInterval(const PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) const;
     int                                         CalculateProspectiveIntervalStart() const;
     void                                        CalculateTimeIntervalIndexes();
-    measure_t                                   DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const;
     count_t                                     GetCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const;
     int                                         LowerPopIndex(Julian Date) const;
     virtual void                                RemoveTractSignificance(const CCluster& Cluster, tract_t tTractIndex);
@@ -103,7 +98,6 @@ class CSaTScanData {
     tract_t                                     m_nGridTracts;
     int                                         m_nTimeIntervals;
 
-    virtual void                                AdjustForKnownRelativeRisks(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure);
     virtual void                                AdjustNeighborCounts(ExecutionType geExecutingType); // For iterative scanning analysis, after top cluster removed
     virtual void                                CalculateMeasure(RealDataSet& thisSet);
     void                                        CalculateExpectedCases();
@@ -111,7 +105,6 @@ class CSaTScanData {
     virtual void                                DisplayRelativeRisksForEachTract() const;
     void                                        DisplaySummary(FILE* fp, std::string sSummaryText, bool bPrintPeriod);
     virtual void                                FindNeighbors();
-    void                                        FreeRelativeRisksAdjustments() {gRelativeRiskAdjustments.Empty();}
     DataSetHandler                            & GetDataSetHandler() {return *gDataSets;}
     const DataSetHandler                      & GetDataSetHandler() const {return *gDataSets;}
     double                                      GetEllipseAngle(int iEllipseIndex) const;
@@ -128,9 +121,7 @@ class CSaTScanData {
     inline virtual tract_t                      GetNeighbor(int iEllipse, tract_t t, unsigned int nearness, double dClusterRadius=-1) const;
     inline tract_t                           ** GetNeighborCountArray() {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
     inline tract_t                           ** GetNeighborCountArray() const {return gppActiveNeighborArray;/*gpNeighborCountHandler->GetArray();*/}
-
     inline MinimalGrowthArray<tract_t>       ** GetReportedNeighborMaxsCountArray() const {return gpReportedMaximumsNeighborCountHandler->GetArray();}
-
     inline size_t                               GetNumDataSets() const {return gDataSets->GetNumDataSets();}
     inline tract_t                              GetNumMetaTracts() const {return (tract_t)gTractHandler->getMetaLocations().getLocations().size();}
     inline tract_t                              GetNumMetaTractsReferenced() const {return (tract_t)gTractHandler->getMetaLocations().getNumReferencedLocations();}
@@ -141,6 +132,7 @@ class CSaTScanData {
     CModel                                    & GetProbabilityModel() const {return *m_pModel;}
     const std::vector<int>                    & GetProspectiveIntervalCuts() const {return gvProspectiveIntervalCuts;}
     int                                         GetProspectiveStartIndex() const {return m_nProspectiveIntervalStart;}  
+    const RiskAdjustments_t                   & getRiskAdjustments() const {return gRelativeRiskAdjustments;}
     Julian                                      GetStudyPeriodEndDate() const {return m_nEndDate;}
     Julian                                      GetStudyPeriodStartDate() const {return m_nStartDate;}
     int                                         GetTimeIntervalOfDate(Julian Date) const;

@@ -2,6 +2,7 @@
 #pragma hdrstop
 #include "AdjustmentHandler.h"
 #include "SSException.h" 
+#include "SaTScanData.h"
 
 /** constructor */
 RelativeRiskAdjustment::RelativeRiskAdjustment(measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {
@@ -15,9 +16,6 @@ RelativeRiskAdjustment::RelativeRiskAdjustment(measure_t dRelativeRisk, Julian S
     throw;
   }
 }
-
-/** destructor */
-RelativeRiskAdjustment::~RelativeRiskAdjustment() {}
 
 void RelativeRiskAdjustment::MultiplyRisk(measure_t dRisk) {
   try {
@@ -34,15 +32,10 @@ void RelativeRiskAdjustment::MultiplyRisk(measure_t dRisk) {
   }
 }
 
-
-/** constructor */
-RelativeRiskAdjustmentHandler::RelativeRiskAdjustmentHandler() {}
-
-/** destructor */
-RelativeRiskAdjustmentHandler::~RelativeRiskAdjustmentHandler() {}
+////////////////// RelativeRiskAdjustmentHandler /////////////////////////
 
 /** defines relative risk adjustment for passed data */
-void RelativeRiskAdjustmentHandler::AddAdjustmentData(tract_t tTractIndex, measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {
+void RelativeRiskAdjustmentHandler::add(tract_t tTractIndex, measure_t dRelativeRisk, Julian StartDate, Julian EndDate) {
   size_t				i, iStartIndex, iEndIndex;
   Julian                                TempDate;
   measure_t                             TempRisk;
@@ -134,9 +127,164 @@ void RelativeRiskAdjustmentHandler::AddAdjustmentData(tract_t tTractIndex, measu
     }
   }
   catch (prg_exception& x) {
-    x.addTrace("AddAdjustmentData()", "RelativeRiskAdjustmentHandler");
+    x.addTrace("add()", "RelativeRiskAdjustmentHandler");
     throw;
   }
+}
+
+/**************************************************************************************
+Adjusts the measure for a particular tract and a set of time intervals, reflecting an
+increased or decreased relative risk in a specified adjustment time period. For time
+intervals completely within the adjustment period, the measure is simply multiplied by
+the relative risk. For time intervals that are only partly within the adjustment period,
+only that proportion is multiplied by the relative risk, and the other proportion remains
+the same, after which they are added.
+Input: Tract, Adjustment Time Period, Relative Risk
+*****************************************************************************************/
+bool RelativeRiskAdjustmentHandler::AdjustMeasure(const TwoDimMeasureArray_t& Measure, 
+                                                  const PopulationData & Population, 
+                                                  tract_t Tract, 
+                                                  double dRelativeRisk, 
+                                                  Julian StartDate, 
+                                                  Julian EndDate, 
+                                                  TwoDimMeasureArray_t& adjustMeasure, 
+                                                  const TwoDimCountArray_t * pCases) const {
+  measure_t ** pp_m = Measure.GetArray();
+  count_t ** ppCases = pCases ? pCases->GetArray() : 0;
+  measure_t ** pNonCumulativeMeasure = adjustMeasure.GetArray();
+
+  for (int interval=_dataHub.GetTimeIntervalOfDate(StartDate); interval <= _dataHub.GetTimeIntervalOfDate(EndDate); ++interval) {
+     Julian AdjustmentStart = std::max(StartDate, _dataHub.GetTimeIntervalStartTimes()[interval]);
+     Julian AdjustmentEnd = std::min(EndDate, _dataHub.GetTimeIntervalStartTimes()[interval+1] - 1);
+     //calculate measure for lower interval date to adjustment start date
+     measure_t MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, _dataHub.GetTimeIntervalStartTimes()[interval], AdjustmentStart);
+     //calculate measure for adjustment period
+     measure_t MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
+     //calculate measure for adjustment end date to upper interval date
+     measure_t MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, _dataHub.GetTimeIntervalStartTimes()[interval+1]);
+     //validate that data overflow will not occur
+     if (MeasureDuring && (dRelativeRisk > (std::numeric_limits<measure_t>::max() - MeasurePre - MeasurePost) / MeasureDuring))
+       throw resolvable_error("Error: Data overflow occurs when adjusting expected number of cases.\n"
+                              "       The specified relative risk %lf in the adjustment file\n"
+                              "       is too large.\n", dRelativeRisk);
+     //assign adjusted measure                      
+     pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
+
+     //if measure has been adjusted to zero, check that cases adjusted interval are also zero
+     if (ppCases && pNonCumulativeMeasure[interval][Tract] == 0 && getCaseCount(ppCases, interval, Tract)) {
+       std::string  sStart, sEnd;
+       throw resolvable_error("Error: For locationID '%s', you have adjusted the expected number\n"
+                              "       of cases in the period %s to %s to be zero, but there\n"
+                              "       are cases in that interval.\n"
+                              "       If the expected is zero, the number of cases must also be zero.\n",
+                              (Tract == -1 ? "All" : _dataHub.GetTInfo()->getLocations().at(Tract)->getIndentifier()),
+                              JulianToString(sStart, StartDate, _dataHub.GetParameters().GetPrecisionOfTimesType()).c_str(),
+                              JulianToString(sEnd, EndDate, _dataHub.GetParameters().GetPrecisionOfTimesType()).c_str());
+     }
+  }
+  return true;
+}
+
+/** Adjusts passed non cumulative measure are for known relative risks, as
+    previously read from user specified file. Caller is responsible for ensuring:
+    - that passed 'measure **' points to a multiple dimensional array contained
+      by passed RealDataSet object.
+    - passed 'measure **' is in fact non-cumulative
+    - passed 'measure **' points to valid memory, allocated to dimensions (number
+      of time intervals plus one by number of tracts)                            */
+void RelativeRiskAdjustmentHandler::apply(const TwoDimMeasureArray_t& Measure, const PopulationData & Population, measure_t totalMeasure, TwoDimMeasureArray_t& adjustMeasure, const TwoDimCountArray_t * pCases) const {
+  if (!gTractAdjustments.size()) return;
+
+  //apply adjustments to relative risks
+  for (AdjustmentsIterator_t itr=gTractAdjustments.begin(); itr != gTractAdjustments.end(); ++itr) {
+     const TractContainer_t & tract_deque = itr->second;
+     for (TractContainerIteratorConst_t itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque)
+         AdjustMeasure(Measure, Population, itr->first, (*itr_deque).GetRelativeRisk(), (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate(), adjustMeasure, pCases);
+  }
+
+  // calculate total adjusted measure
+  measure_t ** ppNonCumulativeMeasure = adjustMeasure.GetArray(), adjustedTotalMeasure_t=0;
+  for (int i=0; i < adjustMeasure.Get1stDimension(); ++i)
+     for (tract_t t=0; t < adjustMeasure.Get2ndDimension(); ++t)
+        adjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
+  //Mutlipy the measure for each interval/tract by constant (c) to obtain total
+  //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
+  measure_t c = totalMeasure/adjustedTotalMeasure_t;
+  for (int i=0; i < adjustMeasure.Get1stDimension(); ++i)
+     for (tract_t t=0; t < adjustMeasure.Get2ndDimension(); ++t)
+        ppNonCumulativeMeasure[i][t] *= c;
+}
+
+/**************************************************************************************
+Calculates measure M for a requested tract and time interval.
+Input: Tract, Time Interval, # Pop Points, Measure array for population points
+       StudyStartDate, StudyEndDate
+Time Interval = [StartDate , EndDate]; EndDate = NextStartDate-1
+Note: The measure 'M' is the same measure used for the population points, which is later
+calibrated before being put into the measure array.
+**************************************************************************************/
+measure_t RelativeRiskAdjustmentHandler::CalcMeasureForTimeInterval(const PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) const {
+  int           i, iStartUpperIndex, iNextLowerIndex;
+  long          nTotalDays = _dataHub.GetStudyPeriodEndDate() + 1 - _dataHub.GetStudyPeriodStartDate();
+  measure_t     SumMeasure;
+
+  if (StartDate >= NextStartDate )
+    return 0;                            
+
+  SumMeasure = 0;
+  iStartUpperIndex = Population.UpperPopIndex(StartDate);
+  iNextLowerIndex = Population.LowerPopIndex(NextStartDate);
+
+  if (iStartUpperIndex <= iNextLowerIndex) {
+    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, StartDate, Tract) + ppPopulationMeasure[iStartUpperIndex][Tract]) *
+                  (Population.GetPopulationDate(iStartUpperIndex) - StartDate);
+    for (i=iStartUpperIndex; i < iNextLowerIndex; ++i)
+       SumMeasure += 0.5 * (ppPopulationMeasure[i][Tract] + ppPopulationMeasure[i+1][Tract] ) *
+                    (Population.GetPopulationDate(i+1) - Population.GetPopulationDate(i));
+    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, NextStartDate, Tract) + ppPopulationMeasure[iNextLowerIndex][Tract])
+                  * (NextStartDate - Population.GetPopulationDate(iNextLowerIndex));
+  }
+  else
+    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, StartDate,Tract) +
+                        DateMeasure(Population, ppPopulationMeasure, NextStartDate,Tract)) * (NextStartDate - StartDate);
+
+   return SumMeasure / nTotalDays;
+}
+
+/********************************************************************
+  Finds the measure M for a requested tract and date.
+  Input: Date, Tracts, #PopPoints
+ ********************************************************************/
+measure_t RelativeRiskAdjustmentHandler::DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const {
+  int           iPopDateIndex=0, iNumPopDates;
+  measure_t     tRelativePosition;
+
+  iNumPopDates = Population.GetNumPopulationDates();
+  
+  if (Date <= Population.GetPopulationDate(0))
+    return ppPopulationMeasure[0][Tract];
+  else if (Date >= Population.GetPopulationDate(iNumPopDates - 1))
+    return ppPopulationMeasure[iNumPopDates - 1][Tract];
+  else {
+    /** Finds the index of the last PopDate before or on the Date **/
+    while (Population.GetPopulationDate(iPopDateIndex+1) <= Date)
+        iPopDateIndex++;
+    //Calculates the relative position of the Date between the Previous PopDate and
+    //the following PopDate, on a scale from zero to one.
+    tRelativePosition = (measure_t)(Date - Population.GetPopulationDate(iPopDateIndex)) /
+                        (measure_t)(Population.GetPopulationDate(iPopDateIndex+1) - Population.GetPopulationDate(iPopDateIndex));
+    //Calculates measure M at the time of the StartDate
+    return (1 - tRelativePosition) * ppPopulationMeasure[iPopDateIndex][Tract] + tRelativePosition * ppPopulationMeasure[iPopDateIndex+1][Tract];
+  }
+}
+
+/** Returns the number of cases for a specified tract and time interval.
+    Note: iInterval and tTract should be valid indexes of the cases array .**/
+count_t RelativeRiskAdjustmentHandler::getCaseCount(count_t ** ppCumulativeCases, int iInterval, tract_t tTract) const {
+  if (iInterval + 1 == _dataHub.GetNumTimeIntervals())
+    return ppCumulativeCases[iInterval][tTract];
+  else
+    return ppCumulativeCases[iInterval][tTract] - ppCumulativeCases[iInterval + 1][tTract];
 }
 
 /** Returns the top most bounding index from existing adjustments periods.
@@ -156,7 +304,7 @@ TractContainerIterator_t RelativeRiskAdjustmentHandler::GetMaxPeriodIndex(TractC
 } 
 
 /** Prints all defined adjustments to text file. */
-void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
+void RelativeRiskAdjustmentHandler::print(TractHandler & tHandler) {
   AdjustmentsIterator_t                 itr;
   TractContainerIteratorConst_t         itr_deque;
   std::string                           sStart, sEnd;
@@ -177,5 +325,4 @@ void RelativeRiskAdjustmentHandler::PrintAdjustments(TractHandler & tHandler) {
   }
   if (pFile) fclose(pFile);
 }
-
 

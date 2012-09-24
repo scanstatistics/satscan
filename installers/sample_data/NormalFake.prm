@@ -149,8 +149,20 @@ IterativeScanMaxPValue=0.05
 MonteCarloReps=999
 
 [Clusters Reported]
+; report hierarchical clusters (y/n)
+ReportHierarchicalClusters=y
+; report gini clusters (y/n)
+ReportGiniClusters=n
 ; criteria for reporting secondary clusters(0=NoGeoOverlap, 1=NoCentersInOther, 2=NoCentersInMostLikely,  3=NoCentersInLessLikely, 4=NoPairsCentersEachOther, 5=NoRestrictions)
 CriteriaForReportingSecondaryClusters=0
+; spatial window maxima stops (comma separated decimal values[<=50%] )
+SpatialMaxima=1,2,3,4,5,6,8,10,12,15,20,25,30,40,50
+; index based cluster reporting type (0=optimal index only, 1=all values)
+IndexBasedClusterReportingType=0
+; max p-value for clusters used in calculation of index based coefficients (0.000-1.000)
+IndexBasedClustersPValueCutOff=0.05
+; output index coefficents to results file (y/n)
+OutputIndexBasedCoefficents=n
 ; restrict reported clusters to maximum geographical cluster size? (y/n)
 UseReportOnlySmallerClusters=n
 ; maximum reported spatial size in population at risk (<=50%)
@@ -179,12 +191,24 @@ EllipseShapes=1.5,2,3,4,5
 EllipseAngles=4,6,9,12,15
 
 [Power Simulations]
-; p-values for 2 pre-specified log likelihood ratios? (y/n)
-PValues2PrespecifiedLLRs=n
-; power calculation log likelihood ratio (no. 1)
-LLR1=0
-; power calculation log likelihood ratio (no. 2)
-LLR2=0
+; perform power evaluation - Poisson only (y/n)
+PerformPowerEvaluation=n
+; total cases in power evaluation
+TotalCases=0
+; specification of critical values type (Automatic=0, Manual=1, Both=3)
+CriticalValuesSpecifyType=0
+; critical value type (0=Monte Carlo, 1=Gumbel)
+CriticalValueType=0
+; power evaluation critical value (no. 1)
+CriticalValue1=0
+; power evaluation critical value (no. 2)
+CriticalValue2=0
+; power estimation type (0=Monte Carlo, 1=Gumbel)
+PowerEstimationType=0
+; power adjustments file
+AdjustmentsFile=
+; number of replications in power step
+PowerReplications=1000
 ; simulation methods (0=Null Randomization, 1=HA Randomization, 2=File Import)
 SimulatedDataMethodType=0
 ; simulation data input file name (with File Import=2)
@@ -206,5 +230,5 @@ SuppressWarnings=n
 
 [System]
 ; system setting - do not modify
-Version=9.0.1
+Version=9.2.0
 

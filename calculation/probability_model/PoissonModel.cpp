@@ -145,10 +145,10 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
   unsigned int  i, t;
 
   try {
-    //adjust measure for known realtive risks
+    //apply known relative risk adjustments to measure
     if (gParameters.UseAdjustmentForRelativeRisksFile())
-      gDataHub.AdjustForKnownRelativeRisks(DataSet, PopMeasure);
-    //adjustment measure temporally
+        gDataHub.getRiskAdjustments()->apply(PopMeasure, DataSet.getPopulationData(), DataSet.getTotalMeasure(), DataSet.getMeasureData(), &DataSet.getCaseData());
+    //apply temporal adjustments to measure
     if (DataSet.getIntervalDimension() > 1) {
       switch (gParameters.GetTimeTrendAdjustmentType()) {
         case NOTADJUSTED               : break;
@@ -157,16 +157,14 @@ void CPoissonModel::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray
         case CALCULATED_QUADRATIC_PERC :
         case CALCULATED_LOGLINEAR_PERC : AdjustForLogLinear(DataSet); break;
         case STRATIFIED_RANDOMIZATION  : AdjustForNonParameteric(DataSet); break;//this adjustment occurs during randomization also
-        default : throw prg_error("Unknown time trend adjustment type: '%d'.",
-                                  "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
+        default : throw prg_error("Unknown time trend adjustment type: '%d'.", "AdjustMeasure()", gParameters.GetTimeTrendAdjustmentType());
       }
     }
-    //adjust measure spatially
+    //apply spatial adjusts to measure
     switch (gParameters.GetSpatialAdjustmentType()) {
       case NO_SPATIAL_ADJUSTMENT : break;
       case SPATIALLY_STRATIFIED_RANDOMIZATION : StratifiedSpatialAdjustment(DataSet); break;
-      default : throw prg_error("Unknown spatial adjustment type: '%d'.",
-                                "AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
+      default : throw prg_error("Unknown spatial adjustment type: '%d'.","AdjustMeasure()", gParameters.GetSpatialAdjustmentType());
     }
     // Bug check, to ensure that adjusted  total measure equals previously determined total measure
     for (AdjustedTotalMeasure_t=0, i=0; i < DataSet.getIntervalDimension(); ++i)
@@ -190,17 +188,27 @@ void CPoissonModel::CalculateMeasure(RealDataSet& Set) {
     measure_t** ppM = Set.getMeasureData().GetArray(); // validate that all elements of measure array are not negative
     for (unsigned int t=0; t < Set.getLocationDimension(); ++t) for (unsigned int i=0; i < Set.getIntervalDimension(); ++i)
       if (ppM[i][t] < 0) throw prg_error("Negative measure = %g, location %d, interval %d.", "CalculateMeasure()", ppM[i][t], t, i);
-    gDataHub.ValidateObservedToExpectedCases(Set); //validate that observed and expected agree
-    AdjustMeasure(Set, *pPopMeasure); // apply adjustments
-    Set.setMeasureDataToCumulative(); // now we can make the measure data cummulative
+
+    //TODO PE: If user specified the total number of cases in parameter file, the next step should be skipped -- is that ok?
+    if (!gParameters.getPerformPowerEvaluation() || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount() == 0))
+        gDataHub.ValidateObservedToExpectedCases(Set); //validate that observed and expected agree
+
+    //apply adjustments to measure
+    AdjustMeasure(Set, *pPopMeasure);
+    //When using alternative simulations or power evaulations, we need to cache adjusted non-cummulative measure data in aux structure.
+    if (gParameters.GetSimulationType() == HA_RANDOMIZATION || gParameters.getPerformPowerEvaluation()) {
+        Set.setPopulationMeasureData(*pPopMeasure);
+        Set.setMeasureData_Aux(Set.getMeasureData());
+    }
+    // now we can make the measure data cummulative
+    Set.setMeasureDataToCumulative(); 
     if (fabs(Set.getTotalCases() - Set.getTotalMeasure()) > 0.001) // bug check total cases == total measure
       throw prg_error("Total measure '%8.6lf' != total cases '%ld'.", "CalculateMeasure()", Set.getTotalMeasure(), Set.getTotalCases());
     if ((gParameters.GetTimeTrendAdjustmentType() == STRATIFIED_RANDOMIZATION ||
         gParameters.GetTimeTrendAdjustmentType() == CALCULATED_LOGLINEAR_PERC) &&
         gParameters.GetAnalysisType() != SPATIALVARTEMPTREND/* SVTTData invokes this method as well */)
       Set.setMeasureData_PT_NC();
-  }
-  catch (prg_exception &x) {
+  } catch (prg_exception &x) {
     x.addTrace("CalculateMeasure()","CPoissonModel");
     throw;
   }

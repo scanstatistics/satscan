@@ -36,7 +36,7 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
                             "Adjustment purpose for multiple data sets is not permitted with %s model in this version of SaTScan.\n",
                             BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
     }
-    if (gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.UseLocationNeighborsFile() && !gParameters.GetIsPurelyTemporalAnalysis() &&
         !(gParameters.GetCriteriaSecondClustersType() == NORESTRICTIONS || gParameters.GetCriteriaSecondClustersType() == NOGEOOVERLAP)) {
       bValid = false;
       PrintDirection.Printf("Invalid Parameter Setting:\n"
@@ -81,30 +81,22 @@ bool ParametersValidate::Validate(BasePrint& PrintDirection) const {
     //validate range parameters
     if (! ValidateRangeParameters(PrintDirection))
       bValid = false;
-
     //validate iterative scan parameters
     if (! ValidateIterativeScanParameters(PrintDirection))
       bValid = false;
-
     if (! ValidateInferenceParameters(PrintDirection))
       bValid = false;
-
-    //validate power calculation parameters
-    if (! ValidatePowerCalculationParameters(PrintDirection))
-      bValid = false;
-
     //validate ellipse parameters
     if (! ValidateEllipseParameters(PrintDirection))
       bValid = false;
-
     //validate simulation options
     if (! ValidateSimulationDataParameters(PrintDirection))
       bValid = false;
-
     if (! ValidateRandomizationSeed(PrintDirection))
-      bValid = false;
-  }
-  catch (prg_exception& x) {
+        bValid = false;
+    if (!ValidatePowerEvaluationsParameters(PrintDirection))
+        bValid = false;
+  } catch (prg_exception& x) {
     x.addTrace("ValidateParameters()","ParametersValidate");
     throw;
   }
@@ -312,7 +304,8 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
   size_t        t;
 
   try {
-    if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
+    // case file is ignored when using the continuous Poisson model or power evaluations with specified total cases
+    if (!(gParameters.GetProbabilityModelType() == HOMOGENEOUSPOISSON || (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount()))) {
         //validate case file
         if (!gParameters.GetCaseFileNames().size()) {
             bValid = false;
@@ -535,6 +528,8 @@ bool ParametersValidate::ValidateFileParameters(BasePrint& PrintDirection) const
 /** Validates inference parameters.
     Prints errors to print direction and returns whether values are vaild.*/
 bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection) const {
+  if (gParameters.getPerformPowerEvaluation()) return true;
+
   bool  bValid=true;
 
   try {
@@ -555,6 +550,8 @@ bool ParametersValidate::ValidateInferenceParameters(BasePrint & PrintDirection)
 /** Validates parameters used in optional iterative scan feature.
     Prints errors to print direction and returns whether values are vaild.*/
 bool ParametersValidate::ValidateIterativeScanParameters(BasePrint & PrintDirection) const {
+  if (gParameters.getPerformPowerEvaluation()) return true;
+
   bool  bValid=true;
 
   try {
@@ -680,6 +677,8 @@ bool ParametersValidate::ValidateMaximumTemporalClusterSize(BasePrint& PrintDire
 }
 
 bool ParametersValidate::ValidateClustersReportedParameters(BasePrint & PrintDirection) const {
+  if (gParameters.getPerformPowerEvaluation()) return true;
+
   bool  bReturn=true;
 
   if (gParameters.GetIsPurelyTemporalAnalysis()) return true;
@@ -849,33 +848,95 @@ bool ParametersValidate::ValidateOutputOptionParameters(BasePrint & PrintDirecti
 
 /** Validates power calculation parameters.
    Prints errors to print direction and returns validity. */
-bool ParametersValidate::ValidatePowerCalculationParameters(BasePrint& PrintDirection) const {
-  bool  bValid=true;
-
-  try {
-    if (gParameters.GetIsPowerCalculated()) {
-      if (gParameters.GetNumReplicationsRequested() == 0) {
-        PrintDirection.Printf("Invalid Parameter Setting:\nThe power calculation feature requires that Monte Carlo simulations be performed.\n", BasePrint::P_PARAMERROR);
-        return false;
-      }
-      if (0.0 > gParameters.GetPowerCalculationX() || gParameters.GetPowerCalculationX() > std::numeric_limits<double>::max()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n"
-                              "The power calculation value X. Please use a value between 0 and %12.4f\n",
-                              BasePrint::P_PARAMERROR, std::numeric_limits<double>::max());
-      }
-      if (0.0 > gParameters.GetPowerCalculationY() || gParameters.GetPowerCalculationY() > std::numeric_limits<double>::max()) {
-        bValid = false;
-        PrintDirection.Printf("Invalid Parameter Setting:\n"
-                              "The power calculation value Y. Please use a value between 0 and %12.4f\n",
-                              BasePrint::P_PARAMERROR, std::numeric_limits<double>::max());
-      }
-    }
-  } catch (prg_exception& x) {
-    x.addTrace("ValidatePowerCalculationParameters()","ParametersValidate");
-    throw;
-  }
-  return bValid;
+bool ParametersValidate::ValidatePowerEvaluationsParameters(BasePrint & PrintDirection) const {
+    bool bValid=true;
+    if (gParameters.getPerformPowerEvaluation()) {
+        if (gParameters.GetProbabilityModelType() != POISSON) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation is not available for the %s model.\n", BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetProbabilityModelTypeAsString());
+            bValid = false;
+        }
+        if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation is not available for the %s analysis.\n", BasePrint::P_PARAMERROR, ParametersPrint(gParameters).GetAnalysisTypeAsString());
+            bValid = false;
+        }
+        if (gParameters.GetRiskType() != STANDARDRISK) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation is not available for the isotonic scan statistic.\n", BasePrint::P_PARAMERROR);
+            bValid = false;
+        }
+        // if the user has specified the total # of cases, then certain features are not valid
+        if (gParameters.getPowerEvaluationCaseCount()) {
+            // non-parametric purely spatial adjustment is not available
+            if (gParameters.GetSpatialAdjustmentType() != NO_SPATIAL_ADJUSTMENT) {
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation can not perform the non-parametric, purely spatial adjustment when total case count has been specified.\n", BasePrint::P_PARAMERROR);
+                bValid = false;
+            }
+            // purely temporal adjustments are not available
+            if (gParameters.GetTimeTrendAdjustmentType() != NOTADJUSTED) {
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation can not perform the purely temporal adjustments when total case count has been specified.\n", BasePrint::P_PARAMERROR);
+                bValid = false;
+            }
+            if (gParameters.getPowerEvaluationFilename().empty()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nNo power evaluations adjustments file specified.\n", BasePrint::P_PARAMERROR);
+            } else if (!ValidateFileAccess(gParameters.getPowerEvaluationFilename())) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\n"
+                                      "The power evaluations adjustments file '%s' could not be opened for reading. "
+                                      "Please confirm that the path and/or file name are valid and that you "
+                                      "have permissions to read from this directory and file.\n",
+                                      BasePrint::P_PARAMERROR, gParameters.getPowerEvaluationFilename().c_str());
+            }
+            if (gParameters.GetOutputRelativeRisksFiles()) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation can not report the location relative risks file when total case count has been specified.\n", BasePrint::P_PARAMERROR);
+            }
+        }
+        if (gParameters.GetSimulationType() != STANDARD) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation is only available for the standard simulation.\n", BasePrint::P_PARAMERROR);
+            bValid = false;
+        }
+        if (!(gParameters.GetPValueReportingType() == STANDARD_PVALUE || gParameters.GetPValueReportingType() == GUMBEL_PVALUE)) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation is only available for the standard and Gumbel p-value reporting.\n", BasePrint::P_PARAMERROR);
+            bValid = false;
+        }
+        if (gParameters.GetNumReplicationsRequested() < 999) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum number of standard replications for the power evaluation is %u.\n", BasePrint::P_PARAMERROR, 999);
+            bValid = false;
+        }
+        if (gParameters.getNumPowerEvalReplicaPowerStep() < 100) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe minimum number of power replications in the power evaluation is %u.\n", BasePrint::P_PARAMERROR, 100);
+            bValid = false;
+        }
+        if (gParameters.getNumPowerEvalReplicaPowerStep() % 100) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe minmum number of power replications in the power evaluation must be a multiple of 100.\n", BasePrint::P_PARAMERROR);
+            bValid = false;
+        }
+        if (gParameters.GetNumReplicationsRequested() > gParameters.getNumPowerEvalReplicaPowerStep()) {
+            PrintDirection.Printf("Invalid Parameter Setting:\nThe number of power replications (%u) must be greater than or equal to standard replications (%u).\n", 
+                                  BasePrint::P_PARAMERROR, gParameters.getNumPowerEvalReplicaPowerStep(), gParameters.GetNumReplicationsRequested());
+            bValid = false;
+        }
+        if (gParameters.GetIsIterativeScanning()) {
+           bValid = false;
+           PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation can not be performed with the iterative scan statistic.\n", BasePrint::P_PARAMERROR);
+        }
+        if (gParameters.getPowerEvaluationCriticalValuesSpecType() == PE_MANUAL || gParameters.getPowerEvaluationCriticalValuesSpecType() == PE_BOTH) {
+            if (gParameters.GetPowerCalculationX() < 0.0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation critical value %lf is invalid. Please use a value greater than zero\n",
+                                      BasePrint::P_PARAMERROR, gParameters.GetPowerCalculationX());
+            }
+            if (gParameters.GetPowerCalculationY() < 0.0) {
+                bValid = false;
+                PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation critical value %lf is invalid. Please use a value greater than zero\n",
+                                      BasePrint::P_PARAMERROR, gParameters.GetPowerCalculationY());
+            }
+        }
+        //if (gParameters.GetExecutionType() == CENTRICALLY) {
+        //   bValid = false;
+        //   PrintDirection.Printf("Invalid Parameter Setting:\nThe power evaluation can not be performed with the alternative memory allocation.\n", BasePrint::P_PARAMERROR);
+        //}
+    } return bValid;
 }
 
 /** Validates parameters parameters related to randomization seed.
@@ -1054,24 +1115,7 @@ bool ParametersValidate::ValidateSimulationDataParameters(BasePrint & PrintDirec
 
     switch (gParameters.GetSimulationType()) {
       case STANDARD         : break;
-      case HA_RANDOMIZATION :
-        if (gParameters.GetProbabilityModelType() == POISSON) {
-          if (gParameters.GetAdjustmentsByRelativeRisksFilename().empty()) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nNo adjustments file specified.\n", BasePrint::P_PARAMERROR);
-          }
-          else if (access(gParameters.GetAdjustmentsByRelativeRisksFilename().c_str(), 00)) {
-            bValid = false;
-            PrintDirection.Printf("Invalid Parameter Setting:\nThe adjustments file '%s' does not exist. Please ensure the path is correct.\n",
-                                  BasePrint::P_PARAMERROR, gParameters.GetAdjustmentsByRelativeRisksFilename().c_str());
-          }
-        }
-        else {
-          bValid = false;
-          PrintDirection.Printf("Invalid Parameter Setting:\nThe alternative hypothesis method of creating simulated data"
-                                "is only implemented for the Poisson model.\n", BasePrint::P_PARAMERROR);
-        }
-        break;
+      case HA_RANDOMIZATION : break;
       case FILESOURCE       :
         if (gParameters.GetProbabilityModelType() == EXPONENTIAL || gParameters.GetProbabilityModelType() == NORMAL ||
             gParameters.GetProbabilityModelType() == RANK) {

@@ -33,88 +33,6 @@ CSaTScanData::~CSaTScanData() {
   catch (...){}  
 }
 
-/** Adjusts passed non cumulative measure are for known relative risks, as
-    previously read from user specified file. Caller is responsible for ensuring:
-    - that passed 'measure **' points to a multiple dimensional array contained
-      by passed RealDataSet object.
-    - passed 'measure **' is in fact non-cumulative
-    - passed 'measure **' points to valid memory, allocated to dimensions (number
-      of time intervals plus one by number of tracts)                            */
-void CSaTScanData::AdjustForKnownRelativeRisks(RealDataSet& Set, const TwoDimMeasureArray_t& PopMeasure) {
-  measure_t                             c, AdjustedTotalMeasure_t;
-  int                                   i;
-  tract_t                               t;  
-  AdjustmentsIterator_t                 itr;
-  TractContainerIteratorConst_t         itr_deque;
-
-  //apply adjustments to relative risks
-  for (itr=gRelativeRiskAdjustments.GetAdjustments().begin(); itr != gRelativeRiskAdjustments.GetAdjustments().end(); ++itr) {
-     const TractContainer_t & tract_deque = itr->second;
-     for (itr_deque=tract_deque.begin(); itr_deque != tract_deque.end(); ++itr_deque)
-        AdjustMeasure(Set, PopMeasure, itr->first, (*itr_deque).GetRelativeRisk(), (*itr_deque).GetStartDate(), (*itr_deque).GetEndDate());
-  }
-
-  // calculate total adjusted measure
-  measure_t ** ppNonCumulativeMeasure = Set.getMeasureData().GetArray();
-  for (AdjustedTotalMeasure_t=0, i=0; i < m_nTimeIntervals; ++i)
-     for (t=0; t < m_nTracts; ++t)
-        AdjustedTotalMeasure_t += ppNonCumulativeMeasure[i][t];
-  //Mutlipy the measure for each interval/tract by constant (c) to obtain total
-  //adjusted measure (AdjustedTotalMeasure_t) equal to previous total measure (m_nTotalMeasure).
-  c = Set.getTotalMeasure()/AdjustedTotalMeasure_t;
-  for (i=0; i < m_nTimeIntervals; ++i)
-     for (t=0; t < m_nTracts; ++t)
-        ppNonCumulativeMeasure[i][t] *= c;
-}
-
-
-
-/**************************************************************************************
-Adjusts the measure for a particular tract and a set of time intervals, reflecting an
-increased or decreased relative risk in a specified adjustment time period. For time
-intervals completely within the adjustment period, the measure is simply multiplied by
-the relative risk. For time intervals that are only partly within the adjustment period,
-only that proportion is multiplied by the relative risk, and the other proportion remains
-the same, after which they are added.
-Input: Tract, Adjustment Time Period, Relative Risk
-*****************************************************************************************/
-bool CSaTScanData::AdjustMeasure(RealDataSet& DataSet, const TwoDimMeasureArray_t& PopMeasure, tract_t Tract, double dRelativeRisk, Julian StartDate, Julian EndDate) {
-  const PopulationData & Population = DataSet.getPopulationData();
-  measure_t ** pp_m = PopMeasure.GetArray();
-  count_t ** ppCases = DataSet.getCaseData().GetArray();
-  measure_t ** pNonCumulativeMeasure = DataSet.getMeasureData().GetArray();
-
-  for (int interval=GetTimeIntervalOfDate(StartDate); interval <= GetTimeIntervalOfDate(EndDate); ++interval) {
-     Julian AdjustmentStart = std::max(StartDate, gvTimeIntervalStartTimes[interval]);
-     Julian AdjustmentEnd = std::min(EndDate, gvTimeIntervalStartTimes[interval+1] - 1);
-     //calculate measure for lower interval date to adjustment start date
-     measure_t MeasurePre = CalcMeasureForTimeInterval(Population, pp_m, Tract, gvTimeIntervalStartTimes[interval], AdjustmentStart);
-     //calculate measure for adjustment period
-     measure_t MeasureDuring = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentStart, AdjustmentEnd+1);
-     //calculate measure for adjustment end date to upper interval date
-     measure_t MeasurePost = CalcMeasureForTimeInterval(Population, pp_m, Tract, AdjustmentEnd+1, gvTimeIntervalStartTimes[interval+1]);
-     //validate that data overflow will not occur
-     if (MeasureDuring && (dRelativeRisk > (std::numeric_limits<measure_t>::max() - MeasurePre - MeasurePost) / MeasureDuring))
-       throw resolvable_error("Error: Data overflow occurs when adjusting expected number of cases.\n"
-                              "       The specified relative risk %lf in the adjustment file\n"
-                              "       is too large.\n", dRelativeRisk);
-     //assign adjusted measure                      
-     pNonCumulativeMeasure[interval][Tract] = MeasurePre + dRelativeRisk * MeasureDuring + MeasurePost;
-     //if measure has been adjusted to zero, check that cases adjusted interval are also zero
-     if (pNonCumulativeMeasure[interval][Tract] == 0 && GetCaseCount(ppCases, interval, Tract)) {
-       std::string  sStart, sEnd;
-       throw resolvable_error("Error: For locationID '%s', you have adjusted the expected number\n"
-                              "       of cases in the period %s to %s to be zero, but there\n"
-                              "       are cases in that interval.\n"
-                              "       If the expected is zero, the number of cases must also be zero.\n",
-                              (Tract == -1 ? "All" : gTractHandler->getLocations().at(Tract)->getIndentifier()),
-                              JulianToString(sStart, StartDate, gParameters.GetPrecisionOfTimesType()).c_str(),
-                              JulianToString(sEnd, EndDate, gParameters.GetPrecisionOfTimesType()).c_str());
-     }
-  }
-  return true;
-}
-
 /** Iterative analyses will call this function to clear neighbor information and re-calculate neighbors. */
 void CSaTScanData::AdjustNeighborCounts(ExecutionType geExecutingType) {
   try {
@@ -277,42 +195,6 @@ void CSaTScanData::AllocateSortedArrayNeighbors(tract_t iCentroidIndex, const st
   }
 }
 
-/**************************************************************************************
-Calculates measure M for a requested tract and time interval.
-Input: Tract, Time Interval, # Pop Points, Measure array for population points
-       StudyStartDate, StudyEndDate
-Time Interval = [StartDate , EndDate]; EndDate = NextStartDate-1
-Note: The measure 'M' is the same measure used for the population points, which is later
-calibrated before being put into the measure array.
-**************************************************************************************/
-measure_t CSaTScanData::CalcMeasureForTimeInterval(const PopulationData & Population, measure_t ** ppPopulationMeasure, tract_t Tract, Julian StartDate, Julian NextStartDate) const {
-  int           i, iStartUpperIndex, iNextLowerIndex;
-  long          nTotalDays = m_nEndDate+1 - m_nStartDate;
-  measure_t     SumMeasure;
-
-  if (StartDate >= NextStartDate )
-    return 0;                            
-
-  SumMeasure = 0;
-  iStartUpperIndex = Population.UpperPopIndex(StartDate);
-  iNextLowerIndex = Population.LowerPopIndex(NextStartDate);
-
-  if (iStartUpperIndex <= iNextLowerIndex) {
-    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, StartDate, Tract) + ppPopulationMeasure[iStartUpperIndex][Tract]) *
-                  (Population.GetPopulationDate(iStartUpperIndex) - StartDate);
-    for (i=iStartUpperIndex; i < iNextLowerIndex; ++i)
-       SumMeasure += 0.5 * (ppPopulationMeasure[i][Tract] + ppPopulationMeasure[i+1][Tract] ) *
-                    (Population.GetPopulationDate(i+1) - Population.GetPopulationDate(i));
-    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, NextStartDate, Tract) + ppPopulationMeasure[iNextLowerIndex][Tract])
-                  * (NextStartDate - Population.GetPopulationDate(iNextLowerIndex));
-  }
-  else
-    SumMeasure += 0.5 * (DateMeasure(Population, ppPopulationMeasure, StartDate,Tract) +
-                        DateMeasure(Population, ppPopulationMeasure, NextStartDate,Tract)) * (NextStartDate - StartDate);
-
-   return SumMeasure / nTotalDays;
-}
-
 /** Calculates expected number of cases for each dataset. Records total
     measure, cases, and population for all datasets. Calls method to determines
     the maximum spatial cluster size. */
@@ -326,7 +208,8 @@ void CSaTScanData::CalculateExpectedCases() {
      gtTotalCases += gDataSets->GetDataSet(t).getTotalCases();
      gtTotalPopulation += gDataSets->GetDataSet(t).getTotalPopulation();
   }
-  FreeRelativeRisksAdjustments();
+  // release any adjustments now, we are done with them
+  if (gRelativeRiskAdjustments) gRelativeRiskAdjustments->empty();
 }
 
 /** Calculates expected number of cases for dataset. */
@@ -404,33 +287,6 @@ void CSaTScanData::CalculateTimeIntervalIndexes() {
       // Re-calculate index of prospective start date
       m_nProspectiveIntervalStart = CalculateProspectiveIntervalStart();
     }  
-  }
-}
-
-/********************************************************************
-  Finds the measure M for a requested tract and date.
-  Input: Date, Tracts, #PopPoints
- ********************************************************************/
-measure_t CSaTScanData::DateMeasure(const PopulationData & Population, measure_t ** ppPopulationMeasure, Julian Date, tract_t Tract) const {
-  int           iPopDateIndex=0, iNumPopDates;
-  measure_t     tRelativePosition;
-
-  iNumPopDates = Population.GetNumPopulationDates();
-  
-  if (Date <= Population.GetPopulationDate(0))
-    return ppPopulationMeasure[0][Tract];
-  else if (Date >= Population.GetPopulationDate(iNumPopDates - 1))
-    return ppPopulationMeasure[iNumPopDates - 1][Tract];
-  else {
-    /** Finds the index of the last PopDate before or on the Date **/
-    while (Population.GetPopulationDate(iPopDateIndex+1) <= Date)
-        iPopDateIndex++;
-    //Calculates the relative position of the Date between the Previous PopDate and
-    //the following PopDate, on a scale from zero to one.
-    tRelativePosition = (measure_t)(Date - Population.GetPopulationDate(iPopDateIndex)) /
-                        (measure_t)(Population.GetPopulationDate(iPopDateIndex+1) - Population.GetPopulationDate(iPopDateIndex));
-    //Calculates measure M at the time of the StartDate
-    return (1 - tRelativePosition) * ppPopulationMeasure[iPopDateIndex][Tract] + tRelativePosition * ppPopulationMeasure[iPopDateIndex+1][Tract];
   }
 }
 
@@ -595,8 +451,7 @@ void CSaTScanData::ReadDataFromFiles() {
     CalculateExpectedCases();
     if (gParameters.UseMetaLocationsFile())
       gDataSets->assignMetaLocationData(gDataSets->getDataSets());
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ReadDataFromFiles()","CSaTScanData");
     throw;
   }
@@ -1036,7 +891,7 @@ void CSaTScanData::Setup() {
         gCentroidsHandler.reset(new CentroidHandler());
     else
         gCentroidsHandler.reset(new CentroidHandlerPassThrough(*gTractHandler));
-
+    gRelativeRiskAdjustments = RiskAdjustments_t(new RelativeRiskAdjustmentHandler(*this));
   }
   catch (prg_exception& x) {
     x.addTrace("Setup()","CSaTScanData");

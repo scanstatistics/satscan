@@ -42,7 +42,15 @@ public:
     //get container for simulation data - this data will be modified in the randomize process
     gDataHub.GetDataSetHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
     //get container of data randomizers - these will modify the simulation data
-    gDataHub.GetDataSetHandler().GetRandomizerContainer(*gpRandomizationContainer);
+    if (!gpRandomizationContainer->size()) // conditionally get randomizers -- might already get assigned
+        gDataHub.GetDataSetHandler().GetRandomizerContainer(*gpRandomizationContainer);
+    else {
+        // clone passed randomizers
+        boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+        for (size_t t=0; t < pRandomizationContainer->size(); ++t)
+            randomizers->push_back(pRandomizationContainer->at(t)->Clone());
+        pRandomizationContainer.swap(randomizers);
+    }
     //get data gateway given dataset handler's real data and simulated data structures
     gpDataGateway.reset(gDataHub.GetDataSetHandler().GetNewDataGatewayObject());
     gDataHub.GetDataSetHandler().GetSimulationDataGateway(*gpDataGateway, *gpSimulationDataContainer, *gpRandomizationContainer);

@@ -443,8 +443,7 @@ int PopulationData::CreateCovariateCategory(DataSource& Source, short iScanOffse
   std::vector<std::string>::iterator            itr;
   std::vector<std::vector<int> >::iterator      itr_int;
 
-  if (gbAggregateCovariateCategories)
-    iCategoryIndex = 0;
+  if (gbAggregateCovariateCategories) return 0;
 
   //create a temporary vector of covariate name indexes
   while ((pCovariate = Source.GetValueAt(iNumCovariatesScanned + iScanOffset)) != 0) {

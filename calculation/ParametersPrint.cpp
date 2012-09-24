@@ -160,8 +160,10 @@ void ParametersPrint::PrintAdditionalOutputParameters(FILE* fp) const {
   SettingContainer_t settings;
 
   try {
+    if (!gParameters.getPerformPowerEvaluation()) {
     settings.push_back(std::make_pair("Report Critical Values",(gParameters.GetReportCriticalValues() ? "Yes" : "No")));
     settings.push_back(std::make_pair("Report Monte Carlo Rank",(gParameters.getReportClusterRank() ? "Yes" : "No")));
+    }
     if (gParameters.GetOutputAreaSpecificAscii() || gParameters.GetOutputClusterCaseAscii() ||
         gParameters.GetOutputClusterLevelAscii() || gParameters.GetOutputRelativeRisksAscii() || gParameters.GetOutputSimLoglikeliRatiosAscii())
         settings.push_back(std::make_pair("Print ASCII Column Headers",(gParameters.getPrintAsciiHeaders() ? "Yes" : "No")));
@@ -270,6 +272,7 @@ void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
       default : throw prg_error("Unknown analysis type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetAnalysisType());
     }
+    fprintf(fp, gParameters.getPerformPowerEvaluation() ? " power evaluation\n" : " analysis\n");
     fprintf(fp, "scanning for ");
     if (gParameters.GetAnalysisType() == PURELYSPATIAL && gParameters.GetRiskType() == MONOTONERISK)
       fprintf(fp, "monotone ");
@@ -396,7 +399,7 @@ void ParametersPrint::PrintClustersReportedParameters(FILE* fp) const {
   SettingContainer_t settings;
   std::string        buffer, worker;
 
-  if (gParameters.GetIsPurelyTemporalAnalysis()) return;
+  if (gParameters.GetIsPurelyTemporalAnalysis() || gParameters.getPerformPowerEvaluation()) return;
 
   try {
     settings.push_back(std::make_pair("Report Hierarchical Clusters", (gParameters.getReportHierarchicalClusters() ? "Yes" : "No")));
@@ -524,6 +527,7 @@ void ParametersPrint::PrintEllipticScanParameters(FILE* fp) const {
 
 /** Prints 'Inference' tab parameters to file stream. */
 void ParametersPrint::PrintInferenceParameters(FILE* fp) const {
+   if (gParameters.getPerformPowerEvaluation()) return;
    SettingContainer_t settings;
    std::string        buffer;
 
@@ -698,29 +702,29 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
 
   try {
     settings.push_back(std::make_pair("Results File",gParameters.GetOutputFileName()));
-    if (gParameters.GetOutputClusterLevelAscii()) {
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterLevelAscii()) {
       AdditionalOutputFile.setExtension(".col.txt");
       settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
-    if (gParameters.GetOutputClusterLevelDBase()) {
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterLevelDBase()) {
       AdditionalOutputFile.setExtension(".col.dbf");
       settings.push_back(std::make_pair("Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
     // cluster case information files
-    if (gParameters.GetOutputClusterCaseAscii()) {
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterCaseAscii()) {
       AdditionalOutputFile.setExtension(".sci.txt");
       settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
-    if (gParameters.GetOutputClusterCaseDBase()) {
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputClusterCaseDBase()) {
       AdditionalOutputFile.setExtension(".cci.dbf");
       settings.push_back(std::make_pair("Stratified Cluster File",AdditionalOutputFile.getFullPath(buffer)));
     }
     // area specific files
-    if (gParameters.GetOutputAreaSpecificAscii()) {
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputAreaSpecificAscii()) {
       AdditionalOutputFile.setExtension(".gis.txt");
       settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
     }
-    if (gParameters.GetOutputAreaSpecificDBase()) {
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetOutputAreaSpecificDBase()) {
       AdditionalOutputFile.setExtension(".gis.dbf");
       settings.push_back(std::make_pair("Location File",AdditionalOutputFile.getFullPath(buffer)));
     }
@@ -756,7 +760,9 @@ void ParametersPrint::PrintPowerSimulationsParameters(FILE* fp) const {
   std::string         buffer;
 
   try {
-    if (gParameters.GetIsPowerCalculated()) {
+      // TODO PE: This needs the remainder of the settings.
+
+      if (gParameters.getPerformPowerEvaluation()) {
         settings.push_back(std::make_pair("P-values Prespecified LLRs","Yes"));
         printString(buffer, "%lf", gParameters.GetPowerCalculationX());
         settings.push_back(std::make_pair("LLR1",buffer));
@@ -891,8 +897,6 @@ void ParametersPrint::PrintSpatialNeighborsParameters(FILE* fp) const {
 
 /** Prints 'Space And Time Adjustments' tab parameters to file stream. */
 void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
-  bool bPrintingAdjustmentsFileParameters = (gParameters.GetSimulationType() == HA_RANDOMIZATION ||
-                                             gParameters.UseAdjustmentForRelativeRisksFile());
   bool bPrintingTemporalAdjustment = (gParameters.GetAnalysisType() == PURELYTEMPORAL ||
                                       gParameters.GetAnalysisType() == SPACETIME ||
                                       gParameters.GetAnalysisType() == PROSPECTIVEPURELYTEMPORAL ||
@@ -936,8 +940,8 @@ void ParametersPrint::PrintSpaceAndTimeAdjustmentsParameters(FILE* fp) const {
                                   "PrintSpaceAndTimeAdjustmentsParameters()", gParameters.GetSpatialAdjustmentType());
       }
     }
-    settings.push_back(std::make_pair("Adjust for known relative risks",(bPrintingAdjustmentsFileParameters ? "Yes" : "No")));
-    if (bPrintingAdjustmentsFileParameters)
+    settings.push_back(std::make_pair("Adjust for known relative risks",(gParameters.UseAdjustmentForRelativeRisksFile() ? "Yes" : "No")));
+    if (gParameters.UseAdjustmentForRelativeRisksFile())
         settings.push_back(std::make_pair("Adjustments File",gParameters.GetAdjustmentsByRelativeRisksFilename()));
     //since SVTT time trend type is defaulted to Linear and not GUI, only report as quadratic when set
     if (gParameters.GetAnalysisType() == SPATIALVARTEMPTREND && gParameters.getTimeTrendType() == QUADRATIC) {
@@ -993,7 +997,7 @@ void ParametersPrint::PrintSpatialWindowParameters(FILE* fp) const {
         default : throw prg_error("Unknown window shape type %d.\n", "PrintSpatialWindowParameters()", gParameters.GetSpatialWindowType());
       }
     }
-    if (gParameters.GetAnalysisType() == PURELYSPATIAL &&
+    if (!gParameters.getPerformPowerEvaluation() && gParameters.GetAnalysisType() == PURELYSPATIAL &&
         (gParameters.GetProbabilityModelType() == POISSON || gParameters.GetProbabilityModelType() == BERNOULLI))
         settings.push_back(std::make_pair("Isotonic Scan", (gParameters.GetRiskType() == MONOTONERISK ? "Yes" : "No")));
     WriteSettingsContainer(settings, "Spatial Window", fp);

@@ -143,7 +143,17 @@ bool AsciiFileDataSource::ReadRecord() {
     gSourceFile.seekg(0L, std::ios::beg);
   }
   gsReadBuffer.clear();
-  while (getlinePortable(gSourceFile, gsReadBuffer) && !gStringParser->SetString(gsReadBuffer)) ++glReadCount;
+  //while (getlinePortable(gSourceFile, gsReadBuffer) && !gStringParser->SetString(gsReadBuffer)) ++glReadCount;
+
+  bool isBlank = true;
+  while (isBlank && getlinePortable(gSourceFile, gsReadBuffer)) {
+      isBlank = !gStringParser->SetString(gsReadBuffer);
+      if (isBlank) {
+          tripBlankRecordFlag();
+          ++glReadCount;
+      }
+  }
+
   ++glReadCount;
   return (gsReadBuffer.size() > 0 && gStringParser->HasWords());
 }

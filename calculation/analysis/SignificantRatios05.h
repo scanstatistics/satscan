@@ -6,21 +6,28 @@
 
 /** Maintains ordered list of significant log likelihood ratios as calculated
     during simulation process. */
-class CSignificantRatios05 {
+class SignificantRatios {
+  public:
+    typedef std::vector<double> container_t;
+    typedef std::pair<bool,double> alpha_t;
+
   private:
-    const unsigned int _replications;
-    std::vector<double> _ratios_list;
+    typedef std::vector<double> container_t;
+    typedef std::pair<bool,double> alpha_t;
+
+    container_t  _ratios;
+    unsigned int _numReplications;
 
   public:
-    CSignificantRatios05(unsigned int replications);
+    SignificantRatios(unsigned int iNumReplications);
 
-    bool        AddRatio(double r);
-    double      GetAlpha01() const;
-    double      GetAlpha001() const;
-    double      GetAlpha0001() const;
-    double      GetAlpha00001() const;
-    double      GetAlpha05() const;
-    void        Initialize();
+    bool    add(double r);
+    alpha_t getAlpha01() const;
+    alpha_t getAlpha05() const;
+    alpha_t getAlpha001() const;
+    alpha_t getAlpha0001() const;
+    alpha_t getAlpha00001() const;
+    void    initialize();
 };
 //**********************************************************************************
 #endif

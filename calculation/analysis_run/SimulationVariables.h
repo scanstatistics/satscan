@@ -5,33 +5,36 @@
 #include "SaTScan.h"
 
 class SimulationVariables {
+  public:
+      typedef std::pair<double,unsigned int> mlc_counter_t;
+      typedef std::vector<mlc_counter_t> container_t;
   private:
     unsigned int    _simulations_count;
 	double		    _sum_llr;
 	double		    _sum_squared_llr;
-    double          _mlc_llr;
-    unsigned int    _greater_llr_count;
-
-    //power X, Y ???
+    container_t     _mlc_llr;
 
     void            init(double mlc_llr) {
                         _simulations_count=0;
                         _sum_llr=0;
                         _sum_squared_llr=0;
-                        _mlc_llr=mlc_llr;
-                        _greater_llr_count=0;
+                        _mlc_llr.resize(1,mlc_counter_t(mlc_llr,0));  
                     }
 
   public:
     SimulationVariables() {init(0.0);}
     virtual ~SimulationVariables() {}
 
+    void            add_additional_mlc(double mlc_llr) {
+                        _mlc_llr.push_back(mlc_counter_t(mlc_llr,0));  
+                    }
     void            add_llr(double llr) {_sum_llr += llr; 
                                          _sum_squared_llr += std::pow(llr, 2);
-                                         if (macro_less_than(_mlc_llr, llr, DBL_CMP_TOLERANCE))  ++_greater_llr_count;
+                                         for (container_t::iterator itr=_mlc_llr.begin(); itr != _mlc_llr.end(); ++itr)
+                                             if (macro_less_than(itr->first, llr, DBL_CMP_TOLERANCE)) itr->second++;
                     }
     double          get_mean() const {return _sum_llr/static_cast<double>(_simulations_count);}
-    unsigned int    get_greater_llr_count() const {return _greater_llr_count;}
+    container_t     get_llr_counters() const {return _mlc_llr;}
     unsigned int    get_sim_count() const {return _simulations_count;}
     double          get_standard_deviation() const {return std::sqrt(get_variance());}
     double          get_variance() const {return _sum_squared_llr/static_cast<double>(_simulations_count) - std::pow(get_mean(), 2);}

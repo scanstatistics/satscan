@@ -22,7 +22,7 @@ class ParametersValidate {
     bool                ValidateMaximumTemporalClusterSize(BasePrint& PrintDirection) const;
     bool                ValidateMonotoneRisk(BasePrint& PrintDirection) const;
     bool                ValidateOutputOptionParameters(BasePrint & PrintDirection) const;
-    bool                ValidatePowerCalculationParameters(BasePrint & PrintDirection) const;
+    bool                ValidatePowerEvaluationsParameters(BasePrint & PrintDirection) const;
     bool                ValidateRandomizationSeed(BasePrint& PrintDirection) const;
     bool                ValidateRangeParameters(BasePrint & PrintDirection) const;
     bool                ValidateSimulationDataParameters(BasePrint & PrintDirection) const;

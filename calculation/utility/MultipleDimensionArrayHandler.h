@@ -135,6 +135,7 @@ class TwoDimensionArrayHandler : public MultipleDimesionArrayHandler<T> {
   public:
     TwoDimensionArrayHandler(unsigned int FirstDimension, unsigned int SecondDimension);
     TwoDimensionArrayHandler(unsigned int FirstDimension, unsigned int SecondDimension, const T& t);
+    TwoDimensionArrayHandler(const TwoDimensionArrayHandler<T>& other);
     virtual ~TwoDimensionArrayHandler();
 
     TwoDimensionArrayHandler & operator=(const TwoDimensionArrayHandler<T> & rhs);
@@ -164,6 +165,7 @@ class ThreeDimensionArrayHandler : public MultipleDimesionArrayHandler<T> {
   public:
     ThreeDimensionArrayHandler(unsigned int FirstDimension, unsigned int SecondDimension, unsigned int ThirdDimension);
     ThreeDimensionArrayHandler(unsigned int FirstDimension, unsigned int SecondDimension, unsigned int ThirdDimension, const T& t);
+    ThreeDimensionArrayHandler(const ThreeDimensionArrayHandler<T>& other);
     virtual ~ThreeDimensionArrayHandler();
 
     ThreeDimensionArrayHandler & operator=(const ThreeDimensionArrayHandler<T> & rhs);

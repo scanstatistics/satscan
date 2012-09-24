@@ -10,16 +10,22 @@
 
 /** Input data source abstraction. */
 class DataSource {
+   protected:
+     bool _blank_record_flag;
+
    public:
-     DataSource() {}
+     DataSource() : _blank_record_flag(false) {}
      virtual ~DataSource() {}
 
+     void                               clearBlankRecordFlag() {_blank_record_flag=false;}
+     bool                               detectBlankRecordFlag() const {return _blank_record_flag;}
      virtual long                       GetCurrentRecordIndex() const = 0;
      static DataSource                * GetNewDataSourceObject(const std::string& sSourceFilename, BasePrint& Print, bool bAssumeASCII=true);
      virtual long                       GetNumValues() = 0;
      virtual const char               * GetValueAt(long iFieldIndex) = 0;
      virtual void                       GotoFirstRecord() = 0;
      virtual bool                       ReadRecord() = 0;
+     void                               tripBlankRecordFlag() {_blank_record_flag=true;}
 };
 
 /** ASCII file data source. */

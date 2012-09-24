@@ -9,17 +9,16 @@ stsMCSimJobSource::stsMCSimJobSource(
   CParameters const & rParameters
  ,boost::posix_time::ptime CurrentTime
  ,PrintQueue & rPrintDirection
- ,const char * szReplicationFormatString
  ,AnalysisRunner & rRunner
+ ,unsigned int num_replica
 )
  : guiNextJobParam(1)
  , guiUnregisteredJobLowerBound(1)
  , gfnRegisterResult(&stsMCSimJobSource::RegisterResult_AutoAbort)//initialize to the most feature-laden
  , gConstructionTime(CurrentTime)
  , grPrintDirection(rPrintDirection)
- , gszReplicationFormatString(szReplicationFormatString)
  , grRunner(rRunner)
- , guiJobCount(rParameters.GetNumReplicationsRequested())
+ , guiJobCount(num_replica)
  , guiNextProcessingJobId(1)
  , guiJobsReported(0)
 {
@@ -32,6 +31,10 @@ stsMCSimJobSource::stsMCSimJobSource(
 
   if (rParameters.GetOutputSimLoglikeliRatiosFiles())
     gRatioWriter.reset(new LoglikelihoodRatioWriter(rParameters, grRunner.giAnalysisCount > 1));
+  if (rParameters.GetLogLikelihoodRatioIsTestStatistic())
+    gszReplicationFormatString = "SaTScan test statistic for #%u of %u replications: %7.2lf\n";
+  else
+    gszReplicationFormatString = "SaTScan log likelihood ratio for #%u of %u replications: %7.2lf\n";
 }
 
 
@@ -217,7 +220,7 @@ void stsMCSimJobSource::RegisterResult_AutoAbort(job_id_type const & rJobID, par
          RegisterResult_NoAutoAbort(gmapOverflowResults.begin()->first, gmapOverflowResults.begin()->second.first, gmapOverflowResults.begin()->second.second);
          gmapOverflowResults.erase(gmapOverflowResults.begin());
          ++guiNextProcessingJobId;
-         if (grRunner.gSimVars.get_greater_llr_count() >= grRunner.gParameters.GetExecuteEarlyTermThreshold()) {
+         if (grRunner.gSimVars.get_llr_counters().front().second >= grRunner.gParameters.GetExecuteEarlyTermThreshold()) {
             //auto-abort is triggered
             gfnRegisterResult = &stsMCSimJobSource::RegisterResult_AutoAbortConditionExists;
             ReleaseAutoAbortCheckResources();
@@ -320,8 +323,6 @@ void stsMCSimJobSource::WriteResultToStructures(successful_result_type const & r
     //update significance indicator
     grRunner.UpdateSignificantRatiosList(rResult);
     if (gRatioWriter.get()) gRatioWriter->Write(rResult);
-    //update power calculations
-    grRunner.UpdatePowerCounts(rResult);
     grRunner.gSimVars.add_llr(rResult);
     grRunner.gSimVars.increment_sim_count();
   }

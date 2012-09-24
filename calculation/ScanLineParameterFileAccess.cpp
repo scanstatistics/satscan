@@ -39,9 +39,9 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case REPLICAS                  : return "Num Monte Carlo Replications (line 20)";  
     case MODEL                     : return "Probability Model Type (line 21)";  
     case RISKFUNCTION              : return "Isotonic Scan (line 22)";  
-    case POWERCALC                 : return "Perform Power Calculations? (line 23)";  
-    case POWERX                    : return "Power Calculation LLR #1 (line 24)";  
-    case POWERY                    : return "Power Calculation LLR #2 (line 25)";  
+    case POWER_EVALUATION          : return " perform power evaluation - Poisson only (line 23)";
+    case POWERX                    : return "Power Evaluation Critical Value #1 (line 24)";  
+    case POWERY                    : return "Power Evaluation Critical Value #2 (line 25)";  
     case TIMETREND                 : return "Temporal Trend Adjustment Type (line 26)";  
     case TIMETRENDPERC             : return "Temporal Trend Percentage (line 27)";  
     case PURETEMPORAL              : return "Include Purely Temporal Cluster (line 28)";  
@@ -128,6 +128,12 @@ const char * ScanLineParameterFileAccess::GetParameterLabel(ParameterType eParam
     case INDEXBASED_REPORT_TYPE    : return "index based cluster report type (line 106)";
     case INDEXBASED_PVALUE_CUTOFF  : return "index based cluster p-value cut off (line 107)";
     case OUTPUT_INDEX_COEFFICENTS  : return "output index based coefficents (line 108)";
+    case PE_COUNT                  : return " total cases in power evaluation (line 109)";
+    case PE_CV_SPEC_TYPE           : return " critical value specification type (line 110)";
+    case PE_CRITICAL_TYPE          : return " critical value type (line 111)";
+    case PE_ESTIMATION_TYPE        : return " power estimation type (line 112)";
+    case PE_ADJUSTFILE             : return " power adjustments file (line 113)";
+    case PE_POWER_REPLICAS         : return " number of replications in power step (line 114)";
     default : throw prg_error("Unknown parameter enumeration %d.\n", "GetParameterLabel()", eParameterType);
   };
 }

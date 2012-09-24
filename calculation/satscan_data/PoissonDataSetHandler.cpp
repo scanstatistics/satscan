@@ -34,6 +34,7 @@ SimulationDataContainer_t& PoissonDataSetHandler::AllocateSimulationData(Simulat
 /** For each data set, assigns data at meta location indexes. */
 void PoissonDataSetHandler::assignMetaLocationData(RealDataContainer_t& Container) const {
   for (RealDataContainer_t::iterator itr=Container.begin(); itr != Container.end(); ++itr) {
+    if (!(gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount()))
     (*itr)->setCaseData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
     (*itr)->setMeasureData_MetaLocations(gDataHub.GetTInfo()->getMetaManagerProxy());
   }
@@ -236,6 +237,8 @@ bool PoissonDataSetHandler::ReadData() {
     SetRandomizers();
     for (size_t t=0; t < GetNumDataSets(); ++t) {
        if (gParameters.UsePopulationFile()) { //read population data file
+        if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount())
+            GetDataSet(t).setAggregateCovariateCategories(true);          
          if (GetNumDataSets() == 1) gPrint.Printf("Reading the population file\n", BasePrint::P_STDOUT);
          else gPrint.Printf("Reading the population file for data set %u\n", BasePrint::P_STDOUT, t + 1);
          if (!ReadPopulationFile(GetDataSet(t))) return false;
@@ -245,12 +248,16 @@ bool PoissonDataSetHandler::ReadData() {
          else gPrint.Printf("Creating the population for data set %u\n", BasePrint::P_STDOUT, t + 1);
          if (!CreatePopulationData(GetDataSet(t))) return false;
        }
+       if (gParameters.getPerformPowerEvaluation() && gParameters.getPowerEvaluationCaseCount())
+           GetDataSet(t).getPopulationData().AddCovariateCategoryCaseCount(0, gParameters.getPowerEvaluationCaseCount());
+       else {
        //read case data file
        if (GetNumDataSets() == 1) gPrint.Printf("Reading the case file\n", BasePrint::P_STDOUT);
        else gPrint.Printf("Reading the case file for data set %u\n", BasePrint::P_STDOUT, t + 1);
        if (!ReadCaseFile(GetDataSet(t))) return false;
        //validate population data against case data (if population was read from file)  
        if (gParameters.UsePopulationFile()) GetDataSet(t).checkPopulationDataCases(gDataHub);
+       } 
     }
   }
   catch (prg_exception& x) {
@@ -390,12 +397,12 @@ void PoissonDataSetHandler::SetRandomizers() {
           else
             gvDataSetRandomizers.at(0) = new PoissonNullHypothesisRandomizer(gParameters, gParameters.GetRandomizationSeed());
           break;
-      case HA_RANDOMIZATION :
-          gvDataSetRandomizers.at(0) = new AlternateHypothesisRandomizer(gDataHub, gParameters.GetRandomizationSeed());
-          break;
-      case FILESOURCE :
-          gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
-          break;
+      //case HA_RANDOMIZATION :
+      //    gvDataSetRandomizers.at(0) = new AlternateHypothesisRandomizer(gDataHub, gParameters.GetRandomizationSeed());
+      //    break;
+      //case FILESOURCE :
+      //    gvDataSetRandomizers.at(0) = new FileSourceRandomizer(gParameters, gParameters.GetRandomizationSeed());
+      //    break;
       default :
           throw prg_error("Unknown simulation type '%d'.","SetRandomizers()", gParameters.GetSimulationType());
     };

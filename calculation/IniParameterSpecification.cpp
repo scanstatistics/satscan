@@ -384,6 +384,15 @@ void IniParameterSpecification::Build_9_2_x_ParameterList() {
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClusterReportingType"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"IndexBasedClustersPValueCutOff"));
   gvParameterInfo.push_back(std::make_pair(ClustersReported, (const char*)"OutputIndexBasedCoefficents"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"TotalCases"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"CriticalValuesSpecifyType"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"CriticalValueType"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PowerEstimationType"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"AdjustmentsFile"));
+  gvParameterInfo.push_back(std::make_pair(PowerSimulations, (const char*)"PowerReplications"));
+  gvParameterInfo[POWER_EVALUATION - 1] = std::make_pair(PowerSimulations, (const char*)"PerformPowerEvaluation");
+  gvParameterInfo[POWERX - 1] = std::make_pair(PowerSimulations, (const char*)"CriticalValue1");
+  gvParameterInfo[POWERY - 1] = std::make_pair(PowerSimulations, (const char*)"CriticalValue2");
 }
 
 /** For sepcified ParameterType, attempts to retrieve ini section and key name if ini file.

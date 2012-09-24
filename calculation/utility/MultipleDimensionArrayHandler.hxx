@@ -29,6 +29,19 @@ TwoDimensionArrayHandler<T>::TwoDimensionArrayHandler(unsigned int FirstDimensio
 }
 
 template<class T>
+TwoDimensionArrayHandler<T>::TwoDimensionArrayHandler(const TwoDimensionArrayHandler<T>& other)
+                            :MultipleDimesionArrayHandler<T>(), g1stDimension(other.Get1stDimension()), g2ndDimension(other.Get2ndDimension()) {
+  try {
+    Init();
+    Allocate();
+    *this = other;
+  }
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","TwoDimensionArrayHandler");
+    throw;
+  }
+}
+template<class T>
 TwoDimensionArrayHandler<T>::~TwoDimensionArrayHandler() {
   try {
     Deallocate();
@@ -168,6 +181,19 @@ ThreeDimensionArrayHandler<T>::ThreeDimensionArrayHandler(unsigned int FirstDime
   }
 }
 
+template<class T>
+ThreeDimensionArrayHandler<T>::ThreeDimensionArrayHandler(const ThreeDimensionArrayHandler<T>& other)
+                              :MultipleDimesionArrayHandler<T>(), g1stDimension(other.Get1stDimension()), g2ndDimension(other.Get2ndDimension()), g3rdDimension(other.Get3rdDimension()) {
+  try {
+    Init();
+    Allocate();
+    *this = other;
+  }
+  catch (prg_exception& x) {
+    x.addTrace("constructor()","ThreeDimensionArrayHandler");
+    throw;
+  }
+}
 template<class T>
 ThreeDimensionArrayHandler<T>::~ThreeDimensionArrayHandler() {
   try {

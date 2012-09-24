@@ -111,12 +111,11 @@ void SaTScanDataReader::Read() {
   }
 }
 
-
 /** Read the relative risks file
     -- unlike other input files of system, records read from relative risks
        file are applied directly to the measure structure, just post calculation
        of measure and prior to temporal adjustments and making cumulative. */
-bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
+bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile(const std::string& filename, RiskAdjustmentsContainer_t& rrAdjustments, bool consolidate) {
   bool          bValid=true, bEmpty=true,
                 bRestrictedLocations(gParameters.GetIsPurelyTemporalAnalysis() &&
                                      gParameters.GetCoordinatesFileName().size() == 0);
@@ -130,9 +129,22 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
     gPrint.SetImpliedInputFileType(BasePrint::ADJ_BY_RR_FILE);
 
     gPrint.Printf("Reading the adjustments file\n", BasePrint::P_STDOUT);
-    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(gParameters.GetAdjustmentsByRelativeRisksFilename(), gPrint));
-    gDataHub.gRelativeRiskAdjustments.Empty();
+    std::auto_ptr<DataSource> Source(DataSource::GetNewDataSourceObject(filename, gPrint));
+    // start with one collection of adjustments
+    rrAdjustments.clear();
+    rrAdjustments.push_back(RiskAdjustments_t(new RelativeRiskAdjustmentHandler(gDataHub)));
+
+    RiskAdjustments_t adjustments = rrAdjustments.front();
     while (!gPrint.GetMaximumReadErrorsPrinted() && Source->ReadRecord()) {
+        // if not consolidating adjustments, then we'll use blank record as trigger to create new adjustment collection
+        if (!consolidate && Source->detectBlankRecordFlag()) {
+            if (adjustments->get().size()) { // create new collection of adjustments
+                rrAdjustments.push_back(RiskAdjustments_t(new RelativeRiskAdjustmentHandler(gDataHub)));
+                adjustments = rrAdjustments.back();
+            }
+            Source->clearBlankRecordFlag();
+        }
+
         bEmpty=false;
         //read tract identifier
         if (!stricmp(Source->GetValueAt(uLocationIndex),"all"))
@@ -143,8 +155,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
                                  "       relative risks at the location level. In order to adjust for known relative\n"
                                  "       risks at the location level, you must define a coordinates file. Alternatively,\n"
                                  "       you may want to define known relative risks that apply to all locations.");
-        }
-        else {
+        } else {
           //Validate that tract identifer is one of those defined in the coordinates file.
           SaTScanDataReader::RecordStatusType eStatus = RetrieveLocationIndex(*Source, TractIndex);
           if (eStatus == SaTScanDataReader::Ignored)
@@ -213,7 +224,7 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
         iMaxTract = (TractIndex == -1 ? gDataHub.m_nTracts : TractIndex + 1);
         TractIndex = (TractIndex == -1 ? 0 : TractIndex);
         for (; TractIndex < iMaxTract; ++TractIndex)
-           gDataHub.gRelativeRiskAdjustments.AddAdjustmentData(TractIndex, dRelativeRisk, StartDate, EndDate);
+           adjustments->add(TractIndex, dRelativeRisk, StartDate, EndDate);
     }
     //if invalid at this point then read encountered problems with data format,
     //inform user of section to refer to in user guide for assistance
@@ -223,9 +234,13 @@ bool SaTScanDataReader::ReadAdjustmentsByRelativeRisksFile() {
     else if (bEmpty) {
       gPrint.Printf("Error: %s contains no data.\n", BasePrint::P_ERROR, gPrint.GetImpliedFileTypeString().c_str());
       bValid = false;
+    } else {
+        // safety check - remove any collections that have no adjustments
+        for (RiskAdjustmentsContainer_t::iterator itr=rrAdjustments.begin(); itr != rrAdjustments.end(); ++itr) {
+            if (itr->get()->get().size() == 0) itr = rrAdjustments.erase(itr);
+        }
     }
-  }
-  catch (prg_exception& x) {
+  } catch (prg_exception& x) {
     x.addTrace("ReadAdjustmentsByRelativeRisksFile()","SaTScanDataReader");
     throw;
   }
@@ -952,8 +967,12 @@ bool SaTScanDataReader::ReadPoissonData() {
     gDataHub.gDataSets.reset(new PoissonDataSetHandler(gDataHub, gPrint));
     if (!gDataHub.gDataSets->ReadData())
       return false;
-    if (gParameters.UseAdjustmentForRelativeRisksFile() && !ReadAdjustmentsByRelativeRisksFile())
-      return false;
+    if (gParameters.UseAdjustmentForRelativeRisksFile()) {
+        RiskAdjustmentsContainer_t riskAdjustments;
+        if (!ReadAdjustmentsByRelativeRisksFile(gParameters.GetAdjustmentsByRelativeRisksFilename(), riskAdjustments, true))
+            return false;
+        gDataHub.gRelativeRiskAdjustments = riskAdjustments.front();
+    }
     if (gParameters.UseMaxCirclePopulationFile() && !ReadMaxCirclePopulationFile())
         return false;
     if (gParameters.UseSpecialGrid() && !ReadGridFile())

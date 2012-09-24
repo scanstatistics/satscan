@@ -82,12 +82,13 @@ class DataSet {
     count_t                   * getCaseData_PT_NC() const;
     TwoDimMeasureArray_t      & getMeasureData() const;
     TwoDimMeasureArray_t      & getMeasureData_NC() const;
-    measure_t                 * getMeasureData_PT() const;
-    measure_t                 * getMeasureData_PT_NC() const;
+    measure_t                 * getMeasureData_PT(bool check=true) const;
+    measure_t                 * getMeasureData_PT_NC(bool check=true) const;
     measure_t                 * getMeasureData_PT_Aux() const;
     TwoDimMeasureArray_t      & getMeasureData_Aux() const;
     unsigned int                getIntervalDimension() const {return giIntervalsDimensions;}
     unsigned int                getLocationDimension() const {return giLocationDimensions;}
+    unsigned int                getMetaLocationDimension() const {return giMetaLocations;}
     AbstractTimeTrend         & getTimeTrend() {return *gpTimeTrend;}
     const AbstractTimeTrend   & getTimeTrend() const {return *gpTimeTrend;}
     unsigned int                getSetIndex() const {return giSetIndex;}
@@ -105,6 +106,8 @@ class DataSet {
     void                        setMeasureData_PT_NC();
     void                        setMeasureData_PT_Aux();
     void                        setMeasureDataToCumulative();
+    void                        setMeasureData_Aux(TwoDimMeasureArray_t& other);
+
 };
 
 /** Encapsulates real data of dataset. */
@@ -128,6 +131,7 @@ class RealDataSet : public DataSet {
     TwoDimCountArray_t        * gpCaseData_Censored;                 /** number of censored individuals stratified with respect to time intervals by tract index
                                                                             - cases are distributed in time intervals cumulatively */
     double                      gdCalculatedTimeTrendPercentage;        /** calculated time trend percentage used to temporal adjust expected cases*/
+    TwoDimMeasureArray_t      * gpPopulationMeasureData;                     /** population measure array */
 
   public:
     RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts, unsigned int iMetaLocations, const CParameters& parameters, unsigned int iSetIndex);
@@ -163,6 +167,8 @@ class RealDataSet : public DataSet {
     void                        setTotalMeasureAux(measure_t tTotalMeasureAux) {gtTotalMeasureAux = tTotalMeasureAux;}
     void                        setTotalMeasureAtStart(measure_t tTotalMeasure) {gtTotalMeasureAtStart = tTotalMeasure;}
     void                        setTotalPopulation(measure_t tTotalPopulation) {gdTotalPop = tTotalPopulation;}
+    void                        setPopulationMeasureData(TwoDimMeasureArray_t& other);
+    TwoDimMeasureArray_t     &  getPopulationMeasureData() const;
 };
 //*****************************************************************************
 #endif

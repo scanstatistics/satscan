@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters 	              = 108;
+const int CParameters::giNumParameters 	              = 114;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -40,7 +40,7 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (geProbabilityModelType                 != rhs.geProbabilityModelType) return false;
   if (geRiskFunctionType                     != rhs.geRiskFunctionType) return false;
   if (giReplications                         != rhs.giReplications) return false;
-  if (gbPowerCalculation                     != rhs.gbPowerCalculation) return false;
+  if (_performPowerEvaluation                != rhs._performPowerEvaluation) return false;
   if (gdPower_X                              != rhs.gdPower_X) return false;
   if (gdPower_Y                              != rhs.gdPower_Y) return false;
   if (gsStudyPeriodStartDate                 != rhs.gsStudyPeriodStartDate) return false;
@@ -137,6 +137,12 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_reportGiniOptimizedClusters           != rhs._reportGiniOptimizedClusters) return false;
   if (_indexBasedReportType                  != rhs._indexBasedReportType) return false;
   if (_outputIndexCoefficients               != rhs._outputIndexCoefficients) return false;
+  if (_criticalvalues_specify_type           != rhs._criticalvalues_specify_type) return false;  
+  if (_totalPowerEvaluationCases             != rhs._totalPowerEvaluationCases) return false;
+  if (_critical_value_type                   != rhs._critical_value_type) return false;
+  if (_power_estimation_type                 != rhs._power_estimation_type) return false;
+  if (_power_adjustments_filename            != rhs._power_adjustments_filename) return false;
+  if (_pe_power_replica                      != rhs._pe_power_replica) return false;
 
   return true;
 }
@@ -228,7 +234,7 @@ void CParameters::Copy(const CParameters &rhs) {
   geProbabilityModelType                 = rhs.geProbabilityModelType;
   geRiskFunctionType                     = rhs.geRiskFunctionType;
   giReplications                         = rhs.giReplications;
-  gbPowerCalculation                     = rhs.gbPowerCalculation;
+  _performPowerEvaluation                = rhs._performPowerEvaluation;
   gdPower_X                              = rhs.gdPower_X;
   gdPower_Y                              = rhs.gdPower_Y;
   gsStudyPeriodStartDate                 = rhs.gsStudyPeriodStartDate;
@@ -325,6 +331,12 @@ void CParameters::Copy(const CParameters &rhs) {
   _reportGiniOptimizedClusters           = rhs._reportGiniOptimizedClusters;
   _indexBasedReportType                  = rhs._indexBasedReportType;
   _outputIndexCoefficients               = rhs._outputIndexCoefficients;
+  _criticalvalues_specify_type           = rhs._criticalvalues_specify_type;
+  _totalPowerEvaluationCases             = rhs._totalPowerEvaluationCases;
+  _critical_value_type                   = rhs._critical_value_type;
+  _power_estimation_type                 = rhs._power_estimation_type;
+  _power_adjustments_filename            = rhs._power_adjustments_filename;
+  _pe_power_replica                      = rhs._pe_power_replica;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -707,7 +719,7 @@ void CParameters::SetAsDefaulted() {
   gbLogRunHistory                          = false;
   geProbabilityModelType                   = POISSON;
   geRiskFunctionType                       = STANDARDRISK;
-  gbPowerCalculation                       = false;
+  _performPowerEvaluation                  = false;
   gdPower_X                                = 0.0;
   gdPower_Y                                = 0.0;
   geTimeTrendAdjustType                    = NOTADJUSTED;
@@ -794,6 +806,12 @@ void CParameters::SetAsDefaulted() {
   _reportGiniOptimizedClusters = true;
   _indexBasedReportType = OPTIMAL_ONLY;
   _outputIndexCoefficients = false;
+  _criticalvalues_specify_type = PE_AUTOMATIC;
+  _totalPowerEvaluationCases = 0;
+  _critical_value_type = PE_MONTECARLO;
+  _power_estimation_type = PE_MONTECARLO;
+  _power_adjustments_filename = "";
+  _pe_power_replica = giReplications + 1;
 }
 
 /** Sets start range start date. Throws exception. */
@@ -906,6 +924,10 @@ void CParameters::SetPowerCalculationY(double dPowerY) {
   gdPower_Y = dPowerY;
 }
 
+void CParameters::setPowerEvaluationFilename(const char * f, bool bCorrectForRelativePath) {
+  _power_adjustments_filename = f;
+  if (bCorrectForRelativePath) AssignMissingPath(_power_adjustments_filename);
+}
 /** Sets relative risks adjustments file name.
     If bCorrectForRelativePath is true, an attempt is made to modify filename
     to path relative to executable. This is only attempted if current file does not exist. */
@@ -913,6 +935,16 @@ void CParameters::SetAdjustmentsByRelativeRisksFilename(const char * sFileName, 
   gsAdjustmentsByRelativeRisksFileName = sFileName;
   if (bCorrectForRelativePath)
     AssignMissingPath(gsAdjustmentsByRelativeRisksFileName);
+}
+void CParameters::setPowerEvaluationCriticalValuesSpecType(CriticalValuesSpecifyType e) {
+  if (e < PE_AUTOMATIC || e > PE_BOTH)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "setPowerEvaluationCriticalValuesSpecType()", e, PE_AUTOMATIC, PE_BOTH);
+  _criticalvalues_specify_type = e;
+}
+void CParameters::setPowerEvaluationCriticalValueType(PowerEvaluationType e) {
+  if (e < PE_MONTECARLO || e > PE_GUMBEL)
+    throw prg_error("Enumeration %d out of range [%d,%d].", "setPowerEvaluationCriticalValueType()", e, PE_MONTECARLO, PE_GUMBEL);
+  _critical_value_type = e;
 }
 
 /** Sets precision of input file dates type. Throws exception if out of range. */

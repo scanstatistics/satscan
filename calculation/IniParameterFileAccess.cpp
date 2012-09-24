@@ -270,7 +270,7 @@ void IniParameterFileAccess::WriteInferenceSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, ITERATIVE_PVAL, GetParameterString(ITERATIVE_PVAL, s).c_str(), GetParameterComment(ITERATIVE_PVAL));
     WriteIniParameter(WriteFile, REPLICAS, GetParameterString(REPLICAS, s).c_str(), GetParameterComment(REPLICAS));
   } catch (prg_exception& x) {
-    x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+    x.addTrace("WriteInferenceSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -401,15 +401,21 @@ void IniParameterFileAccess::WriteOutputSettings(IniFile& WriteFile) {
 void IniParameterFileAccess::WritePowerSimulationsSettings(IniFile& WriteFile) {
   std::string s;
   try {
-    WriteIniParameter(WriteFile, POWERCALC, GetParameterString(POWERCALC, s).c_str(), GetParameterComment(POWERCALC));
+    WriteIniParameter(WriteFile, POWER_EVALUATION, GetParameterString(POWER_EVALUATION, s).c_str(), GetParameterComment(POWER_EVALUATION));
+    WriteIniParameter(WriteFile, PE_COUNT, GetParameterString(PE_COUNT, s).c_str(), GetParameterComment(PE_COUNT));
+    WriteIniParameter(WriteFile, PE_CV_SPEC_TYPE, GetParameterString(PE_CV_SPEC_TYPE, s).c_str(), GetParameterComment(PE_CV_SPEC_TYPE));
+    WriteIniParameter(WriteFile, PE_CRITICAL_TYPE, GetParameterString(PE_CRITICAL_TYPE, s).c_str(), GetParameterComment(PE_CRITICAL_TYPE));
     WriteIniParameter(WriteFile, POWERX, GetParameterString(POWERX, s).c_str(), GetParameterComment(POWERX));
     WriteIniParameter(WriteFile, POWERY, GetParameterString(POWERY, s).c_str(), GetParameterComment(POWERY));
+    WriteIniParameter(WriteFile, PE_ESTIMATION_TYPE, GetParameterString(PE_ESTIMATION_TYPE, s).c_str(), GetParameterComment(PE_ESTIMATION_TYPE));
+    WriteIniParameter(WriteFile, PE_ADJUSTFILE, GetParameterString(PE_ADJUSTFILE, s).c_str(), GetParameterComment(PE_ADJUSTFILE));
+    WriteIniParameter(WriteFile, PE_POWER_REPLICAS, GetParameterString(PE_POWER_REPLICAS, s).c_str(), GetParameterComment(PE_POWER_REPLICAS));
     WriteIniParameter(WriteFile, SIMULATION_TYPE, GetParameterString(SIMULATION_TYPE, s).c_str(), GetParameterComment(SIMULATION_TYPE));
     WriteIniParameter(WriteFile, SIMULATION_SOURCEFILE, GetParameterString(SIMULATION_SOURCEFILE, s).c_str(), GetParameterComment(SIMULATION_SOURCEFILE));
     WriteIniParameter(WriteFile, OUTPUT_SIMULATION_DATA, GetParameterString(OUTPUT_SIMULATION_DATA, s).c_str(), GetParameterComment(OUTPUT_SIMULATION_DATA));
     WriteIniParameter(WriteFile, SIMULATION_DATA_OUTFILE, GetParameterString(SIMULATION_DATA_OUTFILE, s).c_str(), GetParameterComment(SIMULATION_DATA_OUTFILE));
   } catch (prg_exception& x) {
-    x.addTrace("WriteSpaceAndTimeAdjustmentSettings()","IniParameterFileAccess");
+    x.addTrace("WritePowerSimulationsSettings()","IniParameterFileAccess");
     throw;
   }
 }
@@ -462,7 +468,7 @@ void IniParameterFileAccess::WriteSpatialNeighborsSettings(IniFile& WriteFile) {
     WriteIniParameter(WriteFile, USE_META_LOCATIONS_FILE, GetParameterString(USE_META_LOCATIONS_FILE, s).c_str(), GetParameterComment(USE_META_LOCATIONS_FILE));
     WriteIniParameter(WriteFile, MULTIPLE_COORDINATES_TYPE, GetParameterString(MULTIPLE_COORDINATES_TYPE, s).c_str(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
   } catch (prg_exception& x) {
-    x.addTrace("WriteNeighborsFileSettings()","IniParameterFileAccess");
+    x.addTrace("WriteSpatialNeighborsSettings()","IniParameterFileAccess");
     throw;
   }
 }

@@ -298,15 +298,15 @@ TwoDimMeasureArray_t & DataSet::getMeasureData_NC() const {
 
 /** Returns pointer to allocated array that represents cumulative measure data,
     time only. Throws prg_error if not allocated. */
-measure_t * DataSet::getMeasureData_PT() const {
-  if (!gpMeasureData_PT) throw prg_error("gpMeasureData_PT not allocated.","getMeasureData_PT()");
+measure_t * DataSet::getMeasureData_PT(bool check) const {
+  if (!gpMeasureData_PT && check) throw prg_error("gpMeasureData_PT not allocated.","getMeasureData_PT()");
   return gpMeasureData_PT;
 }
 
 /** Returns pointer to allocated array that represents not cumulative measure data,
     time only. Throws prg_error if not allocated. */
-measure_t * DataSet::getMeasureData_PT_NC() const {
-  if (!gpMeasureData_PT_NC) throw prg_error("gpMeasureData_PT_NC not allocated.","getMeasureData_PT_NC()");
+measure_t * DataSet::getMeasureData_PT_NC(bool check) const {
+  if (!gpMeasureData_PT_NC && check) throw prg_error("gpMeasureData_PT_NC not allocated.","getMeasureData_PT_NC()");
   return gpMeasureData_PT_NC;
 }
 
@@ -581,6 +581,14 @@ void DataSet::setMeasureDataToCumulative() {
   }
 }
 
+void DataSet::setMeasureData_Aux(TwoDimMeasureArray_t& other) {
+    if (!gpMeasureData_Aux)
+        gpMeasureData_Aux = new TwoDimensionArrayHandler<measure_t>(other);
+    else
+        *gpMeasureData_Aux = other;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////// RealDataSet ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -590,7 +598,7 @@ RealDataSet::RealDataSet(unsigned int iNumTimeIntervals, unsigned int iNumTracts
             :DataSet(iNumTimeIntervals, iNumTracts, iMetaLocations, parameters, iSetIndex),
              gtTotalCases(0), gtTotalCasesAtStart(0), gtTotalControls(0), gdTotalPop(0),
              gpControlData(0), gtTotalMeasure(0), gtTotalMeasureAtStart(0),
-             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0) {
+             gdCalculatedTimeTrendPercentage(0), gpCaseData_Censored(0), gtTotalMeasureAux(0), gpPopulationMeasureData(0) {
   gPopulation.SetNumTracts(giLocationDimensions);
 }
 
@@ -602,6 +610,7 @@ RealDataSet::~RealDataSet() {
   try {
     delete gpControlData;
     delete gpCaseData_Censored;
+    delete gpPopulationMeasureData;
   }
   catch(...){}
 }
@@ -748,3 +757,14 @@ void RealDataSet::setControlData_MetaLocations(const MetaManagerProxy& MetaProxy
   }
 }
 
+void RealDataSet::setPopulationMeasureData(TwoDimMeasureArray_t& other) {
+    if (!gpPopulationMeasureData)
+        gpPopulationMeasureData = new TwoDimensionArrayHandler<measure_t>(other);
+    else
+        *gpPopulationMeasureData = other;
+}
+
+TwoDimMeasureArray_t & RealDataSet::getPopulationMeasureData() const {
+  if (!gpPopulationMeasureData) throw prg_error("gpPopulationMeasureData not allocated.","getPopulationMeasureData()");
+  return *gpPopulationMeasureData;
+}

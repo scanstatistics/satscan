@@ -35,9 +35,11 @@ class ClusterRankHelper {
             }
         }
         void sort() {
+            if (_addStatus != closed) { // already closed? - them it is already sorted
             // sort cluster collection by cluster LLR -- adding clusters after this call is undefined behavior.
             std::sort(_rankCollection.begin(), _rankCollection.end(), MostLikelyClustersContainer::CompareClustersRatios());
             _addStatus = closed;
+            }
         }
         void update(double llr) {
             if (_addStatus == accepting)
@@ -59,7 +61,7 @@ class AnalysisRunner {
     const CParameters                 & gParameters;
     BasePrint                         & gPrintDirection;
     std::auto_ptr<CSaTScanData>         gpDataHub;
-    std::auto_ptr<CSignificantRatios05> gpSignificantRatios;
+    std::auto_ptr<SignificantRatios>    gpSignificantRatios;
     unsigned short                      guwSignificantAt005;
     time_t                              gStartTime;
     double                              gdMinRatioToReport;
@@ -76,8 +78,8 @@ class AnalysisRunner {
     void                                Execute();
     void                                ExecuteCentrically();
     void                                ExecuteSuccessively();
+    void                                ExecutePowerEvaluations();
     void                                CalculateMostLikelyClusters();
-    void                                CreateRelativeRiskFile();
     void                                CreateReport();
     void                                FinalizeReport();
     double                              GetAvailablePhysicalMemory() const;
@@ -85,13 +87,12 @@ class AnalysisRunner {
     void                                LogRunHistory();
     void                                OpenReportFile(FILE*& fp, bool bOpenAppend);
     void                                ExecuteCentricEvaluation();
-    void                                PerformSuccessiveSimulations_Parallel();
+    void                                runSuccessiveSimulations(boost::shared_ptr<RandomizerContainer_t>& randomizers, unsigned int num_relica);
     void                                ExecuteSuccessiveSimulations();
     void                                PrintCriticalValuesStatus(FILE* fp);
     void                                PrintEarlyTerminationStatus(FILE* fp);
     void                                PrintFindClusterHeading();
     void                                PrintGiniCoefficients(FILE* fp);
-    void                                PrintPowerCalculationsStatus(FILE* fp);
     void                                PrintRetainedClustersStatus(FILE* fp, bool bClusterReported);
     void                                PrintTopClusters(const MostLikelyClustersContainer& mlc);
     void                                PrintTopClusterLogLikelihood(const MostLikelyClustersContainer& mlc);
@@ -100,7 +101,6 @@ class AnalysisRunner {
     bool                                RepeatAnalysis();
     void                                reportClusters();
     void                                Setup();
-    void                                UpdatePowerCounts(double r);
     void                                UpdateSignificantRatiosList(double dRatio);
 	void                                calculateOverlappingClusters(const MostLikelyClustersContainer& mlc, ClusterSupplementInfo& clusterSupplement);
 
