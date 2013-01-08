@@ -11,10 +11,6 @@ class SignificantRatios {
     typedef std::vector<double> container_t;
     typedef std::pair<bool,double> alpha_t;
 
-  private:
-    typedef std::vector<double> container_t;
-    typedef std::pair<bool,double> alpha_t;
-
     container_t  _ratios;
     unsigned int _numReplications;
 
