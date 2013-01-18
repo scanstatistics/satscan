@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
     if (verifyParameters) {Console.Printf("Parameters confirmed.\n", BasePrint::P_STDOUT); return 0;}
 
 
-    ParameterAccessCoordinator(Parameters).Write(vm["parameter-file"].as<std::string>().c_str(), Console);
+    //ParameterAccessCoordinator(Parameters).Write(vm["parameter-file"].as<std::string>().c_str(), Console);
 
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
     //create analysis runner object and execute analysis

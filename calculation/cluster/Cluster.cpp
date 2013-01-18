@@ -37,6 +37,7 @@ void CCluster::Initialize(tract_t nCenter) {
   m_nLastInterval  = 0;
   m_iEllipseOffset = 0;
   gpCachedReportLines = 0;
+  gGiniCluster = false;
 }
 
 /** overloaded assignment operator */
@@ -54,6 +55,7 @@ CCluster& CCluster::operator=(const CCluster& rhs) {
   if (rhs.gpCachedReportLines) {
       gpCachedReportLines = new ReportCache_t(*rhs.gpCachedReportLines);
   }
+  gGiniCluster = rhs.gGiniCluster;
   return *this;
 }
 
@@ -115,7 +117,12 @@ void CCluster::Display(FILE* fp, const CSaTScanData& DataHub, const ClusterSuppl
         DisplayCoordinates(fp, DataHub, PrintFormat);
       else
         DisplayLatLongCoords(fp, DataHub, PrintFormat);
-    }    
+    }
+	if (DataHub.GetParameters().getReportGiniOptimizedClusters()) {
+		PrintFormat.PrintSectionLabel(fp, "Gini Cluster", false, true);
+		buffer = isGiniCluster() ? "Yes" : "No";
+		PrintFormat.PrintAlignedMarginsDataString(fp, buffer);
+	}
     DisplayTimeFrame(fp, DataHub, PrintFormat);
     if (DataHub.GetParameters().GetProbabilityModelType() == ORDINAL ||
         DataHub.GetParameters().GetProbabilityModelType() == CATEGORICAL)

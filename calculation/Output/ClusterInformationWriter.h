@@ -50,6 +50,7 @@ class ClusterInformationWriter : public AbstractDataFileWriter {
       static const char       * WEIGHTED_MEAN_INSIDE_FIELD;
       static const char       * WEIGHTED_MEAN_OUTSIDE_FIELD;
       static const char       * WEIGHT_INSIDE_FIELD;
+      static const char       * GINI_CLUSTER_FIELD;
 
       const CSaTScanData      & gDataHub;
       ASCIIDataFileWriter     * gpASCIIFileDataWriter;

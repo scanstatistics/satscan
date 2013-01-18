@@ -42,6 +42,7 @@ class LocationInformationWriter : public AbstractDataFileWriter {
       //static const char       * CLU_BETA2_GLOBAL_FIELD;
       //static const char       * CLU_FUNC_ALPHA_IN_FIELD;
       //static const char       * CLU_FUNC_ALPHA_OUT_FIELD;
+      static const char        * GINI_CLUSTER_FIELD;
 
       AbstractWeightedNormalRandomizer::ClusterLocationStatistics gStatistics;
 

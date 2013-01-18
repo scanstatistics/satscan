@@ -1159,8 +1159,8 @@ void AnalysisRunner::PrintTopClusters(const MostLikelyClustersContainer& mlc) {
         //write cluster details to results file and 'location information' files -- always report most likely cluster but only report
         //secondary clusters if loglikelihood ratio is greater than defined minimum and it's rank is not lower than all simulated ratios
         switch (i) {
-            case 0  : fprintf(fp, "\nMOST LIKELY CLUSTER\n\n"); break;
-            case 1  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
+            case 0  : fprintf(fp, "\nCLUSTERS DETECTED\n\n"); break;
+            //case 1  : fprintf(fp, "\nSECONDARY CLUSTERS\n\n"); break;
             default : fprintf(fp, "\n"); break;
         }
         //print cluster definition to file stream
@@ -1254,7 +1254,7 @@ void AnalysisRunner::PrintTopIterativeScanCluster(const MostLikelyClustersContai
 /** Performs ranking on each collection of clusters. */
 void AnalysisRunner::rankClusterCollections() {
     // If reporting hierarchical clusters, clone the collection of clusters associated with the greatest maxima.
-    // We need to maintain a copy since geographical overlap might be different that index based ranking (no overlap).
+    // We need to maintain a copy since geographical overlap might be different than index based ranking (no overlap).
     if (gParameters.getReportHierarchicalClusters() || gParameters.GetIsPurelyTemporalAnalysis()) {
         _reportClusters = gTopClustersContainers.back();
         _reportClusters.rankClusters(*gpDataHub, gParameters.GetCriteriaSecondClustersType(), gPrintDirection);
@@ -1398,14 +1398,14 @@ void AnalysisRunner::reportClusters() {
                 }
                 // combine clusters from maximized GINI collection with reporting collection
                 if (maximizedCollection) 
-                    _reportClusters.combine(*maximizedCollection, *gpDataHub);
+                    _reportClusters.combine(*maximizedCollection, *gpDataHub, true);
                 else if (_reportClusters.GetNumClustersRetained() == 0) {
                     /* When reporting only Gini coefficients (optimal only) then if no significant gini collection found, 
                        then report cluster collection from largest maxima with clusters. */
                     MLC_Collections_t::reverse_iterator rev(gTopClustersContainers.end()), rev_end(gTopClustersContainers.begin());
                     for (; rev != rev_end; rev++) {
                         if (rev->GetNumClustersRetained()) {
-                            _reportClusters.combine(*rev, *gpDataHub);
+                            _reportClusters.combine(*rev, *gpDataHub, true);
                             break;
                         }
                     }
@@ -1413,7 +1413,7 @@ void AnalysisRunner::reportClusters() {
             } else {
                 // combine clusters from each maxima collection with reporting collection
                 for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
-                    _reportClusters.combine(*itrMLC, *gpDataHub);
+                    _reportClusters.combine(*itrMLC, *gpDataHub, true);
             }
             // now sort combined cluster collection by LLR
             _reportClusters.sort();

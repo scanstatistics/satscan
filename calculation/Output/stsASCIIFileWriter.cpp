@@ -67,6 +67,9 @@ void ASCIIDataFileWriter::CreateFormatString(std::string& sValue, const FieldDef
             sValue = sTemp;
         }
       break;
+	case FieldValue::BOOLEAN_FLD :
+		sValue = fv.AsBool() ? "T" : "F";
+		break;
     default : throw prg_error("Unsupported field type %c", "Error!", fv.GetType());
   }
 }

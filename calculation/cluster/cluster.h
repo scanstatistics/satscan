@@ -33,6 +33,7 @@ class CCluster {
     double                        m_NonCompactnessPenalty; // non-compactness penalty, for ellipses
     int                           m_iEllipseOffset;        // Link to Circle or Ellipse (top cluster)
     mutable ReportCache_t       * gpCachedReportLines;
+	mutable bool                  gGiniCluster;
 
     void                          cacheReportLine(std::string& label, std::string& value) const;
     std::string                 & GetPopulationAsString(std::string& sString, double dPopulation) const;
@@ -127,6 +128,7 @@ class CCluster {
     virtual std::string         & GetStartDate(std::string& sDateString, const CSaTScanData& DataHub) const;
     void                          IncrementRank() {m_nRank++;}
     virtual void                  Initialize(tract_t nCenter=0);
+	bool                          isGiniCluster() const {return gGiniCluster;}
     virtual void                  PrintClusterLocationsToFile(const CSaTScanData& DataHub, const std::string& sFilename) const;
     bool                          reportableGumbelPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
     bool                          reportableMonteCarloPValue(const CParameters& parameters, const SimulationVariables& simVars) const;
@@ -135,6 +137,7 @@ class CCluster {
     virtual void                  SetCartesianRadius(const CSaTScanData& DataHub);
     void                          SetCenter(tract_t nCenter);
     void                          SetEllipseOffset(int iOffset, const CSaTScanData& DataHub);
+	void                          setAsGiniCluster(bool b) {gGiniCluster = b;}
     virtual void                  SetMostCentralLocationIndex(const CSaTScanData& DataHub);
     void                          SetNonCompactnessPenalty(double dEllipseShape, double dPower);
     virtual void                  SetNonPersistantNeighborInfo(const CSaTScanData& DataHub, const CentroidNeighbors& Neighbors);

@@ -151,7 +151,7 @@ class MostLikelyClustersContainer {
 
     void                        Add(const CCluster& Cluster);
     void                        Add(std::auto_ptr<CCluster>& pCluster);
-    void                        combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub);
+    void                        combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, bool markAsGini);
     void                        Empty();
     tract_t                     GetNumClustersRetained() const {return (tract_t)gvTopClusterList.size();}
     const CCluster            & GetCluster(tract_t tClusterIndex) const;

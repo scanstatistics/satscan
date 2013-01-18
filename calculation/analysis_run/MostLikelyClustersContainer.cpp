@@ -53,10 +53,13 @@ bool MostLikelyClustersContainer::CentroidLiesWithinSphereRegion(stsClusterCentr
 }
 
 /** Combines passed collection with this collection of clusters. */
-void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub) {
-    if (gvTopClusterList.size() == 0)
+void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& other, const CSaTScanData& DataHub, bool markAsGini) {
+    if (gvTopClusterList.size() == 0) {
         gvTopClusterList = other.gvTopClusterList;
-    else {
+		for (ClusterList_t::iterator itrThis=gvTopClusterList.begin(); itrThis != gvTopClusterList.end(); ++itrThis) {
+			(*itrThis)->setAsGiniCluster(markAsGini);
+		}
+	} else {
         ClusterList_t combineClusters;
         ClusterList_t::const_iterator itrOther=other.gvTopClusterList.begin(), itrEndOther=other.gvTopClusterList.end();
         for (;itrOther != itrEndOther; ++itrOther) {
@@ -85,7 +88,10 @@ void MostLikelyClustersContainer::combine(const MostLikelyClustersContainer& oth
         }
         // now add the non-duplicate clusters to cluster collection
         ClusterList_t::const_iterator itr=combineClusters.begin(), itrEnd=combineClusters.end();
-        for (;itr != itrEnd; ++itr) gvTopClusterList.push_back(*itr);
+        for (;itr != itrEnd; ++itr) {
+			(*itr)->setAsGiniCluster(markAsGini);
+			gvTopClusterList.push_back(*itr);
+		}
     }
 }
 

@@ -52,6 +52,9 @@ const char * ClusterInformationWriter::WEIGHTED_MEAN_INSIDE_FIELD   = "W_MEAN_IN
 const char * ClusterInformationWriter::WEIGHTED_MEAN_OUTSIDE_FIELD  = "W_MEAN_OUT";
 const char * ClusterInformationWriter::WEIGHT_INSIDE_FIELD          = "WEIGHT_IN";
 
+const char * ClusterInformationWriter::GINI_CLUSTER_FIELD           = "GINI_CLUST";
+
+
 /** class constructor */
 ClusterInformationWriter::ClusterInformationWriter(const CSaTScanData& DataHub, bool bAppend)
                :AbstractDataFileWriter(DataHub.GetParameters()), gDataHub(DataHub),
@@ -183,6 +186,7 @@ void ClusterInformationWriter::DefineClusterInformationFields() {
          //CreateField(vFieldDefinitions, FUNC_ALPHA_IN_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
          //CreateField(vFieldDefinitions, FUNC_ALPHA_OUT_FIELD, FieldValue::NUMBER_FLD, 19, 10, uwOffset, 10);
       }
+      CreateField(vFieldDefinitions, GINI_CLUSTER_FIELD, FieldValue::BOOLEAN_FLD, 1, 0, uwOffset, 0);
     }
   }
   catch (prg_exception& x) {
@@ -334,11 +338,12 @@ void ClusterInformationWriter::WriteClusterInformation(const CCluster& theCluste
     if (theCluster.reportableRecurrenceInterval(gParameters, simVars)) {
         Record.GetFieldValue(RECURRENCE_INTERVAL_FLD).AsDouble() = theCluster.GetRecurrenceInterval(gDataHub, iClusterNumber, simVars).second;
     }
-
     if (gParameters.GetProbabilityModelType() != HOMOGENEOUSPOISSON) {
         Record.GetFieldValue(START_DATE_FLD).AsString() = theCluster.GetStartDate(sBuffer, gDataHub);
         Record.GetFieldValue(END_DATE_FLD).AsString() = theCluster.GetEndDate(sBuffer, gDataHub);
     }
+	Record.GetFieldValue(GINI_CLUSTER_FIELD).AsBool() = theCluster.isGiniCluster();
+
     if (gParameters.GetNumDataSets() == 1 && gParameters.GetProbabilityModelType() != ORDINAL && gParameters.GetProbabilityModelType() != CATEGORICAL) {
       Record.GetFieldValue(OBSERVED_FIELD).AsDouble() = theCluster.GetObservedCount();
       if (gParameters.GetProbabilityModelType() == NORMAL && !gParameters.getIsWeightedNormal()) {
