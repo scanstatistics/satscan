@@ -460,6 +460,7 @@
     <ClCompile Include="..\calculation\Output\stsASCIIFileWriter.cpp" />
     <ClCompile Include="..\calculation\Output\stsDBaseFileWriter.cpp" />
     <ClCompile Include="..\calculation\Output\stsRunHistoryFile.cpp" />
+    <ClCompile Include="ParameterProgramOptions.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\analysis\IntermediateClustersContainer.hpp" />
@@ -619,6 +620,7 @@
     <ClInclude Include="..\calculation\utility\stsMonteCarloSimFunctor.h" />
     <ClInclude Include="..\calculation\utility\TimeStamp.h" />
     <ClInclude Include="..\calculation\utility\UtilityFunctions.h" />
+    <ClInclude Include="ParameterProgramOptions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

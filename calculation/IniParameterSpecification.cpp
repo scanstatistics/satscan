@@ -6,34 +6,34 @@
 
 const char * IniParameterSpecification::NotUsed                 = "NotUsed";
 
-const char * IniParameterSpecification::Input                   = "[Input]";
-const char * IniParameterSpecification::MultipleDataSets        = "[Multiple Data Sets]";
-const char * IniParameterSpecification::DataChecking            = "[Data Checking]";
-const char * IniParameterSpecification::NeighborsFile           = "[Non-Eucledian Neighbors]";
-const char * IniParameterSpecification::SpatialNeighbors        = "[Spatial Neighbors]";
-const char * IniParameterSpecification::Analysis                = "[Analysis]";
-const char * IniParameterSpecification::SpatialWindow           = "[Spatial Window]";
-const char * IniParameterSpecification::TemporalWindow          = "[Temporal Window]";
-const char * IniParameterSpecification::Polygons                = "[Polygons]";
-const char * IniParameterSpecification::SpaceAndTimeAdjustments = "[Space and Time Adjustments]";
-const char * IniParameterSpecification::Inference               = "[Inference]";
-const char * IniParameterSpecification::Output                  = "[Output]";
-const char * IniParameterSpecification::ClustersReported        = "[Clusters Reported]";
-const char * IniParameterSpecification::AdditionalOutput        = "[Additional Output]";
+const char * IniParameterSpecification::Input                   = "Input";
+const char * IniParameterSpecification::MultipleDataSets        = "Multiple Data Sets";
+const char * IniParameterSpecification::DataChecking            = "Data Checking";
+const char * IniParameterSpecification::NeighborsFile           = "Non-Eucledian Neighbors";
+const char * IniParameterSpecification::SpatialNeighbors        = "Spatial Neighbors";
+const char * IniParameterSpecification::Analysis                = "Analysis";
+const char * IniParameterSpecification::SpatialWindow           = "Spatial Window";
+const char * IniParameterSpecification::TemporalWindow          = "Temporal Window";
+const char * IniParameterSpecification::Polygons                = "Polygons";
+const char * IniParameterSpecification::SpaceAndTimeAdjustments = "Space and Time Adjustments";
+const char * IniParameterSpecification::Inference               = "Inference";
+const char * IniParameterSpecification::Output                  = "Output";
+const char * IniParameterSpecification::ClustersReported        = "Clusters Reported";
+const char * IniParameterSpecification::AdditionalOutput        = "Additional Output";
 
-const char * IniParameterSpecification::EllipticScan            = "[Elliptic Scan]";
-const char * IniParameterSpecification::SequentialScan          = "[Sequential Scan]";
-const char * IniParameterSpecification::IsotonicScan            = "[Isotonic Scan]";
-const char * IniParameterSpecification::PowerSimulations        = "[Power Simulations]";
-const char * IniParameterSpecification::RunOptions              = "[Run Options]";
-const char * IniParameterSpecification::BatchModeFeatures       = "[BatchMode Features]";
-const char * IniParameterSpecification::System                  = "[System]";
+const char * IniParameterSpecification::EllipticScan            = "Elliptic Scan";
+const char * IniParameterSpecification::SequentialScan          = "Sequential Scan";
+const char * IniParameterSpecification::IsotonicScan            = "Isotonic Scan";
+const char * IniParameterSpecification::PowerSimulations        = "Power Simulations";
+const char * IniParameterSpecification::RunOptions              = "Run Options";
+const char * IniParameterSpecification::BatchModeFeatures       = "BatchMode Features";
+const char * IniParameterSpecification::System                  = "System";
 
-const char * IniParameterSpecification::InputFiles              = "[Input Files]";
-const char * IniParameterSpecification::ScanningWindow          = "[Scanning Window]";
-const char * IniParameterSpecification::TimeParameters          = "[Time Parameters]";
-const char * IniParameterSpecification::OutputFiles             = "[Output Files]";
-const char * IniParameterSpecification::AdvancedFeatures        = "[Advanced Features]";
+const char * IniParameterSpecification::InputFiles              = "Input Files";
+const char * IniParameterSpecification::ScanningWindow          = "Scanning Window";
+const char * IniParameterSpecification::TimeParameters          = "Time Parameters";
+const char * IniParameterSpecification::OutputFiles             = "Output Files";
+const char * IniParameterSpecification::AdvancedFeatures        = "Advanced Features";
 
 /** constructor -- builds specification for write process */
 IniParameterSpecification::IniParameterSpecification() {

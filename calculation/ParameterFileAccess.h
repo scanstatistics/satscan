@@ -54,14 +54,13 @@ class AbtractParameterFileAccess {
     std::string               & AsString(std::string& ref, const CParameters::CreationVersion& v) const {printString(ref, "%d.%d.%d", v.iMajor, v.iMinor, v.iRelease); return ref;}
     const char                * GetParameterComment(ParameterType eParameterType) const;
     std::string               & GetParameterString(ParameterType eParameterType, std::string& s) const;
-    void                        MarkAsMissingDefaulted(ParameterType eParameterType, BasePrint& PrintDirection);
-    void                        SetParameter(ParameterType eParameterType, const std::string& sParameter, BasePrint& PrintDirection);
 
   public:
      AbtractParameterFileAccess(CParameters& Parameters, BasePrint& PrintDirection, bool bWriteBooleanAsDigit=false);
      virtual ~AbtractParameterFileAccess();
 
      virtual bool               Read(const char* szFilename) = 0;
+     void                       SetParameter(ParameterType eParameterType, const std::string& sParameter, BasePrint& PrintDirection);
      virtual void               Write(const char * szFilename) = 0;
 };
 

@@ -645,6 +645,9 @@
     <ClCompile Include="..\..\boost\boost_1_48_0\libs\program_options\src\winmain.cpp">
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
+    <ClCompile Include="ParameterProgramOptions.cpp">
+      <Filter>Source Files\calculation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\calculation\IniParameterFileAccess.h">
@@ -1117,6 +1120,9 @@
     </ClInclude>
     <ClInclude Include="..\calculation\cluster\ClusterSupplement.h">
       <Filter>Header Files\calculation\cluster</Filter>
+    </ClInclude>
+    <ClInclude Include="ParameterProgramOptions.h">
+      <Filter>Header Files\calculation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -11,7 +11,7 @@ class IniParameterSpecification {
     typedef std::vector<std::pair<const char*, const char*> > ParameterInfo_t;
     typedef std::map<ParameterType, std::pair<const char*, const char*> > MultipleParameterInfo_t;
 
-  protected:
+  public:
     static const char         * NotUsed;
     static const char         * Input;
     static const char         * MultipleDataSets;
@@ -42,6 +42,7 @@ class IniParameterSpecification {
     static const char         * OutputFiles;
     static const char         * AdvancedFeatures;
 
+  protected:
     ParameterInfo_t             gvParameterInfo;
     MultipleParameterInfo_t     gvMultipleParameterInfo;
 

@@ -205,6 +205,7 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(CALCULATION)/IniParameterFileAccess.cpp \
                $(CALCULATION)/RunTimeComponents.cpp \
+               $(CALCULATION)/ParameterProgramOptions.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
                $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
