@@ -85,7 +85,7 @@ void ClusterKML::writeCluster(std::ofstream& outKML, const CCluster& cluster, in
       else outKML << "<name>Cluster " << (iCluster + 1) << "</name>" << std::endl;
       // set popup window text
       getClusterLegend(cluster, iCluster, legend);
-      outKML << "<description>" << legend.c_str() << "</description>" << std::endl;
+      outKML << "<description>" << legend << "</description>" << std::endl;
       //set focal point of this cluster - cluster centriod
       _dataHub.GetGInfo()->retrieveCoordinates(cluster.GetCentroidIndex(), vCoordinates);
       prLatitudeLongitude = ConvertToLatLong(vCoordinates);
@@ -110,7 +110,7 @@ void ClusterKML::writeCluster(std::ofstream& outKML, const CCluster& cluster, in
             _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
             CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
             prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-            outKML << "<Placemark><name>" <<  vTractIdentifiers[0].c_str() << "</name><description></description><styleUrl>" << placemark_style_id << "</styleUrl>"
+            outKML << "<Placemark><name>" <<  vTractIdentifiers[0] << "</name><description></description><styleUrl>" << placemark_style_id << "</styleUrl>"
                    << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
                    << "</coordinates></Point></Placemark>" << std::endl;
         }
@@ -129,7 +129,7 @@ std::string & ClusterKML::getClusterLegend(const CCluster& cluster, int iCluster
 
   lines << "<![CDATA[" << std::endl << "<font face=\"Courier New\">";
   for (; itr != itr_end; ++itr) {
-      lines << itr->first.c_str() << " : " << itr->second.c_str() << "<br>";
+      lines << itr->first << " : " << itr->second << "<br>";
   }
   lines << "</font>" << std::endl << "]]>";
 

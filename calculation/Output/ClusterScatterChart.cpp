@@ -113,16 +113,16 @@ void ClusterScatterChart::renderScatterChart() {
     long ymax = static_cast<long>(std::max(xrange,yrange) + smallestYValue);
 
     HTMLout << "<html>\n<head>\n";
-    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir.c_str() << "mootools-1.2.4-core-nc.js\"></script>\n";
-    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir.c_str() << "moochart-0.1b1-nc.js\"></script>\n";
-    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir.c_str() << "mootoolsMore.js\"></script>\n";
+    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir << "mootools-1.2.4-core-nc.js\"></script>\n";
+    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir << "moochart-0.1b1-nc.js\"></script>\n";
+    HTMLout << "<script type=\"text/javascript\" src=\"file:///" << src_dir << "mootoolsMore.js\"></script>\n";
     HTMLout << "<script type=\"text/javascript\">\n";
     HTMLout << "    var myChart = null;\n";
     HTMLout << "    window.addEvent('domready', function(){\n";
     HTMLout << "       myChart = new Chart.Bubble('chartContainer', {zmin:" << 0 << ",zmax:" << 1 
         << ",xsteps:" << 10 << ",ysteps:" << 10 << ",xmin:" << floor(smallestXValue) << ",xmax:" << xmax << ",ymin:" << floor(smallestYValue) 
         << ",ymax:" << ymax << ",width:" << 800 << ",height:" << 800 << ",bubbleSize:" << 8
-        << ",tipImage:'file:///" << src_dir.c_str() << "tip-background.png'});\n";
+        << ",tipImage:'file:///" << src_dir << "tip-background.png'});\n";
     HTMLout << "       showPoints(document.getElementById('points').checked);\n";
     HTMLout << "    });\n";
 
@@ -130,19 +130,19 @@ void ClusterScatterChart::renderScatterChart() {
     HTMLout << "       myChart.empty();\n";
     std::vector<std::string>::const_iterator itr=chartClusters.begin(), itr_end=chartClusters.end();
     for (;itr != itr_end; ++itr) {
-       HTMLout << "       " << (*itr).c_str() << "\n";
+       HTMLout << "       " << *itr << "\n";
     }
     HTMLout << "       if (show) {\n";
     itr=chartPoints.begin(), itr_end=chartPoints.end();
     for (;itr != itr_end; ++itr) {
-       HTMLout << "          " << (*itr).c_str() << "\n";
+       HTMLout << "          " << *itr << "\n";
     }
     HTMLout << "       }\n";
     HTMLout << "       myChart.redraw();\n";
     HTMLout << "    }\n";
 
     HTMLout << "</script>\n</head>\n";
-    HTMLout << "<body style=\"background-color: #f0f8ff;/*background-image: url('file:///" << src_dir.c_str() << "bg.png'); background-repeat:repeat-x;*/\">\n";
+    HTMLout << "<body style=\"background-color: #f0f8ff;/*background-image: url('file:///" << src_dir << "bg.png'); background-repeat:repeat-x;*/\">\n";
     HTMLout << "<!--[if IE]>\n<div id=\"ie\" style=\"z-index:255;border-top:5px solid #fff;border-bottom:5px solid #fff;background-color:#c00; color:#fff;\">\n";
     HTMLout << "  <div class=\"iewrap\" style=\"border-top:5px solid #e57373;border-bottom:5px solid #e57373;\">\n";
     HTMLout << "     <div class=\"iehead\" style=\"margin: 14px 14px;font-size: 20px;\">Notice to Internet Explorer users!</div>\n";
@@ -177,7 +177,7 @@ std::string & ClusterScatterChart::getClusterLegend(const CCluster& cluster, int
 
   lines << "Cluster " << iCluster + 1 << "<br>";
   for (; itr != itr_end; ++itr) {
-      lines << itr->first.c_str() << " : " << itr->second.c_str() << "<br>";
+      lines << itr->first << " : " << itr->second << "<br>";
   }
   legend = lines.str();
   std::replace(legend.begin(), legend.end(), '\n', ' ');

@@ -41,7 +41,7 @@ void usage_message(std::string program, ParameterProgramOptions::ParamOptContain
         if (opt_descriptions[t]->get<1>())
             message << std::endl << std::endl << opt_descriptions[t]->get<0>();
         if (opt_descriptions[t]->get<2>().size())
-            message << std::endl << "  " << opt_descriptions[t]->get<2>().c_str();
+            message << std::endl << "  " << opt_descriptions[t]->get<2>();
     }
     console.Print(message.str().c_str(), BasePrint::P_STDOUT);
 }

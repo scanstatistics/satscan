@@ -1006,13 +1006,13 @@ void AnalysisRunner::PrintGiniCoefficients(FILE* fp) {
       lineData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl;
       pointData << itrMLC->getMaximumWindowSize() << "  " << gini << std::endl << "e" << std::endl;
   }
-  pg << std::endl << lineData.str().c_str() << "e" << std::endl << pointData.str().c_str() << "#";
+  pg << std::endl << lineData.str() << "e" << std::endl << pointData.str() << "#";
   pg.close();
 
   //change to parameter
   std::string gnuBinary("c:/prj/gnuplot/bin/gnuplot");
   std::stringstream command;
-  command << gnuBinary.c_str() << " " << name.c_str();
+  command << gnuBinary << " " << name;
   if (system (command.str().c_str()))
     gPrintDirection.Printf("Failed to create GINI graphic.\n", BasePrint::P_STDOUT);
   remove(name.c_str());
