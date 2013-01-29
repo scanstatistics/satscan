@@ -6,8 +6,8 @@
 #include "SSException.h"
 #include "UtilityFunctions.h"
 
-int ParameterProgramOptions::ADDITIONAL_DATASETS = 50;
-int ParameterProgramOptions::POLYGON_REGIONS = 100;
+unsigned int ParameterProgramOptions::ADDITIONAL_DATASETS = 50;
+unsigned int ParameterProgramOptions::POLYGON_REGIONS = 100;
 
 const char * ParameterProgramOptions::getOption(ParameterType e, bool withShortName) const {
     const char  * sSectionName, * sKey;
@@ -31,8 +31,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
     std::string buffer, buffer2, buffer3;
 
     /* Input tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Input), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Input), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(CASEFILE, true), po::value<std::string>(), GetParameterComment(CASEFILE))
         (getOption(CONTROLFILE, true), po::value<std::string>(), GetParameterComment(CONTROLFILE))
         (getOption(PRECISION, true), po::value<std::string>(), GetParameterComment(PRECISION))
@@ -45,8 +45,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(COORDTYPE, true), po::value<std::string>(), GetParameterComment(COORDTYPE));
 
     /* Analysis tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Analysis), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Analysis), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(ANALYSISTYPE, true), po::value<std::string>(), GetParameterComment(ANALYSISTYPE))
         (getOption(MODEL, true), po::value<std::string>(), GetParameterComment(MODEL))
         (getOption(SCANAREAS, true), po::value<std::string>(), GetParameterComment(SCANAREAS))
@@ -54,8 +54,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(TIME_AGGREGATION, true), po::value<std::string>(), GetParameterComment(TIME_AGGREGATION));
 
     /* Output tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Output), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Output), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(OUTPUTFILE, true), po::value<std::string>(), GetParameterComment(OUTPUTFILE))
         (getOption(OUTPUT_MLC_ASCII, true), po::value<std::string>(), GetParameterComment(OUTPUT_MLC_ASCII))
         (getOption(OUTPUT_MLC_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_MLC_DBASE))
@@ -70,42 +70,42 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
 
     /* Polygons tab options */
     printString(buffer2, "%s\n  %d polygon regions specified via --Polygon1, --Polygon2, --Polygon3, etc.", GetParameterComment(OBSERVABLE_REGIONS), POLYGON_REGIONS);
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Polygons), LINE_WIDTH),true,buffer2));
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Polygons), LINE_WIDTH, LINE_WIDTH/2),true,buffer2)));
 
     /* Polygons (additional files -- hidden) tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, "Polygon Regions"), LINE_WIDTH),false,std::string()));
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, "Polygon Regions"), LINE_WIDTH, LINE_WIDTH/2),false,std::string())));
     for (size_t t=0; t < POLYGON_REGIONS; ++t) {
-        opt_descriptions.back().get<0>().add_options()
+        opt_descriptions.back()->get<0>().add_options()
             (printString(buffer, "Polygon%d", t+1).c_str(), po::value<std::string>(), GetParameterComment(OBSERVABLE_REGIONS));
     }
 
     /* Multiple Data Sets tab options */
     printString(buffer2, "%d additional data sets specified via --%s2, --%s2, --%s2, etc.", ADDITIONAL_DATASETS, getOption(CASEFILE), getOption(CONTROLFILE), getOption(POPFILE));
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::MultipleDataSets), LINE_WIDTH),true,buffer2));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::MultipleDataSets), LINE_WIDTH, LINE_WIDTH/2),true,buffer2)));
+    opt_descriptions.back()->get<0>().add_options()
         //("case-file,c", "Case File")
         //("count-file,b", "Count File")
         //("population-file,p", "Population File")
         (getOption(MULTI_DATASET_PURPOSE_TYPE, true), po::value<std::string>(), GetParameterComment(MULTI_DATASET_PURPOSE_TYPE));
 
     /* Multiple Data Sets (additional files -- hidden) tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, "Additional File Sets"), LINE_WIDTH),false,std::string()));
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, "Additional File Sets"), LINE_WIDTH, LINE_WIDTH/2),false,std::string())));
     for (size_t t=0; t < ADDITIONAL_DATASETS; ++t) {
-        opt_descriptions.back().get<0>().add_options()
+        opt_descriptions.back()->get<0>().add_options()
             (printString(buffer, "%s%d", getOption(CASEFILE), t+2).c_str(), po::value<std::string>(), GetParameterComment(CASEFILE))
             (printString(buffer2, "%s%d", getOption(CONTROLFILE), t+2).c_str(), po::value<std::string>(), GetParameterComment(CONTROLFILE))
             (printString(buffer3, "%s%d", getOption(POPFILE), t+2).c_str(), po::value<std::string>(), GetParameterComment(POPFILE));
     }
 
     /* Data Checking tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::DataChecking), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::DataChecking), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(STUDYPERIOD_DATACHECK, true), po::value<std::string>(), GetParameterComment(STUDYPERIOD_DATACHECK))
         (getOption(COORDINATES_DATACHECK, true), po::value<std::string>(), GetParameterComment(COORDINATES_DATACHECK));
 
     /* Spatial Neighbors tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpatialNeighbors), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpatialNeighbors), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(LOCATION_NEIGHBORS_FILE, true), po::value<std::string>(), GetParameterComment(LOCATION_NEIGHBORS_FILE))
         (getOption(USE_LOCATION_NEIGHBORS_FILE, true), po::value<std::string>(), GetParameterComment(USE_LOCATION_NEIGHBORS_FILE))
         (getOption(META_LOCATIONS_FILE, true), po::value<std::string>(), GetParameterComment(META_LOCATIONS_FILE))
@@ -113,8 +113,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(MULTIPLE_COORDINATES_TYPE, true), po::value<std::string>(), GetParameterComment(MULTIPLE_COORDINATES_TYPE));
 
     /* Spatial Window tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpatialWindow), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpatialWindow), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(MAXGEOPOPATRISK, true), po::value<std::string>(), GetParameterComment(MAXGEOPOPATRISK))
         (getOption(MAXGEOPOPFILE, true), po::value<std::string>(), GetParameterComment(MAXGEOPOPFILE))
         (getOption(MAXGEODISTANCE, true), po::value<std::string>(), GetParameterComment(MAXGEODISTANCE))
@@ -127,8 +127,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(RISKFUNCTION, true), po::value<std::string>(), GetParameterComment(RISKFUNCTION));
 
     /* Temporal Window tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalWindow), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::TemporalWindow), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(TIMESIZE, true), po::value<std::string>(), GetParameterComment(TIMESIZE))
         (getOption(PURESPATIAL, true), po::value<std::string>(), GetParameterComment(PURESPATIAL))
         (getOption(MAX_TEMPORAL_TYPE, true), po::value<std::string>(), GetParameterComment(MAX_TEMPORAL_TYPE))
@@ -137,8 +137,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(INTERVAL_ENDRANGE, true), po::value<std::string>(), GetParameterComment(INTERVAL_ENDRANGE));
 
     /* Space And Time Adjustments tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpaceAndTimeAdjustments), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::SpaceAndTimeAdjustments), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(TIMETREND, true), po::value<std::string>(), GetParameterComment(TIMETREND))
         (getOption(TIMETRENDPERC, true), po::value<std::string>(), GetParameterComment(TIMETRENDPERC))
         (getOption(ADJ_BY_RR_FILE, true), po::value<std::string>(), GetParameterComment(ADJ_BY_RR_FILE))
@@ -147,8 +147,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(TIME_TREND_TYPE, true), po::value<std::string>(), GetParameterComment(TIME_TREND_TYPE));
 
     /* Inference tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Inference), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::Inference), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(START_PROSP_SURV, true), po::value<std::string>(), GetParameterComment(START_PROSP_SURV))
         (getOption(PVALUE_REPORT_TYPE, true), po::value<std::string>(), GetParameterComment(PVALUE_REPORT_TYPE))
         (getOption(REPORT_GUMBEL, true), po::value<std::string>(), GetParameterComment(REPORT_GUMBEL))
@@ -160,8 +160,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(REPLICAS, true), po::value<std::string>(), GetParameterComment(REPLICAS));
 
     /* Clusters Reported tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::ClustersReported), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::ClustersReported), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(REPORT_HIERARCHICAL_CLUSTERS, true), po::value<std::string>(), GetParameterComment(REPORT_HIERARCHICAL_CLUSTERS))
         (getOption(REPORT_GINI_CLUSTERS, true), po::value<std::string>(), GetParameterComment(REPORT_GINI_CLUSTERS))
         (getOption(CRITERIA_SECOND_CLUSTERS, true), po::value<std::string>(), GetParameterComment(CRITERIA_SECOND_CLUSTERS))
@@ -177,21 +177,21 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(USE_MAXGEODISTANCE_REPORTED, true), po::value<std::string>(), GetParameterComment(USE_MAXGEODISTANCE_REPORTED));
 
     /* Additional Output tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdditionalOutput), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::AdditionalOutput), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(REPORT_CRITICAL_VALUES, true), po::value<std::string>(), GetParameterComment(REPORT_CRITICAL_VALUES))
         (getOption(REPORT_RANK, true), po::value<std::string>(), GetParameterComment(REPORT_RANK))
         (getOption(PRINT_ASCII_HEADERS, true), po::value<std::string>(), GetParameterComment(PRINT_ASCII_HEADERS));
 
     /* Elliptic Scan tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::EllipticScan), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::EllipticScan), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(ESHAPES, true), po::value<std::string>(), GetParameterComment(ESHAPES))
         (getOption(ENUMBERS, true), po::value<std::string>(), GetParameterComment(ENUMBERS));
 
     /* Power Simulations tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerSimulations), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::PowerSimulations), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(POWER_EVALUATION, true), po::value<std::string>(), GetParameterComment(POWER_EVALUATION))
         (getOption(PE_COUNT, true), po::value<std::string>(), GetParameterComment(PE_COUNT))
         (getOption(PE_CV_SPEC_TYPE, true), po::value<std::string>(), GetParameterComment(PE_CV_SPEC_TYPE))
@@ -207,8 +207,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(SIMULATION_DATA_OUTFILE, true), po::value<std::string>(), GetParameterComment(SIMULATION_DATA_OUTFILE));
 
     /* Run Options tab options */
-    opt_descriptions.push_back(ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::RunOptions), LINE_WIDTH),true,std::string()));
-    opt_descriptions.back().get<0>().add_options()
+    opt_descriptions.push_back(ParamOptItem_t(new ParamOpt_t(po::options_description(printString(buffer, OPT_FORMAT, IniParameterSpecification::RunOptions), LINE_WIDTH, LINE_WIDTH/2),true,std::string())));
+    opt_descriptions.back()->get<0>().add_options()
         (getOption(EXECUTION_TYPE, true), po::value<std::string>(), GetParameterComment(EXECUTION_TYPE))
         (getOption(NUM_PROCESSES, true), po::value<std::string>(), GetParameterComment(NUM_PROCESSES))
         (getOption(LOG_HISTORY, true), po::value<std::string>(), GetParameterComment(LOG_HISTORY))

@@ -38,10 +38,10 @@ void usage_message(std::string program, ParameterProgramOptions::ParamOptContain
     message << std::endl << "Usage: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter file>(optional) [options]";
     message << std::endl << std::endl << desc;
     for (size_t t=0; t < opt_descriptions.size(); ++t) {
-        if (opt_descriptions[t].get<1>())
-            message << std::endl << std::endl << opt_descriptions[t].get<0>();
-        if (opt_descriptions[t].get<2>().size())
-            message << std::endl << "  " << opt_descriptions[t].get<2>();
+        if (opt_descriptions[t]->get<1>())
+            message << std::endl << std::endl << opt_descriptions[t]->get<0>();
+        if (opt_descriptions[t]->get<2>().size())
+            message << std::endl << "  " << opt_descriptions[t]->get<2>();
     }
     console.Print(message.str().c_str(), BasePrint::P_STDOUT);
 }
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     ParameterProgramOptions parameterOptions(Parameters, Console);
     parameterOptions.getOptions(opt_descriptions);
     for (size_t t=0; t < opt_descriptions.size(); ++t)
-        cmdline_options.add(opt_descriptions[t].get<0>());
+        cmdline_options.add(opt_descriptions[t]->get<0>());
     cmdline_options.add(application).add(hidden);
     usage_message(argv[0], opt_descriptions, application, Console);
     try {

@@ -205,7 +205,6 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(CALCULATION)/IniParameterSpecification.cpp \
                $(CALCULATION)/IniParameterFileAccess.cpp \
                $(CALCULATION)/RunTimeComponents.cpp \
-               $(CALCULATION)/ParameterProgramOptions.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/once.cpp \
                $(BOOSTDIR)/libs/thread/src/pthread/thread.cpp \
                $(BOOSTDIR)/libs/regex/src/c_regex_traits.cpp \
@@ -235,7 +234,8 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
                $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
 
-APP_SRC     := $(SATSCAN)/batch_application/Main.cpp
+APP_SRC     := $(SATSCAN)/batch_application/Main.cpp \
+               $(SATSCAN)/batch_application/ParameterProgramOptions.cpp
 LIB_SRC     := $(SATSCAN)/java_application/shared_library/SharedLibrary.cpp \
                $(SATSCAN)/java_application/shared_library/stsJNIPrintWindow.cpp \
                $(SATSCAN)/java_application/shared_library/stsParametersUtility.cpp \

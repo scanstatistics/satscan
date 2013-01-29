@@ -13,12 +13,13 @@ namespace po = boost::program_options;
 class ParameterProgramOptions: public AbtractParameterFileAccess {
     public:
         typedef boost::tuple<po::options_description,bool,std::string>  ParamOpt_t; // (po::options_description, visible, extra text)
-        typedef std::vector<ParamOpt_t> ParamOptContainer_t;
+        typedef boost::shared_ptr<ParamOpt_t> ParamOptItem_t;
+        typedef std::vector<ParamOptItem_t> ParamOptContainer_t;
 
     protected:
         const IniParameterSpecification   _specifications;
-        static int ADDITIONAL_DATASETS;
-        static int POLYGON_REGIONS;
+        static unsigned int ADDITIONAL_DATASETS;
+        static unsigned int POLYGON_REGIONS;
 
         const char * getOption(ParameterType e, bool withShortName=false) const;
         const char * GetParameterLabel(ParameterType e) const {return getOption(e);}

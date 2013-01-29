@@ -94,6 +94,9 @@
     <Filter Include="Source Files\boost\program_options">
       <UniqueIdentifier>{135c0a6f-bc3b-4d0f-97bf-4f9106d60d63}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\batch_application">
+      <UniqueIdentifier>{7d99923d-f99d-4331-a981-2e874b38e6e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -646,7 +649,7 @@
       <Filter>Source Files\boost\program_options</Filter>
     </ClCompile>
     <ClCompile Include="ParameterProgramOptions.cpp">
-      <Filter>Source Files\calculation</Filter>
+      <Filter>Source Files\batch_application</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1122,7 +1125,7 @@
       <Filter>Header Files\calculation\cluster</Filter>
     </ClInclude>
     <ClInclude Include="ParameterProgramOptions.h">
-      <Filter>Header Files\calculation</Filter>
+      <Filter>Header Files\batch_application</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
