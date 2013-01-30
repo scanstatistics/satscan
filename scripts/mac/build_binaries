@@ -4,7 +4,7 @@
 
 binaries="/Users/hostovic/prj/satscan.development/build.area/binaries/mac"
 satscan_src="/Users/hostovic/prj/satscan.development/build.area/satscan"
-boost_src="/Users/hostovic/prj/boost/boost_1_48_0"
+boost_src="/Users/hostovic/prj/boost/boost_1_52_0"
 processors="-j2"
 
 rm -f $binaries/*

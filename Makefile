@@ -232,7 +232,11 @@ SRC         := $(ANALYSIS)/Analysis.cpp \
                $(BOOSTDIR)/libs/program_options/src/split.cpp \
                $(BOOSTDIR)/libs/program_options/src/utf8_codecvt_facet.cpp \
                $(BOOSTDIR)/libs/program_options/src/value_semantic.cpp \
-               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp
+               $(BOOSTDIR)/libs/program_options/src/variables_map.cpp \
+               $(BOOSTDIR)/libs/chrono/src/chrono.cpp \
+               $(BOOSTDIR)/libs/chrono/src/process_cpu_clocks.cpp \
+               $(BOOSTDIR)/libs/chrono/src/thread_clock.cpp \
+               $(BOOSTDIR)/libs/system/src/error_code.cpp
 
 APP_SRC     := $(SATSCAN)/batch_application/Main.cpp \
                $(SATSCAN)/batch_application/ParameterProgramOptions.cpp
