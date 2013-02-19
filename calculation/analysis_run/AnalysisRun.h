@@ -34,6 +34,10 @@ class ClusterRankHelper {
                     _rankCollection.insert(itr, cluster);
             }
         }
+        void clear() {
+            _rankCollection.clear();
+            _addStatus = accepting;
+        }
         void sort() {
             if (_addStatus != closed) { // already closed? - them it is already sorted
             // sort cluster collection by cluster LLR -- adding clusters after this call is undefined behavior.

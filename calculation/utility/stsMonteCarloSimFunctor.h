@@ -32,24 +32,25 @@ public:
    ,boost::shared_ptr<CAnalysis> pAnalysis
    ,boost::shared_ptr<SimulationDataContainer_t> pSimulationDataContainer
    ,boost::shared_ptr<RandomizerContainer_t> pRandomizationContainer
+   ,bool sharableRandomizers=false
   )
    : gMutex(Mutex)
    , gDataHub(theDataHub)
    , gpAnalysis(pAnalysis)
    , gpSimulationDataContainer(pSimulationDataContainer)
-   , gpRandomizationContainer(pRandomizationContainer)
+   //, gpRandomizationContainer(pRandomizationContainer)
   {
     //get container for simulation data - this data will be modified in the randomize process
     gDataHub.GetDataSetHandler().GetSimulationDataContainer(*gpSimulationDataContainer);
     //get container of data randomizers - these will modify the simulation data
-    if (!gpRandomizationContainer->size()) // conditionally get randomizers -- might already get assigned
+    if (sharableRandomizers || !pRandomizationContainer->size()) {// conditionally get randomizers -- might already get assigned
+        gpRandomizationContainer = pRandomizationContainer;
         gDataHub.GetDataSetHandler().GetRandomizerContainer(*gpRandomizationContainer);
-    else {
+    } else {
         // clone passed randomizers
-        boost::shared_ptr<RandomizerContainer_t> randomizers(new RandomizerContainer_t());
+        gpRandomizationContainer = boost::shared_ptr<RandomizerContainer_t>(new RandomizerContainer_t());
         for (size_t t=0; t < pRandomizationContainer->size(); ++t)
-            randomizers->push_back(pRandomizationContainer->at(t)->Clone());
-        pRandomizationContainer.swap(randomizers);
+            gpRandomizationContainer->push_back(pRandomizationContainer->at(t)->Clone());
     }
     //get data gateway given dataset handler's real data and simulated data structures
     gpDataGateway.reset(gDataHub.GetDataSetHandler().GetNewDataGatewayObject());

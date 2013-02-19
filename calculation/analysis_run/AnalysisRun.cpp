@@ -220,7 +220,7 @@ void AnalysisRunner::ExecutePowerEvaluations() {
     unsigned int numReplicaStep1 = gSimVars.get_sim_count();
 
     // report critical values gathered from simulations and/or user specified
-    fprintf(fp,"\nAlpha\t\t\t\t\t\t\t\t0.05\t\t\t\t\t0.01\t\t\t\t\t0.001\n");
+    fprintf(fp,"\nAlpha\t\t\t\t\t0.05\t\t\t\t0.01\t\t\t\t0.001\n");
     double critical05, critical01, critical001;
     switch (gParameters.getPowerEvaluationCriticalValueType()) {
         case PE_MONTECARLO:
@@ -790,7 +790,7 @@ void AnalysisRunner::runSuccessiveSimulations(boost::shared_ptr<RandomizerContai
       unsigned long ulParallelProcessCount = std::min(gParameters.GetNumParallelProcessesToExecute(), num_relica);
       for (unsigned u=0; u < ulParallelProcessCount; ++u) {
          try {
-            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers);
+            stsMCSimSuccessiveFunctor mcsf(thread_mutex, GetDataHub(), boost::shared_ptr<CAnalysis>(GetNewAnalysisObject()), boost::shared_ptr<SimulationDataContainer_t>(new SimulationDataContainer_t()), randomizers, u==0);
             tg.create_thread(subcontractor<contractor_type,stsMCSimSuccessiveFunctor>(theContractor,mcsf));
          } catch (std::bad_alloc &b) {             
              if (u == 0) throw; // if this is the first thread, re-throw exception
@@ -1342,6 +1342,7 @@ bool AnalysisRunner::RepeatAnalysis() {
       for (MLC_Collections_t::iterator itrMLC=gTopClustersContainers.begin(); itrMLC != gTopClustersContainers.end(); ++itrMLC)
         itrMLC->Empty();
       _reportClusters.Empty();
+      _clusterRanker.clear();
   }
   catch (prg_exception& x) {
     x.addTrace("RepeatAnalysis()","AnalysisRunner");

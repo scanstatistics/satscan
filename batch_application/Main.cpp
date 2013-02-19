@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
     for (size_t t=0; t < opt_descriptions.size(); ++t)
         cmdline_options.add(opt_descriptions[t]->get<0>());
     cmdline_options.add(application).add(hidden);
-    usage_message(argv[0], opt_descriptions, application, Console);
+    //usage_message(argv[0], opt_descriptions, application, Console);
     try {
         po::store(po::command_line_parser(argc, argv).options(cmdline_options).style(po::command_line_style::default_style|po::command_line_style::case_insensitive).positional(pd).run(), vm);
         po::notify(vm);

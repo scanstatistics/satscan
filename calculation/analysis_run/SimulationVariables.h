@@ -18,7 +18,8 @@ class SimulationVariables {
                         _simulations_count=0;
                         _sum_llr=0;
                         _sum_squared_llr=0;
-                        _mlc_llr.resize(1,mlc_counter_t(mlc_llr,0));  
+                        _mlc_llr.clear();
+                        _mlc_llr.push_back(mlc_counter_t(mlc_llr,0));
                     }
 
   public:
@@ -26,7 +27,7 @@ class SimulationVariables {
     virtual ~SimulationVariables() {}
 
     void            add_additional_mlc(double mlc_llr) {
-                        _mlc_llr.push_back(mlc_counter_t(mlc_llr,0));  
+                        _mlc_llr.push_back(mlc_counter_t(mlc_llr,0));
                     }
     void            add_llr(double llr) {_sum_llr += llr; 
                                          _sum_squared_llr += std::pow(llr, 2);
