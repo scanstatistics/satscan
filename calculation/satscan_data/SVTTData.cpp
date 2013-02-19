@@ -44,10 +44,10 @@ void CSVTTData::DisplayCases(FILE* pFile) const {
     handle and array pointers are valid. Probably should call
     DisplayCases(FILE* pFile) instead of this function directly. */
 void CSVTTData::DisplayCounts(FILE* pFile,
-                              count_t** pCounts,   char* szVarName,
-                              count_t** pCountsNC, char* szVarNameNC,
-                              count_t*  pCountsTI, char* szVarNameTI,
-                              char* szTitle) const {
+                              count_t** pCounts,   const char* szVarName,
+                              count_t** pCountsNC, const char* szVarNameNC,
+                              count_t*  pCountsTI, const char* szVarNameTI,
+                              const char* szTitle) const {
   if (szTitle != NULL)
     fprintf(pFile, "%s", szTitle);
 

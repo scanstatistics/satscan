@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "DateStringParser.h"
 #include "SSException.h"
+#include <cstring>
 
 const unsigned int DateStringParser::DEFAULT_DAY                       = 1;
 const unsigned int DateStringParser::DEFAULT_MONTH                     = 1;

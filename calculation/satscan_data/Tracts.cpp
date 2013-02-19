@@ -396,6 +396,11 @@ void TractHandler::assignExplicitCoordinates(CoordinatesContainer_t& coordinates
     if (gvCoordinates.size() == coordinates.size()) {
         for (size_t t=0; t < coordinates.size(); ++t) {
             //Verify that coordinates have equal dimensions...
+            if (!gvCoordinates[t])
+                throw prg_error("not allolcated.", "pushCoordinates()");
+            if (!coordinates[t])
+                throw prg_error("not allolcated.", "pushCoordinates()");
+
             if (gvCoordinates[t]->getSize() != coordinates[t]->getSize())
                throw prg_error("Coordinate dimension is %u, expected %d.", "pushCoordinates()", coordinates[t]->getSize(), gvCoordinates[t]->getSize());
              memcpy(gvCoordinates[t]->getCoordinates(), coordinates[t]->getCoordinates(), sizeof(double) * coordinates[t]->getSize() );

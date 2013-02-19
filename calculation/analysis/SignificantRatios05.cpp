@@ -4,6 +4,7 @@
 //***************************************************************************
 #include "SignificantRatios05.h"
 #include "SSException.h"
+#include <cstring>
 
 /** constructor */
 SignificantRatios::SignificantRatios(unsigned int iNumReplications) : _numReplications(iNumReplications) {

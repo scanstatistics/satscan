@@ -5,6 +5,7 @@
 #include "SaTScan.h"
 #include "MultipleDimensionArrayHandler.h"
 #include "ptr_vector.h"
+#include <cstring>
 
 class TractHandler; // forward declaration
 class MetaLocation; // forward declaration

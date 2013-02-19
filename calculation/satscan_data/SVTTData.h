@@ -14,10 +14,10 @@
     dimension array. */
 class CSVTTData : public CSaTScanData {
   private:
-    virtual void        DisplayCounts(FILE* pFile, count_t** pCounts,
-                                      char* szVarName, count_t** pCountsNC,
-                                      char* szVarNameNC, count_t*  pCountsTI,
-                                      char* szVarNameTI, char* szTitle=NULL) const;
+    virtual void        DisplayCounts(FILE* pFile, 
+                                      count_t** pCounts, const char* szVarName, 
+                                      count_t** pCountsNC, const char* szVarNameNC, 
+                                      count_t*  pCountsTI, const char* szVarNameTI, const char* szTitle=NULL) const;
     virtual void        SetProbabilityModel();
 
   protected:
