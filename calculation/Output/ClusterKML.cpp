@@ -11,7 +11,7 @@
 
 /** constructor */
 ClusterKML::ClusterKML(const CSaTScanData& dataHub, const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) 
-           :_dataHub(dataHub), _clusters(clusters), _simVars(simVars), _visiblePoints(false) {}
+           :_dataHub(dataHub), _clusters(clusters), _simVars(simVars), _visibleLocations(false), _includeLocations(false) {}
 
 /** Render scatter chart to html page. */
 void ClusterKML::renderKML() {
@@ -30,16 +30,14 @@ void ClusterKML::renderKML() {
     KMLout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     KMLout << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;
 
-    //KMLout << "<Style id=\"cluster-centriod\"><IconStyle><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href></Icon></IconStyle></Style>" << std::endl;
-
     // TODO: How to detect that a cluster is high or low? Oberserved vs expected? ... but how about ordinal model?
-	KMLout << "<Style id=\"cluster-centriod-high-rate\"><IconStyle><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon></IconStyle><LineStyle><color>ff0000aa</color></LineStyle><PolyStyle><color>400000aa</color></PolyStyle></Style>" << std::endl;
+	KMLout << "<Style id=\"cluster-centriod-high-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png</href></Icon></IconStyle><LineStyle><color>ff0000aa</color></LineStyle><PolyStyle><color>400000aa</color></PolyStyle></Style>" << std::endl;
     KMLout << "<Style id=\"cluster-boundary-high-rate\"><LineStyle><color>ff0000aa</color><width>2</width></LineStyle><PolyStyle><color>400000aa</color></PolyStyle></Style>" << std::endl;
-    KMLout << "<Style id=\"cluster-placemark-high-rate\"><IconStyle><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    KMLout << "<Style id=\"cluster-placemark-high-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
 
-	KMLout << "<Style id=\"cluster-centriod-low-rate\"><IconStyle><Icon><href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon></IconStyle><LineStyle><color>ffff0000</color></LineStyle><PolyStyle><color>40ff0000</color></PolyStyle></Style>" << std::endl;
+	KMLout << "<Style id=\"cluster-centriod-low-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href></Icon></IconStyle><LineStyle><color>ffff0000</color></LineStyle><PolyStyle><color>40ff0000</color></PolyStyle></Style>" << std::endl;
     KMLout << "<Style id=\"cluster-boundary-low-rate\"><LineStyle><color>ffff0000</color><width>2</width></LineStyle><PolyStyle><color>40ff0000</color></PolyStyle></Style>" << std::endl;
-    KMLout << "<Style id=\"cluster-placemark-low-rate\"><IconStyle><Icon><href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
+    KMLout << "<Style id=\"cluster-placemark-low-rate\"><IconStyle><Icon><href>https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href><scale>0.25</scale></Icon></IconStyle></Style>" << std::endl;
 
     KMLout << "<name>SaTScan Clusters Detected</name><description>Spatial clusters detected in your analysis.</description>" << std::endl << std::endl;
 
@@ -103,20 +101,24 @@ void ClusterKML::writeCluster(std::ofstream& outKML, const CCluster& cluster, in
       // create centroid placemark
       outKML << "<Placemark><name>Cluster " << (iCluster + 1) <<" Centriod</name><description></description><styleUrl>#cluster-centriod-"<< (isHighRate ? "high" : "low") << "-rate</styleUrl>"
              << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0" << "</coordinates></Point></Placemark>" << std::endl;
-      // create locations folder and locations within cluster placemarks
-      outKML << "<Folder><name>Locations</name><description></description>" << std::endl;
-      for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
-        tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
-        if (!_dataHub.GetIsNullifiedLocation(tTract)) {
-            _dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
-            CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
-            prLatitudeLongitude = ConvertToLatLong(vCoordinates);
-			outKML << "<Placemark><name>" <<  vTractIdentifiers[0] << "</name>" << (_visiblePoints ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>#cluster-placemark-" << (isHighRate ? "high" : "low") << "-rate</styleUrl>"
-                   << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
-                   << "</coordinates></Point></Placemark>" << std::endl;
-        }
-      }
-      outKML << "</Folder>" << std::endl << "</Folder>" << std::endl << std::endl; 
+
+	  if (_includeLocations) {
+		// create locations folder and locations within cluster placemarks
+		outKML << "<Folder><name>Locations</name><description></description>" << std::endl;
+		for (tract_t t=1; t <= cluster.GetNumTractsInCluster(); ++t) {
+			tract_t tTract = _dataHub.GetNeighbor(cluster.GetEllipseOffset(), cluster.GetCentroidIndex(), t, cluster.GetCartesianRadius());
+			if (!_dataHub.GetIsNullifiedLocation(tTract)) {
+				_dataHub.GetTInfo()->retrieveAllIdentifiers(tTract, vTractIdentifiers);
+				CentroidNeighborCalculator::getTractCoordinates(_dataHub, cluster, tTract,vCoordinates);
+				prLatitudeLongitude = ConvertToLatLong(vCoordinates);
+				outKML << "<Placemark><name>" <<  vTractIdentifiers[0] << "</name>" << (_visibleLocations ? "" : "<visibility>0</visibility>") << "<description></description><styleUrl>#cluster-placemark-" << (isHighRate ? "high" : "low") << "-rate</styleUrl>"
+					   << "<Point><coordinates>" << prLatitudeLongitude.second << "," << prLatitudeLongitude.first << ",0"
+                       << "</coordinates></Point></Placemark>" << std::endl;
+			}
+		}
+		outKML << "</Folder>" << std::endl;
+	  }
+      outKML << "</Folder>" << std::endl << std::endl; 
   } catch (prg_exception& x) {
     x.addTrace("writeCluster()","ClusterKML");
     throw;
