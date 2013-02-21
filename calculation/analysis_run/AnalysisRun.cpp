@@ -39,7 +39,7 @@
 #include "SVTTCentricAnalysis.h"
 #include "PurelySpatialBruteForceAnalysis.h"
 //#include "ClusterScatterChart.h"
-//#include "ClusterKML.h"
+#include "ClusterKML.h"
 #include "PoissonRandomizer.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign;
@@ -1431,14 +1431,14 @@ void AnalysisRunner::reportClusters() {
                 ClusterScatterChart plot(*gpDataHub, _reportClusters, gSimVars);
                 plot.renderScatterChart();
             } */
-            /* Google Earth code ... 
+            // Google Earth code ... 
             if (_reportClusters.GetNumClustersRetained() && 
                 gParameters.GetCoordinatesType() == LATLON && 
                 !gParameters.GetIsPurelyTemporalAnalysis() &&
                 !gParameters.UseLocationNeighborsFile()) {
                 ClusterKML kmlOut(*gpDataHub, _reportClusters, gSimVars);
                 kmlOut.renderKML();
-            }*/
+            }
         }
     } catch (prg_exception& x) {
         x.addTrace("reportClusters()","AnalysisRunner");

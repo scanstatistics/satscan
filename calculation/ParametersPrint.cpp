@@ -263,12 +263,12 @@ void ParametersPrint::PrintAnalysisParameters(FILE* fp) const {
 void ParametersPrint::PrintAnalysisSummary(FILE* fp) const {
   try {
     switch (gParameters.GetAnalysisType()) {
-      case PURELYSPATIAL             : fprintf(fp, "Purely Spatial analysis\n"); break;
-      case PURELYTEMPORAL            : fprintf(fp, "Retrospective Purely Temporal analysis\n"); break;
-      case SPACETIME                 : fprintf(fp, "Retrospective Space-Time analysis\n"); break;
-      case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time analysis\n"); break;
-      case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation in Temporal Trends analysis\n"); break;
-      case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal analysis\n"); break;
+      case PURELYSPATIAL             : fprintf(fp, "Purely Spatial"); break;
+      case PURELYTEMPORAL            : fprintf(fp, "Retrospective Purely Temporal"); break;
+      case SPACETIME                 : fprintf(fp, "Retrospective Space-Time"); break;
+      case PROSPECTIVESPACETIME      : fprintf(fp, "Prospective Space-Time"); break;
+      case SPATIALVARTEMPTREND       : fprintf(fp, "Spatial Variation in Temporal Trends"); break;
+      case PROSPECTIVEPURELYTEMPORAL : fprintf(fp, "Prospective Purely Temporal"); break;
       default : throw prg_error("Unknown analysis type '%d'.\n",
                                 "PrintAnalysisSummary()", gParameters.GetAnalysisType());
     }

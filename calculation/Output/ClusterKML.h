@@ -15,6 +15,7 @@ class ClusterKML {
       const CSaTScanData                & _dataHub;
       const MostLikelyClustersContainer & _clusters;
       const SimulationVariables         & _simVars;
+      bool                                _visiblePoints;
 
       std::string                       & getClusterLegend(const CCluster& cluster, int iCluster, std::string& legend) const;
       void                                writeCluster(std::ofstream& outKML, const CCluster& cluster, int iCluster) const;
