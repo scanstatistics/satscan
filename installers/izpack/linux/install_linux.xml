@@ -15,8 +15,8 @@
     -->
     <info>
         <appname>SaTScan</appname>
-        <appversion>9.2</appversion>
-        <appsubpath>SaTScan</appsubpath>
+        <appversion>9.2 Beta 8</appversion>
+        <appsubpath>SaTScan_9_2_beta8</appsubpath>
         <authors>
             <author name="Martin Kulldorff together with IMS Inc." email="kulldorff@satscan.org"/>
         </authors>
@@ -89,25 +89,17 @@
 
         <pack name="Linux Specific Files" required="yes" os="unix" >
             <description>Linux Specific Files</description>
-            <file src="/prj/satscan/build.area/binaries/linux/satscan_stdc++5_x86_64_32bit" targetdir="$INSTALL_PATH" />
-            <file src="/prj/satscan/build.area/binaries/linux/satscan_stdc++5_x86_64_64bit" targetdir="$INSTALL_PATH" />
             <file src="/prj/satscan/build.area/binaries/linux/satscan_stdc++6_x86_64_32bit" targetdir="$INSTALL_PATH" />
             <file src="/prj/satscan/build.area/binaries/linux/satscan_stdc++6_x86_64_64bit" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/satscan_stdc++5_x86_64_32bit" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/satscan_stdc++5_x86_64_64bit" type="bin" keep="true" stage="never" />
             <executable targetfile="$INSTALL_PATH/satscan_stdc++6_x86_64_32bit" type="bin" keep="true" stage="never" />
             <executable targetfile="$INSTALL_PATH/satscan_stdc++6_x86_64_64bit" type="bin" keep="true" stage="never" />
 
             <file src="/prj/satscan/build.area/satscan/installers/izpack/linux/symbolic.link.sh" targetdir="$INSTALL_PATH" />
             <executable targetfile="$INSTALL_PATH/symbolic.link.sh" type="bin" keep="false" stage="never" />
 
-            <file src="/prj/satscan/build.area/binaries/linux/libsatscan_stdc++5_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
-            <file src="/prj/satscan/build.area/binaries/linux/libsatscan_stdc++5_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
             <file src="/prj/satscan/build.area/binaries/linux/libsatscan_stdc++6_x86_64_32bit.so" targetdir="$INSTALL_PATH" />
             <file src="/prj/satscan/build.area/binaries/linux/libsatscan_stdc++6_x86_64_64bit.so" targetdir="$INSTALL_PATH" />
-            <executable targetfile="$INSTALL_PATH/libsatscan_stdc++5_x86_64_32bit.so" type="bin" keep="true" stage="never" />
             <executable targetfile="$INSTALL_PATH/libsatscan_stdc++6_x86_64_32bit.so" type="bin" keep="true" stage="never" />
-            <executable targetfile="$INSTALL_PATH/libsatscan_stdc++5_x86_64_64bit.so" type="bin" keep="true" stage="never" />
             <executable targetfile="$INSTALL_PATH/libsatscan_stdc++6_x86_64_64bit.so" type="bin" keep="true" stage="never" />
 
             <file src="/prj/satscan/build.area/satscan/installers/resources/SaTScan.png" targetdir="$INSTALL_PATH" />
