@@ -7,8 +7,13 @@
 
 /** Validates CParameters settings in relation to program and each other, as well as available functionality in program. */
 class ParametersValidate {
+  public: 
+      static const char * MSG_INVALID_PARAM;
+
   private:
     const CParameters & gParameters;
+
+    bool                checkFileExists(const std::string& filename, const std::string& filetype, BasePrint& PrintDirection) const;
 
     bool                ValidateClustersReportedParameters(BasePrint & PrintDirection) const;
     bool                ValidateContinuousPoissonParameters(BasePrint & PrintDirection) const;

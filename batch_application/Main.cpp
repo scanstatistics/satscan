@@ -32,16 +32,30 @@ void __SaTScanExit() {
   AppToolkit::ToolKitDestroy();
 }
 
-void usage_message(std::string program, ParameterProgramOptions::ParamOptContainer_t& opt_descriptions, po::options_description& desc, PrintScreen& console) {
+void usage_message(std::string program, po::options_description& desc, const ParameterProgramOptions& prgOptions, ParameterProgramOptions::ParamOptContainer_t& opt_descriptions, bool displayParams, PrintScreen& console) {
     FileName            exe(program.c_str());
     std::stringstream   message;
     message << std::endl << "Usage: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter file>(optional) [options]";
     message << std::endl << std::endl << desc;
-    for (size_t t=0; t < opt_descriptions.size(); ++t) {
-        if (opt_descriptions[t]->get<1>())
-            message << std::endl << std::endl << opt_descriptions[t]->get<0>();
-        if (opt_descriptions[t]->get<2>().size())
-            message << std::endl << "  " << opt_descriptions[t]->get<2>();
+
+    message << std::endl << "The parameter file is an optional argument. You can define settings in 3 ways:" << std::endl << std::endl;
+    message << " All parameter settings specified with a parameter file." << std::endl;
+    message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter filename>" << std::endl << std::endl;
+    message << " All parameter settings specified with command-line arguments -- see 'display-parameters'." << std::endl;
+    message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " --" << prgOptions.getOption(CASEFILE) 
+            << " <case filename> --" << prgOptions.getOption(POPFILE) <<" <population filename> ..."<< std::endl << std::endl;
+    message << " Default parameter settings defined in a parameter file then override with command-line arguments." << std::endl;
+    message << "   example: " << exe.getFileName().c_str() << exe.getExtension().c_str() << " <parameter filename> --"
+            << prgOptions.getOption(STARTDATE) << " 1973/1/1 --" << prgOptions.getOption(ENDDATE) << " 1991/12/31 --"
+            << prgOptions.getOption(OUTPUTFILE) << " <results filename>" << std::endl;
+
+    if (displayParams) {
+        for (size_t t=0; t < opt_descriptions.size(); ++t) {
+            if (opt_descriptions[t]->get<1>())
+                message << std::endl << std::endl << opt_descriptions[t]->get<0>();
+            if (opt_descriptions[t]->get<2>().size())
+                message << std::endl << "  " << opt_descriptions[t]->get<2>();
+        }
     }
     console.Print(message.str().c_str(), BasePrint::P_STDOUT);
 }
@@ -53,6 +67,7 @@ int main(int argc, char *argv[]) {
   std::string sMessage;
   PrintScreen Console(false);
   po::variables_map vm;
+  ParameterProgramOptions parameterOptions(Parameters, Console);
 
   try {
     __SaTScanInit(argv[0]);
@@ -61,20 +76,20 @@ int main(int argc, char *argv[]) {
     /* general options */
     po::options_description application("", 200);
     application.add_options()
-        ("help,h", "Help")
-        ("version,v", "Program version")
         ("parameter-file,f", po::value<std::string>(), "Parameter file")
+        ("display-parameters,s", "Display Parameter Options List")
+        ("version,v", "Program version")
         ("verify-parameters,c", po::bool_switch(&verifyParameters), "Verify parameters only")
-        ("print-parameters,p", po::bool_switch(&printParameters), "Print parameters only");
+        ("print-parameters,p", po::bool_switch(&printParameters), "Print parameters only")
+        ("help,h", "Help");
 
     /* hidden options */
     po::options_description hidden("Hidden options", 200);
     hidden.add_options()("centric,t", po::bool_switch(&forceCentric), "Centric execution (overrides parameter file)")
                         ("all-out,a", po::bool_switch(&allOut), "All output files (overrides parameter file)")
-                        ("standard-pvalue,d", po::bool_switch(&standardPvalue), "Report standard p-value (overrides parameter file)")                        
+                        ("standard-pvalue,d", po::bool_switch(&standardPvalue), "Report standard p-value (overrides parameter file)")
                         ("RandomSeed", po::value<std::string>(), "randomization seed (0 < Seed < 2147483647)")
-                        ("RandomlyGenerateSeed", po::value<std::string>(), "randomly generate seed")
-                        ;
+                        ("RandomlyGenerateSeed", po::value<std::string>(), "randomly generate seed");
 
     /* positional options */
     po::positional_options_description pd; 
@@ -83,12 +98,15 @@ int main(int argc, char *argv[]) {
     po::options_description cmdline_options;
 
     ParameterProgramOptions::ParamOptContainer_t opt_descriptions;
-    ParameterProgramOptions parameterOptions(Parameters, Console);
     parameterOptions.getOptions(opt_descriptions);
     for (size_t t=0; t < opt_descriptions.size(); ++t)
         cmdline_options.add(opt_descriptions[t]->get<0>());
     cmdline_options.add(application).add(hidden);
-    //usage_message(argv[0], opt_descriptions, application, Console);
+    // display help if no additional arguments specified 
+    if (argc < 2) {
+        usage_message(argv[0], application, parameterOptions, opt_descriptions, false, Console);
+        return 1;
+    }
     try {
         po::store(po::command_line_parser(argc, argv).options(cmdline_options).style(po::command_line_style::default_style|po::command_line_style::case_insensitive).positional(pd).run(), vm);
         po::notify(vm);
@@ -98,13 +116,14 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     /* program options processing */
-    if (vm.count("help")) {usage_message(argv[0], opt_descriptions, application, Console); return 0;}
+    if (vm.count("help")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, false, Console); return 0;}
     if (vm.count("version")) {Console.Printf("SaTScan %s.%s.%s %s.\n", BasePrint::P_STDOUT, VERSION_MAJOR, VERSION_MINOR, VERSION_RELEASE, VERSION_PHASE); return 0;}
+    if (vm.count("display-parameters")) {usage_message(argv[0], application, parameterOptions, opt_descriptions, true, Console); return 0;}
     //if (!vm.count("parameter-file")) {Console.Printf("Missing input parameter-file.\n", BasePrint::P_ERROR); usage_message(argv[0], opt_descriptions, application, Console); return 1;}
     /* read parameter file */
     if (vm.count("parameter-file")) {
         if (!ParameterAccessCoordinator(Parameters).Read(vm["parameter-file"].as<std::string>().c_str(), Console))
-            throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+            throw resolvable_error("\nThe parameter settings that prevent SaTScan from continuing.\n"
                                    "Please review above message(s) and modify parameter settings accordingly.");
     }
     /* apply parameter overrides*/
@@ -116,11 +135,11 @@ int main(int argc, char *argv[]) {
     Parameters.SetRunHistoryFilename(AppToolkit::getToolkit().GetRunHistoryFileName());
     /* validate parameters - print errors to console */
     if (!ParametersValidate(Parameters).Validate(Console))
-      throw resolvable_error("\nThe parameter file contains incorrect settings that prevent SaTScan from continuing.\n"
+      throw resolvable_error("\nThe parameter settings prevent SaTScan from continuing.\n"
                              "Please review above message(s) and modify parameter settings accordingly.");
     /* additional program options processing */
     if (printParameters) {ParametersPrint(Parameters).Print(stdout); return 0;}
-    if (verifyParameters) {Console.Printf("Parameters confirmed.\n", BasePrint::P_STDOUT); return 0;}
+    if (verifyParameters) {Console.Printf("Parameters verified, no setting errors detected.\n", BasePrint::P_STDOUT); return 0;}
     //parameterOptions.listOptions();
     //ParameterAccessCoordinator(Parameters).Write(vm["parameter-file"].as<std::string>().c_str(), Console);
     Console.Printf(AppToolkit::getToolkit().GetAcknowledgment(sMessage), BasePrint::P_STDOUT);
@@ -130,7 +149,7 @@ int main(int argc, char *argv[]) {
     Console.Printf("\nSaTScan completed successfully.\nThe results have been written to: \n  %s\n\n",  BasePrint::P_STDOUT, Parameters.GetOutputFileName().c_str());
     __SaTScanExit();
   } catch (resolvable_error & x) {
-    Console.Printf("%s\n\nJob cancelled.", BasePrint::P_ERROR, x.what());
+    Console.Printf("%s\n\nUse '--help' to get help with program options.\n", BasePrint::P_ERROR, x.what());
     __SaTScanExit();
     return 1;
   } catch (prg_exception& x) {

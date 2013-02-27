@@ -262,3 +262,12 @@ void ParameterProgramOptions::listOptions(FILE * fp) {
         }
     }    
 }
+
+bool ParameterProgramOptions::Read(const char* szFilename) {
+    throw prg_error("ParameterProgramOptions::Read(const char*) not implemented.", "Read()");
+    return false;
+}
+void ParameterProgramOptions::Write(const char * szFilename) {
+    throw prg_error("ParameterProgramOptions::Write(const char*) not implemented.", "Write()");
+}
+
