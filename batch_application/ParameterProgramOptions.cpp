@@ -66,7 +66,8 @@ ParameterProgramOptions::ParamOptContainer_t & ParameterProgramOptions::getOptio
         (getOption(OUTPUT_RR_ASCII, true), po::value<std::string>(), GetParameterComment(OUTPUT_RR_ASCII))
         (getOption(OUTPUT_RR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_RR_DBASE))
         (getOption(OUTPUT_SIM_LLR_ASCII, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_ASCII))
-        (getOption(OUTPUT_SIM_LLR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_DBASE));
+        (getOption(OUTPUT_SIM_LLR_DBASE, true), po::value<std::string>(), GetParameterComment(OUTPUT_SIM_LLR_DBASE))
+        (getOption(OUTPUT_KML, true), po::value<std::string>(), GetParameterComment(OUTPUT_KML));
 
     /* Polygons tab options */
     printString(buffer2, "%s\n  %d polygon regions specified via --Polygon1, --Polygon2, --Polygon3, etc.", GetParameterComment(OBSERVABLE_REGIONS), POLYGON_REGIONS);

@@ -73,14 +73,15 @@ class CParameters {
                                         gbOutputRelativeRisksDBase;             /** indicates whether to output relative risks for each tract/location in dBase format */
     bool                                gbOutputClusterLevelAscii,              /** indicates whether to output most likely clusters for each centroid in ascii format */
                                         gbOutputClusterLevelDBase;              /** indicates whether to output most likely clusters for each centroid in dBase format */
-    bool                                gbOutputClusterCaseAscii,              /** indicates whether to output most likely cluster cases for each centroid in ascii format */
+    bool                                gbOutputClusterCaseAscii,               /** indicates whether to output most likely cluster cases for each centroid in ascii format */
                                         gbOutputClusterCaseDBase;               /** indicates whether to output most likely cluster cases for each centroid in dBase format */
     bool                                gbOutputAreaSpecificAscii,              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
                                         gbOutputAreaSpecificDBase;              /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
+    bool                                _output_kml;                            /* generate KML output file */
         /* Iterative scans variables */
-    bool                                gbIterativeRuns;                       /* iterative analysis? */
-    unsigned int                        giNumIterativeRuns;                    /* number of iterative scans to attempt */
-    double                              gbIterativeCutOffPValue;               /* P-Value used to exit iterative analysis */
+    bool                                gbIterativeRuns;                        /* iterative analysis? */
+    unsigned int                        giNumIterativeRuns;                     /* number of iterative scans to attempt */
+    double                              gbIterativeCutOffPValue;                /* P-Value used to exit iterative analysis */
         /* Input/Output filenames */
     std::string                         gsParametersSourceFileName;             /** parameters source filename */
     std::vector<std::string>            gvCaseFilenames;                        /** case data source filenames */
@@ -238,6 +239,7 @@ class CParameters {
     bool                                GetOutputClusterLevelFiles() const;
     const std::string                 & GetOutputFileName() const {return gsOutputFileName; }
     bool                                getReportGiniIndexCoefficents() const {return _reportGiniIndexCoefficients;}
+    bool                                getOutputKMLFile() const {return _output_kml;}
     bool                                GetOutputRelativeRisksAscii() const {return gbOutputRelativeRisksAscii;}
     bool                                GetOutputRelativeRisksDBase() const {return gbOutputRelativeRisksDBase;}
     bool                                GetOutputRelativeRisksFiles() const;
@@ -347,6 +349,7 @@ class CParameters {
     void                                SetNumberMonteCarloReplications(unsigned int iReplications);
     void                                setNumPowerEvalReplicaPowerStep(unsigned int r) {_power_replica = r;}
     void                                SetNumIterativeScans(int iNumIterativeScans);
+    void                                setOutputKMLFile(bool b) {_output_kml = b;}
     void                                SetOutputAreaSpecificAscii(bool b) {gbOutputAreaSpecificAscii = b;}
     void                                SetOutputAreaSpecificDBase(bool b) {gbOutputAreaSpecificDBase = b;}
     void                                SetOutputClusterCaseAscii(bool b) {gbOutputClusterCaseAscii = b;}

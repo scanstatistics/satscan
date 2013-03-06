@@ -183,6 +183,7 @@ const char * AbtractParameterFileAccess::GetParameterComment(ParameterType ePara
       case POWER_001                    : return "power evaluation critical value .001 (> 0)";
       case PE_OUTPUT_SIMUALTION_DATA    : return "report power evaluation randomization data from power step (y/n)";
       case PE_SIMUALTION_OUTPUTFILE     : return "power evaluation simulation data output filename";
+      case OUTPUT_KML                   : return "output Google Earth KML file (y/n)";
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -331,6 +332,7 @@ std::string & AbtractParameterFileAccess::GetParameterString(ParameterType ePara
       case POWER_001                    : return AsString(s, gParameters.getPowerEvaluationCriticalValue001());
       case PE_OUTPUT_SIMUALTION_DATA    : return AsString(s, gParameters.getOutputPowerEvaluationSimulationData());
       case PE_SIMUALTION_OUTPUTFILE     : s = gParameters.getPowerEvaluationSimulationDataOutputFilename().c_str(); return s;
+      case OUTPUT_KML                   : return AsString(s, gParameters.getOutputKMLFile());
       default : throw prg_error("Unknown parameter enumeration %d.","GetParameterComment()", eParameterType);
     };
   } catch (prg_exception& x) {
@@ -711,6 +713,7 @@ void AbtractParameterFileAccess::SetParameter(ParameterType eParameterType, cons
       case POWER_001                    : gParameters.SetPowerEvaluationCriticalValue001(ReadDouble(sParameter, eParameterType)); break;
       case PE_OUTPUT_SIMUALTION_DATA    : gParameters.setOutputPowerEvaluationSimulationData(ReadBoolean(sParameter, eParameterType)); break;
       case PE_SIMUALTION_OUTPUTFILE     : gParameters.setPowerEvaluationSimulationDataOutputFilename(sParameter.c_str(), true); break;
+      case OUTPUT_KML                   : gParameters.setOutputKMLFile(ReadBoolean(sParameter, eParameterType)); break;
       default : throw parameter_error("Unknown parameter enumeration %d.", eParameterType);
     };
   } catch (parameter_error &x) {

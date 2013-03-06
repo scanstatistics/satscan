@@ -10,7 +10,7 @@ using namespace boost::assign;
 
 const int CParameters::MAXIMUM_ITERATIVE_ANALYSES     = 32000;
 const int CParameters::MAXIMUM_ELLIPSOIDS             = 10;
-const int CParameters::giNumParameters                = 119;
+const int CParameters::giNumParameters                = 120;
 
 /** Constructor */
 CParameters::CParameters() {
@@ -30,45 +30,45 @@ CParameters &CParameters::operator=(const CParameters &rhs) {
 }
 
 bool  CParameters::operator==(const CParameters& rhs) const {
-  if (geSpatialWindowType                    != rhs.geSpatialWindowType) return false;
-  if (gvEllipseShapes                        != rhs.gvEllipseShapes) return false;
-  if (gvEllipseRotations                     != rhs.gvEllipseRotations) return false;
-  if (geNonCompactnessPenaltyType            != rhs.geNonCompactnessPenaltyType) return false;
-  if (glTotalNumEllipses                     != rhs.glTotalNumEllipses) return false;
-  if (geAnalysisType                         != rhs.geAnalysisType) return false;
-  if (geAreaScanRate                         != rhs.geAreaScanRate) return false;
-  if (geProbabilityModelType                 != rhs.geProbabilityModelType) return false;
-  if (geRiskFunctionType                     != rhs.geRiskFunctionType) return false;
-  if (giReplications                         != rhs.giReplications) return false;
-  if (_performPowerEvaluation                != rhs._performPowerEvaluation) return false;
-  if (_critical_value_05                     != rhs._critical_value_05) return false;
-  if (_critical_value_01                     != rhs._critical_value_01) return false;
-  if (_critical_value_001                    != rhs._critical_value_001) return false;
-  if (gsStudyPeriodStartDate                 != rhs.gsStudyPeriodStartDate) return false;
-  if (gsStudyPeriodEndDate                   != rhs.gsStudyPeriodEndDate) return false;
-  if (gdMaxTemporalClusterSize               != rhs.gdMaxTemporalClusterSize) return false;
-  if (geIncludeClustersType                  != rhs.geIncludeClustersType) return false;
-  if (geTimeAggregationUnitsType             != rhs.geTimeAggregationUnitsType) return false;
-  if (glTimeAggregationLength                != rhs.glTimeAggregationLength) return false;
-  if (geTimeTrendAdjustType                  != rhs.geTimeTrendAdjustType) return false;
-  if (gdTimeTrendAdjustPercentage            != rhs.gdTimeTrendAdjustPercentage) return false;
-  if (gbIncludePurelySpatialClusters         != rhs.gbIncludePurelySpatialClusters) return false;
-  if (gbIncludePurelyTemporalClusters        != rhs.gbIncludePurelyTemporalClusters) return false;
-  if (gvCaseFilenames                        != rhs.gvCaseFilenames) return false;
-  if (gvControlFilenames                     != rhs.gvControlFilenames) return false;
-  if (gvPopulationFilenames                  != rhs.gvPopulationFilenames) return false;
-  if (gsCoordinatesFileName                  != rhs.gsCoordinatesFileName) return false;
-  if (gsSpecialGridFileName                  != rhs.gsSpecialGridFileName) return false;
-  if (gbUseSpecialGridFile                   != rhs.gbUseSpecialGridFile) return false;
-  if (gsMaxCirclePopulationFileName          != rhs.gsMaxCirclePopulationFileName) return false;
-  if (gePrecisionOfTimesType                 != rhs.gePrecisionOfTimesType) return false;
-  if (geCoordinatesType                      != rhs.geCoordinatesType) return false;
-  if (gsOutputFileName                       != rhs.gsOutputFileName) return false;
-  if (gbOutputSimLogLikeliRatiosAscii        != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
-  if (gbOutputRelativeRisksAscii             != rhs.gbOutputRelativeRisksAscii) return false;
-  if (gbIterativeRuns                        != rhs.gbIterativeRuns) return false;
-  if (giNumIterativeRuns                     != rhs.giNumIterativeRuns) return false;
-  if (gbIterativeCutOffPValue                != rhs.gbIterativeCutOffPValue) return false;
+  if (geSpatialWindowType != rhs.geSpatialWindowType) return false;
+  if (gvEllipseShapes != rhs.gvEllipseShapes) return false;
+  if (gvEllipseRotations != rhs.gvEllipseRotations) return false;
+  if (geNonCompactnessPenaltyType != rhs.geNonCompactnessPenaltyType) return false;
+  if (glTotalNumEllipses != rhs.glTotalNumEllipses) return false;
+  if (geAnalysisType != rhs.geAnalysisType) return false;
+  if (geAreaScanRate != rhs.geAreaScanRate) return false;
+  if (geProbabilityModelType != rhs.geProbabilityModelType) return false;
+  if (geRiskFunctionType != rhs.geRiskFunctionType) return false;
+  if (giReplications != rhs.giReplications) return false;
+  if (_performPowerEvaluation != rhs._performPowerEvaluation) return false;
+  if (_critical_value_05 != rhs._critical_value_05) return false;
+  if (_critical_value_01 != rhs._critical_value_01) return false;
+  if (_critical_value_001 != rhs._critical_value_001) return false;
+  if (gsStudyPeriodStartDate != rhs.gsStudyPeriodStartDate) return false;
+  if (gsStudyPeriodEndDate != rhs.gsStudyPeriodEndDate) return false;
+  if (gdMaxTemporalClusterSize != rhs.gdMaxTemporalClusterSize) return false;
+  if (geIncludeClustersType != rhs.geIncludeClustersType) return false;
+  if (geTimeAggregationUnitsType != rhs.geTimeAggregationUnitsType) return false;
+  if (glTimeAggregationLength != rhs.glTimeAggregationLength) return false;
+  if (geTimeTrendAdjustType != rhs.geTimeTrendAdjustType) return false;
+  if (gdTimeTrendAdjustPercentage != rhs.gdTimeTrendAdjustPercentage) return false;
+  if (gbIncludePurelySpatialClusters != rhs.gbIncludePurelySpatialClusters) return false;
+  if (gbIncludePurelyTemporalClusters != rhs.gbIncludePurelyTemporalClusters) return false;
+  if (gvCaseFilenames != rhs.gvCaseFilenames) return false;
+  if (gvControlFilenames != rhs.gvControlFilenames) return false;
+  if (gvPopulationFilenames != rhs.gvPopulationFilenames) return false;
+  if (gsCoordinatesFileName != rhs.gsCoordinatesFileName) return false;
+  if (gsSpecialGridFileName != rhs.gsSpecialGridFileName) return false;
+  if (gbUseSpecialGridFile != rhs.gbUseSpecialGridFile) return false;
+  if (gsMaxCirclePopulationFileName != rhs.gsMaxCirclePopulationFileName) return false;
+  if (gePrecisionOfTimesType != rhs.gePrecisionOfTimesType) return false;
+  if (geCoordinatesType != rhs.geCoordinatesType) return false;
+  if (gsOutputFileName != rhs.gsOutputFileName) return false;
+  if (gbOutputSimLogLikeliRatiosAscii != rhs.gbOutputSimLogLikeliRatiosAscii) return false;
+  if (gbOutputRelativeRisksAscii != rhs.gbOutputRelativeRisksAscii) return false;
+  if (gbIterativeRuns != rhs.gbIterativeRuns) return false;
+  if (giNumIterativeRuns != rhs.giNumIterativeRuns) return false;
+  if (gbIterativeCutOffPValue != rhs.gbIterativeCutOffPValue) return false;
   if (gsProspectiveStartDate                 != rhs.gsProspectiveStartDate) return false;
   if (gbOutputAreaSpecificAscii              != rhs.gbOutputAreaSpecificAscii) return false;
   if (gbOutputClusterLevelAscii              != rhs.gbOutputClusterLevelAscii) return false;
@@ -142,12 +142,13 @@ bool  CParameters::operator==(const CParameters& rhs) const {
   if (_critical_value_type                   != rhs._critical_value_type) return false;
   if (_power_estimation_type                 != rhs._power_estimation_type) return false;
   if (_power_alt_hypothesis_filename         != rhs._power_alt_hypothesis_filename) return false;
-  if (_power_replica                         != rhs._power_replica) return false;
-  if (_power_simulation_type                 != rhs._power_simulation_type) return false;
-  if (_power_simulation_source_filename      != rhs._power_simulation_source_filename) return false;
-  if (_report_power_simulation_data          != rhs._report_power_simulation_data) return false;
-  if (_power_simulation_output_filename      != rhs._power_simulation_output_filename) return false;
-  if (_power_evaluation_method               != rhs._power_evaluation_method) return false;
+  if (_power_replica != rhs._power_replica) return false;
+  if (_power_simulation_type != rhs._power_simulation_type) return false;
+  if (_power_simulation_source_filename != rhs._power_simulation_source_filename) return false;
+  if (_report_power_simulation_data != rhs._report_power_simulation_data) return false;
+  if (_power_simulation_output_filename != rhs._power_simulation_output_filename) return false;
+  if (_power_evaluation_method != rhs._power_evaluation_method) return false;
+  if (_output_kml != rhs._output_kml) return false;
 
   return true;
 }
@@ -347,6 +348,7 @@ void CParameters::Copy(const CParameters &rhs) {
   _report_power_simulation_data          = rhs._report_power_simulation_data;
   _power_simulation_output_filename      = rhs._power_simulation_output_filename;
   _power_evaluation_method               = rhs._power_evaluation_method;
+  _output_kml = rhs._output_kml;
 }
 
 const std::string & CParameters::GetCaseFileName(size_t iSetIndex) const {
@@ -828,6 +830,7 @@ void CParameters::SetAsDefaulted() {
   _report_power_simulation_data = false;
   _power_simulation_output_filename = "";
   _power_evaluation_method = PE_WITH_ANALYSIS;
+  _output_kml = false;
 }
 
 /** Sets start range start date. Throws exception. */

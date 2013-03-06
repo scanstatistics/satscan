@@ -754,6 +754,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _clustersInColumnFormatDBaseCheckBox.setSelected(parameters.GetOutputClusterLevelDBase());
         _clusterCaseInColumnFormatAsciiCheckBox.setSelected(parameters.GetOutputClusterCaseAscii());  // Output Most Likely Cluster for each Centroid
         _clusterCaseInColumnFormatDBaseCheckBox.setSelected(parameters.GetOutputClusterCaseDBase());
+        _reportGoogleEarthKML.setSelected(parameters.getOutputKMLFile());
         enableSettingsForAnalysisModelCombination();
         enableAdvancedButtons();
     }
@@ -766,9 +767,10 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         if (_cartesianRadioButton.isSelected()) {
             eReturn = Parameters.CoordinatesType.CARTESIAN;
-        }
-        if (_latLongRadioButton.isSelected()) {
+        } else if (_latLongRadioButton.isSelected()) {
             eReturn = Parameters.CoordinatesType.LATLON;
+        } else {
+            throw new RuntimeException("Unable to determine coordinates type.");
         }
         return eReturn;
     }
@@ -781,12 +783,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
 
         if (_highRatesRadioButton.isSelected()) {
             eReturn = Parameters.AreaRateType.HIGH;
-        }
-        if (_lowRatesRadioButton.isSelected()) {
+        } else if (_lowRatesRadioButton.isSelected()) {
             eReturn = Parameters.AreaRateType.LOW;
-        }
-        if (_highOrLowRatesRadioButton.isSelected()) {
+        } else if (_highOrLowRatesRadioButton.isSelected()) {
             eReturn = Parameters.AreaRateType.HIGHANDLOW;
+        } else {
+            throw new RuntimeException("Unable to determine scanning area type.");
         }
         return eReturn;
     }
@@ -803,6 +805,8 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             eReturn = Parameters.DatePrecisionType.MONTH;
         } else if (_timeAggregationDayRadioButton.isSelected()) {
             eReturn = Parameters.DatePrecisionType.DAY;
+        } else {
+            throw new RuntimeException("Unable to determine time aggregation type.");
         }
         return eReturn;
     }
@@ -853,6 +857,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         parameters.SetOutputRelativeRisksDBase(_relativeRiskEstimatesAreaDBaseCheckBox.isSelected() && _relativeRiskEstimatesAreaDBaseCheckBox.isEnabled());
         parameters.SetOutputSimLogLikeliRatiosAscii(_simulatedLogLikelihoodRatiosAsciiCheckBox.isSelected());
         parameters.SetOutputSimLogLikeliRatiosDBase(_simulatedLogLikelihoodRatiosDBaseCheckBox.isSelected());
+        parameters.setOutputKMLFile(_reportGoogleEarthKML.isSelected());
         getAdvancedParameterInternalFrame().saveParameterSettings(parameters);
         geObservableRegionsParameterInternalFrame().saveParameterSettings(parameters);
     }
@@ -864,18 +869,16 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         Parameters.DatePrecisionType eReturn = null;
         if (_timePrecisionNone.isSelected() == true) {
             eReturn = Parameters.DatePrecisionType.NONE;
-        }
-        if (_timePrecisionYear.isSelected() == true) {
+        } else if (_timePrecisionYear.isSelected() == true) {
             eReturn = Parameters.DatePrecisionType.YEAR;
-        }
-        if (_timePrecisionMonth.isSelected() == true) {
+        } else if (_timePrecisionMonth.isSelected() == true) {
             eReturn = Parameters.DatePrecisionType.MONTH;
-        }
-        if (_timePrecisionDay.isSelected() == true) {
+        } else if (_timePrecisionDay.isSelected() == true) {
             eReturn = Parameters.DatePrecisionType.DAY;
-        }
-        if (_timePrecisionGeneric.isSelected() == true) {
+        } else if (_timePrecisionGeneric.isSelected() == true) {
             eReturn = Parameters.DatePrecisionType.GENERIC;
+        } else {
+            throw new RuntimeException("Unable to determine precision of times type.");
         }
         return eReturn;
     }
@@ -1019,8 +1022,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _timeAggregationYearRadioButton.setEnabled(bEnable && !bGenericType && eDatePrecisionType != Parameters.DatePrecisionType.NONE);                
         _timeAggregationMonthRadioButton.setEnabled(bEnable && !bGenericType &&  
                                                     eDatePrecisionType != Parameters.DatePrecisionType.NONE && 
-                                                    eDatePrecisionType != Parameters.DatePrecisionType.YEAR);
-        
+                                                    eDatePrecisionType != Parameters.DatePrecisionType.YEAR);        
         if (_timeAggregationGroup.isEnabled() && !bGenericType && _timeAggregationMonthRadioButton.isSelected() && !_timeAggregationMonthRadioButton.isEnabled()) {
             _timeAggregationYearRadioButton.setSelected(true);
         }
@@ -1045,6 +1047,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _relativeRiskEstimatesAreaAsciiCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaDBaseCheckBox.setEnabled(bRelativeRisks);
         _relativeRiskEstimatesAreaLabel.setEnabled(bRelativeRisks);
+        _reportGoogleEarthKML.setEnabled(getCoordinatesType() == Parameters.CoordinatesType.LATLON);
     }
 
     /**
@@ -1444,9 +1447,6 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _aggregrationUnitsLabel = new javax.swing.JLabel();
         _advancedAnalysisButton = new javax.swing.JButton();
         _outputTab = new javax.swing.JPanel();
-        _resultsFileLabel = new HelpLinkedLabel("Results File:","results_file_htm");
-        _resultsFileTextField = new javax.swing.JTextField();
-        _resultsFileBrowseButton = new javax.swing.JButton();
         _additionalOutputFilesGroup = new javax.swing.JPanel();
         _asciiLabel = new javax.swing.JLabel();
         _dBaseLabel = new javax.swing.JLabel();
@@ -1466,6 +1466,12 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         _simulatedLogLikelihoodRatiosAsciiCheckBox = new javax.swing.JCheckBox();
         _simulatedLogLikelihoodRatiosDBaseCheckBox = new javax.swing.JCheckBox();
         _advancedFeaturesOutputButton = new javax.swing.JButton();
+        _textOutputFormatGroup = new javax.swing.JPanel();
+        _resultsFileLabel = new javax.swing.JLabel();
+        _resultsFileTextField = new javax.swing.JTextField();
+        _resultsFileBrowseButton = new javax.swing.JButton();
+        _geographicalOutputGroup = new javax.swing.JPanel();
+        _reportGoogleEarthKML = new javax.swing.JCheckBox();
 
         _timePrecisionButtonGroup.add(_timePrecisionNone);
         _timePrecisionButtonGroup.add(_timePrecisionYear);
@@ -2311,7 +2317,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                 .addComponent(_populationInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_geographicalInputPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
                 .addComponent(_advancedInputButton)
                 .addContainerGap())
         );
@@ -2785,28 +2791,14 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
                         .addComponent(_timeAggregationGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_probabilityModelGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(_analysisTypeGroup, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 162, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
                 .addComponent(_advancedAnalysisButton)
                 .addContainerGap())
         );
 
         _tabbedPane.addTab("Analysis", _analysisTab);
 
-        _resultsFileLabel.setText("Results File:"); // NOI18N
-
-        _resultsFileBrowseButton.setText("..."); // NOI18N
-        _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
-                fc.setDialogTitle("Select Results File");
-                fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
-                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
-                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
-                _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
-            }
-        });
-
-        _additionalOutputFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Additional Output Files"));
+        _additionalOutputFilesGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Column Output Format"));
         _additionalOutputFilesGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_additionalOutputFilesGroup, "create_additional_output_files_htm"));
 
         _asciiLabel.setText("ASCII"); // NOI18N
@@ -2941,6 +2933,71 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             }
         });
 
+        _textOutputFormatGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Text Output Format"));
+        _textOutputFormatGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_textOutputFormatGroup, "results_file_htm"));
+
+        _resultsFileLabel.setText("Results File:"); // NOI18N
+
+        _resultsFileBrowseButton.setText("..."); // NOI18N
+        _resultsFileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                JFileChooser fc = new JFileChooser(SaTScanApplication.getInstance().lastBrowseDirectory);
+                fc.setDialogTitle("Select Results File");
+                fc.addChoosableFileFilter(new InputFileFilter("txt","Results Files (*.txt)"));
+                if (fc.showSaveDialog(ParameterSettingsFrame.this) == JFileChooser.APPROVE_OPTION)
+                SaTScanApplication.getInstance().lastBrowseDirectory = fc.getCurrentDirectory();
+                _resultsFileTextField.setText(fc.getSelectedFile().getAbsolutePath());
+            }
+        });
+
+        javax.swing.GroupLayout _textOutputFormatGroupLayout = new javax.swing.GroupLayout(_textOutputFormatGroup);
+        _textOutputFormatGroup.setLayout(_textOutputFormatGroupLayout);
+        _textOutputFormatGroupLayout.setHorizontalGroup(
+            _textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(_textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
+                        .addComponent(_resultsFileLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
+                        .addComponent(_resultsFileTextField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+        );
+        _textOutputFormatGroupLayout.setVerticalGroup(
+            _textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_textOutputFormatGroupLayout.createSequentialGroup()
+                .addComponent(_resultsFileLabel)
+                .addGap(0, 0, 0)
+                .addGroup(_textOutputFormatGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(_resultsFileBrowseButton)
+                    .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        _geographicalOutputGroup.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Geographical Output Format"));
+        _geographicalOutputGroup.setBorder(new org.satscan.gui.utils.help.HelpLinkedTitledBorder(_geographicalOutputGroup, "create_additional_output_files_htm"));
+
+        _reportGoogleEarthKML.setText("Google Earth KML File");
+
+        javax.swing.GroupLayout _geographicalOutputGroupLayout = new javax.swing.GroupLayout(_geographicalOutputGroup);
+        _geographicalOutputGroup.setLayout(_geographicalOutputGroupLayout);
+        _geographicalOutputGroupLayout.setHorizontalGroup(
+            _geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(_reportGoogleEarthKML, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        _geographicalOutputGroupLayout.setVerticalGroup(
+            _geographicalOutputGroupLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(_geographicalOutputGroupLayout.createSequentialGroup()
+                .addComponent(_reportGoogleEarthKML)
+                .addGap(0, 8, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout _outputTabLayout = new javax.swing.GroupLayout(_outputTab);
         _outputTab.setLayout(_outputTabLayout);
         _outputTabLayout.setHorizontalGroup(
@@ -2948,28 +3005,24 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
             .addGroup(_outputTabLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(_outputTabLayout.createSequentialGroup()
-                        .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(_resultsFileLabel)
-                            .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(_resultsFileBrowseButton, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_advancedFeaturesOutputButton, javax.swing.GroupLayout.Alignment.TRAILING))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, _outputTabLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(_advancedFeaturesOutputButton))
+                    .addComponent(_textOutputFormatGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         _outputTabLayout.setVerticalGroup(
             _outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(_outputTabLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(_resultsFileLabel)
-                .addGap(0, 0, 0)
-                .addGroup(_outputTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(_resultsFileBrowseButton)
-                    .addComponent(_resultsFileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(_textOutputFormatGroup, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(_additionalOutputFilesGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 227, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(_geographicalOutputGroup, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
                 .addComponent(_advancedFeaturesOutputButton)
                 .addContainerGap())
         );
@@ -2984,7 +3037,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(_tabbedPane, javax.swing.GroupLayout.DEFAULT_SIZE, 494, Short.MAX_VALUE)
+            .addComponent(_tabbedPane)
         );
 
         pack();
@@ -3038,6 +3091,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JLabel _endDateYearLabel1;
     private javax.swing.JRadioButton _exponentialModelRadioButton;
     private javax.swing.JPanel _geographicalInputPanel;
+    private javax.swing.JPanel _geographicalOutputGroup;
     private javax.swing.JButton _gridFileBrowseButton;
     private javax.swing.JButton _gridFileImportButton;
     private javax.swing.JLabel _gridFileLabel;
@@ -3066,6 +3120,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JCheckBox _relativeRiskEstimatesAreaAsciiCheckBox;
     private javax.swing.JCheckBox _relativeRiskEstimatesAreaDBaseCheckBox;
     private javax.swing.JLabel _relativeRiskEstimatesAreaLabel;
+    private javax.swing.JCheckBox _reportGoogleEarthKML;
     private javax.swing.JButton _resultsFileBrowseButton;
     private javax.swing.JLabel _resultsFileLabel;
     private javax.swing.JTextField _resultsFileTextField;
@@ -3098,6 +3153,7 @@ public class ParameterSettingsFrame extends javax.swing.JInternalFrame implement
     private javax.swing.JTextField _studyPeriodStartDateMonthTextField;
     private javax.swing.JTextField _studyPeriodStartDateYearTextField;
     private javax.swing.JTabbedPane _tabbedPane;
+    private javax.swing.JPanel _textOutputFormatGroup;
     private javax.swing.ButtonGroup _timeAggregationButtonGroup;
     private javax.swing.JRadioButton _timeAggregationDayRadioButton;
     private javax.swing.JPanel _timeAggregationGroup;

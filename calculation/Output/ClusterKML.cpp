@@ -8,6 +8,7 @@
 #include "UtilityFunctions.h"
 #include "RandomNumberGenerator.h"
 
+const char * ClusterKML::KML_FILE_EXT = ".kml";
 
 /** constructor */
 ClusterKML::ClusterKML(const CSaTScanData& dataHub, const MostLikelyClustersContainer& clusters, const SimulationVariables& simVars) 
@@ -15,17 +16,19 @@ ClusterKML::ClusterKML(const CSaTScanData& dataHub, const MostLikelyClustersCont
 
 /** Render scatter chart to html page. */
 void ClusterKML::renderKML() {
-  std::string              color,legend;
+  std::string              buffer, color,legend;
   RandomNumberGenerator    rng;
   double                   gdMinRatioToReport=0.001;
+  FileName                 fileName;
 
   try {
+    fileName.setFullPath(_dataHub.GetParameters().GetOutputFileName().c_str());
+    fileName.setExtension(KML_FILE_EXT);
+
     std::ofstream KMLout;
     //open output file
-    std::string name(_dataHub.GetParameters().GetOutputFileName());
-    name += ".kml";
-    KMLout.open(name.c_str());
-    if (!KMLout) throw resolvable_error("Error: Could not open file '%s'.\n", name.c_str());
+    KMLout.open(fileName.getFullPath(buffer).c_str());
+    if (!KMLout) throw resolvable_error("Error: Could not open file '%s'.\n", fileName.getFullPath(buffer).c_str());
 
     KMLout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
     KMLout << "<kml xmlns=\"http://www.opengis.net/kml/2.2\">" << std::endl << "<Document>" << std::endl << std::endl;

@@ -133,16 +133,18 @@ public class Parameters implements Cloneable {
     private boolean                         gbIncludePurelySpatialClusters=false, /** indicates whether to include purely spatial clusters */
                                             gbIncludePurelyTemporalClusters=false; /** indicates whether to include purely temporal clusters */
         /* Additional output variables */
-    private boolean                         gbOutputSimLogLikeliRatiosAscii=false, /** indicates whether to output simulated loglikelihood ratios in acsii format */
-                                            gbOutputSimLogLikeliRatiosDBase=false; /** indicates whether to output simulated loglikelihood ratios in dBase format */
-    private boolean                         gbOutputRelativeRisksAscii=false, /** indicates whether to output relative risks for each tract/location in ascii format */
+    private boolean                         gbOutputSimLogLikeliRatiosAscii=false, /** indicates whether to output simulated log likelihood ratios in ASCII format */
+                                            gbOutputSimLogLikeliRatiosDBase=false; /** indicates whether to output simulated log likelihood ratios in dBase format */
+    private boolean                         gbOutputRelativeRisksAscii=false, /** indicates whether to output relative risks for each tract/location in ASCII format */
                                             gbOutputRelativeRisksDBase=false; /** indicates whether to output relative risks for each tract/location in dBase format */
-    private boolean                         gbOutputClusterLevelAscii=false, /** indicates whether to output most likely clusters for each centroid in ascii format */
+    private boolean                         gbOutputClusterLevelAscii=false, /** indicates whether to output most likely clusters for each centroid in ASCII format */
                                             gbOutputClusterLevelDBase=false; /** indicates whether to output most likely clusters for each centroid in dBase format */
-    private boolean                         gbOutputClusterCaseAscii=false, /** indicates whether to output most likely cluster cases for each centroid in ascii format */
+    private boolean                         gbOutputClusterCaseAscii=false, /** indicates whether to output most likely cluster cases for each centroid in ASCII format */
                                             gbOutputClusterCaseDBase=false; /** indicates whether to output most likely cluster cases for each centroid in dBase format */
-    private boolean                         gbOutputAreaSpecificAscii=false, /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ascii format */
+    private boolean                         gbOutputAreaSpecificAscii=false, /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in ASCII format */
                                             gbOutputAreaSpecificDBase=false; /** indicates whether to output tract/location information of reported(.i.e top ranked) clusters in dBase format */
+    private boolean                         _output_kml; /* report google earth kml file */
+
     /* Iterative scans variables */
     private boolean                         gbIterativeRuns=false; /* Iterative analysis? */
     private int                             giNumIterativeRuns=0; /* number of Iterative scans to attempt */
@@ -157,7 +159,7 @@ public class Parameters implements Cloneable {
     private String                          gsMaxCirclePopulationFileName=""; /** special population file for constructing circles only */
     private String                          gsOutputFileName=""; /** results output filename */
     private boolean                         gbLogRunHistory=true; /** indicates whether to log history */
-    private String                          gsSimulationDataSourceFileName=""; /** simualtion data source filename */
+    private String                          gsSimulationDataSourceFileName=""; /** simulation data source filename */
     private boolean                         gbUseAdjustmentsForRRFile=false; /** indicates whether to use adjustments for known relative risks file */
     private String                          gsAdjustmentsByRelativeRisksFileName=""; /** adjustments by known relative risks filename */
     private String                          gsSimulationDataOutputFilename=""; /** simulation data output filename */
@@ -176,16 +178,16 @@ public class Parameters implements Cloneable {
     private Vector<String>                  gvObservableRegions; /** collection of observable regions */
     private CreationVersion                 gCreationVersion;
     private int                             glRandomizationSeed=12345678; /** randomization seed */
-    private boolean                         gbReportCriticalValues=false; /** indicates whether to report critical llr values */
-    private boolean                         gbSuppressWarnings=false; /** indicates whether to suppres warnings printed during execution */
+    private boolean                         gbReportCriticalValues=false; /** indicates whether to report critical LLR values */
+    private boolean                         gbSuppressWarnings=false; /** indicates whether to suppress warnings printed during execution */
     private SpatialWindowType               geSpatialWindowType=SpatialWindowType.CIRCULAR; /** spatial window shape */
     private TimeTrendType                   geTimeTrendType=TimeTrendType.LINEAR;                        /** time trend type */
     private boolean                         gbReportRank=false;  /** report cluster rank */
-    private boolean                         gbPrintAsciiHeaders=false;  /** print ascii column headers */
+    private boolean                         gbPrintAsciiHeaders=false;  /** print ASCII column headers */
     private double                          _giniIndexPValueCutoff=0.05; /* P-Value used to limit clusters in gini index coefficients calcuation */
 
-    private boolean                         _reportHierarchicalClusters=true;  /** print ascii column headers */
-    private boolean                         _reportGiniOptimizedClusters=true;  /** print ascii column headers */
+    private boolean                         _reportHierarchicalClusters=true;  /** print ASCII column headers */
+    private boolean                         _reportGiniOptimizedClusters=true;  /** print ASCII column headers */
     GiniIndexReportType                     _giniIndexReportType=GiniIndexReportType.OPTIMAL_ONLY; /* type for the gini index cluster reporting */
     boolean                                 _outputGiniIndexCoefficients=false; /* output gini index coefficents */
 
@@ -197,7 +199,7 @@ public class Parameters implements Cloneable {
     private String                          _power_alt_hypothesis_filename=""; /** power evaluation alternative filename */
     private int                             _powerEvaluationTotalCases; /* number cases in power evaluation, user specified */
     private int                             _power_replica; /* number of replications in power step of power evaluations */
-
+    
     public static final int                 MAXIMUM_ITERATIVE_ANALYSES=32000; /** maximum number of permitted iterative scans */
     public static final int                 MAXIMUM_ELLIPSOIDS=10; /** maximum number of permitted ellipsoids */
 
@@ -257,6 +259,8 @@ public class Parameters implements Cloneable {
         }
     }
 
+    public boolean getOutputKMLFile() {return _output_kml;}
+    public void setOutputKMLFile(boolean b) {_output_kml = b;}
     public MultipleCoordinatesType GetMultipleCoordinatesType() {return geMultipleCoordinatesType;}
     public PValueReportingType GetPValueReportingType() {return gePValueReportingType;}
     public int GetEarlyTermThreshold() {return giEarlyTermThreshold;}

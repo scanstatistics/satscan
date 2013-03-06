@@ -12,6 +12,7 @@ class ClusterKML {
   typedef std::vector<std::pair<double, double> > points_t;
 
   protected:      
+      static const char                 * KML_FILE_EXT;
       const CSaTScanData                & _dataHub;
       const MostLikelyClustersContainer & _clusters;
       const SimulationVariables         & _simVars;

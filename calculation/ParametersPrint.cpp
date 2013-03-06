@@ -766,6 +766,10 @@ void ParametersPrint::PrintOutputParameters(FILE* fp) const {
       AdditionalOutputFile.setExtension(".llr.dbf");
       settings.push_back(std::make_pair("Simulated LLRs File",AdditionalOutputFile.getFullPath(buffer)));
     }
+    if (gParameters.GetCoordinatesType() == LATLON && gParameters.getOutputKMLFile()) {
+      AdditionalOutputFile.setExtension(".kml");
+      settings.push_back(std::make_pair("Google Earth KML File",AdditionalOutputFile.getFullPath(buffer)));
+    }
     WriteSettingsContainer(settings, "Output", fp);
   }
   catch (prg_exception& x) {
